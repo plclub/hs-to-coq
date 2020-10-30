@@ -1,6 +1,6 @@
 {
 
-{-# LANGUAGE TupleSections, OverloadedStrings, CPP #-}
+{-# LANGUAGE FlexibleContexts, TupleSections, OverloadedStrings, CPP #-}
 
 --work around https://github.com/simonmar/happy/issues/109
 #undef __GLASGOW_HASKELL__
@@ -22,6 +22,7 @@ import Control.Monad.Except
 import Control.Monad.State
 import Control.Monad.Parse
 
+import HsToCoq.Util.Has
 import HsToCoq.Util.GHC.Module (ModuleName(), mkModuleNameT)
 
 import HsToCoq.Coq.Gallina
@@ -31,6 +32,7 @@ import HsToCoq.Coq.Pretty (showP)
 
 import HsToCoq.ConvertHaskell.Parameters.Edits
 import HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing
+import HsToCoq.ConvertHaskell.Parameters.Parsers.Util
 }
 
 -- No conflicts allowed
@@ -43,7 +45,7 @@ import HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing
 %tokentype { Token }
 %error     { unexpected }
 
-%monad { Lexing }
+%monad { Parser }
 %lexer { (=<< token) } { TokEOF }
 
 -- Please maintain the format of this list; the token definitions and the
@@ -51,6 +53,7 @@ import HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing
 -- Emacs major mode with syntax highlighting.
 %token
   -- Tokens: Edits
+  alias           { TokWord    "alias"          }
   value           { TokWord    "value"          }
   type            { TokWord    "type"           }
   data            { TokWord    "data"           }
@@ -294,26 +297,29 @@ Scope :: { Ident }
   : Word    { $1     }
   | type    { "type" } -- This is so common, we have to special-case it
 
+ModuleName :: { ModuleName }
+  : Word    {% fmap mkModuleNameT (expandModuleIdent $1) }
+
 Edit :: { Edit }
   : type synonym Word ':->' Word                          { TypeSynonymTypeEdit              $3 $5                                 }
   | data type arguments Qualid DataTypeArguments          { DataTypeArgumentsEdit            $4 $5                                 }
   | redefine CoqDefinition                                { RedefinitionEdit                 $2                                    }
-  | add type Word CoqDefinition                           { AddEdit                          (mkModuleNameT $3) $4 PhaseTyCl       }
-  | add Word CoqDefinition                                { AddEdit                          (mkModuleNameT $2) $3 PhaseTerm       }
+  | add type ModuleName CoqDefinition                     { AddEdit                          $3 $4 PhaseTyCl                       }
+  | add ModuleName CoqDefinition                          { AddEdit                          $2 $3 PhaseTerm                       }
   | skip Qualid                                           { SkipEdit                         $2                                    }
   | skip constructor Qualid                               { SkipConstructorEdit              $3                                    }
   | skip class Qualid                                     { SkipClassEdit                    $3                                    }
   | skip method Qualid Word                               { SkipMethodEdit                   $3 $4                                 }
   | skip equation Qualid Some(AtomicPattern)              { SkipEquationEdit                 $3 $4                                 }
   | skip case pattern Pattern                             { SkipCasePatternEdit              $4                                    }
-  | skip module Word                                      { SkipModuleEdit                   (mkModuleNameT $3)                    }
-  | import module Word                                    { ImportModuleEdit                 (mkModuleNameT $3)                    }
-  | manual notation Word                                  { HasManualNotationEdit            (mkModuleNameT $3)                    }
+  | skip module ModuleName                                { SkipModuleEdit                   $3                                    }
+  | import module ModuleName                              { ImportModuleEdit                 $3                                    }
+  | manual notation ModuleName                            { HasManualNotationEdit            $3                                    }
   | termination Qualid TerminationArgument                { TerminationEdit                  $2 $3                                 }
   | obligations Qualid TrivialLtac                        { ObligationsEdit                  $2 $3                                 }
   | rename Renaming                                       { RenameEdit                       (fst $2) (snd $2)                     }
-  | axiomatize module Word                                { AxiomatizeModuleEdit             (mkModuleNameT $3)                    }
-  | axiomatize original module name Word                  { AxiomatizeOriginalModuleNameEdit (mkModuleNameT $5)                    }
+  | axiomatize module ModuleName                          { AxiomatizeModuleEdit             $3                                    }
+  | axiomatize original module name ModuleName            { AxiomatizeOriginalModuleNameEdit $5                                    }
   | axiomatize definition Qualid                          { AxiomatizeDefinitionEdit         $3                                    }
   | unaxiomatize definition Qualid                        { UnaxiomatizeDefinitionEdit       $3                                    }
   | add scope Scope for ScopePlace Qualid                 { AdditionalScopeEdit              $5 $6 $3                              }
@@ -323,7 +329,8 @@ Edit :: { Edit }
   | delete unused type variables Qualid                   { DeleteUnusedTypeVariablesEdit    $5                                    }
   | coinductive Qualid                                    { CoinductiveEdit                  $2                                    }
   | rewrite Rewrite                                       { RewriteEdit                      $2                                    }
-  | rename module Word Word                               { RenameModuleEdit                 (mkModuleNameT $3) (mkModuleNameT $4) }
+  | rename module ModuleName ModuleName                   { RenameModuleEdit                 $3 $4                                 }
+  | alias module Word Word                                {% aliasModule AliasModuleEdit     $3 $4                                 }
   | simple class Qualid                                   { SimpleClassEdit                  $3                                    }
   | inline mutual Qualid                                  { InlineMutualEdit                 $3                                    }
   | set type Qualid TypeAnnotationOrNot                   { SetTypeEdit                      $3 $4                                 }
@@ -351,21 +358,21 @@ Coq(p)
 
 -- This production is just for side effects
 EnterCoqParsing :: { () }
-  : {- empty -}    {% put NewlineWhitespace }
+  : {- empty -}    {% putPart NewlineWhitespace }
 
 -- This production is just for side effects
 ExitCoqParsing :: { () }
-  : {- empty -}    {% put NewlineSeparators }
+  : {- empty -}    {% putPart NewlineSeparators }
 
 Qualid :: { Qualid }
-  : WordOrOp   { forceIdentToQualid $1 }
+  : WordOrOp   {% forceIdentToQualid $1 }
 
 QualOp :: { Qualid }
-  : Op   { forceIdentToQualid $1  }
-  | '='  { forceIdentToQualid "=" }
+  : Op   {% forceIdentToQualid $1  }
+  | '='  {% forceIdentToQualid "=" }
 
 EqlessQualOp :: { Qualid }
-  : Op   { forceIdentToQualid $1 }
+  : Op   {% forceIdentToQualid $1 }
 
 EqlessTerm :: { Term }
   : MediumTerm(EqlessQualOp, EqlessTerm)    { $1 }
@@ -633,8 +640,11 @@ uncurry3 f = \(a,b,c) -> f a b c
 unexpected :: MonadParse m => Token -> m a
 unexpected tok = parseError $ "unexpected " ++ tokenDescription tok
 
-forceIdentToQualid :: Ident -> Qualid
-forceIdentToQualid x = fromMaybe (error $ "internal error: lexer produced a malformed qualid: " ++ show x) (identToQualid x)
+forceIdentToQualid :: MonadParser s m => Ident -> m Qualid
+forceIdentToQualid x = case identToQualid x of
+  Nothing -> error $ "internal error: lexer produced a malformed qualid: " ++ show x
+  Just (Qualified mod name) -> mkQualid mod name
+  Just q@(Bare _) -> pure q
 
 prechomp :: T.Text -> T.Text
 prechomp t = case T.stripPrefix "\n" t of

@@ -53,6 +53,7 @@ library
                      , HsToCoq.Util.TempFiles
                      , HsToCoq.Util.Messages
                      , HsToCoq.Util.FVs
+                     , HsToCoq.Util.Has
                      , Control.Monad.Trans.Activatable.Internal
                      , Control.Monad.Trans.Activatable
                      , Control.Monad.Activatable.Class
@@ -60,7 +61,6 @@ library
                      , Control.Monad.Trans.Counter
                      , Control.Monad.DefinedIdents
                      , Control.Monad.Trans.Parse
-                     , Control.Monad.Trans.NewlinesParse
                      , Control.Monad.Parse.Class
                      , Control.Monad.Parse
                      , HsToCoq.PrettyPrint
@@ -76,6 +76,7 @@ library
                      , HsToCoq.ConvertHaskell.Parameters.Edits
                      , HsToCoq.ConvertHaskell.Parameters.Parsers
                      , HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing
+                     , HsToCoq.ConvertHaskell.Parameters.Parsers.Types
                      , HsToCoq.ConvertHaskell.BuiltIn
                      , HsToCoq.ConvertHaskell.TypeInfo
                      , HsToCoq.ConvertHaskell.Monad

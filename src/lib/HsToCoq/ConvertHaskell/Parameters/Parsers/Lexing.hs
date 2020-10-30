@@ -1,10 +1,14 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TupleSections, LambdaCase, FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators #-}
 
 module HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing (
   -- * Lexing
   Lexing, runLexing, requestTactics, prettyParseError,
+  -- ** Lexer state
+  NewlineStatus(..),
   -- * Tokens
   Token(..), tokenDescription,
   token, token', proofBody,
@@ -28,6 +32,7 @@ module HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing (
 import Prelude hiding (Num())
 
 import Data.Foldable
+import Data.Function ((&))
 import Data.Bifunctor (first, second, bimap)
 import HsToCoq.Util.Foldable
 import HsToCoq.Util.Functor
@@ -40,6 +45,7 @@ import Control.Monad.Activatable
 
 import Data.Char
 import HsToCoq.Util.Char
+import HsToCoq.Util.Has
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -183,7 +189,12 @@ parseUntilAny stops = do
 -- parseToken :: MonadParse m => (Text -> a)  -> (Char -> Bool) -> (Char -> Bool) -> m a
 -- parseToken build isFirst isRest = ...
 
-token' :: MonadNewlinesParse m => m (Maybe Token)
+data NewlineStatus = NewlineSeparators | NewlineWhitespace
+                   deriving (Eq, Ord, Enum, Bounded, Show, Read)
+
+type MonadNewlineStatus s m = (MonadParse m, MonadState s m, Has s NewlineStatus)
+
+token' :: MonadNewlineStatus s m => m (Maybe Token)
 token' = asum $
   [ Nothing          <$  comment
   , Nothing          <$  space
@@ -195,14 +206,14 @@ token' = asum $
   , Just . nameToken <$> qualid
   , Just TokEOF      <$  (guard =<< atEOF) ]
   where
-    newlineToken = get <&> \case
+    newlineToken = getPart <&> \case
                      NewlineSeparators -> Just TokNewline
                      NewlineWhitespace -> Nothing
     nameToken    = uncurry $ \case
                      CatWord -> TokWord
                      CatSym  -> TokOp
 
-token :: (MonadActivatable Token m, MonadNewlinesParse m) => m Token
+token :: (MonadActivatable Token m, MonadNewlineStatus s m) => m Token
 token = switching' (untilJustM token') (bimap TokTactics TokPfEnd <$> proofBody)
 
 proofBody :: MonadParse m => m (Tactics, ProofEnder)
@@ -216,7 +227,13 @@ requestTactics = activateWith $ \case
   DoubleActivation -> parseError "already about to parse tactics"
   EarlyActivation  -> parseError "can't parse tactics again immediately after parsing tactics"
 
-type Lexing = ActivatableT Token NewlinesParse
+type Lexing s = ActivatableT Token (StateT (NewlineStatus :* s) Parse)
 
-runLexing :: Lexing a -> Text -> Either [ParseError] a
-runLexing = evalNewlinesParse . finalizeActivatableT (\_ -> parseError "trailing post-tactics keyword not parsed")
+evalParserState :: Monad m => StateT (NewlineStatus :* s) m a -> s -> m a
+evalParserState u s = evalStateT u (NewlineSeparators :* s)
+
+runLexing :: Lexing s a -> s -> Text -> Either [ParseError] a
+runLexing act s t = act
+  & finalizeActivatableT (\_ -> parseError "trailing post-tactics keyword not parsed")
+  & (`evalParserState` s)
+  & (`evalParse` t)
