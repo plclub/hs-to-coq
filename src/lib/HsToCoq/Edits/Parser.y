@@ -23,6 +23,7 @@ import Control.Monad.Except
 import Control.Monad.State
 import Control.Monad.Parse
 
+import HsToCoq.Util.List (ordNub)
 import HsToCoq.Util.Has
 import HsToCoq.Util.GHC.Module (ModuleName(), mkModuleNameT)
 
@@ -650,14 +651,11 @@ buildSTB :: MonadParse m => Term -> [(Qualid, Term)] -> m Term
 buildSTB t b = do
   let (ambig, t1) = buildSTB' t b
   unless (null ambig) . parseError $
-    "ambiguous expression, mixing operators " ++ show (qualidToOp' <$> snub ambig) ++ ": " ++ showP t
+    "ambiguous expression, mixing operators " ++ show (qualidToOp' <$> ordNub ambig) ++ ": " ++ showP t
   pure t1
 
 qualidToOp' :: Qualid -> Op
 qualidToOp' x = fromMaybe (error $ "internal error: malformed qualid (should be an op): " ++ show x) (qualidToOp x)
-
-snub :: Ord a => [a] -> [a]
-snub = S.toList . S.fromList
 
 buildSTB' :: Term -> [(Qualid, Term)] -> ([Qualid], Term)
 buildSTB' t suffix =
