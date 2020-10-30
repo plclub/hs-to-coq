@@ -20,7 +20,7 @@ import HsToCoq.Util.FVs
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Type
-import HsToCoq.ConvertHaskell.Parameters.Edits
+import HsToCoq.Edits.Types
 
 --------------------------------------------------------------------------------
 

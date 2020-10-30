@@ -14,7 +14,7 @@ category:            Language
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:
-  src/lib/HsToCoq/ConvertHaskell/Parameters/Parsers.y
+  src/lib/HsToCoq/Edits/Parser.y
   src/include/*.h
 tested-with: GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.4 GHC == 8.10.1
 
@@ -73,10 +73,6 @@ library
                      , HsToCoq.Coq.Pretty
                      , HsToCoq.Coq.FreeVars
                      , HsToCoq.Coq.Subst
-                     , HsToCoq.ConvertHaskell.Parameters.Edits
-                     , HsToCoq.ConvertHaskell.Parameters.Parsers
-                     , HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing
-                     , HsToCoq.ConvertHaskell.Parameters.Parsers.Types
                      , HsToCoq.ConvertHaskell.BuiltIn
                      , HsToCoq.ConvertHaskell.TypeInfo
                      , HsToCoq.ConvertHaskell.Monad
@@ -101,6 +97,10 @@ library
                      , HsToCoq.CLI.FileTree
                      , HsToCoq.CLI.FileTree.Parser
                      , HsToCoq.CLI
+                     , HsToCoq.Edits.Types
+                     , HsToCoq.Edits.Parser
+                     , HsToCoq.Edits.ParserState
+                     , HsToCoq.Edits.Lexer
                      , HsToCoq.Plugin
 
   build-tools:         happy == 1.19.*

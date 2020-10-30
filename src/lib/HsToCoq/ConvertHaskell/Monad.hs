@@ -68,7 +68,7 @@ import HsToCoq.Coq.Gallina (Qualid, Qualid(..), Ident)
 import HsToCoq.Coq.Pretty
 import HsToCoq.Util.GHC.Module (moduleNameText, ModuleData, modName)
 
-import HsToCoq.ConvertHaskell.Parameters.Edits
+import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.TypeInfo
 
 --------------------------------------------------------------------------------

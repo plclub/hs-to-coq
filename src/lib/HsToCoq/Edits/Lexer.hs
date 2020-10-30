@@ -4,9 +4,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
-module HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing (
-  -- * Lexing
-  Lexing, runLexing, requestTactics, prettyParseError,
+module HsToCoq.Edits.Lexer (
+  -- * Lexer
+  Lexer, runLexer, requestTactics, prettyParseError,
   -- ** Lexer state
   NewlineStatus(..),
   -- * Tokens
@@ -227,13 +227,13 @@ requestTactics = activateWith $ \case
   DoubleActivation -> parseError "already about to parse tactics"
   EarlyActivation  -> parseError "can't parse tactics again immediately after parsing tactics"
 
-type Lexing s = ActivatableT Token (StateT (NewlineStatus :* s) Parse)
+type Lexer s = ActivatableT Token (StateT (NewlineStatus :* s) Parse)
 
 evalParserState :: Monad m => StateT (NewlineStatus :* s) m a -> s -> m a
 evalParserState u s = evalStateT u (NewlineSeparators :* s)
 
-runLexing :: Lexing s a -> s -> Text -> Either [ParseError] a
-runLexing act s t = act
+runLexer :: Lexer s a -> s -> Text -> Either [ParseError] a
+runLexer act s t = act
   & finalizeActivatableT (\_ -> parseError "trailing post-tactics keyword not parsed")
   & (`evalParserState` s)
   & (`evalParse` t)

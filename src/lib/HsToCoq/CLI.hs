@@ -47,9 +47,8 @@ import HsToCoq.Util.GHC.Exception
 import Module
 import CmdLineParser (Warn(..))
 
-import HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing (prettyParseError)
-import HsToCoq.ConvertHaskell.Parameters.Parsers.Types (runParser)
-import HsToCoq.ConvertHaskell.Parameters.Parsers
+import HsToCoq.Edits.Parser (parseEditList, runParser, prettyParseError)
+import HsToCoq.Edits.Types
 
 import HsToCoq.Util.Monad
 import HsToCoq.Util.Messages
@@ -62,7 +61,6 @@ import HsToCoq.Coq.Preamble
 import HsToCoq.ProcessFiles
 import HsToCoq.ConvertHaskell
 import HsToCoq.ConvertHaskell.TypeInfo
-import HsToCoq.ConvertHaskell.Parameters.Edits
 import HsToCoq.CLI.FileTree
 import HsToCoq.CLI.FileTree.Parser
 

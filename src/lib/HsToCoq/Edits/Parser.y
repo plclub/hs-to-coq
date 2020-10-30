@@ -6,8 +6,9 @@
 #undef __GLASGOW_HASKELL__
 #define __GLASGOW_HASKELL__ 709
 
-module HsToCoq.ConvertHaskell.Parameters.Parsers (
-  parseTerm, parseSentence, parseEditList
+module HsToCoq.Edits.Parser (
+  parseTerm, parseSentence, parseEditList,
+  runParser, prettyParseError
 ) where
 
 import Data.Foldable
@@ -30,9 +31,9 @@ import HsToCoq.Coq.Gallina.Util
 import HsToCoq.Coq.Gallina.Orphans ()
 import HsToCoq.Coq.Pretty (showP)
 
-import HsToCoq.ConvertHaskell.Parameters.Edits
-import HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing
-import HsToCoq.ConvertHaskell.Parameters.Parsers.Util
+import HsToCoq.Edits.Types
+import HsToCoq.Edits.Lexer
+import HsToCoq.Edits.ParserState
 }
 
 -- No conflicts allowed
@@ -639,12 +640,6 @@ uncurry3 f = \(a,b,c) -> f a b c
 
 unexpected :: MonadParse m => Token -> m a
 unexpected tok = parseError $ "unexpected " ++ tokenDescription tok
-
-forceIdentToQualid :: MonadParser s m => Ident -> m Qualid
-forceIdentToQualid x = case identToQualid x of
-  Nothing -> error $ "internal error: lexer produced a malformed qualid: " ++ show x
-  Just (Qualified mod name) -> mkQualid mod name
-  Just q@(Bare _) -> pure q
 
 prechomp :: T.Text -> T.Text
 prechomp t = case T.stripPrefix "\n" t of

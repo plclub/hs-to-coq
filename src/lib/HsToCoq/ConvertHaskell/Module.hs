@@ -47,7 +47,7 @@ import HsToCoq.Util.GHC.HsTypes (noExtCon)
 import HsToCoq.Util.GHC.Module
 import Bag
 
-import HsToCoq.ConvertHaskell.Parameters.Edits
+import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.InfixNames
 import HsToCoq.ConvertHaskell.Variables

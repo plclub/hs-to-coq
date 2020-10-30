@@ -8,7 +8,7 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 
-module HsToCoq.ConvertHaskell.Parameters.Edits (
+module HsToCoq.Edits.Types (
   Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs,
   HsNamespace(..), NamespacedIdent(..), Renamings,
   DataTypeArguments(..), dtParameters, dtIndices,
