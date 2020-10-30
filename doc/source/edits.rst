@@ -587,6 +587,29 @@ Examples:
      rename module Type MyType
      rename module Data.Semigroup.Internal Data.SemigroupInternal
 
+``alias module`` -- abbreviate a module name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index::
+   single: alias module, edit
+
+Format:
+  | **alias module** *module* *module*
+
+Effect:
+  Abbreviate a module name with an alias. All occurrences of the alias in the
+  current edits file are expanded to the original name.
+  Aliases do not affect the generated Coq code.
+
+Examples:
+
+  .. code-block:: shell
+
+    alias module Seq Data.Sequence.Internal
+    order Seq.Functor__Seq Seq.Applicative__Seq
+
+    # Equivalent to
+    order Data.Sequence.Internal.Functor__Seq Data.Sequence.Internal.Applicative__Seq
 
 ``rewrite`` -- replace Haskell subexpressions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
