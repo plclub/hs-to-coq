@@ -693,8 +693,7 @@ Instance Unpeel_Endo a : GHC.Prim.Unpeel (Endo a) (a -> a) :=
 
 Local Definition Semigroup__Endo_op_zlzlzgzg__ {inst_a : Type}
    : Endo inst_a -> Endo inst_a -> Endo inst_a :=
-  GHC.Prim.coerce (_GHC.Base.∘_ : (inst_a -> inst_a) ->
-                   (inst_a -> inst_a) -> (inst_a -> inst_a)).
+  GHC.Prim.coerce _GHC.Base.∘_.
 
 Program Instance Semigroup__Endo {a : Type} : GHC.Base.Semigroup (Endo a) :=
   fun _ k__ =>
@@ -762,7 +761,7 @@ Program Instance Monoid__Any : GHC.Base.Monoid Any :=
 Local Definition Semigroup__Sum_op_zlzlzgzg__ {inst_a : Type} `{GHC.Num.Num
   inst_a}
    : Sum inst_a -> Sum inst_a -> Sum inst_a :=
-  GHC.Prim.coerce (_GHC.Num.+_ : inst_a -> inst_a -> inst_a).
+  GHC.Prim.coerce _GHC.Num.+_.
 
 Program Instance Semigroup__Sum {a : Type} `{GHC.Num.Num a}
    : GHC.Base.Semigroup (Sum a) :=
@@ -851,7 +850,7 @@ Program Instance Monad__Sum : GHC.Base.Monad Sum :=
 Local Definition Semigroup__Product_op_zlzlzgzg__ {inst_a : Type} `{GHC.Num.Num
   inst_a}
    : Product inst_a -> Product inst_a -> Product inst_a :=
-  GHC.Prim.coerce (_GHC.Num.*_ : inst_a -> inst_a -> inst_a).
+  GHC.Prim.coerce _GHC.Num.*_.
 
 Program Instance Semigroup__Product {a : Type} `{GHC.Num.Num a}
    : GHC.Base.Semigroup (Product a) :=

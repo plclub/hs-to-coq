@@ -29,11 +29,11 @@ Instance Unpeel_Down a : GHC.Prim.Unpeel (Down a) a :=
 
 Local Definition Eq___Down_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Down inst_a -> Down inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+  GHC.Prim.coerce (_GHC.Base.==_) : Down inst_a -> Down inst_a -> bool.
 
 Local Definition Eq___Down_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Down inst_a -> Down inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+  GHC.Prim.coerce (_GHC.Base./=_) : Down inst_a -> Down inst_a -> bool.
 
 Program Instance Eq___Down {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (Down a) :=
@@ -53,7 +53,7 @@ Program Instance Eq___Down {a : Type} `{GHC.Base.Eq_ a}
 Local Definition Semigroup__Down_op_zlzlzgzg__ {inst_a : Type}
   `{GHC.Base.Semigroup inst_a}
    : Down inst_a -> Down inst_a -> Down inst_a :=
-  GHC.Prim.coerce _GHC.Base.<<>>_.
+  GHC.Prim.coerce (_GHC.Base.<<>>_) : Down inst_a -> Down inst_a -> Down inst_a.
 
 Program Instance Semigroup__Down {a : Type} `{GHC.Base.Semigroup a}
    : GHC.Base.Semigroup (Down a) :=
@@ -62,15 +62,15 @@ Program Instance Semigroup__Down {a : Type} `{GHC.Base.Semigroup a}
 
 Local Definition Monoid__Down_mappend {inst_a : Type} `{GHC.Base.Monoid inst_a}
    : Down inst_a -> Down inst_a -> Down inst_a :=
-  GHC.Prim.coerce GHC.Base.mappend.
+  GHC.Prim.coerce (GHC.Base.mappend) : Down inst_a -> Down inst_a -> Down inst_a.
 
 Local Definition Monoid__Down_mconcat {inst_a : Type} `{GHC.Base.Monoid inst_a}
    : list (Down inst_a) -> Down inst_a :=
-  GHC.Prim.coerce GHC.Base.mconcat.
+  GHC.Prim.coerce (GHC.Base.mconcat) : list (Down inst_a) -> Down inst_a.
 
 Local Definition Monoid__Down_mempty {inst_a : Type} `{GHC.Base.Monoid inst_a}
    : Down inst_a :=
-  GHC.Prim.coerce GHC.Base.mempty.
+  GHC.Prim.coerce (GHC.Base.mempty) : Down inst_a.
 
 Program Instance Monoid__Down {a : Type} `{GHC.Base.Monoid a}
    : GHC.Base.Monoid (Down a) :=

@@ -2,6 +2,11 @@ add Data.Monoid Instance Unpeel_First a : GHC.Prim.Unpeel (First a) (option a) :
 	 GHC.Prim.Build_Unpeel _ _ getFirst Mk_First.
 add Data.Monoid Instance Unpeel_Last a : GHC.Prim.Unpeel (Last a) (option a) :=
 	 GHC.Prim.Build_Unpeel _ _ getLast Mk_Last.
+add Data.Monoid Instance Unpeel_Ap k (f : k -> Type) a : GHC.Prim.Unpeel (Ap f a) (f a) :=
+         GHC.Prim.Build_Unpeel _ _ getAp Mk_Ap.
+
+polykinds Data.Monoid.Ap k
+data kinds Data.Monoid.Ap (k -> Type), k
 
 order Unpeel_Dual Data.Monoid.Eq___Dual_op_zeze__
 order Unpeel_Dual Data.Monoid.Eq___Dual_op_zsze__
@@ -20,8 +25,19 @@ order Data.Monoid.Eq___First Data.Monoid.Ord__First
 order Unpeel_First Data.Monoid.Functor__First Data.Monoid.Applicative__First Data.Monoid.Monad__First
 order Data.Monoid.Semigroup__First Data.Monoid.Monoid__First_mappend
 
+order Unpeel_Ap Data.Monoid.Applicative__Ap_liftA2
+order Unpeel_Ap Data.Monoid.Eq___Ap_op_zeze__
+order Unpeel_Ap Data.Monoid.Eq___Ap_op_zsze__
+order Data.Monoid.Eq___Ap Data.Monoid.Ord__Ap
+order Unpeel_Ap Data.Monoid.Functor__Ap Data.Monoid.Applicative__Ap Data.Monoid.Monad__Ap
+order Data.Monoid.Semigroup__Ap Data.Monoid.Monoid__Ap_mappend
+
 # Read and Show instances
 skip Data.Monoid.Read__Last
 skip Data.Monoid.Read__First
+skip Data.Monoid.Read__Ap
 skip Data.Monoid.Show__Last
 skip Data.Monoid.Show__First
+skip Data.Monoid.Show__Ap
+
+rewrite forall f t, GHC.Prim.coerce (f : t) = GHC.Prim.coerce f

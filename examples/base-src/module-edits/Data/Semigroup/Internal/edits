@@ -68,3 +68,5 @@ skip Data.SemigroupInternal.MonadPlus__Alt
 # Deals with the phantom type parameter {k}
 delete unused type variables Data.SemigroupInternal.Eq___Alt
 delete unused type variables Data.SemigroupInternal.Ord__Alt
+
+rewrite forall f t, GHC.Prim.coerce (f : t) = GHC.Prim.coerce f

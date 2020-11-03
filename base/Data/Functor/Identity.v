@@ -47,11 +47,11 @@ Instance Unpeel_Identity a : Prim.Unpeel (Identity a) a :=
 
 Local Definition Eq___Identity_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+  GHC.Prim.coerce (_GHC.Base.==_) : Identity inst_a -> Identity inst_a -> bool.
 
 Local Definition Eq___Identity_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+  GHC.Prim.coerce (_GHC.Base./=_) : Identity inst_a -> Identity inst_a -> bool.
 
 Program Instance Eq___Identity {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (Identity a) :=
@@ -83,7 +83,8 @@ Program Instance Eq___Identity {a : Type} `{GHC.Base.Eq_ a}
 Local Definition Semigroup__Identity_op_zlzlzgzg__ {inst_a : Type}
   `{GHC.Base.Semigroup inst_a}
    : Identity inst_a -> Identity inst_a -> Identity inst_a :=
-  GHC.Prim.coerce _GHC.Base.<<>>_.
+  GHC.Prim.coerce (_GHC.Base.<<>>_) : Identity inst_a ->
+  Identity inst_a -> Identity inst_a.
 
 Program Instance Semigroup__Identity {a : Type} `{GHC.Base.Semigroup a}
    : GHC.Base.Semigroup (Identity a) :=
@@ -93,17 +94,18 @@ Program Instance Semigroup__Identity {a : Type} `{GHC.Base.Semigroup a}
 Local Definition Monoid__Identity_mappend {inst_a : Type} `{GHC.Base.Monoid
   inst_a}
    : Identity inst_a -> Identity inst_a -> Identity inst_a :=
-  GHC.Prim.coerce GHC.Base.mappend.
+  GHC.Prim.coerce (GHC.Base.mappend) : Identity inst_a ->
+  Identity inst_a -> Identity inst_a.
 
 Local Definition Monoid__Identity_mconcat {inst_a : Type} `{GHC.Base.Monoid
   inst_a}
    : list (Identity inst_a) -> Identity inst_a :=
-  GHC.Prim.coerce GHC.Base.mconcat.
+  GHC.Prim.coerce (GHC.Base.mconcat) : list (Identity inst_a) -> Identity inst_a.
 
 Local Definition Monoid__Identity_mempty {inst_a : Type} `{GHC.Base.Monoid
   inst_a}
    : Identity inst_a :=
-  GHC.Prim.coerce GHC.Base.mempty.
+  GHC.Prim.coerce (GHC.Base.mempty) : Identity inst_a.
 
 Program Instance Monoid__Identity {a : Type} `{GHC.Base.Monoid a}
    : GHC.Base.Monoid (Identity a) :=
@@ -117,31 +119,34 @@ Program Instance Monoid__Identity {a : Type} `{GHC.Base.Monoid a}
 
 Local Definition Ord__Identity_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<_.
+  GHC.Prim.coerce (_GHC.Base.<_) : Identity inst_a -> Identity inst_a -> bool.
 
 Local Definition Ord__Identity_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<=_.
+  GHC.Prim.coerce (_GHC.Base.<=_) : Identity inst_a -> Identity inst_a -> bool.
 
 Local Definition Ord__Identity_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>_.
+  GHC.Prim.coerce (_GHC.Base.>_) : Identity inst_a -> Identity inst_a -> bool.
 
 Local Definition Ord__Identity_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>=_.
+  GHC.Prim.coerce (_GHC.Base.>=_) : Identity inst_a -> Identity inst_a -> bool.
 
 Local Definition Ord__Identity_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> comparison :=
-  GHC.Prim.coerce GHC.Base.compare.
+  GHC.Prim.coerce (GHC.Base.compare) : Identity inst_a ->
+  Identity inst_a -> comparison.
 
 Local Definition Ord__Identity_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> Identity inst_a :=
-  GHC.Prim.coerce GHC.Base.max.
+  GHC.Prim.coerce (GHC.Base.max) : Identity inst_a ->
+  Identity inst_a -> Identity inst_a.
 
 Local Definition Ord__Identity_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> Identity inst_a :=
-  GHC.Prim.coerce GHC.Base.min.
+  GHC.Prim.coerce (GHC.Base.min) : Identity inst_a ->
+  Identity inst_a -> Identity inst_a.
 
 Program Instance Ord__Identity {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (Identity a) :=
@@ -181,12 +186,19 @@ Local Definition Foldable__Identity_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Identity m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Identity_foldMap GHC.Base.id.
 
-Local Definition Foldable__Identity_foldl
+Local Definition Foldable__Identity_foldl'
    : forall {b : Type},
      forall {a : Type}, (b -> a -> b) -> b -> Identity a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
-Local Definition Foldable__Identity_foldl'
+Local Definition Foldable__Identity_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Identity a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Identity_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
+Local Definition Foldable__Identity_foldl
    : forall {b : Type},
      forall {a : Type}, (b -> a -> b) -> b -> Identity a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
@@ -231,6 +243,8 @@ Program Instance Foldable__Identity : Data.Foldable.Foldable Identity :=
              Foldable__Identity_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Identity_foldMap ;
+           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+             Foldable__Identity_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Identity_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} =>
              Foldable__Identity_foldl' ;
@@ -317,17 +331,17 @@ Program Instance Monad__Identity : GHC.Base.Monad Identity :=
 
 (* External variables:
      Type bool comparison cons false list nil Data.Foldable.Foldable
-     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
-     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
-     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
-     Data.Foldable.sum__ Data.Foldable.toList__ GHC.Base.Applicative GHC.Base.Eq_
-     GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup
-     GHC.Base.compare GHC.Base.compare__ GHC.Base.const GHC.Base.fmap__ GHC.Base.id
-     GHC.Base.liftA2__ GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max
-     GHC.Base.max__ GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty
-     GHC.Base.mempty__ GHC.Base.min GHC.Base.min__ GHC.Base.op_z2218U__
-     GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____
-     GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zgzg____
+     Data.Foldable.foldMap'__ Data.Foldable.foldMap__ Data.Foldable.fold__
+     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
+     Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
+     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
+     GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad
+     GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.compare
+     GHC.Base.compare__ GHC.Base.const GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__
+     GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max GHC.Base.max__ GHC.Base.mconcat
+     GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.min GHC.Base.min__
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__
+     GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zgzg____
      GHC.Base.op_zgzgze____ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd__
      GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
      GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____

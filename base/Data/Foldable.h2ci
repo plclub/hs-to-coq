@@ -1,7 +1,7 @@
 superclassCount:
   Data.Foldable.Foldable: '0'
 defaultMethods:
-  Data.Foldable.Foldable: ! 'fromList [(Qualified "Data.Foldable" "elem",App (Qualid
+  Data.Foldable.Foldable: 'fromList [(Qualified "Data.Foldable" "elem",App (Qualid
     (Qualified "GHC.Base" "op_z2218U__")) (PosArg (Qualid (Qualified "Data.Foldable"
     "any")) :| [PosArg (Qualid (Qualified "GHC.Base" "op_zeze__"))])),(Qualified "Data.Foldable"
     "fold",App (Qualid (Qualified "Data.Foldable" "foldMap")) (PosArg (Qualid (Qualified
@@ -9,64 +9,70 @@ defaultMethods:
     (Ident (Bare "f")) :| []) (App (App (Qualid (Qualified "Data.Foldable" "foldr"))
     (PosArg (Parens (App (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg (Qualid
     (Qualified "GHC.Base" "mappend")) :| [PosArg (Qualid (Bare "f"))]))) :| [])) (PosArg
-    (Qualid (Qualified "GHC.Base" "mempty")) :| []))),(Qualified "Data.Foldable" "foldl",Fun
-    (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "z")),ExplicitBinder
-    (Ident (Bare "t"))]) (App (App (Qualid (Qualified "Data.SemigroupInternal" "appEndo"))
-    (PosArg (Parens (App (Qualid (Qualified "Data.SemigroupInternal" "getDual")) (PosArg
-    (Parens (App (App (Qualid (Qualified "Data.Foldable" "foldMap")) (PosArg (Parens
-    (App (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg (Qualid (Qualified
-    "Data.SemigroupInternal" "Mk_Dual")) :| [PosArg (App (Qualid (Qualified "GHC.Base"
-    "op_z2218U__")) (PosArg (Qualid (Qualified "Data.SemigroupInternal" "Mk_Endo"))
-    :| [PosArg (App (Qualid (Qualified "GHC.Base" "flip")) (PosArg (Qualid (Bare "f"))
-    :| []))]))]))) :| [])) (PosArg (Qualid (Bare "t")) :| []))) :| []))) :| [])) (PosArg
-    (Qualid (Bare "z")) :| []))),(Qualified "Data.Foldable" "foldl''",Fun (ExplicitBinder
+    (Qualid (Qualified "GHC.Base" "mempty")) :| []))),(Qualified "Data.Foldable" "foldMap''",Fun
+    (ExplicitBinder (Ident (Bare "f")) :| []) (App (App (Qualid (Qualified "Data.Foldable"
+    "foldl''")) (PosArg (Parens (Fun (ExplicitBinder (Ident (Bare "acc")) :| [ExplicitBinder
+    (Ident (Bare "a"))]) (App (Qualid (Qualified "GHC.Base" "op_zlzlzgzg__")) (PosArg
+    (Qualid (Bare "acc")) :| [PosArg (App (Qualid (Bare "f")) (PosArg (Qualid (Bare
+    "a")) :| []))])))) :| [])) (PosArg (Qualid (Qualified "GHC.Base" "mempty")) :|
+    []))),(Qualified "Data.Foldable" "foldl",Fun (ExplicitBinder (Ident (Bare "f"))
+    :| [ExplicitBinder (Ident (Bare "z")),ExplicitBinder (Ident (Bare "t"))]) (App
+    (App (Qualid (Qualified "Data.SemigroupInternal" "appEndo")) (PosArg (Parens (App
+    (Qualid (Qualified "Data.SemigroupInternal" "getDual")) (PosArg (Parens (App (App
+    (Qualid (Qualified "Data.Foldable" "foldMap")) (PosArg (Parens (App (Qualid (Qualified
+    "GHC.Base" "op_z2218U__")) (PosArg (Qualid (Qualified "Data.SemigroupInternal"
+    "Mk_Dual")) :| [PosArg (App (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg
+    (Qualid (Qualified "Data.SemigroupInternal" "Mk_Endo")) :| [PosArg (App (Qualid
+    (Qualified "GHC.Base" "flip")) (PosArg (Qualid (Bare "f")) :| []))]))]))) :| []))
+    (PosArg (Qualid (Bare "t")) :| []))) :| []))) :| [])) (PosArg (Qualid (Bare "z"))
+    :| []))),(Qualified "Data.Foldable" "foldl''",Fun (ExplicitBinder (Ident (Bare
+    "f")) :| [ExplicitBinder (Ident (Bare "z0")),ExplicitBinder (Ident (Bare "xs"))])
+    (Let (Bare "f''") [] Nothing (Fun (ExplicitBinder (Ident (Bare "x")) :| [ExplicitBinder
+    (Ident (Bare "k")),ExplicitBinder (Ident (Bare "z"))]) (App (Qualid (Bare "k"))
+    (PosArg (App (Qualid (Bare "f")) (PosArg (Qualid (Bare "z")) :| [PosArg (Qualid
+    (Bare "x"))])) :| []))) (App (App (App (App (Qualid (Qualified "Data.Foldable"
+    "foldr")) (PosArg (Qualid (Bare "f''")) :| [])) (PosArg (Qualid (Qualified "GHC.Base"
+    "id")) :| [])) (PosArg (Qualid (Bare "xs")) :| [])) (PosArg (Qualid (Bare "z0"))
+    :| [])))),(Qualified "Data.Foldable" "foldl1",Fun (ExplicitBinder (Ident (Bare
+    "f")) :| [ExplicitBinder (Ident (Bare "xs"))]) (Let (Bare "mf") [] Nothing (Fun
+    (ExplicitBinder (Ident (Bare "m")) :| [ExplicitBinder (Ident (Bare "y"))]) (App
+    (Qualid (Bare "Some")) (PosArg (Parens (Match (MatchItem (Qualid (Bare "m")) Nothing
+    Nothing :| []) Nothing [Equation (MultPattern (ArgsPat (Bare "None") [] :| [])
+    :| []) (Qualid (Bare "y")),Equation (MultPattern (ArgsPat (Bare "Some") [QualidPat
+    (Bare "x")] :| []) :| []) (App (App (Qualid (Bare "f")) (PosArg (Qualid (Bare
+    "x")) :| [])) (PosArg (Qualid (Bare "y")) :| []))])) :| []))) (App (App (Qualid
+    (Qualified "Data.Maybe" "fromMaybe")) (PosArg (Parens (App (Qualid (Qualified
+    "GHC.Err" "errorWithoutStackTrace")) (PosArg (HsString "foldl1: empty structure")
+    :| []))) :| [])) (PosArg (Parens (App (App (App (Qualid (Qualified "Data.Foldable"
+    "foldl")) (PosArg (Qualid (Bare "mf")) :| [])) (PosArg (Qualid (Bare "None"))
+    :| [])) (PosArg (Qualid (Bare "xs")) :| []))) :| [])))),(Qualified "Data.Foldable"
+    "foldr",Fun (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare
+    "z")),ExplicitBinder (Ident (Bare "t"))]) (App (App (Qualid (Qualified "Data.SemigroupInternal"
+    "appEndo")) (PosArg (Parens (App (App (Qualid (Qualified "Data.Foldable" "foldMap"))
+    (PosArg (Parens (App (Qualid (Qualified "Coq.Program.Basics" "compose")) (PosArg
+    (Qualid (Qualified "Data.SemigroupInternal" "Mk_Endo")) :| [PosArg (Qualid (Bare
+    "f"))]))) :| [])) (PosArg (Qualid (Bare "t")) :| []))) :| [])) (PosArg (Qualid
+    (Bare "z")) :| []))),(Qualified "Data.Foldable" "foldr''",Fun (ExplicitBinder
     (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "z0")),ExplicitBinder (Ident
     (Bare "xs"))]) (Let (Bare "f''") [] Nothing (Fun (ExplicitBinder (Ident (Bare
-    "x")) :| [ExplicitBinder (Ident (Bare "k")),ExplicitBinder (Ident (Bare "z"))])
+    "k")) :| [ExplicitBinder (Ident (Bare "x")),ExplicitBinder (Ident (Bare "z"))])
     (App (Qualid (Bare "k")) (PosArg (App (Qualid (Bare "f")) (PosArg (Qualid (Bare
-    "z")) :| [PosArg (Qualid (Bare "x"))])) :| []))) (App (App (App (App (Qualid (Qualified
-    "Data.Foldable" "foldr")) (PosArg (Qualid (Bare "f''")) :| [])) (PosArg (Qualid
+    "x")) :| [PosArg (Qualid (Bare "z"))])) :| []))) (App (App (App (App (Qualid (Qualified
+    "Data.Foldable" "foldl")) (PosArg (Qualid (Bare "f''")) :| [])) (PosArg (Qualid
     (Qualified "GHC.Base" "id")) :| [])) (PosArg (Qualid (Bare "xs")) :| [])) (PosArg
-    (Qualid (Bare "z0")) :| [])))),(Qualified "Data.Foldable" "foldl1",Fun (ExplicitBinder
+    (Qualid (Bare "z0")) :| [])))),(Qualified "Data.Foldable" "foldr1",Fun (ExplicitBinder
     (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "xs"))]) (Let (Bare "mf") []
-    Nothing (Fun (ExplicitBinder (Ident (Bare "m")) :| [ExplicitBinder (Ident (Bare
-    "y"))]) (App (Qualid (Bare "Some")) (PosArg (Parens (Match (MatchItem (Qualid
+    Nothing (Fun (ExplicitBinder (Ident (Bare "x")) :| [ExplicitBinder (Ident (Bare
+    "m"))]) (App (Qualid (Bare "Some")) (PosArg (Parens (Match (MatchItem (Qualid
     (Bare "m")) Nothing Nothing :| []) Nothing [Equation (MultPattern (ArgsPat (Bare
-    "None") [] :| []) :| []) (Qualid (Bare "y")),Equation (MultPattern (ArgsPat (Bare
-    "Some") [QualidPat (Bare "x")] :| []) :| []) (App (App (Qualid (Bare "f")) (PosArg
+    "None") [] :| []) :| []) (Qualid (Bare "x")),Equation (MultPattern (ArgsPat (Bare
+    "Some") [QualidPat (Bare "y")] :| []) :| []) (App (App (Qualid (Bare "f")) (PosArg
     (Qualid (Bare "x")) :| [])) (PosArg (Qualid (Bare "y")) :| []))])) :| []))) (App
     (App (Qualid (Qualified "Data.Maybe" "fromMaybe")) (PosArg (Parens (App (Qualid
-    (Qualified "GHC.Err" "errorWithoutStackTrace")) (PosArg (HsString "foldl1: empty
+    (Qualified "GHC.Err" "errorWithoutStackTrace")) (PosArg (HsString "foldr1: empty
     structure") :| []))) :| [])) (PosArg (Parens (App (App (App (Qualid (Qualified
-    "Data.Foldable" "foldl")) (PosArg (Qualid (Bare "mf")) :| [])) (PosArg (Qualid
+    "Data.Foldable" "foldr")) (PosArg (Qualid (Bare "mf")) :| [])) (PosArg (Qualid
     (Bare "None")) :| [])) (PosArg (Qualid (Bare "xs")) :| []))) :| [])))),(Qualified
-    "Data.Foldable" "foldr",Fun (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder
-    (Ident (Bare "z")),ExplicitBinder (Ident (Bare "t"))]) (App (App (Qualid (Qualified
-    "Data.SemigroupInternal" "appEndo")) (PosArg (Parens (App (App (Qualid (Qualified
-    "Data.Foldable" "foldMap")) (PosArg (Parens (App (Qualid (Qualified "Coq.Program.Basics"
-    "compose")) (PosArg (Qualid (Qualified "Data.SemigroupInternal" "Mk_Endo")) :|
-    [PosArg (Qualid (Bare "f"))]))) :| [])) (PosArg (Qualid (Bare "t")) :| []))) :|
-    [])) (PosArg (Qualid (Bare "z")) :| []))),(Qualified "Data.Foldable" "foldr''",Fun
-    (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "z0")),ExplicitBinder
-    (Ident (Bare "xs"))]) (Let (Bare "f''") [] Nothing (Fun (ExplicitBinder (Ident
-    (Bare "k")) :| [ExplicitBinder (Ident (Bare "x")),ExplicitBinder (Ident (Bare
-    "z"))]) (App (Qualid (Bare "k")) (PosArg (App (Qualid (Bare "f")) (PosArg (Qualid
-    (Bare "x")) :| [PosArg (Qualid (Bare "z"))])) :| []))) (App (App (App (App (Qualid
-    (Qualified "Data.Foldable" "foldl")) (PosArg (Qualid (Bare "f''")) :| [])) (PosArg
-    (Qualid (Qualified "GHC.Base" "id")) :| [])) (PosArg (Qualid (Bare "xs")) :| []))
-    (PosArg (Qualid (Bare "z0")) :| [])))),(Qualified "Data.Foldable" "foldr1",Fun
-    (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "xs"))]) (Let
-    (Bare "mf") [] Nothing (Fun (ExplicitBinder (Ident (Bare "x")) :| [ExplicitBinder
-    (Ident (Bare "m"))]) (App (Qualid (Bare "Some")) (PosArg (Parens (Match (MatchItem
-    (Qualid (Bare "m")) Nothing Nothing :| []) Nothing [Equation (MultPattern (ArgsPat
-    (Bare "None") [] :| []) :| []) (Qualid (Bare "x")),Equation (MultPattern (ArgsPat
-    (Bare "Some") [QualidPat (Bare "y")] :| []) :| []) (App (App (Qualid (Bare "f"))
-    (PosArg (Qualid (Bare "x")) :| [])) (PosArg (Qualid (Bare "y")) :| []))])) :|
-    []))) (App (App (Qualid (Qualified "Data.Maybe" "fromMaybe")) (PosArg (Parens
-    (App (Qualid (Qualified "GHC.Err" "errorWithoutStackTrace")) (PosArg (HsString
-    "foldr1: empty structure") :| []))) :| [])) (PosArg (Parens (App (App (App (Qualid
-    (Qualified "Data.Foldable" "foldr")) (PosArg (Qualid (Bare "mf")) :| [])) (PosArg
-    (Qualid (Bare "None")) :| [])) (PosArg (Qualid (Bare "xs")) :| []))) :| [])))),(Qualified
     "Data.Foldable" "length",App (App (Qualid (Qualified "Data.Foldable" "foldl''"))
     (PosArg (Parens (Fun (ExplicitBinder (Ident (Bare "arg_0__")) :| [ExplicitBinder
     (Ident (Bare "arg_1__"))]) (Match (MatchItem (Qualid (Bare "arg_0__")) Nothing
@@ -117,6 +123,12 @@ classDefns:
     (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Base" "Monoid")) (PosArg
     (Qualid (Bare "m")) :| [])) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid
     (Bare "m")) :| [])) (Qualid (Bare "m"))))),(Qualified "Data.Foldable" "foldMap",Forall
+    (Typed Ungeneralizable Implicit (Ident (Bare "m") :| []) (Qualid (Bare "Type"))
+    :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid
+    (Bare "Type")) :| []) (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Base"
+    "Monoid")) (PosArg (Qualid (Bare "m")) :| [])) :| []) (Arrow (Arrow (Qualid (Bare
+    "a")) (Qualid (Bare "m"))) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare
+    "a")) :| [])) (Qualid (Bare "m"))))))),(Qualified "Data.Foldable" "foldMap'",Forall
     (Typed Ungeneralizable Implicit (Ident (Bare "m") :| []) (Qualid (Bare "Type"))
     :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid
     (Bare "Type")) :| []) (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Base"

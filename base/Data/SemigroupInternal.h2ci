@@ -1,11 +1,11 @@
 constructors:
-  Data.SemigroupInternal.Endo: ! '[Qualified "Data.SemigroupInternal" "Mk_Endo"]'
-  Data.SemigroupInternal.Alt: ! '[Qualified "Data.SemigroupInternal" "Mk_Alt"]'
-  Data.SemigroupInternal.Product: ! '[Qualified "Data.SemigroupInternal" "Mk_Product"]'
-  Data.SemigroupInternal.Sum: ! '[Qualified "Data.SemigroupInternal" "Mk_Sum"]'
-  Data.SemigroupInternal.Any: ! '[Qualified "Data.SemigroupInternal" "Mk_Any"]'
-  Data.SemigroupInternal.All: ! '[Qualified "Data.SemigroupInternal" "Mk_All"]'
-  Data.SemigroupInternal.Dual: ! '[Qualified "Data.SemigroupInternal" "Mk_Dual"]'
+  Data.SemigroupInternal.Endo: '[Qualified "Data.SemigroupInternal" "Mk_Endo"]'
+  Data.SemigroupInternal.Alt: '[Qualified "Data.SemigroupInternal" "Mk_Alt"]'
+  Data.SemigroupInternal.Product: '[Qualified "Data.SemigroupInternal" "Mk_Product"]'
+  Data.SemigroupInternal.Sum: '[Qualified "Data.SemigroupInternal" "Mk_Sum"]'
+  Data.SemigroupInternal.Any: '[Qualified "Data.SemigroupInternal" "Mk_Any"]'
+  Data.SemigroupInternal.All: '[Qualified "Data.SemigroupInternal" "Mk_All"]'
+  Data.SemigroupInternal.Dual: '[Qualified "Data.SemigroupInternal" "Mk_Dual"]'
 constructorFields:
   Data.SemigroupInternal.Mk_Dual: RecordFields [Qualified "Data.SemigroupInternal"
     "getDual"]

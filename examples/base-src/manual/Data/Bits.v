@@ -13,6 +13,8 @@ Require Import GHC.Enum.
 Require Import GHC.Num.
 Require Import GHC.Base.
 Require Import GHC.Real.
+Require Import GHC.Maybe.
+Require Import GHC.Types.
 
 Unset Implicit Arguments.
 Set Maximal Implicit Insertion.
@@ -118,10 +120,9 @@ Definition toIntegralSized {a} {b} `{GHC.Real.Integral a} `{GHC.Real.Integral b}
                let j_81__ :=
                  if andb (isSigned x) (isSigned y)
                  then match yWidth with
-                        | (Some yW) => Some (GHC.Base.op_zd__ GHC.Num.negate (bit (GHC.Num.op_zm__ yW
-                                                                                                   (GHC.Num.fromInteger
-                                                                                                   1))))
-                        | _ => None
+                      | (Some yW) => Some (@GHC.Base.op_zd__ _ _ GHC.Num.negate
+                                                            (bit (GHC.Num.op_zm__ yW (GHC.Num.fromInteger 1))))
+                      | _ => None
                       end
                  else None in
                let j_82__ :=

@@ -1,11 +1,11 @@
 constructors:
-  Data.Semigroup.Min: ! '[Qualified "Data.Semigroup" "Mk_Min"]'
-  Data.Semigroup.Option: ! '[Qualified "Data.Semigroup" "Mk_Option"]'
-  Data.Semigroup.Arg: ! '[Qualified "Data.Semigroup" "Mk_Arg"]'
-  Data.Semigroup.Last: ! '[Qualified "Data.Semigroup" "Mk_Last"]'
-  Data.Semigroup.First: ! '[Qualified "Data.Semigroup" "Mk_First"]'
-  Data.Semigroup.WrappedMonoid: ! '[Qualified "Data.Semigroup" "WrapMonoid"]'
-  Data.Semigroup.Max: ! '[Qualified "Data.Semigroup" "Mk_Max"]'
+  Data.Semigroup.Min: '[Qualified "Data.Semigroup" "Mk_Min"]'
+  Data.Semigroup.Option: '[Qualified "Data.Semigroup" "Mk_Option"]'
+  Data.Semigroup.Arg: '[Qualified "Data.Semigroup" "Mk_Arg"]'
+  Data.Semigroup.Last: '[Qualified "Data.Semigroup" "Mk_Last"]'
+  Data.Semigroup.First: '[Qualified "Data.Semigroup" "Mk_First"]'
+  Data.Semigroup.WrappedMonoid: '[Qualified "Data.Semigroup" "WrapMonoid"]'
+  Data.Semigroup.Max: '[Qualified "Data.Semigroup" "Mk_Max"]'
 constructorFields:
   Data.Semigroup.WrapMonoid: RecordFields [Qualified "Data.Semigroup" "unwrapMonoid"]
   Data.Semigroup.Mk_Option: RecordFields [Qualified "Data.Semigroup" "getOption"]

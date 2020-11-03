@@ -15,6 +15,7 @@ Require Coq.Program.Wf.
 Require Data.Either.
 Require Data.Functor.Const.
 Require Data.Functor.Identity.
+Require Data.Ord.
 Require Data.Proxy.
 Require GHC.Base.
 Require GHC.Tuple.
@@ -512,6 +513,40 @@ Program Instance Ord1__Proxy : Ord1 Data.Proxy.Proxy :=
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
    `Data.Functor.Classes.Read1__Proxy' *)
 
+Local Definition Eq1__Down_liftEq
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> bool) -> Data.Ord.Down a -> Data.Ord.Down b -> bool :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | eq, Data.Ord.Mk_Down x, Data.Ord.Mk_Down y => eq x y
+      end.
+
+Program Instance Eq1__Down : Eq1 Data.Ord.Down :=
+  fun _ k__ =>
+    k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__Down_liftEq |}.
+
+Local Definition Ord1__Down_liftCompare
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> comparison) -> Data.Ord.Down a -> Data.Ord.Down b -> comparison :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | comp, Data.Ord.Mk_Down x, Data.Ord.Mk_Down y => comp x y
+      end.
+
+Program Instance Ord1__Down : Ord1 Data.Ord.Down :=
+  fun _ k__ =>
+    k__ {| liftCompare__ := fun {a : Type} {b : Type} => Ord1__Down_liftCompare |}.
+
+(* Skipping all instances of class `Data.Functor.Classes.Read1', including
+   `Data.Functor.Classes.Read1__Down' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show1', including
+   `Data.Functor.Classes.Show1__Down' *)
+
 Definition eq1 {f : Type -> Type} {a : Type} `{Eq1 f} `{GHC.Base.Eq_ a}
    : f a -> f a -> bool :=
   liftEq _GHC.Base.==_.
@@ -582,7 +617,7 @@ Definition compare2 {f : Type -> Type -> Type} {a : Type} {b : Type} `{Ord2 f}
      Eq Gt Lt None Some Type andb bool comparison cons false list option pair true
      Data.Either.Either Data.Either.Left Data.Either.Right Data.Functor.Const.Const
      Data.Functor.Const.Mk_Const Data.Functor.Identity.Identity
-     Data.Functor.Identity.Mk_Identity Data.Proxy.Proxy GHC.Base.Eq_ GHC.Base.NEcons
-     GHC.Base.NonEmpty GHC.Base.Ord GHC.Base.compare GHC.Base.mappend
-     GHC.Base.op_zeze__ GHC.Tuple.pair_type
+     Data.Functor.Identity.Mk_Identity Data.Ord.Down Data.Ord.Mk_Down
+     Data.Proxy.Proxy GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord
+     GHC.Base.compare GHC.Base.mappend GHC.Base.op_zeze__ GHC.Tuple.pair_type
 *)

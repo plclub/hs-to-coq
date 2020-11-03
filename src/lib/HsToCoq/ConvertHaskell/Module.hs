@@ -94,7 +94,7 @@ convertBinding
   => M.Map Qualid Signature -> ConvertedBinding -> m [Sentence]
 convertBinding sigs (ConvertedDefinitionBinding cdef@ConvertedDefinition{_convDefName = name}) =
   withCurrentDefinition name $ do
-    t  <- view (edits.termination.at name)
+    t   <- view (edits.termination.at name)
     obl <- view (edits.obligations.at name)
     useProgram <- useProgramHere
     if | Just (WellFoundedTA order) <- t  -- turn into Program Fixpoint

@@ -1,5 +1,5 @@
 constructors:
-  Data.Functor.Compose.Compose: ! '[Qualified "Data.Functor.Compose" "Mk_Compose"]'
+  Data.Functor.Compose.Compose: '[Qualified "Data.Functor.Compose" "Mk_Compose"]'
 constructorFields:
   Data.Functor.Compose.Mk_Compose: RecordFields [Qualified "Data.Functor.Compose"
     "getCompose"]

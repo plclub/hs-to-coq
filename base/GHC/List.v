@@ -237,18 +237,6 @@ Definition foldr1 {a} `{_ : GHC.Err.Default a} : (a -> a -> a) -> list a -> a :=
 
 (* Skipping definition `GHC.List.scanr' *)
 
-Definition strictUncurryScanr {a} {b} {c}
-   : (a -> b -> c) -> (a * b)%type -> c :=
-  fun f pair_ => let 'pair x y := pair_ in f x y.
-
-Definition scanrFB {a} {b} {c}
-   : (a -> b -> b) -> (b -> c -> c) -> a -> (b * c)%type -> (b * c)%type :=
-  fun f c =>
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | x, pair r est => pair (f x r) (c r est)
-      end.
-
 Fixpoint scanr1 {a} `{_ : GHC.Err.Default a} (arg_0__ : a -> a -> a) (arg_1__
                   : list a) : list a
   := match arg_0__, arg_1__ with
@@ -445,6 +433,27 @@ Definition foldr2_left {a} {b} {c} {d}
     | k, _z, x, r, cons y ys => k x y (r ys)
     end.
 
+Definition foldr3 {a} {b} {c} {d}
+   : (a -> b -> c -> d -> d) -> d -> list a -> list b -> list c -> d :=
+  fun k z =>
+    let fix go arg_0__ arg_1__ arg_2__
+      := match arg_0__, arg_1__, arg_2__ with
+         | nil, _, _ => z
+         | _, nil, _ => z
+         | _, _, nil => z
+         | cons a as_, cons b bs, cons c cs => k a b c (go as_ bs cs)
+         end in
+    go.
+
+Definition foldr3_left {a} {b} {c} {d} {e}
+   : (a -> b -> c -> d -> e) ->
+     e -> a -> (list b -> list c -> d) -> list b -> list c -> e :=
+  fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ arg_5__ =>
+    match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__, arg_5__ with
+    | k, _z, a, r, cons b bs, cons c cs => k a b c (r bs cs)
+    | _, z, _, _, _, _ => z
+    end.
+
 Fixpoint zip {a : Type} {b : Type} (arg_0__ : list a) (arg_1__ : list b) : list
                                                                            (a * b)%type
   := match arg_0__, arg_1__ with
@@ -463,6 +472,10 @@ Fixpoint zip3 {a : Type} {b : Type} {c : Type} (arg_0__ : list a) (arg_1__
      | cons a as_, cons b bs, cons c cs => cons (pair (pair a b) c) (zip3 as_ bs cs)
      | _, _, _ => nil
      end.
+
+Definition zip3FB {a} {b} {c} {xs} {xs'}
+   : ((a * b * c)%type -> xs -> xs') -> a -> b -> c -> xs -> xs' :=
+  fun cons_ => fun a b c r => cons_ (pair (pair a b) c) r.
 
 Definition zipWith {a : Type} {b : Type} {c : Type}
    : (a -> b -> c) -> list a -> list b -> list c :=
@@ -488,6 +501,10 @@ Definition zipWith3 {a : Type} {b : Type} {c : Type} {d : Type}
          | _, _, _ => nil
          end in
     go.
+
+Definition zipWith3FB {d} {xs} {xs'} {a} {b} {c}
+   : (d -> xs -> xs') -> (a -> b -> c -> d) -> a -> b -> c -> xs -> xs' :=
+  fun cons_ func => fun a b c r => cons_ (func a b c) r.
 
 Definition unzip {a : Type} {b : Type}
    : list (a * b)%type -> (list a * list b)%type :=

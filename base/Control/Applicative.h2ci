@@ -1,6 +1,6 @@
 constructors:
-  Control.Applicative.WrappedArrow: ! '[Qualified "Control.Applicative" "WrapArrow"]'
-  Control.Applicative.WrappedMonad: ! '[Qualified "Control.Applicative" "WrapMonad"]'
+  Control.Applicative.WrappedArrow: '[Qualified "Control.Applicative" "WrapArrow"]'
+  Control.Applicative.WrappedMonad: '[Qualified "Control.Applicative" "WrapMonad"]'
 constructorFields:
   Control.Applicative.WrapMonad: RecordFields [Qualified "Control.Applicative" "unwrapMonad"]
   Control.Applicative.WrapArrow: RecordFields [Qualified "Control.Applicative" "unwrapArrow"]

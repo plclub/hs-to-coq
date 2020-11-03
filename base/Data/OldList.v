@@ -573,6 +573,171 @@ Definition zip7 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
      list e -> list f -> list g -> list (GHC.Tuple.sept_type a b c d e f g) :=
   zipWith7 GHC.Tuple.pair7.
 
+Definition zipWith4FB {e} {xs} {xs'} {a} {b} {c} {d}
+   : (e -> xs -> xs') ->
+     (a -> b -> c -> d -> e) -> a -> b -> c -> d -> xs -> xs' :=
+  fun cons_ func => fun a b c d r => cons_ (func a b c d) r.
+
+Definition zipWith5FB {f} {xs} {xs'} {a} {b} {c} {d} {e}
+   : (f -> xs -> xs') ->
+     (a -> b -> c -> d -> e -> f) -> a -> b -> c -> d -> e -> xs -> xs' :=
+  fun cons_ func => fun a b c d e r => cons_ (func a b c d e) r.
+
+Definition zipWith6FB {g} {xs} {xs'} {a} {b} {c} {d} {e} {f}
+   : (g -> xs -> xs') ->
+     (a -> b -> c -> d -> e -> f -> g) -> a -> b -> c -> d -> e -> f -> xs -> xs' :=
+  fun cons_ func => fun a b c d e f r => cons_ (func a b c d e f) r.
+
+Definition zipWith7FB {h} {xs} {xs'} {a} {b} {c} {d} {e} {f} {g}
+   : (h -> xs -> xs') ->
+     (a -> b -> c -> d -> e -> f -> g -> h) ->
+     a -> b -> c -> d -> e -> f -> g -> xs -> xs' :=
+  fun cons_ func => fun a b c d e f g r => cons_ (func a b c d e f g) r.
+
+Definition foldr4 {a} {b} {c} {d} {e}
+   : (a -> b -> c -> d -> e -> e) ->
+     e -> list a -> list b -> list c -> list d -> e :=
+  fun k z =>
+    let fix go arg_0__ arg_1__ arg_2__ arg_3__
+      := match arg_0__, arg_1__, arg_2__, arg_3__ with
+         | cons a as_, cons b bs, cons c cs, cons d ds => k a b c d (go as_ bs cs ds)
+         | _, _, _, _ => z
+         end in
+    go.
+
+Definition foldr5 {a} {b} {c} {d} {e} {f}
+   : (a -> b -> c -> d -> e -> f -> f) ->
+     f -> list a -> list b -> list c -> list d -> list e -> f :=
+  fun k z =>
+    let fix go arg_0__ arg_1__ arg_2__ arg_3__ arg_4__
+      := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
+         | cons a as_, cons b bs, cons c cs, cons d ds, cons e es =>
+             k a b c d e (go as_ bs cs ds es)
+         | _, _, _, _, _ => z
+         end in
+    go.
+
+Definition foldr6 {a} {b} {c} {d} {e} {f} {g}
+   : (a -> b -> c -> d -> e -> f -> g -> g) ->
+     g -> list a -> list b -> list c -> list d -> list e -> list f -> g :=
+  fun k z =>
+    let fix go arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ arg_5__
+      := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__, arg_5__ with
+         | cons a as_, cons b bs, cons c cs, cons d ds, cons e es, cons f fs =>
+             k a b c d e f (go as_ bs cs ds es fs)
+         | _, _, _, _, _, _ => z
+         end in
+    go.
+
+Definition foldr7 {a} {b} {c} {d} {e} {f} {g} {h}
+   : (a -> b -> c -> d -> e -> f -> g -> h -> h) ->
+     h -> list a -> list b -> list c -> list d -> list e -> list f -> list g -> h :=
+  fun k z =>
+    let fix go arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ arg_5__ arg_6__
+      := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__, arg_5__, arg_6__ with
+         | cons a as_
+         , cons b bs
+         , cons c cs
+         , cons d ds
+         , cons e es
+         , cons f fs
+         , cons g gs =>
+             k a b c d e f g (go as_ bs cs ds es fs gs)
+         | _, _, _, _, _, _, _ => z
+         end in
+    go.
+
+Definition foldr4_left {a} {b} {c} {d} {e} {f}
+   : (a -> b -> c -> d -> e -> f) ->
+     f ->
+     a -> (list b -> list c -> list d -> e) -> list b -> list c -> list d -> f :=
+  fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ arg_5__ arg_6__ =>
+    match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__, arg_5__, arg_6__ with
+    | k, _z, a, r, cons b bs, cons c cs, cons d ds => k a b c d (r bs cs ds)
+    | _, z, _, _, _, _, _ => z
+    end.
+
+Definition foldr5_left {a} {b} {c} {d} {e} {f} {g}
+   : (a -> b -> c -> d -> e -> f -> g) ->
+     g ->
+     a ->
+     (list b -> list c -> list d -> list e -> f) ->
+     list b -> list c -> list d -> list e -> g :=
+  fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ arg_5__ arg_6__ arg_7__ =>
+    match arg_0__
+        , arg_1__
+        , arg_2__
+        , arg_3__
+        , arg_4__
+        , arg_5__
+        , arg_6__
+        , arg_7__ with
+    | k, _z, a, r, cons b bs, cons c cs, cons d ds, cons e es =>
+        k a b c d e (r bs cs ds es)
+    | _, z, _, _, _, _, _, _ => z
+    end.
+
+Definition foldr6_left {a} {b} {c} {d} {e} {f} {g} {h}
+   : (a -> b -> c -> d -> e -> f -> g -> h) ->
+     h ->
+     a ->
+     (list b -> list c -> list d -> list e -> list f -> g) ->
+     list b -> list c -> list d -> list e -> list f -> h :=
+  fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ arg_5__ arg_6__ arg_7__ arg_8__ =>
+    match arg_0__
+        , arg_1__
+        , arg_2__
+        , arg_3__
+        , arg_4__
+        , arg_5__
+        , arg_6__
+        , arg_7__
+        , arg_8__ with
+    | k, _z, a, r, cons b bs, cons c cs, cons d ds, cons e es, cons f fs =>
+        k a b c d e f (r bs cs ds es fs)
+    | _, z, _, _, _, _, _, _, _ => z
+    end.
+
+Definition foldr7_left {a} {b} {c} {d} {e} {f} {g} {h} {i}
+   : (a -> b -> c -> d -> e -> f -> g -> h -> i) ->
+     i ->
+     a ->
+     (list b -> list c -> list d -> list e -> list f -> list g -> h) ->
+     list b -> list c -> list d -> list e -> list f -> list g -> i :=
+  fun arg_0__
+  arg_1__
+  arg_2__
+  arg_3__
+  arg_4__
+  arg_5__
+  arg_6__
+  arg_7__
+  arg_8__
+  arg_9__ =>
+    match arg_0__
+        , arg_1__
+        , arg_2__
+        , arg_3__
+        , arg_4__
+        , arg_5__
+        , arg_6__
+        , arg_7__
+        , arg_8__
+        , arg_9__ with
+    | k
+    , _z
+    , a
+    , r
+    , cons b bs
+    , cons c cs
+    , cons d ds
+    , cons e es
+    , cons f fs
+    , cons g gs =>
+        k a b c d e f g (r bs cs ds es fs gs)
+    | _, z, _, _, _, _, _, _, _, _ => z
+    end.
+
 Definition unzip4 {a : Type} {b : Type} {c : Type} {d : Type}
    : list (GHC.Tuple.quad_type a b c d) ->
      GHC.Tuple.quad_type (list a) (list b) (list c) (list d) :=

@@ -31,6 +31,7 @@ HANDMOD = \
 # Generated modules
 # generated directly from GHC/libraries/base
 MODULES = \
+  GHC/Maybe \
   GHC/Base \
   Data/Maybe \
   GHC/List \

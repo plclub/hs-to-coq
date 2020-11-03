@@ -78,7 +78,7 @@ Program Instance Ord__Void : GHC.Base.Ord Void :=
 (* Skipping all instances of class `GHC.Arr.Ix', including
    `Data.Void.Ix__Void' *)
 
-(* Skipping all instances of class `GHC.Exception.Exception', including
+(* Skipping all instances of class `GHC.Exception.Type.Exception', including
    `Data.Void.Exception__Void' *)
 
 Local Definition Semigroup__Void_op_zlzlzgzg__ : Void -> Void -> Void :=

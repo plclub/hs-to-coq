@@ -39,9 +39,7 @@ defaultMethods:
     (Bare "nil") []]) :| []) (Qualid (Bare "b"))])))) (App (App (Qualid (Bare "go"))
     (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid (Bare "as_")) :| [])))])),(Qualified
     "GHC.Base" "stimes",Qualid (Qualified "Data.SemigroupInternal" "stimesDefault"))]
-  GHC.Base.Monad: fromList [(Qualified "GHC.Base" "fail",Fun (ExplicitBinder (Ident
-    (Bare "s")) :| []) (App (Qualid (Qualified "GHC.Err" "errorWithoutStackTrace"))
-    (PosArg (Qualid (Bare "s")) :| []))),(Qualified "GHC.Base" "op_zgzg__",Fun (ExplicitBinder
+  GHC.Base.Monad: fromList [(Qualified "GHC.Base" "op_zgzg__",Fun (ExplicitBinder
     (Ident (Bare "m")) :| [ExplicitBinder (Ident (Bare "k"))]) (App (Qualid (Qualified
     "GHC.Base" "op_zgzgze__")) (PosArg (Qualid (Bare "m")) :| [PosArg (Fun (ExplicitBinder
     (Ident (Bare "arg_0__")) :| []) (Qualid (Bare "k")))]))),(Qualified "GHC.Base"
@@ -53,7 +51,7 @@ classTypes:
   GHC.Base.Semigroup: fromList []
   GHC.Base.Monad: fromList []
 constructors:
-  GHC.Base.NonEmpty: ! '[Qualified "GHC.Base" "NEcons"]'
+  GHC.Base.NonEmpty: '[Qualified "GHC.Base" "NEcons"]'
 constructorFields:
   GHC.Base.NEcons: NonRecordFields 2
 classDefns:

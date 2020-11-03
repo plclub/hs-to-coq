@@ -1,5 +1,5 @@
 constructors:
-  Data.Either.Either: ! '[Qualified "Data.Either" "Left",Qualified "Data.Either" "Right"]'
+  Data.Either.Either: '[Qualified "Data.Either" "Left",Qualified "Data.Either" "Right"]'
 constructorFields:
   Data.Either.Left: NonRecordFields 1
   Data.Either.Right: NonRecordFields 1

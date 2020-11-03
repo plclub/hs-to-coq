@@ -156,11 +156,11 @@ Instance Unpeel_Min a : GHC.Prim.Unpeel (Min a) a :=
 
 Local Definition Eq___Min_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Min inst_a -> Min inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+  GHC.Prim.coerce (_GHC.Base.==_) : Min inst_a -> Min inst_a -> bool.
 
 Local Definition Eq___Min_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Min inst_a -> Min inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+  GHC.Prim.coerce (_GHC.Base./=_) : Min inst_a -> Min inst_a -> bool.
 
 Program Instance Eq___Min {a : Type} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Min a) :=
   fun _ k__ =>
@@ -169,31 +169,31 @@ Program Instance Eq___Min {a : Type} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Min a) :=
 
 Local Definition Ord__Min_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a -> Min inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<_.
+  GHC.Prim.coerce (_GHC.Base.<_) : Min inst_a -> Min inst_a -> bool.
 
 Local Definition Ord__Min_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a -> Min inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<=_.
+  GHC.Prim.coerce (_GHC.Base.<=_) : Min inst_a -> Min inst_a -> bool.
 
 Local Definition Ord__Min_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a -> Min inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>_.
+  GHC.Prim.coerce (_GHC.Base.>_) : Min inst_a -> Min inst_a -> bool.
 
 Local Definition Ord__Min_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a -> Min inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>=_.
+  GHC.Prim.coerce (_GHC.Base.>=_) : Min inst_a -> Min inst_a -> bool.
 
 Local Definition Ord__Min_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a -> Min inst_a -> comparison :=
-  GHC.Prim.coerce GHC.Base.compare.
+  GHC.Prim.coerce (GHC.Base.compare) : Min inst_a -> Min inst_a -> comparison.
 
 Local Definition Ord__Min_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a -> Min inst_a -> Min inst_a :=
-  GHC.Prim.coerce GHC.Base.max.
+  GHC.Prim.coerce (GHC.Base.max) : Min inst_a -> Min inst_a -> Min inst_a.
 
 Local Definition Ord__Min_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a -> Min inst_a -> Min inst_a :=
-  GHC.Prim.coerce GHC.Base.min.
+  GHC.Prim.coerce (GHC.Base.min) : Min inst_a -> Min inst_a -> Min inst_a.
 
 Program Instance Ord__Min {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Min a) :=
   fun _ k__ =>
@@ -228,11 +228,11 @@ Instance Unpeel_Max a : GHC.Prim.Unpeel (Max a) a :=
 
 Local Definition Eq___Max_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Max inst_a -> Max inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+  GHC.Prim.coerce (_GHC.Base.==_) : Max inst_a -> Max inst_a -> bool.
 
 Local Definition Eq___Max_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Max inst_a -> Max inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+  GHC.Prim.coerce (_GHC.Base./=_) : Max inst_a -> Max inst_a -> bool.
 
 Program Instance Eq___Max {a : Type} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Max a) :=
   fun _ k__ =>
@@ -241,31 +241,31 @@ Program Instance Eq___Max {a : Type} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Max a) :=
 
 Local Definition Ord__Max_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a -> Max inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<_.
+  GHC.Prim.coerce (_GHC.Base.<_) : Max inst_a -> Max inst_a -> bool.
 
 Local Definition Ord__Max_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a -> Max inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<=_.
+  GHC.Prim.coerce (_GHC.Base.<=_) : Max inst_a -> Max inst_a -> bool.
 
 Local Definition Ord__Max_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a -> Max inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>_.
+  GHC.Prim.coerce (_GHC.Base.>_) : Max inst_a -> Max inst_a -> bool.
 
 Local Definition Ord__Max_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a -> Max inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>=_.
+  GHC.Prim.coerce (_GHC.Base.>=_) : Max inst_a -> Max inst_a -> bool.
 
 Local Definition Ord__Max_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a -> Max inst_a -> comparison :=
-  GHC.Prim.coerce GHC.Base.compare.
+  GHC.Prim.coerce (GHC.Base.compare) : Max inst_a -> Max inst_a -> comparison.
 
 Local Definition Ord__Max_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a -> Max inst_a -> Max inst_a :=
-  GHC.Prim.coerce GHC.Base.max.
+  GHC.Prim.coerce (GHC.Base.max) : Max inst_a -> Max inst_a -> Max inst_a.
 
 Local Definition Ord__Max_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a -> Max inst_a -> Max inst_a :=
-  GHC.Prim.coerce GHC.Base.min.
+  GHC.Prim.coerce (GHC.Base.min) : Max inst_a -> Max inst_a -> Max inst_a.
 
 Program Instance Ord__Max {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Max a) :=
   fun _ k__ =>
@@ -315,11 +315,11 @@ Instance Unpeel_First a : GHC.Prim.Unpeel (First a) a :=
 
 Local Definition Eq___First_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : First inst_a -> First inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+  GHC.Prim.coerce (_GHC.Base.==_) : First inst_a -> First inst_a -> bool.
 
 Local Definition Eq___First_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : First inst_a -> First inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+  GHC.Prim.coerce (_GHC.Base./=_) : First inst_a -> First inst_a -> bool.
 
 Program Instance Eq___First {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (First a) :=
@@ -329,31 +329,31 @@ Program Instance Eq___First {a : Type} `{GHC.Base.Eq_ a}
 
 Local Definition Ord__First_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : First inst_a -> First inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<_.
+  GHC.Prim.coerce (_GHC.Base.<_) : First inst_a -> First inst_a -> bool.
 
 Local Definition Ord__First_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : First inst_a -> First inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<=_.
+  GHC.Prim.coerce (_GHC.Base.<=_) : First inst_a -> First inst_a -> bool.
 
 Local Definition Ord__First_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : First inst_a -> First inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>_.
+  GHC.Prim.coerce (_GHC.Base.>_) : First inst_a -> First inst_a -> bool.
 
 Local Definition Ord__First_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : First inst_a -> First inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>=_.
+  GHC.Prim.coerce (_GHC.Base.>=_) : First inst_a -> First inst_a -> bool.
 
 Local Definition Ord__First_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : First inst_a -> First inst_a -> comparison :=
-  GHC.Prim.coerce GHC.Base.compare.
+  GHC.Prim.coerce (GHC.Base.compare) : First inst_a -> First inst_a -> comparison.
 
 Local Definition Ord__First_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : First inst_a -> First inst_a -> First inst_a :=
-  GHC.Prim.coerce GHC.Base.max.
+  GHC.Prim.coerce (GHC.Base.max) : First inst_a -> First inst_a -> First inst_a.
 
 Local Definition Ord__First_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : First inst_a -> First inst_a -> First inst_a :=
-  GHC.Prim.coerce GHC.Base.min.
+  GHC.Prim.coerce (GHC.Base.min) : First inst_a -> First inst_a -> First inst_a.
 
 Program Instance Ord__First {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (First a) :=
@@ -389,11 +389,11 @@ Instance Unpeel_Last a : GHC.Prim.Unpeel (Last a) a :=
 
 Local Definition Eq___Last_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Last inst_a -> Last inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+  GHC.Prim.coerce (_GHC.Base.==_) : Last inst_a -> Last inst_a -> bool.
 
 Local Definition Eq___Last_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Last inst_a -> Last inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+  GHC.Prim.coerce (_GHC.Base./=_) : Last inst_a -> Last inst_a -> bool.
 
 Program Instance Eq___Last {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (Last a) :=
@@ -403,31 +403,31 @@ Program Instance Eq___Last {a : Type} `{GHC.Base.Eq_ a}
 
 Local Definition Ord__Last_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Last inst_a -> Last inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<_.
+  GHC.Prim.coerce (_GHC.Base.<_) : Last inst_a -> Last inst_a -> bool.
 
 Local Definition Ord__Last_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Last inst_a -> Last inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<=_.
+  GHC.Prim.coerce (_GHC.Base.<=_) : Last inst_a -> Last inst_a -> bool.
 
 Local Definition Ord__Last_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Last inst_a -> Last inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>_.
+  GHC.Prim.coerce (_GHC.Base.>_) : Last inst_a -> Last inst_a -> bool.
 
 Local Definition Ord__Last_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Last inst_a -> Last inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>=_.
+  GHC.Prim.coerce (_GHC.Base.>=_) : Last inst_a -> Last inst_a -> bool.
 
 Local Definition Ord__Last_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Last inst_a -> Last inst_a -> comparison :=
-  GHC.Prim.coerce GHC.Base.compare.
+  GHC.Prim.coerce (GHC.Base.compare) : Last inst_a -> Last inst_a -> comparison.
 
 Local Definition Ord__Last_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Last inst_a -> Last inst_a -> Last inst_a :=
-  GHC.Prim.coerce GHC.Base.max.
+  GHC.Prim.coerce (GHC.Base.max) : Last inst_a -> Last inst_a -> Last inst_a.
 
 Local Definition Ord__Last_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Last inst_a -> Last inst_a -> Last inst_a :=
-  GHC.Prim.coerce GHC.Base.min.
+  GHC.Prim.coerce (GHC.Base.min) : Last inst_a -> Last inst_a -> Last inst_a.
 
 Program Instance Ord__Last {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (Last a) :=
@@ -464,12 +464,14 @@ Instance Unpeel_WrappedMonoid a : GHC.Prim.Unpeel (WrappedMonoid a) a :=
 Local Definition Eq___WrappedMonoid_op_zeze__ {inst_m : Type} `{GHC.Base.Eq_
   inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+  GHC.Prim.coerce (_GHC.Base.==_) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> bool.
 
 Local Definition Eq___WrappedMonoid_op_zsze__ {inst_m : Type} `{GHC.Base.Eq_
   inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+  GHC.Prim.coerce (_GHC.Base./=_) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> bool.
 
 Program Instance Eq___WrappedMonoid {m : Type} `{GHC.Base.Eq_ m}
    : GHC.Base.Eq_ (WrappedMonoid m) :=
@@ -480,35 +482,42 @@ Program Instance Eq___WrappedMonoid {m : Type} `{GHC.Base.Eq_ m}
 Local Definition Ord__WrappedMonoid_op_zl__ {inst_m : Type} `{GHC.Base.Ord
   inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
-  GHC.Prim.coerce _GHC.Base.<_.
+  GHC.Prim.coerce (_GHC.Base.<_) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> bool.
 
 Local Definition Ord__WrappedMonoid_op_zlze__ {inst_m : Type} `{GHC.Base.Ord
   inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
-  GHC.Prim.coerce _GHC.Base.<=_.
+  GHC.Prim.coerce (_GHC.Base.<=_) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> bool.
 
 Local Definition Ord__WrappedMonoid_op_zg__ {inst_m : Type} `{GHC.Base.Ord
   inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
-  GHC.Prim.coerce _GHC.Base.>_.
+  GHC.Prim.coerce (_GHC.Base.>_) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> bool.
 
 Local Definition Ord__WrappedMonoid_op_zgze__ {inst_m : Type} `{GHC.Base.Ord
   inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
-  GHC.Prim.coerce _GHC.Base.>=_.
+  GHC.Prim.coerce (_GHC.Base.>=_) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> bool.
 
 Local Definition Ord__WrappedMonoid_compare {inst_m : Type} `{GHC.Base.Ord
   inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> comparison :=
-  GHC.Prim.coerce GHC.Base.compare.
+  GHC.Prim.coerce (GHC.Base.compare) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> comparison.
 
 Local Definition Ord__WrappedMonoid_max {inst_m : Type} `{GHC.Base.Ord inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> WrappedMonoid inst_m :=
-  GHC.Prim.coerce GHC.Base.max.
+  GHC.Prim.coerce (GHC.Base.max) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> WrappedMonoid inst_m.
 
 Local Definition Ord__WrappedMonoid_min {inst_m : Type} `{GHC.Base.Ord inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> WrappedMonoid inst_m :=
-  GHC.Prim.coerce GHC.Base.min.
+  GHC.Prim.coerce (GHC.Base.min) : WrappedMonoid inst_m ->
+  WrappedMonoid inst_m -> WrappedMonoid inst_m.
 
 Program Instance Ord__WrappedMonoid {m : Type} `{GHC.Base.Ord m}
    : GHC.Base.Ord (WrappedMonoid m) :=
@@ -541,11 +550,11 @@ Instance Unpeel_Option a : GHC.Prim.Unpeel (Option a) (option a) :=
 
 Local Definition Eq___Option_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Option inst_a -> Option inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+  GHC.Prim.coerce (_GHC.Base.==_) : Option inst_a -> Option inst_a -> bool.
 
 Local Definition Eq___Option_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Option inst_a -> Option inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+  GHC.Prim.coerce (_GHC.Base./=_) : Option inst_a -> Option inst_a -> bool.
 
 Program Instance Eq___Option {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (Option a) :=
@@ -555,31 +564,34 @@ Program Instance Eq___Option {a : Type} `{GHC.Base.Eq_ a}
 
 Local Definition Ord__Option_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Option inst_a -> Option inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<_.
+  GHC.Prim.coerce (_GHC.Base.<_) : Option inst_a -> Option inst_a -> bool.
 
 Local Definition Ord__Option_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Option inst_a -> Option inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.<=_.
+  GHC.Prim.coerce (_GHC.Base.<=_) : Option inst_a -> Option inst_a -> bool.
 
 Local Definition Ord__Option_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Option inst_a -> Option inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>_.
+  GHC.Prim.coerce (_GHC.Base.>_) : Option inst_a -> Option inst_a -> bool.
 
 Local Definition Ord__Option_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Option inst_a -> Option inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.>=_.
+  GHC.Prim.coerce (_GHC.Base.>=_) : Option inst_a -> Option inst_a -> bool.
 
 Local Definition Ord__Option_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Option inst_a -> Option inst_a -> comparison :=
-  GHC.Prim.coerce GHC.Base.compare.
+  GHC.Prim.coerce (GHC.Base.compare) : Option inst_a ->
+  Option inst_a -> comparison.
 
 Local Definition Ord__Option_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Option inst_a -> Option inst_a -> Option inst_a :=
-  GHC.Prim.coerce GHC.Base.max.
+  GHC.Prim.coerce (GHC.Base.max) : Option inst_a ->
+  Option inst_a -> Option inst_a.
 
 Local Definition Ord__Option_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Option inst_a -> Option inst_a -> Option inst_a :=
-  GHC.Prim.coerce GHC.Base.min.
+  GHC.Prim.coerce (GHC.Base.min) : Option inst_a ->
+  Option inst_a -> Option inst_a.
 
 Program Instance Ord__Option {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (Option a) :=
@@ -648,15 +660,6 @@ Local Definition Foldable__Min_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Min m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Min_foldMap GHC.Base.id.
 
-Local Definition Foldable__Min_foldl
-   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Min a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Min_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                              (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                               GHC.Base.flip f)) t)) z.
-
 Local Definition Foldable__Min_foldr
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Min a -> b :=
   fun {a : Type} {b : Type} =>
@@ -669,6 +672,22 @@ Local Definition Foldable__Min_foldl'
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Min_foldr f' GHC.Base.id xs z0.
+
+Local Definition Foldable__Min_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Min a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Min_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
+Local Definition Foldable__Min_foldl
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Min a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
+                                      (Foldable__Min_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
+                                                              (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
+                                                               GHC.Base.flip f)) t)) z.
 
 Local Definition Foldable__Min_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Min a -> b :=
@@ -709,6 +728,8 @@ Program Instance Foldable__Min : Data.Foldable.Foldable Min :=
              Foldable__Min_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Min_foldMap ;
+           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+             Foldable__Min_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Min_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Min_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Min_foldr ;
@@ -866,15 +887,6 @@ Local Definition Foldable__Max_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Max m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Max_foldMap GHC.Base.id.
 
-Local Definition Foldable__Max_foldl
-   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Max a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Max_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                              (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                               GHC.Base.flip f)) t)) z.
-
 Local Definition Foldable__Max_foldr
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Max a -> b :=
   fun {a : Type} {b : Type} =>
@@ -887,6 +899,22 @@ Local Definition Foldable__Max_foldl'
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Max_foldr f' GHC.Base.id xs z0.
+
+Local Definition Foldable__Max_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Max a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Max_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
+Local Definition Foldable__Max_foldl
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Max a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
+                                      (Foldable__Max_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
+                                                              (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
+                                                               GHC.Base.flip f)) t)) z.
 
 Local Definition Foldable__Max_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Max a -> b :=
@@ -927,6 +955,8 @@ Program Instance Foldable__Max : Data.Foldable.Foldable Max :=
              Foldable__Max_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Max_foldMap ;
+           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+             Foldable__Max_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Max_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Max_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Max_foldr ;
@@ -1071,16 +1101,6 @@ Local Definition Foldable__Arg_fold {inst_a : Type}
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Arg inst_a m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Arg_foldMap GHC.Base.id.
 
-Local Definition Foldable__Arg_foldl {inst_a : Type}
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Arg inst_a a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Arg_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                              (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                               GHC.Base.flip f)) t)) z.
-
 Local Definition Foldable__Arg_foldr {inst_a : Type}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> Arg inst_a a -> b :=
@@ -1095,6 +1115,23 @@ Local Definition Foldable__Arg_foldl' {inst_a : Type}
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Arg_foldr f' GHC.Base.id xs z0.
+
+Local Definition Foldable__Arg_foldMap' {inst_a : Type}
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Arg inst_a a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Arg_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
+Local Definition Foldable__Arg_foldl {inst_a : Type}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Arg inst_a a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
+                                      (Foldable__Arg_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
+                                                              (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
+                                                               GHC.Base.flip f)) t)) z.
 
 Local Definition Foldable__Arg_foldr' {inst_a : Type}
    : forall {a : Type},
@@ -1138,6 +1175,8 @@ Program Instance Foldable__Arg {a : Type} : Data.Foldable.Foldable (Arg a) :=
              Foldable__Arg_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Arg_foldMap ;
+           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+             Foldable__Arg_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Arg_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Arg_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Arg_foldr ;
@@ -1383,15 +1422,6 @@ Local Definition Foldable__First_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, First m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__First_foldMap GHC.Base.id.
 
-Local Definition Foldable__First_foldl
-   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> First a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__First_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                 GHC.Base.flip f)) t)) z.
-
 Local Definition Foldable__First_foldr
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> First a -> b :=
   fun {a : Type} {b : Type} =>
@@ -1404,6 +1434,22 @@ Local Definition Foldable__First_foldl'
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__First_foldr f' GHC.Base.id xs z0.
+
+Local Definition Foldable__First_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> First a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__First_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
+Local Definition Foldable__First_foldl
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> First a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
+                                      (Foldable__First_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
+                                                                (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
+                                                                 GHC.Base.flip f)) t)) z.
 
 Local Definition Foldable__First_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> First a -> b :=
@@ -1445,6 +1491,8 @@ Program Instance Foldable__First : Data.Foldable.Foldable First :=
              Foldable__First_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__First_foldMap ;
+           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+             Foldable__First_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__First_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__First_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__First_foldr ;
@@ -1599,15 +1647,6 @@ Local Definition Foldable__Last_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Last m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Last_foldMap GHC.Base.id.
 
-Local Definition Foldable__Last_foldl
-   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Last a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Last_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                               (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                GHC.Base.flip f)) t)) z.
-
 Local Definition Foldable__Last_foldr
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Last a -> b :=
   fun {a : Type} {b : Type} =>
@@ -1620,6 +1659,22 @@ Local Definition Foldable__Last_foldl'
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Last_foldr f' GHC.Base.id xs z0.
+
+Local Definition Foldable__Last_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Last a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Last_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
+Local Definition Foldable__Last_foldl
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Last a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
+                                      (Foldable__Last_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
+                                                               (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
+                                                                GHC.Base.flip f)) t)) z.
 
 Local Definition Foldable__Last_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Last a -> b :=
@@ -1660,6 +1715,8 @@ Program Instance Foldable__Last : Data.Foldable.Foldable Last :=
              Foldable__Last_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Last_foldMap ;
+           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+             Foldable__Last_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Last_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Last_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Last_foldr ;
@@ -1915,15 +1972,6 @@ Local Definition Foldable__Option_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Option m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Option_foldMap GHC.Base.id.
 
-Local Definition Foldable__Option_foldl
-   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Option a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Option_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                 (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                  GHC.Base.flip f)) t)) z.
-
 Local Definition Foldable__Option_foldr
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Option a -> b :=
   fun {a : Type} {b : Type} =>
@@ -1936,6 +1984,22 @@ Local Definition Foldable__Option_foldl'
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Option_foldr f' GHC.Base.id xs z0.
+
+Local Definition Foldable__Option_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Option a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Option_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
+Local Definition Foldable__Option_foldl
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Option a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
+                                      (Foldable__Option_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
+                                                                 (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
+                                                                  GHC.Base.flip f)) t)) z.
 
 Local Definition Foldable__Option_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Option a -> b :=
@@ -1977,6 +2041,8 @@ Program Instance Foldable__Option : Data.Foldable.Foldable Option :=
              Foldable__Option_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Option_foldMap ;
+           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+             Foldable__Option_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Option_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Option_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Option_foldr ;
@@ -2096,12 +2162,12 @@ Definition destruct_option {b : Type} {a : Type}
      Data.Bifoldable.bifoldMap__ Data.Bifoldable.bifold__ Data.Bifoldable.bifoldl__
      Data.Bifoldable.bifoldr__ Data.Bifunctor.Bifunctor Data.Bifunctor.bimap__
      Data.Bifunctor.first__ Data.Bifunctor.second__ Data.Bitraversable.Bitraversable
-     Data.Bitraversable.bitraverse__ Data.Foldable.Foldable Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
-     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
-     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
-     Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.Maybe.maybe
-     Data.SemigroupInternal.Endo Data.SemigroupInternal.Mk_Dual
+     Data.Bitraversable.bitraverse__ Data.Foldable.Foldable Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
+     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
+     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
+     Data.Foldable.sum__ Data.Foldable.toList__ Data.Functor.op_zlzdzg__
+     Data.Maybe.maybe Data.SemigroupInternal.Endo Data.SemigroupInternal.Mk_Dual
      Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
      Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
      Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct

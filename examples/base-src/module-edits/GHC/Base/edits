@@ -5,6 +5,7 @@ manual notation GHC.Base
 skip module GHC.Types
 
 # replaced with Coq types
+
 skip GHC.Base.String
 skip option
 skip Coq.Init.Datatypes.app
@@ -117,3 +118,7 @@ skip GHC.Base.MonadPlus__option
 
 # For hs_coq_map theorem
 redefine Definition GHC.Base.map {A B :Type} (f : A -> B) xs := Coq.Lists.List.map f xs.
+
+set type GHC.Base.op_zd__ : forall {a : Type} {b : Type}, (a -> b) -> a -> b
+
+set type GHC.Base.op_zdzn__ : forall {a : Type} {b : Type}, (a -> b) -> a -> b

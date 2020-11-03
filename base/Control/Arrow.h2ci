@@ -4,7 +4,6 @@ superclassCount:
   Control.Arrow.ArrowChoice: '2'
   Control.Arrow.ArrowZero: '2'
   Control.Arrow.ArrowPlus: '3'
-  Control.Arrow.ArrowLoop: '2'
 defaultMethods:
   Control.Arrow.Arrow: fromList [(Qualified "Control.Arrow" "first",Parens (Fun (ExplicitBinder
     (Ident (Bare "arg_0__")) :| []) (App (Qualid (Qualified "Control.Arrow" "op_ztztzt__"))
@@ -74,10 +73,9 @@ classTypes:
   Control.Arrow.ArrowChoice: fromList []
   Control.Arrow.ArrowZero: fromList []
   Control.Arrow.ArrowPlus: fromList []
-  Control.Arrow.ArrowLoop: fromList []
 constructors:
-  Control.Arrow.Kleisli: ! '[Qualified "Control.Arrow" "Mk_Kleisli"]'
-  Control.Arrow.ArrowMonad: ! '[Qualified "Control.Arrow" "Mk_ArrowMonad"]'
+  Control.Arrow.Kleisli: '[Qualified "Control.Arrow" "Mk_Kleisli"]'
+  Control.Arrow.ArrowMonad: '[Qualified "Control.Arrow" "Mk_ArrowMonad"]'
 constructorFields:
   Control.Arrow.Mk_ArrowMonad: NonRecordFields 1
   Control.Arrow.Mk_Kleisli: RecordFields [Qualified "Control.Arrow" "runKleisli"]
@@ -204,20 +202,6 @@ classDefns:
     (Qualid (Bare "c")) :| [])) (Arrow (App (App (Qualid (Bare "a")) (PosArg (Qualid
     (Bare "b")) :| [])) (PosArg (Qualid (Bare "c")) :| [])) (App (App (Qualid (Bare
     "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare "c")) :| []))))))]
-  Control.Arrow.ArrowLoop: ClassDefinition (Qualified "Control.Arrow" "ArrowLoop")
-    [Typed Ungeneralizable Explicit (Ident (Bare "a") :| []) (Arrow (Qualid (Bare
-    "Type")) (Arrow (Qualid (Bare "Type")) (Qualid (Bare "Type")))),Generalized Implicit
-    (App (Qualid (Qualified "Control.Arrow" "Arrow")) (PosArg (Qualid (Bare "a"))
-    :| []))] Nothing [(Qualified "Control.Arrow" "loop",Forall (Typed Ungeneralizable
-    Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed
-    Ungeneralizable Implicit (Ident (Bare "d") :| []) (Qualid (Bare "Type")) :| [])
-    (Forall (Typed Ungeneralizable Implicit (Ident (Bare "c") :| []) (Qualid (Bare
-    "Type")) :| []) (Arrow (App (App (Qualid (Bare "a")) (PosArg (InScope (App (Qualid
-    (Bare "op_zt__")) (PosArg (Qualid (Bare "b")) :| [PosArg (Qualid (Bare "d"))]))
-    "type") :| [])) (PosArg (InScope (App (Qualid (Bare "op_zt__")) (PosArg (Qualid
-    (Bare "c")) :| [PosArg (Qualid (Bare "d"))])) "type") :| [])) (App (App (Qualid
-    (Bare "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare "c")) :|
-    []))))))]
 constructorTypes:
   Control.Arrow.Mk_ArrowMonad: Qualified "Control.Arrow" "ArrowMonad"
   Control.Arrow.Mk_Kleisli: Qualified "Control.Arrow" "Kleisli"

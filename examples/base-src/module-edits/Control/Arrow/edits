@@ -3,8 +3,7 @@ data kinds Control.Arrow.Kleisli (Type -> Type)
 
 # arrow type constructor
 # need category instance for Klesli
-skip Control.Arrow.ArrowChoice__arrow
-skip Control.Arrow.ArrowLoop__arrow
+skip class Control.Arrow.ArrowLoop
 
 # ???
 skip Control.Arrow.leftApp
@@ -18,7 +17,6 @@ skip Control.Arrow.ArrowPlus__Kleisli
 skip Control.Arrow.ArrowZero__Kleisli
 skip Control.Arrow.ArrowChoice__Kleisli
 skip Control.Arrow.Arrow__Kleisli
-skip Control.Arrow.ArrowLoop__Kleisli
 
 skip Control.Arrow.Monad__ArrowMonad
 skip Control.Arrow.Applicative__ArrowMonad

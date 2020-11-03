@@ -1,4 +1,4 @@
-Definition default_foldable {f:Type -> Type}
+Definition default_foldable { f : Type -> Type }
   (foldMap : forall m a, forall (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m), (a -> m) -> f a -> m)
   (foldr : forall a b, (a -> b -> b) -> b -> f a -> b):=
   let foldl : forall b a, (b -> a -> b) -> b -> f a -> b :=
@@ -17,12 +17,16 @@ Definition default_foldable {f:Type -> Type}
            let f' :=  fun  x  k  z => GHC.Base.op_zdzn__ k (f z x)
            in foldr _ _ f' GHC.Base.id xs z0)
   in
+  let foldMap' : forall m a, forall (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m), (a -> m) -> f a -> m :=
+      (fun {m} {a} _ _ => fun f => foldl' (fun acc a => GHC.Base.op_zlzlzgzg__ acc (f a)) GHC.Base.mempty) in
   Foldable__Dict_Build
     f
     (* fold *)
     (fun m (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) => foldMap _ _ _ _ GHC.Base.id)
     (* foldMap *)
     (@foldMap)
+    (* foldMap' *)
+    (@foldMap')
     (* foldl *)
     (@foldl)
     (* foldl' *)
@@ -49,6 +53,8 @@ Definition default_foldable {f:Type -> Type}
                                   (foldMap _ _ _ _ Data.SemigroupInternal.Mk_Sum))
     (* toList *)
     (fun a => fun t => GHC.Base.build (fun _ c n => @foldr _ _ c n t)).
+
+
 
 Definition default_foldable_foldMap {f : Type -> Type}
   (foldMap : forall {m} {a}, forall `{GHC.Base.Monoid m}, (a -> m) -> f a -> m)

@@ -1,5 +1,5 @@
 constructors:
-  Data.Functor.Product.Product: ! '[Qualified "Data.Functor.Product" "Pair"]'
+  Data.Functor.Product.Product: '[Qualified "Data.Functor.Product" "Pair"]'
 constructorFields:
   Data.Functor.Product.Pair: NonRecordFields 2
 constructorTypes:
