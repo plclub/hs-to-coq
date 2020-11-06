@@ -8,7 +8,7 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 
-module HsToCoq.ConvertHaskell.Parameters.Edits (
+module HsToCoq.Edits.Types (
   Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs,
   HsNamespace(..), NamespacedIdent(..), Renamings,
   DataTypeArguments(..), dtParameters, dtIndices,
@@ -184,6 +184,7 @@ data Edit = TypeSynonymTypeEdit              Ident Ident
           | RewriteEdit                      Rewrite
           | CoinductiveEdit                  Qualid
           | RenameModuleEdit                 ModuleName ModuleName
+          | AliasModuleEdit                  ModuleIdent ModuleIdent  -- Resolved during parsing
           | SimpleClassEdit                  Qualid
           | InlineMutualEdit                 Qualid
           | SetTypeEdit                      Qualid (Maybe Term)
@@ -358,6 +359,7 @@ descDuplEdit = \case
   ObligationsEdit                  what _       -> duplicateQ_for  "obligation kinds"                               what
   CoinductiveEdit                  ty           -> duplicateQ_for  "coinductive data types"                         ty
   RenameModuleEdit                 m1 _         -> duplicate_for   "renamed modules"                                (moduleNameString m1)
+  AliasModuleEdit                  _ _          -> error "Alias module edits are never duplicates"
   AddEdit                          _ _ _        -> error "Add edits are never duplicates"
   RewriteEdit                      _            -> error "Rewrites are never duplicates"
   OrderEdit                        _            -> error "Order edits are never duplicates"
@@ -404,6 +406,7 @@ addEdit e = case e of
   DeleteUnusedTypeVariablesEdit    qid              -> addFresh e deleteUnusedTypeVariables              qid                         ()
   CoinductiveEdit                  ty               -> addFresh e coinductiveTypes                       ty                          ()
   RenameModuleEdit                 m1 m2            -> addFresh e renamedModules                         m1                          m2
+  AliasModuleEdit{}                                 -> pure
   SimpleClassEdit                  cls              -> addFresh e simpleClasses                          cls                         ()
   InlineMutualEdit                 fun              -> addFresh e inlinedMutuals                         fun                         ()
   SetTypeEdit                      qid oty          -> addFresh e replacedTypes                          qid                         oty

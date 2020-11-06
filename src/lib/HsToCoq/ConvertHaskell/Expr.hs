@@ -71,7 +71,7 @@ import HsToCoq.Coq.FreeVars
 import HsToCoq.Util.FVs (ErrOrVars(..))
 import HsToCoq.Coq.Pretty
 
-import HsToCoq.ConvertHaskell.Parameters.Edits
+import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
