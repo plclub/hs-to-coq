@@ -1102,7 +1102,7 @@ lpatBindName = patBindName . unLPat
 unLPat :: LPat GhcRn -> Pat GhcRn
 toLPat :: String -> Pat GhcRn -> LPat GhcRn
 #if __GLASGOW_HASKELL__ == 808
-unLPat = id
+unLPat = \case (XPat (L _ p)) -> p ; p -> p
 toLPat _ = id
 #else
 unLPat = unLoc
