@@ -103,6 +103,7 @@ import HsToCoq.Edits.ParserState
   promote         { TokWord    "promote"        }
   polyrec         { TokWord    "polyrec"        }
   except          { TokWord    "except"         }
+  polykinds       { TokWord    "polykinds"      }
   '='             { TokOp      "="              }
   ':->'           { TokOp      ":->"            }
   -- Tokens: Coq terms
@@ -328,6 +329,7 @@ Edit :: { Edit }
   | order Some(Qualid)                                    { OrderEdit                        $2                                    }
   | class kinds Qualid SepBy1(Term,',')                   { ClassKindEdit                    $3 $4                                 }
   | data  kinds Qualid SepBy1(Term,',')                   { DataKindEdit                     $3 $4                                 }
+  | polykinds Qualid Some(Word)                           { PolyKindEdit                     $2 $3                                 }
   | delete unused type variables Qualid                   { DeleteUnusedTypeVariablesEdit    $5                                    }
   | coinductive Qualid                                    { CoinductiveEdit                  $2                                    }
   | rewrite Rewrite                                       { RewriteEdit                      $2                                    }

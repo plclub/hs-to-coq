@@ -744,6 +744,29 @@ Examples:
      data kinds Data.Functor.Reverse.Reverse   (Type -> Type), Type
      data kinds Data.Functor.Constant.Constant Type,           Type
 
+``polykinds`` -- Declare polymorphic kind variables to Inductive datatypes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index::
+   single: polykinds, edit
+
+Format:
+  | **polykinds** *qualified_name* *name*
+
+Effect:
+
+  For Haskell programs written with the ``PolyKind`` extension, the user can
+  provide the polymorphic kind variables to help hs-to-coq to include those kind
+  variables.
+
+Examples:
+  .. code-block:: shell
+
+     polykinds Data.Monoid.Ap k
+
+     data kinds Data.Monoid.Ap (k -> Type), k
+
+
 ``class kinds`` -- Declare kinds of type arguments to type classes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -1,0 +1,7 @@
+skip module GHC.Err
+skip PolyKind.Default__A
+
+polykinds PolyKind.T k
+data kinds PolyKind.T (k -> Type), k
+data kinds PolyKind.F (Type -> Type)
+data kinds PolyKind.G Type
