@@ -73,6 +73,7 @@ library
                      , HsToCoq.Coq.Pretty
                      , HsToCoq.Coq.FreeVars
                      , HsToCoq.Coq.Subst
+                     , HsToCoq.Coq.SubstTy
                      , HsToCoq.ConvertHaskell.BuiltIn
                      , HsToCoq.ConvertHaskell.TypeInfo
                      , HsToCoq.ConvertHaskell.Monad
