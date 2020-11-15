@@ -157,6 +157,7 @@ import HsToCoq.Edits.ParserState
   '{'             { TokOpen    '{'              }
   '}'             { TokClose   '}'              }
   '_'             { TokWord    "_"              }
+  '\''            { TokTick                     }
   eol             { TokNewline                  }
   Word            { TokWord    $$               }
   Op              { TokOp      $$               }
@@ -394,6 +395,7 @@ LargeTerm :: { Term }
 -- Lets us implement EqlessTerm
 MediumTerm(Binop, RTerm) :: { Term }
   : 'let' Qualid Many(Binder) Optional(TypeAnnotation) ':=' Term 'in' RTerm     { Let $2 $3 $4 $6 $8 }
+  | 'let' '\'' Pattern ':=' Term 'in' RTerm                                     { LetTick $3 $5 $7 }
   | SmallishTerm(Binop) ':' RTerm { HasType $1 $3 }
   | SmallishTerm(Binop) { $1 }
 
