@@ -10,7 +10,6 @@ module HsToCoq.ConvertHaskell.Declarations.TyCl (
   convertModuleTyClDecls,
   -- * Convert single declarations
   ConvertedDeclaration(..), convDeclName,
-  convertTyClDecl,
   -- * Mutually-recursive declaration groups
   DeclarationGroup(..), singletonDeclarationGroup,
   -- * Converting 'DeclarationGroup's
@@ -52,6 +51,7 @@ import HsToCoq.Util.FVs
 #if __GLASGOW_HASKELL__ >= 806
 import HsToCoq.Util.GHC.HsTypes (noExtCon)
 #endif
+import HsToCoq.Util.GHC.Module
 
 import Data.Generics hiding (Generic, Fixity(..))
 
@@ -64,6 +64,7 @@ import HsToCoq.ConvertHaskell.Declarations.TypeSynonym
 import HsToCoq.ConvertHaskell.Declarations.DataType
 import HsToCoq.ConvertHaskell.Declarations.Class
 import HsToCoq.ConvertHaskell.Declarations.Notations (buildInfixNotations)
+import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 
 --------------------------------------------------------------------------------
 
@@ -92,8 +93,8 @@ failTyClDecl :: ConversionMonad r m => Qualid -> GhcException -> m (Maybe Conver
 failTyClDecl name e = pure $ Just $
     ConvFailure name $ translationFailedComment (qualidBase name) e
 
-convertTyClDecl :: ConversionMonad r m => TyClDecl GhcRn -> m (Maybe ConvertedDeclaration)
-convertTyClDecl decl = do
+convertTyClDecl :: ConversionMonad r m => ConvertedTyClEnv -> TyClDecl GhcRn -> m (Maybe ConvertedDeclaration)
+convertTyClDecl env decl = do
   coqName <- var TypeNS . unLoc $ tyClDeclLName decl
   withCurrentDefinition coqName $ handleIfPermissive (failTyClDecl coqName) $
     view (edits.skippedClasses.contains coqName) >>= \case
@@ -171,9 +172,9 @@ convertTyClDecl decl = do
       let isCoind = view (edits.coinductiveTypes.contains coqName)
       in Just <$> case decl of
            FamDecl{}     -> convUnsupported "type/data families"
-           SynDecl{..}   -> ConvSyn              <$> convertSynDecl           tcdLName (hsq_explicit tcdTyVars) tcdRhs
-           DataDecl{..}  -> ConvData <$> isCoind <*> convertDataDecl          tcdLName (hsq_explicit tcdTyVars) tcdDataDefn
-           ClassDecl{..} -> ConvClass            <$> convertClassDecl tcdCtxt tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
+           SynDecl{..}   -> ConvSyn              <$> convertSynDecl               tcdLName (hsq_explicit tcdTyVars) tcdRhs
+           DataDecl{..}  -> ConvData <$> isCoind <*> convertDataDecl              tcdLName (hsq_explicit tcdTyVars) tcdDataDefn
+           ClassDecl{..} -> ConvClass            <$> convertClassDecl env tcdCtxt tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
 #if __GLASGOW_HASKELL__ >= 806
            XTyClDecl v -> noExtCon v
 #endif
@@ -460,7 +461,9 @@ generateGroupDataInfixNotations =
 groupTyClDecls :: ConversionMonad r m
                => [TyClDecl GhcRn] -> m [DeclarationGroup]
 groupTyClDecls decls = do
-  bodies <- traverse convertTyClDecl decls <&>
+  mod <- view (currentModule.modDetails)
+  env <- convertTyClEnv mod
+  bodies <- traverse (convertTyClDecl env) decls <&>
               M.fromList . map (convDeclName &&& id) . catMaybes
 
   -- We need to do this here, becaues topoSortEnvironment expects

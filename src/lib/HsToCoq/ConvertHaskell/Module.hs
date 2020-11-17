@@ -44,8 +44,6 @@ import HsToCoq.Util.GHC.HsTypes (noExtCon)
 #endif
 import HsToCoq.Util.GHC.Module
 import Bag
-import HscTypes
-import Name()
 
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Monad
@@ -57,12 +55,9 @@ import HsToCoq.ConvertHaskell.Sigs
 import HsToCoq.ConvertHaskell.Declarations.TyCl
 import HsToCoq.ConvertHaskell.Declarations.Instances
 import HsToCoq.ConvertHaskell.Declarations.Notations
-import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 import HsToCoq.ConvertHaskell.Axiomatize
 import HsToCoq.Coq.Preamble
 import HsToCoq.Coq.Pretty (textP)
-
-import Debug.Trace
 
 --------------------------------------------------------------------------------
 
@@ -73,11 +68,6 @@ data ConvertedModuleDeclarations =
                               , convertedAddedTyCls   :: ![Sentence]
                               , convertedAddedDecls   :: ![Sentence]
                               }
-  deriving (Eq, Ord, Show, Data)
-
-data ConvertedModuleTypes =
-  ConvertedModuleTypes { convertedTyClTypes :: [ConvertedTyClEnv]
-                       }
   deriving (Eq, Ord, Show, Data)
 
 
@@ -218,13 +208,6 @@ convertHsGroup HsGroup{..} = do
 convertHsGroup (XHsGroup v) = noExtCon v
 #endif
 
-convertModDetails :: ConversionMonad r m => ModDetails -> m ConvertedModuleTypes
-convertModDetails mod = do
-  let typeEnv = md_types mod
-  let classes = typeEnvClasses typeEnv
-  convertedTyClTypes <- convertTyClEnvs classes
-  traceShow convertedTyClTypes $ pure ConvertedModuleTypes {..}
-
 --------------------------------------------------------------------------------
 
 data ConvertedModule =
@@ -235,7 +218,6 @@ data ConvertedModule =
                   , convModClsInstDecls :: ![Sentence]
                   , convModAddedTyCls   :: ![Sentence]
                   , convModAddedDecls   :: ![Sentence]
-                  , convModTyClTypes    :: [ConvertedTyClEnv]
                   }
   deriving (Eq, Ord, Show, Data)
 
@@ -283,9 +265,6 @@ convertModule convModData group = do
             , mn `S.notMember` imported_modules
             ]
 
-    convModTypes <- convertModDetails $ convModData ^. modDetails
-    let convModTyClTypes = convertedTyClTypes convModTypes
-    
     pure (ConvertedModule{..}, modules)
 
 -- Module-local
@@ -338,8 +317,8 @@ convertModules sources = do
                  , (modData^.modExports) <> combinedExports
                  , (modData^.modDetails) <> combinedDetails )
 
-    combineModules (ConvertedModule name  imports1 tyClDecls1 valDecls1 clsInstDecls1 addedTyCls1 addedDecls1 tyClTypes1, imps1)
-                   (ConvertedModule _name imports2 tyClDecls2 valDecls2 clsInstDecls2 _addedTyCls2 _addedDecls2 tyClTypes2, imps2) =
+    combineModules (ConvertedModule name  imports1 tyClDecls1 valDecls1 clsInstDecls1 addedTyCls1 addedDecls1, imps1)
+                   (ConvertedModule _name imports2 tyClDecls2 valDecls2 clsInstDecls2 _addedTyCls2 _addedDecls2, imps2) =
       ( ConvertedModule name
                         (ordNub                     $ imports1      <> imports2)
                         (                             tyClDecls1    <> tyClDecls2)
@@ -347,7 +326,6 @@ convertModules sources = do
                         (                             clsInstDecls1 <> clsInstDecls2)
                         (                             addedTyCls1   ) -- only need one copy of the added components
                         (                             addedDecls1   ) --
-                        (                             tyClTypes1 <> tyClTypes2)
       , S.toList $ ((<>) `on` S.fromList) imps1 imps2 )
       -- It's OK not to worry about ordering the declarations
       -- because we 'topoSortByVariablesBy' them in 'moduleDeclarations'.
