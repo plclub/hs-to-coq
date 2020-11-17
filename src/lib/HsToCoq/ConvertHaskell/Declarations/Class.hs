@@ -40,7 +40,7 @@ import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Definitions
-import HsToCoq.ConvertHaskell.Type
+import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.ConvertHaskell.Expr
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Sigs
@@ -60,7 +60,7 @@ getImplicitBindersForClassMember className memberName = do
   classDef <- lookupClassDefn className
   case classDef of
     (Just (ClassDefinition _ _ _ sigs)) ->
-        case (lookup memberName sigs) of
+        case lookup memberName sigs of
           Just sigType -> return $ getImplicits sigType
           Nothing -> return []
     Nothing -> return []
@@ -100,11 +100,11 @@ convertAssociatedType classArgs FamilyDecl{..} = do
 
   result <- case unLoc fdResultSig of
     NoSig NOEXTP                     -> pure $ Sort Type
-    KindSig NOEXTP k                 -> withCurrentDefinition name $ convertLType k
+    KindSig NOEXTP k                 -> withCurrentDefinition name $ convertLHsType k
     TyVarSig NOEXTP (L _ (UserTyVar NOEXTP _))
       -> pure $ Sort Type -- Maybe not a thing inside type classes?
     TyVarSig NOEXTP (L _ (KindedTyVar NOEXTP _ k))
-      -> withCurrentDefinition name $ convertLType k   -- Maybe not a thing inside type classes?
+      -> withCurrentDefinition name $ convertLHsType k   -- Maybe not a thing inside type classes?
 #if __GLASGOW_HASKELL__ >= 806
     TyVarSig _ (L _ (XTyVarBndr v)) -> noExtCon v
     XFamilyResultSig v -> noExtCon v
@@ -139,7 +139,7 @@ convertAssociatedTypeDefault classArgs
     convUnsupportedIn_lname "associated type family defaults with argument lists that differ from the class's"
                             "associated type equation"
                             feqn_tycon
-  ty <- withCurrentDefinition n $ convertLType feqn_rhs
+  ty <- withCurrentDefinition n $ convertLHsType feqn_rhs
   pure (n, ty)
   -- Skipping feqn_fixity
 
@@ -166,7 +166,7 @@ convertClassDecl (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefa
   let convUnsupportedHere what = convUnsupportedIn what "type class" (showP name)
   unless (null fds) $ convUnsupportedHere "functional dependencies"
 
-  let aux x = withCurrentDefinition name $ convertLType x
+  let aux x = withCurrentDefinition name $ convertLHsType x
   ctx  <- traverse (fmap (Generalized Coq.Implicit) . aux) hsCtx
 
   storeSuperclassCount name . sum <=< for ctx $ \case
@@ -230,7 +230,7 @@ convertClassDecl (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefa
 --  liftIO (traceIO (show name))
 --  liftIO (traceIO (show defs))
 
-  let classDefn = (ClassDefinition name (args' ++ ctx) Nothing (second sigType <$> M.toList sigs))
+  let classDefn = ClassDefinition name (args' ++ ctx) Nothing (second sigType <$> M.toList sigs)
 
   storeClassDefn name classDefn
 

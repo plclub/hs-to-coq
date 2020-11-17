@@ -10,10 +10,6 @@ Stability   : experimental
 -}
 
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE LambdaCase         #-}
-{-# LANGUAGE OverloadedLists    #-}
-{-# LANGUAGE OverloadedStrings  #-}
-{-# LANGUAGE TemplateHaskell    #-}
 
 module HsToCoq.Coq.Gallina (
   -- * Lexical structure

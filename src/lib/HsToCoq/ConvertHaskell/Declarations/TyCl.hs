@@ -120,9 +120,9 @@ convertTyClDecl decl = do
                 case ind of
                   Inductive   (body :| [])  []    -> pure $ ConvData False body
                   CoInductive (body :| [])  []    -> pure $ ConvData True body
-                  Inductive   (_    :| _:_) _     -> editFailure $ "cannot redefine data type to mutually-recursive types"
-                  Inductive   _             (_:_) -> editFailure $ "cannot redefine data type to include notations"
-                  CoInductive _             _     -> editFailure $ "cannot redefine data type to be coinductive"
+                  Inductive   (_    :| _:_) _     -> editFailure "cannot redefine data type to mutually-recursive types"
+                  Inductive   _             (_:_) -> editFailure "cannot redefine data type to include notations"
+                  CoInductive _             _     -> editFailure "cannot redefine data type to be coinductive"
               
               (FamDecl{}, _) ->
                 editFailure "cannot redefine type/data families"
@@ -225,7 +225,7 @@ convertDeclarationGroup DeclarationGroup{..} =
       let synDefs  = recSynDefs inds syns
           synDefs' = expandAllDefs synDefs
       in pure $  [InductiveSentence $ Inductive (subst synDefs' inds) []]
-              ++ (orderRecSynDefs $ synDefs)
+              ++ orderRecSynDefs synDefs
     
     (Nothing, Nothing, Nothing, Just (classDef :| []), Nothing) ->
       classSentences classDef
@@ -370,7 +370,7 @@ generateDefaultInstance (IndBody tyName _ _ cons)
         False -> pure $ pure $ InstanceSentence $
             InstanceTerm inst_name []
                      (App1 "GHC.Err.Default" (Qualid tyName))
-                     (App2 "GHC.Err.Build_Default" Underscore (foldr (\_ acc -> (App1 acc "GHC.Err.default")) (Qualid con) bndrs))
+                     (App2 "GHC.Err.Build_Default" Underscore (foldr (\_ acc -> App1 acc "GHC.Err.default") (Qualid con) bndrs))
                      Nothing
   where
     inst_name = qualidMapBase ("Default__" <>) tyName
@@ -434,7 +434,7 @@ generateRecordAccessors (IndBody tyName params resTy cons) = do
                                [Ident arg] (appList (Qualid tyName) $ binderArgs typeArgs)
 
     pure . (\ m -> DefinitionDef Global field (implicitArgs ++ [argBinder]) Nothing m NotExistingClass) $
-      (Coq.Match [MatchItem (Qualid arg) Nothing Nothing] Nothing equations) 
+      Coq.Match [MatchItem (Qualid arg) Nothing Nothing] Nothing equations 
 
 generateGroupRecordAccessors :: ConversionMonad r m => DeclarationGroup -> m [Sentence]
 generateGroupRecordAccessors = fmap (fmap DefinitionSentence)
@@ -471,7 +471,7 @@ groupTyClDecls decls = do
         -- they are constructor names:
         -- ctypes <- setMapMaybeM lookupConstructorType vars
         -- With interface loading, this is too crude.
-        return $ vars -- <> ctypes
+        return vars -- <> ctypes
 
   pure $ map (foldMap $ singletonDeclarationGroup . (bodies M.!))
        $ topoSortEnvironmentWith id bodies_fvars
@@ -485,4 +485,4 @@ convertModuleTyClDecls =  fork [ foldTraverse convertDeclarationGroup
                                , foldTraverse generateGroupDataInfixNotations
                                ]
                        <=< groupTyClDecls
-  where fork fns x = mconcat <$> sequence (map ($x) fns)
+  where fork fns x = mconcat <$> mapM ($x) fns

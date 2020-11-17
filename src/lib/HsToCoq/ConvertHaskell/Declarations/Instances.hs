@@ -1,6 +1,7 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections, LambdaCase, RecordWildCards,
+{-# LANGUAGE CPP,
+             TupleSections,
+             LambdaCase,
+             RecordWildCards,
              OverloadedStrings,
              ScopedTypeVariables,
              FlexibleContexts #-}
@@ -44,7 +45,7 @@ import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Definitions
 import HsToCoq.Edits.Types
-import HsToCoq.ConvertHaskell.Type
+import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.ConvertHaskell.Expr
 import HsToCoq.ConvertHaskell.Axiomatize
 import HsToCoq.ConvertHaskell.Declarations.Class
@@ -54,7 +55,7 @@ import HsToCoq.ConvertHaskell.Declarations.Class
 -- Take the instance head and make it into a valid identifier.
 convertInstanceName :: ConversionMonad r m => LHsType GhcRn -> m Qualid
 convertInstanceName n = do
-    coqType <- withCurrentDefinition (Bare "") $ convertLType n -- revisit if needed
+    coqType <- withCurrentDefinition (Bare "") $ convertLHsType n -- revisit if needed
     qual <- views (currentModule.modName) $ Qualified . moduleNameText
     case skip coqType of
         Left err -> throwProgramError $ "Cannot derive instance name from `" ++ showP coqType ++ "': " ++ err
@@ -70,13 +71,13 @@ convertInstanceName n = do
     bfToName qids | isVanilla = name
                   | otherwise = name <> "__" <> T.pack (show shapeNum)
       where
-        tyCons = [ bn | Just bn <- unTyCon <$> qids]
+        tyCons = catMaybes (unTyCon <$> qids)
         name = T.intercalate "__" tyCons
         shapeNum = bitsToInt $ map isTyCon qids
 
         -- A vanilla header is when all tyCons appear before all
         -- type variables. In this case, do not add the shapeNum
-        isVanilla = not $ any isTyCon $ dropWhile isTyCon $ qids
+        isVanilla = not $ any isTyCon $ dropWhile isTyCon qids
 
         isTyCon = isJust . unTyCon
 
@@ -186,7 +187,7 @@ bindsToMap binds = fmap M.fromList $ forM binds $ \hs_bind -> do
 
 clsInstFamiliesToMap :: ConversionMonad r m => [LTyFamInstDecl GhcRn] -> m (M.Map Qualid (HsType GhcRn))
 clsInstFamiliesToMap assocTys =
-  fmap M.fromList . for assocTys $ \(L _ (TyFamInstDecl (HsIB {hsib_body = FamEqn{..}}))) ->
+  fmap M.fromList . for assocTys $ \(L _ (TyFamInstDecl HsIB {hsib_body = FamEqn{..}})) ->
     (, unLoc feqn_rhs) <$> var TypeNS (unLoc feqn_tycon)
 
 -- Module-local
@@ -221,9 +222,9 @@ convertClsInstDecl cid@ClsInstDecl{..} = do
       lookupClassDefn instanceClass >>= \case
         Just (ClassDefinition _ _ _ methods)
           | null methods ->
-            pure $ [ InstanceSentence $ InstanceDefinition instanceName [] instanceHead [] Nothing]
+            pure [ InstanceSentence $ InstanceDefinition instanceName [] instanceHead [] Nothing]
           | otherwise ->
-            pure $ [ InstanceSentence $ InstanceProof instanceName [] instanceHead $ ProofAdmitted ""]
+            pure [ InstanceSentence $ InstanceProof instanceName [] instanceHead $ ProofAdmitted ""]
         Nothing -> case axMode of
           GeneralAxiomatize  -> pure []
           SpecificAxiomatize -> no_class_instance_error instanceClass instanceName
@@ -240,7 +241,7 @@ convertClsInstDecl cid@ClsInstDecl{..} = do
 
       -- Get the methods of this class (this should already exclude skipped ones)
       (classMethods, classArgs) <- lookupClassDefn className >>= \case
-        Just (ClassDefinition _ args _ sigs) -> pure $ (map fst sigs, args)
+        Just (ClassDefinition _ args _ sigs) -> pure (map fst sigs, args)
         _ -> no_class_instance_error className instanceName
 
       -- Associated types for this class
@@ -297,7 +298,7 @@ convertClsInstDecl cid@ClsInstDecl{..} = do
               SkippedBinding _ -> convUnsupportedHere "skipping binding in instance"
 
           (Nothing, Just assoc, _) ->
-            let convertedType = withCurrentDefinition meth $ convertType assoc in
+            let convertedType = withCurrentDefinition meth $ convertHsType assoc in
 
             CM_Defined CL_Type <$> local (envFor meth) convertedType
             -- TODO: Permit rewriting or renaming or similar here
@@ -420,7 +421,7 @@ makeInstanceMethodSubst params =
         let inst_x = qualidMapBase ("inst_" <>) x
         in Ident inst_x <$ modify' (M.insert x (Qualid inst_x))
 
-      sub ty = ($ ty) <$> gets subst
+      sub ty = gets (($ ty) . subst)
 
       (instBnds, instSubst) = (runState ?? M.empty) $ for params $ \case
         ExplicitBinder  x      -> ExplicitBinder  <$> renameInst x

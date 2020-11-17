@@ -5,7 +5,7 @@ import HsToCoq.ConvertHaskell.InfixNames               as ConvertHaskell
 import HsToCoq.ConvertHaskell.Variables                as ConvertHaskell
 import HsToCoq.ConvertHaskell.Definitions              as ConvertHaskell
 import HsToCoq.ConvertHaskell.Literals                 as ConvertHaskell
-import HsToCoq.ConvertHaskell.Type                     as ConvertHaskell
+import HsToCoq.ConvertHaskell.HsType                   as ConvertHaskell
 import HsToCoq.ConvertHaskell.Expr                     as ConvertHaskell
 import HsToCoq.ConvertHaskell.Pattern                  as ConvertHaskell
 import HsToCoq.ConvertHaskell.Sigs                     as ConvertHaskell

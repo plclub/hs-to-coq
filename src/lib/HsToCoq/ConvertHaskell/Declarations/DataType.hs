@@ -44,7 +44,7 @@ import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
-import HsToCoq.ConvertHaskell.Type
+import HsToCoq.ConvertHaskell.HsType
 
 import qualified Data.List.NonEmpty as NE
 
@@ -90,7 +90,7 @@ convertConDecl curType extraArgs (ConDeclH98 lname mlqvs mlcxt details _doc)
   -- Only the explicit tyvars are available before renaming, so they're all we
   -- need to consider
   params <- withCurrentDefinition con $ convertLHsTyVarBndrs Coq.Implicit lqvs
-  args   <- withCurrentDefinition con (traverse convertLType $ hsConDeclArgTys details)
+  args   <- withCurrentDefinition con (traverse convertLHsType $ hsConDeclArgTys details)
 
   case details of
     RecCon (L _ fields) ->
@@ -177,7 +177,7 @@ convertDataDefn :: LocalConvMonad r m
                 -> m (Term, [Constructor])
 convertDataDefn curType extraArgs (HsDataDefn NOEXTP _nd lcxt _ctype ksig cons _derivs) = do
   unless (null $ unLoc lcxt) $ convUnsupported' "data type contexts"
-  (,) <$> maybe (pure $ Sort Type) convertLType ksig
+  (,) <$> maybe (pure $ Sort Type) convertLHsType ksig
       <*> (traverse addAdditionalConstructorScope =<<
            foldTraverse (convertConDecl curType extraArgs . unLoc) cons)
 #if __GLASGOW_HASKELL__ >= 806
