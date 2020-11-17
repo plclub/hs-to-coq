@@ -82,6 +82,7 @@ library
                      , HsToCoq.ConvertHaskell.Definitions
                      , HsToCoq.ConvertHaskell.Literals
                      , HsToCoq.ConvertHaskell.Type
+                     , HsToCoq.ConvertHaskell.HsType
                      , HsToCoq.ConvertHaskell.Expr
                      , HsToCoq.ConvertHaskell.Pattern
                      , HsToCoq.ConvertHaskell.Sigs
@@ -91,6 +92,7 @@ library
                      , HsToCoq.ConvertHaskell.Declarations.Class
                      , HsToCoq.ConvertHaskell.Declarations.Instances
                      , HsToCoq.ConvertHaskell.Declarations.TyCl
+                     , HsToCoq.ConvertHaskell.TypeEnv.TyCl
                      , HsToCoq.ConvertHaskell.Module
                      , HsToCoq.ConvertHaskell.Axiomatize
                      , HsToCoq.ConvertHaskell

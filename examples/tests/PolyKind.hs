@@ -1,18 +1,30 @@
-{-# LANGUAGE PolyKinds                  #-}
+{-# LANGUAGE PolyKinds, RankNTypes #-}
 
 module PolyKind where
 
 -- T :: (k -> *) -> k -> *
-data T m a = MkT (m a)
+newtype T m a = MkT (m a)
 
 -- F :: (* -> *) -> *
-data F f = MkF (f A)
+newtype F f = MkF (f A)
 
 -- G :: * -> *
-data G a = MkG a
+newtype G a = MkG a
 
 -- A :: *
 data A = MkA
 
 t :: T F G
 t = MkT (MkF (MkG MkA))
+
+class Foo a where
+  bar :: a -> A
+  
+class Foo' a where
+  bar' :: a -> A
+
+instance Foo (T m a) where
+  bar _ = MkA
+
+instance forall k (m :: k -> *) a. Foo' (T m a) where
+  bar' _ = MkA

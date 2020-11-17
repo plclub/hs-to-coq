@@ -77,7 +77,7 @@ import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Definitions
 import HsToCoq.ConvertHaskell.Literals
-import HsToCoq.ConvertHaskell.Type
+import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.ConvertHaskell.Pattern
 import HsToCoq.ConvertHaskell.Sigs
 import HsToCoq.ConvertHaskell.Axiomatize
