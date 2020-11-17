@@ -45,6 +45,7 @@ import HsToCoq.ConvertHaskell.Expr
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Sigs
 import HsToCoq.ConvertHaskell.Declarations.Notations
+import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 
 
 data ClassBody = ClassBody ClassDefinition [Notation]
@@ -151,7 +152,8 @@ convertAssociatedTypeDefault _ (XFamEqn v) = noExtCon v
 #endif
 
 convertClassDecl :: ConversionMonad r m
-                 => LHsContext GhcRn                      -- ^@tcdCtxt@    Context
+                 => ConvertedTyClEnv
+                 -> LHsContext GhcRn                      -- ^@tcdCtxt@    Context
                  -> Located GHC.Name                      -- ^@tcdLName@   name of the class
                  -> [LHsTyVarBndr GhcRn]                  -- ^@tcdTyVars@  class type variables
                  -> [Located (FunDep (Located GHC.Name))] -- ^@tcdFDs@     functional dependencies
@@ -160,8 +162,9 @@ convertClassDecl :: ConversionMonad r m
                  -> [LFamilyDecl GhcRn]                   -- ^@tcdATs@     associated types
                  -> [LTyFamDefltDecl GhcRn]               -- ^@tcdATDefs@  associated types defaults
                  -> m ClassBody
-convertClassDecl (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefaults = do
+convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefaults = do
   name <- var TypeNS hsName
+  let clTy :: Maybe ConvertedTyCl = convertedTyCl name env
   
   let convUnsupportedHere what = convUnsupportedIn what "type class" (showP name)
   unless (null fds) $ convUnsupportedHere "functional dependencies"
@@ -174,7 +177,8 @@ convertClassDecl (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefa
     _                                      -> pure 1
 
   args <- withCurrentDefinition name $ convertLHsTyVarBndrs Coq.Explicit ltvs
-  kinds <- (++ repeat Nothing) . map Just . maybe [] NE.toList <$> view (edits.classKinds.at name)
+  -- Ignore class kind edits at the moment
+  let kinds = (++ repeat Nothing) . map (Just . snd) $ maybe [] id (convertedTyClTyVars <$> clTy)
   let args' = zipWith go args kinds
        where go (ExplicitBinder  name)  (Just t) = mkBinders Explicit (name NE.:| []) t
              go (ImplicitBinders names) (Just t) = mkBinders Implicit names t

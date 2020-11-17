@@ -2,11 +2,10 @@
 
 #include "ghc-compat.h"
 
-module HsToCoq.ConvertHaskell.Type
-  (convertType)
-where
+module HsToCoq.ConvertHaskell.Type (convertType) where
 
 import Data.List.NonEmpty
+import Data.Text
 
 import TyCoRep
 import TyCon
@@ -23,7 +22,12 @@ import HsToCoq.ConvertHaskell.Monad
 convertType :: ConversionMonad r m => Type -> m Term
 convertType (TyVarTy tv) = Qualid <$> var TypeNS (getName tv)
 convertType (AppTy ty1 ty2) = App1 <$> convertType ty1 <*> convertType ty2
-convertType (TyConApp tc ts) = appList <$> convertTyCon tc <*> mapM (fmap PosArg . convertKindOrType) ts
+convertType (TyConApp tc ts) = do
+  convertedTc <- convertTyCon tc
+  case convertedTc of
+    (Qualid (Qualified m t)) | unpack m == "GHC.Prim" && unpack t == "TYPE"
+                               -> pure $ Qualid (Bare $ pack "Type")
+    _ -> appList convertedTc <$> mapM (fmap PosArg . convertKindOrType) ts
 convertType (ForAllTy tv ty) = do
   convertedTv <- convertTyVarBinder Coq.Implicit tv
   convertedTy <- convertType ty
