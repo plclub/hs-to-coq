@@ -375,12 +375,14 @@ convertClsInstDecls = foldTraverse convertClsInstDecl
 lookupInstanceTypeOrMethodVarTy :: ConversionMonad r m => Qualid -> Qualid -> m (Qualid, Term)
 lookupInstanceTypeOrMethodVarTy className memberName =
   lookupClassDefn className >>= \case
-    Just (ClassDefinition _ (b:_) _ sigs) | [var] <- toListOf binderIdents b ->
-      case lookup memberName sigs of
-        Just sigType -> pure (var, sigType)
-        Nothing      -> throwProgramError $ "Cannot find signature for " ++ quote_qualid memberName
-    _ ->
-      no_class_method_error className memberName
+    Just (ClassDefinition _ bs _ sigs) ->
+      case filter (\b -> binderExplicitness b == Explicit) bs of
+        b:_ | [var] <- toListOf binderIdents b ->
+              case lookup memberName sigs of
+                Just sigType -> pure (var, sigType)
+                Nothing      -> throwProgramError $ "Cannot find signature for " ++ quote_qualid memberName
+        _ -> no_class_method_error className memberName
+    _ -> no_class_method_error className memberName
 
 makeTy :: ConversionMonad r m => [Binder] -> M.Map Qualid Term -> Qualid -> Term -> Qualid -> m ([Binder], Term)
 makeTy params instSubst className instTy memberName = do

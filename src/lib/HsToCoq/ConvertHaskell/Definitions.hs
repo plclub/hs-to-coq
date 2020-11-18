@@ -68,7 +68,7 @@ decomposeFixpoint _
 toProgramFixpointSentence ::
     ConversionMonad r m =>
     ConvertedDefinition -> Order -> Maybe Tactics -> m Sentence
-toProgramFixpointSentence (ConvertedDefinition{..}) order tac
+toProgramFixpointSentence ConvertedDefinition{..} order tac
     | Nothing <- _convDefType
     = editFailure "cannot \"termination\" a definition without a type signature"
     | Just cty <- _convDefType

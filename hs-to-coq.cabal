@@ -92,6 +92,7 @@ library
                      , HsToCoq.ConvertHaskell.Declarations.Class
                      , HsToCoq.ConvertHaskell.Declarations.Instances
                      , HsToCoq.ConvertHaskell.Declarations.TyCl
+                     , HsToCoq.ConvertHaskell.TypeEnv.Id
                      , HsToCoq.ConvertHaskell.TypeEnv.TyCl
                      , HsToCoq.ConvertHaskell.Module
                      , HsToCoq.ConvertHaskell.Axiomatize

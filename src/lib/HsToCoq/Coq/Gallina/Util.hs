@@ -27,7 +27,7 @@ module HsToCoq.Coq.Gallina.Util (
   -- ** Optics
   _Ident, _UnderscoreName, nameToIdent,
   binderNames, binderIdents, binderExplicitness, binderGeneralizability,
-  mkBinder, mkBinders, toImplicitBinder,
+  mkBinder, mkBinders, mkTypedBinder, toImplicitBinder,
   -- ** Functions
   qualidBase, qualidModule, qualidMapBase, qualidExtendBase,
   splitModule,
@@ -86,7 +86,7 @@ pattern BName  x          = Ident (Bare x)
 
 -- Legacy combinator, to migrate away from the Infix constructor
 mkInfix :: Term -> Qualid -> Term -> Term
-mkInfix l op r = App2 (Qualid op) l r
+mkInfix l op = App2 (Qualid op) l
 
 maybeForall :: Foldable f => f Binder -> Term -> Term
 maybeForall = maybe id Forall . nonEmpty . toList
@@ -199,6 +199,9 @@ mkBinder Implicit name = ImplicitBinders (pure name)
 -- | Multi-name binder with explicit type.
 mkBinders :: Explicitness -> NonEmpty Name -> Term -> Binder
 mkBinders = Typed Ungeneralizable
+
+mkTypedBinder :: Explicitness -> Name -> Term -> Binder
+mkTypedBinder ex n = Typed Ungeneralizable ex (n :| []) 
 
 binderGeneralizability :: Binder -> Generalizability
 binderGeneralizability = \case
