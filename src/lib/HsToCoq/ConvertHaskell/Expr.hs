@@ -56,6 +56,7 @@ import HsToCoq.Util.GHC.Exception
 import qualified Outputable as GHC
 
 import HsToCoq.Util.GHC
+import HsToCoq.Util.GHC.Module
 import HsToCoq.Util.GHC.Name hiding (Name)
 import HsToCoq.Util.GHC.HsExpr
 import HsToCoq.Util.GHC.HsTypes (selectorFieldOcc_, fieldOcc)
@@ -81,6 +82,8 @@ import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.ConvertHaskell.Pattern
 import HsToCoq.ConvertHaskell.Sigs
 import HsToCoq.ConvertHaskell.Axiomatize
+
+import HsToCoq.ConvertHaskell.TypeEnv.Id
 
 --------------------------------------------------------------------------------
 
@@ -1081,7 +1084,7 @@ wfFix _ fb = convUnsupportedIn "well-founded recursion cannot handle annotations
 -- find the first name in a pattern binding
 patBindName :: ConversionMonad r m => Pat GhcRn -> m Qualid
 patBindName p = case p of
-  WildPat _ -> convUnsupported' ("no name in binding pattern")
+  WildPat _ -> convUnsupported' "no name in binding pattern"
   GHC.VarPat NOEXTP (L _ hsName)  -> var ExprNS hsName
   LazyPat NOEXTP p -> lpatBindName p
   GHC.AsPat NOEXTP (L _ hsName) _ -> var ExprNS hsName
@@ -1210,10 +1213,14 @@ convertMultipleBindings convertSingleBinding defns0 sigs build mhandler =
        -- nothing else
        runMaybeT . wrap defn . fmap Right $ do
          ty <- case defn of
-                 FunBind{fun_id = L _ hsName} ->
-                   fmap (fmap sigType) . (`lookupSig` sigs) =<< var ExprNS hsName
-                 _ ->
-                   pure Nothing
+                 FunBind{fun_id = L _ hsName} -> do
+                   coqName <- var ExprNS hsName
+                   mod <- view (currentModule.modDetails)
+                   env <- withCurrentDefinition coqName $ convertIdEnv mod
+                   case convertedIdType coqName env of
+                     Nothing -> fmap sigType <$> lookupSig coqName sigs
+                     t       -> pure t
+                 _ -> pure Nothing
          MaybeT $ convertSingleBinding ty defn
 
 -- ALMOST a 'ConvertedDefinition', but:
@@ -1344,7 +1351,7 @@ addRecursion eBindings = do
 
 fixConvertedDefinition ::
   ConversionMonad r m => ConvertedDefinition -> m (RecDef, Maybe TerminationArgument)
-fixConvertedDefinition (ConvertedDefinition{_convDefBody = Fun args body, ..}) = do
+fixConvertedDefinition ConvertedDefinition{_convDefBody = Fun args body, ..} = do
   let fullType = maybeForall _convDefArgs <$> _convDefType
       allArgs = _convDefArgs <++ args
       (resultType, convArgs') = case fullType of
@@ -1384,12 +1391,12 @@ splitArgs cds = do
 convertLocalBinds :: LocalConvMonad r m => HsLocalBinds GhcRn -> m Term -> m Term
 #if __GLASGOW_HASKELL__ >= 806
 convertLocalBinds (XHsLocalBindsLR v) _ = noExtCon v
-convertLocalBinds (HsValBinds _ (ValBinds{})) _ =
+convertLocalBinds (HsValBinds _ ValBinds{}) _ =
   convUnsupported "Unexpected ValBinds in post-renamer AST"
 
 convertLocalBinds (HsValBinds _ (XValBindsLR (NValBinds recBinds lsigs))) body = do
 #else
-convertLocalBinds (HsValBinds (ValBindsIn{})) _ =
+convertLocalBinds (HsValBinds ValBindsIn{}) _ =
   convUnsupported "Unexpected ValBindsIn in post-renamer AST"
 
 convertLocalBinds (HsValBinds (ValBindsOut recBinds lsigs)) body = do
@@ -1402,7 +1409,7 @@ convertLocalBinds (HsValBinds (ValBindsOut recBinds lsigs)) body = do
   let convDefs = concat convDefss
 
   let fromConvertedBinding cb body = case cb of
-        ConvertedDefinitionBinding (ConvertedDefinition{..}) ->
+        ConvertedDefinitionBinding ConvertedDefinition{..} ->
           pure (Let _convDefName _convDefArgs _convDefType _convDefBody body)
         ConvertedPatternBinding pat term -> do
           is_complete <- isCompleteMultiPattern [MultPattern [pat]]

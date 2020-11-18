@@ -1,14 +1,15 @@
-{-# LANGUAGE CPP, FlexibleContexts #-}
+{-# LANGUAGE CPP, FlexibleContexts, OverloadedStrings #-}
 
 #include "ghc-compat.h"
 
 module HsToCoq.ConvertHaskell.Type (convertType) where
 
 import Data.List.NonEmpty
-import Data.Text
+import Control.Lens
 
 import TyCoRep
 import TyCon
+import Type (isPredTy)
 import Name (getName)
 
 import HsToCoq.Coq.Gallina as Coq
@@ -22,17 +23,26 @@ import HsToCoq.ConvertHaskell.Monad
 convertType :: ConversionMonad r m => Type -> m Term
 convertType (TyVarTy tv) = Qualid <$> var TypeNS (getName tv)
 convertType (AppTy ty1 ty2) = App1 <$> convertType ty1 <*> convertType ty2
-convertType (TyConApp tc ts) = do
+convertType (TyConApp tc []) = Qualid <$> convertTyCon tc
+convertType (TyConApp tc ts@(t:ts')) = do
   convertedTc <- convertTyCon tc
   case convertedTc of
-    (Qualid (Qualified m t)) | unpack m == "GHC.Prim" && unpack t == "TYPE"
-                               -> pure $ Qualid (Bare $ pack "Type")
-    _ -> appList convertedTc <$> mapM (fmap PosArg . convertKindOrType) ts
+    (Qualified m t) | m == "GHC.Prim" && t == "TYPE"
+                      -> pure $ Qualid (Bare "Type")
+                    | m == "GHC.Tuple" && t == "op_Z2T__"
+                      -> (`InScope` "type") . foldl1 (mkInfix ?? "*") <$> traverse convertType ts
+    _ -> do
+      ct  <- convertType t
+      cts <- mapM convertType ts'
+      pure $ App (Qualid convertedTc) $ PosArg <$> (ct :| cts)
 convertType (ForAllTy tv ty) = do
   convertedTv <- convertTyVarBinder Coq.Implicit tv
   convertedTy <- convertType ty
   pure $ Forall (convertedTv :| []) convertedTy
-convertType (FunTy ty1 ty2) = Arrow <$> convertType ty1 <*> convertType ty2
+convertType (FunTy ty1 ty2) | isPredTy ty1 = do
+                                cons <- convertType ty1
+                                Forall (Generalized Coq.Implicit cons :| []) <$> convertType ty2
+                            | otherwise    = Arrow <$> convertType ty1 <*> convertType ty2
 convertType (LitTy tl) = case tl of
   NumTyLit int -> either convUnsupported' (pure . Num) $ convertInteger "type-level integers" int
   StrTyLit str -> pure $ convertFastString str
@@ -45,8 +55,8 @@ convertKindOrType = convertType
 convertKind :: ConversionMonad r m => Kind -> m Term
 convertKind = convertType
 
-convertTyCon :: ConversionMonad r m => TyCon -> m Term
-convertTyCon tc = Qualid <$> var TypeNS (getName tc)
+convertTyCon :: ConversionMonad r m => TyCon -> m Qualid
+convertTyCon tc = var TypeNS $ getName tc
 
 convertTyVarBinder :: ConversionMonad r m => Explicitness -> TyVarBinder -> m Binder
 convertTyVarBinder ex bndr = do

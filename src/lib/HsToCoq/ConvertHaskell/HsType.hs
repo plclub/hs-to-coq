@@ -8,7 +8,11 @@
 module HsToCoq.ConvertHaskell.HsType
   (convertHsType,
    convertLHsType,
+   convertLHsTyVarBndr,
    convertLHsTyVarBndrs,
+#if __GLASGOW_HASKELL__ < 806
+   getLHsTyVarName,
+#endif
    convertLHsSigType,
    convertLHsSigTypeWithExcls,
    convertLHsSigWcType,
@@ -41,13 +45,25 @@ import HsToCoq.ConvertHaskell.Literals
 
 --------------------------------------------------------------------------------
 
-convertLHsTyVarBndrs :: LocalConvMonad r m => Explicitness -> [LHsTyVarBndr GhcRn] -> m [Binder]
-convertLHsTyVarBndrs ex tvs = for (map unLoc tvs) $ \case
+#if __GLASGOW_HASKELL__ < 806
+-- In later versions of GHC. [HsTyVarBndr] is a [NamedThing], so we won't need
+-- this function.
+getLHsTyVarName :: LHsTyVarBndr GhcRn -> GHC.Name
+getLHsTyVarName tv = case unLoc tv of
+  UserTyVar   NOEXTP tv    -> unLoc tv
+  KindedTyVar NOEXTP tv _k -> unLoc tv
+#endif
+
+convertLHsTyVarBndr :: LocalConvMonad r m => Explicitness -> LHsTyVarBndr GhcRn -> m Binder
+convertLHsTyVarBndr ex tv = case unLoc tv of
   UserTyVar   NOEXTP tv   -> mkBinder ex . Ident <$> var TypeNS (unLoc tv)
   KindedTyVar NOEXTP tv k -> mkBinders ex <$> (pure . Ident <$> var TypeNS (unLoc tv)) <*> convertLHsType k
 #if __GLASGOW_HASKELL__ >= 806
   XTyVarBndr v -> noExtCon v
 #endif
+
+convertLHsTyVarBndrs :: LocalConvMonad r m => Explicitness -> [LHsTyVarBndr GhcRn] -> m [Binder]
+convertLHsTyVarBndrs ex = mapM (convertLHsTyVarBndr ex)
 
 --------------------------------------------------------------------------------
 

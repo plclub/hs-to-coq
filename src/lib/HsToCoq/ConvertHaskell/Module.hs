@@ -172,7 +172,7 @@ convertHsGroup HsGroup{..} = do
 
         -- transitiveClosure :: Ord a => Reflexivity -> Map a (Set a) -> Map a (Set a)
         let tc = transitiveClosure Reflexive sentenceBVs                -- :: Map Qualid (Set Qualid)
-        let depsList = map (\k -> M.lookup k tc) (S.toList promotions)  -- :: [Maybe (Set Qualid)]
+        let depsList = map (`M.lookup` tc) (S.toList promotions)        -- :: [Maybe (Set Qualid)]
         let depsSet = S.unions $ map (fromMaybe S.empty) depsList       -- :: Set Qualid
                 
         let (promotedSentences, namedSentences') =

@@ -164,7 +164,7 @@ convertClassDecl :: ConversionMonad r m
                  -> m ClassBody
 convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefaults = do
   name <- var TypeNS hsName
-  let clTy :: Maybe ConvertedTyCl = convertedTyCl name env
+  let tycl = convertedTyCl name env
   
   let convUnsupportedHere what = convUnsupportedIn what "type class" (showP name)
   unless (null fds) $ convUnsupportedHere "functional dependencies"
@@ -176,13 +176,16 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
     Generalized _ (termHead -> Just super) -> maybe 1 (+ 1) <$> lookupSuperclassCount super
     _                                      -> pure 1
 
-  args <- withCurrentDefinition name $ convertLHsTyVarBndrs Coq.Explicit ltvs
-  -- Ignore class kind edits at the moment
-  let kinds = (++ repeat Nothing) . map (Just . snd) $ maybe [] id (convertedTyClTyVars <$> clTy)
-  let args' = zipWith go args kinds
-       where go (ExplicitBinder  name)  (Just t) = mkBinders Explicit (name NE.:| []) t
-             go (ImplicitBinders names) (Just t) = mkBinders Implicit names t
-             go a _ = a
+  let combineArgs :: ConversionMonad r m => [(Qualid, Term)] -> [LHsTyVarBndr GhcRn] -> m [Binder]
+      combineArgs ((q, t):ts) ltvs@(ltv:ltvs') = do
+        varName <- var TypeNS $ getLHsTyVarName ltv
+        if q == varName then
+          (:) (mkTypedBinder Coq.Explicit (Ident q) t) <$> combineArgs ts ltvs'
+        else (:) (mkTypedBinder Coq.Explicit (Ident q) t) <$> combineArgs ts ltvs
+      combineArgs ts []   = pure $ fmap (\(q, t) -> mkTypedBinder Coq.Implicit (Ident q) t) ts
+      combineArgs [] ltvs = withCurrentDefinition name $ convertLHsTyVarBndrs Coq.Explicit ltvs
+
+  args <- combineArgs (maybe [] convertedTyClTyVars tycl) ltvs
   
   let argNames = foldMap (toListOf binderIdents) args
 
@@ -234,7 +237,7 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
 --  liftIO (traceIO (show name))
 --  liftIO (traceIO (show defs))
 
-  let classDefn = ClassDefinition name (args' ++ ctx) Nothing (second sigType <$> M.toList sigs)
+  let classDefn = ClassDefinition name (args ++ ctx) Nothing (second sigType <$> M.toList sigs)
 
   storeClassDefn name classDefn
 
@@ -286,7 +289,8 @@ cpsClassSentences (ClassBody (ClassDefinition name args ty methods) nots) = do
     -- The dictionary needs all explicit (type) arguments,
     -- but none of the implicit (constraint) arguments
     inst_args = filter (\b -> binderExplicitness b == Explicit) args
-    app_args f = foldl App1 (Qualid f) (map Qualid (foldMap (toListOf binderIdents) inst_args))
+    app_args f      = foldl App1 (Qualid f) (map Qualid (foldMap (toListOf binderIdents) inst_args))
+    -- full_app_args f = ExplicitApp f (map Qualid (foldMap (toListOf binderIdents) args))
     
     method_def g meth ty = do
       explicitArgs <- fromMaybe [] <$> lookupExplicitMethodArguments meth
