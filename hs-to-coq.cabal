@@ -14,7 +14,7 @@ category:            Language
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:
-  src/lib/HsToCoq/ConvertHaskell/Parameters/Parsers.y
+  src/lib/HsToCoq/Edits/Parser.y
   src/include/*.h
 tested-with: GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.4 GHC == 8.10.1
 
@@ -53,6 +53,7 @@ library
                      , HsToCoq.Util.TempFiles
                      , HsToCoq.Util.Messages
                      , HsToCoq.Util.FVs
+                     , HsToCoq.Util.Has
                      , Control.Monad.Trans.Activatable.Internal
                      , Control.Monad.Trans.Activatable
                      , Control.Monad.Activatable.Class
@@ -60,7 +61,6 @@ library
                      , Control.Monad.Trans.Counter
                      , Control.Monad.DefinedIdents
                      , Control.Monad.Trans.Parse
-                     , Control.Monad.Trans.NewlinesParse
                      , Control.Monad.Parse.Class
                      , Control.Monad.Parse
                      , HsToCoq.PrettyPrint
@@ -73,9 +73,7 @@ library
                      , HsToCoq.Coq.Pretty
                      , HsToCoq.Coq.FreeVars
                      , HsToCoq.Coq.Subst
-                     , HsToCoq.ConvertHaskell.Parameters.Edits
-                     , HsToCoq.ConvertHaskell.Parameters.Parsers
-                     , HsToCoq.ConvertHaskell.Parameters.Parsers.Lexing
+                     , HsToCoq.Coq.SubstTy
                      , HsToCoq.ConvertHaskell.BuiltIn
                      , HsToCoq.ConvertHaskell.TypeInfo
                      , HsToCoq.ConvertHaskell.Monad
@@ -100,6 +98,10 @@ library
                      , HsToCoq.CLI.FileTree
                      , HsToCoq.CLI.FileTree.Parser
                      , HsToCoq.CLI
+                     , HsToCoq.Edits.Types
+                     , HsToCoq.Edits.Parser
+                     , HsToCoq.Edits.ParserState
+                     , HsToCoq.Edits.Lexer
                      , HsToCoq.Plugin
 
   build-tools:         happy == 1.19.*

@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TupleSections, RecordWildCards, LambdaCase,
+{-# LANGUAGE LambdaCase,
              OverloadedStrings,
              FlexibleContexts #-}
 
@@ -40,7 +40,7 @@ import HsToCoq.Util.GHC.HsTypes (noExtCon)
 import HsToCoq.Coq.Gallina as Coq
 import HsToCoq.Coq.Gallina.Util
 
-import HsToCoq.ConvertHaskell.Parameters.Edits
+import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
@@ -190,6 +190,9 @@ convertDataDecl :: ConversionMonad r m
 convertDataDecl name tvs defn = do
   coqName   <- var TypeNS $ unLoc name
 
+  addKindVars <- view (edits.polyKinds.at coqName) >>= \case
+    Just ids -> pure $ (:) (ImplicitBinders $ fmap (Ident . Bare) ids)
+    Nothing  -> pure id
   kinds     <- (++ repeat Nothing) . map Just . maybe [] NE.toList <$> view (edits.dataKinds.at coqName)
   let cvtName tv = Ident <$> var TypeNS (unLoc tv)
   let  go :: ConversionMonad r m => LHsTyVarBndr GhcRn -> Maybe Term -> m Binder
@@ -201,7 +204,7 @@ convertDataDecl name tvs defn = do
        go (L _ (XTyVarBndr v)) _ = noExtCon v
 #endif
 
-  rawParams <- zipWithM go tvs kinds
+  rawParams <- addKindVars <$> zipWithM go tvs kinds
 
   (params, indices) <-
     view (edits . dataTypeArguments . at coqName) >>= \case

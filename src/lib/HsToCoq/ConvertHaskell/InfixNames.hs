@@ -80,9 +80,9 @@ splitModule = fmap fixup . either (const Nothing) Just . parse qualid "" where
   -- common case of working with names like Coq.ZArith.BinInt.Z.eqb more convenient,
   -- without solving the problem of handling non-filesystem-modules in general
   fixup (mod, name)
-    | ".Z" `T.isSuffixOf` mod = (T.take (T.length mod - 2) mod, "Z." <> name)
-    | ".N" `T.isSuffixOf` mod = (T.take (T.length mod - 2) mod, "N." <> name)
-    | otherwise               = (mod, name)
+    | Just mod' <- T.stripSuffix ".Z" mod = (mod', "Z." <> name)
+    | Just mod' <- T.stripSuffix ".N" mod = (mod', "N." <> name)
+    | otherwise = (mod, name)
 
 identIsOp :: Ident -> Bool
 identIsOp t = "op_" `T.isPrefixOf` t && "__" `T.isSuffixOf` t

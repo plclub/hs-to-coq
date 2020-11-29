@@ -32,7 +32,7 @@ import HsToCoq.Util.GHC.HsTypes (noExtCon)
 #endif
 import HsToCoq.Coq.Gallina
 
-import HsToCoq.ConvertHaskell.Parameters.Edits
+import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Type

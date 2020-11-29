@@ -35,6 +35,7 @@ import HsToCoq.Util.Monad (ErrorString)
 
 import HsToCoq.Coq.Gallina
 import HsToCoq.Coq.Subst
+import HsToCoq.Coq.SubstTy
 import HsToCoq.Coq.Pretty
 import HsToCoq.Coq.Gallina.Util
 
@@ -42,7 +43,7 @@ import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Definitions
-import HsToCoq.ConvertHaskell.Parameters.Edits
+import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Type
 import HsToCoq.ConvertHaskell.Expr
 import HsToCoq.ConvertHaskell.Axiomatize
@@ -320,12 +321,13 @@ convertClsInstDecl cid@ClsInstDecl{..} = do
           CM_Renamed renamed ->
             pure renamed
           CM_Defined level body    -> do
-            let makeSig = case level of
-                  CL_Term -> makeInstanceMethodTy
-                  CL_Type -> makeAssociatedTypeTy
+            let (params, sub) = (case level of
+                                   CL_Term -> makeInstanceMethodSubst
+                                   CL_Type -> makeAssociatedTypeSubst) binds
+            let makeSig = makeTy params sub
             -- We've converted the method, now sentenceify it
-            (params, ty) <- makeSig className binds instTy meth
-            qbody        <- quantify meth body
+            (params, ty) <- makeSig className instTy meth
+            qbody        <- quantify meth (substTy sub body)
             pure . DefinitionSentence $ DefinitionDef Local
                                                       localMeth
                                                       (subst allLocalNames <$> params)
@@ -379,16 +381,21 @@ lookupInstanceTypeOrMethodVarTy className memberName =
     _ ->
       no_class_method_error className memberName
 
-makeAssociatedTypeTy :: ConversionMonad r m => Qualid -> [Binder] -> Term -> Qualid -> m ([Binder], Term)
-makeAssociatedTypeTy className params instTy memberName = do
+makeTy :: ConversionMonad r m => [Binder] -> M.Map Qualid Term -> Qualid -> Term -> Qualid -> m ([Binder], Term)
+makeTy params instSubst className instTy memberName = do
   (var, sigType) <- lookupInstanceTypeOrMethodVarTy className memberName
-  pure (params, subst (M.singleton var instTy) sigType)
+  -- Why the nested substitution?  The only place the per-instance variable name
+  -- can show up is in the specific instance type!  It can't show up in the
+  -- signature of the method, that's the whole point
+  pure (params, subst (M.singleton var $ subst instSubst instTy) sigType)
+
+makeAssociatedTypeSubst :: [Binder] -> ([Binder], M.Map Qualid Term)
+makeAssociatedTypeSubst params = (params, M.empty)
 
 -- lookup the type of the class member
 -- add extra quantifiers from the class & instance definitions
-makeInstanceMethodTy :: ConversionMonad r m => Qualid -> [Binder] -> Term -> Qualid -> m ([Binder], Term)
-makeInstanceMethodTy className params instTy memberName = do
-  (var, sigType) <- lookupInstanceTypeOrMethodVarTy className memberName
+makeInstanceMethodSubst :: [Binder] -> ([Binder], M.Map Qualid Term)
+makeInstanceMethodSubst params = 
   -- GOAL: Consider
   -- @
   --     class Functor f where
@@ -419,14 +426,8 @@ makeInstanceMethodTy className params instTy memberName = do
         ExplicitBinder  x      -> ExplicitBinder  <$> renameInst x
         ImplicitBinders xs     -> ImplicitBinders <$> traverse renameInst xs
         Typed       g ei xs ty -> Typed       g ei <$> traverse renameInst xs <*> sub ty
-        Generalized ei tm      -> Generalized   ei <$> sub tm
-
-      -- Why the nested substitution?  The only place the
-      -- per-instance variable name can show up is in the
-      -- specific instance type!  It can't show up in the
-      -- signature of the method, that's the whole point
-      instSigType = subst (M.singleton var $ subst instSubst instTy) sigType
-  pure $ (instBnds, instSigType)
+        Generalized ei tm      -> Generalized   ei <$> sub tm in
+  (instBnds, instSubst)
 
 -- from "instance C ty where" access C and ty
 -- TODO: multiparameter type classes   "instance C t1 t2 where"

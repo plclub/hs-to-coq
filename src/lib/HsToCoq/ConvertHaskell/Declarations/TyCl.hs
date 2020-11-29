@@ -55,7 +55,7 @@ import HsToCoq.Util.GHC.HsTypes (noExtCon)
 
 import Data.Generics hiding (Generic, Fixity(..))
 
-import HsToCoq.ConvertHaskell.Parameters.Edits
+import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
@@ -370,7 +370,7 @@ generateDefaultInstance (IndBody tyName _ _ cons)
         False -> pure $ pure $ InstanceSentence $
             InstanceTerm inst_name []
                      (App1 "GHC.Err.Default" (Qualid tyName))
-                     (App2 "GHC.Err.Build_Default" Underscore (foldl (\acc _ -> (App1 acc "GHC.Err.default")) (Qualid con) bndrs))
+                     (App2 "GHC.Err.Build_Default" Underscore (foldr (\_ acc -> (App1 acc "GHC.Err.default")) (Qualid con) bndrs))
                      Nothing
   where
     inst_name = qualidMapBase ("Default__" <>) tyName

@@ -67,7 +67,7 @@ Qed.
 
 Section Length.
 
-Local Parameter A : Type.
+Context {A : Type}.
 
 Lemma length_nil : List.length (@nil A) = 0%Z.
 Proof. reflexivity. Qed.
@@ -90,6 +90,8 @@ End Length.
 (* ------------------------- reverse ----------------------------------- *)
 
 Section Reverse.
+
+Context {A : Type}.
 
 Lemma reverse_nil : reverse (@nil A) = @nil A.
 Proof. rewrite !hs_coq_reverse. reflexivity. Qed.

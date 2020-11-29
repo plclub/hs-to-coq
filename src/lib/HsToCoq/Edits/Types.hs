@@ -8,8 +8,8 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 
-module HsToCoq.ConvertHaskell.Parameters.Edits (
-  Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs,
+module HsToCoq.Edits.Types (
+  Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, polyKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs,
   HsNamespace(..), NamespacedIdent(..), Renamings,
   DataTypeArguments(..), dtParameters, dtIndices,
   CoqDefinition(..), definitionSentence,
@@ -180,10 +180,12 @@ data Edit = TypeSynonymTypeEdit              Ident Ident
           | RenameEdit                       NamespacedIdent Qualid
           | ClassKindEdit                    Qualid (NonEmpty Term)
           | DataKindEdit                     Qualid (NonEmpty Term)
+          | PolyKindEdit                     Qualid (NonEmpty Ident)
           | DeleteUnusedTypeVariablesEdit    Qualid
           | RewriteEdit                      Rewrite
           | CoinductiveEdit                  Qualid
           | RenameModuleEdit                 ModuleName ModuleName
+          | AliasModuleEdit                  ModuleIdent ModuleIdent  -- Resolved during parsing
           | SimpleClassEdit                  Qualid
           | InlineMutualEdit                 Qualid
           | SetTypeEdit                      Qualid (Maybe Term)
@@ -230,6 +232,7 @@ data Edits = Edits { _typeSynonymTypes               :: !(Map Ident Ident)
                    , _orders                         :: !(Map Qualid (Set Qualid))
                    , _classKinds                     :: !(Map Qualid (NonEmpty Term))
                    , _dataKinds                      :: !(Map Qualid (NonEmpty Term))
+                   , _polyKinds                      :: !(Map Qualid (NonEmpty Ident))
                    , _deleteUnusedTypeVariables      :: !(Set Qualid)
                    , _renamings                      :: !Renamings
                    , _rewrites                       :: ![Rewrite]
@@ -284,6 +287,7 @@ subtractEdits edits1 edits2 =
   , _orders                         = edits1^.orders
   , _classKinds                     = edits1^.classKinds
   , _dataKinds                      = edits1^.dataKinds
+  , _polyKinds                      = edits1^.polyKinds
   , _deleteUnusedTypeVariables      = edits1^.deleteUnusedTypeVariables -- ?
   , _renamings                      = (edits1^.renamings) M.\\ (edits2^.renamings)
   , _rewrites                       = (edits1^.rewrites) \\ (edits2^.rewrites)
@@ -308,7 +312,7 @@ useProgram name edits = or
     , name `M.member`_obligations edits
     ]
   where
-   isWellFounded (WellFoundedTA {}) = True
+   isWellFounded WellFoundedTA {} = True
    isWellFounded _                = False
 
 -- Module-local'
@@ -354,10 +358,12 @@ descDuplEdit = \case
   RenameEdit                       hs _         -> duplicate_for   "renamings"                                      (prettyNSIdent hs)
   ClassKindEdit                    cls _        -> duplicateQ_for  "class kinds"                                    cls
   DataKindEdit                     dat _        -> duplicateQ_for  "data kinds"                                     dat
+  PolyKindEdit                     dat _        -> duplicateQ_for  "polykinds"                                      dat
   DeleteUnusedTypeVariablesEdit    qid          -> duplicateQ_for  "unused type variables deletions"                qid
   ObligationsEdit                  what _       -> duplicateQ_for  "obligation kinds"                               what
   CoinductiveEdit                  ty           -> duplicateQ_for  "coinductive data types"                         ty
   RenameModuleEdit                 m1 _         -> duplicate_for   "renamed modules"                                (moduleNameString m1)
+  AliasModuleEdit                  _ _          -> error "Alias module edits are never duplicates"
   AddEdit                          _ _ _        -> error "Add edits are never duplicates"
   RewriteEdit                      _            -> error "Rewrites are never duplicates"
   OrderEdit                        _            -> error "Order edits are never duplicates"
@@ -400,25 +406,27 @@ addEdit e = case e of
   RenameEdit                       hs to            -> addFresh e renamings                              hs                          to
   ObligationsEdit                  what tac         -> addFresh e obligations                            what                        tac
   ClassKindEdit                    cls kinds        -> addFresh e classKinds                             cls                         kinds
-  DataKindEdit                     cls kinds        -> addFresh e dataKinds                              cls                         kinds
+  DataKindEdit                     dat kinds        -> addFresh e dataKinds                              dat                         kinds
+  PolyKindEdit                     dat ids          -> addFresh e polyKinds                              dat                         ids
   DeleteUnusedTypeVariablesEdit    qid              -> addFresh e deleteUnusedTypeVariables              qid                         ()
   CoinductiveEdit                  ty               -> addFresh e coinductiveTypes                       ty                          ()
   RenameModuleEdit                 m1 m2            -> addFresh e renamedModules                         m1                          m2
+  AliasModuleEdit{}                                 -> pure
   SimpleClassEdit                  cls              -> addFresh e simpleClasses                          cls                         ()
   InlineMutualEdit                 fun              -> addFresh e inlinedMutuals                         fun                         ()
   SetTypeEdit                      qid oty          -> addFresh e replacedTypes                          qid                         oty
   CollapseLetEdit                  qid              -> addFresh e collapsedLets                          qid                         ()
-  AddEdit                          mod def ph -> return . (additions.at mod.non mempty %~ (addPhase ph (definitionSentence def)))
+  AddEdit                          mod def ph -> return . (additions.at mod.non mempty %~ addPhase ph (definitionSentence def))
   OrderEdit                        idents           -> return . appEndo (foldMap (Endo . addEdge orders . swap) (adjacents idents))
   RewriteEdit                      rewrite          -> return . (rewrites %~ (rewrite:))
-  InEdit                           qid edit         -> inEdits.at qid.non mempty %%~ (addEdit edit)
+  InEdit                           qid edit         -> inEdits.at qid.non mempty %%~ addEdit edit
   PromoteEdit                      qid              -> addFresh e promotions                             qid                         ()
   PolyrecEdit                      qid              -> addFresh e polyrecs                               qid                         ()
   ExceptInEdit                     qids edit        -> addExceptInEdit qids edit
 
 
 addExceptInEdit :: MonadError String m => 
-  (NonEmpty Qualid) -- the Qualids to which this edit should not apply
+  NonEmpty Qualid -- the Qualids to which this edit should not apply
   -> Edit           -- the edit itself
   -> Edits -> m Edits
 addExceptInEdit qids edit =
@@ -433,8 +441,8 @@ addExceptInEdit qids edit =
   where
      -- f             :: Edits -> m Edits
      -- currentQidFun :: Edits -> m Edits
-    aux f qid = let currentQidFun = exceptInEdits.at qid.non mempty %%~ (addEdit edit) in
-        \edits -> (currentQidFun edits) >>= f
+    aux f qid = let currentQidFun = exceptInEdits.at qid.non mempty %%~ addEdit edit in
+        \edits -> currentQidFun edits >>= f
 
 defName :: CoqDefinition -> Qualid
 defName (CoqDefinitionDef (DefinitionDef _ x _ _ _ _))              = x
