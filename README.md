@@ -1,8 +1,3 @@
-# Note
-
-**This repo has been moved to https://github.com/plclub/hs-to-coq.**
-
-We will no longer update the code here. All issues and pull requests should be reported on the repo.
 
 # hs-to-coq
 
