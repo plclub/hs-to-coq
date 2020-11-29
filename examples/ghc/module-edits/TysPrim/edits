@@ -1,0 +1,9 @@
+# this module silently fails with hs-to-coq
+# I don't know why
+
+axiomatize module TysPrim
+
+skip module ForeignCall
+skip module Data.Array
+skip module Outputable
+

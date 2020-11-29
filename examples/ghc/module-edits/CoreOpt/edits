@@ -1,0 +1,22 @@
+skip module OptCoercion
+
+# axiomatize definition CoreOpt.exprIsConApp_maybe
+
+# Data.ByteString.nul
+axiomatize definition CoreOpt.dealWithStringLiteral
+
+rewrite forall x y, OptCoercion.optCoercion x y = y
+
+# non-structural mutual recursion
+axiomatize definition CoreOpt.collectBindersPushingCo
+
+
+in CoreOpt.finish_app termination go deferred
+in CoreOpt.finish_app inline mutual go_alt
+
+rewrite forall x y z, Outputable.pprTrace x y z = z
+
+# not strictly positive type: probably the redefinition of IntMap 
+# prevents Coq from looking through the type.
+# in CoreOpt.SimplOptEnv rename type Core.IdEnv = Data.IntMap.Internal.IntMap
+

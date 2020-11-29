@@ -1,0 +1,34 @@
+axiomatize module FastString
+
+redefine Axiom FastString.FastString : Type.
+redefine Axiom  FastString.LitString : Type.
+
+redefine Axiom FastString.FastStringTable : Type.
+
+skip FastString.updTbl
+skip FastString.op_mkLitStringzh__ 
+skip FastString.op_mkFastStringzh__
+skip FastString.mkNewFastStringByteString
+skip FastString.mkNewFastString
+skip FastString.mkFastStringWith
+skip FastString.mkFastStringBytes
+skip FastString.lookupTbl
+skip FastString.hashStr
+skip FastString.hPutFZS 
+skip FastString.hPutFS 
+skip FastString.copyNewFastString
+skip FastString.copyBytesToForeignPtr
+skip FastString.cmpStringPrefix
+skip FastString.bucket_match 
+skip FastString.mkFastStringForeignPtr
+skip FastString.mkFastStringByteList
+skip FastString.getFastStringTable
+skip FastString.bytesFS 
+
+rename value FastString.FastZString = FastString.Mk_FastZString
+
+order FastString.Semigroup__FastString FastString.Monoid__FastString
+order FastString.Eq___FastString FastString.Ord__FastString
+
+set type FastString.uniqueOfFS : FastString.FastString -> BinNums.N
+set type FastString.hashByteString : FastString.FastString -> nat
