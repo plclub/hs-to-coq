@@ -47,6 +47,11 @@ import HsToCoq.ConvertHaskell.Sigs
 import HsToCoq.ConvertHaskell.Declarations.Notations
 import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 
+import Debug.Trace
+import Outputable (pprTrace, ppr)
+import HscTypes
+import HsToCoq.Util.GHC.Module
+import InstEnv
 
 data ClassBody = ClassBody ClassDefinition [Notation]
                deriving (Eq, Ord, Read, Show)
@@ -72,6 +77,7 @@ getImplicits (Forall bs t) = if length bs == length imps then imps ++ getImplici
     imps = NE.takeWhile (\b -> case b of
                                  ImplicitBinders _ -> True
                                  Generalized Implicit _ -> True
+                                 Typed _ Implicit _ _ -> True
                                  _ -> False) bs
 getImplicits _ = []
 
@@ -191,7 +197,11 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
 
   type_sigs  <- M.fromList . map (second $ Signature ?? Nothing)
                   <$> traverse (convertAssociatedType argNames . unLoc) types
-  value_sigs <- convertLSigs lsigs
+  value_sigs_from_sigs <- convertLSigs lsigs
+  let value_sigs_from_typs = M.mapWithKey
+        (\k t -> Signature (unpeelTyClVars t name) (sigFixity =<< M.lookup k value_sigs_from_sigs)) .
+        (M.fromList . convertedTyClMethods) <$> tycl
+  let value_sigs = fromMaybe value_sigs_from_sigs value_sigs_from_typs
   storeClassTypes name $ M.keysSet type_sigs
   -- We don't use 'lookupSig' here because type classes depend on the exact list
   -- of signatures.  This also means all the signatures should be present, so
@@ -203,7 +213,8 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
     pure $ Rewrite { patternVars = vars
                    , lhs         = Qualid meth `appList` map (PosArg . Var) vars
                    , rhs         = Qualid meth }
-  let all_sigs = everywhere (mkT $ rewrite hideTypeArgs) <$> (type_sigs <> value_sigs)
+  insts <- md_insts <$> view (currentModule.modDetails)
+  let all_sigs = pprTrace "instances" (ppr (is_tcs <$> insts)) $ traceShow value_sigs $ everywhere (mkT $ rewrite hideTypeArgs) <$> (type_sigs <> value_sigs)
 
   -- implement the class part of "skip method"
   skippedMethodsS <- view (edits.skippedMethods)

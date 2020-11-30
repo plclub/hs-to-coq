@@ -56,6 +56,7 @@ import HsToCoq.ConvertHaskell.Declarations.TyCl
 import HsToCoq.ConvertHaskell.Declarations.Instances
 import HsToCoq.ConvertHaskell.Declarations.Notations
 import HsToCoq.ConvertHaskell.Axiomatize
+import HsToCoq.ConvertHaskell.TypeEnv.Instances
 import HsToCoq.Coq.Preamble
 import HsToCoq.Coq.Pretty (textP)
 
@@ -186,7 +187,10 @@ convertHsGroup HsGroup{..} = do
       compareSpan (UnhelpfulSpan _) (RealSrcSpan _) = LT
       compareSpan (RealSrcSpan _) (UnhelpfulSpan _) = GT
       compareSpan (RealSrcSpan p) (RealSrcSpan q) = compare p q
-  convertedClsInstDecls <- convertClsInstDecls . map unLoc $ sortBy (compareSpan `on` getLoc)
+
+  instEnv <- view (currentModule.modDetails) >>= instancesOfModDetails
+  
+  convertedClsInstDecls <- convertClsInstDecls instEnv . map unLoc $ sortBy (compareSpan `on` getLoc)
     [L l cid | grp <- hs_tyclds, L l (ClsInstD NOEXTP cid) <- group_instds grp]
 
   (convertedAddedTyCls,convertedAddedDecls) <- view (edits.additions.at mod.non ([],[]))

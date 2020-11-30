@@ -43,6 +43,7 @@ PASS = \
   StrictPair \
   InstVar \
   PolyKind \
+  PolyKindClass \
   ClassKinds \
 
 # tests that *should* pass but currently fail

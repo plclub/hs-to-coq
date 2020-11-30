@@ -40,32 +40,38 @@ import HsToCoq.Coq.SubstTy
 import HsToCoq.Coq.Pretty
 import HsToCoq.Coq.Gallina.Util
 
+import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Definitions
-import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.ConvertHaskell.Expr
 import HsToCoq.ConvertHaskell.Axiomatize
 import HsToCoq.ConvertHaskell.Declarations.Class
+import HsToCoq.ConvertHaskell.TypeEnv.Instances
+
+import Debug.Trace
 
 --------------------------------------------------------------------------------
 
 -- Take the instance head and make it into a valid identifier.
-convertInstanceName :: ConversionMonad r m => LHsType GhcRn -> m Qualid
-convertInstanceName n = do
+convertInstanceNameAndTy :: ConversionMonad r m => LHsType GhcRn -> m (Qualid, Qualid)
+convertInstanceNameAndTy n = do
     coqType <- withCurrentDefinition (Bare "") $ convertLHsType n -- revisit if needed
     qual <- views (currentModule.modName) $ Qualified . moduleNameText
     case skip coqType of
         Left err -> throwProgramError $ "Cannot derive instance name from `" ++ showP coqType ++ "': " ++ err
-        Right name -> return $ qual name
+        Right (name, ty) -> return (qual name, ty)
   where
     -- Skip type variables and constraints
     skip (Forall _ t)  = skip t
     skip (Arrow _ t)   = skip t
     skip (InScope t _) = skip t
-    skip t             = bfToName <$> bfTerm t
+    skip t             = do
+      t' <- bfTerm t
+      -- The [head $ tail] below will not be correct with multi-param type classes
+      pure (bfToName t', head $ tail t')
 
     bfToName :: [Qualid] -> T.Text
     bfToName qids | isVanilla = name
@@ -131,21 +137,21 @@ convertInstanceName n = do
 data InstanceInfo = InstanceInfo { instanceName       :: !Qualid
                                  , instanceHead       :: !Term
                                  , instanceClass      :: !Qualid
+                                 , instanceTy         :: !Qualid
                                  }
                   deriving (Eq, Ord, Show, Read)
 
 -- TODO use LocalConvMonad instead?
 convertClsInstDeclInfo :: ConversionMonad r m => ClsInstDecl GhcRn -> m InstanceInfo
 convertClsInstDeclInfo ClsInstDecl{..} = do
-  instanceName  <- convertInstanceName $ hsib_body cid_poly_ty
-  utvm          <- unusedTyVarModeFor instanceName
-  instanceHead  <- withCurrentDefinition instanceName $ convertLHsSigType utvm cid_poly_ty
-  instanceClass <- termHead instanceHead
-                     & maybe (convUnsupportedIn "strangely-formed instance heads"
-                                                "type class instance"
-                                                (showP instanceName))
-                             pure
-
+  (instanceName, instanceTy)  <- convertInstanceNameAndTy $ hsib_body cid_poly_ty
+  utvm                        <- unusedTyVarModeFor instanceName
+  instanceHead                <- withCurrentDefinition instanceName $ convertLHsSigType utvm cid_poly_ty
+  instanceClass               <- termHead instanceHead
+                                 & maybe (convUnsupportedIn "strangely-formed instance heads"
+                                           "type class instance"
+                                           (showP instanceName))
+                                 pure
 
   pure InstanceInfo{..}
 #if __GLASGOW_HASKELL__ >= 806
@@ -198,8 +204,8 @@ data Conv_Method = CM_Renamed            Sentence
 -- Module-local
 data Conv_Level = CL_Term | CL_Type deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
-convertClsInstDecl :: forall r m. ConversionMonad r m => ClsInstDecl GhcRn -> m [Sentence]
-convertClsInstDecl cid@ClsInstDecl{..} = do
+convertClsInstDecl :: forall r m. ConversionMonad r m => ConvertedInstanceEnv -> ClsInstDecl GhcRn -> m [Sentence]
+convertClsInstDecl env cid@ClsInstDecl{..} = do
   ii@InstanceInfo{..} <- convertClsInstDeclInfo cid
   let convUnsupportedHere what = convUnsupportedIn what "type class instance" (showP instanceName)
 
@@ -233,11 +239,14 @@ convertClsInstDecl cid@ClsInstDecl{..} = do
       cid_binds_map <- bindsToMap (map unLoc $ bagToList cid_binds)
       cid_types_map <- clsInstFamiliesToMap cid_tyfam_insts
 
-      let (binds, classTy) = decomposeForall instanceHead
+      let (binds', classTy) = decomposeForall instanceHead
 
       -- decomposeClassTy can fail, so run it in the monad so that
       -- failure will be caught and cause the instance to be skipped
       (className, instTy) <- either convUnsupportedHere pure $ decomposeClassTy classTy
+      
+      inst@ConvertedInstance{..} <- lookupInstance instanceTy className env
+      let binds = convertedInstanceBinds ++ filter (\b -> binderGeneralizability b == Generalizable) binds'
 
       -- Get the methods of this class (this should already exclude skipped ones)
       (classMethods, classArgs) <- lookupClassDefn className >>= \case
@@ -267,7 +276,7 @@ convertClsInstDecl cid@ClsInstDecl{..} = do
 
       let allLocalNames = M.fromList $  [ (m, Qualid (localNameFor m)) | m <- classMethods ]
 
-      let quantify meth body = (maybeFun ?? body) <$> getImplicitBindersForClassMember className meth
+      let quantify sub meth body = ((maybeFun ?? body) . subst sub) <$> getImplicitBindersForClassMember className meth
 
       -- For each method, look for
       --  * explicit definitions
@@ -322,13 +331,19 @@ convertClsInstDecl cid@ClsInstDecl{..} = do
           CM_Renamed renamed ->
             pure renamed
           CM_Defined level body    -> do
-            let (params, sub) = (case level of
-                                   CL_Term -> makeInstanceMethodSubst
-                                   CL_Type -> makeAssociatedTypeSubst) binds
-            let makeSig = makeTy params sub
+
+            let (params, sub') = (case level of
+                                    CL_Term -> makeInstanceMethodSubst
+                                    CL_Type -> makeAssociatedTypeSubst) binds
+
+            -- Why the nested substitution?  The only place the per-instance variable name
+            -- can show up is in the specific instance type!  It can't show up in the
+            -- signature of the method, that's the whole point
+            let sub = (fmap $ subst sub') convertedInstanceSubst
+            
             -- We've converted the method, now sentenceify it
-            (params, ty) <- makeSig className instTy meth
-            qbody        <- quantify meth (substTy sub body)
+            ty    <- makeTy sub className meth
+            qbody <- quantify sub meth $ substTy sub' body
             pure . DefinitionSentence $ DefinitionDef Local
                                                       localMeth
                                                       (subst allLocalNames <$> params)
@@ -336,17 +351,17 @@ convertClsInstDecl cid@ClsInstDecl{..} = do
                                                       qbody
                                                       NotExistingClass
 
-      let instHeadTy = appList (Qualid className) [PosArg instTy]
+      let instHeadTy = appList (Qualid className) (PosArg <$> convertedInstanceTypes)
       instance_sentence <- view (edits.simpleClasses.contains className) >>= \case
         True  -> do
-          methods <- traverse (\m -> (m,) <$> quantify m (Qualid $ localNameFor m)) classMethods
+          methods <- traverse (\m -> (m,) <$> quantify M.empty m (Qualid $ localNameFor m)) classMethods
           pure $ ProgramSentence
                    (InstanceSentence $ InstanceDefinition instanceName binds instHeadTy methods Nothing)
                    Nothing
         False -> do
           -- Assemble the actual record
           instRHS <- fmap Record $ forM classMethods $ \m -> do
-                       method_body <- quantify m $ Qualid (localNameFor m)
+                       method_body <- subst convertedInstanceSubst $ quantify M.empty m $ Qualid (localNameFor m)
                        return (qualidMapBase (<> "__") m, method_body)
           -- TODO: This should probably be created with 'gensym'/'genqid', but then I
           -- have to be within a 'LocalConvMonad' and then I have to think exactly about
@@ -367,30 +382,22 @@ convertClsInstDecl (XClsInstDecl v) = noExtCon v
 
 --------------------------------------------------------------------------------
 
-convertClsInstDecls :: ConversionMonad r m => [ClsInstDecl GhcRn] -> m [Sentence]
-convertClsInstDecls = foldTraverse convertClsInstDecl
+convertClsInstDecls :: ConversionMonad r m => ConvertedInstanceEnv -> [ClsInstDecl GhcRn] -> m [Sentence]
+convertClsInstDecls env = foldTraverse (convertClsInstDecl env)
 
 -- Look up the type class variable and the type of the class member without
 -- postprocessing.
-lookupInstanceTypeOrMethodVarTy :: ConversionMonad r m => Qualid -> Qualid -> m (Qualid, Term)
-lookupInstanceTypeOrMethodVarTy className memberName =
+lookupInstanceMethodTy :: ConversionMonad r m => Qualid -> Qualid -> m Term
+lookupInstanceMethodTy className memberName =
   lookupClassDefn className >>= \case
     Just (ClassDefinition _ bs _ sigs) ->
-      case filter (\b -> binderExplicitness b == Explicit) bs of
-        b:_ | [var] <- toListOf binderIdents b ->
-              case lookup memberName sigs of
-                Just sigType -> pure (var, sigType)
-                Nothing      -> throwProgramError $ "Cannot find signature for " ++ quote_qualid memberName
-        _ -> no_class_method_error className memberName
+      case lookup memberName sigs of
+        Just sigType -> pure sigType
+        Nothing      -> throwProgramError $ "Cannot find signature for " ++ quote_qualid memberName
     _ -> no_class_method_error className memberName
 
-makeTy :: ConversionMonad r m => [Binder] -> M.Map Qualid Term -> Qualid -> Term -> Qualid -> m ([Binder], Term)
-makeTy params instSubst className instTy memberName = do
-  (var, sigType) <- lookupInstanceTypeOrMethodVarTy className memberName
-  -- Why the nested substitution?  The only place the per-instance variable name
-  -- can show up is in the specific instance type!  It can't show up in the
-  -- signature of the method, that's the whole point
-  pure (params, subst (M.singleton var $ subst instSubst instTy) sigType)
+makeTy :: ConversionMonad r m => M.Map Qualid Term -> Qualid -> Qualid -> m Term
+makeTy instSub className memberName = subst instSub <$> lookupInstanceMethodTy className memberName
 
 makeAssociatedTypeSubst :: [Binder] -> ([Binder], M.Map Qualid Term)
 makeAssociatedTypeSubst params = (params, M.empty)

@@ -88,15 +88,16 @@ Program Instance Semigroup__Void : GHC.Base.Semigroup Void :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Void_op_zlzlzgzg__ |}.
 
-Definition absurd {a} : Void -> a :=
+Definition absurd {a : Type} : Void -> a :=
   fun a => match a with end.
 
-Definition vacuous {f} {a} `{GHC.Base.Functor f} : f Void -> f a :=
+Definition vacuous {f : Type -> Type} {a : Type} `{GHC.Base.Functor f}
+   : f Void -> f a :=
   GHC.Base.fmap absurd.
 
 (* External variables:
-     Eq Gt Lt bool comparison negb true GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Ord
-     GHC.Base.Semigroup GHC.Base.compare__ GHC.Base.fmap GHC.Base.max__
+     Eq Gt Lt Type bool comparison negb true GHC.Base.Eq_ GHC.Base.Functor
+     GHC.Base.Ord GHC.Base.Semigroup GHC.Base.compare__ GHC.Base.fmap GHC.Base.max__
      GHC.Base.min__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg____
      GHC.Base.op_zgze____ GHC.Base.op_zl____ GHC.Base.op_zlze____
      GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____

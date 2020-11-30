@@ -12,7 +12,6 @@ Stability   : experimental
 {-# LANGUAGE LambdaCase         #-}
 {-# LANGUAGE OverloadedLists    #-}
 {-# LANGUAGE OverloadedStrings  #-}
-{-# LANGUAGE TemplateHaskell    #-}
 
 module HsToCoq.Coq.Pretty (
   renderGallina,

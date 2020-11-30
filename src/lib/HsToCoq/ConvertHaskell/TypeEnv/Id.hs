@@ -1,15 +1,15 @@
-{-# LANGUAGE DeriveDataTypeable, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module HsToCoq.ConvertHaskell.TypeEnv.Id(
   ConvertedIdEnv,
   ConvertedId,
   convertedIdType,
   convertIdEnv,
-  convertId
+  convertId,
+  idEnvOfModDetails
   ) where
 
 import qualified Data.Map as M
-import Data.Generics (Data)
 
 import HscTypes
 import Var
@@ -21,26 +21,19 @@ import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Type
 
-newtype ConvertedId = ConvertedId Term
-  deriving (Eq, Ord, Show, Data)
+type ConvertedId = (Qualid, Term)
 
-type ConvertedIdEnv = M.Map Qualid ConvertedId
+type ConvertedIdEnv = M.Map Qualid Term
 
 convertedIdType :: Qualid -> ConvertedIdEnv -> Maybe Term
-convertedIdType q env = do
-  id <- M.lookup q env
-  case id of
-    ConvertedId t -> pure t
+convertedIdType = M.lookup
 
-convertIdEnv :: ConversionMonad r m => ModDetails -> m ConvertedIdEnv
-convertIdEnv mod = do
-  let typeEnv = md_types mod
-  let ids = typeEnvIds typeEnv
-  M.fromList <$> mapM convertId ids
+idEnvOfModDetails :: ConversionMonad r m => ModDetails -> m ConvertedIdEnv
+idEnvOfModDetails mod = M.fromList <$> mapM convertId (typeEnvIds $ md_types mod)
 
-convertId :: ConversionMonad r m => Id -> m (Qualid, ConvertedId)
-convertId id = do
-  name <- var ExprNS $ varName id
-  typ  <- convertType $ varType id
-  pure (name, ConvertedId typ)
+convertIdEnv :: ConversionMonad r m => [Id] -> m ConvertedIdEnv
+convertIdEnv ids = M.fromList <$> mapM convertId ids
+
+convertId :: ConversionMonad r m => Id -> m ConvertedId
+convertId id = (,) <$> var ExprNS (varName id) <*> convertType (varType id)
   

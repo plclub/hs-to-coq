@@ -37,48 +37,48 @@ Arguments Mk_KProxy {_}.
 (* Skipping all instances of class `GHC.Read.Read', including
    `Data.Proxy.Read__Proxy' *)
 
-Local Definition Eq___Proxy_op_zeze__ {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> bool :=
+Local Definition Eq___Proxy_op_zeze__ {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> bool :=
   fun arg_0__ arg_1__ => true.
 
-Local Definition Eq___Proxy_op_zsze__ {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> bool :=
+Local Definition Eq___Proxy_op_zsze__ {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> bool :=
   fun x y => negb (Eq___Proxy_op_zeze__ x y).
 
-Program Instance Eq___Proxy {s} : GHC.Base.Eq_ (Proxy s) :=
+Program Instance Eq___Proxy {k : Type} {s : k} : GHC.Base.Eq_ (Proxy k s) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Proxy_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Proxy_op_zsze__ |}.
 
-Local Definition Ord__Proxy_compare {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> comparison :=
+Local Definition Ord__Proxy_compare {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> comparison :=
   fun arg_0__ arg_1__ => Eq.
 
-Local Definition Ord__Proxy_op_zl__ {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> bool :=
+Local Definition Ord__Proxy_op_zl__ {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> bool :=
   fun x y => Ord__Proxy_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__Proxy_op_zlze__ {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> bool :=
+Local Definition Ord__Proxy_op_zlze__ {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> bool :=
   fun x y => Ord__Proxy_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__Proxy_op_zg__ {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> bool :=
+Local Definition Ord__Proxy_op_zg__ {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> bool :=
   fun x y => Ord__Proxy_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__Proxy_op_zgze__ {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> bool :=
+Local Definition Ord__Proxy_op_zgze__ {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> bool :=
   fun x y => Ord__Proxy_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__Proxy_max {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> (Proxy inst_s) :=
+Local Definition Ord__Proxy_max {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> Proxy inst_k inst_s :=
   fun x y => if Ord__Proxy_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__Proxy_min {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> (Proxy inst_s) :=
+Local Definition Ord__Proxy_min {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> Proxy inst_k inst_s :=
   fun x y => if Ord__Proxy_op_zlze__ x y : bool then x else y.
 
-Program Instance Ord__Proxy {s} : GHC.Base.Ord (Proxy s) :=
+Program Instance Ord__Proxy {k : Type} {s : k} : GHC.Base.Ord (Proxy k s) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Proxy_op_zl__ ;
            GHC.Base.op_zlze____ := Ord__Proxy_op_zlze__ ;
@@ -97,92 +97,113 @@ Program Instance Ord__Proxy {s} : GHC.Base.Ord (Proxy s) :=
 (* Skipping all instances of class `GHC.Arr.Ix', including
    `Data.Proxy.Ix__Proxy' *)
 
-Local Definition Semigroup__Proxy_op_zlzlzgzg__ {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> (Proxy inst_s) :=
+Local Definition Semigroup__Proxy_op_zlzlzgzg__ {inst_k : Type} {inst_s
+   : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> Proxy inst_k inst_s :=
   fun arg_0__ arg_1__ => Mk_Proxy.
 
-Program Instance Semigroup__Proxy {s} : GHC.Base.Semigroup (Proxy s) :=
+Program Instance Semigroup__Proxy {k : Type} {s : k}
+   : GHC.Base.Semigroup (Proxy k s) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Proxy_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__Proxy_mappend {inst_s}
-   : (Proxy inst_s) -> (Proxy inst_s) -> (Proxy inst_s) :=
+Local Definition Monoid__Proxy_mappend {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s -> Proxy inst_k inst_s -> Proxy inst_k inst_s :=
   _GHC.Base.<<>>_.
 
-Local Definition Monoid__Proxy_mconcat {inst_s}
-   : list (Proxy inst_s) -> (Proxy inst_s) :=
+Local Definition Monoid__Proxy_mconcat {inst_k : Type} {inst_s : inst_k}
+   : list (Proxy inst_k inst_s) -> Proxy inst_k inst_s :=
   fun arg_0__ => Mk_Proxy.
 
-Local Definition Monoid__Proxy_mempty {inst_s} : (Proxy inst_s) :=
+Local Definition Monoid__Proxy_mempty {inst_k : Type} {inst_s : inst_k}
+   : Proxy inst_k inst_s :=
   Mk_Proxy.
 
-Program Instance Monoid__Proxy {s} : GHC.Base.Monoid (Proxy s) :=
+Program Instance Monoid__Proxy {k : Type} {s : k}
+   : GHC.Base.Monoid (Proxy k s) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Proxy_mappend ;
            GHC.Base.mconcat__ := Monoid__Proxy_mconcat ;
            GHC.Base.mempty__ := Monoid__Proxy_mempty |}.
 
 Local Definition Functor__Proxy_fmap
-   : forall {a} {b}, (a -> b) -> Proxy a -> Proxy b :=
-  fun {a} {b} => fun arg_0__ arg_1__ => Mk_Proxy.
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> Proxy Type a -> Proxy Type b :=
+  fun {a : Type} {b : Type} => fun arg_0__ arg_1__ => Mk_Proxy.
 
 Local Definition Functor__Proxy_op_zlzd__
-   : forall {a} {b}, a -> Proxy b -> Proxy a :=
-  fun {a} {b} => Functor__Proxy_fmap GHC.Base.∘ GHC.Base.const.
+   : forall {a : Type}, forall {b : Type}, a -> Proxy Type b -> Proxy Type a :=
+  fun {a : Type} {b : Type} => Functor__Proxy_fmap GHC.Base.∘ GHC.Base.const.
 
-Program Instance Functor__Proxy : GHC.Base.Functor Proxy :=
+Program Instance Functor__Proxy : GHC.Base.Functor (Proxy Type) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__Proxy_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__Proxy_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Proxy_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__Proxy_op_zlzd__ |}.
 
 Local Definition Applicative__Proxy_op_zlztzg__
-   : forall {a} {b}, Proxy (a -> b) -> Proxy a -> Proxy b :=
-  fun {a} {b} => fun arg_0__ arg_1__ => Mk_Proxy.
+   : forall {a : Type},
+     forall {b : Type}, Proxy Type (a -> b) -> Proxy Type a -> Proxy Type b :=
+  fun {a : Type} {b : Type} => fun arg_0__ arg_1__ => Mk_Proxy.
 
 Local Definition Applicative__Proxy_liftA2
-   : forall {a} {b} {c}, (a -> b -> c) -> Proxy a -> Proxy b -> Proxy c :=
-  fun {a} {b} {c} =>
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     (a -> b -> c) -> Proxy Type a -> Proxy Type b -> Proxy Type c :=
+  fun {a : Type} {b : Type} {c : Type} =>
     fun f x => Applicative__Proxy_op_zlztzg__ (GHC.Base.fmap f x).
 
 Local Definition Applicative__Proxy_op_ztzg__
-   : forall {a} {b}, Proxy a -> Proxy b -> Proxy b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, Proxy Type a -> Proxy Type b -> Proxy Type b :=
+  fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__Proxy_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__Proxy_pure : forall {a}, a -> Proxy a :=
-  fun {a} => fun arg_0__ => Mk_Proxy.
+Local Definition Applicative__Proxy_pure
+   : forall {a : Type}, a -> Proxy Type a :=
+  fun {a : Type} => fun arg_0__ => Mk_Proxy.
 
-Program Instance Applicative__Proxy : GHC.Base.Applicative Proxy :=
+Program Instance Applicative__Proxy : GHC.Base.Applicative (Proxy Type) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__Proxy_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__Proxy_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__Proxy_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__Proxy_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__Proxy_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Proxy_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Proxy_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__Proxy_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Data.Proxy.Alternative__Proxy' *)
 
 Local Definition Monad__Proxy_op_zgzgze__
-   : forall {a} {b}, Proxy a -> (a -> Proxy b) -> Proxy b :=
-  fun {a} {b} => fun arg_0__ arg_1__ => Mk_Proxy.
+   : forall {a : Type},
+     forall {b : Type}, Proxy Type a -> (a -> Proxy Type b) -> Proxy Type b :=
+  fun {a : Type} {b : Type} => fun arg_0__ arg_1__ => Mk_Proxy.
 
 Local Definition Monad__Proxy_op_zgzg__
-   : forall {a} {b}, Proxy a -> Proxy b -> Proxy b :=
-  fun {a} {b} => fun m k => Monad__Proxy_op_zgzgze__ m (fun arg_0__ => k).
+   : forall {a : Type},
+     forall {b : Type}, Proxy Type a -> Proxy Type b -> Proxy Type b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__Proxy_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__Proxy_return_ : forall {a}, a -> Proxy a :=
-  fun {a} => GHC.Base.pure.
+Local Definition Monad__Proxy_return_ : forall {a : Type}, a -> Proxy Type a :=
+  fun {a : Type} => GHC.Base.pure.
 
-Program Instance Monad__Proxy : GHC.Base.Monad Proxy :=
+Program Instance Monad__Proxy : GHC.Base.Monad (Proxy Type) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__Proxy_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__Proxy_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__Proxy_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__Proxy_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+             Monad__Proxy_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__Proxy_return_ |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Data.Proxy.MonadPlus__Proxy' *)
 
-Definition asProxyTypeOf {a} {proxy} : a -> proxy a -> a :=
+Definition asProxyTypeOf {a : Type} {proxy : Type -> Type}
+   : a -> proxy a -> a :=
   GHC.Base.const.
 
 (* External variables:
