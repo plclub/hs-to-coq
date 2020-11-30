@@ -1216,7 +1216,7 @@ convertMultipleBindings convertSingleBinding defns0 sigs build mhandler =
                  FunBind{fun_id = L _ hsName} -> do
                    coqName <- var ExprNS hsName
                    mod <- view (currentModule.modDetails)
-                   env <- withCurrentDefinition coqName $ convertIdEnv mod
+                   env <- withCurrentDefinition coqName $ idEnvOfModDetails mod
                    case convertedIdType coqName env of
                      Nothing -> fmap sigType <$> lookupSig coqName sigs
                      t       -> pure t

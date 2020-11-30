@@ -186,48 +186,50 @@ Instance instance_forall___GHC_Base_Ord__f_a____GHC_Base_Ord__Alt_f_a_  {f}
 Instance Unpeel_Dual a : GHC.Prim.Unpeel (Dual a) a :=
   GHC.Prim.Build_Unpeel _ _ getDual Mk_Dual.
 
-Local Definition Eq___Dual_op_zeze__ {inst_a} `{GHC.Base.Eq_ inst_a}
+Local Definition Eq___Dual_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Dual inst_a -> Dual inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.==_.
 
-Local Definition Eq___Dual_op_zsze__ {inst_a} `{GHC.Base.Eq_ inst_a}
+Local Definition Eq___Dual_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Dual inst_a -> Dual inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base./=_.
 
-Program Instance Eq___Dual {a} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Dual a) :=
+Program Instance Eq___Dual {a : Type} `{GHC.Base.Eq_ a}
+   : GHC.Base.Eq_ (Dual a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Dual_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Dual_op_zsze__ |}.
 
-Local Definition Ord__Dual_op_zl__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Dual_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Dual inst_a -> Dual inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<_.
 
-Local Definition Ord__Dual_op_zlze__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Dual_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Dual inst_a -> Dual inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<=_.
 
-Local Definition Ord__Dual_op_zg__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Dual_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Dual inst_a -> Dual inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>_.
 
-Local Definition Ord__Dual_op_zgze__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Dual_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Dual inst_a -> Dual inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>=_.
 
-Local Definition Ord__Dual_compare {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Dual_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Dual inst_a -> Dual inst_a -> comparison :=
   GHC.Prim.coerce GHC.Base.compare.
 
-Local Definition Ord__Dual_max {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Dual_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Dual inst_a -> Dual inst_a -> Dual inst_a :=
   GHC.Prim.coerce GHC.Base.max.
 
-Local Definition Ord__Dual_min {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Dual_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Dual inst_a -> Dual inst_a -> Dual inst_a :=
   GHC.Prim.coerce GHC.Base.min.
 
-Program Instance Ord__Dual {a} `{GHC.Base.Ord a} : GHC.Base.Ord (Dual a) :=
+Program Instance Ord__Dual {a : Type} `{GHC.Base.Ord a}
+   : GHC.Base.Ord (Dual a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Dual_op_zl__ ;
            GHC.Base.op_zlze____ := Ord__Dual_op_zlze__ ;
@@ -372,48 +374,48 @@ Program Instance Ord__Any : GHC.Base.Ord Any :=
 Instance Unpeel_Sum a : GHC.Prim.Unpeel (Sum a) a :=
   GHC.Prim.Build_Unpeel _ _ getSum Mk_Sum.
 
-Local Definition Eq___Sum_op_zeze__ {inst_a} `{GHC.Base.Eq_ inst_a}
+Local Definition Eq___Sum_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Sum inst_a -> Sum inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.==_.
 
-Local Definition Eq___Sum_op_zsze__ {inst_a} `{GHC.Base.Eq_ inst_a}
+Local Definition Eq___Sum_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Sum inst_a -> Sum inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base./=_.
 
-Program Instance Eq___Sum {a} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Sum a) :=
+Program Instance Eq___Sum {a : Type} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Sum a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Sum_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Sum_op_zsze__ |}.
 
-Local Definition Ord__Sum_op_zl__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Sum_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Sum inst_a -> Sum inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<_.
 
-Local Definition Ord__Sum_op_zlze__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Sum_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Sum inst_a -> Sum inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<=_.
 
-Local Definition Ord__Sum_op_zg__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Sum_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Sum inst_a -> Sum inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>_.
 
-Local Definition Ord__Sum_op_zgze__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Sum_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Sum inst_a -> Sum inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>=_.
 
-Local Definition Ord__Sum_compare {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Sum_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Sum inst_a -> Sum inst_a -> comparison :=
   GHC.Prim.coerce GHC.Base.compare.
 
-Local Definition Ord__Sum_max {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Sum_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Sum inst_a -> Sum inst_a -> Sum inst_a :=
   GHC.Prim.coerce GHC.Base.max.
 
-Local Definition Ord__Sum_min {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Sum_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Sum inst_a -> Sum inst_a -> Sum inst_a :=
   GHC.Prim.coerce GHC.Base.min.
 
-Program Instance Ord__Sum {a} `{GHC.Base.Ord a} : GHC.Base.Ord (Sum a) :=
+Program Instance Ord__Sum {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Sum a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Sum_op_zl__ ;
            GHC.Base.op_zlze____ := Ord__Sum_op_zlze__ ;
@@ -444,49 +446,49 @@ Program Instance Ord__Sum {a} `{GHC.Base.Ord a} : GHC.Base.Ord (Sum a) :=
 Instance Unpeel_Product a : GHC.Prim.Unpeel (Product a) a :=
   GHC.Prim.Build_Unpeel _ _ getProduct Mk_Product.
 
-Local Definition Eq___Product_op_zeze__ {inst_a} `{GHC.Base.Eq_ inst_a}
+Local Definition Eq___Product_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Product inst_a -> Product inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.==_.
 
-Local Definition Eq___Product_op_zsze__ {inst_a} `{GHC.Base.Eq_ inst_a}
+Local Definition Eq___Product_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Product inst_a -> Product inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base./=_.
 
-Program Instance Eq___Product {a} `{GHC.Base.Eq_ a}
+Program Instance Eq___Product {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (Product a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Product_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Product_op_zsze__ |}.
 
-Local Definition Ord__Product_op_zl__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Product_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Product inst_a -> Product inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<_.
 
-Local Definition Ord__Product_op_zlze__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Product_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Product inst_a -> Product inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<=_.
 
-Local Definition Ord__Product_op_zg__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Product_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Product inst_a -> Product inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>_.
 
-Local Definition Ord__Product_op_zgze__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Product_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Product inst_a -> Product inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>=_.
 
-Local Definition Ord__Product_compare {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Product_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Product inst_a -> Product inst_a -> comparison :=
   GHC.Prim.coerce GHC.Base.compare.
 
-Local Definition Ord__Product_max {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Product_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Product inst_a -> Product inst_a -> Product inst_a :=
   GHC.Prim.coerce GHC.Base.max.
 
-Local Definition Ord__Product_min {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Product_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Product inst_a -> Product inst_a -> Product inst_a :=
   GHC.Prim.coerce GHC.Base.min.
 
-Program Instance Ord__Product {a} `{GHC.Base.Ord a}
+Program Instance Ord__Product {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (Product a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Product_op_zl__ ;
@@ -527,68 +529,63 @@ Program Instance Ord__Product {a} `{GHC.Base.Ord a}
 (* Skipping all instances of class `GHC.Show.Show', including
    `Data.SemigroupInternal.Show__Alt' *)
 
-Local Definition Eq___Alt_op_zeze__ {inst_f} {inst_a} `{GHC.Base.Eq_ (inst_f
-                                                                      inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) -> bool :=
+Local Definition Eq___Alt_op_zeze__ {inst_k : Type} {inst_f : inst_k -> Type}
+  {inst_a : inst_k} `{GHC.Base.Eq_ (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.==_.
 
-Local Definition Eq___Alt_op_zsze__ {inst_f} {inst_a} `{GHC.Base.Eq_ (inst_f
-                                                                      inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) -> bool :=
+Local Definition Eq___Alt_op_zsze__ {inst_k : Type} {inst_f : inst_k -> Type}
+  {inst_a : inst_k} `{GHC.Base.Eq_ (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base./=_.
 
-Program Instance Eq___Alt {f} {a} `{GHC.Base.Eq_ (f a)}
-   : GHC.Base.Eq_ (Alt f a : GHC.Prim.TYPE GHC.Types.LiftedRep) :=
+Program Instance Eq___Alt {k : Type} {f : k -> Type} {a : k} `{GHC.Base.Eq_ (f
+                                                                             a)}
+   : GHC.Base.Eq_ (Alt k f a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Alt_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Alt_op_zsze__ |}.
 
-Local Definition Ord__Alt_op_zl__ {inst_f} {inst_a} `{GHC.Base.Ord (inst_f
-                                                                    inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) -> bool :=
+Local Definition Ord__Alt_op_zl__ {inst_k : Type} {inst_f : inst_k -> Type}
+  {inst_a : inst_k} `{GHC.Base.Ord (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<_.
 
-Local Definition Ord__Alt_op_zlze__ {inst_f} {inst_a} `{GHC.Base.Ord (inst_f
-                                                                      inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) -> bool :=
+Local Definition Ord__Alt_op_zlze__ {inst_k : Type} {inst_f : inst_k -> Type}
+  {inst_a : inst_k} `{GHC.Base.Ord (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<=_.
 
-Local Definition Ord__Alt_op_zg__ {inst_f} {inst_a} `{GHC.Base.Ord (inst_f
-                                                                    inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) -> bool :=
+Local Definition Ord__Alt_op_zg__ {inst_k : Type} {inst_f : inst_k -> Type}
+  {inst_a : inst_k} `{GHC.Base.Ord (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>_.
 
-Local Definition Ord__Alt_op_zgze__ {inst_f} {inst_a} `{GHC.Base.Ord (inst_f
-                                                                      inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) -> bool :=
+Local Definition Ord__Alt_op_zgze__ {inst_k : Type} {inst_f : inst_k -> Type}
+  {inst_a : inst_k} `{GHC.Base.Ord (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>=_.
 
-Local Definition Ord__Alt_compare {inst_f} {inst_a} `{GHC.Base.Ord (inst_f
-                                                                    inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) -> comparison :=
+Local Definition Ord__Alt_compare {inst_k : Type} {inst_f : inst_k -> Type}
+  {inst_a : inst_k} `{GHC.Base.Ord (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a -> comparison :=
   GHC.Prim.coerce GHC.Base.compare.
 
-Local Definition Ord__Alt_max {inst_f} {inst_a} `{GHC.Base.Ord (inst_f inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) :=
+Local Definition Ord__Alt_max {inst_k : Type} {inst_f : inst_k -> Type} {inst_a
+   : inst_k} `{GHC.Base.Ord (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a ->
+     Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a :=
   GHC.Prim.coerce GHC.Base.max.
 
-Local Definition Ord__Alt_min {inst_f} {inst_a} `{GHC.Base.Ord (inst_f inst_a)}
-   : (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) ->
-     (Alt inst_f inst_a : GHC.Prim.TYPE GHC.Types.LiftedRep) :=
+Local Definition Ord__Alt_min {inst_k : Type} {inst_f : inst_k -> Type} {inst_a
+   : inst_k} `{GHC.Base.Ord (inst_f inst_a)}
+   : Alt inst_k inst_f inst_a ->
+     Alt inst_k inst_f inst_a -> Alt inst_k inst_f inst_a :=
   GHC.Prim.coerce GHC.Base.min.
 
-Program Instance Ord__Alt {f} {a} `{GHC.Base.Ord (f a)}
-   : GHC.Base.Ord (Alt f a : GHC.Prim.TYPE GHC.Types.LiftedRep) :=
+Program Instance Ord__Alt {k : Type} {f : k -> Type} {a : k} `{GHC.Base.Ord (f
+                                                                             a)}
+   : GHC.Base.Ord (Alt k f a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Alt_op_zl__ ;
            GHC.Base.op_zlze____ := Ord__Alt_op_zlze__ ;
@@ -604,115 +601,88 @@ Program Instance Ord__Alt {f} {a} `{GHC.Base.Ord (f a)}
 (* Skipping all instances of class `GHC.Enum.Enum', including
    `Data.SemigroupInternal.Enum__Alt' *)
 
-Local Definition Monad__Alt_op_zgzg__ {inst_f} `{GHC.Base.Monad inst_f}
-   : forall {a} {b},
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b :=
-  fun {a} {b} => GHC.Prim.coerce _GHC.Base.>>_.
-
-Local Definition Monad__Alt_op_zgzgze__ {inst_f} `{GHC.Base.Monad inst_f}
-   : forall {a} {b},
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a ->
-     (a ->
-      (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-       GHC.Prim.TYPE GHC.Types.LiftedRep) b) ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b :=
-  fun {a} {b} => GHC.Prim.coerce _GHC.Base.>>=_.
-
-Local Definition Monad__Alt_return_ {inst_f} `{GHC.Base.Monad inst_f}
-   : forall {a},
-     a ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a :=
-  fun {a} => GHC.Prim.coerce GHC.Base.return_.
-
-Local Definition Applicative__Alt_liftA2 {inst_f} `{GHC.Base.Applicative inst_f}
-   : forall {a} {b} {c},
-     (a -> b -> c) ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) c :=
-  fun {a} {b} {c} => GHC.Prim.coerce GHC.Base.liftA2.
-
-Local Definition Applicative__Alt_op_zlztzg__ {inst_f} `{GHC.Base.Applicative
+Local Definition Monad__Alt_op_zgzg__ {inst_f : Type -> Type} `{GHC.Base.Monad
   inst_f}
-   : forall {a} {b},
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) (a -> b) ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b :=
-  fun {a} {b} => GHC.Prim.coerce _GHC.Base.<*>_.
+   : forall {a : Type},
+     forall {b : Type},
+     Alt Type inst_f a -> Alt Type inst_f b -> Alt Type inst_f b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce _GHC.Base.>>_.
 
-Local Definition Applicative__Alt_op_ztzg__ {inst_f} `{GHC.Base.Applicative
+Local Definition Monad__Alt_op_zgzgze__ {inst_f : Type -> Type} `{GHC.Base.Monad
   inst_f}
-   : forall {a} {b},
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b :=
-  fun {a} {b} => GHC.Prim.coerce _GHC.Base.*>_.
+   : forall {a : Type},
+     forall {b : Type},
+     Alt Type inst_f a -> (a -> Alt Type inst_f b) -> Alt Type inst_f b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce _GHC.Base.>>=_.
 
-Local Definition Applicative__Alt_pure {inst_f} `{GHC.Base.Applicative inst_f}
-   : forall {a},
-     a ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a :=
-  fun {a} => GHC.Prim.coerce GHC.Base.pure.
+Local Definition Monad__Alt_return_ {inst_f : Type -> Type} `{GHC.Base.Monad
+  inst_f}
+   : forall {a : Type}, a -> Alt Type inst_f a :=
+  fun {a : Type} => GHC.Prim.coerce GHC.Base.return_.
 
-Local Definition Functor__Alt_fmap {inst_f} `{GHC.Base.Functor inst_f}
-   : forall {a} {b},
-     (a -> b) ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b :=
-  fun {a} {b} => GHC.Prim.coerce GHC.Base.fmap.
+Local Definition Applicative__Alt_liftA2 {inst_f : Type -> Type}
+  `{GHC.Base.Applicative inst_f}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     (a -> b -> c) -> Alt Type inst_f a -> Alt Type inst_f b -> Alt Type inst_f c :=
+  fun {a : Type} {b : Type} {c : Type} => GHC.Prim.coerce GHC.Base.liftA2.
 
-Local Definition Functor__Alt_op_zlzd__ {inst_f} `{GHC.Base.Functor inst_f}
-   : forall {a} {b},
-     a ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) b ->
-     (Alt inst_f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-      GHC.Prim.TYPE GHC.Types.LiftedRep) a :=
-  fun {a} {b} => GHC.Prim.coerce _GHC.Base.<$_.
+Local Definition Applicative__Alt_op_zlztzg__ {inst_f : Type -> Type}
+  `{GHC.Base.Applicative inst_f}
+   : forall {a : Type},
+     forall {b : Type},
+     Alt Type inst_f (a -> b) -> Alt Type inst_f a -> Alt Type inst_f b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce _GHC.Base.<*>_.
 
-Program Instance Functor__Alt {f} `{GHC.Base.Functor f}
-   : GHC.Base.Functor (Alt f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-                       GHC.Prim.TYPE GHC.Types.LiftedRep) :=
+Local Definition Applicative__Alt_op_ztzg__ {inst_f : Type -> Type}
+  `{GHC.Base.Applicative inst_f}
+   : forall {a : Type},
+     forall {b : Type},
+     Alt Type inst_f a -> Alt Type inst_f b -> Alt Type inst_f b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce _GHC.Base.*>_.
+
+Local Definition Applicative__Alt_pure {inst_f : Type -> Type}
+  `{GHC.Base.Applicative inst_f}
+   : forall {a : Type}, a -> Alt Type inst_f a :=
+  fun {a : Type} => GHC.Prim.coerce GHC.Base.pure.
+
+Local Definition Functor__Alt_fmap {inst_f : Type -> Type} `{GHC.Base.Functor
+  inst_f}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> Alt Type inst_f a -> Alt Type inst_f b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce GHC.Base.fmap.
+
+Local Definition Functor__Alt_op_zlzd__ {inst_f : Type -> Type}
+  `{GHC.Base.Functor inst_f}
+   : forall {a : Type},
+     forall {b : Type}, a -> Alt Type inst_f b -> Alt Type inst_f a :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce _GHC.Base.<$_.
+
+Program Instance Functor__Alt {f : Type -> Type} `{GHC.Base.Functor f}
+   : GHC.Base.Functor (Alt Type f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__Alt_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__Alt_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Alt_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Alt_op_zlzd__ |}.
 
-Program Instance Applicative__Alt {f} `{GHC.Base.Applicative f}
-   : GHC.Base.Applicative (Alt f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-                           GHC.Prim.TYPE GHC.Types.LiftedRep) :=
+Program Instance Applicative__Alt {f : Type -> Type} `{GHC.Base.Applicative f}
+   : GHC.Base.Applicative (Alt Type f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__Alt_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__Alt_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__Alt_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__Alt_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__Alt_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Alt_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Alt_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__Alt_pure |}.
 
-Program Instance Monad__Alt {f} `{GHC.Base.Monad f}
-   : GHC.Base.Monad (Alt f : GHC.Prim.TYPE GHC.Types.LiftedRep ->
-                     GHC.Prim.TYPE GHC.Types.LiftedRep) :=
+Program Instance Monad__Alt {f : Type -> Type} `{GHC.Base.Monad f}
+   : GHC.Base.Monad (Alt Type f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__Alt_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__Alt_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__Alt_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__Alt_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Alt_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__Alt_return_ |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Data.SemigroupInternal.MonadPlus__Alt' *)
@@ -720,32 +690,32 @@ Program Instance Monad__Alt {f} `{GHC.Base.Monad f}
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Data.SemigroupInternal.Alternative__Alt' *)
 
-Local Definition Semigroup__Dual_op_zlzlzgzg__ {inst_a} `{GHC.Base.Semigroup
-  inst_a}
-   : (Dual inst_a) -> (Dual inst_a) -> (Dual inst_a) :=
+Local Definition Semigroup__Dual_op_zlzlzgzg__ {inst_a : Type}
+  `{GHC.Base.Semigroup inst_a}
+   : Dual inst_a -> Dual inst_a -> Dual inst_a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_Dual a, Mk_Dual b => Mk_Dual (b GHC.Base.<<>> a)
     end.
 
-Program Instance Semigroup__Dual {a} `{GHC.Base.Semigroup a}
+Program Instance Semigroup__Dual {a : Type} `{GHC.Base.Semigroup a}
    : GHC.Base.Semigroup (Dual a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Dual_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__Dual_mappend {inst_a} `{GHC.Base.Monoid inst_a}
-   : (Dual inst_a) -> (Dual inst_a) -> (Dual inst_a) :=
+Local Definition Monoid__Dual_mappend {inst_a : Type} `{GHC.Base.Monoid inst_a}
+   : Dual inst_a -> Dual inst_a -> Dual inst_a :=
   _GHC.Base.<<>>_.
 
-Local Definition Monoid__Dual_mempty {inst_a} `{GHC.Base.Monoid inst_a}
-   : (Dual inst_a) :=
+Local Definition Monoid__Dual_mempty {inst_a : Type} `{GHC.Base.Monoid inst_a}
+   : Dual inst_a :=
   Mk_Dual GHC.Base.mempty.
 
-Local Definition Monoid__Dual_mconcat {inst_a} `{GHC.Base.Monoid inst_a}
-   : list (Dual inst_a) -> (Dual inst_a) :=
+Local Definition Monoid__Dual_mconcat {inst_a : Type} `{GHC.Base.Monoid inst_a}
+   : list (Dual inst_a) -> Dual inst_a :=
   GHC.Base.foldr Monoid__Dual_mappend Monoid__Dual_mempty.
 
-Program Instance Monoid__Dual {a} `{GHC.Base.Monoid a}
+Program Instance Monoid__Dual {a : Type} `{GHC.Base.Monoid a}
    : GHC.Base.Monoid (Dual a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Dual_mappend ;
@@ -753,57 +723,65 @@ Program Instance Monoid__Dual {a} `{GHC.Base.Monoid a}
            GHC.Base.mempty__ := Monoid__Dual_mempty |}.
 
 Local Definition Functor__Dual_fmap
-   : forall {a} {b}, (a -> b) -> Dual a -> Dual b :=
-  fun {a} {b} => GHC.Prim.coerce.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> Dual a -> Dual b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce.
 
 Local Definition Functor__Dual_op_zlzd__
-   : forall {a} {b}, a -> Dual b -> Dual a :=
-  fun {a} {b} => Functor__Dual_fmap GHC.Base.∘ GHC.Base.const.
+   : forall {a : Type}, forall {b : Type}, a -> Dual b -> Dual a :=
+  fun {a : Type} {b : Type} => Functor__Dual_fmap GHC.Base.∘ GHC.Base.const.
 
 Program Instance Functor__Dual : GHC.Base.Functor Dual :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__Dual_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__Dual_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Dual_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Dual_op_zlzd__ |}.
 
 Local Definition Applicative__Dual_op_zlztzg__
-   : forall {a} {b}, Dual (a -> b) -> Dual a -> Dual b :=
-  fun {a} {b} => GHC.Prim.coerce.
+   : forall {a : Type}, forall {b : Type}, Dual (a -> b) -> Dual a -> Dual b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce.
 
 Local Definition Applicative__Dual_liftA2
-   : forall {a} {b} {c}, (a -> b -> c) -> Dual a -> Dual b -> Dual c :=
-  fun {a} {b} {c} => fun f x => Applicative__Dual_op_zlztzg__ (GHC.Base.fmap f x).
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type}, (a -> b -> c) -> Dual a -> Dual b -> Dual c :=
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun f x => Applicative__Dual_op_zlztzg__ (GHC.Base.fmap f x).
 
 Local Definition Applicative__Dual_op_ztzg__
-   : forall {a} {b}, Dual a -> Dual b -> Dual b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, Dual a -> Dual b -> Dual b :=
+  fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__Dual_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__Dual_pure : forall {a}, a -> Dual a :=
-  fun {a} => Mk_Dual.
+Local Definition Applicative__Dual_pure : forall {a : Type}, a -> Dual a :=
+  fun {a : Type} => Mk_Dual.
 
 Program Instance Applicative__Dual : GHC.Base.Applicative Dual :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__Dual_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__Dual_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__Dual_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__Dual_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__Dual_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Dual_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Dual_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__Dual_pure |}.
 
 Local Definition Monad__Dual_op_zgzgze__
-   : forall {a} {b}, Dual a -> (a -> Dual b) -> Dual b :=
-  fun {a} {b} => fun m k => k (getDual m).
+   : forall {a : Type}, forall {b : Type}, Dual a -> (a -> Dual b) -> Dual b :=
+  fun {a : Type} {b : Type} => fun m k => k (getDual m).
 
 Local Definition Monad__Dual_op_zgzg__
-   : forall {a} {b}, Dual a -> Dual b -> Dual b :=
-  fun {a} {b} => fun m k => Monad__Dual_op_zgzgze__ m (fun arg_0__ => k).
+   : forall {a : Type}, forall {b : Type}, Dual a -> Dual b -> Dual b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__Dual_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__Dual_return_ : forall {a}, a -> Dual a :=
-  fun {a} => GHC.Base.pure.
+Local Definition Monad__Dual_return_ : forall {a : Type}, a -> Dual a :=
+  fun {a : Type} => GHC.Base.pure.
 
 Program Instance Monad__Dual : GHC.Base.Monad Dual :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__Dual_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__Dual_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__Dual_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__Dual_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Dual_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__Dual_return_ |}.
 
 Instance Unpeel_Endo a : GHC.Prim.Unpeel (Endo a) (a -> a) :=
   GHC.Prim.Build_Unpeel _ _ appEndo Mk_Endo.
@@ -812,22 +790,22 @@ Local Definition Semigroup__Endo_op_zlzlzgzg__ {inst_a}
    : Endo inst_a -> Endo inst_a -> Endo inst_a :=
   GHC.Prim.coerce Coq.Program.Basics.compose.
 
-Program Instance Semigroup__Endo {a} : GHC.Base.Semigroup (Endo a) :=
+Program Instance Semigroup__Endo {a : Type} : GHC.Base.Semigroup (Endo a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Endo_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__Endo_mappend {inst_a}
-   : (Endo inst_a) -> (Endo inst_a) -> (Endo inst_a) :=
+Local Definition Monoid__Endo_mappend {inst_a : Type}
+   : Endo inst_a -> Endo inst_a -> Endo inst_a :=
   _GHC.Base.<<>>_.
 
-Local Definition Monoid__Endo_mempty {inst_a} : (Endo inst_a) :=
+Local Definition Monoid__Endo_mempty {inst_a : Type} : Endo inst_a :=
   Mk_Endo GHC.Base.id.
 
-Local Definition Monoid__Endo_mconcat {inst_a}
-   : list (Endo inst_a) -> (Endo inst_a) :=
+Local Definition Monoid__Endo_mconcat {inst_a : Type}
+   : list (Endo inst_a) -> Endo inst_a :=
   GHC.Base.foldr Monoid__Endo_mappend Monoid__Endo_mempty.
 
-Program Instance Monoid__Endo {a} : GHC.Base.Monoid (Endo a) :=
+Program Instance Monoid__Endo {a : Type} : GHC.Base.Monoid (Endo a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Endo_mappend ;
            GHC.Base.mconcat__ := Monoid__Endo_mconcat ;
@@ -879,102 +857,112 @@ Local Definition Semigroup__Sum_op_zlzlzgzg__ {inst_a} `{GHC.Num.Num inst_a}
    : Sum inst_a -> Sum inst_a -> Sum inst_a :=
   GHC.Prim.coerce _GHC.Num.+_.
 
-Program Instance Semigroup__Sum {a} `{GHC.Num.Num a}
+Program Instance Semigroup__Sum {a : Type} `{GHC.Num.Num a}
    : GHC.Base.Semigroup (Sum a) :=
   fun _ k__ => k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Sum_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__Sum_mappend {inst_a} `{GHC.Num.Num inst_a}
-   : (Sum inst_a) -> (Sum inst_a) -> (Sum inst_a) :=
+Local Definition Monoid__Sum_mappend {inst_a : Type} `{GHC.Num.Num inst_a}
+   : Sum inst_a -> Sum inst_a -> Sum inst_a :=
   _GHC.Base.<<>>_.
 
-Local Definition Monoid__Sum_mempty {inst_a} `{GHC.Num.Num inst_a}
-   : (Sum inst_a) :=
+Local Definition Monoid__Sum_mempty {inst_a : Type} `{GHC.Num.Num inst_a}
+   : Sum inst_a :=
   Mk_Sum #0.
 
-Local Definition Monoid__Sum_mconcat {inst_a} `{GHC.Num.Num inst_a}
-   : list (Sum inst_a) -> (Sum inst_a) :=
+Local Definition Monoid__Sum_mconcat {inst_a : Type} `{GHC.Num.Num inst_a}
+   : list (Sum inst_a) -> Sum inst_a :=
   GHC.Base.foldr Monoid__Sum_mappend Monoid__Sum_mempty.
 
-Program Instance Monoid__Sum {a} `{GHC.Num.Num a} : GHC.Base.Monoid (Sum a) :=
+Program Instance Monoid__Sum {a : Type} `{GHC.Num.Num a}
+   : GHC.Base.Monoid (Sum a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Sum_mappend ;
            GHC.Base.mconcat__ := Monoid__Sum_mconcat ;
            GHC.Base.mempty__ := Monoid__Sum_mempty |}.
 
 Local Definition Functor__Sum_fmap
-   : forall {a} {b}, (a -> b) -> Sum a -> Sum b :=
-  fun {a} {b} => GHC.Prim.coerce.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> Sum a -> Sum b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce.
 
-Local Definition Functor__Sum_op_zlzd__ : forall {a} {b}, a -> Sum b -> Sum a :=
-  fun {a} {b} => Functor__Sum_fmap GHC.Base.∘ GHC.Base.const.
+Local Definition Functor__Sum_op_zlzd__
+   : forall {a : Type}, forall {b : Type}, a -> Sum b -> Sum a :=
+  fun {a : Type} {b : Type} => Functor__Sum_fmap GHC.Base.∘ GHC.Base.const.
 
 Program Instance Functor__Sum : GHC.Base.Functor Sum :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__Sum_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__Sum_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Sum_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Sum_op_zlzd__ |}.
 
 Local Definition Applicative__Sum_op_zlztzg__
-   : forall {a} {b}, Sum (a -> b) -> Sum a -> Sum b :=
-  fun {a} {b} => GHC.Prim.coerce.
+   : forall {a : Type}, forall {b : Type}, Sum (a -> b) -> Sum a -> Sum b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce.
 
 Local Definition Applicative__Sum_liftA2
-   : forall {a} {b} {c}, (a -> b -> c) -> Sum a -> Sum b -> Sum c :=
-  fun {a} {b} {c} => fun f x => Applicative__Sum_op_zlztzg__ (GHC.Base.fmap f x).
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type}, (a -> b -> c) -> Sum a -> Sum b -> Sum c :=
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun f x => Applicative__Sum_op_zlztzg__ (GHC.Base.fmap f x).
 
 Local Definition Applicative__Sum_op_ztzg__
-   : forall {a} {b}, Sum a -> Sum b -> Sum b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, Sum a -> Sum b -> Sum b :=
+  fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__Sum_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__Sum_pure : forall {a}, a -> Sum a :=
-  fun {a} => Mk_Sum.
+Local Definition Applicative__Sum_pure : forall {a : Type}, a -> Sum a :=
+  fun {a : Type} => Mk_Sum.
 
 Program Instance Applicative__Sum : GHC.Base.Applicative Sum :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__Sum_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__Sum_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__Sum_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__Sum_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__Sum_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Sum_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Sum_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__Sum_pure |}.
 
 Local Definition Monad__Sum_op_zgzgze__
-   : forall {a} {b}, Sum a -> (a -> Sum b) -> Sum b :=
-  fun {a} {b} => fun m k => k (getSum m).
+   : forall {a : Type}, forall {b : Type}, Sum a -> (a -> Sum b) -> Sum b :=
+  fun {a : Type} {b : Type} => fun m k => k (getSum m).
 
 Local Definition Monad__Sum_op_zgzg__
-   : forall {a} {b}, Sum a -> Sum b -> Sum b :=
-  fun {a} {b} => fun m k => Monad__Sum_op_zgzgze__ m (fun arg_0__ => k).
+   : forall {a : Type}, forall {b : Type}, Sum a -> Sum b -> Sum b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__Sum_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__Sum_return_ : forall {a}, a -> Sum a :=
-  fun {a} => GHC.Base.pure.
+Local Definition Monad__Sum_return_ : forall {a : Type}, a -> Sum a :=
+  fun {a : Type} => GHC.Base.pure.
 
 Program Instance Monad__Sum : GHC.Base.Monad Sum :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__Sum_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__Sum_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__Sum_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__Sum_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Sum_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__Sum_return_ |}.
 
 Local Definition Semigroup__Product_op_zlzlzgzg__ {inst_a} `{GHC.Num.Num inst_a}
    : Product inst_a -> Product inst_a -> Product inst_a :=
   GHC.Prim.coerce _GHC.Num.*_.
 
-Program Instance Semigroup__Product {a} `{GHC.Num.Num a}
+Program Instance Semigroup__Product {a : Type} `{GHC.Num.Num a}
    : GHC.Base.Semigroup (Product a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Product_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__Product_mappend {inst_a} `{GHC.Num.Num inst_a}
-   : (Product inst_a) -> (Product inst_a) -> (Product inst_a) :=
+Local Definition Monoid__Product_mappend {inst_a : Type} `{GHC.Num.Num inst_a}
+   : Product inst_a -> Product inst_a -> Product inst_a :=
   _GHC.Base.<<>>_.
 
-Local Definition Monoid__Product_mempty {inst_a} `{GHC.Num.Num inst_a}
-   : (Product inst_a) :=
+Local Definition Monoid__Product_mempty {inst_a : Type} `{GHC.Num.Num inst_a}
+   : Product inst_a :=
   Mk_Product #1.
 
-Local Definition Monoid__Product_mconcat {inst_a} `{GHC.Num.Num inst_a}
-   : list (Product inst_a) -> (Product inst_a) :=
+Local Definition Monoid__Product_mconcat {inst_a : Type} `{GHC.Num.Num inst_a}
+   : list (Product inst_a) -> Product inst_a :=
   GHC.Base.foldr Monoid__Product_mappend Monoid__Product_mempty.
 
-Program Instance Monoid__Product {a} `{GHC.Num.Num a}
+Program Instance Monoid__Product {a : Type} `{GHC.Num.Num a}
    : GHC.Base.Monoid (Product a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Product_mappend ;
@@ -982,58 +970,70 @@ Program Instance Monoid__Product {a} `{GHC.Num.Num a}
            GHC.Base.mempty__ := Monoid__Product_mempty |}.
 
 Local Definition Functor__Product_fmap
-   : forall {a} {b}, (a -> b) -> Product a -> Product b :=
-  fun {a} {b} => GHC.Prim.coerce.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> Product a -> Product b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce.
 
 Local Definition Functor__Product_op_zlzd__
-   : forall {a} {b}, a -> Product b -> Product a :=
-  fun {a} {b} => Functor__Product_fmap GHC.Base.∘ GHC.Base.const.
+   : forall {a : Type}, forall {b : Type}, a -> Product b -> Product a :=
+  fun {a : Type} {b : Type} => Functor__Product_fmap GHC.Base.∘ GHC.Base.const.
 
 Program Instance Functor__Product : GHC.Base.Functor Product :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__Product_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__Product_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Product_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__Product_op_zlzd__ |}.
 
 Local Definition Applicative__Product_op_zlztzg__
-   : forall {a} {b}, Product (a -> b) -> Product a -> Product b :=
-  fun {a} {b} => GHC.Prim.coerce.
+   : forall {a : Type},
+     forall {b : Type}, Product (a -> b) -> Product a -> Product b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce.
 
 Local Definition Applicative__Product_liftA2
-   : forall {a} {b} {c}, (a -> b -> c) -> Product a -> Product b -> Product c :=
-  fun {a} {b} {c} =>
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type}, (a -> b -> c) -> Product a -> Product b -> Product c :=
+  fun {a : Type} {b : Type} {c : Type} =>
     fun f x => Applicative__Product_op_zlztzg__ (GHC.Base.fmap f x).
 
 Local Definition Applicative__Product_op_ztzg__
-   : forall {a} {b}, Product a -> Product b -> Product b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, Product a -> Product b -> Product b :=
+  fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__Product_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__Product_pure : forall {a}, a -> Product a :=
-  fun {a} => Mk_Product.
+Local Definition Applicative__Product_pure
+   : forall {a : Type}, a -> Product a :=
+  fun {a : Type} => Mk_Product.
 
 Program Instance Applicative__Product : GHC.Base.Applicative Product :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__Product_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__Product_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__Product_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__Product_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__Product_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Product_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Product_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__Product_pure |}.
 
 Local Definition Monad__Product_op_zgzgze__
-   : forall {a} {b}, Product a -> (a -> Product b) -> Product b :=
-  fun {a} {b} => fun m k => k (getProduct m).
+   : forall {a : Type},
+     forall {b : Type}, Product a -> (a -> Product b) -> Product b :=
+  fun {a : Type} {b : Type} => fun m k => k (getProduct m).
 
 Local Definition Monad__Product_op_zgzg__
-   : forall {a} {b}, Product a -> Product b -> Product b :=
-  fun {a} {b} => fun m k => Monad__Product_op_zgzgze__ m (fun arg_0__ => k).
+   : forall {a : Type}, forall {b : Type}, Product a -> Product b -> Product b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__Product_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__Product_return_ : forall {a}, a -> Product a :=
-  fun {a} => GHC.Base.pure.
+Local Definition Monad__Product_return_ : forall {a : Type}, a -> Product a :=
+  fun {a : Type} => GHC.Base.pure.
 
 Program Instance Monad__Product : GHC.Base.Monad Product :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__Product_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__Product_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__Product_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__Product_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+             Monad__Product_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__Product_return_ |}.
 
 (* Skipping instance `Data.SemigroupInternal.Semigroup__Alt' of class
    `GHC.Base.Semigroup' *)
@@ -1043,7 +1043,7 @@ Program Instance Monad__Product : GHC.Base.Monad Product :=
 
 (* Skipping definition `Data.SemigroupInternal.stimesIdempotent' *)
 
-Definition stimesIdempotentMonoid {b} {a} `{GHC.Real.Integral b}
+Definition stimesIdempotentMonoid {b : Type} {a : Type} `{GHC.Real.Integral b}
   `{GHC.Base.Monoid a}
    : b -> a -> a :=
   fun n x =>
@@ -1080,6 +1080,6 @@ Definition stimesIdempotentMonoid {b} {a} `{GHC.Real.Integral b}
      GHC.Base.op_ztzg__ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
      GHC.Base.return_ GHC.Base.return___ GHC.Err.Build_Default GHC.Err.Default
      GHC.Err.default GHC.Err.errorWithoutStackTrace GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.Build_Unpeel GHC.Prim.TYPE
-     GHC.Prim.Unpeel GHC.Prim.coerce GHC.Real.Integral GHC.Types.LiftedRep
+     GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel
+     GHC.Prim.coerce GHC.Real.Integral
 *)

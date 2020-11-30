@@ -22,6 +22,7 @@ Require Data.Traversable.
 Require GHC.Base.
 Require GHC.List.
 Require GHC.Prim.
+Require GHC.Tuple.
 Import Data.Functor.Notations.
 Import GHC.Base.Notations.
 
@@ -31,7 +32,7 @@ Import GHC.Base.Notations.
 
 (* Skipping definition `Control.Monad.guard' *)
 
-Definition filterM {m} {a} `{(GHC.Base.Applicative m)}
+Definition filterM {m : Type -> Type} {a : Type} `{GHC.Base.Applicative m}
    : (a -> m bool) -> list a -> m (list a) :=
   fun p =>
     GHC.Base.foldr (fun x =>
@@ -40,16 +41,18 @@ Definition filterM {m} {a} `{(GHC.Base.Applicative m)}
                                          then (fun arg_0__ => cons x arg_0__)
                                          else GHC.Base.id) (p x)) (GHC.Base.pure nil).
 
-Definition op_zgzezg__ {m} {a} {b} {c} `{GHC.Base.Monad m}
-   : (a -> m b) -> (b -> m c) -> (a -> m c) :=
+Definition op_zgzezg__ {m : Type -> Type} {a : Type} {b : Type} {c : Type}
+  `{GHC.Base.Monad m}
+   : (a -> m b) -> (b -> m c) -> a -> m c :=
   fun f g => fun x => f x GHC.Base.>>= g.
 
 Notation "'_>=>_'" := (op_zgzezg__).
 
 Infix ">=>" := (_>=>_) (at level 99).
 
-Definition op_zlzezl__ {m} {b} {c} {a} `{GHC.Base.Monad m}
-   : (b -> m c) -> (a -> m b) -> (a -> m c) :=
+Definition op_zlzezl__ {m : Type -> Type} {b : Type} {c : Type} {a : Type}
+  `{GHC.Base.Monad m}
+   : (b -> m c) -> (a -> m b) -> a -> m c :=
   GHC.Base.flip _>=>_.
 
 Notation "'_<=<_'" := (op_zlzezl__).
@@ -58,8 +61,10 @@ Infix "<=<" := (_<=<_) (at level 99).
 
 (* Skipping definition `Control.Monad.forever' *)
 
-Definition mapAndUnzipM {m} {a} {b} {c} `{(GHC.Base.Applicative m)}
-   : (a -> m (b * c)%type) -> list a -> m (list b * list c)%type :=
+Definition mapAndUnzipM {m : Type -> Type} {a : Type} {b : Type} {c : Type}
+  `{GHC.Base.Applicative m}
+   : (a -> m (GHC.Tuple.pair_type b c)) ->
+     list a -> m (GHC.Tuple.pair_type (list b) (list c)) :=
   fun f xs => GHC.List.unzip Data.Functor.<$> Data.Traversable.traverse f xs.
 
 Definition zipWithM {m} {a} {b} {c} `{_ : GHC.Base.Applicative m}
@@ -67,16 +72,18 @@ Definition zipWithM {m} {a} {b} {c} `{_ : GHC.Base.Applicative m}
   fun f xs ys =>
     (@Data.Traversable.sequenceA _ _ _ _ m _ _ _ (GHC.List.zipWith f xs ys)).
 
-Definition zipWithM_ {m} {a} {b} {c} `{(GHC.Base.Applicative m)}
+Definition zipWithM_ {m : Type -> Type} {a : Type} {b : Type} {c : Type}
+  `{GHC.Base.Applicative m}
    : (a -> b -> m c) -> list a -> list b -> m unit :=
   fun f xs ys => Data.Foldable.sequenceA_ (GHC.List.zipWith f xs ys).
 
-Definition foldM {t} {m} {b} {a} `{Data.Foldable.Foldable t} `{GHC.Base.Monad m}
+Definition foldM {t : Type -> Type} {m : Type -> Type} {b : Type} {a : Type}
+  `{Data.Foldable.Foldable t} `{GHC.Base.Monad m}
    : (b -> a -> m b) -> b -> t a -> m b :=
   Data.Foldable.foldlM.
 
-Definition foldM_ {t} {m} {b} {a} `{Data.Foldable.Foldable t} `{GHC.Base.Monad
-  m}
+Definition foldM_ {t : Type -> Type} {m : Type -> Type} {b : Type} {a : Type}
+  `{Data.Foldable.Foldable t} `{GHC.Base.Monad m}
    : (b -> a -> m b) -> b -> t a -> m unit :=
   fun f a xs => Data.Foldable.foldlM f a xs GHC.Base.>> GHC.Base.return_ tt.
 
@@ -84,10 +91,12 @@ Definition foldM_ {t} {m} {b} {a} `{Data.Foldable.Foldable t} `{GHC.Base.Monad
 
 (* Skipping definition `Control.Monad.replicateM_' *)
 
-Definition unless {f} `{(GHC.Base.Applicative f)} : bool -> f unit -> f unit :=
+Definition unless {f : Type -> Type} `{GHC.Base.Applicative f}
+   : bool -> f unit -> f unit :=
   fun p s => if p : bool then GHC.Base.pure tt else s.
 
-Definition op_zlzdznzg__ {m} {a} {b} `{GHC.Base.Monad m}
+Definition op_zlzdznzg__ {m : Type -> Type} {a : Type} {b : Type}
+  `{GHC.Base.Monad m}
    : (a -> b) -> m a -> m b :=
   fun f m =>
     m GHC.Base.>>= (fun x => let z := f x in GHC.Prim.seq z (GHC.Base.return_ z)).
@@ -108,10 +117,10 @@ Infix "Control.Monad.<$!>" := (_<$!>_) (at level 99).
 End Notations.
 
 (* External variables:
-     bool cons list nil op_zt__ tt unit Data.Foldable.Foldable Data.Foldable.foldlM
+     Type bool cons list nil tt unit Data.Foldable.Foldable Data.Foldable.foldlM
      Data.Foldable.sequenceA_ Data.Functor.op_zlzdzg__ Data.Traversable.sequenceA
      Data.Traversable.traverse GHC.Base.Applicative GHC.Base.Monad GHC.Base.flip
      GHC.Base.foldr GHC.Base.id GHC.Base.liftA2 GHC.Base.op_zgzg__
      GHC.Base.op_zgzgze__ GHC.Base.pure GHC.Base.return_ GHC.List.unzip
-     GHC.List.zipWith GHC.Prim.seq
+     GHC.List.zipWith GHC.Prim.seq GHC.Tuple.pair_type
 *)

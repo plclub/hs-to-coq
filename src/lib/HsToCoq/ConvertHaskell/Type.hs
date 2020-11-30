@@ -49,9 +49,6 @@ convertType (LitTy tl) = case tl of
 convertType (CastTy _ty _coercion) = convUnsupported' "Kind cast"
 convertType (CoercionTy _coercion) = convUnsupported' "Injection of a Coercion into a type"
   
-convertKindOrType :: ConversionMonad r m => KindOrType -> m Term
-convertKindOrType = convertType
-
 convertKind :: ConversionMonad r m => Kind -> m Term
 convertKind = convertType
 

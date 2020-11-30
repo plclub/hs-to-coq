@@ -19,7 +19,7 @@ Import GHC.Base.Notations.
 
 (* Converted value declarations: *)
 
-Fixpoint isSubsequenceOf {a} `{(GHC.Base.Eq_ a)} (arg_0__ arg_1__ : list a)
+Fixpoint isSubsequenceOf {a : Type} `{GHC.Base.Eq_ a} (arg_0__ arg_1__ : list a)
   : bool
   := match arg_0__, arg_1__ with
      | nil, _ => true
@@ -30,5 +30,5 @@ Fixpoint isSubsequenceOf {a} `{(GHC.Base.Eq_ a)} (arg_0__ arg_1__ : list a)
      end.
 
 (* External variables:
-     bool cons false list nil true GHC.Base.Eq_ GHC.Base.op_zeze__
+     Type bool cons false list nil true GHC.Base.Eq_ GHC.Base.op_zeze__
 *)

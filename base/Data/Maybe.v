@@ -23,31 +23,31 @@ Import GHC.Base.Notations.
 
 (* Converted value declarations: *)
 
-Definition maybe {b} {a} : b -> (a -> b) -> option a -> b :=
+Definition maybe {b : Type} {a : Type} : b -> (a -> b) -> option a -> b :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | n, _, None => n
     | _, f, Some x => f x
     end.
 
-Definition isJust {a} : option a -> bool :=
+Definition isJust {a : Type} : option a -> bool :=
   fun arg_0__ => match arg_0__ with | None => false | _ => true end.
 
-Definition isNothing {a} : option a -> bool :=
+Definition isNothing {a : Type} : option a -> bool :=
   fun arg_0__ => match arg_0__ with | None => true | _ => false end.
 
 (* Skipping definition `Data.Maybe.fromJust' *)
 
-Definition fromMaybe {a} : a -> option a -> a :=
+Definition fromMaybe {a : Type} : a -> option a -> a :=
   fun d x => match x with | None => d | Some v => v end.
 
-Definition maybeToList {a} : option a -> list a :=
+Definition maybeToList {a : Type} : option a -> list a :=
   fun arg_0__ => match arg_0__ with | None => nil | Some x => cons x nil end.
 
-Definition listToMaybe {a} : list a -> option a :=
+Definition listToMaybe {a : Type} : list a -> option a :=
   GHC.Base.foldr (GHC.Base.const GHC.Base.∘ Some) None.
 
-Definition catMaybes {a} : list (option a) -> list a :=
+Definition catMaybes {a : Type} : list (option a) -> list a :=
   fun ls =>
     let cont_0__ arg_1__ :=
       match arg_1__ with
@@ -56,8 +56,8 @@ Definition catMaybes {a} : list (option a) -> list a :=
       end in
     Coq.Lists.List.flat_map cont_0__ ls.
 
-Fixpoint mapMaybe {a} {b} (arg_0__ : (a -> option b)) (arg_1__ : list a) : list
-                                                                           b
+Fixpoint mapMaybe {a : Type} {b : Type} (arg_0__ : a -> option b) (arg_1__
+                    : list a) : list b
   := match arg_0__, arg_1__ with
      | _, nil => nil
      | f, cons x xs =>
@@ -73,6 +73,6 @@ Definition mapMaybeFB {b} {r} {a}
     end.
 
 (* External variables:
-     None Some bool cons false list nil option true Coq.Lists.List.flat_map
+     None Some Type bool cons false list nil option true Coq.Lists.List.flat_map
      GHC.Base.const GHC.Base.foldr GHC.Base.op_z2218U__
 *)
