@@ -4,7 +4,7 @@
 
 module HsToCoq.ConvertHaskell.Type (convertType) where
 
-import Data.List.NonEmpty
+import Data.List.NonEmpty (NonEmpty(..))
 import Control.Lens
 
 import TyCoRep
@@ -27,10 +27,17 @@ convertType (TyConApp tc []) = Qualid <$> convertTyCon tc
 convertType (TyConApp tc ts@(t:ts')) = do
   convertedTc <- convertTyCon tc
   case convertedTc of
+    -- many hacks ahead
     (Qualified m t) | m == "GHC.Prim" && t == "TYPE"
                       -> pure $ Qualid (Bare "Type")
                     | m == "GHC.Tuple" && t == "op_Z2T__"
                       -> (`InScope` "type") . foldl1 (mkInfix ?? "*") <$> traverse convertType ts
+                    | m == "GHC.Prim" && t == "arrow"
+                      -> do
+                        cts <- mapM convertType $ drop 1 ts'
+                        case cts of
+                          ct : cts' -> pure $ App (Qualid convertedTc) $ PosArg <$> (ct :| cts')
+                          _         -> pure $ Qualid convertedTc
     _ -> do
       ct  <- convertType t
       cts <- mapM convertType ts'

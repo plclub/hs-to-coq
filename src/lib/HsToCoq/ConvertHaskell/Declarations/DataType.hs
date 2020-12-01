@@ -102,7 +102,7 @@ convertConDecl curType extraArgs (ConDeclH98 lname mlqvs mlcxt details _doc)
        storeConstructorFields con fieldInfo
        qualids <- qualids
        let namedBinders = fmap (\(x,y) -> mkBinders Explicit ( Ident x  NE.:| [] ) y) $ zip qualids args
-       pure [(con, params ++ namedBinders , Just . maybeForall extraArgs $ foldr Arrow curType [])]
+       pure [(con, params ++ namedBinders , Just . maybeForall extraArgs $ curType)]
     _ ->
      do
       fieldInfo <- pure . NonRecordFields $ length args
@@ -191,7 +191,7 @@ convertDataDecl name tvs defn = do
   coqName   <- var TypeNS $ unLoc name
 
   addKindVars <- view (edits.polyKinds.at coqName) >>= \case
-    Just ids -> pure $ (:) (ImplicitBinders $ fmap (Ident . Bare) ids)
+    Just ids -> pure $ (:) (mkBinders Explicit (Ident . Bare <$> ids) $ Qualid (Bare "Type"))
     Nothing  -> pure id
   kinds     <- (++ repeat Nothing) . map Just . maybe [] NE.toList <$> view (edits.dataKinds.at coqName)
   let cvtName tv = Ident <$> var TypeNS (unLoc tv)

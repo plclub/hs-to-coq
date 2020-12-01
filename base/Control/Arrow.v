@@ -236,9 +236,7 @@ Definition arrow_second {b}{c}{d} (f : (b -> c)) : (d * b)%type -> (d * c)%type 
 (* Converted value declarations: *)
 
 Local Definition Arrow__arrow_arr
-   : forall {b : Type},
-     forall {c : Type},
-     (b -> c) -> GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b c :=
+   : forall {b : Type}, forall {c : Type}, (b -> c) -> GHC.Prim.arrow b c :=
   fun {b : Type} {c : Type} => fun f => f.
 
 Local Definition Arrow__arrow_op_ztztzt__
@@ -246,10 +244,9 @@ Local Definition Arrow__arrow_op_ztztzt__
      forall {c : Type},
      forall {b' : Type},
      forall {c' : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b c ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b' c' ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep (GHC.Tuple.pair_type b
-                                                                                 b') (GHC.Tuple.pair_type c c') :=
+     GHC.Prim.arrow b c ->
+     GHC.Prim.arrow b' c' ->
+     GHC.Prim.arrow (GHC.Tuple.pair_type b b') (GHC.Tuple.pair_type c c') :=
   fun {b : Type} {c : Type} {b' : Type} {c' : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -260,9 +257,8 @@ Local Definition Arrow__arrow_first
    : forall {b : Type},
      forall {c : Type},
      forall {d : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b c ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep (GHC.Tuple.pair_type b d)
-     (GHC.Tuple.pair_type c d) :=
+     GHC.Prim.arrow b c ->
+     GHC.Prim.arrow (GHC.Tuple.pair_type b d) (GHC.Tuple.pair_type c d) :=
   fun {b : Type} {c : Type} {d : Type} =>
     (fun arg_0__ => Arrow__arrow_op_ztztzt__ arg_0__ Control.Category.id).
 
@@ -270,10 +266,8 @@ Local Definition Arrow__arrow_op_zazaza__
    : forall {b : Type},
      forall {c : Type},
      forall {c' : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b c ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b c' ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b (GHC.Tuple.pair_type c
-                                                                                   c') :=
+     GHC.Prim.arrow b c ->
+     GHC.Prim.arrow b c' -> GHC.Prim.arrow b (GHC.Tuple.pair_type c c') :=
   fun {b : Type} {c : Type} {c' : Type} =>
     fun f g =>
       Arrow__arrow_arr (fun b => pair b b) Control.Category.>>>
@@ -283,14 +277,12 @@ Local Definition Arrow__arrow_second
    : forall {b : Type},
      forall {c : Type},
      forall {d : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b c ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep (GHC.Tuple.pair_type d b)
-     (GHC.Tuple.pair_type d c) :=
+     GHC.Prim.arrow b c ->
+     GHC.Prim.arrow (GHC.Tuple.pair_type d b) (GHC.Tuple.pair_type d c) :=
   fun {b : Type} {c : Type} {d : Type} =>
     (fun arg_0__ => Arrow__arrow_op_ztztzt__ Control.Category.id arg_0__).
 
-Program Instance Arrow__arrow
-   : Arrow (GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep) :=
+Program Instance Arrow__arrow : Arrow GHC.Prim.arrow :=
   fun _ k__ =>
     k__ {| arr__ := fun {b : Type} {c : Type} => Arrow__arrow_arr ;
            first__ := fun {b : Type} {c : Type} {d : Type} => Arrow__arrow_first ;
@@ -321,13 +313,10 @@ Program Instance Arrow__arrow
 Local Definition ArrowApply__arrow_app
    : forall {b : Type},
      forall {c : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep (GHC.Tuple.pair_type
-                                                             (GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b
-                                                              c) b) c :=
+     GHC.Prim.arrow (GHC.Tuple.pair_type (GHC.Prim.arrow b c) b) c :=
   fun {b : Type} {c : Type} => fun '(pair f x) => f x.
 
-Program Instance ArrowApply__arrow
-   : ArrowApply (GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep) :=
+Program Instance ArrowApply__arrow : ArrowApply GHC.Prim.arrow :=
   fun _ k__ =>
     k__ {| app__ := fun {b : Type} {c : Type} => ArrowApply__arrow_app |}.
 
@@ -442,5 +431,5 @@ End Notations.
      Type pair unit Control.Category.Category Control.Category.id
      Control.Category.op_zgzgzg__ Control.Category.op_zlzlzl__ Data.Either.Either
      GHC.Base.Functor GHC.Base.const GHC.Base.fmap__ GHC.Base.op_z2218U__
-     GHC.Base.op_zlzd____ GHC.Prim.arrow GHC.Tuple.pair_type GHC.Types.LiftedRep
+     GHC.Base.op_zlzd____ GHC.Prim.arrow GHC.Tuple.pair_type
 *)

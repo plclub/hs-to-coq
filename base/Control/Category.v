@@ -45,22 +45,17 @@ Infix "∘" := (_∘_) (left associativity, at level 40).
 
 (* Converted value declarations: *)
 
-Local Definition Category__arrow_id
-   : forall {a : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep a a :=
+Local Definition Category__arrow_id : forall {a : Type}, GHC.Prim.arrow a a :=
   fun {a : Type} => GHC.Base.id.
 
 Local Definition Category__arrow_op_z2218U__
    : forall {b : Type},
      forall {c : Type},
      forall {a : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep b c ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep a b ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep a c :=
+     GHC.Prim.arrow b c -> GHC.Prim.arrow a b -> GHC.Prim.arrow a c :=
   fun {b : Type} {c : Type} {a : Type} => _GHC.Base.∘_.
 
-Program Instance Category__arrow
-   : Category Type (GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep) :=
+Program Instance Category__arrow : Category Type GHC.Prim.arrow :=
   fun _ k__ =>
     k__ {| id__ := fun {a : Type} => Category__arrow_id ;
            op_z2218U____ := fun {b : Type} {c : Type} {a : Type} =>
@@ -103,5 +98,5 @@ Infix "Control.Category.>>>" := (_>>>_) (at level 99).
 End Notations.
 
 (* External variables:
-     Type GHC.Base.id GHC.Base.op_z2218U__ GHC.Prim.arrow GHC.Types.LiftedRep
+     Type GHC.Base.id GHC.Base.op_z2218U__ GHC.Prim.arrow
 *)

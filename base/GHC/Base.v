@@ -941,21 +941,15 @@ Program Instance Monad__pair_type {a : Type} `{Monoid a}
 Local Definition Functor__arrow_fmap {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
-     (a -> b) ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r a ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r b :=
+     (a -> b) -> GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b :=
   fun {a : Type} {b : Type} => _∘_.
 
 Local Definition Functor__arrow_op_zlzd__ {inst_r : Type}
    : forall {a : Type},
-     forall {b : Type},
-     a ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r b ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r a :=
+     forall {b : Type}, a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r a :=
   fun {a : Type} {b : Type} => Functor__arrow_fmap ∘ const.
 
-Program Instance Functor__arrow {r : Type}
-   : Functor (GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep r) :=
+Program Instance Functor__arrow {r : Type} : Functor (GHC.Prim.arrow r) :=
   fun _ k__ =>
     k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__arrow_fmap ;
            op_zlzd____ := fun {a : Type} {b : Type} => Functor__arrow_op_zlzd__ |}.
@@ -965,35 +959,29 @@ Local Definition Applicative__arrow_liftA2 {inst_a : Type}
      forall {b : Type},
      forall {c : Type},
      (a -> b -> c) ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a a ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a b ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a c :=
+     GHC.Prim.arrow inst_a a -> GHC.Prim.arrow inst_a b -> GHC.Prim.arrow inst_a c :=
   fun {a : Type} {b : Type} {c : Type} => fun q f g x => q (f x) (g x).
 
 Local Definition Applicative__arrow_op_zlztzg__ {inst_a : Type}
    : forall {a : Type},
      forall {b : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a (a -> b) ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a a ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a b :=
+     GHC.Prim.arrow inst_a (a -> b) ->
+     GHC.Prim.arrow inst_a a -> GHC.Prim.arrow inst_a b :=
   fun {a : Type} {b : Type} => fun f g x => f x (g x).
 
 Local Definition Applicative__arrow_op_ztzg__ {inst_a : Type}
    : forall {a : Type},
      forall {b : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a a ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a b ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a b :=
+     GHC.Prim.arrow inst_a a -> GHC.Prim.arrow inst_a b -> GHC.Prim.arrow inst_a b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__arrow_op_zlztzg__ (id <$ a1) a2.
 
 Local Definition Applicative__arrow_pure {inst_a : Type}
-   : forall {a : Type},
-     a -> GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_a a :=
+   : forall {a : Type}, a -> GHC.Prim.arrow inst_a a :=
   fun {a : Type} => const.
 
 Program Instance Applicative__arrow {a : Type}
-   : Applicative (GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep a) :=
+   : Applicative (GHC.Prim.arrow a) :=
   fun _ k__ =>
     k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
              Applicative__arrow_liftA2 ;
@@ -1004,27 +992,22 @@ Program Instance Applicative__arrow {a : Type}
 Local Definition Monad__arrow_op_zgzgze__ {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r a ->
-     (a -> GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r b) ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r b :=
+     GHC.Prim.arrow inst_r a ->
+     (a -> GHC.Prim.arrow inst_r b) -> GHC.Prim.arrow inst_r b :=
   fun {a : Type} {b : Type} => fun f k => fun r => k (f r) r.
 
 Local Definition Monad__arrow_op_zgzg__ {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r a ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r b ->
-     GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r b :=
+     GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r b :=
   fun {a : Type} {b : Type} =>
     fun m k => Monad__arrow_op_zgzgze__ m (fun arg_0__ => k).
 
 Local Definition Monad__arrow_return_ {inst_r : Type}
-   : forall {a : Type},
-     a -> GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep inst_r a :=
+   : forall {a : Type}, a -> GHC.Prim.arrow inst_r a :=
   fun {a : Type} => pure.
 
-Program Instance Monad__arrow {r : Type}
-   : Monad (GHC.Prim.arrow GHC.Types.LiftedRep GHC.Types.LiftedRep r) :=
+Program Instance Monad__arrow {r : Type} : Monad (GHC.Prim.arrow r) :=
   fun _ k__ =>
     k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__arrow_op_zgzg__ ;
            op_zgzgze____ := fun {a : Type} {b : Type} => Monad__arrow_op_zgzgze__ ;
@@ -1496,5 +1479,5 @@ End Notations.
      cons false list max__ min__ negb nil op_zeze__ op_zeze____ op_zg____ op_zgze____
      op_zl__ op_zl____ op_zlze____ op_zsze____ option pair true tt unit
      Coq.Init.Datatypes.app Coq.Lists.List.flat_map Coq.Lists.List.map GHC.Prim.arrow
-     GHC.Tuple.pair_type GHC.Types.LiftedRep
+     GHC.Tuple.pair_type
 *)

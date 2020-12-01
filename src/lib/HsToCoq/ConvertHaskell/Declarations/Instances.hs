@@ -51,8 +51,6 @@ import HsToCoq.ConvertHaskell.Axiomatize
 import HsToCoq.ConvertHaskell.Declarations.Class
 import HsToCoq.ConvertHaskell.TypeEnv.Instances
 
-import Debug.Trace
-
 --------------------------------------------------------------------------------
 
 -- Take the instance head and make it into a valid identifier.
@@ -245,7 +243,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
       -- failure will be caught and cause the instance to be skipped
       (className, instTy) <- either convUnsupportedHere pure $ decomposeClassTy classTy
       
-      inst@ConvertedInstance{..} <- lookupInstance instanceTy className env
+      _inst@ConvertedInstance{..} <- lookupInstance instanceTy className env
       let binds = convertedInstanceBinds ++ filter (\b -> binderGeneralizability b == Generalizable) binds'
 
       -- Get the methods of this class (this should already exclude skipped ones)
@@ -390,7 +388,7 @@ convertClsInstDecls env = foldTraverse (convertClsInstDecl env)
 lookupInstanceMethodTy :: ConversionMonad r m => Qualid -> Qualid -> m Term
 lookupInstanceMethodTy className memberName =
   lookupClassDefn className >>= \case
-    Just (ClassDefinition _ bs _ sigs) ->
+    Just (ClassDefinition _ _ _ sigs) ->
       case lookup memberName sigs of
         Just sigType -> pure sigType
         Nothing      -> throwProgramError $ "Cannot find signature for " ++ quote_qualid memberName
