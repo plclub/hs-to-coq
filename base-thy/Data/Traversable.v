@@ -59,16 +59,7 @@ Proof.
   unfold Utils.runStateL,liftA2, liftA2__, 
   Utils.Applicative__StateL,Utils.Applicative__StateL_liftA2,
   pure,pure__,Utils.Applicative__StateL_pure in *.
-  destruct (fold_right
-        (fun (x0 : b) (ys : Utils.StateL a (list c)) =>
-         match ys with
-         | Utils.Mk_StateL ky =>
-             Utils.Mk_StateL
-               (fun s0 : a =>
-                let
-                '(s', x1) := flip f x0 s0 in
-                 let '(s'', y) := ky s' in (s'', x1 :: y))
-         end) (Utils.Mk_StateL (fun s0 : a => (s0, nil))) xs) eqn:EQ.
+  destruct (fold_right _ _) eqn:EQ.
   unfold flip.
   auto.
 Qed.
