@@ -1219,7 +1219,9 @@ convertMultipleBindings convertSingleBinding defns0 sigs build mhandler =
                    env <- withCurrentDefinition coqName $ idEnvOfModDetails mod
                    case convertedIdType coqName env of
                      Nothing -> fmap sigType <$> lookupSig coqName sigs
-                     t       -> pure t
+                     t       -> view (edits.replacedTypes.at coqName) >>= \case
+                       Nothing -> pure t
+                       _       -> fmap sigType <$> lookupSig coqName sigs
                  _ -> pure Nothing
          MaybeT $ convertSingleBinding ty defn
 
