@@ -26,13 +26,13 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Sum (f : Type -> Type) (g : Type -> Type) a : Type :=
-  | InL : (f a) -> Sum f g a
-  | InR : (g a) -> Sum f g a.
+Inductive Sum (k : Type) (f : k -> Type) (g : k -> Type) (a : k) : Type :=
+  | InL : (f a) -> Sum k f g a
+  | InR : (g a) -> Sum k f g a.
 
-Arguments InL {_} {_} {_} _.
+Arguments InL {_} {_} {_} {_} _.
 
-Arguments InR {_} {_} {_} _.
+Arguments InR {_} {_} {_} {_} _.
 
 (* Converted value declarations: *)
 

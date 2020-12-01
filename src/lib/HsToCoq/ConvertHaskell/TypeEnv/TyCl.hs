@@ -5,7 +5,9 @@ module HsToCoq.ConvertHaskell.TypeEnv.TyCl(
   ConvertedTyCl,
   convertedTyClName,
   convertedTyClTyVars,
+  convertedTyClPredTypes,
   convertedTyClMethods,
+  convertedTyClBinders,
   convertTyClEnv,
   convertedTyCl,
   convertTyCl,
@@ -20,6 +22,7 @@ import HscTypes
 import Var
 
 import HsToCoq.Coq.Gallina
+import HsToCoq.Coq.Gallina.Util
 import HsToCoq.Edits.Types
 
 import HsToCoq.ConvertHaskell.Monad
@@ -34,6 +37,7 @@ data ConvertedTyCl =
                   -- don't use [Binder] here because we don't know the
                   -- explicitness
                 , convertedTyClTyVars  :: [(Qualid, Term)]
+                , convertedTyClPredTypes   :: [Term]
                 , convertedTyClMethods :: [(Qualid, Term)]
                 }
   deriving (Eq, Ord, Show, Data)
@@ -57,6 +61,11 @@ unpeelTyClVars (Forall bs t) className
   | otherwise                             = unpeelTyClVars t className
 unpeelTyClVars t _className = t
 
+convertedTyClBinders :: ConvertedTyCl -> [Binder]
+convertedTyClBinders ConvertedTyCl{..} =
+  ((\(q, t) -> mkTypedBinder Explicit (Ident q) t) <$> convertedTyClTyVars) <>
+  (Generalized Implicit <$> convertedTyClPredTypes)
+
 convertTyClEnv :: ConversionMonad r m => ModDetails -> m ConvertedTyClEnv
 convertTyClEnv mod = do
   cls <- convertTyCls mod
@@ -76,7 +85,9 @@ convertTyClVar tv = do
   
 convertTyCl :: ConversionMonad r m => Class -> m ConvertedTyCl
 convertTyCl cl = do
-  convertedTyClName <- var TypeNS $ className cl
-  convertedTyClTyVars <- mapM convertTyClVar $ classTyVars cl
-  convertedTyClMethods <- mapM convertId $ classMethods cl
+  convertedTyClName      <- var TypeNS $ className cl
+  convertedTyClTyVars    <- mapM convertTyClVar $ classTyVars cl
+  convertedTyClMethods   <- mapM convertId $ classMethods cl
+  convertedTyClPredTypes <- mapM convertType $ classSCTheta cl
   pure ConvertedTyCl{..}
+

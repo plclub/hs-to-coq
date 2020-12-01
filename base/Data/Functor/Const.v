@@ -33,11 +33,12 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Const a b : Type := | Mk_Const (getConst : a) : Const a b.
+Inductive Const (k : Type) (a : Type) (b : k) : Type :=
+  | Mk_Const (getConst : a) : Const k a b.
 
-Arguments Mk_Const {_} {_} _.
+Arguments Mk_Const {_} {_} {_} _.
 
-Definition getConst {a} {b} (arg_0__ : Const a b) :=
+Definition getConst {k : Type} {a : Type} {b : k} (arg_0__ : Const k a b) :=
   let 'Mk_Const getConst := arg_0__ in
   getConst.
 
@@ -52,7 +53,7 @@ Definition getConst {a} {b} (arg_0__ : Const a b) :=
 (* Skipping all instances of class `GHC.Enum.Enum', including
    `Data.Functor.Const.Enum__Const' *)
 
-Instance Unpeel_Const a b : GHC.Prim.Unpeel (Const a b) a :=
+Instance Unpeel_Const (k a : Type) (b : k) : GHC.Prim.Unpeel (Const k a b) a :=
   GHC.Prim.Build_Unpeel _ _ getConst Mk_Const.
 
 Local Definition Eq___Const_op_zeze__ {inst_a : Type} {inst_k : Type} {inst_b
@@ -322,7 +323,8 @@ Local Definition Applicative__Const_liftA2 {inst_m : Type} `{GHC.Base.Monoid
 
 Local Definition Applicative__Const_op_zlztzg__ {inst_m} `{GHC.Base.Monoid
   inst_m}
-   : forall {a} {b}, Const inst_m (a -> b) -> Const inst_m a -> Const inst_m b :=
+   : forall {a} {b},
+     Const Type inst_m (a -> b) -> Const Type inst_m a -> Const Type inst_m b :=
   fun {a} {b} => GHC.Prim.coerce GHC.Base.mappend.
 
 Local Definition Applicative__Const_op_ztzg__ {inst_m : Type} `{GHC.Base.Monoid

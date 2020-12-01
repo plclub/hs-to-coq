@@ -27,10 +27,10 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Product (f : Type -> Type) (g : Type -> Type) a : Type :=
-  | Pair : (f a) -> (g a) -> Product f g a.
+Inductive Product (k : Type) (f : k -> Type) (g : k -> Type) (a : k) : Type :=
+  | Pair : (f a) -> (g a) -> Product k f g a.
 
-Arguments Pair {_} {_} {_} _ _.
+Arguments Pair {_} {_} {_} {_} _ _.
 
 (* Converted value declarations: *)
 

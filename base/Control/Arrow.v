@@ -51,7 +51,8 @@ Record Arrow__Dict (a : Type -> Type -> Type) := Arrow__Dict_Build {
   forall {d : Type},
   a b c -> a (GHC.Tuple.pair_type d b) (GHC.Tuple.pair_type d c) }.
 
-Definition Arrow (a : Type -> Type -> Type) `{Control.Category.Category a} :=
+Definition Arrow (a : Type -> Type -> Type) `{Control.Category.Category Type
+                                                                        a} :=
   forall r__, (Arrow__Dict a -> r__) -> r__.
 Existing Class Arrow.
 

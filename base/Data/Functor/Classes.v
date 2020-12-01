@@ -53,7 +53,7 @@ Record Ord2__Dict (f : Type -> Type -> Type) := Ord2__Dict_Build {
   (a -> b -> comparison) ->
   (c -> d -> comparison) -> f a c -> f b d -> comparison }.
 
-Definition Ord2 (f : Type -> Type -> Type) `{(Eq2 f)} :=
+Definition Ord2 (f : Type -> Type -> Type) `{Eq2 f} :=
   forall r__, (Ord2__Dict f -> r__) -> r__.
 Existing Class Ord2.
 
@@ -79,7 +79,7 @@ Definition liftEq `{g__0__ : Eq1 f}
      forall {b : Type}, (a -> b -> bool) -> f a -> f b -> bool :=
   g__0__ _ (liftEq__ f).
 
-Definition Ord1 (f : Type -> Type) `{(Eq1 f)} :=
+Definition Ord1 (f : Type -> Type) `{Eq1 f} :=
   forall r__, (Ord1__Dict f -> r__) -> r__.
 Existing Class Ord1.
 
