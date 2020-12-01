@@ -170,7 +170,8 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
   unless (null fds) $ convUnsupportedHere "functional dependencies"
 
   let aux x = withCurrentDefinition name $ convertLHsType x
-  ctx  <- traverse (fmap (Generalized Coq.Implicit) . aux) hsCtx
+  ctx' <- traverse (fmap (Generalized Coq.Implicit) . aux) hsCtx
+  let ctx = maybe ctx' (fmap (Generalized Coq.Implicit) . convertedTyClPredTypes) tycl
 
   storeSuperclassCount name . sum <=< for ctx $ \case
     Generalized _ (termHead -> Just super) -> maybe 1 (+ 1) <$> lookupSuperclassCount super

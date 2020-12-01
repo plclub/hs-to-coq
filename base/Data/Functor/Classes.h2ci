@@ -25,8 +25,8 @@ classDefns:
     [])) (Qualid (Bare "bool"))))))))))]
   Data.Functor.Classes.Ord1: ClassDefinition (Qualified "Data.Functor.Classes" "Ord1")
     [Typed Ungeneralizable Explicit (Ident (Bare "f") :| []) (Arrow (Qualid (Bare
-    "Type")) (Qualid (Bare "Type"))),Generalized Implicit (Parens (App (Qualid (Qualified
-    "Data.Functor.Classes" "Eq1")) (PosArg (Qualid (Bare "f")) :| [])))] Nothing [(Qualified
+    "Type")) (Qualid (Bare "Type"))),Generalized Implicit (App (Qualid (Qualified
+    "Data.Functor.Classes" "Eq1")) (PosArg (Qualid (Bare "f")) :| []))] Nothing [(Qualified
     "Data.Functor.Classes" "liftCompare",Forall (Typed Ungeneralizable Implicit (Ident
     (Bare "a") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable
     Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Arrow (Arrow
@@ -45,15 +45,15 @@ classDefns:
   Data.Functor.Classes.Ord2: ClassDefinition (Qualified "Data.Functor.Classes" "Ord2")
     [Typed Ungeneralizable Explicit (Ident (Bare "f") :| []) (Arrow (Qualid (Bare
     "Type")) (Arrow (Qualid (Bare "Type")) (Qualid (Bare "Type")))),Generalized Implicit
-    (Parens (App (Qualid (Qualified "Data.Functor.Classes" "Eq2")) (PosArg (Qualid
-    (Bare "f")) :| [])))] Nothing [(Qualified "Data.Functor.Classes" "liftCompare2",Forall
-    (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid (Bare "Type"))
-    :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "b") :| []) (Qualid
-    (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "c")
-    :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident
-    (Bare "d") :| []) (Qualid (Bare "Type")) :| []) (Arrow (Arrow (Qualid (Bare "a"))
-    (Arrow (Qualid (Bare "b")) (Qualid (Bare "comparison")))) (Arrow (Arrow (Qualid
-    (Bare "c")) (Arrow (Qualid (Bare "d")) (Qualid (Bare "comparison")))) (Arrow (App
-    (App (Qualid (Bare "f")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid (Bare
+    (App (Qualid (Qualified "Data.Functor.Classes" "Eq2")) (PosArg (Qualid (Bare "f"))
+    :| []))] Nothing [(Qualified "Data.Functor.Classes" "liftCompare2",Forall (Typed
+    Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid (Bare "Type")) :| [])
+    (Forall (Typed Ungeneralizable Implicit (Ident (Bare "b") :| []) (Qualid (Bare
+    "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "c") :| [])
+    (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare
+    "d") :| []) (Qualid (Bare "Type")) :| []) (Arrow (Arrow (Qualid (Bare "a")) (Arrow
+    (Qualid (Bare "b")) (Qualid (Bare "comparison")))) (Arrow (Arrow (Qualid (Bare
+    "c")) (Arrow (Qualid (Bare "d")) (Qualid (Bare "comparison")))) (Arrow (App (App
+    (Qualid (Bare "f")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid (Bare
     "c")) :| [])) (Arrow (App (App (Qualid (Bare "f")) (PosArg (Qualid (Bare "b"))
     :| [])) (PosArg (Qualid (Bare "d")) :| [])) (Qualid (Bare "comparison"))))))))))]

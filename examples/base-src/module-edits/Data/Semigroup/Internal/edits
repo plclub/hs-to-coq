@@ -1,4 +1,5 @@
-data kinds Data.SemigroupInternal.Alt (Type -> Type)
+polykinds Data.SemigroupInternal.Alt k
+data kinds Data.SemigroupInternal.Alt (k -> Type), k
 
 # needs stimes
 skip Data.SemigroupInternal.stimesDefault

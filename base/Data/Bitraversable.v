@@ -382,9 +382,9 @@ Definition bimapDefault {t : Type -> Type -> Type} {a : Type} {b : Type} {c
 Definition bifoldMapDefault {t : Type -> Type -> Type} {m : Type} {a : Type} {b
    : Type} `{Bitraversable t} `{GHC.Base.Monoid m}
    : (a -> m) -> (b -> m) -> t a b -> m :=
-  GHC.Prim.coerce (bitraverse : (a -> Data.Functor.Const.Const m unit) ->
-                   (b -> Data.Functor.Const.Const m unit) ->
-                   t a b -> Data.Functor.Const.Const m (t unit unit)).
+  GHC.Prim.coerce (bitraverse : (a -> Data.Functor.Const.Const Type m unit) ->
+                   (b -> Data.Functor.Const.Const Type m unit) ->
+                   t a b -> Data.Functor.Const.Const Type m (t unit unit)).
 
 (* External variables:
      Type pair unit Data.Bifoldable.Bifoldable Data.Bifunctor.Bifunctor

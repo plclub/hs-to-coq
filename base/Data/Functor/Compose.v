@@ -26,13 +26,14 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Compose (f : Type -> Type) (g : Type -> Type) (a : Type) : Type :=
-  | Mk_Compose (getCompose : f (g a)) : Compose f g a.
+Inductive Compose (k : Type) (k1 : Type) (f : k -> Type) (g : k1 -> k) (a : k1)
+   : Type :=
+  | Mk_Compose (getCompose : f (g a)) : Compose k k1 f g a.
 
-Arguments Mk_Compose {_} {_} {_} _.
+Arguments Mk_Compose {_} {_} {_} {_} {_} _.
 
-Definition getCompose {f : Type -> Type} {g : Type -> Type} {a : Type} (arg_0__
-    : Compose f g a) :=
+Definition getCompose {k : Type} {k1 : Type} {f : k -> Type} {g : k1 -> k} {a
+   : k1} (arg_0__ : Compose k k1 f g a) :=
   let 'Mk_Compose getCompose := arg_0__ in
   getCompose.
 

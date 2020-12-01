@@ -101,7 +101,7 @@ convertConDecl curType extraArgs (ConDeclH98 lname mlqvs mlcxt details _doc)
        fieldInfo <- fmap RecordFields qualids
        storeConstructorFields con fieldInfo
        qualids <- qualids
-       let namedBinders = fmap (\(x,y) -> mkBinders Explicit ( Ident x  NE.:| [] ) y) $ zip qualids args
+       let namedBinders = (\(x,y) -> mkBinders Explicit ( Ident x  NE.:| [] ) y) <$> zip qualids args
        pure [(con, params ++ namedBinders , Just . maybeForall extraArgs $ curType)]
     _ ->
      do
@@ -155,7 +155,7 @@ rewriteDataTypeArguments dta bs = do
       boundIdents = fmap S.fromList . traverse (view nameToIdent) $ foldMap (toListOf binderNames) ebs
                        -- Underscores are an automatic failure
     in unless (boundIdents == Just editIdents) $
-         dtaEditFailure $ "mismatched names"
+         dtaEditFailure "mismatched names"
 
   let coalesceTypedBinders [] = []
       coalesceTypedBinders (Typed g ei xs0 ty : bs) =
@@ -191,7 +191,7 @@ convertDataDecl name tvs defn = do
   coqName   <- var TypeNS $ unLoc name
 
   addKindVars <- view (edits.polyKinds.at coqName) >>= \case
-    Just ids -> pure $ (:) (mkBinders Explicit (Ident . Bare <$> ids) $ Qualid (Bare "Type"))
+    Just ids -> pure $ (++) ((\id -> mkTypedBinder Explicit (Ident $ Bare id) $ Qualid (Bare "Type")) <$> toList ids)
     Nothing  -> pure id
   kinds     <- (++ repeat Nothing) . map Just . maybe [] NE.toList <$> view (edits.dataKinds.at coqName)
   let cvtName tv = Ident <$> var TypeNS (unLoc tv)
