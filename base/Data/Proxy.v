@@ -21,11 +21,11 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Proxy (t : Type) : Type := | Mk_Proxy : Proxy t.
+Inductive Proxy (k : Type) (t : k) : Type := | Mk_Proxy : Proxy k t.
 
 Inductive KProxy (t : Type) : Type := | Mk_KProxy : KProxy t.
 
-Arguments Mk_Proxy {_}.
+Arguments Mk_Proxy {_} {_}.
 
 Arguments Mk_KProxy {_}.
 
