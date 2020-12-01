@@ -1,4 +1,5 @@
- Definition DVarSet :=
+(*
+Definition DVarSet :=
   (UniqSetInv.UniqSet Var)%type.
 
 Definition CoVarSet :=
@@ -58,3 +59,4 @@ Inductive TCvSubst : Type
 
 Inductive LiftingContext : Type
   := | LC : TCvSubst -> LiftCoEnv -> LiftingContext.
+*)

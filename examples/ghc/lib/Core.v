@@ -2355,7 +2355,8 @@ eapply varName. intro v. eapply Name.nameOccName. eapply varName. exact v.
 Qed.
 
 
- Definition DVarSet :=
+(*
+Definition DVarSet :=
   (UniqSetInv.UniqSet Var)%type.
 
 Definition CoVarSet :=
@@ -2415,6 +2416,7 @@ Inductive TCvSubst : Type
 
 Inductive LiftingContext : Type
   := | LC : TCvSubst -> LiftCoEnv -> LiftingContext.
+*)
 (* ------------- VarEnv midamble.v ------------ *)
 Require GHC.Err.
 
