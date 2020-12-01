@@ -20,8 +20,6 @@ import HscTypes
 import InstEnv
 import Var
 
-import Debug.Trace
-
 data ConvertedInstance =
   ConvertedInstance { convertedInstanceClass :: ConvertedTyCl
                     , convertedInstanceBinds :: [Binder]
@@ -55,5 +53,5 @@ lookupInstance :: ConversionMonad r m => Qualid -> Qualid -> ConvertedInstanceEn
 lookupInstance top className env = case find matchInstance env of
   Just t -> pure t
   _ -> throwProgramError $ "The class " <> showP className <> " of " <> showP top <> " is not found"
-  where matchInstance i = traceShow i $ elem top (convertedInstanceTops i) &&
+  where matchInstance i = elem top (convertedInstanceTops i) &&
           convertedTyClName (convertedInstanceClass i) == className

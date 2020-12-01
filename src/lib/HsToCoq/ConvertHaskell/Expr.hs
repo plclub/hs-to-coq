@@ -304,7 +304,7 @@ convertExpr_ (RecordUpd recVal fields PlaceHolder PlaceHolder PlaceHolder PlaceH
         let quote f = "`" ++ T.unpack (qualidToIdent f) ++ "'"
         in explainStrItems quote "no" "," "and" what (what ++ "s") updFields
 
-  recType <- S.minView . S.fromList <$> traverse (\field -> lookupRecordFieldType field) updFields >>= \case
+  recType <- S.minView . S.fromList <$> traverse lookupRecordFieldType updFields >>= \case
                Just (Just recType, []) -> pure recType
                Just (Nothing,      []) -> convUnsupported $ "invalid record update with " ++ prettyUpdFields "non-record-field"
                _                       -> convUnsupported $ "invalid mixed-data-type record updates with " ++ prettyUpdFields "the given field"
@@ -541,7 +541,7 @@ convertFunction _ mg | Just alt <- isTrivialMatch mg = convTrivialMatch alt
 convertFunction skipEqns mg = do
   let n_args = matchGroupArity mg
   args <- replicateM n_args (genqid "arg") >>= maybe err pure . nonEmpty
-  let argBinders = (mkBinder Coq.Explicit . Ident) <$> args
+  let argBinders = mkBinder Coq.Explicit . Ident <$> args
   match <- convertMatchGroup skipEqns (Qualid <$> args) mg
   pure (argBinders, match)
  where
@@ -569,9 +569,9 @@ convTrivialMatch ::  LocalConvMonad r m =>
   Match GhcRn (LHsExpr GhcRn) ->  m (Binders, Term)
 convTrivialMatch alt = do
   (MultPattern pats, _, rhs) <- convertMatch alt
-                                  <&> maybe (error "internal error: convTrivialMatch: not a trivial match!") id
+                                  <&> fromMaybe (error "internal error: convTrivialMatch: not a trivial match!")
   names <- mapM patToName pats
-  let argBinders = (mkBinder Explicit) <$> names
+  let argBinders = mkBinder Explicit <$> names
   body <- rhs patternFailure
   return (argBinders, body)
 
@@ -817,7 +817,7 @@ groupMatches pats = map (map snd) . go <$> mapM summarize pats
         -- Append to a group, if mutually exclusive with all members
                | all (mutExcls ps . fst) g -> ((ps,x):g)  : gs
         -- Otherwise, start a new group
-        gs                                 -> ((ps,x):[]) : gs
+        gs                                 -> [(ps,x)]    : gs
 
 
 convertMatch :: LocalConvMonad r m =>

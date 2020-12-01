@@ -47,12 +47,6 @@ import HsToCoq.ConvertHaskell.Sigs
 import HsToCoq.ConvertHaskell.Declarations.Notations
 import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 
-import Debug.Trace
-import Outputable (pprTrace, ppr)
-import HscTypes
-import HsToCoq.Util.GHC.Module
-import InstEnv
-
 data ClassBody = ClassBody ClassDefinition [Notation]
                deriving (Eq, Ord, Read, Show)
 
@@ -213,8 +207,7 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
     pure $ Rewrite { patternVars = vars
                    , lhs         = Qualid meth `appList` map (PosArg . Var) vars
                    , rhs         = Qualid meth }
-  insts <- md_insts <$> view (currentModule.modDetails)
-  let all_sigs = pprTrace "instances" (ppr (is_tcs <$> insts)) $ traceShow value_sigs $ everywhere (mkT $ rewrite hideTypeArgs) <$> (type_sigs <> value_sigs)
+  let all_sigs = everywhere (mkT $ rewrite hideTypeArgs) <$> (type_sigs <> value_sigs)
 
   -- implement the class part of "skip method"
   skippedMethodsS <- view (edits.skippedMethods)

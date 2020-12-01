@@ -37,8 +37,6 @@ import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.HsType
 
-
-
 -- From Haskell declaration
 data HsSignature = HsSignature { hsSigType   :: LHsSigType GhcRn
                                , hsSigFixity :: Maybe Fixity }
@@ -76,10 +74,10 @@ collectSigs sigs = do
   pure $ flip M.mapWithKey multimap $ \_key info@(_,_) -> case info of
          ([ty],  [fixity])  -> Right $ HsSignature ty (Just fixity)
          ([ty],  [])        -> Right $ HsSignature ty Nothing
-         ([],    [_fixity]) -> Left $ "a fixity annotation without a type signature"
-         ([],    _)         -> Left $ "multiple fixity annotations without a type signature"
-         (_,     [])        -> Left $ "multiple type signatures for the same identifier"
-         (_,     _)         -> Left $ "multiple type and fixity signatures for the same identifier"
+         ([],    [_fixity]) -> Left "a fixity annotation without a type signature"
+         ([],    _)         -> Left "multiple fixity annotations without a type signature"
+         (_,     [])        -> Left "multiple type signatures for the same identifier"
+         (_,     _)         -> Left "multiple type and fixity signatures for the same identifier"
 
 collectSigsWithErrors :: ConversionMonad r m => [Sig GhcRn] -> m (Map GHC.Name HsSignature)
 collectSigsWithErrors =
@@ -91,7 +89,7 @@ collectSigsWithErrors =
           pure sig
 
 convertSignature :: ConversionMonad r m => Qualid -> UnusedTyVarMode -> HsSignature -> m Signature
-convertSignature coqName utvm (HsSignature sigTy _hsFix) = do
+convertSignature coqName utvm (HsSignature sigTy _hsFix) =
   withCurrentDefinition coqName (Signature <$> convertLHsSigType utvm sigTy <*> pure Nothing)
 
 -- Incorporates @set type …@ edits ('replacedTypes') for all bindings that
