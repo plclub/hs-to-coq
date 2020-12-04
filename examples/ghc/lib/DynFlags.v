@@ -25,351 +25,351 @@ Require SrcLoc.
 
 (* Converted type declarations: *)
 
-Inductive Way : Type
-  := | WayCustom : GHC.Base.String -> Way
-  |  WayThreaded : Way
-  |  WayDebug : Way
-  |  WayProf : Way
-  |  WayEventLog : Way
-  |  WayDyn : Way.
+Inductive Way : Type :=
+  | WayCustom : GHC.Base.String -> Way
+  | WayThreaded : Way
+  | WayDebug : Way
+  | WayProf : Way
+  | WayEventLog : Way
+  | WayDyn : Way.
 
-Inductive WarningFlag : Type
-  := | Opt_WarnDuplicateExports : WarningFlag
-  |  Opt_WarnDuplicateConstraints : WarningFlag
-  |  Opt_WarnRedundantConstraints : WarningFlag
-  |  Opt_WarnHiShadows : WarningFlag
-  |  Opt_WarnImplicitPrelude : WarningFlag
-  |  Opt_WarnIncompletePatterns : WarningFlag
-  |  Opt_WarnIncompleteUniPatterns : WarningFlag
-  |  Opt_WarnIncompletePatternsRecUpd : WarningFlag
-  |  Opt_WarnOverflowedLiterals : WarningFlag
-  |  Opt_WarnEmptyEnumerations : WarningFlag
-  |  Opt_WarnMissingFields : WarningFlag
-  |  Opt_WarnMissingImportList : WarningFlag
-  |  Opt_WarnMissingMethods : WarningFlag
-  |  Opt_WarnMissingSignatures : WarningFlag
-  |  Opt_WarnMissingLocalSignatures : WarningFlag
-  |  Opt_WarnNameShadowing : WarningFlag
-  |  Opt_WarnOverlappingPatterns : WarningFlag
-  |  Opt_WarnTypeDefaults : WarningFlag
-  |  Opt_WarnMonomorphism : WarningFlag
-  |  Opt_WarnUnusedTopBinds : WarningFlag
-  |  Opt_WarnUnusedLocalBinds : WarningFlag
-  |  Opt_WarnUnusedPatternBinds : WarningFlag
-  |  Opt_WarnUnusedImports : WarningFlag
-  |  Opt_WarnUnusedMatches : WarningFlag
-  |  Opt_WarnUnusedTypePatterns : WarningFlag
-  |  Opt_WarnUnusedForalls : WarningFlag
-  |  Opt_WarnWarningsDeprecations : WarningFlag
-  |  Opt_WarnDeprecatedFlags : WarningFlag
-  |  Opt_WarnAMP : WarningFlag
-  |  Opt_WarnMissingMonadFailInstances : WarningFlag
-  |  Opt_WarnSemigroup : WarningFlag
-  |  Opt_WarnDodgyExports : WarningFlag
-  |  Opt_WarnDodgyImports : WarningFlag
-  |  Opt_WarnOrphans : WarningFlag
-  |  Opt_WarnAutoOrphans : WarningFlag
-  |  Opt_WarnIdentities : WarningFlag
-  |  Opt_WarnTabs : WarningFlag
-  |  Opt_WarnUnrecognisedPragmas : WarningFlag
-  |  Opt_WarnDodgyForeignImports : WarningFlag
-  |  Opt_WarnUnusedDoBind : WarningFlag
-  |  Opt_WarnWrongDoBind : WarningFlag
-  |  Opt_WarnAlternativeLayoutRuleTransitional : WarningFlag
-  |  Opt_WarnUnsafe : WarningFlag
-  |  Opt_WarnSafe : WarningFlag
-  |  Opt_WarnTrustworthySafe : WarningFlag
-  |  Opt_WarnMissedSpecs : WarningFlag
-  |  Opt_WarnAllMissedSpecs : WarningFlag
-  |  Opt_WarnUnsupportedCallingConventions : WarningFlag
-  |  Opt_WarnUnsupportedLlvmVersion : WarningFlag
-  |  Opt_WarnInlineRuleShadowing : WarningFlag
-  |  Opt_WarnTypedHoles : WarningFlag
-  |  Opt_WarnPartialTypeSignatures : WarningFlag
-  |  Opt_WarnMissingExportedSignatures : WarningFlag
-  |  Opt_WarnUntickedPromotedConstructors : WarningFlag
-  |  Opt_WarnDerivingTypeable : WarningFlag
-  |  Opt_WarnDeferredTypeErrors : WarningFlag
-  |  Opt_WarnDeferredOutOfScopeVariables : WarningFlag
-  |  Opt_WarnNonCanonicalMonadInstances : WarningFlag
-  |  Opt_WarnNonCanonicalMonadFailInstances : WarningFlag
-  |  Opt_WarnNonCanonicalMonoidInstances : WarningFlag
-  |  Opt_WarnMissingPatternSynonymSignatures : WarningFlag
-  |  Opt_WarnUnrecognisedWarningFlags : WarningFlag
-  |  Opt_WarnSimplifiableClassConstraints : WarningFlag
-  |  Opt_WarnCPPUndef : WarningFlag
-  |  Opt_WarnUnbangedStrictPatterns : WarningFlag
-  |  Opt_WarnMissingHomeModules : WarningFlag
-  |  Opt_WarnPartialFields : WarningFlag
-  |  Opt_WarnMissingExportList : WarningFlag.
+Inductive WarningFlag : Type :=
+  | Opt_WarnDuplicateExports : WarningFlag
+  | Opt_WarnDuplicateConstraints : WarningFlag
+  | Opt_WarnRedundantConstraints : WarningFlag
+  | Opt_WarnHiShadows : WarningFlag
+  | Opt_WarnImplicitPrelude : WarningFlag
+  | Opt_WarnIncompletePatterns : WarningFlag
+  | Opt_WarnIncompleteUniPatterns : WarningFlag
+  | Opt_WarnIncompletePatternsRecUpd : WarningFlag
+  | Opt_WarnOverflowedLiterals : WarningFlag
+  | Opt_WarnEmptyEnumerations : WarningFlag
+  | Opt_WarnMissingFields : WarningFlag
+  | Opt_WarnMissingImportList : WarningFlag
+  | Opt_WarnMissingMethods : WarningFlag
+  | Opt_WarnMissingSignatures : WarningFlag
+  | Opt_WarnMissingLocalSignatures : WarningFlag
+  | Opt_WarnNameShadowing : WarningFlag
+  | Opt_WarnOverlappingPatterns : WarningFlag
+  | Opt_WarnTypeDefaults : WarningFlag
+  | Opt_WarnMonomorphism : WarningFlag
+  | Opt_WarnUnusedTopBinds : WarningFlag
+  | Opt_WarnUnusedLocalBinds : WarningFlag
+  | Opt_WarnUnusedPatternBinds : WarningFlag
+  | Opt_WarnUnusedImports : WarningFlag
+  | Opt_WarnUnusedMatches : WarningFlag
+  | Opt_WarnUnusedTypePatterns : WarningFlag
+  | Opt_WarnUnusedForalls : WarningFlag
+  | Opt_WarnWarningsDeprecations : WarningFlag
+  | Opt_WarnDeprecatedFlags : WarningFlag
+  | Opt_WarnAMP : WarningFlag
+  | Opt_WarnMissingMonadFailInstances : WarningFlag
+  | Opt_WarnSemigroup : WarningFlag
+  | Opt_WarnDodgyExports : WarningFlag
+  | Opt_WarnDodgyImports : WarningFlag
+  | Opt_WarnOrphans : WarningFlag
+  | Opt_WarnAutoOrphans : WarningFlag
+  | Opt_WarnIdentities : WarningFlag
+  | Opt_WarnTabs : WarningFlag
+  | Opt_WarnUnrecognisedPragmas : WarningFlag
+  | Opt_WarnDodgyForeignImports : WarningFlag
+  | Opt_WarnUnusedDoBind : WarningFlag
+  | Opt_WarnWrongDoBind : WarningFlag
+  | Opt_WarnAlternativeLayoutRuleTransitional : WarningFlag
+  | Opt_WarnUnsafe : WarningFlag
+  | Opt_WarnSafe : WarningFlag
+  | Opt_WarnTrustworthySafe : WarningFlag
+  | Opt_WarnMissedSpecs : WarningFlag
+  | Opt_WarnAllMissedSpecs : WarningFlag
+  | Opt_WarnUnsupportedCallingConventions : WarningFlag
+  | Opt_WarnUnsupportedLlvmVersion : WarningFlag
+  | Opt_WarnInlineRuleShadowing : WarningFlag
+  | Opt_WarnTypedHoles : WarningFlag
+  | Opt_WarnPartialTypeSignatures : WarningFlag
+  | Opt_WarnMissingExportedSignatures : WarningFlag
+  | Opt_WarnUntickedPromotedConstructors : WarningFlag
+  | Opt_WarnDerivingTypeable : WarningFlag
+  | Opt_WarnDeferredTypeErrors : WarningFlag
+  | Opt_WarnDeferredOutOfScopeVariables : WarningFlag
+  | Opt_WarnNonCanonicalMonadInstances : WarningFlag
+  | Opt_WarnNonCanonicalMonadFailInstances : WarningFlag
+  | Opt_WarnNonCanonicalMonoidInstances : WarningFlag
+  | Opt_WarnMissingPatternSynonymSignatures : WarningFlag
+  | Opt_WarnUnrecognisedWarningFlags : WarningFlag
+  | Opt_WarnSimplifiableClassConstraints : WarningFlag
+  | Opt_WarnCPPUndef : WarningFlag
+  | Opt_WarnUnbangedStrictPatterns : WarningFlag
+  | Opt_WarnMissingHomeModules : WarningFlag
+  | Opt_WarnPartialFields : WarningFlag
+  | Opt_WarnMissingExportList : WarningFlag.
 
-Inductive WarnReason : Type
-  := | NoReason : WarnReason
-  |  Reason : WarningFlag -> WarnReason
-  |  ErrReason : (option WarningFlag) -> WarnReason.
+Inductive WarnReason : Type :=
+  | NoReason : WarnReason
+  | Reason : WarningFlag -> WarnReason
+  | ErrReason : (option WarningFlag) -> WarnReason.
 
 Definition TurnOnFlag :=
   bool%type.
 
-Inductive TrustFlag : Type
-  := | TrustPackage : GHC.Base.String -> TrustFlag
-  |  DistrustPackage : GHC.Base.String -> TrustFlag.
+Inductive TrustFlag : Type :=
+  | TrustPackage : GHC.Base.String -> TrustFlag
+  | DistrustPackage : GHC.Base.String -> TrustFlag.
 
-Inductive SseVersion : Type
-  := | SSE1 : SseVersion
-  |  SSE2 : SseVersion
-  |  SSE3 : SseVersion
-  |  SSE4 : SseVersion
-  |  SSE42 : SseVersion.
+Inductive SseVersion : Type :=
+  | SSE1 : SseVersion
+  | SSE2 : SseVersion
+  | SSE3 : SseVersion
+  | SSE4 : SseVersion
+  | SSE42 : SseVersion.
 
 Axiom Settings : Type.
 
-Inductive SafeHaskellMode : Type
-  := | Sf_None : SafeHaskellMode
-  |  Sf_Unsafe : SafeHaskellMode
-  |  Sf_Trustworthy : SafeHaskellMode
-  |  Sf_Safe : SafeHaskellMode.
+Inductive SafeHaskellMode : Type :=
+  | Sf_None : SafeHaskellMode
+  | Sf_Unsafe : SafeHaskellMode
+  | Sf_Trustworthy : SafeHaskellMode
+  | Sf_Safe : SafeHaskellMode.
 
-Inductive RtsOptsEnabled : Type
-  := | RtsOptsNone : RtsOptsEnabled
-  |  RtsOptsIgnore : RtsOptsEnabled
-  |  RtsOptsIgnoreAll : RtsOptsEnabled
-  |  RtsOptsSafeOnly : RtsOptsEnabled
-  |  RtsOptsAll : RtsOptsEnabled.
+Inductive RtsOptsEnabled : Type :=
+  | RtsOptsNone : RtsOptsEnabled
+  | RtsOptsIgnore : RtsOptsEnabled
+  | RtsOptsIgnoreAll : RtsOptsEnabled
+  | RtsOptsSafeOnly : RtsOptsEnabled
+  | RtsOptsAll : RtsOptsEnabled.
 
-Inductive ProfAuto : Type
-  := | NoProfAuto : ProfAuto
-  |  ProfAutoAll : ProfAuto
-  |  ProfAutoTop : ProfAuto
-  |  ProfAutoExports : ProfAuto
-  |  ProfAutoCalls : ProfAuto.
+Inductive ProfAuto : Type :=
+  | NoProfAuto : ProfAuto
+  | ProfAutoAll : ProfAuto
+  | ProfAutoTop : ProfAuto
+  | ProfAutoExports : ProfAuto
+  | ProfAutoCalls : ProfAuto.
 
-Inductive PkgConfRef : Type
-  := | GlobalPkgConf : PkgConfRef
-  |  UserPkgConf : PkgConfRef
-  |  PkgConfFile : GHC.Base.String -> PkgConfRef.
+Inductive PkgConfRef : Type :=
+  | GlobalPkgConf : PkgConfRef
+  | UserPkgConf : PkgConfRef
+  | PkgConfFile : GHC.Base.String -> PkgConfRef.
 
-Inductive PackageDBFlag : Type
-  := | PackageDB : PkgConfRef -> PackageDBFlag
-  |  NoUserPackageDB : PackageDBFlag
-  |  NoGlobalPackageDB : PackageDBFlag
-  |  ClearPackageDBs : PackageDBFlag.
+Inductive PackageDBFlag : Type :=
+  | PackageDB : PkgConfRef -> PackageDBFlag
+  | NoUserPackageDB : PackageDBFlag
+  | NoGlobalPackageDB : PackageDBFlag
+  | ClearPackageDBs : PackageDBFlag.
 
-Inductive PackageArg : Type
-  := | Mk_PackageArg : GHC.Base.String -> PackageArg
-  |  UnitIdArg : Module.UnitId -> PackageArg.
+Inductive PackageArg : Type :=
+  | Mk_PackageArg : GHC.Base.String -> PackageArg
+  | UnitIdArg : Module.UnitId -> PackageArg.
 
-Inductive Option : Type
-  := | FileOption : GHC.Base.String -> GHC.Base.String -> Option
-  |  Mk_Option : GHC.Base.String -> Option.
+Inductive Option : Type :=
+  | FileOption : GHC.Base.String -> GHC.Base.String -> Option
+  | Mk_Option : GHC.Base.String -> Option.
 
-Inductive OnOff a : Type := | On : a -> OnOff a |  Off : a -> OnOff a.
+Inductive OnOff a : Type := | On : a -> OnOff a | Off : a -> OnOff a.
 
-Inductive ModRenaming : Type
-  := | Mk_ModRenaming (modRenamingWithImplicit : bool) (modRenamings
+Inductive ModRenaming : Type :=
+  | Mk_ModRenaming (modRenamingWithImplicit : bool) (modRenamings
     : list (Module.ModuleName * Module.ModuleName)%type)
    : ModRenaming.
 
-Inductive PackageFlag : Type
-  := | ExposePackage : GHC.Base.String -> PackageArg -> ModRenaming -> PackageFlag
-  |  HidePackage : GHC.Base.String -> PackageFlag.
+Inductive PackageFlag : Type :=
+  | ExposePackage : GHC.Base.String -> PackageArg -> ModRenaming -> PackageFlag
+  | HidePackage : GHC.Base.String -> PackageFlag.
 
-Inductive LlvmTarget : Type
-  := | Mk_LlvmTarget (lDataLayout : GHC.Base.String) (lCPU : GHC.Base.String)
+Inductive LlvmTarget : Type :=
+  | Mk_LlvmTarget (lDataLayout : GHC.Base.String) (lCPU : GHC.Base.String)
   (lAttributes : list GHC.Base.String)
    : LlvmTarget.
 
 Definition LlvmTargets :=
   (list (GHC.Base.String * LlvmTarget)%type)%type.
 
-Inductive LinkerInfo : Type
-  := | GnuLD : list Option -> LinkerInfo
-  |  GnuGold : list Option -> LinkerInfo
-  |  LlvmLLD : list Option -> LinkerInfo
-  |  DarwinLD : list Option -> LinkerInfo
-  |  SolarisLD : list Option -> LinkerInfo
-  |  AixLD : list Option -> LinkerInfo
-  |  UnknownLD : LinkerInfo.
+Inductive LinkerInfo : Type :=
+  | GnuLD : list Option -> LinkerInfo
+  | GnuGold : list Option -> LinkerInfo
+  | LlvmLLD : list Option -> LinkerInfo
+  | DarwinLD : list Option -> LinkerInfo
+  | SolarisLD : list Option -> LinkerInfo
+  | AixLD : list Option -> LinkerInfo
+  | UnknownLD : LinkerInfo.
 
-Inductive Language : Type := | Haskell98 : Language |  Haskell2010 : Language.
+Inductive Language : Type := | Haskell98 : Language | Haskell2010 : Language.
 
-Inductive IgnorePackageFlag : Type
-  := | IgnorePackage : GHC.Base.String -> IgnorePackageFlag.
+Inductive IgnorePackageFlag : Type :=
+  | IgnorePackage : GHC.Base.String -> IgnorePackageFlag.
 
-Inductive HscTarget : Type
-  := | HscC : HscTarget
-  |  HscAsm : HscTarget
-  |  HscLlvm : HscTarget
-  |  HscInterpreted : HscTarget
-  |  HscNothing : HscTarget.
+Inductive HscTarget : Type :=
+  | HscC : HscTarget
+  | HscAsm : HscTarget
+  | HscLlvm : HscTarget
+  | HscInterpreted : HscTarget
+  | HscNothing : HscTarget.
 
-Inductive GhcMode : Type
-  := | CompManager : GhcMode
-  |  OneShot : GhcMode
-  |  MkDepend : GhcMode.
+Inductive GhcMode : Type :=
+  | CompManager : GhcMode
+  | OneShot : GhcMode
+  | MkDepend : GhcMode.
 
-Inductive GhcLink : Type
-  := | NoLink : GhcLink
-  |  LinkBinary : GhcLink
-  |  LinkInMemory : GhcLink
-  |  LinkDynLib : GhcLink
-  |  LinkStaticLib : GhcLink.
+Inductive GhcLink : Type :=
+  | NoLink : GhcLink
+  | LinkBinary : GhcLink
+  | LinkInMemory : GhcLink
+  | LinkDynLib : GhcLink
+  | LinkStaticLib : GhcLink.
 
-Inductive GeneralFlag : Type
-  := | Opt_DumpToFile : GeneralFlag
-  |  Opt_D_faststring_stats : GeneralFlag
-  |  Opt_D_dump_minimal_imports : GeneralFlag
-  |  Opt_DoCoreLinting : GeneralFlag
-  |  Opt_DoStgLinting : GeneralFlag
-  |  Opt_DoCmmLinting : GeneralFlag
-  |  Opt_DoAsmLinting : GeneralFlag
-  |  Opt_DoAnnotationLinting : GeneralFlag
-  |  Opt_NoLlvmMangler : GeneralFlag
-  |  Opt_FastLlvm : GeneralFlag
-  |  Opt_WarnIsError : GeneralFlag
-  |  Opt_ShowWarnGroups : GeneralFlag
-  |  Opt_HideSourcePaths : GeneralFlag
-  |  Opt_PrintExplicitForalls : GeneralFlag
-  |  Opt_PrintExplicitKinds : GeneralFlag
-  |  Opt_PrintExplicitCoercions : GeneralFlag
-  |  Opt_PrintExplicitRuntimeReps : GeneralFlag
-  |  Opt_PrintEqualityRelations : GeneralFlag
-  |  Opt_PrintUnicodeSyntax : GeneralFlag
-  |  Opt_PrintExpandedSynonyms : GeneralFlag
-  |  Opt_PrintPotentialInstances : GeneralFlag
-  |  Opt_PrintTypecheckerElaboration : GeneralFlag
-  |  Opt_CallArity : GeneralFlag
-  |  Opt_Exitification : GeneralFlag
-  |  Opt_Strictness : GeneralFlag
-  |  Opt_LateDmdAnal : GeneralFlag
-  |  Opt_KillAbsence : GeneralFlag
-  |  Opt_KillOneShot : GeneralFlag
-  |  Opt_FullLaziness : GeneralFlag
-  |  Opt_FloatIn : GeneralFlag
-  |  Opt_Specialise : GeneralFlag
-  |  Opt_SpecialiseAggressively : GeneralFlag
-  |  Opt_CrossModuleSpecialise : GeneralFlag
-  |  Opt_StaticArgumentTransformation : GeneralFlag
-  |  Opt_CSE : GeneralFlag
-  |  Opt_StgCSE : GeneralFlag
-  |  Opt_LiberateCase : GeneralFlag
-  |  Opt_SpecConstr : GeneralFlag
-  |  Opt_SpecConstrKeen : GeneralFlag
-  |  Opt_DoLambdaEtaExpansion : GeneralFlag
-  |  Opt_IgnoreAsserts : GeneralFlag
-  |  Opt_DoEtaReduction : GeneralFlag
-  |  Opt_CaseMerge : GeneralFlag
-  |  Opt_CaseFolding : GeneralFlag
-  |  Opt_UnboxStrictFields : GeneralFlag
-  |  Opt_UnboxSmallStrictFields : GeneralFlag
-  |  Opt_DictsCheap : GeneralFlag
-  |  Opt_EnableRewriteRules : GeneralFlag
-  |  Opt_Vectorise : GeneralFlag
-  |  Opt_VectorisationAvoidance : GeneralFlag
-  |  Opt_RegsGraph : GeneralFlag
-  |  Opt_RegsIterative : GeneralFlag
-  |  Opt_PedanticBottoms : GeneralFlag
-  |  Opt_LlvmTBAA : GeneralFlag
-  |  Opt_LlvmPassVectorsInRegisters : GeneralFlag
-  |  Opt_LlvmFillUndefWithGarbage : GeneralFlag
-  |  Opt_IrrefutableTuples : GeneralFlag
-  |  Opt_CmmSink : GeneralFlag
-  |  Opt_CmmElimCommonBlocks : GeneralFlag
-  |  Opt_OmitYields : GeneralFlag
-  |  Opt_FunToThunk : GeneralFlag
-  |  Opt_DictsStrict : GeneralFlag
-  |  Opt_DmdTxDictSel : GeneralFlag
-  |  Opt_Loopification : GeneralFlag
-  |  Opt_CprAnal : GeneralFlag
-  |  Opt_WorkerWrapper : GeneralFlag
-  |  Opt_SolveConstantDicts : GeneralFlag
-  |  Opt_AlignmentSanitisation : GeneralFlag
-  |  Opt_CatchBottoms : GeneralFlag
-  |  Opt_SimplPreInlining : GeneralFlag
-  |  Opt_IgnoreInterfacePragmas : GeneralFlag
-  |  Opt_OmitInterfacePragmas : GeneralFlag
-  |  Opt_ExposeAllUnfoldings : GeneralFlag
-  |  Opt_WriteInterface : GeneralFlag
-  |  Opt_AutoSccsOnIndividualCafs : GeneralFlag
-  |  Opt_ProfCountEntries : GeneralFlag
-  |  Opt_Pp : GeneralFlag
-  |  Opt_ForceRecomp : GeneralFlag
-  |  Opt_IgnoreOptimChanges : GeneralFlag
-  |  Opt_IgnoreHpcChanges : GeneralFlag
-  |  Opt_ExcessPrecision : GeneralFlag
-  |  Opt_EagerBlackHoling : GeneralFlag
-  |  Opt_NoHsMain : GeneralFlag
-  |  Opt_SplitObjs : GeneralFlag
-  |  Opt_SplitSections : GeneralFlag
-  |  Opt_StgStats : GeneralFlag
-  |  Opt_HideAllPackages : GeneralFlag
-  |  Opt_HideAllPluginPackages : GeneralFlag
-  |  Opt_PrintBindResult : GeneralFlag
-  |  Opt_Haddock : GeneralFlag
-  |  Opt_HaddockOptions : GeneralFlag
-  |  Opt_BreakOnException : GeneralFlag
-  |  Opt_BreakOnError : GeneralFlag
-  |  Opt_PrintEvldWithShow : GeneralFlag
-  |  Opt_PrintBindContents : GeneralFlag
-  |  Opt_GenManifest : GeneralFlag
-  |  Opt_EmbedManifest : GeneralFlag
-  |  Opt_SharedImplib : GeneralFlag
-  |  Opt_BuildingCabalPackage : GeneralFlag
-  |  Opt_IgnoreDotGhci : GeneralFlag
-  |  Opt_GhciSandbox : GeneralFlag
-  |  Opt_GhciHistory : GeneralFlag
-  |  Opt_LocalGhciHistory : GeneralFlag
-  |  Opt_HelpfulErrors : GeneralFlag
-  |  Opt_DeferTypeErrors : GeneralFlag
-  |  Opt_DeferTypedHoles : GeneralFlag
-  |  Opt_DeferOutOfScopeVariables : GeneralFlag
-  |  Opt_PIC : GeneralFlag
-  |  Opt_PIE : GeneralFlag
-  |  Opt_PICExecutable : GeneralFlag
-  |  Opt_SccProfilingOn : GeneralFlag
-  |  Opt_Ticky : GeneralFlag
-  |  Opt_Ticky_Allocd : GeneralFlag
-  |  Opt_Ticky_LNE : GeneralFlag
-  |  Opt_Ticky_Dyn_Thunk : GeneralFlag
-  |  Opt_RPath : GeneralFlag
-  |  Opt_RelativeDynlibPaths : GeneralFlag
-  |  Opt_Hpc : GeneralFlag
-  |  Opt_FlatCache : GeneralFlag
-  |  Opt_ExternalInterpreter : GeneralFlag
-  |  Opt_OptimalApplicativeDo : GeneralFlag
-  |  Opt_VersionMacros : GeneralFlag
-  |  Opt_WholeArchiveHsLibs : GeneralFlag
-  |  Opt_ErrorSpans : GeneralFlag
-  |  Opt_DiagnosticsShowCaret : GeneralFlag
-  |  Opt_PprCaseAsLet : GeneralFlag
-  |  Opt_PprShowTicks : GeneralFlag
-  |  Opt_ShowHoleConstraints : GeneralFlag
-  |  Opt_ShowLoadedModules : GeneralFlag
-  |  Opt_SuppressCoercions : GeneralFlag
-  |  Opt_SuppressVarKinds : GeneralFlag
-  |  Opt_SuppressModulePrefixes : GeneralFlag
-  |  Opt_SuppressTypeApplications : GeneralFlag
-  |  Opt_SuppressIdInfo : GeneralFlag
-  |  Opt_SuppressUnfoldings : GeneralFlag
-  |  Opt_SuppressTypeSignatures : GeneralFlag
-  |  Opt_SuppressUniques : GeneralFlag
-  |  Opt_SuppressStgFreeVars : GeneralFlag
-  |  Opt_SuppressTicks : GeneralFlag
-  |  Opt_AutoLinkPackages : GeneralFlag
-  |  Opt_ImplicitImportQualified : GeneralFlag
-  |  Opt_KeepHiDiffs : GeneralFlag
-  |  Opt_KeepHcFiles : GeneralFlag
-  |  Opt_KeepSFiles : GeneralFlag
-  |  Opt_KeepTmpFiles : GeneralFlag
-  |  Opt_KeepRawTokenStream : GeneralFlag
-  |  Opt_KeepLlvmFiles : GeneralFlag
-  |  Opt_KeepHiFiles : GeneralFlag
-  |  Opt_KeepOFiles : GeneralFlag
-  |  Opt_BuildDynamicToo : GeneralFlag
-  |  Opt_DistrustAllPackages : GeneralFlag
-  |  Opt_PackageTrust : GeneralFlag
-  |  Opt_G_NoStateHack : GeneralFlag
-  |  Opt_G_NoOptCoercion : GeneralFlag.
+Inductive GeneralFlag : Type :=
+  | Opt_DumpToFile : GeneralFlag
+  | Opt_D_faststring_stats : GeneralFlag
+  | Opt_D_dump_minimal_imports : GeneralFlag
+  | Opt_DoCoreLinting : GeneralFlag
+  | Opt_DoStgLinting : GeneralFlag
+  | Opt_DoCmmLinting : GeneralFlag
+  | Opt_DoAsmLinting : GeneralFlag
+  | Opt_DoAnnotationLinting : GeneralFlag
+  | Opt_NoLlvmMangler : GeneralFlag
+  | Opt_FastLlvm : GeneralFlag
+  | Opt_WarnIsError : GeneralFlag
+  | Opt_ShowWarnGroups : GeneralFlag
+  | Opt_HideSourcePaths : GeneralFlag
+  | Opt_PrintExplicitForalls : GeneralFlag
+  | Opt_PrintExplicitKinds : GeneralFlag
+  | Opt_PrintExplicitCoercions : GeneralFlag
+  | Opt_PrintExplicitRuntimeReps : GeneralFlag
+  | Opt_PrintEqualityRelations : GeneralFlag
+  | Opt_PrintUnicodeSyntax : GeneralFlag
+  | Opt_PrintExpandedSynonyms : GeneralFlag
+  | Opt_PrintPotentialInstances : GeneralFlag
+  | Opt_PrintTypecheckerElaboration : GeneralFlag
+  | Opt_CallArity : GeneralFlag
+  | Opt_Exitification : GeneralFlag
+  | Opt_Strictness : GeneralFlag
+  | Opt_LateDmdAnal : GeneralFlag
+  | Opt_KillAbsence : GeneralFlag
+  | Opt_KillOneShot : GeneralFlag
+  | Opt_FullLaziness : GeneralFlag
+  | Opt_FloatIn : GeneralFlag
+  | Opt_Specialise : GeneralFlag
+  | Opt_SpecialiseAggressively : GeneralFlag
+  | Opt_CrossModuleSpecialise : GeneralFlag
+  | Opt_StaticArgumentTransformation : GeneralFlag
+  | Opt_CSE : GeneralFlag
+  | Opt_StgCSE : GeneralFlag
+  | Opt_LiberateCase : GeneralFlag
+  | Opt_SpecConstr : GeneralFlag
+  | Opt_SpecConstrKeen : GeneralFlag
+  | Opt_DoLambdaEtaExpansion : GeneralFlag
+  | Opt_IgnoreAsserts : GeneralFlag
+  | Opt_DoEtaReduction : GeneralFlag
+  | Opt_CaseMerge : GeneralFlag
+  | Opt_CaseFolding : GeneralFlag
+  | Opt_UnboxStrictFields : GeneralFlag
+  | Opt_UnboxSmallStrictFields : GeneralFlag
+  | Opt_DictsCheap : GeneralFlag
+  | Opt_EnableRewriteRules : GeneralFlag
+  | Opt_Vectorise : GeneralFlag
+  | Opt_VectorisationAvoidance : GeneralFlag
+  | Opt_RegsGraph : GeneralFlag
+  | Opt_RegsIterative : GeneralFlag
+  | Opt_PedanticBottoms : GeneralFlag
+  | Opt_LlvmTBAA : GeneralFlag
+  | Opt_LlvmPassVectorsInRegisters : GeneralFlag
+  | Opt_LlvmFillUndefWithGarbage : GeneralFlag
+  | Opt_IrrefutableTuples : GeneralFlag
+  | Opt_CmmSink : GeneralFlag
+  | Opt_CmmElimCommonBlocks : GeneralFlag
+  | Opt_OmitYields : GeneralFlag
+  | Opt_FunToThunk : GeneralFlag
+  | Opt_DictsStrict : GeneralFlag
+  | Opt_DmdTxDictSel : GeneralFlag
+  | Opt_Loopification : GeneralFlag
+  | Opt_CprAnal : GeneralFlag
+  | Opt_WorkerWrapper : GeneralFlag
+  | Opt_SolveConstantDicts : GeneralFlag
+  | Opt_AlignmentSanitisation : GeneralFlag
+  | Opt_CatchBottoms : GeneralFlag
+  | Opt_SimplPreInlining : GeneralFlag
+  | Opt_IgnoreInterfacePragmas : GeneralFlag
+  | Opt_OmitInterfacePragmas : GeneralFlag
+  | Opt_ExposeAllUnfoldings : GeneralFlag
+  | Opt_WriteInterface : GeneralFlag
+  | Opt_AutoSccsOnIndividualCafs : GeneralFlag
+  | Opt_ProfCountEntries : GeneralFlag
+  | Opt_Pp : GeneralFlag
+  | Opt_ForceRecomp : GeneralFlag
+  | Opt_IgnoreOptimChanges : GeneralFlag
+  | Opt_IgnoreHpcChanges : GeneralFlag
+  | Opt_ExcessPrecision : GeneralFlag
+  | Opt_EagerBlackHoling : GeneralFlag
+  | Opt_NoHsMain : GeneralFlag
+  | Opt_SplitObjs : GeneralFlag
+  | Opt_SplitSections : GeneralFlag
+  | Opt_StgStats : GeneralFlag
+  | Opt_HideAllPackages : GeneralFlag
+  | Opt_HideAllPluginPackages : GeneralFlag
+  | Opt_PrintBindResult : GeneralFlag
+  | Opt_Haddock : GeneralFlag
+  | Opt_HaddockOptions : GeneralFlag
+  | Opt_BreakOnException : GeneralFlag
+  | Opt_BreakOnError : GeneralFlag
+  | Opt_PrintEvldWithShow : GeneralFlag
+  | Opt_PrintBindContents : GeneralFlag
+  | Opt_GenManifest : GeneralFlag
+  | Opt_EmbedManifest : GeneralFlag
+  | Opt_SharedImplib : GeneralFlag
+  | Opt_BuildingCabalPackage : GeneralFlag
+  | Opt_IgnoreDotGhci : GeneralFlag
+  | Opt_GhciSandbox : GeneralFlag
+  | Opt_GhciHistory : GeneralFlag
+  | Opt_LocalGhciHistory : GeneralFlag
+  | Opt_HelpfulErrors : GeneralFlag
+  | Opt_DeferTypeErrors : GeneralFlag
+  | Opt_DeferTypedHoles : GeneralFlag
+  | Opt_DeferOutOfScopeVariables : GeneralFlag
+  | Opt_PIC : GeneralFlag
+  | Opt_PIE : GeneralFlag
+  | Opt_PICExecutable : GeneralFlag
+  | Opt_SccProfilingOn : GeneralFlag
+  | Opt_Ticky : GeneralFlag
+  | Opt_Ticky_Allocd : GeneralFlag
+  | Opt_Ticky_LNE : GeneralFlag
+  | Opt_Ticky_Dyn_Thunk : GeneralFlag
+  | Opt_RPath : GeneralFlag
+  | Opt_RelativeDynlibPaths : GeneralFlag
+  | Opt_Hpc : GeneralFlag
+  | Opt_FlatCache : GeneralFlag
+  | Opt_ExternalInterpreter : GeneralFlag
+  | Opt_OptimalApplicativeDo : GeneralFlag
+  | Opt_VersionMacros : GeneralFlag
+  | Opt_WholeArchiveHsLibs : GeneralFlag
+  | Opt_ErrorSpans : GeneralFlag
+  | Opt_DiagnosticsShowCaret : GeneralFlag
+  | Opt_PprCaseAsLet : GeneralFlag
+  | Opt_PprShowTicks : GeneralFlag
+  | Opt_ShowHoleConstraints : GeneralFlag
+  | Opt_ShowLoadedModules : GeneralFlag
+  | Opt_SuppressCoercions : GeneralFlag
+  | Opt_SuppressVarKinds : GeneralFlag
+  | Opt_SuppressModulePrefixes : GeneralFlag
+  | Opt_SuppressTypeApplications : GeneralFlag
+  | Opt_SuppressIdInfo : GeneralFlag
+  | Opt_SuppressUnfoldings : GeneralFlag
+  | Opt_SuppressTypeSignatures : GeneralFlag
+  | Opt_SuppressUniques : GeneralFlag
+  | Opt_SuppressStgFreeVars : GeneralFlag
+  | Opt_SuppressTicks : GeneralFlag
+  | Opt_AutoLinkPackages : GeneralFlag
+  | Opt_ImplicitImportQualified : GeneralFlag
+  | Opt_KeepHiDiffs : GeneralFlag
+  | Opt_KeepHcFiles : GeneralFlag
+  | Opt_KeepSFiles : GeneralFlag
+  | Opt_KeepTmpFiles : GeneralFlag
+  | Opt_KeepRawTokenStream : GeneralFlag
+  | Opt_KeepLlvmFiles : GeneralFlag
+  | Opt_KeepHiFiles : GeneralFlag
+  | Opt_KeepOFiles : GeneralFlag
+  | Opt_BuildDynamicToo : GeneralFlag
+  | Opt_DistrustAllPackages : GeneralFlag
+  | Opt_PackageTrust : GeneralFlag
+  | Opt_G_NoStateHack : GeneralFlag
+  | Opt_G_NoOptCoercion : GeneralFlag.
 
 Axiom FlushOut : Type.
 
@@ -377,14 +377,14 @@ Axiom FlushErr : Type.
 
 Axiom FlagSpec : Type -> Type.
 
-Inductive FilesToClean : Type
-  := | Mk_FilesToClean (ftcGhcSession : (Data.Set.Internal.Set_ GHC.Base.String))
+Inductive FilesToClean : Type :=
+  | Mk_FilesToClean (ftcGhcSession : (Data.Set.Internal.Set_ GHC.Base.String))
   (ftcCurrentModule : (Data.Set.Internal.Set_ GHC.Base.String))
    : FilesToClean.
 
-Inductive DynLibLoader : Type
-  := | Deployable : DynLibLoader
-  |  SystemDependent : DynLibLoader.
+Inductive DynLibLoader : Type :=
+  | Deployable : DynLibLoader
+  | SystemDependent : DynLibLoader.
 
 Axiom DynFlags : Type.
 
@@ -398,92 +398,92 @@ Existing Class HasDynFlags.
 Definition getDynFlags `{g__0__ : HasDynFlags m} : m DynFlags :=
   g__0__ _ (getDynFlags__ m).
 
-Inductive DumpFlag : Type
-  := | Opt_D_dump_cmm : DumpFlag
-  |  Opt_D_dump_cmm_from_stg : DumpFlag
-  |  Opt_D_dump_cmm_raw : DumpFlag
-  |  Opt_D_dump_cmm_verbose : DumpFlag
-  |  Opt_D_dump_cmm_cfg : DumpFlag
-  |  Opt_D_dump_cmm_cbe : DumpFlag
-  |  Opt_D_dump_cmm_switch : DumpFlag
-  |  Opt_D_dump_cmm_proc : DumpFlag
-  |  Opt_D_dump_cmm_sp : DumpFlag
-  |  Opt_D_dump_cmm_sink : DumpFlag
-  |  Opt_D_dump_cmm_caf : DumpFlag
-  |  Opt_D_dump_cmm_procmap : DumpFlag
-  |  Opt_D_dump_cmm_split : DumpFlag
-  |  Opt_D_dump_cmm_info : DumpFlag
-  |  Opt_D_dump_cmm_cps : DumpFlag
-  |  Opt_D_dump_asm : DumpFlag
-  |  Opt_D_dump_asm_native : DumpFlag
-  |  Opt_D_dump_asm_liveness : DumpFlag
-  |  Opt_D_dump_asm_regalloc : DumpFlag
-  |  Opt_D_dump_asm_regalloc_stages : DumpFlag
-  |  Opt_D_dump_asm_conflicts : DumpFlag
-  |  Opt_D_dump_asm_stats : DumpFlag
-  |  Opt_D_dump_asm_expanded : DumpFlag
-  |  Opt_D_dump_llvm : DumpFlag
-  |  Opt_D_dump_core_stats : DumpFlag
-  |  Opt_D_dump_deriv : DumpFlag
-  |  Opt_D_dump_ds : DumpFlag
-  |  Opt_D_dump_foreign : DumpFlag
-  |  Opt_D_dump_inlinings : DumpFlag
-  |  Opt_D_dump_rule_firings : DumpFlag
-  |  Opt_D_dump_rule_rewrites : DumpFlag
-  |  Opt_D_dump_simpl_trace : DumpFlag
-  |  Opt_D_dump_occur_anal : DumpFlag
-  |  Opt_D_dump_parsed : DumpFlag
-  |  Opt_D_dump_parsed_ast : DumpFlag
-  |  Opt_D_dump_rn : DumpFlag
-  |  Opt_D_dump_rn_ast : DumpFlag
-  |  Opt_D_dump_shape : DumpFlag
-  |  Opt_D_dump_simpl : DumpFlag
-  |  Opt_D_dump_simpl_iterations : DumpFlag
-  |  Opt_D_dump_spec : DumpFlag
-  |  Opt_D_dump_prep : DumpFlag
-  |  Opt_D_dump_stg : DumpFlag
-  |  Opt_D_dump_call_arity : DumpFlag
-  |  Opt_D_dump_exitify : DumpFlag
-  |  Opt_D_dump_stranal : DumpFlag
-  |  Opt_D_dump_str_signatures : DumpFlag
-  |  Opt_D_dump_tc : DumpFlag
-  |  Opt_D_dump_tc_ast : DumpFlag
-  |  Opt_D_dump_types : DumpFlag
-  |  Opt_D_dump_rules : DumpFlag
-  |  Opt_D_dump_cse : DumpFlag
-  |  Opt_D_dump_worker_wrapper : DumpFlag
-  |  Opt_D_dump_rn_trace : DumpFlag
-  |  Opt_D_dump_rn_stats : DumpFlag
-  |  Opt_D_dump_opt_cmm : DumpFlag
-  |  Opt_D_dump_simpl_stats : DumpFlag
-  |  Opt_D_dump_cs_trace : DumpFlag
-  |  Opt_D_dump_tc_trace : DumpFlag
-  |  Opt_D_dump_ec_trace : DumpFlag
-  |  Opt_D_dump_if_trace : DumpFlag
-  |  Opt_D_dump_vt_trace : DumpFlag
-  |  Opt_D_dump_splices : DumpFlag
-  |  Opt_D_th_dec_file : DumpFlag
-  |  Opt_D_dump_BCOs : DumpFlag
-  |  Opt_D_dump_vect : DumpFlag
-  |  Opt_D_dump_ticked : DumpFlag
-  |  Opt_D_dump_rtti : DumpFlag
-  |  Opt_D_source_stats : DumpFlag
-  |  Opt_D_verbose_stg2stg : DumpFlag
-  |  Opt_D_dump_hi : DumpFlag
-  |  Opt_D_dump_hi_diffs : DumpFlag
-  |  Opt_D_dump_mod_cycles : DumpFlag
-  |  Opt_D_dump_mod_map : DumpFlag
-  |  Opt_D_dump_timings : DumpFlag
-  |  Opt_D_dump_view_pattern_commoning : DumpFlag
-  |  Opt_D_verbose_core2core : DumpFlag
-  |  Opt_D_dump_debug : DumpFlag
-  |  Opt_D_dump_json : DumpFlag
-  |  Opt_D_ppr_debug : DumpFlag
-  |  Opt_D_no_debug_output : DumpFlag.
+Inductive DumpFlag : Type :=
+  | Opt_D_dump_cmm : DumpFlag
+  | Opt_D_dump_cmm_from_stg : DumpFlag
+  | Opt_D_dump_cmm_raw : DumpFlag
+  | Opt_D_dump_cmm_verbose : DumpFlag
+  | Opt_D_dump_cmm_cfg : DumpFlag
+  | Opt_D_dump_cmm_cbe : DumpFlag
+  | Opt_D_dump_cmm_switch : DumpFlag
+  | Opt_D_dump_cmm_proc : DumpFlag
+  | Opt_D_dump_cmm_sp : DumpFlag
+  | Opt_D_dump_cmm_sink : DumpFlag
+  | Opt_D_dump_cmm_caf : DumpFlag
+  | Opt_D_dump_cmm_procmap : DumpFlag
+  | Opt_D_dump_cmm_split : DumpFlag
+  | Opt_D_dump_cmm_info : DumpFlag
+  | Opt_D_dump_cmm_cps : DumpFlag
+  | Opt_D_dump_asm : DumpFlag
+  | Opt_D_dump_asm_native : DumpFlag
+  | Opt_D_dump_asm_liveness : DumpFlag
+  | Opt_D_dump_asm_regalloc : DumpFlag
+  | Opt_D_dump_asm_regalloc_stages : DumpFlag
+  | Opt_D_dump_asm_conflicts : DumpFlag
+  | Opt_D_dump_asm_stats : DumpFlag
+  | Opt_D_dump_asm_expanded : DumpFlag
+  | Opt_D_dump_llvm : DumpFlag
+  | Opt_D_dump_core_stats : DumpFlag
+  | Opt_D_dump_deriv : DumpFlag
+  | Opt_D_dump_ds : DumpFlag
+  | Opt_D_dump_foreign : DumpFlag
+  | Opt_D_dump_inlinings : DumpFlag
+  | Opt_D_dump_rule_firings : DumpFlag
+  | Opt_D_dump_rule_rewrites : DumpFlag
+  | Opt_D_dump_simpl_trace : DumpFlag
+  | Opt_D_dump_occur_anal : DumpFlag
+  | Opt_D_dump_parsed : DumpFlag
+  | Opt_D_dump_parsed_ast : DumpFlag
+  | Opt_D_dump_rn : DumpFlag
+  | Opt_D_dump_rn_ast : DumpFlag
+  | Opt_D_dump_shape : DumpFlag
+  | Opt_D_dump_simpl : DumpFlag
+  | Opt_D_dump_simpl_iterations : DumpFlag
+  | Opt_D_dump_spec : DumpFlag
+  | Opt_D_dump_prep : DumpFlag
+  | Opt_D_dump_stg : DumpFlag
+  | Opt_D_dump_call_arity : DumpFlag
+  | Opt_D_dump_exitify : DumpFlag
+  | Opt_D_dump_stranal : DumpFlag
+  | Opt_D_dump_str_signatures : DumpFlag
+  | Opt_D_dump_tc : DumpFlag
+  | Opt_D_dump_tc_ast : DumpFlag
+  | Opt_D_dump_types : DumpFlag
+  | Opt_D_dump_rules : DumpFlag
+  | Opt_D_dump_cse : DumpFlag
+  | Opt_D_dump_worker_wrapper : DumpFlag
+  | Opt_D_dump_rn_trace : DumpFlag
+  | Opt_D_dump_rn_stats : DumpFlag
+  | Opt_D_dump_opt_cmm : DumpFlag
+  | Opt_D_dump_simpl_stats : DumpFlag
+  | Opt_D_dump_cs_trace : DumpFlag
+  | Opt_D_dump_tc_trace : DumpFlag
+  | Opt_D_dump_ec_trace : DumpFlag
+  | Opt_D_dump_if_trace : DumpFlag
+  | Opt_D_dump_vt_trace : DumpFlag
+  | Opt_D_dump_splices : DumpFlag
+  | Opt_D_th_dec_file : DumpFlag
+  | Opt_D_dump_BCOs : DumpFlag
+  | Opt_D_dump_vect : DumpFlag
+  | Opt_D_dump_ticked : DumpFlag
+  | Opt_D_dump_rtti : DumpFlag
+  | Opt_D_source_stats : DumpFlag
+  | Opt_D_verbose_stg2stg : DumpFlag
+  | Opt_D_dump_hi : DumpFlag
+  | Opt_D_dump_hi_diffs : DumpFlag
+  | Opt_D_dump_mod_cycles : DumpFlag
+  | Opt_D_dump_mod_map : DumpFlag
+  | Opt_D_dump_timings : DumpFlag
+  | Opt_D_dump_view_pattern_commoning : DumpFlag
+  | Opt_D_verbose_core2core : DumpFlag
+  | Opt_D_dump_debug : DumpFlag
+  | Opt_D_dump_json : DumpFlag
+  | Opt_D_ppr_debug : DumpFlag
+  | Opt_D_no_debug_output : DumpFlag.
 
-Inductive Deprecation : Type
-  := | NotDeprecated : Deprecation
-  |  Deprecated : Deprecation.
+Inductive Deprecation : Type :=
+  | NotDeprecated : Deprecation
+  | Deprecated : Deprecation.
 
 Record ContainsDynFlags__Dict t := ContainsDynFlags__Dict_Build {
   extractDynFlags__ : t -> DynFlags }.
@@ -495,14 +495,14 @@ Existing Class ContainsDynFlags.
 Definition extractDynFlags `{g__0__ : ContainsDynFlags t} : t -> DynFlags :=
   g__0__ _ (extractDynFlags__ t).
 
-Inductive CompilerInfo : Type
-  := | GCC : CompilerInfo
-  |  Clang : CompilerInfo
-  |  AppleClang : CompilerInfo
-  |  AppleClang51 : CompilerInfo
-  |  UnknownCC : CompilerInfo.
+Inductive CompilerInfo : Type :=
+  | GCC : CompilerInfo
+  | Clang : CompilerInfo
+  | AppleClang : CompilerInfo
+  | AppleClang51 : CompilerInfo
+  | UnknownCC : CompilerInfo.
 
-Inductive BmiVersion : Type := | BMI1 : BmiVersion |  BMI2 : BmiVersion.
+Inductive BmiVersion : Type := | BMI1 : BmiVersion | BMI2 : BmiVersion.
 
 Arguments On {_} _.
 

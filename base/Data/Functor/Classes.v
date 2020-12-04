@@ -114,12 +114,12 @@ Local Definition Eq1__list_liftEq
    : forall {a} {b}, (a -> b -> bool) -> list a -> list b -> bool :=
   fun {a} {b} =>
     fix liftEq arg_69__ arg_70__ arg_71__
-          := match arg_69__, arg_70__, arg_71__ with
-             | _, nil, nil => true
-             | _, nil, cons _ _ => false
-             | _, cons _ _, nil => false
-             | eq, cons x xs, cons y ys => andb (eq x y) (liftEq eq xs ys)
-             end.
+      := match arg_69__, arg_70__, arg_71__ with
+         | _, nil, nil => true
+         | _, nil, cons _ _ => false
+         | _, cons _ _, nil => false
+         | eq, cons x xs, cons y ys => andb (eq x y) (liftEq eq xs ys)
+         end.
 
 Program Instance Eq1__list : Eq1 list :=
   fun _ k__ => k__ {| liftEq__ := fun {a} {b} => Eq1__list_liftEq |}.
@@ -128,13 +128,13 @@ Local Definition Ord1__list_liftCompare
    : forall {a} {b}, (a -> b -> comparison) -> list a -> list b -> comparison :=
   fun {a} {b} =>
     fix liftCompare arg_69__ arg_70__ arg_71__
-          := match arg_69__, arg_70__, arg_71__ with
-             | _, nil, nil => Eq
-             | _, nil, cons _ _ => Lt
-             | _, cons _ _, nil => Gt
-             | comp, cons x xs, cons y ys =>
-                 GHC.Base.mappend (comp x y) (liftCompare comp xs ys)
-             end.
+      := match arg_69__, arg_70__, arg_71__ with
+         | _, nil, nil => Eq
+         | _, nil, cons _ _ => Lt
+         | _, cons _ _, nil => Gt
+         | comp, cons x xs, cons y ys =>
+             GHC.Base.mappend (comp x y) (liftCompare comp xs ys)
+         end.
 
 Program Instance Ord1__list : Ord1 list :=
   fun _ k__ => k__ {| liftCompare__ := fun {a} {b} => Ord1__list_liftCompare |}.

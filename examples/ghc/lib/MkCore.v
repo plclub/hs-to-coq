@@ -41,9 +41,9 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive FloatBind : Type
-  := | FloatLet : Core.CoreBind -> FloatBind
-  |  FloatCase
+Inductive FloatBind : Type :=
+  | FloatLet : Core.CoreBind -> FloatBind
+  | FloatCase
    : Core.CoreExpr -> Core.Id -> Core.AltCon -> list Core.Var -> FloatBind.
 
 (* Converted value declarations: *)

@@ -28,20 +28,20 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive BuiltInSyntax : Type
-  := | Mk_BuiltInSyntax : BuiltInSyntax
-  |  UserSyntax : BuiltInSyntax.
+Inductive BuiltInSyntax : Type :=
+  | Mk_BuiltInSyntax : BuiltInSyntax
+  | UserSyntax : BuiltInSyntax.
 
-Inductive NameSort : Type
-  := | External : Module.Module -> NameSort
-  |  WiredIn
+Inductive NameSort : Type :=
+  | External : Module.Module -> NameSort
+  | WiredIn
    : Module.Module -> AxiomatizedTypes.TyThing -> BuiltInSyntax -> NameSort
-  |  Internal : NameSort
-  |  System : NameSort.
+  | Internal : NameSort
+  | System : NameSort.
 
-Inductive Name : Type
-  := | Mk_Name (n_sort : NameSort) (n_occ : OccName.OccName) (n_uniq
-    : Unique.Unique) (n_loc : SrcLoc.SrcSpan)
+Inductive Name : Type :=
+  | Mk_Name (n_sort : NameSort) (n_occ : OccName.OccName) (n_uniq : Unique.Unique)
+  (n_loc : SrcLoc.SrcSpan)
    : Name.
 
 Record NamedThing__Dict a := NamedThing__Dict_Build {

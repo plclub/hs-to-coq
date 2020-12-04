@@ -28,8 +28,8 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive IdentityT (f : Type -> Type) a : Type
-  := | Mk_IdentityT (runIdentityT : f a) : IdentityT f a.
+Inductive IdentityT (f : Type -> Type) a : Type :=
+  | Mk_IdentityT (runIdentityT : f a) : IdentityT f a.
 
 Arguments Mk_IdentityT {_} {_} _.
 

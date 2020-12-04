@@ -18,17 +18,17 @@ Require GHC.Num.
 
 (* Converted type declarations: *)
 
-Inductive GhcException : Type
-  := | Signal : GHC.Num.Int -> GhcException
-  |  UsageError : GHC.Base.String -> GhcException
-  |  CmdLineError : GHC.Base.String -> GhcException
-  |  Panic : GHC.Base.String -> GhcException
-  |  PprPanic : GHC.Base.String -> GHC.Base.String -> GhcException
-  |  Sorry : GHC.Base.String -> GhcException
-  |  PprSorry : GHC.Base.String -> GHC.Base.String -> GhcException
-  |  InstallationError : GHC.Base.String -> GhcException
-  |  ProgramError : GHC.Base.String -> GhcException
-  |  PprProgramError : GHC.Base.String -> GHC.Base.String -> GhcException.
+Inductive GhcException : Type :=
+  | Signal : GHC.Num.Int -> GhcException
+  | UsageError : GHC.Base.String -> GhcException
+  | CmdLineError : GHC.Base.String -> GhcException
+  | Panic : GHC.Base.String -> GhcException
+  | PprPanic : GHC.Base.String -> GHC.Base.String -> GhcException
+  | Sorry : GHC.Base.String -> GhcException
+  | PprSorry : GHC.Base.String -> GHC.Base.String -> GhcException
+  | InstallationError : GHC.Base.String -> GhcException
+  | ProgramError : GHC.Base.String -> GhcException
+  | PprProgramError : GHC.Base.String -> GHC.Base.String -> GhcException.
 
 (* Converted value declarations: *)
 
@@ -81,9 +81,9 @@ Axiom assertPanic : forall {a} `{GHC.Err.Default a},
 Axiom panicStr : forall {a} `{GHC.Err.Default a},
                  GHC.Base.String -> GHC.Base.String -> a.
 
-Inductive panicked {a} : a -> Prop
-  := | PlainPanic `{GHC.Err.Default a} {s} : panicked (panic s)
-  |  StrPanic `{GHC.Err.Default a} {s} {d} : panicked (panicStr s d).
+Inductive panicked {a} : a -> Prop :=
+  | PlainPanic `{GHC.Err.Default a} {s} : panicked (panic s)
+  | StrPanic `{GHC.Err.Default a} {s} {d} : panicked (panicStr s d).
 
 Definition warnPprTrace
    : forall {a} `{GHC.Err.Default a},

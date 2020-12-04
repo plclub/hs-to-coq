@@ -218,36 +218,36 @@ Definition exitifyProgram : Core.CoreProgram -> Core.CoreProgram :=
   fun binds =>
     let go : Core.InScopeSet -> Core.CoreExpr -> Core.CoreExpr :=
       fix go (arg_0__ : Core.InScopeSet) (arg_1__ : Core.CoreExpr) : Core.CoreExpr
-            := match arg_0__, arg_1__ with
-               | _, (Core.Mk_Var _ as e) => e
-               | _, (Core.Lit _ as e) => e
-               | _, (Core.Mk_Type _ as e) => e
-               | _, (Core.Mk_Coercion _ as e) => e
-               | in_scope, Core.Cast e' c => Core.Cast (go in_scope e') c
-               | in_scope, Core.App e1 e2 => Core.App (go in_scope e1) (go in_scope e2)
-               | in_scope, Core.Lam v e' =>
-                   let in_scope' := Core.extendInScopeSet in_scope v in
-                   Core.Lam v (go in_scope' e')
-               | in_scope, Core.Case scrut bndr ty alts =>
-                   let in_scope1 := Core.extendInScopeSet in_scope bndr in
-                   let go_alt :=
-                     fun '(pair (pair dc pats) rhs) =>
-                       let in_scope' := Core.extendInScopeSetList in_scope1 pats in
-                       pair (pair dc pats) (go in_scope' rhs) in
-                   Core.Case (go in_scope scrut) bndr ty (GHC.Base.map go_alt alts)
-               | in_scope, Core.Let (Core.NonRec bndr rhs) body =>
-                   let in_scope' := Core.extendInScopeSet in_scope bndr in
-                   Core.Let (Core.NonRec bndr (go in_scope rhs)) (go in_scope' body)
-               | in_scope, Core.Let (Core.Rec pairs) body =>
-                   let in_scope' :=
-                     Core.extendInScopeSetList in_scope (Core.bindersOf (Core.Rec pairs)) in
-                   let pairs' := Util.mapSnd (go in_scope') pairs in
-                   let body' := go in_scope' body in
-                   let is_join_rec :=
-                     Data.Foldable.any (Id.isJoinId GHC.Base.∘ Data.Tuple.fst) pairs in
-                   if is_join_rec : bool then Core.mkLets (exitifyRec in_scope' pairs') body' else
-                   Core.Let (Core.Rec pairs') body'
-               end in
+        := match arg_0__, arg_1__ with
+           | _, (Core.Mk_Var _ as e) => e
+           | _, (Core.Lit _ as e) => e
+           | _, (Core.Mk_Type _ as e) => e
+           | _, (Core.Mk_Coercion _ as e) => e
+           | in_scope, Core.Cast e' c => Core.Cast (go in_scope e') c
+           | in_scope, Core.App e1 e2 => Core.App (go in_scope e1) (go in_scope e2)
+           | in_scope, Core.Lam v e' =>
+               let in_scope' := Core.extendInScopeSet in_scope v in
+               Core.Lam v (go in_scope' e')
+           | in_scope, Core.Case scrut bndr ty alts =>
+               let in_scope1 := Core.extendInScopeSet in_scope bndr in
+               let go_alt :=
+                 fun '(pair (pair dc pats) rhs) =>
+                   let in_scope' := Core.extendInScopeSetList in_scope1 pats in
+                   pair (pair dc pats) (go in_scope' rhs) in
+               Core.Case (go in_scope scrut) bndr ty (GHC.Base.map go_alt alts)
+           | in_scope, Core.Let (Core.NonRec bndr rhs) body =>
+               let in_scope' := Core.extendInScopeSet in_scope bndr in
+               Core.Let (Core.NonRec bndr (go in_scope rhs)) (go in_scope' body)
+           | in_scope, Core.Let (Core.Rec pairs) body =>
+               let in_scope' :=
+                 Core.extendInScopeSetList in_scope (Core.bindersOf (Core.Rec pairs)) in
+               let pairs' := Util.mapSnd (go in_scope') pairs in
+               let body' := go in_scope' body in
+               let is_join_rec :=
+                 Data.Foldable.any (Id.isJoinId GHC.Base.∘ Data.Tuple.fst) pairs in
+               if is_join_rec : bool then Core.mkLets (exitifyRec in_scope' pairs') body' else
+               Core.Let (Core.Rec pairs') body'
+           end in
     let in_scope_toplvl :=
       Core.extendInScopeSetList Core.emptyInScopeSet (Core.bindersOfBinds binds) in
     let goTopLvl :=

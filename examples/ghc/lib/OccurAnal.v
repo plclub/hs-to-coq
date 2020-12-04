@@ -51,12 +51,12 @@ Definition OccInfoEnv :=
 Definition ZappedSet :=
   OccInfoEnv%type.
 
-Inductive UsageDetails : Type
-  := | UD (ud_env : OccInfoEnv) (ud_z_many : ZappedSet) (ud_z_in_lam : ZappedSet)
+Inductive UsageDetails : Type :=
+  | UD (ud_env : OccInfoEnv) (ud_z_many : ZappedSet) (ud_z_in_lam : ZappedSet)
   (ud_z_no_tail : ZappedSet)
    : UsageDetails.
 
-Inductive OccEncl : Type := | OccRhs : OccEncl |  OccVanilla : OccEncl.
+Inductive OccEncl : Type := | OccRhs : OccEncl | OccVanilla : OccEncl.
 
 Definition NodeScore :=
   (nat * nat * bool)%type%type.
@@ -70,14 +70,14 @@ Definition IdWithOccInfo :=
 Definition GlobalScruts :=
   Core.IdSet%type.
 
-Inductive OccEnv : Type
-  := | Mk_OccEnv (occ_encl : OccEncl) (occ_one_shots : OneShots) (occ_gbl_scrut
+Inductive OccEnv : Type :=
+  | Mk_OccEnv (occ_encl : OccEncl) (occ_one_shots : OneShots) (occ_gbl_scrut
     : GlobalScruts) (occ_rule_act : BasicTypes.Activation -> bool) (occ_binder_swap
     : bool)
    : OccEnv.
 
-Inductive Details : Type
-  := | ND (nd_bndr : Core.Id) (nd_rhs : Core.CoreExpr) (nd_rhs_bndrs
+Inductive Details : Type :=
+  | ND (nd_bndr : Core.Id) (nd_rhs : Core.CoreExpr) (nd_rhs_bndrs
     : list Core.CoreBndr) (nd_uds : UsageDetails) (nd_inl : Core.IdSet) (nd_weak
     : Core.IdSet) (nd_active_rule_fvs : Core.IdSet) (nd_score : NodeScore)
    : Details.
@@ -378,19 +378,19 @@ Definition markJoinOneShots
    : option BasicTypes.JoinArity -> list Core.Var -> list Core.Var :=
   fun mb_join_arity bndrs =>
     let fix go arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | num_2__, bndrs =>
-                     if num_2__ GHC.Base.== #0 : bool then bndrs else
-                     match arg_0__, arg_1__ with
-                     | _, nil =>
-                         Panic.warnPprTrace (true) (GHC.Base.hs_string__
-                                             "ghc/compiler/simplCore/OccurAnal.hs") #2194 (GHC.Base.mappend
-                                             Panic.someSDoc Panic.someSDoc) nil
-                     | n, cons b bs =>
-                         let b' := if Core.isId b : bool then Id.setOneShotLambda b else b in
-                         cons b' (go (n GHC.Num.- #1) bs)
-                     end
-                 end in
+      := match arg_0__, arg_1__ with
+         | num_2__, bndrs =>
+             if num_2__ GHC.Base.== #0 : bool then bndrs else
+             match arg_0__, arg_1__ with
+             | _, nil =>
+                 Panic.warnPprTrace (true) (GHC.Base.hs_string__
+                                     "ghc/compiler/simplCore/OccurAnal.hs") #2194 (GHC.Base.mappend Panic.someSDoc
+                                                                                                    Panic.someSDoc) nil
+             | n, cons b bs =>
+                 let b' := if Core.isId b : bool then Id.setOneShotLambda b else b in
+                 cons b' (go (n GHC.Num.- #1) bs)
+             end
+         end in
     match mb_join_arity with
     | None => bndrs
     | Some n => go n bndrs
@@ -603,17 +603,17 @@ Definition rank : NodeScore -> nat :=
 Fixpoint chooseLoopBreaker (arg_0__ : bool) (arg_1__ : NodeScore) (arg_2__
                             arg_3__ arg_4__
                              : list LetrecNode) : (list LetrecNode * list LetrecNode)%type
-           := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
-              | _, _, loop_nodes, acc, nil => pair loop_nodes acc
-              | approx_lb, loop_sc, loop_nodes, acc, cons node nodes =>
-                  let sc := nd_score (Digraph.node_payload node) in
-                  if andb approx_lb (rank sc GHC.Base.== rank loop_sc) : bool
-                  then chooseLoopBreaker approx_lb loop_sc (cons node loop_nodes) acc nodes else
-                  if betterLB sc loop_sc : bool
-                  then chooseLoopBreaker approx_lb sc (cons node nil) (Coq.Init.Datatypes.app
-                                                                       loop_nodes acc) nodes else
-                  chooseLoopBreaker approx_lb loop_sc loop_nodes (cons node acc) nodes
-              end.
+  := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
+     | _, _, loop_nodes, acc, nil => pair loop_nodes acc
+     | approx_lb, loop_sc, loop_nodes, acc, cons node nodes =>
+         let sc := nd_score (Digraph.node_payload node) in
+         if andb approx_lb (rank sc GHC.Base.== rank loop_sc) : bool
+         then chooseLoopBreaker approx_lb loop_sc (cons node loop_nodes) acc nodes else
+         if betterLB sc loop_sc : bool
+         then chooseLoopBreaker approx_lb sc (cons node nil) (Coq.Init.Datatypes.app
+                                                              loop_nodes acc) nodes else
+         chooseLoopBreaker approx_lb loop_sc loop_nodes (cons node acc) nodes
+     end.
 
 Definition noImpRuleEdges : ImpRuleEdges :=
   Core.emptyVarEnv.
@@ -697,12 +697,12 @@ Definition nodeScore
    : Core.Id -> Core.Id -> Core.CoreExpr -> Core.VarSet -> NodeScore :=
   fun old_bndr new_bndr bind_rhs lb_deps =>
     let fix is_con_app arg_0__
-              := match arg_0__ with
-                 | Core.Mk_Var v => Id.isConLikeId v
-                 | Core.App f _ => is_con_app f
-                 | Core.Lam _ e => is_con_app e
-                 | _ => false
-                 end in
+      := match arg_0__ with
+         | Core.Mk_Var v => Id.isConLikeId v
+         | Core.App f _ => is_con_app f
+         | Core.Lam _ e => is_con_app e
+         | _ => false
+         end in
     let id_unfolding := Id.realIdUnfolding old_bndr in
     let can_unfold := Core.canUnfold id_unfolding in
     let rhs := bind_rhs in
@@ -977,23 +977,23 @@ Definition oneShotGroup
     match arg_0__, arg_1__ with
     | (Mk_OccEnv _ ctxt _ _ _ as env), bndrs =>
         let fix go arg_2__ arg_3__ arg_4__
-                  := match arg_2__, arg_3__, arg_4__ with
-                     | ctxt, nil, rev_bndrs =>
-                         pair (let 'Mk_OccEnv occ_encl_5__ occ_one_shots_6__ occ_gbl_scrut_7__
-                                  occ_rule_act_8__ occ_binder_swap_9__ := env in
-                               Mk_OccEnv OccVanilla ctxt occ_gbl_scrut_7__ occ_rule_act_8__
-                                         occ_binder_swap_9__) (GHC.List.reverse rev_bndrs)
-                     | nil, bndrs, rev_bndrs =>
-                         pair (let 'Mk_OccEnv occ_encl_13__ occ_one_shots_14__ occ_gbl_scrut_15__
-                                  occ_rule_act_16__ occ_binder_swap_17__ := env in
-                               Mk_OccEnv OccVanilla nil occ_gbl_scrut_15__ occ_rule_act_16__
-                                         occ_binder_swap_17__) (Coq.Init.Datatypes.app (GHC.List.reverse rev_bndrs)
-                                                                                       bndrs)
-                     | (cons one_shot ctxt' as ctxt), cons bndr bndrs, rev_bndrs =>
-                         let bndr' := Id.updOneShotInfo bndr one_shot in
-                         if Core.isId bndr : bool then go ctxt' bndrs (cons bndr' rev_bndrs) else
-                         go ctxt bndrs (cons bndr rev_bndrs)
-                     end in
+          := match arg_2__, arg_3__, arg_4__ with
+             | ctxt, nil, rev_bndrs =>
+                 pair (let 'Mk_OccEnv occ_encl_5__ occ_one_shots_6__ occ_gbl_scrut_7__
+                          occ_rule_act_8__ occ_binder_swap_9__ := env in
+                       Mk_OccEnv OccVanilla ctxt occ_gbl_scrut_7__ occ_rule_act_8__
+                                 occ_binder_swap_9__) (GHC.List.reverse rev_bndrs)
+             | nil, bndrs, rev_bndrs =>
+                 pair (let 'Mk_OccEnv occ_encl_13__ occ_one_shots_14__ occ_gbl_scrut_15__
+                          occ_rule_act_16__ occ_binder_swap_17__ := env in
+                       Mk_OccEnv OccVanilla nil occ_gbl_scrut_15__ occ_rule_act_16__
+                                 occ_binder_swap_17__) (Coq.Init.Datatypes.app (GHC.List.reverse rev_bndrs)
+                                                                               bndrs)
+             | (cons one_shot ctxt' as ctxt), cons bndr bndrs, rev_bndrs =>
+                 let bndr' := Id.updOneShotInfo bndr one_shot in
+                 if Core.isId bndr : bool then go ctxt' bndrs (cons bndr' rev_bndrs) else
+                 go ctxt bndrs (cons bndr rev_bndrs)
+             end in
         go ctxt bndrs nil
     end.
 

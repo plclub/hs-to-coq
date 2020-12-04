@@ -26,12 +26,12 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive UnVarSet : Type
-  := | Mk_UnVarSet : (Data.IntSet.Internal.IntSet) -> UnVarSet.
+Inductive UnVarSet : Type :=
+  | Mk_UnVarSet : (Data.IntSet.Internal.IntSet) -> UnVarSet.
 
-Inductive Gen : Type
-  := | CBPG : UnVarSet -> UnVarSet -> Gen
-  |  CG : UnVarSet -> Gen.
+Inductive Gen : Type :=
+  | CBPG : UnVarSet -> UnVarSet -> Gen
+  | CG : UnVarSet -> Gen.
 
 Inductive UnVarGraph : Type := | Mk_UnVarGraph : (Bag.Bag Gen) -> UnVarGraph.
 

@@ -25,9 +25,9 @@ Require OccName.
 Definition FieldLabelString :=
   FastString.FastString%type.
 
-Inductive FieldLbl a : Type
-  := | Mk_FieldLabel (flLabel : FieldLabelString) (flIsOverloaded : bool)
-  (flSelector : a)
+Inductive FieldLbl a : Type :=
+  | Mk_FieldLabel (flLabel : FieldLabelString) (flIsOverloaded : bool) (flSelector
+    : a)
    : FieldLbl a.
 
 Definition FieldLabel :=

@@ -20,11 +20,11 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive UniqSupply : Type
-  := | MkSplitUniqSupply : BinNums.N -> UniqSupply -> UniqSupply -> UniqSupply.
+Inductive UniqSupply : Type :=
+  | MkSplitUniqSupply : BinNums.N -> UniqSupply -> UniqSupply -> UniqSupply.
 
-Inductive UniqSM result : Type
-  := | USM (unUSM : UniqSupply -> (result * UniqSupply)%type) : UniqSM result.
+Inductive UniqSM result : Type :=
+  | USM (unUSM : UniqSupply -> (result * UniqSupply)%type) : UniqSM result.
 
 Record MonadUnique__Dict m := MonadUnique__Dict_Build {
   getUniqueM__ : m Unique.Unique ;
@@ -162,8 +162,8 @@ Local Definition MonadUnique__UniqSM_getUniqueSupplyM : UniqSM UniqSupply :=
   getUs.
 
 Fixpoint uniqsFromSupply (arg_0__ : UniqSupply) : list Unique.Unique
-           := let 'MkSplitUniqSupply n _ s2 := arg_0__ in
-              cons (Unique.mkUniqueGrimily n) (uniqsFromSupply s2).
+  := let 'MkSplitUniqSupply n _ s2 := arg_0__ in
+     cons (Unique.mkUniqueGrimily n) (uniqsFromSupply s2).
 
 Definition getUniquesUs : UniqSM (list Unique.Unique) :=
   USM (fun us =>
@@ -183,8 +183,8 @@ Program Instance MonadUnique__UniqSM : MonadUnique UniqSM :=
 (* Skipping definition `UniqSupply.mkSplitUniqSupply' *)
 
 Fixpoint listSplitUniqSupply (arg_0__ : UniqSupply) : list UniqSupply
-           := let 'MkSplitUniqSupply _ s1 s2 := arg_0__ in
-              cons s1 (listSplitUniqSupply s2).
+  := let 'MkSplitUniqSupply _ s1 s2 := arg_0__ in
+     cons s1 (listSplitUniqSupply s2).
 
 Definition uniqFromSupply : UniqSupply -> Unique.Unique :=
   fun '(MkSplitUniqSupply n _ _) => Unique.mkUniqueGrimily n.
@@ -232,13 +232,13 @@ Definition liftUs {m} {a} `{MonadUnique m} : UniqSM a -> m a :=
     (GHC.Base.return_ GHC.Base.∘ GHC.Base.flip initUs_ m).
 
 Fixpoint lazyMapUs {a} {b} (arg_0__ : (a -> UniqSM b)) (arg_1__ : list a)
-           : UniqSM (list b)
-           := match arg_0__, arg_1__ with
-              | _, nil => returnUs nil
-              | f, cons x xs =>
-                  lazyThenUs (f x) (fun r =>
-                                lazyThenUs (lazyMapUs f xs) (fun rs => returnUs (cons r rs)))
-              end.
+  : UniqSM (list b)
+  := match arg_0__, arg_1__ with
+     | _, nil => returnUs nil
+     | f, cons x xs =>
+         lazyThenUs (f x) (fun r =>
+                       lazyThenUs (lazyMapUs f xs) (fun rs => returnUs (cons r rs)))
+     end.
 
 (* External variables:
      cons list nil op_zt__ pair BinNums.N GHC.Base.Applicative GHC.Base.Functor

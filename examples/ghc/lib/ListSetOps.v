@@ -64,12 +64,12 @@ Definition minusList {a} `{GHC.Base.Ord a} : list a -> list a -> list a :=
 
 Fixpoint assocDefaultUsing {a} {b} (arg_0__ : (a -> a -> bool)) (arg_1__ : b)
                            (arg_2__ : Assoc a b) (arg_3__ : a) : b
-           := match arg_0__, arg_1__, arg_2__, arg_3__ with
-              | _, deflt, nil, _ => deflt
-              | eq, deflt, cons (pair k v) rest, key =>
-                  if eq k key : bool then v else
-                  assocDefaultUsing eq deflt rest key
-              end.
+  := match arg_0__, arg_1__, arg_2__, arg_3__ with
+     | _, deflt, nil, _ => deflt
+     | eq, deflt, cons (pair k v) rest, key =>
+         if eq k key : bool then v else
+         assocDefaultUsing eq deflt rest key
+     end.
 
 Definition assoc {a} {b} `{GHC.Base.Eq_ a} `{GHC.Err.Default b}
    : GHC.Base.String -> Assoc a b -> a -> b :=
@@ -91,26 +91,26 @@ Definition assocMaybe {a} {b} `{(GHC.Base.Eq_ a)}
    : Assoc a b -> a -> option b :=
   fun alist key =>
     let fix lookup arg_0__
-              := match arg_0__ with
-                 | nil => None
-                 | cons (pair tv ty) rest =>
-                     if key GHC.Base.== tv : bool
-                     then Some ty
-                     else lookup rest
-                 end in
+      := match arg_0__ with
+         | nil => None
+         | cons (pair tv ty) rest =>
+             if key GHC.Base.== tv : bool
+             then Some ty
+             else lookup rest
+         end in
     lookup alist.
 
 Definition hasNoDups {a} `{(GHC.Base.Eq_ a)} : list a -> bool :=
   fun xs =>
     let is_elem := Util.isIn (GHC.Base.hs_string__ "hasNoDups") in
     let fix f arg_1__ arg_2__
-              := match arg_1__, arg_2__ with
-                 | _, nil => true
-                 | seen_so_far, cons x xs =>
-                     if is_elem x seen_so_far : bool
-                     then false
-                     else f (cons x seen_so_far) xs
-                 end in
+      := match arg_1__, arg_2__ with
+         | _, nil => true
+         | seen_so_far, cons x xs =>
+             if is_elem x seen_so_far : bool
+             then false
+             else f (cons x seen_so_far) xs
+         end in
     f nil xs.
 
 Axiom equivClasses : forall {a},

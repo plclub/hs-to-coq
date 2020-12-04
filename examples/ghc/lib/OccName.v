@@ -32,14 +32,14 @@ Definition TidyOccEnv :=
 
 Inductive OccEnv a : Type := | A : (UniqFM.UniqFM a) -> OccEnv a.
 
-Inductive NameSpace : Type
-  := | VarName : NameSpace
-  |  DataName : NameSpace
-  |  TvName : NameSpace
-  |  TcClsName : NameSpace.
+Inductive NameSpace : Type :=
+  | VarName : NameSpace
+  | DataName : NameSpace
+  | TvName : NameSpace
+  | TcClsName : NameSpace.
 
-Inductive OccName : Type
-  := | Mk_OccName (occNameSpace : NameSpace) (occNameFS : FastString.FastString)
+Inductive OccName : Type :=
+  | Mk_OccName (occNameSpace : NameSpace) (occNameFS : FastString.FastString)
    : OccName.
 
 Definition OccSet :=
@@ -738,14 +738,14 @@ Definition emptyTidyOccEnv : TidyOccEnv :=
 Definition avoidClashesOccEnv : TidyOccEnv -> list OccName -> TidyOccEnv :=
   fun env occs =>
     let fix go arg_0__ arg_1__ arg_2__
-              := match arg_0__, arg_1__, arg_2__ with
-                 | env, _, nil => env
-                 | env, seenOnce, cons (Mk_OccName _ fs) occs =>
-                     if UniqFM.elemUFM fs env : bool then go env seenOnce occs else
-                     if UniqFM.elemUFM fs seenOnce : bool
-                     then go (UniqFM.addToUFM env fs #1) seenOnce occs else
-                     go env (UniqFM.addToUFM seenOnce fs tt) occs
-                 end in
+      := match arg_0__, arg_1__, arg_2__ with
+         | env, _, nil => env
+         | env, seenOnce, cons (Mk_OccName _ fs) occs =>
+             if UniqFM.elemUFM fs env : bool then go env seenOnce occs else
+             if UniqFM.elemUFM fs seenOnce : bool
+             then go (UniqFM.addToUFM env fs #1) seenOnce occs else
+             go env (UniqFM.addToUFM seenOnce fs tt) occs
+         end in
     go env UniqFM.emptyUFM occs.
 
 Axiom tidyOccName : TidyOccEnv -> OccName -> (TidyOccEnv * OccName)%type.

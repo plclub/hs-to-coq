@@ -37,8 +37,8 @@ Definition XT a :=
 
 Axiom TypeMapX : forall (a : Type), Type.
 
-Inductive TyLitMap a : Type
-  := | TLM (tlm_number : Data.Map.Internal.Map GHC.Num.Integer a) (tlm_string
+Inductive TyLitMap a : Type :=
+  | TLM (tlm_number : Data.Map.Internal.Map GHC.Num.Integer a) (tlm_string
     : Data.Map.Internal.Map FastString.FastString a)
    : TyLitMap a.
 
@@ -55,8 +55,8 @@ Arguments Key _ {_}.
 Definition TickishMap :=
   (Data.Map.Internal.Map (Core.Tickish Core.Id))%type.
 
-Inductive MaybeMap m a : Type
-  := | MM (mm_nothing : option a) (mm_just : m a) : MaybeMap m a.
+Inductive MaybeMap m a : Type :=
+  | MM (mm_nothing : option a) (mm_just : m a) : MaybeMap m a.
 
 Definition LiteralMap :=
   (Data.Map.Internal.Map Literal.Literal)%type.
@@ -68,11 +68,11 @@ Axiom GenMap : forall (m : Type -> Type) (a : Type), Type.
 Definition TypeMapG :=
   (GenMap TypeMapX)%type.
 
-Inductive LooseTypeMap a : Type
-  := | Mk_LooseTypeMap : (TypeMapG a) -> LooseTypeMap a.
+Inductive LooseTypeMap a : Type :=
+  | Mk_LooseTypeMap : (TypeMapG a) -> LooseTypeMap a.
 
-Inductive TypeMap a : Type
-  := | Mk_TypeMap : (TypeMapG (TypeMapG a)) -> TypeMap a.
+Inductive TypeMap a : Type :=
+  | Mk_TypeMap : (TypeMapG (TypeMapG a)) -> TypeMap a.
 
 Axiom CoreMapX : forall (a : Type), Type.
 
@@ -81,35 +81,35 @@ Definition CoreMapG :=
 
 Inductive CoreMap a : Type := | Mk_CoreMap : (CoreMapG a) -> CoreMap a.
 
-Inductive CoercionMapX a : Type
-  := | Mk_CoercionMapX : (TypeMapX a) -> CoercionMapX a.
+Inductive CoercionMapX a : Type :=
+  | Mk_CoercionMapX : (TypeMapX a) -> CoercionMapX a.
 
 Definition CoercionMapG :=
   (GenMap CoercionMapX)%type.
 
-Inductive CoercionMap a : Type
-  := | Mk_CoercionMap : (CoercionMapG a) -> CoercionMap a.
+Inductive CoercionMap a : Type :=
+  | Mk_CoercionMap : (CoercionMapG a) -> CoercionMap a.
 
 Definition BoundVarMap :=
   IntMap.IntMap%type.
 
-Inductive VarMap a : Type
-  := | VM (vm_bvar : BoundVarMap a) (vm_fvar : Core.DVarEnv a) : VarMap a.
+Inductive VarMap a : Type :=
+  | VM (vm_bvar : BoundVarMap a) (vm_fvar : Core.DVarEnv a) : VarMap a.
 
 Definition BoundVar :=
   Data.IntSet.Internal.Key%type.
 
-Inductive CmEnv : Type
-  := | CME (cme_next : BoundVar) (cme_env : Core.VarEnv BoundVar) : CmEnv.
+Inductive CmEnv : Type :=
+  | CME (cme_next : BoundVar) (cme_env : Core.VarEnv BoundVar) : CmEnv.
 
 Inductive DeBruijn a : Type := | D : CmEnv -> a -> DeBruijn a.
 
 Definition BndrMap :=
   TypeMapG%type.
 
-Inductive AltMap a : Type
-  := | AM (am_deflt : CoreMapG a) (am_data : NameEnv.DNameEnv (CoreMapG a))
-  (am_lit : LiteralMap (CoreMapG a))
+Inductive AltMap a : Type :=
+  | AM (am_deflt : CoreMapG a) (am_data : NameEnv.DNameEnv (CoreMapG a)) (am_lit
+    : LiteralMap (CoreMapG a))
    : AltMap a.
 
 Arguments TLM {_} _ _.
@@ -949,12 +949,12 @@ Definition Eq___DeBruijn__list_op_zeze__ {a} `{GHC.Base.Eq_ (DeBruijn a)}
   match dbl_xs, dbl_ys with
   | D env_xs xs0, D env_ys ys0 =>
       let fix equal xs ys
-                := match xs, ys with
-                   | nil, nil => true
-                   | cons x xs', cons y ys' =>
-                       andb (D env_xs x GHC.Base.== D env_ys y) (equal xs' ys')
-                   | _, _ => false
-                   end in
+        := match xs, ys with
+           | nil, nil => true
+           | cons x xs', cons y ys' =>
+               andb (D env_xs x GHC.Base.== D env_ys y) (equal xs' ys')
+           | _, _ => false
+           end in
       equal xs0 ys0
   end.
 

@@ -36,50 +36,50 @@ Import GHC.Base.Notations.
 Definition ModuleNameEnv :=
   UniqFM.UniqFM%type.
 
-Inductive ModuleName : Type
-  := | Mk_ModuleName : FastString.FastString -> ModuleName.
+Inductive ModuleName : Type :=
+  | Mk_ModuleName : FastString.FastString -> ModuleName.
 
-Inductive ModLocation : Type
-  := | Mk_ModLocation (ml_hs_file : option GHC.Base.String) (ml_hi_file
+Inductive ModLocation : Type :=
+  | Mk_ModLocation (ml_hs_file : option GHC.Base.String) (ml_hi_file
     : GHC.Base.String) (ml_obj_file : GHC.Base.String)
    : ModLocation.
 
-Inductive InstalledUnitId : Type
-  := | Mk_InstalledUnitId (installedUnitIdFS : FastString.FastString)
+Inductive InstalledUnitId : Type :=
+  | Mk_InstalledUnitId (installedUnitIdFS : FastString.FastString)
    : InstalledUnitId.
 
-Inductive InstalledModule : Type
-  := | Mk_InstalledModule (installedModuleUnitId : InstalledUnitId)
+Inductive InstalledModule : Type :=
+  | Mk_InstalledModule (installedModuleUnitId : InstalledUnitId)
   (installedModuleName : ModuleName)
    : InstalledModule.
 
-Inductive InstalledModuleEnv elt : Type
-  := | Mk_InstalledModuleEnv
+Inductive InstalledModuleEnv elt : Type :=
+  | Mk_InstalledModuleEnv
    : (Data.Map.Internal.Map InstalledModule elt) -> InstalledModuleEnv elt.
 
-Inductive DefUnitId : Type
-  := | Mk_DefUnitId (unDefUnitId : InstalledUnitId) : DefUnitId.
+Inductive DefUnitId : Type :=
+  | Mk_DefUnitId (unDefUnitId : InstalledUnitId) : DefUnitId.
 
 Definition DModuleNameEnv :=
   UniqFM.UniqFM%type.
 
-Inductive ComponentId : Type
-  := | Mk_ComponentId : FastString.FastString -> ComponentId.
+Inductive ComponentId : Type :=
+  | Mk_ComponentId : FastString.FastString -> ComponentId.
 
-Inductive IndefUnitId : Type
-  := | Mk_IndefUnitId (indefUnitIdFS : FastString.FastString) (indefUnitIdKey
+Inductive IndefUnitId : Type :=
+  | Mk_IndefUnitId (indefUnitIdFS : FastString.FastString) (indefUnitIdKey
     : Unique.Unique) (indefUnitIdComponentId : ComponentId) (indefUnitIdInsts
     : list (ModuleName * Module)%type) (indefUnitIdFreeHoles
     : UniqSet.UniqSet ModuleName)
    : IndefUnitId
-with Module : Type
-  := | Mk_Module (moduleUnitId : UnitId) (moduleName : ModuleName) : Module
-with UnitId : Type
-  := | IndefiniteUnitId : IndefUnitId -> UnitId
-  |  DefiniteUnitId : DefUnitId -> UnitId.
+with Module : Type :=
+  | Mk_Module (moduleUnitId : UnitId) (moduleName : ModuleName) : Module
+with UnitId : Type :=
+  | IndefiniteUnitId : IndefUnitId -> UnitId
+  | DefiniteUnitId : DefUnitId -> UnitId.
 
-Inductive IndefModule : Type
-  := | Mk_IndefModule (indefModuleUnitId : IndefUnitId) (indefModuleName
+Inductive IndefModule : Type :=
+  | Mk_IndefModule (indefModuleUnitId : IndefUnitId) (indefModuleName
     : ModuleName)
    : IndefModule.
 
@@ -105,8 +105,8 @@ Definition getModule `{g__0__ : HasModule m} : m Module :=
 
 Inductive NDModule : Type := | Mk_NDModule (unNDModule : Module) : NDModule.
 
-Inductive ModuleEnv elt : Type
-  := | Mk_ModuleEnv : (Data.Map.Internal.Map NDModule elt) -> ModuleEnv elt.
+Inductive ModuleEnv elt : Type :=
+  | Mk_ModuleEnv : (Data.Map.Internal.Map NDModule elt) -> ModuleEnv elt.
 
 Definition ModuleSet :=
   (Data.Set.Internal.Set_ NDModule)%type.

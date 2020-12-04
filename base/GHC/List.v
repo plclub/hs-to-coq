@@ -120,10 +120,10 @@ Definition init {a} `{_ : GHC.Err.Default a} : list a -> list a :=
     | nil => errorEmptyList (GHC.Base.hs_string__ "init")
     | cons x xs =>
         let fix init' arg_2__ arg_3__
-                  := match arg_2__, arg_3__ with
-                     | _, nil => nil
-                     | y, cons z zs => cons y (init' z zs)
-                     end in
+          := match arg_2__, arg_3__ with
+             | _, nil => nil
+             | y, cons z zs => cons y (init' z zs)
+             end in
         init' x xs
     end.
 
@@ -131,10 +131,10 @@ Definition null {a} : list a -> bool :=
   fun arg_0__ => match arg_0__ with | nil => true | cons _ _ => false end.
 
 Fixpoint lenAcc {a} (arg_0__ : list a) (arg_1__ : GHC.Num.Int) : GHC.Num.Int
-           := match arg_0__, arg_1__ with
-              | nil, n => n
-              | cons _ ys, n => lenAcc ys (n GHC.Num.+ #1)
-              end.
+  := match arg_0__, arg_1__ with
+     | nil, n => n
+     | cons _ ys, n => lenAcc ys (n GHC.Num.+ #1)
+     end.
 
 Definition length {a} : list a -> GHC.Num.Int :=
   fun xs => lenAcc xs #0.
@@ -150,12 +150,12 @@ Definition idLength : GHC.Num.Int -> GHC.Num.Int :=
   id.
 
 Fixpoint filter {a} (arg_0__ : (a -> bool)) (arg_1__ : list a) : list a
-           := match arg_0__, arg_1__ with
-              | _pred, nil => nil
-              | pred, cons x xs =>
-                  if pred x : bool then cons x (filter pred xs) else
-                  filter pred xs
-              end.
+  := match arg_0__, arg_1__ with
+     | _pred, nil => nil
+     | pred, cons x xs =>
+         if pred x : bool then cons x (filter pred xs) else
+         filter pred xs
+     end.
 
 Definition filterFB {a} {b} : (a -> b -> b) -> (a -> bool) -> a -> b -> b :=
   fun c p x r => if p x : bool then c x r else r.
@@ -186,10 +186,10 @@ Definition product {a} `{(GHC.Num.Num a)} : list a -> a :=
 Definition scanl {b} {a} : (b -> a -> b) -> b -> list a -> list b :=
   let scanlGo {b} {a} : (b -> a -> b) -> b -> list a -> list b :=
     fix scanlGo (f : (b -> a -> b)) (q : b) (ls : list a) : list b
-          := cons q (match ls with
-                   | nil => nil
-                   | cons x xs => scanlGo f (f q x) xs
-                   end) in
+      := cons q (match ls with
+               | nil => nil
+               | cons x xs => scanlGo f (f q x) xs
+               end) in
   scanlGo.
 
 Definition scanlFB {b} {a} {c}
@@ -209,10 +209,10 @@ Definition scanl1 {a} : (a -> a -> a) -> list a -> list a :=
 Definition scanl' {b} {a} : (b -> a -> b) -> b -> list a -> list b :=
   let scanlGo' {b} {a} : (b -> a -> b) -> b -> list a -> list b :=
     fix scanlGo' (f : (b -> a -> b)) (q : b) (ls : list a) : list b
-          := cons q (match ls with
-                   | nil => nil
-                   | cons x xs => scanlGo' f (f q x) xs
-                   end) in
+      := cons q (match ls with
+               | nil => nil
+               | cons x xs => scanlGo' f (f q x) xs
+               end) in
   scanlGo'.
 
 Definition scanlFB' {b} {a} {c}
@@ -225,11 +225,11 @@ Definition flipSeqScanl' {a} {b} : a -> b -> a :=
 Definition foldr1 {a} `{_ : GHC.Err.Default a} : (a -> a -> a) -> list a -> a :=
   fun f =>
     let fix go arg_0__
-              := match arg_0__ with
-                 | cons x nil => x
-                 | cons x xs => f x (go xs)
-                 | nil => errorEmptyList (GHC.Base.hs_string__ "foldr1")
-                 end in
+      := match arg_0__ with
+         | cons x nil => x
+         | cons x xs => f x (go xs)
+         | nil => errorEmptyList (GHC.Base.hs_string__ "foldr1")
+         end in
     go.
 
 (* Skipping definition `GHC.List.scanr' *)
@@ -248,15 +248,15 @@ Definition scanrFB {a} {b} {c}
 
 Fixpoint scanr1 {a} `{_ : GHC.Err.Default a} (arg_0__ : a -> a -> a) (arg_1__
                   : list a) : list a
-           := match arg_0__, arg_1__ with
-              | _, nil => nil
-              | _, cons x nil => cons x nil
-              | f, cons x xs =>
-                  match scanr1 f xs with
-                  | (cons q _ as qs) => cons (f x q) qs
-                  | _ => GHC.Err.patternFailure
-                  end
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => nil
+     | _, cons x nil => cons x nil
+     | f, cons x xs =>
+         match scanr1 f xs with
+         | (cons q _ as qs) => cons (f x q) qs
+         | _ => GHC.Err.patternFailure
+         end
+     end.
 
 Definition maximum {a} `{_ : GHC.Err.Default a} {_ : Eq_ a} {_ : Ord a}
    : list a -> a :=
@@ -291,20 +291,20 @@ Definition minimum {a} `{_ : GHC.Err.Default a} {_ : Eq_ a} {_ : Ord a}
 (* Skipping definition `GHC.List.cycle' *)
 
 Fixpoint takeWhile {a} (arg_0__ : (a -> bool)) (arg_1__ : list a) : list a
-           := match arg_0__, arg_1__ with
-              | _, nil => nil
-              | p, cons x xs => if p x : bool then cons x (takeWhile p xs) else nil
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => nil
+     | p, cons x xs => if p x : bool then cons x (takeWhile p xs) else nil
+     end.
 
 Definition takeWhileFB {a} {b}
    : (a -> bool) -> (a -> b -> b) -> b -> a -> b -> b :=
   fun p c n => fun x r => if p x : bool then c x r else n.
 
 Fixpoint dropWhile {a} (arg_0__ : (a -> bool)) (arg_1__ : list a) : list a
-           := match arg_0__, arg_1__ with
-              | _, nil => nil
-              | p, (cons x xs' as xs) => if p x : bool then dropWhile p xs' else xs
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => nil
+     | p, (cons x xs' as xs) => if p x : bool then dropWhile p xs' else xs
+     end.
 
 (* Skipping definition `GHC.List.take' *)
 
@@ -327,74 +327,74 @@ Definition takeFB {a} {b}
 
 Fixpoint span {a} (arg_0__ : (a -> bool)) (arg_1__ : list a) : (list a *
                                                                 list a)%type
-           := match arg_0__, arg_1__ with
-              | _, (nil as xs) => pair xs xs
-              | p, (cons x xs' as xs) =>
-                  if p x : bool then let 'pair ys zs := span p xs' in pair (cons x ys) zs else
-                  pair nil xs
-              end.
+  := match arg_0__, arg_1__ with
+     | _, (nil as xs) => pair xs xs
+     | p, (cons x xs' as xs) =>
+         if p x : bool then let 'pair ys zs := span p xs' in pair (cons x ys) zs else
+         pair nil xs
+     end.
 
 Fixpoint break {a} (arg_0__ : (a -> bool)) (arg_1__ : list a) : (list a *
                                                                  list a)%type
-           := match arg_0__, arg_1__ with
-              | _, (nil as xs) => pair xs xs
-              | p, (cons x xs' as xs) =>
-                  if p x : bool then pair nil xs else
-                  let 'pair ys zs := break p xs' in
-                  pair (cons x ys) zs
-              end.
+  := match arg_0__, arg_1__ with
+     | _, (nil as xs) => pair xs xs
+     | p, (cons x xs' as xs) =>
+         if p x : bool then pair nil xs else
+         let 'pair ys zs := break p xs' in
+         pair (cons x ys) zs
+     end.
 
 Definition reverse {a} : list a -> list a :=
   fun l =>
     let fix rev arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | nil, a => a
-                 | cons x xs, a => rev xs (cons x a)
-                 end in
+      := match arg_0__, arg_1__ with
+         | nil, a => a
+         | cons x xs, a => rev xs (cons x a)
+         end in
     rev l nil.
 
 Fixpoint and (arg_0__ : list bool) : bool
-           := match arg_0__ with
-              | nil => true
-              | cons x xs => andb x (and xs)
-              end.
+  := match arg_0__ with
+     | nil => true
+     | cons x xs => andb x (and xs)
+     end.
 
 Fixpoint or (arg_0__ : list bool) : bool
-           := match arg_0__ with
-              | nil => false
-              | cons x xs => orb x (or xs)
-              end.
+  := match arg_0__ with
+     | nil => false
+     | cons x xs => orb x (or xs)
+     end.
 
 Fixpoint any {a} (arg_0__ : (a -> bool)) (arg_1__ : list a) : bool
-           := match arg_0__, arg_1__ with
-              | _, nil => false
-              | p, cons x xs => orb (p x) (any p xs)
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => false
+     | p, cons x xs => orb (p x) (any p xs)
+     end.
 
 Fixpoint all {a} (arg_0__ : (a -> bool)) (arg_1__ : list a) : bool
-           := match arg_0__, arg_1__ with
-              | _, nil => true
-              | p, cons x xs => andb (p x) (all p xs)
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => true
+     | p, cons x xs => andb (p x) (all p xs)
+     end.
 
 Fixpoint elem {a} `{(Eq_ a)} (arg_0__ : a) (arg_1__ : list a) : bool
-           := match arg_0__, arg_1__ with
-              | _, nil => false
-              | x, cons y ys => orb (x == y) (elem x ys)
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => false
+     | x, cons y ys => orb (x == y) (elem x ys)
+     end.
 
 Fixpoint notElem {a} `{(Eq_ a)} (arg_0__ : a) (arg_1__ : list a) : bool
-           := match arg_0__, arg_1__ with
-              | _, nil => true
-              | x, cons y ys => andb (x /= y) (notElem x ys)
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => true
+     | x, cons y ys => andb (x /= y) (notElem x ys)
+     end.
 
 Fixpoint lookup {a} {b} `{(Eq_ a)} (arg_0__ : a) (arg_1__ : list (a * b)%type)
-           : option b
-           := match arg_0__, arg_1__ with
-              | _key, nil => None
-              | key, cons (pair x y) xys => if key == x : bool then Some y else lookup key xys
-              end.
+  : option b
+  := match arg_0__, arg_1__ with
+     | _key, nil => None
+     | key, cons (pair x y) xys => if key == x : bool then Some y else lookup key xys
+     end.
 
 (* Skipping definition `Coq.Lists.List.flat_map' *)
 
@@ -427,11 +427,11 @@ Definition foldr2 {a} {b} {c}
    : (a -> b -> c -> c) -> c -> list a -> list b -> c :=
   fun k z =>
     let fix go arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | nil, _ys => z
-                 | _xs, nil => z
-                 | cons x xs, cons y ys => k x y (go xs ys)
-                 end in
+      := match arg_0__, arg_1__ with
+         | nil, _ys => z
+         | _xs, nil => z
+         | cons x xs, cons y ys => k x y (go xs ys)
+         end in
     go.
 
 Definition foldr2_left {a} {b} {c} {d}
@@ -443,11 +443,11 @@ Definition foldr2_left {a} {b} {c} {d}
     end.
 
 Fixpoint zip {a} {b} (arg_0__ : list a) (arg_1__ : list b) : list (a * b)%type
-           := match arg_0__, arg_1__ with
-              | nil, _bs => nil
-              | _as, nil => nil
-              | cons a as_, cons b bs => cons (pair a b) (zip as_ bs)
-              end.
+  := match arg_0__, arg_1__ with
+     | nil, _bs => nil
+     | _as, nil => nil
+     | cons a as_, cons b bs => cons (pair a b) (zip as_ bs)
+     end.
 
 Definition zipFB {a} {b} {c} {d}
    : ((a * b)%type -> c -> d) -> a -> b -> c -> d :=
@@ -455,19 +455,19 @@ Definition zipFB {a} {b} {c} {d}
 
 Fixpoint zip3 {a} {b} {c} (arg_0__ : list a) (arg_1__ : list b) (arg_2__
                 : list c) : list (a * b * c)%type
-           := match arg_0__, arg_1__, arg_2__ with
-              | cons a as_, cons b bs, cons c cs => cons (pair (pair a b) c) (zip3 as_ bs cs)
-              | _, _, _ => nil
-              end.
+  := match arg_0__, arg_1__, arg_2__ with
+     | cons a as_, cons b bs, cons c cs => cons (pair (pair a b) c) (zip3 as_ bs cs)
+     | _, _, _ => nil
+     end.
 
 Definition zipWith {a} {b} {c} : (a -> b -> c) -> list a -> list b -> list c :=
   fun f =>
     let fix go arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | nil, _ => nil
-                 | _, nil => nil
-                 | cons x xs, cons y ys => cons (f x y) (go xs ys)
-                 end in
+      := match arg_0__, arg_1__ with
+         | nil, _ => nil
+         | _, nil => nil
+         | cons x xs, cons y ys => cons (f x y) (go xs ys)
+         end in
     go.
 
 Definition zipWithFB {a} {b} {c} {d} {e}
@@ -478,10 +478,10 @@ Definition zipWith3 {a} {b} {c} {d}
    : (a -> b -> c -> d) -> list a -> list b -> list c -> list d :=
   fun z =>
     let fix go arg_0__ arg_1__ arg_2__
-              := match arg_0__, arg_1__, arg_2__ with
-                 | cons a as_, cons b bs, cons c cs => cons (z a b c) (go as_ bs cs)
-                 | _, _, _ => nil
-                 end in
+      := match arg_0__, arg_1__, arg_2__ with
+         | cons a as_, cons b bs, cons c cs => cons (z a b c) (go as_ bs cs)
+         | _, _, _ => nil
+         end in
     go.
 
 Definition unzip {a} {b} : list (a * b)%type -> (list a * list b)%type :=

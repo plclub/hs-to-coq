@@ -41,8 +41,8 @@ Definition FreeVarSet :=
 Definition BoundVarSet :=
   Core.DIdSet%type.
 
-Inductive FloatInBind : Type
-  := | FB : BoundVarSet -> FreeVarSet -> MkCore.FloatBind -> FloatInBind.
+Inductive FloatInBind : Type :=
+  | FB : BoundVarSet -> FreeVarSet -> MkCore.FloatBind -> FloatInBind.
 
 Definition FloatInBinds :=
   (list FloatInBind)%type.
@@ -129,43 +129,43 @@ Definition sepBindsByDropPoint
     let n_alts := Coq.Lists.List.length drop_pts in
     let go : FloatInBinds -> list DropBox -> list FloatInBinds :=
       fix go (arg_1__ : FloatInBinds) (arg_2__ : list DropBox) : list FloatInBinds
-            := match arg_1__, arg_2__ with
-               | nil, drop_boxes =>
-                   GHC.Base.map (GHC.List.reverse GHC.Base.∘ Data.Tuple.snd) drop_boxes
-               | cons (FB bndrs bind_fvs bind as bind_w_fvs) binds
-               , (cons here_box fork_boxes as drop_boxes) =>
-                   let insert : DropBox -> DropBox :=
-                     fun '(pair fvs drops) =>
-                       pair (Core.unionDVarSet fvs bind_fvs) (cons bind_w_fvs drops) in
-                   let insert_maybe :=
-                     fun arg_7__ arg_8__ =>
-                       match arg_7__, arg_8__ with
-                       | box, true => insert box
-                       | box, false => box
-                       end in
-                   match (let cont_11__ arg_12__ :=
-                              let 'pair fvs _ := arg_12__ in
-                              cons (Core.intersectsDVarSet fvs bndrs) nil in
-                            Coq.Lists.List.flat_map cont_11__ drop_boxes) with
-                   | cons used_here used_in_flags =>
-                       let n_used_alts := Util.count GHC.Base.id used_in_flags in
-                       let cant_push :=
-                         if is_case : bool
-                         then orb (n_used_alts GHC.Base.== n_alts) (andb (n_used_alts GHC.Base.> #1)
-                                                                         (negb (floatIsDupable dflags bind))) else
-                         orb (floatIsCase bind) (n_used_alts GHC.Base.> #1) in
-                       let drop_here := orb used_here cant_push in
-                       let new_fork_boxes :=
-                         Util.zipWithEqual (GHC.Base.hs_string__ "FloatIn.sepBinds") insert_maybe
-                         fork_boxes used_in_flags in
-                       let new_boxes :=
-                         if drop_here : bool then (cons (insert here_box) fork_boxes) else
-                         (cons here_box new_fork_boxes) in
-                       go binds new_boxes
-                   | _ => GHC.Err.patternFailure
-                   end
-               | _, _ => Panic.panic (GHC.Base.hs_string__ "sepBindsByDropPoint/go")
-               end in
+        := match arg_1__, arg_2__ with
+           | nil, drop_boxes =>
+               GHC.Base.map (GHC.List.reverse GHC.Base.∘ Data.Tuple.snd) drop_boxes
+           | cons (FB bndrs bind_fvs bind as bind_w_fvs) binds
+           , (cons here_box fork_boxes as drop_boxes) =>
+               let insert : DropBox -> DropBox :=
+                 fun '(pair fvs drops) =>
+                   pair (Core.unionDVarSet fvs bind_fvs) (cons bind_w_fvs drops) in
+               let insert_maybe :=
+                 fun arg_7__ arg_8__ =>
+                   match arg_7__, arg_8__ with
+                   | box, true => insert box
+                   | box, false => box
+                   end in
+               match (let cont_11__ arg_12__ :=
+                          let 'pair fvs _ := arg_12__ in
+                          cons (Core.intersectsDVarSet fvs bndrs) nil in
+                        Coq.Lists.List.flat_map cont_11__ drop_boxes) with
+               | cons used_here used_in_flags =>
+                   let n_used_alts := Util.count GHC.Base.id used_in_flags in
+                   let cant_push :=
+                     if is_case : bool
+                     then orb (n_used_alts GHC.Base.== n_alts) (andb (n_used_alts GHC.Base.> #1)
+                                                                     (negb (floatIsDupable dflags bind))) else
+                     orb (floatIsCase bind) (n_used_alts GHC.Base.> #1) in
+                   let drop_here := orb used_here cant_push in
+                   let new_fork_boxes :=
+                     Util.zipWithEqual (GHC.Base.hs_string__ "FloatIn.sepBinds") insert_maybe
+                     fork_boxes used_in_flags in
+                   let new_boxes :=
+                     if drop_here : bool then (cons (insert here_box) fork_boxes) else
+                     (cons here_box new_fork_boxes) in
+                   go binds new_boxes
+               | _ => GHC.Err.patternFailure
+               end
+           | _, _ => Panic.panic (GHC.Base.hs_string__ "sepBindsByDropPoint/go")
+           end in
     if Data.Foldable.null floaters : bool
     then cons nil (Coq.Lists.List.flat_map (fun _ => cons nil nil) drop_pts) else
     if andb Util.debugIsOn (negb (Util.lengthAtLeast drop_pts #2)) : bool
@@ -239,11 +239,11 @@ Definition fiBind
     end.
 
 Fixpoint wrapFloats (arg_0__ : FloatInBinds) (arg_1__ : Core.CoreExpr)
-           : Core.CoreExpr
-           := match arg_0__, arg_1__ with
-              | nil, e => e
-              | cons (FB _ _ fl) bs, e => wrapFloats bs (MkCore.wrapFloat fl e)
-              end.
+  : Core.CoreExpr
+  := match arg_0__, arg_1__ with
+     | nil, e => e
+     | cons (FB _ _ fl) bs, e => wrapFloats bs (MkCore.wrapFloat fl e)
+     end.
 
 (* External variables:
      Some andb bool cons false list negb nil op_zt__ orb pair true

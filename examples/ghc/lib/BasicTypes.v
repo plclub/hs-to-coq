@@ -30,44 +30,44 @@ Import GHC.Num.Notations.
 Definition Version :=
   GHC.Num.Int%type.
 
-Inductive TyPrec : Type
-  := | TopPrec : TyPrec
-  |  FunPrec : TyPrec
-  |  TyOpPrec : TyPrec
-  |  TyConPrec : TyPrec.
+Inductive TyPrec : Type :=
+  | TopPrec : TyPrec
+  | FunPrec : TyPrec
+  | TyOpPrec : TyPrec
+  | TyConPrec : TyPrec.
 
-Inductive TupleSort : Type
-  := | BoxedTuple : TupleSort
-  |  UnboxedTuple : TupleSort
-  |  ConstraintTuple : TupleSort.
+Inductive TupleSort : Type :=
+  | BoxedTuple : TupleSort
+  | UnboxedTuple : TupleSort
+  | ConstraintTuple : TupleSort.
 
-Inductive TopLevelFlag : Type
-  := | TopLevel : TopLevelFlag
-  |  NotTopLevel : TopLevelFlag.
+Inductive TopLevelFlag : Type :=
+  | TopLevel : TopLevelFlag
+  | NotTopLevel : TopLevelFlag.
 
-Inductive SwapFlag : Type := | NotSwapped : SwapFlag |  IsSwapped : SwapFlag.
+Inductive SwapFlag : Type := | NotSwapped : SwapFlag | IsSwapped : SwapFlag.
 
-Inductive SuccessFlag : Type
-  := | Succeeded : SuccessFlag
-  |  Failed : SuccessFlag.
+Inductive SuccessFlag : Type :=
+  | Succeeded : SuccessFlag
+  | Failed : SuccessFlag.
 
-Inductive SpliceExplicitFlag : Type
-  := | ExplicitSplice : SpliceExplicitFlag
-  |  ImplicitSplice : SpliceExplicitFlag.
+Inductive SpliceExplicitFlag : Type :=
+  | ExplicitSplice : SpliceExplicitFlag
+  | ImplicitSplice : SpliceExplicitFlag.
 
-Inductive SourceText : Type
-  := | Mk_SourceText : GHC.Base.String -> SourceText
-  |  NoSourceText : SourceText.
+Inductive SourceText : Type :=
+  | Mk_SourceText : GHC.Base.String -> SourceText
+  | NoSourceText : SourceText.
 
-Inductive StringLiteral : Type
-  := | Mk_StringLiteral (sl_st : SourceText) (sl_fs : FastString.FastString)
+Inductive StringLiteral : Type :=
+  | Mk_StringLiteral (sl_st : SourceText) (sl_fs : FastString.FastString)
    : StringLiteral.
 
-Inductive WarningTxt : Type
-  := | Mk_WarningTxt
+Inductive WarningTxt : Type :=
+  | Mk_WarningTxt
    : (SrcLoc.Located SourceText) ->
      list (SrcLoc.Located StringLiteral) -> WarningTxt
-  |  DeprecatedTxt
+  | DeprecatedTxt
    : (SrcLoc.Located SourceText) ->
      list (SrcLoc.Located StringLiteral) -> WarningTxt.
 
@@ -77,106 +77,106 @@ Definition RulesOnly :=
 Definition RuleName :=
   FastString.FastString%type.
 
-Inductive RuleMatchInfo : Type
-  := | ConLike : RuleMatchInfo
-  |  FunLike : RuleMatchInfo.
+Inductive RuleMatchInfo : Type :=
+  | ConLike : RuleMatchInfo
+  | FunLike : RuleMatchInfo.
 
 Definition RepArity :=
   nat.
 
-Inductive RecFlag : Type := | Recursive : RecFlag |  NonRecursive : RecFlag.
+Inductive RecFlag : Type := | Recursive : RecFlag | NonRecursive : RecFlag.
 
 Definition PhaseNum :=
   nat.
 
-Inductive OverlapMode : Type
-  := | NoOverlap : SourceText -> OverlapMode
-  |  Overlappable : SourceText -> OverlapMode
-  |  Overlapping : SourceText -> OverlapMode
-  |  Overlaps : SourceText -> OverlapMode
-  |  Incoherent : SourceText -> OverlapMode.
+Inductive OverlapMode : Type :=
+  | NoOverlap : SourceText -> OverlapMode
+  | Overlappable : SourceText -> OverlapMode
+  | Overlapping : SourceText -> OverlapMode
+  | Overlaps : SourceText -> OverlapMode
+  | Incoherent : SourceText -> OverlapMode.
 
-Inductive OverlapFlag : Type
-  := | Mk_OverlapFlag (overlapMode : OverlapMode) (isSafeOverlap : bool)
+Inductive OverlapFlag : Type :=
+  | Mk_OverlapFlag (overlapMode : OverlapMode) (isSafeOverlap : bool)
    : OverlapFlag.
 
-Inductive Origin : Type := | FromSource : Origin |  Generated : Origin.
+Inductive Origin : Type := | FromSource : Origin | Generated : Origin.
 
-Inductive OneShotInfo : Type
-  := | NoOneShotInfo : OneShotInfo
-  |  OneShotLam : OneShotInfo.
+Inductive OneShotInfo : Type :=
+  | NoOneShotInfo : OneShotInfo
+  | OneShotLam : OneShotInfo.
 
 Definition OneBranch :=
   bool%type.
 
-Inductive LexicalFixity : Type
-  := | Prefix : LexicalFixity
-  |  Infix : LexicalFixity.
+Inductive LexicalFixity : Type :=
+  | Prefix : LexicalFixity
+  | Infix : LexicalFixity.
 
-Inductive LeftOrRight : Type := | CLeft : LeftOrRight |  CRight : LeftOrRight.
+Inductive LeftOrRight : Type := | CLeft : LeftOrRight | CRight : LeftOrRight.
 
 Definition JoinArity :=
   nat.
 
-Inductive TailCallInfo : Type
-  := | AlwaysTailCalled : JoinArity -> TailCallInfo
-  |  NoTailCallInfo : TailCallInfo.
+Inductive TailCallInfo : Type :=
+  | AlwaysTailCalled : JoinArity -> TailCallInfo
+  | NoTailCallInfo : TailCallInfo.
 
 Definition InterestingCxt :=
   bool%type.
 
-Inductive IntegralLit : Type
-  := | IL (il_text : SourceText) (il_neg : bool) (il_value : GHC.Num.Integer)
+Inductive IntegralLit : Type :=
+  | IL (il_text : SourceText) (il_neg : bool) (il_value : GHC.Num.Integer)
    : IntegralLit.
 
-Inductive IntWithInf : Type
-  := | Int : GHC.Num.Int -> IntWithInf
-  |  Infinity : IntWithInf.
+Inductive IntWithInf : Type :=
+  | Int : GHC.Num.Int -> IntWithInf
+  | Infinity : IntWithInf.
 
 Definition InsideLam :=
   bool%type.
 
-Inductive OccInfo : Type
-  := | ManyOccs (occ_tail : TailCallInfo) : OccInfo
-  |  IAmDead : OccInfo
-  |  OneOcc (occ_in_lam : InsideLam) (occ_one_br : OneBranch) (occ_int_cxt
+Inductive OccInfo : Type :=
+  | ManyOccs (occ_tail : TailCallInfo) : OccInfo
+  | IAmDead : OccInfo
+  | OneOcc (occ_in_lam : InsideLam) (occ_one_br : OneBranch) (occ_int_cxt
     : InterestingCxt) (occ_tail : TailCallInfo)
    : OccInfo
-  |  IAmALoopBreaker (occ_rules_only : RulesOnly) (occ_tail : TailCallInfo)
+  | IAmALoopBreaker (occ_rules_only : RulesOnly) (occ_tail : TailCallInfo)
    : OccInfo.
 
-Inductive InlineSpec : Type
-  := | Inline : InlineSpec
-  |  Inlinable : InlineSpec
-  |  NoInline : InlineSpec
-  |  NoUserInline : InlineSpec.
+Inductive InlineSpec : Type :=
+  | Inline : InlineSpec
+  | Inlinable : InlineSpec
+  | NoInline : InlineSpec
+  | NoUserInline : InlineSpec.
 
-Inductive FunctionOrData : Type
-  := | IsFunction : FunctionOrData
-  |  IsData : FunctionOrData.
+Inductive FunctionOrData : Type :=
+  | IsFunction : FunctionOrData
+  | IsData : FunctionOrData.
 
-Inductive FractionalLit : Type
-  := | FL (fl_text : SourceText) (fl_neg : bool) (fl_value : GHC.Real.Rational)
+Inductive FractionalLit : Type :=
+  | FL (fl_text : SourceText) (fl_neg : bool) (fl_value : GHC.Real.Rational)
    : FractionalLit.
 
-Inductive FixityDirection : Type
-  := | InfixL : FixityDirection
-  |  InfixR : FixityDirection
-  |  InfixN : FixityDirection.
+Inductive FixityDirection : Type :=
+  | InfixL : FixityDirection
+  | InfixR : FixityDirection
+  | InfixN : FixityDirection.
 
-Inductive Fixity : Type
-  := | Mk_Fixity : SourceText -> GHC.Num.Int -> FixityDirection -> Fixity.
+Inductive Fixity : Type :=
+  | Mk_Fixity : SourceText -> GHC.Num.Int -> FixityDirection -> Fixity.
 
 Inductive EP a : Type := | Mk_EP (fromEP : a) (toEP : a) : EP a.
 
-Inductive DerivStrategy : Type
-  := | StockStrategy : DerivStrategy
-  |  AnyclassStrategy : DerivStrategy
-  |  NewtypeStrategy : DerivStrategy.
+Inductive DerivStrategy : Type :=
+  | StockStrategy : DerivStrategy
+  | AnyclassStrategy : DerivStrategy
+  | NewtypeStrategy : DerivStrategy.
 
-Inductive DefMethSpec ty : Type
-  := | VanillaDM : DefMethSpec ty
-  |  GenericDM : ty -> DefMethSpec ty.
+Inductive DefMethSpec ty : Type :=
+  | VanillaDM : DefMethSpec ty
+  | GenericDM : ty -> DefMethSpec ty.
 
 Definition ConTagZ :=
   GHC.Num.Int%type.
@@ -184,11 +184,11 @@ Definition ConTagZ :=
 Definition ConTag :=
   GHC.Num.Int%type.
 
-Inductive CompilerPhase : Type
-  := | Phase : PhaseNum -> CompilerPhase
-  |  InitialPhase : CompilerPhase.
+Inductive CompilerPhase : Type :=
+  | Phase : PhaseNum -> CompilerPhase
+  | InitialPhase : CompilerPhase.
 
-Inductive Boxity : Type := | Boxed : Boxity |  Unboxed : Boxity.
+Inductive Boxity : Type := | Boxed : Boxity | Unboxed : Boxity.
 
 Definition Arity :=
   nat.
@@ -196,14 +196,14 @@ Definition Arity :=
 Definition Alignment :=
   GHC.Num.Int%type.
 
-Inductive Activation : Type
-  := | NeverActive : Activation
-  |  AlwaysActive : Activation
-  |  ActiveBefore : SourceText -> PhaseNum -> Activation
-  |  ActiveAfter : SourceText -> PhaseNum -> Activation.
+Inductive Activation : Type :=
+  | NeverActive : Activation
+  | AlwaysActive : Activation
+  | ActiveBefore : SourceText -> PhaseNum -> Activation
+  | ActiveAfter : SourceText -> PhaseNum -> Activation.
 
-Inductive InlinePragma : Type
-  := | Mk_InlinePragma (inl_src : SourceText) (inl_inline : InlineSpec) (inl_sat
+Inductive InlinePragma : Type :=
+  | Mk_InlinePragma (inl_src : SourceText) (inl_inline : InlineSpec) (inl_sat
     : option Arity) (inl_act : Activation) (inl_rule : RuleMatchInfo)
    : InlinePragma.
 

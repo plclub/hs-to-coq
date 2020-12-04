@@ -29,19 +29,19 @@ Require UniqFM.
 
 (* Converted type declarations: *)
 
-Inductive Literal : Type
-  := | MachChar : GHC.Char.Char -> Literal
-  |  MachStr : GHC.Base.String -> Literal
-  |  MachNullAddr : Literal
-  |  MachInt : GHC.Num.Integer -> Literal
-  |  MachInt64 : GHC.Num.Integer -> Literal
-  |  MachWord : GHC.Num.Integer -> Literal
-  |  MachWord64 : GHC.Num.Integer -> Literal
-  |  MachFloat : GHC.Real.Rational -> Literal
-  |  MachDouble : GHC.Real.Rational -> Literal
-  |  MachLabel
+Inductive Literal : Type :=
+  | MachChar : GHC.Char.Char -> Literal
+  | MachStr : GHC.Base.String -> Literal
+  | MachNullAddr : Literal
+  | MachInt : GHC.Num.Integer -> Literal
+  | MachInt64 : GHC.Num.Integer -> Literal
+  | MachWord : GHC.Num.Integer -> Literal
+  | MachWord64 : GHC.Num.Integer -> Literal
+  | MachFloat : GHC.Real.Rational -> Literal
+  | MachDouble : GHC.Real.Rational -> Literal
+  | MachLabel
    : FastString.FastString -> (option nat) -> BasicTypes.FunctionOrData -> Literal
-  |  LitInteger : GHC.Num.Integer -> AxiomatizedTypes.Type_ -> Literal.
+  | LitInteger : GHC.Num.Integer -> AxiomatizedTypes.Type_ -> Literal.
 
 Instance Default__Literal : GHC.Err.Default Literal :=
   GHC.Err.Build_Default _ MachNullAddr.

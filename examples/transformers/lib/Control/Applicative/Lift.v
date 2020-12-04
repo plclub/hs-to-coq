@@ -28,9 +28,7 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Lift f a : Type
-  := | Pure : a -> Lift f a
-  |  Other : (f a) -> Lift f a.
+Inductive Lift f a : Type := | Pure : a -> Lift f a | Other : (f a) -> Lift f a.
 
 Definition Errors e :=
   (Lift (Data.Functor.Constant.Constant e))%type.

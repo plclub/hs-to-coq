@@ -26,13 +26,13 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive OrdList a : Type
-  := | None : OrdList a
-  |  One : a -> OrdList a
-  |  Many : list a -> OrdList a
-  |  Cons : a -> (OrdList a) -> OrdList a
-  |  Snoc : (OrdList a) -> a -> OrdList a
-  |  Two : (OrdList a) -> (OrdList a) -> OrdList a.
+Inductive OrdList a : Type :=
+  | None : OrdList a
+  | One : a -> OrdList a
+  | Many : list a -> OrdList a
+  | Cons : a -> (OrdList a) -> OrdList a
+  | Snoc : (OrdList a) -> a -> OrdList a
+  | Two : (OrdList a) -> (OrdList a) -> OrdList a.
 
 Arguments None {_}.
 
@@ -93,14 +93,14 @@ Program Instance Monoid__OrdList {a} : GHC.Base.Monoid (OrdList a) :=
            GHC.Base.mempty__ := Monoid__OrdList_mempty |}.
 
 Fixpoint mapOL {a} {b} (arg_0__ : (a -> b)) (arg_1__ : OrdList a) : OrdList b
-           := match arg_0__, arg_1__ with
-              | _, None => None
-              | f, One x => One (f x)
-              | f, Cons x xs => Cons (f x) (mapOL f xs)
-              | f, Snoc xs x => Snoc (mapOL f xs) (f x)
-              | f, Two x y => Two (mapOL f x) (mapOL f y)
-              | f, Many xs => Many (GHC.Base.map f xs)
-              end.
+  := match arg_0__, arg_1__ with
+     | _, None => None
+     | f, One x => One (f x)
+     | f, Cons x xs => Cons (f x) (mapOL f xs)
+     | f, Snoc xs x => Snoc (mapOL f xs) (f x)
+     | f, Two x y => Two (mapOL f x) (mapOL f y)
+     | f, Many xs => Many (GHC.Base.map f xs)
+     end.
 
 Local Definition Functor__OrdList_fmap
    : forall {a} {b}, (a -> b) -> OrdList a -> OrdList b :=
@@ -117,14 +117,14 @@ Program Instance Functor__OrdList : GHC.Base.Functor OrdList :=
 
 Fixpoint foldrOL {a} {b} (arg_0__ : (a -> b -> b)) (arg_1__ : b) (arg_2__
                    : OrdList a) : b
-           := match arg_0__, arg_1__, arg_2__ with
-              | _, z, None => z
-              | k, z, One x => k x z
-              | k, z, Cons x xs => k x (foldrOL k z xs)
-              | k, z, Snoc xs x => foldrOL k (k x z) xs
-              | k, z, Two b1 b2 => foldrOL k (foldrOL k z b2) b1
-              | k, z, Many xs => Data.Foldable.foldr k z xs
-              end.
+  := match arg_0__, arg_1__, arg_2__ with
+     | _, z, None => z
+     | k, z, One x => k x z
+     | k, z, Cons x xs => k x (foldrOL k z xs)
+     | k, z, Snoc xs x => foldrOL k (k x z) xs
+     | k, z, Two b1 b2 => foldrOL k (foldrOL k z b2) b1
+     | k, z, Many xs => Data.Foldable.foldr k z xs
+     end.
 
 Local Definition Foldable__OrdList_foldr
    : forall {a} {b}, (a -> b -> b) -> b -> OrdList a -> b :=
@@ -210,14 +210,14 @@ Program Instance Foldable__OrdList : Data.Foldable.Foldable OrdList :=
 Definition fromOL {a} : OrdList a -> list a :=
   fun a =>
     let fix go arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | None, acc => acc
-                 | One a, acc => cons a acc
-                 | Cons a b, acc => cons a (go b acc)
-                 | Snoc a b, acc => go a (cons b acc)
-                 | Two a b, acc => go a (go b acc)
-                 | Many xs, acc => Coq.Init.Datatypes.app xs acc
-                 end in
+      := match arg_0__, arg_1__ with
+         | None, acc => acc
+         | One a, acc => cons a acc
+         | Cons a b, acc => cons a (go b acc)
+         | Snoc a b, acc => go a (cons b acc)
+         | Two a b, acc => go a (go b acc)
+         | Many xs, acc => Coq.Init.Datatypes.app xs acc
+         end in
     go a nil.
 
 Definition toOL {a} : list a -> OrdList a :=
@@ -271,14 +271,14 @@ Definition isNilOL {a} : OrdList a -> bool :=
 
 Fixpoint foldlOL {b} {a} (arg_0__ : (b -> a -> b)) (arg_1__ : b) (arg_2__
                    : OrdList a) : b
-           := match arg_0__, arg_1__, arg_2__ with
-              | _, z, None => z
-              | k, z, One x => k z x
-              | k, z, Cons x xs => foldlOL k (k z x) xs
-              | k, z, Snoc xs x => k (foldlOL k z xs) x
-              | k, z, Two b1 b2 => foldlOL k (foldlOL k z b1) b2
-              | k, z, Many xs => Data.Foldable.foldl k z xs
-              end.
+  := match arg_0__, arg_1__, arg_2__ with
+     | _, z, None => z
+     | k, z, One x => k z x
+     | k, z, Cons x xs => foldlOL k (k z x) xs
+     | k, z, Snoc xs x => k (foldlOL k z xs) x
+     | k, z, Two b1 b2 => foldlOL k (foldlOL k z b1) b2
+     | k, z, Many xs => Data.Foldable.foldl k z xs
+     end.
 
 (* External variables:
      bool cons false list nil true Coq.Init.Datatypes.app Coq.Program.Basics.compose

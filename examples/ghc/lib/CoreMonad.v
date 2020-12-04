@@ -30,85 +30,84 @@ Require UniqSupply.
 
 (* Converted type declarations: *)
 
-Inductive Tick : Type
-  := | PreInlineUnconditionally : Core.Id -> Tick
-  |  PostInlineUnconditionally : Core.Id -> Tick
-  |  UnfoldingDone : Core.Id -> Tick
-  |  RuleFired : FastString.FastString -> Tick
-  |  LetFloatFromLet : Tick
-  |  EtaExpansion : Core.Id -> Tick
-  |  EtaReduction : Core.Id -> Tick
-  |  BetaReduction : Core.Id -> Tick
-  |  CaseOfCase : Core.Id -> Tick
-  |  KnownBranch : Core.Id -> Tick
-  |  CaseMerge : Core.Id -> Tick
-  |  AltMerge : Core.Id -> Tick
-  |  CaseElim : Core.Id -> Tick
-  |  CaseIdentity : Core.Id -> Tick
-  |  FillInCaseDefault : Core.Id -> Tick
-  |  BottomFound : Tick
-  |  SimplifierDone : Tick.
+Inductive Tick : Type :=
+  | PreInlineUnconditionally : Core.Id -> Tick
+  | PostInlineUnconditionally : Core.Id -> Tick
+  | UnfoldingDone : Core.Id -> Tick
+  | RuleFired : FastString.FastString -> Tick
+  | LetFloatFromLet : Tick
+  | EtaExpansion : Core.Id -> Tick
+  | EtaReduction : Core.Id -> Tick
+  | BetaReduction : Core.Id -> Tick
+  | CaseOfCase : Core.Id -> Tick
+  | KnownBranch : Core.Id -> Tick
+  | CaseMerge : Core.Id -> Tick
+  | AltMerge : Core.Id -> Tick
+  | CaseElim : Core.Id -> Tick
+  | CaseIdentity : Core.Id -> Tick
+  | FillInCaseDefault : Core.Id -> Tick
+  | BottomFound : Tick
+  | SimplifierDone : Tick.
 
 Definition TickCounts :=
   (Data.Map.Internal.Map Tick nat)%type.
 
-Inductive SimplMode : Type
-  := | Mk_SimplMode (sm_names : list GHC.Base.String) (sm_phase
+Inductive SimplMode : Type :=
+  | Mk_SimplMode (sm_names : list GHC.Base.String) (sm_phase
     : BasicTypes.CompilerPhase) (sm_dflags : DynFlags.DynFlags) (sm_rules : bool)
   (sm_inline : bool) (sm_case_case : bool) (sm_eta_expand : bool)
    : SimplMode.
 
-Inductive SimplCount : Type
-  := | VerySimplCount : nat -> SimplCount
-  |  Mk_SimplCount (ticks : nat) (details : TickCounts) (n_log : nat) (log1
+Inductive SimplCount : Type :=
+  | VerySimplCount : nat -> SimplCount
+  | Mk_SimplCount (ticks : nat) (details : TickCounts) (n_log : nat) (log1
     : list Tick) (log2 : list Tick)
    : SimplCount.
 
 Axiom PluginPass : Type.
 
-Inductive FloatOutSwitches : Type
-  := | Mk_FloatOutSwitches (floatOutLambdas : option nat) (floatOutConstants
-    : bool) (floatOutOverSatApps : bool) (floatToTopLevelOnly : bool)
+Inductive FloatOutSwitches : Type :=
+  | Mk_FloatOutSwitches (floatOutLambdas : option nat) (floatOutConstants : bool)
+  (floatOutOverSatApps : bool) (floatToTopLevelOnly : bool)
    : FloatOutSwitches.
 
-Inductive CoreWriter : Type
-  := | Mk_CoreWriter (cw_simpl_count : SimplCount) : CoreWriter.
+Inductive CoreWriter : Type :=
+  | Mk_CoreWriter (cw_simpl_count : SimplCount) : CoreWriter.
 
-Inductive CoreToDo : Type
-  := | CoreDoSimplify : nat -> SimplMode -> CoreToDo
-  |  CoreDoPluginPass : GHC.Base.String -> PluginPass -> CoreToDo
-  |  CoreDoFloatInwards : CoreToDo
-  |  CoreDoFloatOutwards : FloatOutSwitches -> CoreToDo
-  |  CoreLiberateCase : CoreToDo
-  |  CoreDoPrintCore : CoreToDo
-  |  CoreDoStaticArgs : CoreToDo
-  |  CoreDoCallArity : CoreToDo
-  |  CoreDoExitify : CoreToDo
-  |  CoreDoStrictness : CoreToDo
-  |  CoreDoWorkerWrapper : CoreToDo
-  |  CoreDoSpecialising : CoreToDo
-  |  CoreDoSpecConstr : CoreToDo
-  |  CoreCSE : CoreToDo
-  |  CoreDoRuleCheck : BasicTypes.CompilerPhase -> GHC.Base.String -> CoreToDo
-  |  CoreDoVectorisation : CoreToDo
-  |  CoreDoNothing : CoreToDo
-  |  CoreDoPasses : list CoreToDo -> CoreToDo
-  |  CoreDesugar : CoreToDo
-  |  CoreDesugarOpt : CoreToDo
-  |  CoreTidy : CoreToDo
-  |  CorePrep : CoreToDo
-  |  CoreOccurAnal : CoreToDo.
+Inductive CoreToDo : Type :=
+  | CoreDoSimplify : nat -> SimplMode -> CoreToDo
+  | CoreDoPluginPass : GHC.Base.String -> PluginPass -> CoreToDo
+  | CoreDoFloatInwards : CoreToDo
+  | CoreDoFloatOutwards : FloatOutSwitches -> CoreToDo
+  | CoreLiberateCase : CoreToDo
+  | CoreDoPrintCore : CoreToDo
+  | CoreDoStaticArgs : CoreToDo
+  | CoreDoCallArity : CoreToDo
+  | CoreDoExitify : CoreToDo
+  | CoreDoStrictness : CoreToDo
+  | CoreDoWorkerWrapper : CoreToDo
+  | CoreDoSpecialising : CoreToDo
+  | CoreDoSpecConstr : CoreToDo
+  | CoreCSE : CoreToDo
+  | CoreDoRuleCheck : BasicTypes.CompilerPhase -> GHC.Base.String -> CoreToDo
+  | CoreDoVectorisation : CoreToDo
+  | CoreDoNothing : CoreToDo
+  | CoreDoPasses : list CoreToDo -> CoreToDo
+  | CoreDesugar : CoreToDo
+  | CoreDesugarOpt : CoreToDo
+  | CoreTidy : CoreToDo
+  | CorePrep : CoreToDo
+  | CoreOccurAnal : CoreToDo.
 
-Inductive CoreState : Type
-  := | Mk_CoreState (cs_uniq_supply : UniqSupply.UniqSupply) : CoreState.
+Inductive CoreState : Type :=
+  | Mk_CoreState (cs_uniq_supply : UniqSupply.UniqSupply) : CoreState.
 
 Axiom CoreReader : Type.
 
 Axiom CoreIOEnv : Type -> Type.
 
-Inductive CoreM a : Type
-  := | Mk_CoreM (unCoreM
-    : CoreState -> CoreIOEnv (a * CoreState * CoreWriter)%type)
+Inductive CoreM a : Type :=
+  | Mk_CoreM (unCoreM : CoreState -> CoreIOEnv (a * CoreState * CoreWriter)%type)
    : CoreM a.
 
 Arguments Mk_CoreM {_} _.
