@@ -30,9 +30,9 @@ Definition TypeEqn :=
 
 Axiom Branches : Type -> Type.
 
-Inductive BranchFlag : Type
-  := | Branched : BranchFlag
-  |  Unbranched : BranchFlag.
+Inductive BranchFlag : Type :=
+  | Branched : BranchFlag
+  | Unbranched : BranchFlag.
 
 Instance Default__BranchFlag : GHC.Err.Default BranchFlag :=
   GHC.Err.Build_Default _ Branched.

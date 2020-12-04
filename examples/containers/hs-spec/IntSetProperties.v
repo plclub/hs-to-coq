@@ -249,23 +249,21 @@ Definition powersOf2 : Data.IntSet.Internal.IntSet :=
                                                          (GHC.Enum.enumFromTo #0 #63)).
 
 Fixpoint prop_MaskPow2 (arg_0__ : Data.IntSet.Internal.IntSet) : bool
-           := match arg_0__ with
-              | Data.IntSet.Internal.Bin _ msk left_ right_ =>
-                  andb (Data.IntSet.Internal.member msk powersOf2) (andb (prop_MaskPow2 left_)
-                                                                         (prop_MaskPow2 right_))
-              | _ => true
-              end.
+  := match arg_0__ with
+     | Data.IntSet.Internal.Bin _ msk left_ right_ =>
+         andb (Data.IntSet.Internal.member msk powersOf2) (andb (prop_MaskPow2 left_)
+                                                                (prop_MaskPow2 right_))
+     | _ => true
+     end.
 
 Fixpoint prop_Prefix (arg_0__ : Data.IntSet.Internal.IntSet) : bool
-           := match arg_0__ with
-              | (Data.IntSet.Internal.Bin prefix msk left_ right_ as s) =>
-                  andb (Data.Foldable.all (fun elem =>
-                                             Data.IntSet.Internal.match_ elem prefix msk) (Data.IntSet.Internal.toList
-                                                                                           s)) (andb (prop_Prefix left_)
-                                                                                                     (prop_Prefix
-                                                                                                      right_))
-              | _ => true
-              end.
+  := match arg_0__ with
+     | (Data.IntSet.Internal.Bin prefix msk left_ right_ as s) =>
+         andb (Data.Foldable.all (fun elem =>
+                                    Data.IntSet.Internal.match_ elem prefix msk) (Data.IntSet.Internal.toList s))
+              (andb (prop_Prefix left_) (prop_Prefix right_))
+     | _ => true
+     end.
 
 Definition prop_LeftRight : Data.IntSet.Internal.IntSet -> bool :=
   fun arg_0__ =>

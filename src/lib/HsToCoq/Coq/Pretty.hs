@@ -29,7 +29,7 @@ import qualified Data.Set                    as S
 import           Data.Text                   (Text)
 import qualified Data.Text                   as T
 
-import           Data.List.NonEmpty          (NonEmpty (), nonEmpty, (<|))
+import           Data.List.NonEmpty          (NonEmpty ((:|)))
 
 import           Data.Data                   (Data (..))
 import           Data.Typeable
@@ -234,13 +234,23 @@ render_args_oty :: (Functor f, Foldable f, Gallina a) => Orientation -> f a -> M
 render_args_oty o args ot = group $ render_args o args <$$> render_opt_type ot
 
 -- Module-local
-render_mutual_def :: Gallina a => Doc -> NonEmpty a -> [NotationBinding] -> Doc
-render_mutual_def def bodies notations =
-  def <+> lineSep "with" bodies
-      <>  maybe mempty (((line <> "where") <+>) . lineSep "and  ") (nonEmpty notations)
-      <> "."
+render_mutual_def :: Doc -> (Doc -> a -> Doc) -> NonEmpty a -> [NotationBinding] -> Doc
+render_mutual_def def renderBody bodies notations =
+    foldr1 (<$$>) (renderedBodies :| renderedNotations) <> "."
   where
-    lineSep sep = foldr1 (\body doc -> body <!> sep <+> doc) . fmap renderGallina
+    renderedBodies = renderBodies def renderBody bodies
+    renderedNotations = case notations of
+      [] -> []
+      n1 : ns -> ("where" <+> renderGallina n1) : map (\n -> "and  " <+> renderGallina n) ns
+
+-- Render a list of bodies @a@, using the keyword @def@ to introduce the first body,
+-- and separating the rest by @\"with\"@.
+renderBodies :: Doc -> (Doc -> a -> Doc) -> NonEmpty a -> Doc
+renderBodies def renderBody (body1 :| bodies) = foldr1 (<$$>) rendered
+  where
+    rendered
+      = renderBody def body1
+      :| map (renderBody "with") bodies
 
 -- TODO: Precedence!
 instance Gallina Term where
@@ -264,17 +274,17 @@ instance Gallina Term where
     group $ "fun" <+> render_args V vars <+> nest 2 ("=>" <!> renderGallina' funPrec body)
 
   renderGallina' p (Fix fbs) = group $ maybeParen (p > fixPrec) $
-    "fix" <+> renderGallina fbs
+    renderFixBodies "fix" fbs
 
   renderGallina' p (Cofix fbs) = group $ maybeParen (p > fixPrec) $
-    "cofix" <+> renderGallina fbs
+    renderFixBodies "cofix" fbs
 
-  -- the following are pattern synonyms and need to preceed the general Let case.
+  -- the following are pattern synonyms and need to precede the general Let case.
   renderGallina' p (LetFix def body) = group $ maybeParen (p > letPrec) $
-    "let fix" <+> renderGallina def <+> "in" <!> align (renderGallina body)
+    renderFixBody "let fix" def <+> "in" <!> align (renderGallina body)
 
   renderGallina' p (LetCofix def body) = group $ maybeParen (p > letPrec) $
-    "let cofix" <+> renderGallina def <+> "in" <!> align (renderGallina body)
+    renderFixBody "let cofix" def <+> "in" <!> align (renderGallina body)
 
   renderGallina' p (Let var args oty val body) = group $ maybeParen (p > letPrec) $
          "let" <+> group (   renderGallina var
@@ -407,6 +417,21 @@ instance Gallina Term where
     "{|" <+> sepWith (<+>) (<!>) ";" (map (\(f,def) -> renderGallina f <+> ":=" <+> renderGallina def) defns)
         <+> "|}"
 
+renderFixBodies :: Doc -> FixBodies -> Doc
+renderFixBodies def (FixOne fb) = renderFixBody def fb
+renderFixBodies def (FixMany fb fbs var) =
+  renderBodies def renderFixBody (fb :| toList fbs) </> "for" <+> renderGallina var
+
+renderFixBody :: Doc -> FixBody -> Doc
+renderFixBody def (FixBody f args oannot oty body) =
+    nest 2 $ def <+> signature <!> ":=" <+> align (renderGallina body)
+  where
+    signature
+      =   renderGallina f
+      </> align (    fillSep (renderGallina <$> args)
+                </?> (renderGallina <$> oannot))
+      <>  render_opt_type oty
+
 instance Gallina Arg where
   renderGallina' p (PosArg t) =
     renderGallina' p t
@@ -446,19 +471,6 @@ instance Gallina Sort where
   renderGallina' _ Prop = "Prop"
   renderGallina' _ Set  = "Set"
   renderGallina' _ Type = "Type"
-
-instance Gallina FixBodies where
-  renderGallina' p (FixOne fb) =
-    renderGallina' p fb
-  renderGallina' p (FixMany fb fbs var) =
-    spacedSepPre "with" (align . renderGallina' p <$> fb <| fbs) </> "for" <+> renderGallina var
-
-instance Gallina FixBody where
-  renderGallina' _ (FixBody f args oannot oty def) =
-    hang 2 $
-      renderGallina f </> align (    fillSep (renderGallina <$> args)
-                                </?> (renderGallina <$> oannot))
-                      <>  render_opt_type oty <!> ":=" <+> align (renderGallina def)
 
 instance Gallina MatchItem where
   renderGallina' _ (MatchItem scrutinee oas oin) =
@@ -585,28 +597,25 @@ instance Gallina Definition where
       renderEx NotExistingClass _ = mempty
       renderEx ExistingClass qid  = "Existing Class" <+> renderGallina qid <> "."
       renderDef def name args oty body =
-        hang 2 ((def <+> renderGallina name
+        nest 2 ((def <+> renderGallina name
                      <>  spaceIf args <> render_args_oty H args oty
                      <+> ":=") <$$> renderGallina body <>  ".")
 
 instance Gallina Inductive where
-  renderGallina' _ (Inductive   bodies nots) = render_mutual_def "Inductive"   bodies nots
-  renderGallina' _ (CoInductive bodies nots) = render_mutual_def "CoInductive" bodies nots
+  renderGallina' _ (Inductive   bodies nots) = render_mutual_def "Inductive"   renderIndBody bodies nots
+  renderGallina' _ (CoInductive bodies nots) = render_mutual_def "CoInductive" renderIndBody bodies nots
 
-instance Gallina IndBody where
-  renderGallina' _ (IndBody name params ty cons) = nest 2 $ group $
-    renderGallina name <> spaceIf params <> render_args_ty H params ty
-                       <!> renderCons cons
-    where
-      renderCons []         = ":="
-      renderCons (con:cons) = align $ foldl' (<!>) (renderCon ":= |" con) (renderCon "| " <$> cons)
-
-      renderCon delim (cname, cargs, coty) =
-        delim <+> renderGallina cname <> spaceIf cargs <> render_args_oty H cargs coty
+renderIndBody :: Doc -> IndBody -> Doc
+renderIndBody def (IndBody name params ty cons) = nest 2 $ group $
+    def <+> renderGallina name <> spaceIf params <> render_args_ty H params ty <+> ":="
+        <!> vsep (renderCon "|" <$> cons)
+  where
+    renderCon delim (cname, cargs, coty) =
+      delim <+> renderGallina cname <> spaceIf cargs <> render_args_oty H cargs coty
 
 instance Gallina Fixpoint where
-  renderGallina' _ (Fixpoint   bodies nots) = render_mutual_def "Fixpoint"   bodies nots
-  renderGallina' _ (CoFixpoint bodies nots) = render_mutual_def "CoFixpoint" bodies nots
+  renderGallina' _ (Fixpoint   bodies nots) = render_mutual_def "Fixpoint"   renderFixBody bodies nots
+  renderGallina' _ (CoFixpoint bodies nots) = render_mutual_def "CoFixpoint" renderFixBody bodies nots
 
 instance Gallina Order where
   renderGallina' _ (StructOrder var) = braces $

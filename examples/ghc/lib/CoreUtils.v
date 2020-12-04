@@ -60,56 +60,52 @@ Axiom applyTypeToArgs : Core.CoreExpr ->
                         AxiomatizedTypes.Type_ -> list Core.CoreExpr -> AxiomatizedTypes.Type_.
 
 Fixpoint mkCast (arg_0__ : Core.CoreExpr) (arg_1__ : AxiomatizedTypes.Coercion)
-           : Core.CoreExpr
-           := match arg_0__, arg_1__ with
-              | e, co =>
-                  if (if andb Util.debugIsOn (negb (Core.coercionRole co GHC.Base.==
-                                                    AxiomatizedTypes.Representational)) : bool
-                      then (GHC.Err.error (GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend
-                                                                               (GHC.Base.mappend (GHC.Base.mappend
-                                                                                                  (Datatypes.id
-                                                                                                   (GHC.Base.hs_string__
-                                                                                                    "coercion"))
-                                                                                                  Panic.someSDoc)
-                                                                                                 Panic.someSDoc)
-                                                                               Panic.someSDoc) (Datatypes.id
-                                                                               (GHC.Base.hs_string__ "has wrong role")))
-                                                            Panic.someSDoc))
-                      else Core.isReflCo co) : bool
-                  then e else
-                  let j_7__ :=
-                    match arg_0__, arg_1__ with
-                    | Core.Cast expr co2, co =>
-                        Panic.warnPprTrace (let 'Pair.Mk_Pair _from_ty2 to_ty2 := Core.coercionKind
-                                                                                    co2 in
-                                            let 'Pair.Mk_Pair from_ty _to_ty := Core.coercionKind co in
-                                            negb (Core.eqType from_ty to_ty2)) (GHC.Base.hs_string__
-                                            "ghc/compiler/coreSyn/CoreUtils.hs") #279 (Panic.someSDoc) (mkCast expr
-                                                                                                               (Core.mkTransCo
-                                                                                                                co2 co))
-                    | expr, co =>
-                        let 'Pair.Mk_Pair from_ty _to_ty := Core.coercionKind co in
-                        Panic.warnPprTrace (negb (Core.eqType from_ty (exprType expr)))
-                                           (GHC.Base.hs_string__ "ghc/compiler/coreSyn/CoreUtils.hs") #290
-                                           (GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend
-                                                                                                  (Datatypes.id
-                                                                                                   (GHC.Base.hs_string__
-                                                                                                    "Trying to coerce"))
-                                                                                                  (Datatypes.id
-                                                                                                   (GHC.Base.hs_string__
-                                                                                                    "(")))
-                                                                                                 Panic.someSDoc)
-                                                                               Panic.someSDoc) (Datatypes.id
-                                                              (GHC.Base.hs_string__ ")"))) (Core.Cast expr co)
-                    end in
-                  match arg_0__, arg_1__ with
-                  | Core.Mk_Coercion e_co, co =>
-                      if Core.isCoercionType (Pair.pSnd (Core.coercionKind co)) : bool
-                      then Core.Mk_Coercion (Core.mkCoCast e_co co) else
-                      j_7__
-                  | _, _ => j_7__
-                  end
-              end.
+  : Core.CoreExpr
+  := match arg_0__, arg_1__ with
+     | e, co =>
+         if (if andb Util.debugIsOn (negb (Core.coercionRole co GHC.Base.==
+                                           AxiomatizedTypes.Representational)) : bool
+             then (GHC.Err.error (GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend
+                                                                      (GHC.Base.mappend (GHC.Base.mappend (Datatypes.id
+                                                                                                           (GHC.Base.hs_string__
+                                                                                                            "coercion"))
+                                                                                                          Panic.someSDoc)
+                                                                                        Panic.someSDoc) Panic.someSDoc)
+                                                                     (Datatypes.id (GHC.Base.hs_string__
+                                                                                    "has wrong role"))) Panic.someSDoc))
+             else Core.isReflCo co) : bool
+         then e else
+         let j_7__ :=
+           match arg_0__, arg_1__ with
+           | Core.Cast expr co2, co =>
+               Panic.warnPprTrace (let 'Pair.Mk_Pair _from_ty2 to_ty2 := Core.coercionKind
+                                                                           co2 in
+                                   let 'Pair.Mk_Pair from_ty _to_ty := Core.coercionKind co in
+                                   negb (Core.eqType from_ty to_ty2)) (GHC.Base.hs_string__
+                                   "ghc/compiler/coreSyn/CoreUtils.hs") #279 (Panic.someSDoc) (mkCast expr
+                                                                                                      (Core.mkTransCo
+                                                                                                       co2 co))
+           | expr, co =>
+               let 'Pair.Mk_Pair from_ty _to_ty := Core.coercionKind co in
+               Panic.warnPprTrace (negb (Core.eqType from_ty (exprType expr)))
+                                  (GHC.Base.hs_string__ "ghc/compiler/coreSyn/CoreUtils.hs") #290
+                                  (GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend
+                                                                                         (Datatypes.id
+                                                                                          (GHC.Base.hs_string__
+                                                                                           "Trying to coerce"))
+                                                                                         (Datatypes.id
+                                                                                          (GHC.Base.hs_string__ "(")))
+                                                                                        Panic.someSDoc) Panic.someSDoc)
+                                                    (Datatypes.id (GHC.Base.hs_string__ ")"))) (Core.Cast expr co)
+           end in
+         match arg_0__, arg_1__ with
+         | Core.Mk_Coercion e_co, co =>
+             if Core.isCoercionType (Pair.pSnd (Core.coercionKind co)) : bool
+             then Core.Mk_Coercion (Core.mkCoCast e_co co) else
+             j_7__
+         | _, _ => j_7__
+         end
+     end.
 
 (* Skipping definition `CoreUtils.mkTick' *)
 
@@ -118,13 +114,13 @@ Fixpoint mkCast (arg_0__ : Core.CoreExpr) (arg_1__ : AxiomatizedTypes.Coercion)
 Definition isSaturatedConApp : Core.CoreExpr -> bool :=
   fun e =>
     let fix go arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | Core.App f a, as_ => go f (cons a as_)
-                 | Core.Mk_Var fun_, args =>
-                     andb (Id.isConLikeId fun_) (Id.idArity fun_ GHC.Base.== Core.valArgCount args)
-                 | Core.Cast f _, as_ => go f as_
-                 | _, _ => false
-                 end in
+      := match arg_0__, arg_1__ with
+         | Core.App f a, as_ => go f (cons a as_)
+         | Core.Mk_Var fun_, args =>
+             andb (Id.isConLikeId fun_) (Id.idArity fun_ GHC.Base.== Core.valArgCount args)
+         | Core.Cast f _, as_ => go f as_
+         | _, _ => false
+         end in
     go e nil.
 
 (* Skipping definition `CoreUtils.mkTickNoHNF' *)
@@ -144,44 +140,46 @@ Definition stripTicksE {b}
   fun p expr =>
     let go :=
       fix go arg_0__
-            := let go_a (arg_14__ : Core.Alt b) : Core.Alt b :=
-                 let 'pair (pair c bs) e := arg_14__ in
-                 pair (pair c bs) (go e) in
-               match arg_0__ with
-               | Core.App e a => Core.App (go e) (go a)
-               | Core.Lam b e => Core.Lam b (go e)
-               | Core.Let b e => Core.Let (go_bs b) (go e)
-               | Core.Case e b t as_ => Core.Case (go e) b t (GHC.Base.map go_a as_)
-               | Core.Cast e c => Core.Cast (go e) c
-               | other => other
-               end with go_bs arg_7__
-                          := let go_b (arg_11__ : b * Core.Expr b) : b * Core.Expr b :=
-                               let 'pair b e := arg_11__ in
-                               pair b (go e) in
-                             match arg_7__ with
-                             | Core.NonRec b e => Core.NonRec b (go e)
-                             | Core.Rec bs => Core.Rec (GHC.Base.map go_b bs)
-                             end for go in
+        := let go_a (arg_14__ : Core.Alt b) : Core.Alt b :=
+             let 'pair (pair c bs) e := arg_14__ in
+             pair (pair c bs) (go e) in
+           match arg_0__ with
+           | Core.App e a => Core.App (go e) (go a)
+           | Core.Lam b e => Core.Lam b (go e)
+           | Core.Let b e => Core.Let (go_bs b) (go e)
+           | Core.Case e b t as_ => Core.Case (go e) b t (GHC.Base.map go_a as_)
+           | Core.Cast e c => Core.Cast (go e) c
+           | other => other
+           end
+      with go_bs arg_7__
+        := let go_b (arg_11__ : b * Core.Expr b) : b * Core.Expr b :=
+             let 'pair b e := arg_11__ in
+             pair b (go e) in
+           match arg_7__ with
+           | Core.NonRec b e => Core.NonRec b (go e)
+           | Core.Rec bs => Core.Rec (GHC.Base.map go_b bs)
+           end for go in
     let go_bs :=
       fix go arg_0__
-            := let go_a (arg_14__ : Core.Alt b) : Core.Alt b :=
-                 let 'pair (pair c bs) e := arg_14__ in
-                 pair (pair c bs) (go e) in
-               match arg_0__ with
-               | Core.App e a => Core.App (go e) (go a)
-               | Core.Lam b e => Core.Lam b (go e)
-               | Core.Let b e => Core.Let (go_bs b) (go e)
-               | Core.Case e b t as_ => Core.Case (go e) b t (GHC.Base.map go_a as_)
-               | Core.Cast e c => Core.Cast (go e) c
-               | other => other
-               end with go_bs arg_7__
-                          := let go_b (arg_11__ : b * Core.Expr b) : b * Core.Expr b :=
-                               let 'pair b e := arg_11__ in
-                               pair b (go e) in
-                             match arg_7__ with
-                             | Core.NonRec b e => Core.NonRec b (go e)
-                             | Core.Rec bs => Core.Rec (GHC.Base.map go_b bs)
-                             end for go_bs in
+        := let go_a (arg_14__ : Core.Alt b) : Core.Alt b :=
+             let 'pair (pair c bs) e := arg_14__ in
+             pair (pair c bs) (go e) in
+           match arg_0__ with
+           | Core.App e a => Core.App (go e) (go a)
+           | Core.Lam b e => Core.Lam b (go e)
+           | Core.Let b e => Core.Let (go_bs b) (go e)
+           | Core.Case e b t as_ => Core.Case (go e) b t (GHC.Base.map go_a as_)
+           | Core.Cast e c => Core.Cast (go e) c
+           | other => other
+           end
+      with go_bs arg_7__
+        := let go_b (arg_11__ : b * Core.Expr b) : b * Core.Expr b :=
+             let 'pair b e := arg_11__ in
+             pair b (go e) in
+           match arg_7__ with
+           | Core.NonRec b e => Core.NonRec b (go e)
+           | Core.Rec bs => Core.Rec (GHC.Base.map go_b bs)
+           end for go_bs in
     let go_b : b * Core.Expr b -> b * Core.Expr b :=
       fun '(pair b e) => pair b (go e) in
     let go_a : Core.Alt b -> Core.Alt b :=
@@ -194,48 +192,50 @@ Definition stripTicksT {b}
   fun p expr =>
     let go :=
       fix go arg_0__
-            := let go_a (arg_14__ : Core.Alt b) : OrdList.OrdList (Core.Tickish Core.Id) :=
-                 let 'pair (pair _ _) e := arg_14__ in
-                 go e in
-               match arg_0__ with
-               | Core.App e a => OrdList.appOL (go e) (go a)
-               | Core.Lam _ e => go e
-               | Core.Let b e => OrdList.appOL (go_bs b) (go e)
-               | Core.Case e _ _ as_ =>
-                   OrdList.appOL (go e) (OrdList.concatOL (GHC.Base.map go_a as_))
-               | Core.Cast e _ => go e
-               | _ => OrdList.nilOL
-               end with go_bs arg_7__
-                          := let go_b (arg_11__ : b * Core.Expr b)
-                              : OrdList.OrdList (Core.Tickish Core.Id) :=
-                               let 'pair _ e := arg_11__ in
-                               go e in
-                             match arg_7__ with
-                             | Core.NonRec _ e => go e
-                             | Core.Rec bs => OrdList.concatOL (GHC.Base.map go_b bs)
-                             end for go in
+        := let go_a (arg_14__ : Core.Alt b) : OrdList.OrdList (Core.Tickish Core.Id) :=
+             let 'pair (pair _ _) e := arg_14__ in
+             go e in
+           match arg_0__ with
+           | Core.App e a => OrdList.appOL (go e) (go a)
+           | Core.Lam _ e => go e
+           | Core.Let b e => OrdList.appOL (go_bs b) (go e)
+           | Core.Case e _ _ as_ =>
+               OrdList.appOL (go e) (OrdList.concatOL (GHC.Base.map go_a as_))
+           | Core.Cast e _ => go e
+           | _ => OrdList.nilOL
+           end
+      with go_bs arg_7__
+        := let go_b (arg_11__ : b * Core.Expr b)
+            : OrdList.OrdList (Core.Tickish Core.Id) :=
+             let 'pair _ e := arg_11__ in
+             go e in
+           match arg_7__ with
+           | Core.NonRec _ e => go e
+           | Core.Rec bs => OrdList.concatOL (GHC.Base.map go_b bs)
+           end for go in
     let go_bs :=
       fix go arg_0__
-            := let go_a (arg_14__ : Core.Alt b) : OrdList.OrdList (Core.Tickish Core.Id) :=
-                 let 'pair (pair _ _) e := arg_14__ in
-                 go e in
-               match arg_0__ with
-               | Core.App e a => OrdList.appOL (go e) (go a)
-               | Core.Lam _ e => go e
-               | Core.Let b e => OrdList.appOL (go_bs b) (go e)
-               | Core.Case e _ _ as_ =>
-                   OrdList.appOL (go e) (OrdList.concatOL (GHC.Base.map go_a as_))
-               | Core.Cast e _ => go e
-               | _ => OrdList.nilOL
-               end with go_bs arg_7__
-                          := let go_b (arg_11__ : b * Core.Expr b)
-                              : OrdList.OrdList (Core.Tickish Core.Id) :=
-                               let 'pair _ e := arg_11__ in
-                               go e in
-                             match arg_7__ with
-                             | Core.NonRec _ e => go e
-                             | Core.Rec bs => OrdList.concatOL (GHC.Base.map go_b bs)
-                             end for go_bs in
+        := let go_a (arg_14__ : Core.Alt b) : OrdList.OrdList (Core.Tickish Core.Id) :=
+             let 'pair (pair _ _) e := arg_14__ in
+             go e in
+           match arg_0__ with
+           | Core.App e a => OrdList.appOL (go e) (go a)
+           | Core.Lam _ e => go e
+           | Core.Let b e => OrdList.appOL (go_bs b) (go e)
+           | Core.Case e _ _ as_ =>
+               OrdList.appOL (go e) (OrdList.concatOL (GHC.Base.map go_a as_))
+           | Core.Cast e _ => go e
+           | _ => OrdList.nilOL
+           end
+      with go_bs arg_7__
+        := let go_b (arg_11__ : b * Core.Expr b)
+            : OrdList.OrdList (Core.Tickish Core.Id) :=
+             let 'pair _ e := arg_11__ in
+             go e in
+           match arg_7__ with
+           | Core.NonRec _ e => go e
+           | Core.Rec bs => OrdList.concatOL (GHC.Base.map go_b bs)
+           end for go_bs in
     let go_b : b * Core.Expr b -> OrdList.OrdList (Core.Tickish Core.Id) :=
       fun '(pair _ e) => go e in
     let go_a : Core.Alt b -> OrdList.OrdList (Core.Tickish Core.Id) :=
@@ -296,19 +296,19 @@ Definition findAlt {a} {b}
      list (Core.AltCon * a * b)%type -> option (Core.AltCon * a * b)%type :=
   fun con alts =>
     let fix go arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | nil, deflt => deflt
-                 | cons (pair (pair con1 _) _ as alt) alts, deflt =>
-                     match Core.cmpAltCon con con1 with
-                     | Lt => deflt
-                     | Eq => Some alt
-                     | Gt =>
-                         if andb Util.debugIsOn (negb (negb (con1 GHC.Base.== Core.DEFAULT))) : bool
-                         then (Panic.assertPanic (GHC.Base.hs_string__
-                                                  "ghc/compiler/coreSyn/CoreUtils.hs") #545)
-                         else go alts deflt
-                     end
-                 end in
+      := match arg_0__, arg_1__ with
+         | nil, deflt => deflt
+         | cons (pair (pair con1 _) _ as alt) alts, deflt =>
+             match Core.cmpAltCon con con1 with
+             | Lt => deflt
+             | Eq => Some alt
+             | Gt =>
+                 if andb Util.debugIsOn (negb (negb (con1 GHC.Base.== Core.DEFAULT))) : bool
+                 then (Panic.assertPanic (GHC.Base.hs_string__
+                                          "ghc/compiler/coreSyn/CoreUtils.hs") #545)
+                 else go alts deflt
+             end
+         end in
     match alts with
     | cons (pair (pair Core.DEFAULT _) _ as deflt) alts => go alts (Some deflt)
     | _ => go alts None
@@ -384,28 +384,28 @@ Axiom combineIdenticalAlts : list Core.AltCon ->
                              list Core.CoreAlt -> (bool * list Core.AltCon * list Core.CoreAlt)%type.
 
 Fixpoint exprIsTrivial (arg_0__ : Core.CoreExpr) : bool
-           := match arg_0__ with
-              | Core.Mk_Var _ => true
-              | Core.Mk_Type _ => true
-              | Core.Mk_Coercion _ => true
-              | Core.Lit lit => Literal.litIsTrivial lit
-              | Core.App e arg => andb (negb (Core.isRuntimeArg arg)) (exprIsTrivial e)
-              | Core.Lam b e => andb (negb (Core.isRuntimeVar b)) (exprIsTrivial e)
-              | Core.Cast e _ => exprIsTrivial e
-              | Core.Case e _ _ nil => exprIsTrivial e
-              | _ => false
-              end.
+  := match arg_0__ with
+     | Core.Mk_Var _ => true
+     | Core.Mk_Type _ => true
+     | Core.Mk_Coercion _ => true
+     | Core.Lit lit => Literal.litIsTrivial lit
+     | Core.App e arg => andb (negb (Core.isRuntimeArg arg)) (exprIsTrivial e)
+     | Core.Lam b e => andb (negb (Core.isRuntimeVar b)) (exprIsTrivial e)
+     | Core.Cast e _ => exprIsTrivial e
+     | Core.Case e _ _ nil => exprIsTrivial e
+     | _ => false
+     end.
 
 Definition getIdFromTrivialExpr_maybe : Core.CoreExpr -> option Core.Id :=
   fun e =>
     let fix go arg_0__
-              := match arg_0__ with
-                 | Core.Mk_Var v => Some v
-                 | Core.App f t => if negb (Core.isRuntimeArg t) : bool then go f else None
-                 | Core.Cast e _ => go e
-                 | Core.Lam b e => if negb (Core.isRuntimeVar b) : bool then go e else None
-                 | _ => None
-                 end in
+      := match arg_0__ with
+         | Core.Mk_Var v => Some v
+         | Core.App f t => if negb (Core.isRuntimeArg t) : bool then go f else None
+         | Core.Cast e _ => go e
+         | Core.Lam b e => if negb (Core.isRuntimeVar b) : bool then go e else None
+         | _ => None
+         end in
     go e.
 
 Definition getIdFromTrivialExpr : Core.CoreExpr -> Core.Id :=
@@ -430,21 +430,21 @@ Definition isEmptyTy : AxiomatizedTypes.Type_ -> bool :=
 Definition exprIsBottom : Core.CoreExpr -> bool :=
   fun e =>
     let fix go arg_0__ arg_1__
-              := let j_3__ :=
-                   match arg_0__, arg_1__ with
-                   | _, Core.Case _ _ _ alts => Data.Foldable.null alts
-                   | _, _ => false
-                   end in
-                 match arg_0__, arg_1__ with
-                 | n, Core.Mk_Var v => andb (Id.isBottomingId v) (n GHC.Base.>= Id.idArity v)
-                 | n, Core.App e a =>
-                     if Core.isTypeArg a : bool then go n e else
-                     go (n GHC.Num.+ #1) e
-                 | n, Core.Cast e _ => go n e
-                 | n, Core.Let _ e => go n e
-                 | n, Core.Lam v e => if Core.isTyVar v : bool then go n e else j_3__
-                 | _, _ => j_3__
-                 end in
+      := let j_3__ :=
+           match arg_0__, arg_1__ with
+           | _, Core.Case _ _ _ alts => Data.Foldable.null alts
+           | _, _ => false
+           end in
+         match arg_0__, arg_1__ with
+         | n, Core.Mk_Var v => andb (Id.isBottomingId v) (n GHC.Base.>= Id.idArity v)
+         | n, Core.App e a =>
+             if Core.isTypeArg a : bool then go n e else
+             go (n GHC.Num.+ #1) e
+         | n, Core.Cast e _ => go n e
+         | n, Core.Let _ e => go n e
+         | n, Core.Lam v e => if Core.isTyVar v : bool then go n e else j_3__
+         | _, _ => j_3__
+         end in
     if isEmptyTy (exprType e) : bool then true else
     go #0 e.
 
@@ -461,45 +461,45 @@ Definition exprIsDupable : DynFlags.DynFlags -> Core.CoreExpr -> bool :=
         Some (n GHC.Num.- #1) in
     let go : nat -> Core.CoreExpr -> option nat :=
       fix go (arg_6__ : nat) (arg_7__ : Core.CoreExpr) : option nat
-            := match arg_6__, arg_7__ with
-               | n, Core.Mk_Type _ => Some n
-               | n, Core.Mk_Coercion _ => Some n
-               | n, Core.Mk_Var _ => decrement n
-               | n, Core.Cast e _ => go n e
-               | n, Core.App f a => match go n a with | Some n' => go n' f | _ => None end
-               | n, Core.Lit lit =>
-                   if Literal.litIsDupable dflags lit : bool then decrement n else
-                   None
-               | _, _ => None
-               end in
+        := match arg_6__, arg_7__ with
+           | n, Core.Mk_Type _ => Some n
+           | n, Core.Mk_Coercion _ => Some n
+           | n, Core.Mk_Var _ => decrement n
+           | n, Core.Cast e _ => go n e
+           | n, Core.App f a => match go n a with | Some n' => go n' f | _ => None end
+           | n, Core.Lit lit =>
+               if Literal.litIsDupable dflags lit : bool then decrement n else
+               None
+           | _, _ => None
+           end in
     Data.Maybe.isJust (go dupAppSize e).
 
 Definition exprIsCheapX : CheapAppFun -> Core.CoreExpr -> bool :=
   fun ok_app e =>
     let fix go arg_1__ arg_2__
-              := let ok e := go #0 e in
-                 match arg_1__, arg_2__ with
-                 | n, Core.Mk_Var v => ok_app v n
-                 | _, Core.Lit _ => true
-                 | _, Core.Mk_Type _ => true
-                 | _, Core.Mk_Coercion _ => true
-                 | n, Core.Cast e _ => go n e
-                 | n, Core.Case scrut _ _ alts =>
-                     andb (ok scrut) (Data.Foldable.and (let cont_5__ arg_6__ :=
-                                                           let 'pair (pair _ _) rhs := arg_6__ in
-                                                           cons (go n rhs) nil in
-                                                         Coq.Lists.List.flat_map cont_5__ alts))
-                 | n, Core.Lam x e =>
-                     if Core.isRuntimeVar x : bool
-                     then orb (n GHC.Base.== #0) (go (n GHC.Num.- #1) e) else
-                     go n e
-                 | n, Core.App f e =>
-                     if Core.isRuntimeArg e : bool then andb (go (n GHC.Num.+ #1) f) (ok e) else
-                     go n f
-                 | n, Core.Let (Core.NonRec _ r) e => andb (go n e) (ok r)
-                 | n, Core.Let (Core.Rec prs) e =>
-                     andb (go n e) (Data.Foldable.all (ok GHC.Base.∘ Data.Tuple.snd) prs)
-                 end in
+      := let ok e := go #0 e in
+         match arg_1__, arg_2__ with
+         | n, Core.Mk_Var v => ok_app v n
+         | _, Core.Lit _ => true
+         | _, Core.Mk_Type _ => true
+         | _, Core.Mk_Coercion _ => true
+         | n, Core.Cast e _ => go n e
+         | n, Core.Case scrut _ _ alts =>
+             andb (ok scrut) (Data.Foldable.and (let cont_5__ arg_6__ :=
+                                                   let 'pair (pair _ _) rhs := arg_6__ in
+                                                   cons (go n rhs) nil in
+                                                 Coq.Lists.List.flat_map cont_5__ alts))
+         | n, Core.Lam x e =>
+             if Core.isRuntimeVar x : bool
+             then orb (n GHC.Base.== #0) (go (n GHC.Num.- #1) e) else
+             go n e
+         | n, Core.App f e =>
+             if Core.isRuntimeArg e : bool then andb (go (n GHC.Num.+ #1) f) (ok e) else
+             go n f
+         | n, Core.Let (Core.NonRec _ r) e => andb (go n e) (ok r)
+         | n, Core.Let (Core.Rec prs) e =>
+             andb (go n e) (Data.Foldable.all (ok GHC.Base.∘ Data.Tuple.snd) prs)
+         end in
     let ok := fun e => go #0 e in ok e.
 
 Axiom isCheapApp : CheapAppFun.
@@ -555,27 +555,27 @@ Definition exprIsHNFlike
                                                                                   PrelNames.absentErrorIdKey)) in
     let app_is_value : Core.CoreExpr -> nat -> bool :=
       fix app_is_value (arg_1__ : Core.CoreExpr) (arg_2__ : nat) : bool
-            := match arg_1__, arg_2__ with
-               | Core.Mk_Var f, nva => id_app_is_value f nva
-               | Core.Cast f _, nva => app_is_value f nva
-               | Core.App f a, nva =>
-                   if Core.isValArg a : bool then app_is_value f (nva GHC.Num.+ #1) else
-                   app_is_value f nva
-               | _, _ => false
-               end in
+        := match arg_1__, arg_2__ with
+           | Core.Mk_Var f, nva => id_app_is_value f nva
+           | Core.Cast f _, nva => app_is_value f nva
+           | Core.App f a, nva =>
+               if Core.isValArg a : bool then app_is_value f (nva GHC.Num.+ #1) else
+               app_is_value f nva
+           | _, _ => false
+           end in
     let fix is_hnf_like arg_8__
-              := match arg_8__ with
-                 | Core.Mk_Var v => orb (id_app_is_value v #0) (is_con_unf (Id.idUnfolding v))
-                 | Core.Lit _ => true
-                 | Core.Mk_Type _ => true
-                 | Core.Mk_Coercion _ => true
-                 | Core.Lam b e => orb (Core.isRuntimeVar b) (is_hnf_like e)
-                 | Core.Cast e _ => is_hnf_like e
-                 | Core.App e a =>
-                     if Core.isValArg a : bool then app_is_value e #1 else
-                     is_hnf_like e
-                 | _ => match arg_8__ with | Core.Let _ e => is_hnf_like e | _ => false end
-                 end in
+      := match arg_8__ with
+         | Core.Mk_Var v => orb (id_app_is_value v #0) (is_con_unf (Id.idUnfolding v))
+         | Core.Lit _ => true
+         | Core.Mk_Type _ => true
+         | Core.Mk_Coercion _ => true
+         | Core.Lam b e => orb (Core.isRuntimeVar b) (is_hnf_like e)
+         | Core.Cast e _ => is_hnf_like e
+         | Core.App e a =>
+             if Core.isValArg a : bool then app_is_value e #1 else
+             is_hnf_like e
+         | _ => match arg_8__ with | Core.Let _ e => is_hnf_like e | _ => false end
+         end in
     is_hnf_like.
 
 Definition exprIsHNF : Core.CoreExpr -> bool :=
@@ -619,57 +619,56 @@ Definition cheapEqExpr {b} : Core.Expr b -> Core.Expr b -> bool :=
   cheapEqExpr' (GHC.Base.const false).
 
 Fixpoint exprIsBig {b} (arg_0__ : Core.Expr b) : bool
-           := match arg_0__ with
-              | Core.Lit _ => false
-              | Core.Mk_Var _ => false
-              | Core.Mk_Type _ => false
-              | Core.Mk_Coercion _ => false
-              | Core.Lam _ e => exprIsBig e
-              | Core.App f a => orb (exprIsBig f) (exprIsBig a)
-              | Core.Cast e _ => exprIsBig e
-              | _ => true
-              end.
+  := match arg_0__ with
+     | Core.Lit _ => false
+     | Core.Mk_Var _ => false
+     | Core.Mk_Type _ => false
+     | Core.Mk_Coercion _ => false
+     | Core.Lam _ e => exprIsBig e
+     | Core.App f a => orb (exprIsBig f) (exprIsBig a)
+     | Core.Cast e _ => exprIsBig e
+     | _ => true
+     end.
 
 Definition eqExpr : Core.InScopeSet -> Core.CoreExpr -> Core.CoreExpr -> bool :=
   fun in_scope e1 e2 =>
     let fix go arg_0__ arg_1__ arg_2__
-              := let go_alt (arg_18__ : Core.RnEnv2) (arg_19__ arg_20__ : Core.CoreAlt)
-                  : bool :=
-                   match arg_18__, arg_19__, arg_20__ with
-                   | env, pair (pair c1 bs1) e1, pair (pair c2 bs2) e2 =>
-                       andb (c1 GHC.Base.== c2) (go (Core.rnBndrs2 env bs1 bs2) e1 e2)
-                   end in
-                 match arg_0__, arg_1__, arg_2__ with
-                 | env, Core.Mk_Var v1, Core.Mk_Var v2 =>
-                     if Core.rnOccL env v1 GHC.Base.== Core.rnOccR env v2 : bool then true else
-                     false
-                 | _, Core.Lit lit1, Core.Lit lit2 => lit1 GHC.Base.== lit2
-                 | env, Core.Mk_Type t1, Core.Mk_Type t2 => Core.eqTypeX env t1 t2
-                 | env, Core.Mk_Coercion co1, Core.Mk_Coercion co2 =>
-                     Core.eqCoercionX env co1 co2
-                 | env, Core.Cast e1 co1, Core.Cast e2 co2 =>
-                     andb (Core.eqCoercionX env co1 co2) (go env e1 e2)
-                 | env, Core.App f1 a1, Core.App f2 a2 => andb (go env f1 f2) (go env a1 a2)
-                 | env, Core.Lam b1 e1, Core.Lam b2 e2 =>
-                     andb (Core.eqTypeX env (Core.varType b1) (Core.varType b2)) (go (Core.rnBndr2
-                                                                                      env b1 b2) e1 e2)
-                 | env, Core.Let (Core.NonRec v1 r1) e1, Core.Let (Core.NonRec v2 r2) e2 =>
-                     andb (go env r1 r2) (go (Core.rnBndr2 env v1 v2) e1 e2)
-                 | env, Core.Let (Core.Rec ps1) e1, Core.Let (Core.Rec ps2) e2 =>
-                     let 'pair bs2 rs2 := GHC.List.unzip ps2 in
-                     let 'pair bs1 rs1 := GHC.List.unzip ps1 in
-                     let env' := Core.rnBndrs2 env bs1 bs2 in
-                     andb (Util.equalLength ps1 ps2) (andb (NestedRecursionHelpers.all2Map (go env')
-                                                                                           snd snd ps1 ps2) (go env' e1
-                                                            e2))
-                 | env, Core.Case e1 b1 t1 a1, Core.Case e2 b2 t2 a2 =>
-                     if Data.Foldable.null a1 : bool
-                     then andb (Data.Foldable.null a2) (andb (go env e1 e2) (Core.eqTypeX env t1
-                                                              t2)) else
-                     andb (go env e1 e2) (NestedRecursionHelpers.all2Map (go_alt (Core.rnBndr2 env b1
-                                                                                  b2)) id id a1 a2)
-                 | _, _, _ => false
-                 end in
+      := let go_alt (arg_18__ : Core.RnEnv2) (arg_19__ arg_20__ : Core.CoreAlt)
+          : bool :=
+           match arg_18__, arg_19__, arg_20__ with
+           | env, pair (pair c1 bs1) e1, pair (pair c2 bs2) e2 =>
+               andb (c1 GHC.Base.== c2) (go (Core.rnBndrs2 env bs1 bs2) e1 e2)
+           end in
+         match arg_0__, arg_1__, arg_2__ with
+         | env, Core.Mk_Var v1, Core.Mk_Var v2 =>
+             if Core.rnOccL env v1 GHC.Base.== Core.rnOccR env v2 : bool then true else
+             false
+         | _, Core.Lit lit1, Core.Lit lit2 => lit1 GHC.Base.== lit2
+         | env, Core.Mk_Type t1, Core.Mk_Type t2 => Core.eqTypeX env t1 t2
+         | env, Core.Mk_Coercion co1, Core.Mk_Coercion co2 =>
+             Core.eqCoercionX env co1 co2
+         | env, Core.Cast e1 co1, Core.Cast e2 co2 =>
+             andb (Core.eqCoercionX env co1 co2) (go env e1 e2)
+         | env, Core.App f1 a1, Core.App f2 a2 => andb (go env f1 f2) (go env a1 a2)
+         | env, Core.Lam b1 e1, Core.Lam b2 e2 =>
+             andb (Core.eqTypeX env (Core.varType b1) (Core.varType b2)) (go (Core.rnBndr2
+                                                                              env b1 b2) e1 e2)
+         | env, Core.Let (Core.NonRec v1 r1) e1, Core.Let (Core.NonRec v2 r2) e2 =>
+             andb (go env r1 r2) (go (Core.rnBndr2 env v1 v2) e1 e2)
+         | env, Core.Let (Core.Rec ps1) e1, Core.Let (Core.Rec ps2) e2 =>
+             let 'pair bs2 rs2 := GHC.List.unzip ps2 in
+             let 'pair bs1 rs1 := GHC.List.unzip ps1 in
+             let env' := Core.rnBndrs2 env bs1 bs2 in
+             andb (Util.equalLength ps1 ps2) (andb (NestedRecursionHelpers.all2Map (go env')
+                                                                                   snd snd ps1 ps2) (go env' e1 e2))
+         | env, Core.Case e1 b1 t1 a1, Core.Case e2 b2 t2 a2 =>
+             if Data.Foldable.null a1 : bool
+             then andb (Data.Foldable.null a2) (andb (go env e1 e2) (Core.eqTypeX env t1
+                                                      t2)) else
+             andb (go env e1 e2) (NestedRecursionHelpers.all2Map (go_alt (Core.rnBndr2 env b1
+                                                                          b2)) id id a1 a2)
+         | _, _, _ => false
+         end in
     let go_alt : Core.RnEnv2 -> Core.CoreAlt -> Core.CoreAlt -> bool :=
       fun arg_18__ arg_19__ arg_20__ =>
         match arg_18__, arg_19__, arg_20__ with

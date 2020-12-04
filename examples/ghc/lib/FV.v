@@ -76,11 +76,11 @@ Definition filterFV : InterestingVarFun -> FV -> FV :=
 
 Fixpoint mapUnionFV {a} `(arg_0__ : (a -> FV)) `(arg_1__ : list a) arg_2__
                     arg_3__ arg_4__
-           := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
-              | _f, nil, _fv_cand, _in_scope, acc => acc
-              | f, cons a as_, fv_cand, in_scope, acc =>
-                  mapUnionFV f as_ fv_cand in_scope (f a fv_cand in_scope acc)
-              end.
+  := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
+     | _f, nil, _fv_cand, _in_scope, acc => acc
+     | f, cons a as_, fv_cand, in_scope, acc =>
+         mapUnionFV f as_ fv_cand in_scope (f a fv_cand in_scope acc)
+     end.
 
 Definition unionsFV : list FV -> FV :=
   fun fvs fv_cand in_scope acc => mapUnionFV GHC.Base.id fvs fv_cand in_scope acc.

@@ -61,58 +61,58 @@ Import GHC.Num.Notations.
 Definition VarEnv :=
   UniqFM.UniqFM%type.
 
-Inductive UnfoldingSource : Type
-  := | InlineRhs : UnfoldingSource
-  |  InlineStable : UnfoldingSource
-  |  InlineCompulsory : UnfoldingSource.
+Inductive UnfoldingSource : Type :=
+  | InlineRhs : UnfoldingSource
+  | InlineStable : UnfoldingSource
+  | InlineCompulsory : UnfoldingSource.
 
-Inductive UnfoldingGuidance : Type
-  := | UnfWhen (ug_arity : BasicTypes.Arity) (ug_unsat_ok : bool) (ug_boring_ok
+Inductive UnfoldingGuidance : Type :=
+  | UnfWhen (ug_arity : BasicTypes.Arity) (ug_unsat_ok : bool) (ug_boring_ok
     : bool)
    : UnfoldingGuidance
-  |  UnfIfGoodArgs (ug_args : list nat) (ug_size : nat) (ug_res : nat)
+  | UnfIfGoodArgs (ug_args : list nat) (ug_size : nat) (ug_res : nat)
    : UnfoldingGuidance
-  |  UnfNever : UnfoldingGuidance.
+  | UnfNever : UnfoldingGuidance.
 
 Inductive Unfolding : Type := | NoUnfolding : Unfolding.
 
-Inductive TypeShape : Type
-  := | TsFun : TypeShape -> TypeShape
-  |  TsProd : list TypeShape -> TypeShape
-  |  TsUnk : TypeShape.
+Inductive TypeShape : Type :=
+  | TsFun : TypeShape -> TypeShape
+  | TsProd : list TypeShape -> TypeShape
+  | TsUnk : TypeShape.
 
-Inductive TypeOrdering : Type
-  := | TLT : TypeOrdering
-  |  TEQ : TypeOrdering
-  |  TEQX : TypeOrdering
-  |  TGT : TypeOrdering.
+Inductive TypeOrdering : Type :=
+  | TLT : TypeOrdering
+  | TEQ : TypeOrdering
+  | TEQX : TypeOrdering
+  | TGT : TypeOrdering.
 
 Definition TyVarEnv :=
   VarEnv%type.
 
-Inductive TyVarBndr tyvar argf : Type
-  := | TvBndr : tyvar -> argf -> TyVarBndr tyvar argf.
+Inductive TyVarBndr tyvar argf : Type :=
+  | TvBndr : tyvar -> argf -> TyVarBndr tyvar argf.
 
-Inductive TyLit : Type
-  := | NumTyLit : GHC.Num.Integer -> TyLit
-  |  StrTyLit : FastString.FastString -> TyLit.
+Inductive TyLit : Type :=
+  | NumTyLit : GHC.Num.Integer -> TyLit
+  | StrTyLit : FastString.FastString -> TyLit.
 
 Definition TyConRepName :=
   Name.Name%type.
 
-Inductive TyConFlavour : Type
-  := | ClassFlavour : TyConFlavour
-  |  TupleFlavour : BasicTypes.Boxity -> TyConFlavour
-  |  SumFlavour : TyConFlavour
-  |  DataTypeFlavour : TyConFlavour
-  |  NewtypeFlavour : TyConFlavour
-  |  AbstractTypeFlavour : TyConFlavour
-  |  DataFamilyFlavour : TyConFlavour
-  |  OpenTypeFamilyFlavour : TyConFlavour
-  |  ClosedTypeFamilyFlavour : TyConFlavour
-  |  TypeSynonymFlavour : TyConFlavour
-  |  BuiltInTypeFlavour : TyConFlavour
-  |  PromotedDataConFlavour : TyConFlavour.
+Inductive TyConFlavour : Type :=
+  | ClassFlavour : TyConFlavour
+  | TupleFlavour : BasicTypes.Boxity -> TyConFlavour
+  | SumFlavour : TyConFlavour
+  | DataTypeFlavour : TyConFlavour
+  | NewtypeFlavour : TyConFlavour
+  | AbstractTypeFlavour : TyConFlavour
+  | DataFamilyFlavour : TyConFlavour
+  | OpenTypeFamilyFlavour : TyConFlavour
+  | ClosedTypeFamilyFlavour : TyConFlavour
+  | TypeSynonymFlavour : TyConFlavour
+  | BuiltInTypeFlavour : TyConFlavour
+  | PromotedDataConFlavour : TyConFlavour.
 
 Definition TyCoVarEnv :=
   VarEnv%type.
@@ -120,85 +120,85 @@ Definition TyCoVarEnv :=
 Definition TvSubstEnv :=
   (TyVarEnv Type_)%type.
 
-Inductive TickishScoping : Type
-  := | NoScope : TickishScoping
-  |  SoftScope : TickishScoping
-  |  CostCentreScope : TickishScoping.
+Inductive TickishScoping : Type :=
+  | NoScope : TickishScoping
+  | SoftScope : TickishScoping
+  | CostCentreScope : TickishScoping.
 
-Inductive TickishPlacement : Type
-  := | PlaceRuntime : TickishPlacement
-  |  PlaceNonLam : TickishPlacement
-  |  PlaceCostCentre : TickishPlacement.
+Inductive TickishPlacement : Type :=
+  | PlaceRuntime : TickishPlacement
+  | PlaceNonLam : TickishPlacement
+  | PlaceCostCentre : TickishPlacement.
 
-Inductive Tickish id : Type
-  := | ProfNote (profNoteCC : CostCentre) (profNoteCount : bool) (profNoteScope
+Inductive Tickish id : Type :=
+  | ProfNote (profNoteCC : CostCentre) (profNoteCount : bool) (profNoteScope
     : bool)
    : Tickish id
-  |  HpcTick (tickModule : Module.Module) (tickId : nat) : Tickish id
-  |  Breakpoint (breakpointId : nat) (breakpointFVs : list id) : Tickish id
-  |  SourceNote (sourceSpan : SrcLoc.RealSrcSpan) (sourceName : GHC.Base.String)
+  | HpcTick (tickModule : Module.Module) (tickId : nat) : Tickish id
+  | Breakpoint (breakpointId : nat) (breakpointFVs : list id) : Tickish id
+  | SourceNote (sourceSpan : SrcLoc.RealSrcSpan) (sourceName : GHC.Base.String)
    : Tickish id.
 
 Definition TickBoxId :=
   nat%type.
 
-Inductive TickBoxOp : Type
-  := | TickBox : Module.Module -> TickBoxId -> TickBoxOp.
+Inductive TickBoxOp : Type :=
+  | TickBox : Module.Module -> TickBoxId -> TickBoxOp.
 
-Inductive Termination r : Type
-  := | Diverges : Termination r
-  |  ThrowsExn : Termination r
-  |  Dunno : r -> Termination r.
+Inductive Termination r : Type :=
+  | Diverges : Termination r
+  | ThrowsExn : Termination r
+  | Dunno : r -> Termination r.
 
-Inductive StrictnessMark : Type
-  := | MarkedStrict : StrictnessMark
-  |  NotMarkedStrict : StrictnessMark.
+Inductive StrictnessMark : Type :=
+  | MarkedStrict : StrictnessMark
+  | NotMarkedStrict : StrictnessMark.
 
-Inductive SrcUnpackedness : Type
-  := | SrcUnpack : SrcUnpackedness
-  |  SrcNoUnpack : SrcUnpackedness
-  |  NoSrcUnpack : SrcUnpackedness.
+Inductive SrcUnpackedness : Type :=
+  | SrcUnpack : SrcUnpackedness
+  | SrcNoUnpack : SrcUnpackedness
+  | NoSrcUnpack : SrcUnpackedness.
 
-Inductive SrcStrictness : Type
-  := | SrcLazy : SrcStrictness
-  |  SrcStrict : SrcStrictness
-  |  NoSrcStrict : SrcStrictness.
+Inductive SrcStrictness : Type :=
+  | SrcLazy : SrcStrictness
+  | SrcStrict : SrcStrictness
+  | NoSrcStrict : SrcStrictness.
 
 Inductive RuleInfo : Type := | EmptyRuleInfo.
 
-Inductive RecTcChecker : Type
-  := | RC : nat -> (NameEnv.NameEnv nat) -> RecTcChecker.
+Inductive RecTcChecker : Type :=
+  | RC : nat -> (NameEnv.NameEnv nat) -> RecTcChecker.
 
-Inductive PrimElemRep : Type
-  := | Int8ElemRep : PrimElemRep
-  |  Int16ElemRep : PrimElemRep
-  |  Int32ElemRep : PrimElemRep
-  |  Int64ElemRep : PrimElemRep
-  |  Word8ElemRep : PrimElemRep
-  |  Word16ElemRep : PrimElemRep
-  |  Word32ElemRep : PrimElemRep
-  |  Word64ElemRep : PrimElemRep
-  |  FloatElemRep : PrimElemRep
-  |  DoubleElemRep : PrimElemRep.
+Inductive PrimElemRep : Type :=
+  | Int8ElemRep : PrimElemRep
+  | Int16ElemRep : PrimElemRep
+  | Int32ElemRep : PrimElemRep
+  | Int64ElemRep : PrimElemRep
+  | Word8ElemRep : PrimElemRep
+  | Word16ElemRep : PrimElemRep
+  | Word32ElemRep : PrimElemRep
+  | Word64ElemRep : PrimElemRep
+  | FloatElemRep : PrimElemRep
+  | DoubleElemRep : PrimElemRep.
 
-Inductive PrimRep : Type
-  := | VoidRep : PrimRep
-  |  LiftedRep : PrimRep
-  |  UnliftedRep : PrimRep
-  |  IntRep : PrimRep
-  |  WordRep : PrimRep
-  |  Int64Rep : PrimRep
-  |  Word64Rep : PrimRep
-  |  AddrRep : PrimRep
-  |  FloatRep : PrimRep
-  |  DoubleRep : PrimRep
-  |  VecRep : nat -> PrimElemRep -> PrimRep.
+Inductive PrimRep : Type :=
+  | VoidRep : PrimRep
+  | LiftedRep : PrimRep
+  | UnliftedRep : PrimRep
+  | IntRep : PrimRep
+  | WordRep : PrimRep
+  | Int64Rep : PrimRep
+  | Word64Rep : PrimRep
+  | AddrRep : PrimRep
+  | FloatRep : PrimRep
+  | DoubleRep : PrimRep
+  | VecRep : nat -> PrimElemRep -> PrimRep.
 
-Inductive RuntimeRepInfo : Type
-  := | NoRRI : RuntimeRepInfo
-  |  RuntimeRep : (list Type_ -> list PrimRep) -> RuntimeRepInfo
-  |  VecCount : nat -> RuntimeRepInfo
-  |  VecElem : PrimElemRep -> RuntimeRepInfo.
+Inductive RuntimeRepInfo : Type :=
+  | NoRRI : RuntimeRepInfo
+  | RuntimeRep : (list Type_ -> list PrimRep) -> RuntimeRepInfo
+  | VecCount : nat -> RuntimeRepInfo
+  | VecElem : PrimElemRep -> RuntimeRepInfo.
 
 Definition OutType :=
   Type_%type.
@@ -209,37 +209,37 @@ Definition OutKind :=
 Definition OutCoercion :=
   Coercion%type.
 
-Inductive NormaliseStepResult ev : Type
-  := | NS_Done : NormaliseStepResult ev
-  |  NS_Abort : NormaliseStepResult ev
-  |  NS_Step : RecTcChecker -> Type_ -> ev -> NormaliseStepResult ev.
+Inductive NormaliseStepResult ev : Type :=
+  | NS_Done : NormaliseStepResult ev
+  | NS_Abort : NormaliseStepResult ev
+  | NS_Step : RecTcChecker -> Type_ -> ev -> NormaliseStepResult ev.
 
 Definition LiftCoEnv :=
   (VarEnv Coercion)%type.
 
-Inductive LevityInfo : Type
-  := | NoLevityInfo : LevityInfo
-  |  NeverLevityPolymorphic : LevityInfo.
+Inductive LevityInfo : Type :=
+  | NoLevityInfo : LevityInfo
+  | NeverLevityPolymorphic : LevityInfo.
 
 Definition KindOrType :=
   Type_%type.
 
-Inductive KillFlags : Type
-  := | Mk_KillFlags (kf_abs : bool) (kf_used_once : bool) (kf_called_once : bool)
+Inductive KillFlags : Type :=
+  | Mk_KillFlags (kf_abs : bool) (kf_used_once : bool) (kf_called_once : bool)
    : KillFlags.
 
 Inductive JointDmd s u : Type := | JD (sd : s) (ud : u) : JointDmd s u.
 
-Inductive IsOrphan : Type
-  := | Mk_IsOrphan : IsOrphan
-  |  NotOrphan : OccName.OccName -> IsOrphan.
+Inductive IsOrphan : Type :=
+  | Mk_IsOrphan : IsOrphan
+  | NotOrphan : OccName.OccName -> IsOrphan.
 
 Definition InlinePragInfo :=
   BasicTypes.InlinePragma%type.
 
-Inductive Injectivity : Type
-  := | NotInjective : Injectivity
-  |  Injective : list bool -> Injectivity.
+Inductive Injectivity : Type :=
+  | NotInjective : Injectivity
+  | Injective : list bool -> Injectivity.
 
 Definition InType :=
   Type_%type.
@@ -253,38 +253,38 @@ Definition InCoercion :=
 Definition IdEnv :=
   VarEnv%type.
 
-Inductive HsSrcBang : Type
-  := | Mk_HsSrcBang
+Inductive HsSrcBang : Type :=
+  | Mk_HsSrcBang
    : BasicTypes.SourceText -> SrcUnpackedness -> SrcStrictness -> HsSrcBang.
 
-Inductive HsImplBang : Type
-  := | HsLazy : HsImplBang
-  |  HsStrict : HsImplBang
-  |  HsUnpack : (option Coercion) -> HsImplBang.
+Inductive HsImplBang : Type :=
+  | HsLazy : HsImplBang
+  | HsStrict : HsImplBang
+  | HsUnpack : (option Coercion) -> HsImplBang.
 
 Definition FunDep a :=
   (list a * list a)%type%type.
 
-Inductive FamTyConFlav : Type
-  := | DataFamilyTyCon : TyConRepName -> FamTyConFlav
-  |  OpenSynFamilyTyCon : FamTyConFlav
-  |  ClosedSynFamilyTyCon : (option (CoAxiom Branched)) -> FamTyConFlav
-  |  AbstractClosedSynFamilyTyCon : FamTyConFlav
-  |  BuiltInSynFamTyCon : BuiltInSynFamily -> FamTyConFlav.
+Inductive FamTyConFlav : Type :=
+  | DataFamilyTyCon : TyConRepName -> FamTyConFlav
+  | OpenSynFamilyTyCon : FamTyConFlav
+  | ClosedSynFamilyTyCon : (option (CoAxiom Branched)) -> FamTyConFlav
+  | AbstractClosedSynFamilyTyCon : FamTyConFlav
+  | BuiltInSynFamTyCon : BuiltInSynFamily -> FamTyConFlav.
 
-Inductive ExportFlag : Type
-  := | NotExported : ExportFlag
-  |  Exported : ExportFlag.
+Inductive ExportFlag : Type :=
+  | NotExported : ExportFlag
+  | Exported : ExportFlag.
 
-Inductive IdScope : Type
-  := | GlobalId : IdScope
-  |  LocalId : ExportFlag -> IdScope.
+Inductive IdScope : Type :=
+  | GlobalId : IdScope
+  | LocalId : ExportFlag -> IdScope.
 
-Inductive ExnStr : Type := | VanStr : ExnStr |  Mk_ExnStr : ExnStr.
+Inductive ExnStr : Type := | VanStr : ExnStr | Mk_ExnStr : ExnStr.
 
-Inductive Str s : Type := | Lazy : Str s |  Mk_Str : ExnStr -> s -> Str s.
+Inductive Str s : Type := | Lazy : Str s | Mk_Str : ExnStr -> s -> Str s.
 
-Inductive EqRel : Type := | NomEq : EqRel |  ReprEq : EqRel.
+Inductive EqRel : Type := | NomEq : EqRel | ReprEq : EqRel.
 
 Definition DefMethInfo :=
   (option (Name.Name * BasicTypes.DefMethSpec Type_)%type)%type.
@@ -298,9 +298,9 @@ Definition DTyVarEnv :=
 Definition DIdEnv :=
   DVarEnv%type.
 
-Inductive Count : Type := | One : Count |  Many : Count.
+Inductive Count : Type := | One : Count | Many : Count.
 
-Inductive Use u : Type := | Abs : Use u |  Mk_Use : Count -> u -> Use u.
+Inductive Use u : Type := | Abs : Use u | Mk_Use : Count -> u -> Use u.
 
 Definition DmdShell :=
   (JointDmd (Str unit) (Use unit))%type.
@@ -317,11 +317,11 @@ Definition CoercionN :=
 Definition KindCoercion :=
   CoercionN%type.
 
-Inductive UnivCoProvenance : Type
-  := | UnsafeCoerceProv : UnivCoProvenance
-  |  PhantomProv : KindCoercion -> UnivCoProvenance
-  |  ProofIrrelProv : KindCoercion -> UnivCoProvenance
-  |  PluginProv : GHC.Base.String -> UnivCoProvenance.
+Inductive UnivCoProvenance : Type :=
+  | UnsafeCoerceProv : UnivCoProvenance
+  | PhantomProv : KindCoercion -> UnivCoProvenance
+  | ProofIrrelProv : KindCoercion -> UnivCoProvenance
+  | PluginProv : GHC.Base.String -> UnivCoProvenance.
 
 Axiom CoercionHole : Type.
 
@@ -334,12 +334,12 @@ Definition CvSubstEnv :=
 Definition ClassMinimalDef :=
   (BooleanFormula.BooleanFormula Name.Name)%type.
 
-Inductive CafInfo : Type := | MayHaveCafRefs : CafInfo |  NoCafRefs : CafInfo.
+Inductive CafInfo : Type := | MayHaveCafRefs : CafInfo | NoCafRefs : CafInfo.
 
-Inductive CPRResult : Type
-  := | NoCPR : CPRResult
-  |  RetProd : CPRResult
-  |  RetSum : BasicTypes.ConTag -> CPRResult.
+Inductive CPRResult : Type :=
+  | NoCPR : CPRResult
+  | RetProd : CPRResult
+  | RetSum : BasicTypes.ConTag -> CPRResult.
 
 Definition DmdResult :=
   (Termination CPRResult)%type.
@@ -347,20 +347,20 @@ Definition DmdResult :=
 Definition ArityInfo :=
   BasicTypes.Arity%type.
 
-Inductive UseDmd : Type
-  := | UCall : Count -> UseDmd -> UseDmd
-  |  UProd : list (Use UseDmd)%type -> UseDmd
-  |  UHead : UseDmd
-  |  Used : UseDmd.
+Inductive UseDmd : Type :=
+  | UCall : Count -> UseDmd -> UseDmd
+  | UProd : list (Use UseDmd)%type -> UseDmd
+  | UHead : UseDmd
+  | Used : UseDmd.
 
 Definition ArgUse :=
   (Use UseDmd)%type.
 
-Inductive StrDmd : Type
-  := | HyperStr : StrDmd
-  |  SCall : StrDmd -> StrDmd
-  |  SProd : list (Str StrDmd)%type -> StrDmd
-  |  HeadStr : StrDmd.
+Inductive StrDmd : Type :=
+  | HyperStr : StrDmd
+  | SCall : StrDmd -> StrDmd
+  | SProd : list (Str StrDmd)%type -> StrDmd
+  | HeadStr : StrDmd.
 
 Definition ArgStr :=
   (Str StrDmd)%type.
@@ -374,13 +374,13 @@ Definition DmdEnv :=
 Definition BothDmdArg :=
   (DmdEnv * Termination unit)%type%type.
 
-Inductive DmdType : Type
-  := | Mk_DmdType : DmdEnv -> list Demand -> DmdResult -> DmdType.
+Inductive DmdType : Type :=
+  | Mk_DmdType : DmdEnv -> list Demand -> DmdResult -> DmdType.
 
 Inductive StrictSig : Type := | Mk_StrictSig : DmdType -> StrictSig.
 
-Inductive IdInfo : Type
-  := | Mk_IdInfo (arityInfo : ArityInfo) (ruleInfo : RuleInfo) (unfoldingInfo
+Inductive IdInfo : Type :=
+  | Mk_IdInfo (arityInfo : ArityInfo) (ruleInfo : RuleInfo) (unfoldingInfo
     : Unfolding) (cafInfo : CafInfo) (oneShotInfo : BasicTypes.OneShotInfo)
   (inlinePragInfo : BasicTypes.InlinePragma) (occInfo : BasicTypes.OccInfo)
   (strictnessInfo : StrictSig) (demandInfo : Demand) (callArityInfo : ArityInfo)
@@ -390,88 +390,86 @@ Inductive IdInfo : Type
 Definition CleanDemand :=
   (JointDmd StrDmd UseDmd)%type.
 
-Inductive ArgFlag : Type
-  := | Required : ArgFlag
-  |  Specified : ArgFlag
-  |  Inferred : ArgFlag.
+Inductive ArgFlag : Type :=
+  | Required : ArgFlag
+  | Specified : ArgFlag
+  | Inferred : ArgFlag.
 
-Inductive TyConBndrVis : Type
-  := | NamedTCB : ArgFlag -> TyConBndrVis
-  |  AnonTCB : TyConBndrVis.
+Inductive TyConBndrVis : Type :=
+  | NamedTCB : ArgFlag -> TyConBndrVis
+  | AnonTCB : TyConBndrVis.
 
-Inductive AlgTyConFlav : Type
-  := | VanillaAlgTyCon : TyConRepName -> AlgTyConFlav
-  |  UnboxedAlgTyCon : (option TyConRepName) -> AlgTyConFlav
-  |  ClassTyCon : Class -> TyConRepName -> AlgTyConFlav
-  |  DataFamInstTyCon
-   : (CoAxiom Unbranched) -> TyCon -> list Type_ -> AlgTyConFlav
-with Class : Type
-  := | Mk_Class (classTyCon : TyCon) (className : Name.Name) (classKey
+Inductive AlgTyConFlav : Type :=
+  | VanillaAlgTyCon : TyConRepName -> AlgTyConFlav
+  | UnboxedAlgTyCon : (option TyConRepName) -> AlgTyConFlav
+  | ClassTyCon : Class -> TyConRepName -> AlgTyConFlav
+  | DataFamInstTyCon : (CoAxiom Unbranched) -> TyCon -> list Type_ -> AlgTyConFlav
+with Class : Type :=
+  | Mk_Class (classTyCon : TyCon) (className : Name.Name) (classKey
     : Unique.Unique) (classTyVars : list Var%type) (classFunDeps
     : list (FunDep Var%type)) (classBody : ClassBody)
    : Class
-with ClassBody : Type
-  := | AbstractClass : ClassBody
-  |  ConcreteClass (classSCThetaStuff : list PredType) (classSCSels
+with ClassBody : Type :=
+  | AbstractClass : ClassBody
+  | ConcreteClass (classSCThetaStuff : list PredType) (classSCSels
     : list Var%type) (classATStuff : list ClassATItem) (classOpStuff
     : list (Var%type * DefMethInfo)%type%type) (classMinimalDefStuff
     : ClassMinimalDef)
    : ClassBody
-with ClassATItem : Type
-  := | ATI : TyCon -> (option (Type_ * SrcLoc.SrcSpan)%type) -> ClassATItem
-with TyCon : Type
-  := | FunTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
-  (tyConBinders : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConResKind
-    : Kind) (tyConKind : Kind) (tyConArity : BasicTypes.Arity) (tcRepName
-    : TyConRepName)
+with ClassATItem : Type :=
+  | ATI : TyCon -> (option (Type_ * SrcLoc.SrcSpan)%type) -> ClassATItem
+with TyCon : Type :=
+  | FunTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
+    : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConResKind : Kind) (tyConKind
+    : Kind) (tyConArity : BasicTypes.Arity) (tcRepName : TyConRepName)
    : TyCon
-  |  AlgTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
+  | AlgTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
     : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConTyVars : list Var%type)
   (tyConResKind : Kind) (tyConKind : Kind) (tyConArity : BasicTypes.Arity)
   (tcRoles : list Role) (tyConCType : option CType) (algTcGadtSyntax : bool)
   (algTcStupidTheta : list PredType) (algTcRhs : AlgTyConRhs) (algTcFields
     : FieldLabel.FieldLabelEnv) (algTcParent : AlgTyConFlav)
    : TyCon
-  |  SynonymTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
+  | SynonymTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
   (tyConBinders : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConTyVars
     : list Var%type) (tyConResKind : Kind) (tyConKind : Kind) (tyConArity
     : BasicTypes.Arity) (tcRoles : list Role) (synTcRhs : Type_) (synIsTau : bool)
   (synIsFamFree : bool)
    : TyCon
-  |  FamilyTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
+  | FamilyTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
   (tyConBinders : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConTyVars
     : list Var%type) (tyConResKind : Kind) (tyConKind : Kind) (tyConArity
     : BasicTypes.Arity) (famTcResVar : option Name.Name) (famTcFlav : FamTyConFlav)
   (famTcParent : option Class) (famTcInj : Injectivity)
    : TyCon
-  |  PrimTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
+  | PrimTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
     : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConResKind : Kind) (tyConKind
     : Kind) (tyConArity : BasicTypes.Arity) (tcRoles : list Role) (isUnlifted
     : bool) (primRepName : option TyConRepName)
    : TyCon
-  |  PromotedDataCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
+  | PromotedDataCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
   (tyConBinders : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConResKind
     : Kind) (tyConKind : Kind) (tyConArity : BasicTypes.Arity) (tcRoles
     : list Role) (dataCon : DataCon) (tcRepName : TyConRepName) (promDcRepInfo
     : RuntimeRepInfo)
    : TyCon
-  |  TcTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
+  | TcTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
     : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConTyVars : list Var%type)
   (tyConResKind : Kind) (tyConKind : Kind) (tyConArity : BasicTypes.Arity)
   (tcTyConScopedTyVars : list (Name.Name * Var%type)%type) (tcTyConFlavour
     : TyConFlavour)
    : TyCon
-with AlgTyConRhs : Type
-  := | AbstractTyCon : AlgTyConRhs
-  |  DataTyCon (data_cons : list DataCon) (is_enum : bool) : AlgTyConRhs
-  |  TupleTyCon (data_con : DataCon) (tup_sort : BasicTypes.TupleSort)
+with AlgTyConRhs : Type :=
+  | AbstractTyCon : AlgTyConRhs
+  | DataTyCon (data_cons : list DataCon) (is_enum : bool) : AlgTyConRhs
+  | TupleTyCon (data_con : DataCon) (tup_sort : BasicTypes.TupleSort)
    : AlgTyConRhs
-  |  SumTyCon (data_cons : list DataCon) : AlgTyConRhs
-  |  NewTyCon (data_con : DataCon) (nt_rhs : Type_) (nt_etad_rhs
+  | SumTyCon (data_cons : list DataCon) : AlgTyConRhs
+  | NewTyCon (data_con : DataCon) (nt_rhs : Type_) (nt_etad_rhs
     : (list Var%type * Type_)%type) (nt_co : CoAxiom Unbranched)
    : AlgTyConRhs
-with DataCon : Type
-  := | MkData (dcName : Name.Name) (dcUnique : Unique.Unique) (dcTag
+with DataCon : Type :=
+  | MkData (dcName : Name.Name) (dcUnique : Unique.Unique) (dcTag
     : BasicTypes.ConTag) (dcVanilla : bool) (dcUnivTyVars : list Var%type)
   (dcExTyVars : list Var%type) (dcUserTyVarBinders
     : list (TyVarBndr Var%type ArgFlag)%type) (dcEqSpec : list EqSpec)
@@ -481,32 +479,32 @@ with DataCon : Type
   (dcRepArity : BasicTypes.Arity) (dcSourceArity : BasicTypes.Arity) (dcRepTyCon
     : TyCon) (dcRepType : Type_) (dcInfix : bool) (dcPromoted : TyCon)
    : DataCon
-with DataConRep : Type
-  := | NoDataConRep : DataConRep
-  |  DCR (dcr_wrap_id : Var%type) (dcr_boxer : DataConBoxer) (dcr_arg_tys
+with DataConRep : Type :=
+  | NoDataConRep : DataConRep
+  | DCR (dcr_wrap_id : Var%type) (dcr_boxer : DataConBoxer) (dcr_arg_tys
     : list Type_) (dcr_stricts : list StrictnessMark) (dcr_bangs : list HsImplBang)
    : DataConRep
-with Var : Type
-  := | Mk_Id (varName : Name.Name) (realUnique : BinNums.N) (varType : Type_)
+with Var : Type :=
+  | Mk_Id (varName : Name.Name) (realUnique : BinNums.N) (varType : Type_)
   (idScope : IdScope) (id_details : IdDetails) (id_info : IdInfo)
    : Var
-with IdDetails : Type
-  := | VanillaId : IdDetails
-  |  RecSelId (sel_tycon : RecSelParent) (sel_naughty : bool) : IdDetails
-  |  DataConWorkId : DataCon -> IdDetails
-  |  DataConWrapId : DataCon -> IdDetails
-  |  ClassOpId : Class -> IdDetails
-  |  PrimOpId : PrimOp -> IdDetails
-  |  FCallId : ForeignCall -> IdDetails
-  |  TickBoxOpId : TickBoxOp -> IdDetails
-  |  Mk_DFunId : bool -> IdDetails
-  |  Mk_JoinId : BasicTypes.JoinArity -> IdDetails
-with RecSelParent : Type
-  := | RecSelData : TyCon -> RecSelParent
-  |  RecSelPatSyn : PatSyn -> RecSelParent
-with PatSyn : Type
-  := | MkPatSyn (psName : Name.Name) (psUnique : Unique.Unique) (psArgs
-    : list Type_) (psArity : BasicTypes.Arity) (psInfix : bool) (psFieldLabels
+with IdDetails : Type :=
+  | VanillaId : IdDetails
+  | RecSelId (sel_tycon : RecSelParent) (sel_naughty : bool) : IdDetails
+  | DataConWorkId : DataCon -> IdDetails
+  | DataConWrapId : DataCon -> IdDetails
+  | ClassOpId : Class -> IdDetails
+  | PrimOpId : PrimOp -> IdDetails
+  | FCallId : ForeignCall -> IdDetails
+  | TickBoxOpId : TickBoxOp -> IdDetails
+  | Mk_DFunId : bool -> IdDetails
+  | Mk_JoinId : BasicTypes.JoinArity -> IdDetails
+with RecSelParent : Type :=
+  | RecSelData : TyCon -> RecSelParent
+  | RecSelPatSyn : PatSyn -> RecSelParent
+with PatSyn : Type :=
+  | MkPatSyn (psName : Name.Name) (psUnique : Unique.Unique) (psArgs : list Type_)
+  (psArity : BasicTypes.Arity) (psInfix : bool) (psFieldLabels
     : list FieldLabel.FieldLabel) (psUnivTyVars
     : list (TyVarBndr Var%type ArgFlag)%type) (psReqTheta : ThetaType) (psExTyVars
     : list (TyVarBndr Var%type ArgFlag)%type) (psProvTheta : ThetaType) (psResultTy
@@ -622,10 +620,10 @@ Definition TKVar :=
 Definition TidyEnv :=
   (OccName.TidyOccEnv * VarEnv Var)%type%type.
 
-Inductive PredTree : Type
-  := | ClassPred : Class -> list Type_ -> PredTree
-  |  EqPred : EqRel -> Type_ -> Type_ -> PredTree
-  |  IrredPred : PredType -> PredTree.
+Inductive PredTree : Type :=
+  | ClassPred : Class -> list Type_ -> PredTree
+  | EqPred : EqRel -> Type_ -> Type_ -> PredTree
+  | IrredPred : PredType -> PredTree.
 
 Definition DTyVarSet :=
   (UniqSet.UniqSet TyVar)%type.
@@ -636,34 +634,34 @@ Definition InTyVar :=
 Definition OutTyVar :=
   TyVar%type.
 
-Inductive TyCoMapper env m : Type
-  := | Mk_TyCoMapper (tcm_smart : bool) (tcm_tyvar : env -> TyVar -> m Type_)
+Inductive TyCoMapper env m : Type :=
+  | Mk_TyCoMapper (tcm_smart : bool) (tcm_tyvar : env -> TyVar -> m Type_)
   (tcm_covar : env -> CoVar -> m Coercion) (tcm_hole
     : env -> CoercionHole -> m Coercion) (tcm_tybinder
     : env -> TyVar -> ArgFlag -> m (env * TyVar)%type)
    : TyCoMapper env m.
 
-Inductive AltCon : Type
-  := | DataAlt : DataCon -> AltCon
-  |  LitAlt : Literal -> AltCon
-  |  DEFAULT : AltCon.
+Inductive AltCon : Type :=
+  | DataAlt : DataCon -> AltCon
+  | LitAlt : Literal -> AltCon
+  | DEFAULT : AltCon.
 
-Inductive Expr b : Type
-  := | Mk_Var : Id -> Expr b
-  |  Lit : Literal -> Expr b
-  |  App : (Expr b) -> (Expr%type b) -> Expr b
-  |  Lam : b -> (Expr b) -> Expr b
-  |  Let : (Bind b) -> (Expr b) -> Expr b
-  |  Case
+Inductive Expr b : Type :=
+  | Mk_Var : Id -> Expr b
+  | Lit : Literal -> Expr b
+  | App : (Expr b) -> (Expr%type b) -> Expr b
+  | Lam : b -> (Expr b) -> Expr b
+  | Let : (Bind b) -> (Expr b) -> Expr b
+  | Case
    : (Expr b) ->
      b ->
      Type_ -> list ((fun b_ => (AltCon * list b_ * Expr b_)%type%type) b) -> Expr b
-  |  Cast : (Expr b) -> Coercion -> Expr b
-  |  Mk_Type : Type_ -> Expr b
-  |  Mk_Coercion : Coercion -> Expr b
-with Bind b : Type
-  := | NonRec : b -> (Expr b) -> Bind b
-  |  Rec : list (b * (Expr b))%type -> Bind b.
+  | Cast : (Expr b) -> Coercion -> Expr b
+  | Mk_Type : Type_ -> Expr b
+  | Mk_Coercion : Coercion -> Expr b
+with Bind b : Type :=
+  | NonRec : b -> (Expr b) -> Bind b
+  | Rec : list (b * (Expr b))%type -> Bind b.
 
 Definition Arg :=
   Expr%type.
@@ -710,12 +708,12 @@ Definition TaggedBind t :=
 Definition CoreExpr :=
   (Expr CoreBndr)%type.
 
-Inductive CoreVect : Type
-  := | Vect : Id -> CoreExpr -> CoreVect
-  |  NoVect : Id -> CoreVect
-  |  VectType : bool -> TyCon -> (option TyCon) -> CoreVect
-  |  VectClass : TyCon -> CoreVect
-  |  VectInst : Id -> CoreVect.
+Inductive CoreVect : Type :=
+  | Vect : Id -> CoreExpr -> CoreVect
+  | NoVect : Id -> CoreVect
+  | VectType : bool -> TyCon -> (option TyCon) -> CoreVect
+  | VectClass : TyCon -> CoreVect
+  | VectInst : Id -> CoreVect.
 
 Definition InExpr :=
   CoreExpr%type.
@@ -729,19 +727,19 @@ Definition TaggedExpr t :=
 Definition TaggedAlt t :=
   (Alt (TaggedBndr t))%type.
 
-Inductive AnnExpr' bndr annot : Type
-  := | AnnVar : Id -> AnnExpr' bndr annot
-  |  AnnLit : Literal -> AnnExpr' bndr annot
-  |  AnnLam
+Inductive AnnExpr' bndr annot : Type :=
+  | AnnVar : Id -> AnnExpr' bndr annot
+  | AnnLit : Literal -> AnnExpr' bndr annot
+  | AnnLam
    : bndr ->
      ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr annot) ->
      AnnExpr' bndr annot
-  |  AnnApp
+  | AnnApp
    : ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr
       annot) ->
      ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr annot) ->
      AnnExpr' bndr annot
-  |  AnnCase
+  | AnnCase
    : ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr
       annot) ->
      bndr ->
@@ -751,22 +749,22 @@ Inductive AnnExpr' bndr annot : Type
                (fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr_
                annot_)%type%type) bndr annot) ->
      AnnExpr' bndr annot
-  |  AnnLet
+  | AnnLet
    : (AnnBind bndr annot) ->
      ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr annot) ->
      AnnExpr' bndr annot
-  |  AnnCast
+  | AnnCast
    : ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr
       annot) ->
      (annot * Coercion)%type -> AnnExpr' bndr annot
-  |  AnnType : Type_ -> AnnExpr' bndr annot
-  |  AnnCoercion : Coercion -> AnnExpr' bndr annot
-with AnnBind bndr annot : Type
-  := | AnnNonRec
+  | AnnType : Type_ -> AnnExpr' bndr annot
+  | AnnCoercion : Coercion -> AnnExpr' bndr annot
+with AnnBind bndr annot : Type :=
+  | AnnNonRec
    : bndr ->
      ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr annot) ->
      AnnBind bndr annot
-  |  AnnRec
+  | AnnRec
    : list (bndr *
            (fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr
            annot)%type ->
@@ -796,32 +794,31 @@ Definition RuleFun :=
   (DynFlags.DynFlags ->
    InScopeEnv -> Id -> list CoreExpr -> option CoreExpr)%type.
 
-Inductive CoreRule : Type
-  := | Rule (ru_name : BasicTypes.RuleName) (ru_act : BasicTypes.Activation)
-  (ru_fn : Name.Name) (ru_rough : list (option Name.Name)) (ru_bndrs
-    : list CoreBndr) (ru_args : list CoreExpr) (ru_rhs : CoreExpr) (ru_auto : bool)
-  (ru_origin : Module.Module) (ru_orphan : IsOrphan) (ru_local : bool)
+Inductive CoreRule : Type :=
+  | Rule (ru_name : BasicTypes.RuleName) (ru_act : BasicTypes.Activation) (ru_fn
+    : Name.Name) (ru_rough : list (option Name.Name)) (ru_bndrs : list CoreBndr)
+  (ru_args : list CoreExpr) (ru_rhs : CoreExpr) (ru_auto : bool) (ru_origin
+    : Module.Module) (ru_orphan : IsOrphan) (ru_local : bool)
    : CoreRule
-  |  BuiltinRule (ru_name : BasicTypes.RuleName) (ru_fn : Name.Name) (ru_nargs
+  | BuiltinRule (ru_name : BasicTypes.RuleName) (ru_fn : Name.Name) (ru_nargs
     : nat) (ru_try : RuleFun)
    : CoreRule.
 
 Definition RuleBase :=
   (NameEnv.NameEnv (list CoreRule))%type.
 
-Inductive RuleEnv : Type
-  := | Mk_RuleEnv (re_base : RuleBase) (re_visible_orphs : Module.ModuleSet)
+Inductive RuleEnv : Type :=
+  | Mk_RuleEnv (re_base : RuleBase) (re_visible_orphs : Module.ModuleSet)
    : RuleEnv.
 
-Inductive RnEnv2 : Type
-  := | RV2 (envL : VarEnv Var) (envR : VarEnv Var) (in_scope : InScopeSet)
-   : RnEnv2.
+Inductive RnEnv2 : Type :=
+  | RV2 (envL : VarEnv Var) (envR : VarEnv Var) (in_scope : InScopeSet) : RnEnv2.
 
-Inductive TCvSubst : Type
-  := | Mk_TCvSubst : InScopeSet -> TvSubstEnv -> CvSubstEnv -> TCvSubst.
+Inductive TCvSubst : Type :=
+  | Mk_TCvSubst : InScopeSet -> TvSubstEnv -> CvSubstEnv -> TCvSubst.
 
-Inductive LiftingContext : Type
-  := | LC : TCvSubst -> LiftCoEnv -> LiftingContext.
+Inductive LiftingContext : Type :=
+  | LC : TCvSubst -> LiftCoEnv -> LiftingContext.
 
 Arguments TvBndr {_} {_} _ _.
 
@@ -3046,14 +3043,14 @@ Program Instance Eq___Str {s} `{GHC.Base.Eq_ s} : GHC.Base.Eq_ (Str s) :=
 
 Local Definition Eq___StrDmd_op_zeze__ : StrDmd -> StrDmd -> bool :=
   fix StrDmd_eq x y
-        := let eq' : GHC.Base.Eq_ StrDmd := GHC.Base.eq_default StrDmd_eq in
-           match x, y with
-           | HyperStr, HyperStr => true
-           | SCall a1, SCall b1 => a1 GHC.Base.== b1
-           | SProd a1, SProd b1 => a1 GHC.Base.== b1
-           | HeadStr, HeadStr => true
-           | _, _ => false
-           end.
+    := let eq' : GHC.Base.Eq_ StrDmd := GHC.Base.eq_default StrDmd_eq in
+       match x, y with
+       | HyperStr, HyperStr => true
+       | SCall a1, SCall b1 => a1 GHC.Base.== b1
+       | SProd a1, SProd b1 => a1 GHC.Base.== b1
+       | HeadStr, HeadStr => true
+       | _, _ => false
+       end.
 
 Local Definition Eq___StrDmd_op_zsze__ : StrDmd -> StrDmd -> bool :=
   fun x y => negb (Eq___StrDmd_op_zeze__ x y).
@@ -3124,14 +3121,14 @@ Program Instance Eq___Use {u} `{GHC.Base.Eq_ u} : GHC.Base.Eq_ (Use u) :=
 
 Local Definition Eq___UseDmd_op_zeze__ : UseDmd -> UseDmd -> bool :=
   fix UseDmd_eq x y
-        := let eq' : GHC.Base.Eq_ UseDmd := GHC.Base.eq_default UseDmd_eq in
-           match x, y with
-           | UCall a1 a2, UCall b1 b2 => andb (a1 GHC.Base.== b1) (a2 GHC.Base.== b2)
-           | UProd a1, UProd b1 => a1 GHC.Base.== b1
-           | UHead, UHead => true
-           | Used, Used => true
-           | _, _ => false
-           end.
+    := let eq' : GHC.Base.Eq_ UseDmd := GHC.Base.eq_default UseDmd_eq in
+       match x, y with
+       | UCall a1 a2, UCall b1 b2 => andb (a1 GHC.Base.== b1) (a2 GHC.Base.== b2)
+       | UProd a1, UProd b1 => a1 GHC.Base.== b1
+       | UHead, UHead => true
+       | Used, Used => true
+       | _, _ => false
+       end.
 
 Local Definition Eq___UseDmd_op_zsze__ : UseDmd -> UseDmd -> bool :=
   fun x y => negb (Eq___UseDmd_op_zeze__ x y).
@@ -7101,31 +7098,31 @@ Definition ltAlt {a} {b}
   fun a1 a2 => (cmpAlt a1 a2) GHC.Base.== Lt.
 
 Fixpoint deTagExpr {t} (arg_0__ : TaggedExpr t) : CoreExpr
-           := let deTagBind (arg_0__ : TaggedBind t) : CoreBind :=
-                match arg_0__ with
-                | NonRec (TB b _) rhs => NonRec b (deTagExpr rhs)
-                | Rec prs =>
-                    Rec (let cont_2__ arg_3__ :=
-                           let 'pair (TB b _) rhs := arg_3__ in
-                           cons (pair b (deTagExpr rhs)) nil in
-                         Coq.Lists.List.flat_map cont_2__ prs)
-                end in
-              let deTagAlt (arg_0__ : TaggedAlt t) : CoreAlt :=
-                let 'pair (pair con bndrs) rhs := arg_0__ in
-                pair (pair con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
-                            Coq.Lists.List.flat_map cont_1__ bndrs)) (deTagExpr rhs) in
-              match arg_0__ with
-              | Mk_Var v => Mk_Var v
-              | Lit l => Lit l
-              | Mk_Type ty => Mk_Type ty
-              | Mk_Coercion co => Mk_Coercion co
-              | App e1 e2 => App (deTagExpr e1) (deTagExpr e2)
-              | Lam (TB b _) e => Lam b (deTagExpr e)
-              | Let bind body => Let (deTagBind bind) (deTagExpr body)
-              | Case e (TB b _) ty alts =>
-                  Case (deTagExpr e) b ty (GHC.Base.map deTagAlt alts)
-              | Cast e co => Cast (deTagExpr e) co
-              end.
+  := let deTagBind (arg_0__ : TaggedBind t) : CoreBind :=
+       match arg_0__ with
+       | NonRec (TB b _) rhs => NonRec b (deTagExpr rhs)
+       | Rec prs =>
+           Rec (let cont_2__ arg_3__ :=
+                  let 'pair (TB b _) rhs := arg_3__ in
+                  cons (pair b (deTagExpr rhs)) nil in
+                Coq.Lists.List.flat_map cont_2__ prs)
+       end in
+     let deTagAlt (arg_0__ : TaggedAlt t) : CoreAlt :=
+       let 'pair (pair con bndrs) rhs := arg_0__ in
+       pair (pair con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
+                   Coq.Lists.List.flat_map cont_1__ bndrs)) (deTagExpr rhs) in
+     match arg_0__ with
+     | Mk_Var v => Mk_Var v
+     | Lit l => Lit l
+     | Mk_Type ty => Mk_Type ty
+     | Mk_Coercion co => Mk_Coercion co
+     | App e1 e2 => App (deTagExpr e1) (deTagExpr e2)
+     | Lam (TB b _) e => Lam b (deTagExpr e)
+     | Let bind body => Let (deTagBind bind) (deTagExpr body)
+     | Case e (TB b _) ty alts =>
+         Case (deTagExpr e) b ty (GHC.Base.map deTagAlt alts)
+     | Cast e co => Cast (deTagExpr e) co
+     end.
 
 Definition deTagBind {t} : TaggedBind t -> CoreBind :=
   fun arg_0__ =>
@@ -7272,45 +7269,45 @@ Definition rhssOfAlts {b} : list (Alt b) -> list (Expr b) :=
     Coq.Lists.List.flat_map cont_0__ alts.
 
 Fixpoint flattenBinds {b} (arg_0__ : list (Bind b)) : list (b * Expr b)%type
-           := match arg_0__ with
-              | cons (NonRec b r) binds => cons (pair b r) (flattenBinds binds)
-              | cons (Rec prs1) binds => Coq.Init.Datatypes.app prs1 (flattenBinds binds)
-              | nil => nil
-              end.
+  := match arg_0__ with
+     | cons (NonRec b r) binds => cons (pair b r) (flattenBinds binds)
+     | cons (Rec prs1) binds => Coq.Init.Datatypes.app prs1 (flattenBinds binds)
+     | nil => nil
+     end.
 
 Definition collectBinders {b} : Expr b -> (list b * Expr b)%type :=
   fun expr =>
     let fix go arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | bs, Lam b e => go (cons b bs) e
-                 | bs, e => pair (GHC.List.reverse bs) e
-                 end in
+      := match arg_0__, arg_1__ with
+         | bs, Lam b e => go (cons b bs) e
+         | bs, e => pair (GHC.List.reverse bs) e
+         end in
     go nil expr.
 
 Definition collectTyBinders : CoreExpr -> (list TyVar * CoreExpr)%type :=
   fun expr =>
     let fix go arg_0__ arg_1__
-              := let j_3__ :=
-                   match arg_0__, arg_1__ with
-                   | tvs, e => pair (GHC.List.reverse tvs) e
-                   end in
-                 match arg_0__, arg_1__ with
-                 | tvs, Lam b e => if isTyVar b : bool then go (cons b tvs) e else j_3__
-                 | _, _ => j_3__
-                 end in
+      := let j_3__ :=
+           match arg_0__, arg_1__ with
+           | tvs, e => pair (GHC.List.reverse tvs) e
+           end in
+         match arg_0__, arg_1__ with
+         | tvs, Lam b e => if isTyVar b : bool then go (cons b tvs) e else j_3__
+         | _, _ => j_3__
+         end in
     go nil expr.
 
 Definition collectValBinders : CoreExpr -> (list Id * CoreExpr)%type :=
   fun expr =>
     let fix go arg_0__ arg_1__
-              := let j_3__ :=
-                   match arg_0__, arg_1__ with
-                   | ids, body => pair (GHC.List.reverse ids) body
-                   end in
-                 match arg_0__, arg_1__ with
-                 | ids, Lam b e => if isId b : bool then go (cons b ids) e else j_3__
-                 | _, _ => j_3__
-                 end in
+      := let j_3__ :=
+           match arg_0__, arg_1__ with
+           | ids, body => pair (GHC.List.reverse ids) body
+           end in
+         match arg_0__, arg_1__ with
+         | ids, Lam b e => if isId b : bool then go (cons b ids) e else j_3__
+         | _, _ => j_3__
+         end in
     go nil expr.
 
 Definition collectTyAndValBinders
@@ -7323,24 +7320,24 @@ Definition collectTyAndValBinders
 Definition collectNBinders {b} : nat -> Expr b -> (list b * Expr b)%type :=
   fun orig_n orig_expr =>
     let fix go arg_0__ arg_1__ arg_2__
-              := match arg_0__, arg_1__, arg_2__ with
-                 | num_3__, bs, expr =>
-                     if num_3__ GHC.Base.== #0 : bool then pair (GHC.List.reverse bs) expr else
-                     match arg_0__, arg_1__, arg_2__ with
-                     | n, bs, Lam b e => go (n GHC.Num.- #1) (cons b bs) e
-                     | _, _, _ =>
-                         Panic.panicStr (GHC.Base.hs_string__ "collectNBinders") Panic.someSDoc
-                     end
-                 end in
+      := match arg_0__, arg_1__, arg_2__ with
+         | num_3__, bs, expr =>
+             if num_3__ GHC.Base.== #0 : bool then pair (GHC.List.reverse bs) expr else
+             match arg_0__, arg_1__, arg_2__ with
+             | n, bs, Lam b e => go (n GHC.Num.- #1) (cons b bs) e
+             | _, _, _ =>
+                 Panic.panicStr (GHC.Base.hs_string__ "collectNBinders") Panic.someSDoc
+             end
+         end in
     go orig_n nil orig_expr.
 
 Definition collectArgs {b} : Expr b -> (Expr b * list (Arg b))%type :=
   fun expr =>
     let fix go arg_0__ arg_1__
-              := match arg_0__, arg_1__ with
-                 | App f a, as_ => go f (cons a as_)
-                 | e, as_ => pair e as_
-                 end in
+      := match arg_0__, arg_1__ with
+         | App f a, as_ => go f (cons a as_)
+         | e, as_ => pair e as_
+         end in
     go expr nil.
 
 Definition collectArgsTicks {b}
@@ -7348,10 +7345,10 @@ Definition collectArgsTicks {b}
      Expr b -> (Expr b * list (Arg b) * list (Tickish Id))%type :=
   fun skipTick expr =>
     let fix go arg_0__ arg_1__ arg_2__
-              := match arg_0__, arg_1__, arg_2__ with
-                 | App f a, as_, ts => go f (cons a as_) ts
-                 | e, as_, ts => pair (pair e as_) (GHC.List.reverse ts)
-                 end in
+      := match arg_0__, arg_1__, arg_2__ with
+         | App f a, as_, ts => go f (cons a as_) ts
+         | e, as_, ts => pair (pair e as_) (GHC.List.reverse ts)
+         end in
     go expr nil nil.
 
 Definition isRuntimeVar : Var -> bool :=
@@ -7381,64 +7378,65 @@ Definition valArgCount {b} : list (Arg b) -> nat :=
   Util.count isValArg.
 
 Program Definition collectAnnArgs {b} {a}
-           : AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a))%type :=
-          fun expr =>
-            let go :=
-              GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                               size_AnnExpr' (snd arg_0__)) _ (fun arg_0__ arg_1__ go =>
-                               match arg_0__, arg_1__ with
-                               | pair _ (AnnApp f a), as_ => go f (cons a as_)
-                               | e, as_ => pair e as_
-                               end) in
-            go expr nil.
+   : AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a))%type :=
+  fun expr =>
+    let go :=
+      GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                       size_AnnExpr' (snd arg_0__)) _ (fun arg_0__ arg_1__ go =>
+                       match arg_0__, arg_1__ with
+                       | pair _ (AnnApp f a), as_ => go f (cons a as_)
+                       | e, as_ => pair e as_
+                       end) in
+    go expr nil.
 Solve Obligations with (solve_collectAnnArgsTicks).
 
 Program Definition collectAnnArgsTicks {b} {a}
-           : (Tickish Var -> bool) ->
-             AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a) * list (Tickish Var))%type :=
-          fun tickishOk expr =>
-            let go :=
-              GHC.Wf.wfFix3 Coq.Init.Peano.lt (fun arg_0__ arg_1__ arg_2__ =>
-                               size_AnnExpr' (snd arg_0__)) _ (fun arg_0__ arg_1__ arg_2__ go =>
-                               match arg_0__, arg_1__, arg_2__ with
-                               | pair _ (AnnApp f a), as_, ts => go f (cons a as_) ts
-                               | e, as_, ts => pair (pair e as_) (GHC.List.reverse ts)
-                               end) in
-            go expr nil nil.
+   : (Tickish Var -> bool) ->
+     AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a) * list (Tickish Var))%type :=
+  fun tickishOk expr =>
+    let go :=
+      GHC.Wf.wfFix3 Coq.Init.Peano.lt (fun arg_0__ arg_1__ arg_2__ =>
+                       size_AnnExpr' (snd arg_0__)) _ (fun arg_0__ arg_1__ arg_2__ go =>
+                       match arg_0__, arg_1__, arg_2__ with
+                       | pair _ (AnnApp f a), as_, ts => go f (cons a as_) ts
+                       | e, as_, ts => pair (pair e as_) (GHC.List.reverse ts)
+                       end) in
+    go expr nil nil.
 Solve Obligations with (solve_collectAnnArgsTicks).
 
 Definition deAnnotate'
    : forall {bndr} {annot}, AnnExpr' bndr annot -> Expr bndr :=
   fix deAnnotate' {bndr} {annot} (arg_0__ : AnnExpr' bndr annot) : Expr bndr
-        := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
-             let 'pair _ e := arg_0__ in
-             deAnnotate' e in
-           let deAnnAlt {bndr} {annot} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
-             let 'pair (pair con args) rhs := arg_0__ in
-             pair (pair con args) (deAnnotate rhs) in
-           match arg_0__ with
-           | AnnType t => Mk_Type t
-           | AnnCoercion co => Mk_Coercion co
-           | AnnVar v => Mk_Var v
-           | AnnLit lit => Lit lit
-           | AnnLam binder body => Lam binder (deAnnotate body)
-           | AnnApp fun_ arg => App (deAnnotate fun_) (deAnnotate arg)
-           | AnnCast e (pair _ co) => Cast (deAnnotate e) co
-           | AnnLet bind body => Let (deAnnBind bind) (deAnnotate body)
-           | AnnCase scrut v t alts =>
-               Case (deAnnotate scrut) v t (GHC.Base.map deAnnAlt alts)
-           end with deAnnBind {b} {annot} (arg_0__ : AnnBind b annot) : Bind b
-                      := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
-                           let 'pair _ e := arg_0__ in
-                           deAnnotate' e in
-                         match arg_0__ with
-                         | AnnNonRec var rhs => NonRec var (deAnnotate rhs)
-                         | AnnRec pairs =>
-                             Rec (let cont_2__ arg_3__ :=
-                                    let 'pair v rhs := arg_3__ in
-                                    cons (pair v (deAnnotate rhs)) nil in
-                                  Coq.Lists.List.flat_map cont_2__ pairs)
-                         end for deAnnotate'.
+    := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
+         let 'pair _ e := arg_0__ in
+         deAnnotate' e in
+       let deAnnAlt {bndr} {annot} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
+         let 'pair (pair con args) rhs := arg_0__ in
+         pair (pair con args) (deAnnotate rhs) in
+       match arg_0__ with
+       | AnnType t => Mk_Type t
+       | AnnCoercion co => Mk_Coercion co
+       | AnnVar v => Mk_Var v
+       | AnnLit lit => Lit lit
+       | AnnLam binder body => Lam binder (deAnnotate body)
+       | AnnApp fun_ arg => App (deAnnotate fun_) (deAnnotate arg)
+       | AnnCast e (pair _ co) => Cast (deAnnotate e) co
+       | AnnLet bind body => Let (deAnnBind bind) (deAnnotate body)
+       | AnnCase scrut v t alts =>
+           Case (deAnnotate scrut) v t (GHC.Base.map deAnnAlt alts)
+       end
+  with deAnnBind {b} {annot} (arg_0__ : AnnBind b annot) : Bind b
+    := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
+         let 'pair _ e := arg_0__ in
+         deAnnotate' e in
+       match arg_0__ with
+       | AnnNonRec var rhs => NonRec var (deAnnotate rhs)
+       | AnnRec pairs =>
+           Rec (let cont_2__ arg_3__ :=
+                  let 'pair v rhs := arg_3__ in
+                  cons (pair v (deAnnotate rhs)) nil in
+                Coq.Lists.List.flat_map cont_2__ pairs)
+       end for deAnnotate'.
 
 Definition deAnnotate {bndr} {annot} : AnnExpr bndr annot -> Expr bndr :=
   fun '(pair _ e) => deAnnotate' e.
@@ -7448,47 +7446,48 @@ Definition deAnnAlt {bndr} {annot} : AnnAlt bndr annot -> Alt bndr :=
 
 Definition deAnnBind : forall {b} {annot}, AnnBind b annot -> Bind b :=
   fix deAnnotate' {bndr} {annot} (arg_0__ : AnnExpr' bndr annot) : Expr bndr
-        := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
-             let 'pair _ e := arg_0__ in
-             deAnnotate' e in
-           let deAnnAlt {bndr} {annot} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
-             let 'pair (pair con args) rhs := arg_0__ in
-             pair (pair con args) (deAnnotate rhs) in
-           match arg_0__ with
-           | AnnType t => Mk_Type t
-           | AnnCoercion co => Mk_Coercion co
-           | AnnVar v => Mk_Var v
-           | AnnLit lit => Lit lit
-           | AnnLam binder body => Lam binder (deAnnotate body)
-           | AnnApp fun_ arg => App (deAnnotate fun_) (deAnnotate arg)
-           | AnnCast e (pair _ co) => Cast (deAnnotate e) co
-           | AnnLet bind body => Let (deAnnBind bind) (deAnnotate body)
-           | AnnCase scrut v t alts =>
-               Case (deAnnotate scrut) v t (GHC.Base.map deAnnAlt alts)
-           end with deAnnBind {b} {annot} (arg_0__ : AnnBind b annot) : Bind b
-                      := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
-                           let 'pair _ e := arg_0__ in
-                           deAnnotate' e in
-                         match arg_0__ with
-                         | AnnNonRec var rhs => NonRec var (deAnnotate rhs)
-                         | AnnRec pairs =>
-                             Rec (let cont_2__ arg_3__ :=
-                                    let 'pair v rhs := arg_3__ in
-                                    cons (pair v (deAnnotate rhs)) nil in
-                                  Coq.Lists.List.flat_map cont_2__ pairs)
-                         end for deAnnBind.
+    := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
+         let 'pair _ e := arg_0__ in
+         deAnnotate' e in
+       let deAnnAlt {bndr} {annot} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
+         let 'pair (pair con args) rhs := arg_0__ in
+         pair (pair con args) (deAnnotate rhs) in
+       match arg_0__ with
+       | AnnType t => Mk_Type t
+       | AnnCoercion co => Mk_Coercion co
+       | AnnVar v => Mk_Var v
+       | AnnLit lit => Lit lit
+       | AnnLam binder body => Lam binder (deAnnotate body)
+       | AnnApp fun_ arg => App (deAnnotate fun_) (deAnnotate arg)
+       | AnnCast e (pair _ co) => Cast (deAnnotate e) co
+       | AnnLet bind body => Let (deAnnBind bind) (deAnnotate body)
+       | AnnCase scrut v t alts =>
+           Case (deAnnotate scrut) v t (GHC.Base.map deAnnAlt alts)
+       end
+  with deAnnBind {b} {annot} (arg_0__ : AnnBind b annot) : Bind b
+    := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
+         let 'pair _ e := arg_0__ in
+         deAnnotate' e in
+       match arg_0__ with
+       | AnnNonRec var rhs => NonRec var (deAnnotate rhs)
+       | AnnRec pairs =>
+           Rec (let cont_2__ arg_3__ :=
+                  let 'pair v rhs := arg_3__ in
+                  cons (pair v (deAnnotate rhs)) nil in
+                Coq.Lists.List.flat_map cont_2__ pairs)
+       end for deAnnBind.
 
 Program Definition collectAnnBndrs {bndr} {annot}
-           : AnnExpr bndr annot -> (list bndr * AnnExpr bndr annot)%type :=
-          fun e =>
-            let collect :=
-              GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                               size_AnnExpr' (snd arg_1__)) _ (fun arg_0__ arg_1__ collect =>
-                               match arg_0__, arg_1__ with
-                               | bs, pair _ (AnnLam b body) => collect (cons b bs) body
-                               | bs, body => pair (GHC.List.reverse bs) body
-                               end) in
-            collect nil e.
+   : AnnExpr bndr annot -> (list bndr * AnnExpr bndr annot)%type :=
+  fun e =>
+    let collect :=
+      GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                       size_AnnExpr' (snd arg_1__)) _ (fun arg_0__ arg_1__ collect =>
+                       match arg_0__, arg_1__ with
+                       | bs, pair _ (AnnLam b body) => collect (cons b bs) body
+                       | bs, body => pair (GHC.List.reverse bs) body
+                       end) in
+    collect nil e.
 
 (* Skipping definition `Core.collectNAnnBndrs' *)
 

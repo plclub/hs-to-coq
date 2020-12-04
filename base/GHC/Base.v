@@ -690,10 +690,10 @@ Local Definition Monoid__arrow_mempty {inst_b} {inst_a} `{Monoid inst_b}
 Definition foldr {a} {b} : (a -> b -> b) -> b -> list a -> b :=
   fun k z =>
     let fix go arg_0__
-              := match arg_0__ with
-                 | nil => z
-                 | cons y ys => k y (go ys)
-                 end in
+      := match arg_0__ with
+         | nil => z
+         | cons y ys => k y (go ys)
+         end in
     go.
 
 Local Definition Monoid__arrow_mconcat {inst_b} {inst_a} `{Monoid inst_b}
@@ -1308,11 +1308,11 @@ Definition otherwise : bool :=
 (* Skipping definition `GHC.Base.ord' *)
 
 Fixpoint eqString (arg_0__ arg_1__ : String) : bool
-           := match arg_0__, arg_1__ with
-              | nil, nil => true
-              | cons c1 cs1, cons c2 cs2 => andb (c1 == c2) (eqString cs1 cs2)
-              | _, _ => false
-              end.
+  := match arg_0__, arg_1__ with
+     | nil, nil => true
+     | cons c1 cs1, cons c2 cs2 => andb (c1 == c2) (eqString cs1 cs2)
+     | _, _ => false
+     end.
 
 (* Skipping definition `GHC.Base.minInt' *)
 

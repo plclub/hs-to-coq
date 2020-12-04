@@ -28,14 +28,14 @@ Require UniqSupply.
 Definition LvlM :=
   UniqSupply.UniqSM%type.
 
-Inductive LevelType : Type := | BndrLvl : LevelType |  JoinCeilLvl : LevelType.
+Inductive LevelType : Type := | BndrLvl : LevelType | JoinCeilLvl : LevelType.
 
-Inductive Level : Type
-  := | Mk_Level : BinNums.N -> BinNums.N -> LevelType -> Level.
+Inductive Level : Type :=
+  | Mk_Level : BinNums.N -> BinNums.N -> LevelType -> Level.
 
-Inductive FloatSpec : Type
-  := | FloatMe : Level -> FloatSpec
-  |  StayPut : Level -> FloatSpec.
+Inductive FloatSpec : Type :=
+  | FloatMe : Level -> FloatSpec
+  | StayPut : Level -> FloatSpec.
 
 Definition LevelledBind :=
   (Core.TaggedBind FloatSpec)%type.
@@ -46,8 +46,8 @@ Definition LevelledBndr :=
 Definition LevelledExpr :=
   (Core.TaggedExpr FloatSpec)%type.
 
-Inductive LevelEnv : Type
-  := | LE (le_switches : CoreMonad.FloatOutSwitches) (le_ctxt_lvl : Level)
+Inductive LevelEnv : Type :=
+  | LE (le_switches : CoreMonad.FloatOutSwitches) (le_ctxt_lvl : Level)
   (le_lvl_env : Core.VarEnv Level) (le_join_ceil : Level) (le_subst
     : CoreSubst.Subst) (le_env : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
    : LevelEnv.

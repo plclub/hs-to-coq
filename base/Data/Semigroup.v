@@ -30,8 +30,8 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive WrappedMonoid m : Type
-  := | WrapMonoid (unwrapMonoid : m) : WrappedMonoid m.
+Inductive WrappedMonoid m : Type :=
+  | WrapMonoid (unwrapMonoid : m) : WrappedMonoid m.
 
 Inductive Option a : Type := | Mk_Option (getOption : option a) : Option a.
 

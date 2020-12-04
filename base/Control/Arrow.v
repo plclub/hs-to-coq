@@ -25,11 +25,11 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Kleisli (m : Type -> Type) a b : Type
-  := | Mk_Kleisli (runKleisli : a -> m b) : Kleisli m a b.
+Inductive Kleisli (m : Type -> Type) a b : Type :=
+  | Mk_Kleisli (runKleisli : a -> m b) : Kleisli m a b.
 
-Inductive ArrowMonad (a : Type -> Type -> Type) b : Type
-  := | Mk_ArrowMonad : (a unit b) -> ArrowMonad a b.
+Inductive ArrowMonad (a : Type -> Type -> Type) b : Type :=
+  | Mk_ArrowMonad : (a unit b) -> ArrowMonad a b.
 
 Record Arrow__Dict (a : Type -> Type -> Type) := Arrow__Dict_Build {
   arr__ : forall {b} {c}, (b -> c) -> a b c ;

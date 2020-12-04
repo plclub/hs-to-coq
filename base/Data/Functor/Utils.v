@@ -17,11 +17,11 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive StateR s a : Type
-  := | Mk_StateR (runStateR : s -> (s * a)%type) : StateR s a.
+Inductive StateR s a : Type :=
+  | Mk_StateR (runStateR : s -> (s * a)%type) : StateR s a.
 
-Inductive StateL s a : Type
-  := | Mk_StateL (runStateL : s -> (s * a)%type) : StateL s a.
+Inductive StateL s a : Type :=
+  | Mk_StateL (runStateL : s -> (s * a)%type) : StateL s a.
 
 Inductive Min a : Type := | Mk_Min (getMin : option a) : Min a.
 

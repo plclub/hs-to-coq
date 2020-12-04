@@ -39,8 +39,8 @@ Import GHC.Num.Notations.
 Definition IdSubstEnv :=
   (IdEnv CoreExpr)%type.
 
-Inductive Subst : Type
-  := | Mk_Subst : InScopeSet -> IdSubstEnv -> TvSubstEnv -> CvSubstEnv -> Subst.
+Inductive Subst : Type :=
+  | Mk_Subst : InScopeSet -> IdSubstEnv -> TvSubstEnv -> CvSubstEnv -> Subst.
 
 (* Midamble *)
 
@@ -153,12 +153,12 @@ Definition extendSubstWithVar : Subst -> Var -> Var -> Subst :=
     else extendIdSubst subst v1 (Mk_Var v2).
 
 Fixpoint extendSubstList (arg_0__ : Subst) (arg_1__ : list (Var * CoreArg)%type)
-           : Subst
-           := match arg_0__, arg_1__ with
-              | subst, nil => subst
-              | subst, cons (pair var rhs) prs =>
-                  extendSubstList (extendSubst subst var rhs) prs
-              end.
+  : Subst
+  := match arg_0__, arg_1__ with
+     | subst, nil => subst
+     | subst, cons (pair var rhs) prs =>
+         extendSubstList (extendSubst subst var rhs) prs
+     end.
 
 Definition lookupIdSubst : String -> Subst -> Id -> CoreExpr :=
   fun arg_0__ arg_1__ arg_2__ =>
@@ -324,47 +324,47 @@ Definition substRecBndrs : Subst -> list Id -> (Subst * list Id)%type :=
 
 Definition subst_expr : String -> Subst -> CoreExpr -> CoreExpr :=
   fix subst_expr (doc : String) (subst : Subst) (expr : CoreExpr) : CoreExpr
-        := let go_alt :=
-             fun arg_0__ arg_1__ =>
-               match arg_0__, arg_1__ with
-               | subst, pair (pair con bndrs) rhs =>
-                   let 'pair subst' bndrs' := substBndrs subst bndrs in
-                   pair (pair con bndrs') (subst_expr doc subst' rhs)
-               end in
-           let fix go arg_5__
-                     := match arg_5__ with
-                        | Mk_Var v => lookupIdSubst (doc) subst v
-                        | Mk_Type ty => Mk_Type (substTy subst ty)
-                        | Mk_Coercion co => Mk_Coercion (substCo subst co)
-                        | Lit lit => Lit lit
-                        | App fun_ arg => App (go fun_) (go arg)
-                        | Cast e co => Cast (go e) (substCo subst co)
-                        | Lam bndr body =>
-                            let 'pair subst' bndr' := substBndr subst bndr in
-                            Lam bndr' (subst_expr doc subst' body)
-                        | Let bind body =>
-                            let 'pair subst' bind' := substBind subst bind in
-                            Let bind' (subst_expr doc subst' body)
-                        | Case scrut bndr ty alts =>
-                            let 'pair subst' bndr' := substBndr subst bndr in
-                            Case (go scrut) bndr' (substTy subst ty) (map (go_alt subst') alts)
-                        end in
-           go expr with substBind (arg_0__ : Subst) (arg_1__ : CoreBind) : (Subst *
-                                                                            CoreBind)%type
-                          := match arg_0__, arg_1__ with
-                             | subst, NonRec bndr rhs =>
-                                 let 'pair subst' bndr' := substBndr subst bndr in
-                                 pair subst' (NonRec bndr' (subst_expr (Datatypes.id (GHC.Base.hs_string__
-                                                                                      "substBind")) subst rhs))
-                             | subst, Rec pairs =>
-                                 let 'pair bndrs rhss := unzip pairs in
-                                 let 'pair subst' bndrs' := substRecBndrs subst bndrs in
-                                 let rhss' :=
-                                   map (fun ps =>
-                                          subst_expr (Datatypes.id (GHC.Base.hs_string__ "substBind")) subst' (snd ps))
-                                       pairs in
-                                 pair subst' (Rec (zip bndrs' rhss'))
-                             end for subst_expr.
+    := let go_alt :=
+         fun arg_0__ arg_1__ =>
+           match arg_0__, arg_1__ with
+           | subst, pair (pair con bndrs) rhs =>
+               let 'pair subst' bndrs' := substBndrs subst bndrs in
+               pair (pair con bndrs') (subst_expr doc subst' rhs)
+           end in
+       let fix go arg_5__
+         := match arg_5__ with
+            | Mk_Var v => lookupIdSubst (doc) subst v
+            | Mk_Type ty => Mk_Type (substTy subst ty)
+            | Mk_Coercion co => Mk_Coercion (substCo subst co)
+            | Lit lit => Lit lit
+            | App fun_ arg => App (go fun_) (go arg)
+            | Cast e co => Cast (go e) (substCo subst co)
+            | Lam bndr body =>
+                let 'pair subst' bndr' := substBndr subst bndr in
+                Lam bndr' (subst_expr doc subst' body)
+            | Let bind body =>
+                let 'pair subst' bind' := substBind subst bind in
+                Let bind' (subst_expr doc subst' body)
+            | Case scrut bndr ty alts =>
+                let 'pair subst' bndr' := substBndr subst bndr in
+                Case (go scrut) bndr' (substTy subst ty) (map (go_alt subst') alts)
+            end in
+       go expr
+  with substBind (arg_0__ : Subst) (arg_1__ : CoreBind) : (Subst * CoreBind)%type
+    := match arg_0__, arg_1__ with
+       | subst, NonRec bndr rhs =>
+           let 'pair subst' bndr' := substBndr subst bndr in
+           pair subst' (NonRec bndr' (subst_expr (Datatypes.id (GHC.Base.hs_string__
+                                                                "substBind")) subst rhs))
+       | subst, Rec pairs =>
+           let 'pair bndrs rhss := unzip pairs in
+           let 'pair subst' bndrs' := substRecBndrs subst bndrs in
+           let rhss' :=
+             map (fun ps =>
+                    subst_expr (Datatypes.id (GHC.Base.hs_string__ "substBind")) subst' (snd ps))
+                 pairs in
+           pair subst' (Rec (zip bndrs' rhss'))
+       end for subst_expr.
 
 Definition substExprSC : String -> Subst -> CoreExpr -> CoreExpr :=
   fun doc subst orig_expr =>
@@ -376,47 +376,47 @@ Definition substExpr : String -> Subst -> CoreExpr -> CoreExpr :=
 
 Definition substBind : Subst -> CoreBind -> (Subst * CoreBind)%type :=
   fix subst_expr (doc : String) (subst : Subst) (expr : CoreExpr) : CoreExpr
-        := let go_alt :=
-             fun arg_0__ arg_1__ =>
-               match arg_0__, arg_1__ with
-               | subst, pair (pair con bndrs) rhs =>
-                   let 'pair subst' bndrs' := substBndrs subst bndrs in
-                   pair (pair con bndrs') (subst_expr doc subst' rhs)
-               end in
-           let fix go arg_5__
-                     := match arg_5__ with
-                        | Mk_Var v => lookupIdSubst (doc) subst v
-                        | Mk_Type ty => Mk_Type (substTy subst ty)
-                        | Mk_Coercion co => Mk_Coercion (substCo subst co)
-                        | Lit lit => Lit lit
-                        | App fun_ arg => App (go fun_) (go arg)
-                        | Cast e co => Cast (go e) (substCo subst co)
-                        | Lam bndr body =>
-                            let 'pair subst' bndr' := substBndr subst bndr in
-                            Lam bndr' (subst_expr doc subst' body)
-                        | Let bind body =>
-                            let 'pair subst' bind' := substBind subst bind in
-                            Let bind' (subst_expr doc subst' body)
-                        | Case scrut bndr ty alts =>
-                            let 'pair subst' bndr' := substBndr subst bndr in
-                            Case (go scrut) bndr' (substTy subst ty) (map (go_alt subst') alts)
-                        end in
-           go expr with substBind (arg_0__ : Subst) (arg_1__ : CoreBind) : (Subst *
-                                                                            CoreBind)%type
-                          := match arg_0__, arg_1__ with
-                             | subst, NonRec bndr rhs =>
-                                 let 'pair subst' bndr' := substBndr subst bndr in
-                                 pair subst' (NonRec bndr' (subst_expr (Datatypes.id (GHC.Base.hs_string__
-                                                                                      "substBind")) subst rhs))
-                             | subst, Rec pairs =>
-                                 let 'pair bndrs rhss := unzip pairs in
-                                 let 'pair subst' bndrs' := substRecBndrs subst bndrs in
-                                 let rhss' :=
-                                   map (fun ps =>
-                                          subst_expr (Datatypes.id (GHC.Base.hs_string__ "substBind")) subst' (snd ps))
-                                       pairs in
-                                 pair subst' (Rec (zip bndrs' rhss'))
-                             end for substBind.
+    := let go_alt :=
+         fun arg_0__ arg_1__ =>
+           match arg_0__, arg_1__ with
+           | subst, pair (pair con bndrs) rhs =>
+               let 'pair subst' bndrs' := substBndrs subst bndrs in
+               pair (pair con bndrs') (subst_expr doc subst' rhs)
+           end in
+       let fix go arg_5__
+         := match arg_5__ with
+            | Mk_Var v => lookupIdSubst (doc) subst v
+            | Mk_Type ty => Mk_Type (substTy subst ty)
+            | Mk_Coercion co => Mk_Coercion (substCo subst co)
+            | Lit lit => Lit lit
+            | App fun_ arg => App (go fun_) (go arg)
+            | Cast e co => Cast (go e) (substCo subst co)
+            | Lam bndr body =>
+                let 'pair subst' bndr' := substBndr subst bndr in
+                Lam bndr' (subst_expr doc subst' body)
+            | Let bind body =>
+                let 'pair subst' bind' := substBind subst bind in
+                Let bind' (subst_expr doc subst' body)
+            | Case scrut bndr ty alts =>
+                let 'pair subst' bndr' := substBndr subst bndr in
+                Case (go scrut) bndr' (substTy subst ty) (map (go_alt subst') alts)
+            end in
+       go expr
+  with substBind (arg_0__ : Subst) (arg_1__ : CoreBind) : (Subst * CoreBind)%type
+    := match arg_0__, arg_1__ with
+       | subst, NonRec bndr rhs =>
+           let 'pair subst' bndr' := substBndr subst bndr in
+           pair subst' (NonRec bndr' (subst_expr (Datatypes.id (GHC.Base.hs_string__
+                                                                "substBind")) subst rhs))
+       | subst, Rec pairs =>
+           let 'pair bndrs rhss := unzip pairs in
+           let 'pair subst' bndrs' := substRecBndrs subst bndrs in
+           let rhss' :=
+             map (fun ps =>
+                    subst_expr (Datatypes.id (GHC.Base.hs_string__ "substBind")) subst' (snd ps))
+                 pairs in
+           pair subst' (Rec (zip bndrs' rhss'))
+       end for substBind.
 
 Definition substBindSC : Subst -> CoreBind -> (Subst * CoreBind)%type :=
   fun subst bind =>

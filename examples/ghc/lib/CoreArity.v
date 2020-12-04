@@ -22,19 +22,19 @@ Require GHC.Err.
 
 (* Converted type declarations: *)
 
-Inductive EtaInfo : Type
-  := | EtaVar : Core.Var -> EtaInfo
-  |  EtaCo : AxiomatizedTypes.Coercion -> EtaInfo.
+Inductive EtaInfo : Type :=
+  | EtaVar : Core.Var -> EtaInfo
+  | EtaCo : AxiomatizedTypes.Coercion -> EtaInfo.
 
 Definition CheapFun :=
   (Core.CoreExpr -> option AxiomatizedTypes.Type_ -> bool)%type.
 
-Inductive ArityType : Type
-  := | ATop : list BasicTypes.OneShotInfo -> ArityType
-  |  ABot : BasicTypes.Arity -> ArityType.
+Inductive ArityType : Type :=
+  | ATop : list BasicTypes.OneShotInfo -> ArityType
+  | ABot : BasicTypes.Arity -> ArityType.
 
-Inductive ArityEnv : Type
-  := | AE (ae_cheap_fn : CheapFun) (ae_ped_bot : bool) : ArityEnv.
+Inductive ArityEnv : Type :=
+  | AE (ae_cheap_fn : CheapFun) (ae_ped_bot : bool) : ArityEnv.
 
 Instance Default__ArityEnv : GHC.Err.Default ArityEnv :=
   GHC.Err.Build_Default _ (AE GHC.Err.default GHC.Err.default).

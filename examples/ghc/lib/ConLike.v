@@ -22,9 +22,9 @@ Require Unique.
 
 (* Converted type declarations: *)
 
-Inductive ConLike : Type
-  := | RealDataCon : Core.DataCon -> ConLike
-  |  PatSynCon : Core.PatSyn -> ConLike.
+Inductive ConLike : Type :=
+  | RealDataCon : Core.DataCon -> ConLike
+  | PatSynCon : Core.PatSyn -> ConLike.
 
 (* Converted value declarations: *)
 

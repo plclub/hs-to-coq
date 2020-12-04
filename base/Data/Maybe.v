@@ -58,11 +58,11 @@ Definition catMaybes {a} : list (option a) -> list a :=
 
 Fixpoint mapMaybe {a} {b} (arg_0__ : (a -> option b)) (arg_1__ : list a) : list
                                                                            b
-           := match arg_0__, arg_1__ with
-              | _, nil => nil
-              | f, cons x xs =>
-                  let rs := mapMaybe f xs in match f x with | None => rs | Some r => cons r rs end
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => nil
+     | f, cons x xs =>
+         let rs := mapMaybe f xs in match f x with | None => rs | Some r => cons r rs end
+     end.
 
 Definition mapMaybeFB {b} {r} {a}
    : (b -> r -> r) -> (a -> option b) -> a -> r -> r :=

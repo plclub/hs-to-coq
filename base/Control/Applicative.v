@@ -23,11 +23,11 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive WrappedMonad (m : Type -> Type) a : Type
-  := | WrapMonad (unwrapMonad : m a) : WrappedMonad m a.
+Inductive WrappedMonad (m : Type -> Type) a : Type :=
+  | WrapMonad (unwrapMonad : m a) : WrappedMonad m a.
 
-Inductive WrappedArrow (a : Type -> Type -> Type) b c : Type
-  := | WrapArrow (unwrapArrow : a b c) : WrappedArrow a b c.
+Inductive WrappedArrow (a : Type -> Type -> Type) b c : Type :=
+  | WrapArrow (unwrapArrow : a b c) : WrappedArrow a b c.
 
 Arguments WrapMonad {_} {_} _.
 

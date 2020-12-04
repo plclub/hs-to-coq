@@ -47,8 +47,8 @@ Inductive FloatStats : Type := | FlS : nat -> nat -> nat -> FloatStats.
 Definition FloatLet :=
   Core.CoreBind%type.
 
-Inductive FloatBinds : Type
-  := | FB
+Inductive FloatBinds : Type :=
+  | FB
    : (Bag.Bag FloatLet) -> (Bag.Bag MkCore.FloatBind) -> MajorEnv -> FloatBinds.
 
 (* Midamble *)
@@ -118,13 +118,13 @@ Definition zeroStats : FloatStats :=
 
 Fixpoint floatList {a} {b} (arg_0__ : (a -> (FloatStats * FloatBinds * b)%type))
                    (arg_1__ : list a) : (FloatStats * FloatBinds * list b)%type
-           := match arg_0__, arg_1__ with
-              | _, nil => pair (pair zeroStats emptyFloats) nil
-              | f, cons a as_ =>
-                  let 'pair (pair fs_a binds_a) b := f a in
-                  let 'pair (pair fs_as binds_as) bs := floatList f as_ in
-                  pair (pair (add_stats fs_a fs_as) (plusFloats binds_a binds_as)) (cons b bs)
-              end.
+  := match arg_0__, arg_1__ with
+     | _, nil => pair (pair zeroStats emptyFloats) nil
+     | f, cons a as_ =>
+         let 'pair (pair fs_a binds_a) b := f a in
+         let 'pair (pair fs_as binds_as) bs := floatList f as_ in
+         pair (pair (add_stats fs_a fs_as) (plusFloats binds_a binds_as)) (cons b bs)
+     end.
 
 Definition install
    : Bag.Bag MkCore.FloatBind -> Core.CoreExpr -> Core.CoreExpr :=
@@ -160,15 +160,15 @@ Definition floatRhs
      SetLevels.LevelledExpr -> (FloatStats * FloatBinds * Core.CoreExpr)%type :=
   fun bndr rhs =>
     let fix try_collect arg_0__ arg_1__ arg_2__
-              := match arg_0__, arg_1__, arg_2__ with
-                 | num_3__, expr, acc =>
-                     if num_3__ GHC.Base.== #0 : bool
-                     then Some (pair (GHC.List.reverse acc) expr) else
-                     match arg_0__, arg_1__, arg_2__ with
-                     | n, Core.Lam b e, acc => try_collect (n GHC.Num.- #1) e (cons b acc)
-                     | _, _, _ => None
-                     end
-                 end in
+      := match arg_0__, arg_1__, arg_2__ with
+         | num_3__, expr, acc =>
+             if num_3__ GHC.Base.== #0 : bool
+             then Some (pair (GHC.List.reverse acc) expr) else
+             match arg_0__, arg_1__, arg_2__ with
+             | n, Core.Lam b e, acc => try_collect (n GHC.Num.- #1) e (cons b acc)
+             | _, _, _ => None
+             end
+         end in
     let j_17__ := atJoinCeiling (floatExpr rhs) in
     match Id.isJoinId_maybe bndr with
     | Some join_arity =>
@@ -193,10 +193,10 @@ Definition installUnderLambdas
    : Bag.Bag MkCore.FloatBind -> Core.CoreExpr -> Core.CoreExpr :=
   fun floats e =>
     let fix go arg_0__
-              := match arg_0__ with
-                 | Core.Lam b e => Core.Lam b (go e)
-                 | e => install floats e
-                 end in
+      := match arg_0__ with
+         | Core.Lam b e => Core.Lam b (go e)
+         | e => install floats e
+         end in
     if Bag.isEmptyBag floats : bool then e else
     go e.
 
@@ -206,19 +206,19 @@ Definition splitRecFloats
       Bag.Bag MkCore.FloatBind)%type :=
   fun fs =>
     let fix go arg_0__ arg_1__ arg_2__
-              := match arg_0__, arg_1__, arg_2__ with
-                 | ul_prs, prs, cons (MkCore.FloatLet (Core.NonRec b r)) fs =>
-                     if andb (Core.isUnliftedType (Id.idType b)) (negb (Id.isJoinId b)) : bool
-                     then go (cons (pair b r) ul_prs) prs fs else
-                     go ul_prs (cons (pair b r) prs) fs
-                 | _, _, _ =>
-                     match arg_0__, arg_1__, arg_2__ with
-                     | ul_prs, prs, cons (MkCore.FloatLet (Core.Rec prs')) fs =>
-                         go ul_prs (Coq.Init.Datatypes.app prs' prs) fs
-                     | ul_prs, prs, fs =>
-                         pair (pair (GHC.List.reverse ul_prs) prs) (Bag.listToBag fs)
-                     end
-                 end in
+      := match arg_0__, arg_1__, arg_2__ with
+         | ul_prs, prs, cons (MkCore.FloatLet (Core.NonRec b r)) fs =>
+             if andb (Core.isUnliftedType (Id.idType b)) (negb (Id.isJoinId b)) : bool
+             then go (cons (pair b r) ul_prs) prs fs else
+             go ul_prs (cons (pair b r) prs) fs
+         | _, _, _ =>
+             match arg_0__, arg_1__, arg_2__ with
+             | ul_prs, prs, cons (MkCore.FloatLet (Core.Rec prs')) fs =>
+                 go ul_prs (Coq.Init.Datatypes.app prs' prs) fs
+             | ul_prs, prs, fs =>
+                 pair (pair (GHC.List.reverse ul_prs) prs) (Bag.listToBag fs)
+             end
+         end in
     go nil nil (Bag.bagToList fs).
 
 Definition floatBind

@@ -21,8 +21,8 @@ Axiom Set_ : Type -> Type.
 
 Axiom ReduceFn : Type -> Type -> Type.
 
-Inductive Node key payload : Type
-  := | DigraphNode (node_payload : payload) (node_key : key) (node_dependencies
+Inductive Node key payload : Type :=
+  | DigraphNode (node_payload : payload) (node_key : key) (node_dependencies
     : list key)
    : Node key payload.
 
