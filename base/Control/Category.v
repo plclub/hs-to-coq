@@ -21,23 +21,23 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Record Category__Dict (k : Type) (cat : k -> k -> Type) :=
+Record Category__Dict {k : Type} (cat : k -> k -> Type) :=
   Category__Dict_Build {
   id__ : forall {a : k}, cat a a ;
   op_z2218U____ : forall {b : k},
   forall {c : k}, forall {a : k}, cat b c -> cat a b -> cat a c }.
 
-Definition Category (k : Type) (cat : k -> k -> Type) :=
-  forall r__, (Category__Dict k cat -> r__) -> r__.
+Definition Category {k : Type} (cat : k -> k -> Type) :=
+  forall r__, (Category__Dict cat -> r__) -> r__.
 Existing Class Category.
 
 Definition id `{g__0__ : Category k cat} : forall {a : k}, cat a a :=
-  g__0__ _ (id__ k cat).
+  g__0__ _ (id__ cat).
 
 Definition op_z2218U__ `{g__0__ : Category k cat}
    : forall {b : k},
      forall {c : k}, forall {a : k}, cat b c -> cat a b -> cat a c :=
-  g__0__ _ (op_z2218U____ k cat).
+  g__0__ _ (op_z2218U____ cat).
 
 Notation "'_∘_'" := (op_z2218U__).
 
@@ -55,7 +55,7 @@ Local Definition Category__arrow_op_z2218U__
      GHC.Prim.arrow b c -> GHC.Prim.arrow a b -> GHC.Prim.arrow a c :=
   fun {b : Type} {c : Type} {a : Type} => _GHC.Base.∘_.
 
-Program Instance Category__arrow : Category Type GHC.Prim.arrow :=
+Program Instance Category__arrow : Category GHC.Prim.arrow :=
   fun _ k__ =>
     k__ {| id__ := fun {a : Type} => Category__arrow_id ;
            op_z2218U____ := fun {b : Type} {c : Type} {a : Type} =>

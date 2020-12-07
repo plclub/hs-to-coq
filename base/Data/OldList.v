@@ -364,12 +364,12 @@ Definition select {a}
     end.
 
 Definition partition {a : Type}
-   : (a -> bool) -> list a -> GHC.Tuple.pair_type (list a) (list a) :=
+   : (a -> bool) -> list a -> (list a * list a)%type :=
   fun p xs => foldr (select p) (pair nil nil) xs.
 
 Fixpoint mapAccumL {acc : Type} {x : Type} {y : Type} (arg_0__
-                     : acc -> x -> GHC.Tuple.pair_type acc y) (arg_1__ : acc) (arg_2__ : list x)
-  : GHC.Tuple.pair_type acc (list y)
+                     : acc -> x -> (acc * y)%type) (arg_1__ : acc) (arg_2__ : list x) : (acc *
+                                                                                         list y)%type
   := match arg_0__, arg_1__, arg_2__ with
      | _, s, nil => pair s nil
      | f, s, cons x xs =>
@@ -392,8 +392,8 @@ Definition mapAccumLF {acc} {x} {y}
          pair s'' (cons y ys)).
 
 Fixpoint mapAccumR {acc : Type} {x : Type} {y : Type} (arg_0__
-                     : acc -> x -> GHC.Tuple.pair_type acc y) (arg_1__ : acc) (arg_2__ : list x)
-  : GHC.Tuple.pair_type acc (list y)
+                     : acc -> x -> (acc * y)%type) (arg_1__ : acc) (arg_2__ : list x) : (acc *
+                                                                                         list y)%type
   := match arg_0__, arg_1__, arg_2__ with
      | _, s, nil => pair s nil
      | f, s, cons x xs =>
@@ -479,7 +479,7 @@ Fixpoint genericDrop {i : Type} {a : Type} `{GHC.Real.Integral i} (arg_0__ : i)
      end.
 
 Fixpoint genericSplitAt {i : Type} {a : Type} `{GHC.Real.Integral i} (arg_0__
-                          : i) (arg_1__ : list a) : GHC.Tuple.pair_type (list a) (list a)
+                          : i) (arg_1__ : list a) : (list a * list a)%type
   := match arg_0__, arg_1__ with
      | n, xs =>
          if n <= #0 : bool then pair nil xs else
@@ -713,6 +713,6 @@ End Notations.
      GHC.Err.errorWithoutStackTrace GHC.List.any GHC.List.filter GHC.List.foldl1
      GHC.List.null GHC.List.reverse GHC.Num.Num GHC.Num.Word GHC.Num.fromInteger
      GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq GHC.Real.Integral GHC.Tuple.pair4
-     GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7 GHC.Tuple.pair_type
-     GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type GHC.Tuple.sext_type
+     GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7 GHC.Tuple.quad_type
+     GHC.Tuple.quint_type GHC.Tuple.sept_type GHC.Tuple.sext_type
 *)

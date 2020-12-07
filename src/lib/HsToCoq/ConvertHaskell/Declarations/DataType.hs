@@ -191,7 +191,7 @@ convertDataDecl name tvs defn = do
   coqName   <- var TypeNS $ unLoc name
 
   addKindVars <- view (edits.polyKinds.at coqName) >>= \case
-    Just ids -> pure $ (++) ((\id -> mkTypedBinder Explicit (Ident $ Bare id) $ Qualid (Bare "Type")) <$> toList ids)
+    Just ids -> pure $ (++) ((\id -> mkTypedBinder Implicit (Ident $ Bare id) $ Qualid (Bare "Type")) <$> toList ids)
     Nothing  -> pure id
   kinds     <- (++ repeat Nothing) . map Just . maybe [] NE.toList <$> view (edits.dataKinds.at coqName)
   let cvtName tv = Ident <$> var TypeNS (unLoc tv)

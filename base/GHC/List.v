@@ -91,8 +91,7 @@ Definition badHead {a} `{_ : GHC.Err.Default a} : a :=
 Definition head {a} `{_ : GHC.Err.Default a} : list a -> a :=
   fun arg_0__ => match arg_0__ with | cons x _ => x | nil => badHead end.
 
-Definition uncons {a : Type}
-   : list a -> option (GHC.Tuple.pair_type a (list a)) :=
+Definition uncons {a : Type} : list a -> option (a * list a)%type :=
   fun arg_0__ =>
     match arg_0__ with
     | nil => None
@@ -329,8 +328,8 @@ Definition takeFB {a} {b}
 
 (* Skipping definition `GHC.List.splitAt' *)
 
-Fixpoint span {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a)
-  : GHC.Tuple.pair_type (list a) (list a)
+Fixpoint span {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : (list a *
+                                                                     list a)%type
   := match arg_0__, arg_1__ with
      | _, (nil as xs) => pair xs xs
      | p, (cons x xs' as xs) =>
@@ -338,8 +337,8 @@ Fixpoint span {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a)
          pair nil xs
      end.
 
-Fixpoint break {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a)
-  : GHC.Tuple.pair_type (list a) (list a)
+Fixpoint break {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : (list a *
+                                                                      list a)%type
   := match arg_0__, arg_1__ with
      | _, (nil as xs) => pair xs xs
      | p, (cons x xs' as xs) =>
@@ -394,7 +393,7 @@ Fixpoint notElem {a : Type} `{Eq_ a} (arg_0__ : a) (arg_1__ : list a) : bool
      end.
 
 Fixpoint lookup {a : Type} {b : Type} `{Eq_ a} (arg_0__ : a) (arg_1__
-                  : list (GHC.Tuple.pair_type a b)) : option b
+                  : list (a * b)%type) : option b
   := match arg_0__, arg_1__ with
      | _key, nil => None
      | key, cons (pair x y) xys => if key == x : bool then Some y else lookup key xys
@@ -447,7 +446,7 @@ Definition foldr2_left {a} {b} {c} {d}
     end.
 
 Fixpoint zip {a : Type} {b : Type} (arg_0__ : list a) (arg_1__ : list b) : list
-                                                                           (GHC.Tuple.pair_type a b)
+                                                                           (a * b)%type
   := match arg_0__, arg_1__ with
      | nil, _bs => nil
      | _as, nil => nil
@@ -491,7 +490,7 @@ Definition zipWith3 {a : Type} {b : Type} {c : Type} {d : Type}
     go.
 
 Definition unzip {a : Type} {b : Type}
-   : list (GHC.Tuple.pair_type a b) -> GHC.Tuple.pair_type (list a) (list b) :=
+   : list (a * b)%type -> (list a * list b)%type :=
   foldr (fun arg_0__ arg_1__ =>
            match arg_0__, arg_1__ with
            | pair a b, pair as_ bs => pair (cons a as_) (cons b bs)
@@ -516,6 +515,5 @@ End Notations.
      list max min nil op_zeze__ op_zl__ op_zsze__ op_zt__ option orb pair true
      Coq.Init.Datatypes.app GHC.Err.Default GHC.Err.errorWithoutStackTrace
      GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Tuple.pair_type
-     GHC.Tuple.triple_type
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Tuple.triple_type
 *)

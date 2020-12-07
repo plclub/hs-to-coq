@@ -444,15 +444,14 @@ Local Definition Traversable__Proxy_mapM
      forall {a : Type},
      forall {b : Type},
      forall `{GHC.Base.Monad m},
-     (a -> m b) -> Data.Proxy.Proxy Type a -> m (Data.Proxy.Proxy Type b) :=
+     (a -> m b) -> Data.Proxy.Proxy a -> m (Data.Proxy.Proxy b) :=
   fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
     fun arg_0__ arg_1__ => GHC.Base.pure Data.Proxy.Mk_Proxy.
 
 Local Definition Traversable__Proxy_sequence
    : forall {m : Type -> Type},
      forall {a : Type},
-     forall `{GHC.Base.Monad m},
-     Data.Proxy.Proxy Type (m a) -> m (Data.Proxy.Proxy Type a) :=
+     forall `{GHC.Base.Monad m}, Data.Proxy.Proxy (m a) -> m (Data.Proxy.Proxy a) :=
   fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
     fun arg_0__ => GHC.Base.pure Data.Proxy.Mk_Proxy.
 
@@ -460,7 +459,7 @@ Local Definition Traversable__Proxy_sequenceA
    : forall {f : Type -> Type},
      forall {a : Type},
      forall `{GHC.Base.Applicative f},
-     Data.Proxy.Proxy Type (f a) -> f (Data.Proxy.Proxy Type a) :=
+     Data.Proxy.Proxy (f a) -> f (Data.Proxy.Proxy a) :=
   fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
     fun arg_0__ => GHC.Base.pure Data.Proxy.Mk_Proxy.
 
@@ -469,11 +468,11 @@ Local Definition Traversable__Proxy_traverse
      forall {a : Type},
      forall {b : Type},
      forall `{GHC.Base.Applicative f},
-     (a -> f b) -> Data.Proxy.Proxy Type a -> f (Data.Proxy.Proxy Type b) :=
+     (a -> f b) -> Data.Proxy.Proxy a -> f (Data.Proxy.Proxy b) :=
   fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
     fun arg_0__ arg_1__ => GHC.Base.pure Data.Proxy.Mk_Proxy.
 
-Program Instance Traversable__Proxy : Traversable (Data.Proxy.Proxy Type) :=
+Program Instance Traversable__Proxy : Traversable Data.Proxy.Proxy :=
   fun _ k__ =>
     k__ {| mapM__ := fun {m : Type -> Type}
            {a : Type}
@@ -496,8 +495,7 @@ Local Definition Traversable__Const_traverse {inst_m : Type}
      forall {b : Type},
      forall `{GHC.Base.Applicative f},
      (a -> f b) ->
-     Data.Functor.Const.Const Type inst_m a ->
-     f (Data.Functor.Const.Const Type inst_m b) :=
+     Data.Functor.Const.Const inst_m a -> f (Data.Functor.Const.Const inst_m b) :=
   fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
@@ -511,8 +509,7 @@ Local Definition Traversable__Const_mapM {inst_m : Type}
      forall {b : Type},
      forall `{GHC.Base.Monad m},
      (a -> m b) ->
-     Data.Functor.Const.Const Type inst_m a ->
-     m (Data.Functor.Const.Const Type inst_m b) :=
+     Data.Functor.Const.Const inst_m a -> m (Data.Functor.Const.Const inst_m b) :=
   fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
     Traversable__Const_traverse.
 
@@ -520,8 +517,8 @@ Local Definition Traversable__Const_sequenceA {inst_m : Type}
    : forall {f : Type -> Type},
      forall {a : Type},
      forall `{GHC.Base.Applicative f},
-     Data.Functor.Const.Const Type inst_m (f a) ->
-     f (Data.Functor.Const.Const Type inst_m a) :=
+     Data.Functor.Const.Const inst_m (f a) ->
+     f (Data.Functor.Const.Const inst_m a) :=
   fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
     Traversable__Const_traverse GHC.Base.id.
 
@@ -529,13 +526,13 @@ Local Definition Traversable__Const_sequence {inst_m : Type}
    : forall {m : Type -> Type},
      forall {a : Type},
      forall `{GHC.Base.Monad m},
-     Data.Functor.Const.Const Type inst_m (m a) ->
-     m (Data.Functor.Const.Const Type inst_m a) :=
+     Data.Functor.Const.Const inst_m (m a) ->
+     m (Data.Functor.Const.Const inst_m a) :=
   fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
     Traversable__Const_sequenceA.
 
 Program Instance Traversable__Const {m : Type}
-   : Traversable (Data.Functor.Const.Const Type m) :=
+   : Traversable (Data.Functor.Const.Const m) :=
   fun _ k__ =>
     k__ {| mapM__ := fun {m : Type -> Type}
            {a : Type}
@@ -748,16 +745,14 @@ Definition forM {t : Type -> Type} {m : Type -> Type} {a : Type} {b : Type}
 
 Definition mapAccumL {t : Type -> Type} {a : Type} {b : Type} {c : Type}
   `{Traversable t}
-   : (a -> b -> GHC.Tuple.pair_type a c) ->
-     a -> t b -> GHC.Tuple.pair_type a (t c) :=
+   : (a -> b -> (a * c)%type) -> a -> t b -> (a * t c)%type :=
   fun f s t =>
     Data.Functor.Utils.runStateL (traverse (Data.Functor.Utils.Mk_StateL GHC.Base.∘
                                             GHC.Base.flip f) t) s.
 
 Definition mapAccumR {t : Type -> Type} {a : Type} {b : Type} {c : Type}
   `{Traversable t}
-   : (a -> b -> GHC.Tuple.pair_type a c) ->
-     a -> t b -> GHC.Tuple.pair_type a (t c) :=
+   : (a -> b -> (a * c)%type) -> a -> t b -> (a * t c)%type :=
   fun f s t =>
     Data.Functor.Utils.runStateR (traverse (Data.Functor.Utils.Mk_StateR GHC.Base.∘
                                             GHC.Base.flip f) t) s.
@@ -770,9 +765,9 @@ Definition fmapDefault {t : Type -> Type} {a : Type} {b : Type} `{Traversable t}
 (* Skipping definition `Data.Traversable.foldMapDefault' *)
 
 (* External variables:
-     None Some Type cons list nil option pair Data.Either.Either Data.Either.Left
-     Data.Either.Right Data.Foldable.Foldable Data.Functor.op_zlzdzg__
-     Data.Functor.Const.Const Data.Functor.Const.Mk_Const
+     None Some Type cons list nil op_zt__ option pair Data.Either.Either
+     Data.Either.Left Data.Either.Right Data.Foldable.Foldable
+     Data.Functor.op_zlzdzg__ Data.Functor.Const.Const Data.Functor.Const.Mk_Const
      Data.Functor.Identity.Identity Data.Functor.Identity.Mk_Identity
      Data.Functor.Utils.Mk_StateL Data.Functor.Utils.Mk_StateR
      Data.Functor.Utils.runStateL Data.Functor.Utils.runStateR Data.Proxy.Mk_Proxy

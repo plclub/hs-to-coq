@@ -20,7 +20,6 @@ Require Control.Category.
 Require Data.Either.
 Require GHC.Base.
 Require GHC.Prim.
-Require GHC.Tuple.
 Import Control.Category.Notations.
 Import GHC.Base.Notations.
 
@@ -35,21 +34,15 @@ Inductive ArrowMonad (a : Type -> Type -> Type) b : Type :=
 Record Arrow__Dict (a : Type -> Type -> Type) := Arrow__Dict_Build {
   arr__ : forall {b : Type}, forall {c : Type}, (b -> c) -> a b c ;
   first__ : forall {b : Type},
-  forall {c : Type},
-  forall {d : Type},
-  a b c -> a (GHC.Tuple.pair_type b d) (GHC.Tuple.pair_type c d) ;
+  forall {c : Type}, forall {d : Type}, a b c -> a (b * d)%type (c * d)%type ;
   op_zazaza____ : forall {b : Type},
-  forall {c : Type},
-  forall {c' : Type}, a b c -> a b c' -> a b (GHC.Tuple.pair_type c c') ;
+  forall {c : Type}, forall {c' : Type}, a b c -> a b c' -> a b (c * c')%type ;
   op_ztztzt____ : forall {b : Type},
   forall {c : Type},
   forall {b' : Type},
-  forall {c' : Type},
-  a b c -> a b' c' -> a (GHC.Tuple.pair_type b b') (GHC.Tuple.pair_type c c') ;
+  forall {c' : Type}, a b c -> a b' c' -> a (b * b')%type (c * c')%type ;
   second__ : forall {b : Type},
-  forall {c : Type},
-  forall {d : Type},
-  a b c -> a (GHC.Tuple.pair_type d b) (GHC.Tuple.pair_type d c) }.
+  forall {c : Type}, forall {d : Type}, a b c -> a (d * b)%type (d * c)%type }.
 
 Definition Arrow (a : Type -> Type -> Type) `{Control.Category.Category Type
                                                                         a} :=
@@ -65,30 +58,24 @@ Definition arr `{g__0__ : Arrow a}
 
 Definition first `{g__0__ : Arrow a}
    : forall {b : Type},
-     forall {c : Type},
-     forall {d : Type},
-     a b c -> a (GHC.Tuple.pair_type b d) (GHC.Tuple.pair_type c d) :=
+     forall {c : Type}, forall {d : Type}, a b c -> a (b * d)%type (c * d)%type :=
   g__0__ _ (first__ a).
 
 Definition op_zazaza__ `{g__0__ : Arrow a}
    : forall {b : Type},
-     forall {c : Type},
-     forall {c' : Type}, a b c -> a b c' -> a b (GHC.Tuple.pair_type c c') :=
+     forall {c : Type}, forall {c' : Type}, a b c -> a b c' -> a b (c * c')%type :=
   g__0__ _ (op_zazaza____ a).
 
 Definition op_ztztzt__ `{g__0__ : Arrow a}
    : forall {b : Type},
      forall {c : Type},
      forall {b' : Type},
-     forall {c' : Type},
-     a b c -> a b' c' -> a (GHC.Tuple.pair_type b b') (GHC.Tuple.pair_type c c') :=
+     forall {c' : Type}, a b c -> a b' c' -> a (b * b')%type (c * c')%type :=
   g__0__ _ (op_ztztzt____ a).
 
 Definition second `{g__0__ : Arrow a}
    : forall {b : Type},
-     forall {c : Type},
-     forall {d : Type},
-     a b c -> a (GHC.Tuple.pair_type d b) (GHC.Tuple.pair_type d c) :=
+     forall {c : Type}, forall {d : Type}, a b c -> a (d * b)%type (d * c)%type :=
   g__0__ _ (second__ a).
 
 Notation "'_&&&_'" := (op_zazaza__).
@@ -100,15 +87,14 @@ Notation "'_***_'" := (op_ztztzt__).
 Infix "***" := (_***_) (at level 99).
 
 Record ArrowApply__Dict (a : Type -> Type -> Type) := ArrowApply__Dict_Build {
-  app__ : forall {b : Type},
-  forall {c : Type}, a (GHC.Tuple.pair_type (a b c) b) c }.
+  app__ : forall {b : Type}, forall {c : Type}, a (a b c * b)%type c }.
 
 Definition ArrowApply (a : Type -> Type -> Type) `{Arrow a} :=
   forall r__, (ArrowApply__Dict a -> r__) -> r__.
 Existing Class ArrowApply.
 
 Definition app `{g__0__ : ArrowApply a}
-   : forall {b : Type}, forall {c : Type}, a (GHC.Tuple.pair_type (a b c) b) c :=
+   : forall {b : Type}, forall {c : Type}, a (a b c * b)%type c :=
   g__0__ _ (app__ a).
 
 Record ArrowChoice__Dict (a : Type -> Type -> Type) := ArrowChoice__Dict_Build {
@@ -171,9 +157,7 @@ Infix "+++" := (_+++_) (at level 99).
 
 Record ArrowLoop__Dict (a : Type -> Type -> Type) := ArrowLoop__Dict_Build {
   loop__ : forall {b : Type},
-  forall {d : Type},
-  forall {c : Type},
-  a (GHC.Tuple.pair_type b d) (GHC.Tuple.pair_type c d) -> a b c }.
+  forall {d : Type}, forall {c : Type}, a (b * d)%type (c * d)%type -> a b c }.
 
 Definition ArrowLoop (a : Type -> Type -> Type) `{Arrow a} :=
   forall r__, (ArrowLoop__Dict a -> r__) -> r__.
@@ -181,9 +165,7 @@ Existing Class ArrowLoop.
 
 Definition loop `{g__0__ : ArrowLoop a}
    : forall {b : Type},
-     forall {d : Type},
-     forall {c : Type},
-     a (GHC.Tuple.pair_type b d) (GHC.Tuple.pair_type c d) -> a b c :=
+     forall {d : Type}, forall {c : Type}, a (b * d)%type (c * d)%type -> a b c :=
   g__0__ _ (loop__ a).
 
 Record ArrowZero__Dict (a : Type -> Type -> Type) := ArrowZero__Dict_Build {
@@ -246,8 +228,7 @@ Local Definition Arrow__arrow_op_ztztzt__
      forall {b' : Type},
      forall {c' : Type},
      GHC.Prim.arrow b c ->
-     GHC.Prim.arrow b' c' ->
-     GHC.Prim.arrow (GHC.Tuple.pair_type b b') (GHC.Tuple.pair_type c c') :=
+     GHC.Prim.arrow b' c' -> GHC.Prim.arrow (b * b')%type (c * c')%type :=
   fun {b : Type} {c : Type} {b' : Type} {c' : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -258,8 +239,7 @@ Local Definition Arrow__arrow_first
    : forall {b : Type},
      forall {c : Type},
      forall {d : Type},
-     GHC.Prim.arrow b c ->
-     GHC.Prim.arrow (GHC.Tuple.pair_type b d) (GHC.Tuple.pair_type c d) :=
+     GHC.Prim.arrow b c -> GHC.Prim.arrow (b * d)%type (c * d)%type :=
   fun {b : Type} {c : Type} {d : Type} =>
     (fun arg_0__ => Arrow__arrow_op_ztztzt__ arg_0__ Control.Category.id).
 
@@ -267,8 +247,7 @@ Local Definition Arrow__arrow_op_zazaza__
    : forall {b : Type},
      forall {c : Type},
      forall {c' : Type},
-     GHC.Prim.arrow b c ->
-     GHC.Prim.arrow b c' -> GHC.Prim.arrow b (GHC.Tuple.pair_type c c') :=
+     GHC.Prim.arrow b c -> GHC.Prim.arrow b c' -> GHC.Prim.arrow b (c * c')%type :=
   fun {b : Type} {c : Type} {c' : Type} =>
     fun f g =>
       Arrow__arrow_arr (fun b => pair b b) Control.Category.>>>
@@ -278,8 +257,7 @@ Local Definition Arrow__arrow_second
    : forall {b : Type},
      forall {c : Type},
      forall {d : Type},
-     GHC.Prim.arrow b c ->
-     GHC.Prim.arrow (GHC.Tuple.pair_type d b) (GHC.Tuple.pair_type d c) :=
+     GHC.Prim.arrow b c -> GHC.Prim.arrow (d * b)%type (d * c)%type :=
   fun {b : Type} {c : Type} {d : Type} =>
     (fun arg_0__ => Arrow__arrow_op_ztztzt__ Control.Category.id arg_0__).
 
@@ -313,8 +291,7 @@ Program Instance Arrow__arrow : Arrow GHC.Prim.arrow :=
 
 Local Definition ArrowApply__arrow_app
    : forall {b : Type},
-     forall {c : Type},
-     GHC.Prim.arrow (GHC.Tuple.pair_type (GHC.Prim.arrow b c) b) c :=
+     forall {c : Type}, GHC.Prim.arrow (GHC.Prim.arrow b c * b)%type c :=
   fun {b : Type} {c : Type} => fun '(pair f x) => f x.
 
 Program Instance ArrowApply__arrow : ArrowApply GHC.Prim.arrow :=
@@ -429,8 +406,8 @@ Infix "Control.Arrow.^<<" := (_^<<_) (at level 99).
 End Notations.
 
 (* External variables:
-     Type pair unit Control.Category.Category Control.Category.id
+     Type op_zt__ pair unit Control.Category.Category Control.Category.id
      Control.Category.op_zgzgzg__ Control.Category.op_zlzlzl__ Data.Either.Either
      GHC.Base.Functor GHC.Base.const GHC.Base.fmap__ GHC.Base.op_z2218U__
-     GHC.Base.op_zlzd____ GHC.Prim.arrow GHC.Tuple.pair_type
+     GHC.Base.op_zlzd____ GHC.Prim.arrow
 *)
