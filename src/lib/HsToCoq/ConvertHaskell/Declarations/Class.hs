@@ -177,16 +177,7 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
     Generalized _ (termHead -> Just super) -> maybe 1 (+ 1) <$> lookupSuperclassCount super
     _                                      -> pure 1
 
-  let combineArgs :: ConversionMonad r m => [(Qualid, Term)] -> [LHsTyVarBndr GhcRn] -> m [Binder]
-      combineArgs ((q, t):ts) ltvs@(ltv:ltvs') = do
-        varName <- var TypeNS $ getLHsTyVarName ltv
-        if q == varName then
-          (:) (mkTypedBinder Coq.Explicit (Ident q) t) <$> combineArgs ts ltvs'
-        else (:) (mkTypedBinder Coq.Explicit (Ident q) t) <$> combineArgs ts ltvs
-      combineArgs ts []   = pure $ fmap (\(q, t) -> mkTypedBinder Coq.Implicit (Ident q) t) ts
-      combineArgs [] ltvs = withCurrentDefinition name $ convertLHsTyVarBndrs Coq.Explicit ltvs
-
-  args <- combineArgs (maybe [] convertedTyClTyVars tycl) ltvs
+  args <- fromMaybe <$> withCurrentDefinition name (convertLHsTyVarBndrs Coq.Explicit ltvs) <*> pure (convertedTyClBinderArgs <$> tycl)
   
   let argNames = foldMap (toListOf binderIdents) args
 
@@ -239,9 +230,6 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
   let defs = type_defs <> value_defs
   unless (null defs) $ storeDefaultMethods name defs
 
---  liftIO (traceIO (show name))
---  liftIO (traceIO (show defs))
-
   let classDefn = ClassDefinition name (args ++ ctx) Nothing (second sigType <$> M.toList sigs)
 
   storeClassDefn name classDefn
@@ -273,7 +261,7 @@ cpsClassSentences (ClassBody (ClassDefinition name args ty methods) nots) = do
   -- result_ty <- genqid "r"
   -- cont_name <- genqid "g"
   let class_ty = Forall [ ExplicitBinder $ Ident result_ty ] $
-                   (app_args dict_name `Arrow` Qualid result_ty) `Arrow` Qualid result_ty
+                   (app_args_im dict_name `Arrow` Qualid result_ty) `Arrow` Qualid result_ty
   
   let wholeClassSentences =
         [ RecordSentence dict_record
@@ -289,22 +277,21 @@ cpsClassSentences (ClassBody (ClassDefinition name args ty methods) nots) = do
     dict_name = qualidExtendBase "__Dict" name
     dict_build = qualidExtendBase "__Dict_Build" name
     dict_methods = [ (qualidExtendBase "__" name, ty) | (name, ty) <- methods ]
-    dict_record  = RecordDefinition dict_name inst_args ty (Just dict_build) dict_methods
+    dict_record  = RecordDefinition dict_name dict_args ty (Just dict_build) dict_methods
     
-    -- The dictionary needs all explicit (type) arguments,
-    -- but none of the implicit (constraint) arguments
-    inst_args = filter (\b -> binderExplicitness b == Explicit) args
-    app_args f      = foldl App1 (Qualid f) (map Qualid (foldMap (toListOf binderIdents) inst_args))
-    -- full_app_args f = ExplicitApp f (map Qualid (foldMap (toListOf binderIdents) args))
+    dict_args     = filter (\b -> binderGeneralizability b == Ungeneralizable) args
+    impl_args     = filter (\b -> binderExplicitness b == Explicit) args
+    app_args_ex f = foldl App1 (Qualid f) (map Qualid (foldMap (toListOf binderIdents) args))
+    app_args_im f = foldl App1 (Qualid f) (map Qualid (foldMap (toListOf binderIdents) impl_args))
     
     method_def g meth ty = do
       explicitArgs <- fromMaybe [] <$> lookupExplicitMethodArguments meth
       pure $ DefinitionDef
                Global
                meth
-               (explicitArgs ++ [Typed Generalizable Implicit [Ident g] $ app_args name])
+               (explicitArgs ++ [Typed Generalizable Implicit [Ident g] $ app_args_ex name])
                (Just ty)
-               (App2 (Qualid g) Underscore . app_args $ qualidExtendBase "__" meth)
+               (App2 (Qualid g) Underscore . app_args_im $ qualidExtendBase "__" meth)
                NotExistingClass
 
 classSentences :: ConversionMonad r m => ClassBody -> m [Sentence]

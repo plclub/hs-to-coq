@@ -7,10 +7,12 @@ module HsToCoq.ConvertHaskell.TypeEnv.TyCl(
   convertedTyClTyVars,
   convertedTyClPredTypes,
   convertedTyClMethods,
+  convertedTyClBinderArgs,
   convertedTyClBinders,
   convertTyClEnv,
   convertedTyCl,
   convertTyCl,
+  filterVisibleVars,
   unpeelTyClVars
   ) where
 
@@ -19,6 +21,7 @@ import Data.Generics (Data)
 
 import Class
 import HscTypes
+import TyCon
 import Var
 
 import HsToCoq.Coq.Gallina
@@ -37,6 +40,7 @@ data ConvertedTyCl =
                   -- don't use [Binder] here because we don't know the
                   -- explicitness
                 , convertedTyClTyVars  :: [(Qualid, Term)]
+                , convertedTyClVisibility :: [Explicitness]
                 , convertedTyClPredTypes   :: [Term]
                 , convertedTyClMethods :: [(Qualid, Term)]
                 }
@@ -61,10 +65,14 @@ unpeelTyClVars (Forall bs t) className
   | otherwise                             = unpeelTyClVars t className
 unpeelTyClVars t _className = t
 
+convertedTyClBinderArgs :: ConvertedTyCl -> [Binder]
+convertedTyClBinderArgs ConvertedTyCl{..} =
+  fmap (\(ex, (q, t)) -> mkTypedBinder ex (Ident q) t)
+   $ zip convertedTyClVisibility convertedTyClTyVars
+
 convertedTyClBinders :: ConvertedTyCl -> [Binder]
-convertedTyClBinders ConvertedTyCl{..} =
-  ((\(q, t) -> mkTypedBinder Explicit (Ident q) t) <$> convertedTyClTyVars) <>
-  (Generalized Implicit <$> convertedTyClPredTypes)
+convertedTyClBinders tc@ConvertedTyCl{..} =
+  convertedTyClBinderArgs tc <> (Generalized Implicit <$> convertedTyClPredTypes)
 
 convertTyClEnv :: ConversionMonad r m => ModDetails -> m ConvertedTyClEnv
 convertTyClEnv mod = do
@@ -88,6 +96,11 @@ convertTyCl cl = do
   convertedTyClName      <- var TypeNS $ className cl
   convertedTyClTyVars    <- mapM convertTyClVar $ classTyVars cl
   convertedTyClMethods   <- mapM convertId $ classMethods cl
-  convertedTyClPredTypes <- mapM convertType $ classSCTheta cl
+  convertedTyClPredTypes <- mapM convertPredType $ classSCTheta cl
+  let convertedTyClVisibility = (\b -> if isVisibleTyConBinder b then Explicit else Implicit)
+                               <$> (tyConBinders $ classTyCon cl)
   pure ConvertedTyCl{..}
 
+filterVisibleVars :: ConvertedTyCl -> [Term] -> [Term]
+filterVisibleVars ConvertedTyCl{..} tms =
+  snd <$> filter (\(ex, t) -> ex == Explicit) (zip convertedTyClVisibility tms)

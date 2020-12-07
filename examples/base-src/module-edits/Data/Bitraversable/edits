@@ -1,8 +1,3 @@
 skip Data.Bitraversable.Bitraversable__K1
 
-redefine Definition Data.Bitraversable.bifoldMapDefault {t : Type -> Type -> Type} {m : Type} {a : Type} {b
-   : Type} `{Bitraversable t} `{GHC.Base.Monoid m}
-   : (a -> m) -> (b -> m) -> t a b -> m :=
-  GHC.Prim.coerce (bitraverse : (a -> Data.Functor.Const.Const Type m unit) ->
-                   (b -> Data.Functor.Const.Const Type m unit) ->
-                   t a b -> Data.Functor.Const.Const Type m (t unit unit)).
+skip Data.Bitraversable.bifoldMapDefault

@@ -14,7 +14,6 @@ Require Coq.Program.Wf.
 
 Require Coq.Lists.List.
 Require GHC.Base.
-Require GHC.Tuple.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
@@ -242,7 +241,7 @@ Definition rights {a : Type} {b : Type} : list (Either a b) -> list b :=
     Coq.Lists.List.flat_map cont_0__ x.
 
 Definition partitionEithers {a : Type} {b : Type}
-   : list (Either a b) -> GHC.Tuple.pair_type (list a) (list b) :=
+   : list (Either a b) -> (list a * list b)%type :=
   let right_ :=
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
@@ -276,7 +275,7 @@ Definition fromRight {b : Type} {a : Type} : b -> Either a b -> b :=
     end.
 
 (* External variables:
-     Gt Lt Type bool comparison cons false list negb nil pair true
+     Gt Lt Type bool comparison cons false list negb nil op_zt__ pair true
      Coq.Lists.List.flat_map GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor
      GHC.Base.Monad GHC.Base.Ord GHC.Base.Semigroup GHC.Base.compare
      GHC.Base.compare__ GHC.Base.const GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr
@@ -286,5 +285,4 @@ Definition fromRight {b : Type} {a : Type} : b -> Either a b -> b :=
      GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze____
      GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____ GHC.Base.op_zsze____
      GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return___
-     GHC.Tuple.pair_type
 *)

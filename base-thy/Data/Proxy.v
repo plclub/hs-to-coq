@@ -5,8 +5,8 @@ Require Import Data.Proxy.
 From Coq Require Import ssreflect ssrbool ssrfun.
 Set Bullet Behavior "Strict Subproofs".
 
-Instance EqLaws_Proxy {k} {a : k} : EqLaws (Proxy k a).
+Instance EqLaws_Proxy {k} {a : k} : EqLaws (Proxy a).
 Proof. by split. Qed.
 
-Instance EqExact_Proxy {k} {a : k} : EqExact (Proxy k a).
+Instance EqExact_Proxy {k} {a : k} : EqExact (Proxy a).
 Proof. by split; repeat case; constructor. Qed.

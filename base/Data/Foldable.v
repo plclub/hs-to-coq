@@ -645,20 +645,19 @@ Program Instance Foldable__pair_type {a : Type}
    `Data.Foldable.Foldable' *)
 
 Local Definition Foldable__Proxy_fold
-   : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, Data.Proxy.Proxy Type m -> m :=
+   : forall {m : Type}, forall `{GHC.Base.Monoid m}, Data.Proxy.Proxy m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => fun arg_0__ => GHC.Base.mempty.
 
 Local Definition Foldable__Proxy_foldMap
    : forall {m : Type},
      forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> Data.Proxy.Proxy Type a -> m :=
+     forall `{GHC.Base.Monoid m}, (a -> m) -> Data.Proxy.Proxy a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun arg_0__ arg_1__ => GHC.Base.mempty.
 
 Local Definition Foldable__Proxy_foldl
    : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Data.Proxy.Proxy Type a -> b :=
+     forall {a : Type}, (b -> a -> b) -> b -> Data.Proxy.Proxy a -> b :=
   fun {b : Type} {a : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -667,7 +666,7 @@ Local Definition Foldable__Proxy_foldl
 
 Local Definition Foldable__Proxy_foldr
    : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Data.Proxy.Proxy Type a -> b :=
+     forall {b : Type}, (a -> b -> b) -> b -> Data.Proxy.Proxy a -> b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -676,40 +675,40 @@ Local Definition Foldable__Proxy_foldr
 
 Local Definition Foldable__Proxy_foldl'
    : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Data.Proxy.Proxy Type a -> b :=
+     forall {a : Type}, (b -> a -> b) -> b -> Data.Proxy.Proxy a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Proxy_foldr f' GHC.Base.id xs z0.
 
 Local Definition Foldable__Proxy_foldr'
    : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Data.Proxy.Proxy Type a -> b :=
+     forall {b : Type}, (a -> b -> b) -> b -> Data.Proxy.Proxy a -> b :=
   fun {a : Type} {b : Type} =>
     fun f z0 xs =>
       let f' := fun k x z => k (f x z) in Foldable__Proxy_foldl f' GHC.Base.id xs z0.
 
 Local Definition Foldable__Proxy_length
-   : forall {a : Type}, Data.Proxy.Proxy Type a -> GHC.Num.Int :=
+   : forall {a : Type}, Data.Proxy.Proxy a -> GHC.Num.Int :=
   fun {a : Type} => fun arg_0__ => #0.
 
 Local Definition Foldable__Proxy_null
-   : forall {a : Type}, Data.Proxy.Proxy Type a -> bool :=
+   : forall {a : Type}, Data.Proxy.Proxy a -> bool :=
   fun {a : Type} => fun arg_0__ => true.
 
 Local Definition Foldable__Proxy_product
-   : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Proxy.Proxy Type a -> a :=
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Proxy.Proxy a -> a :=
   fun {a : Type} `{GHC.Num.Num a} => fun arg_0__ => #1.
 
 Local Definition Foldable__Proxy_sum
-   : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Proxy.Proxy Type a -> a :=
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Proxy.Proxy a -> a :=
   fun {a : Type} `{GHC.Num.Num a} => fun arg_0__ => #0.
 
 Local Definition Foldable__Proxy_toList
-   : forall {a : Type}, Data.Proxy.Proxy Type a -> list a :=
+   : forall {a : Type}, Data.Proxy.Proxy a -> list a :=
   fun {a : Type} =>
     fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__Proxy_foldr c n t)).
 
-Program Instance Foldable__Proxy : Foldable (Data.Proxy.Proxy Type) :=
+Program Instance Foldable__Proxy : Foldable Data.Proxy.Proxy :=
   fun _ k__ =>
     k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Proxy_fold ;
            foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>

@@ -26,10 +26,8 @@ Require GHC.Tuple.
 
 Record MonadZip__Dict (m : Type -> Type) := MonadZip__Dict_Build {
   munzip__ : forall {a : Type},
-  forall {b : Type},
-  m (GHC.Tuple.pair_type a b) -> GHC.Tuple.pair_type (m a) (m b) ;
-  mzip__ : forall {a : Type},
-  forall {b : Type}, m a -> m b -> m (GHC.Tuple.pair_type a b) ;
+  forall {b : Type}, m (a * b)%type -> (m a * m b)%type ;
+  mzip__ : forall {a : Type}, forall {b : Type}, m a -> m b -> m (a * b)%type ;
   mzipWith__ : forall {a : Type},
   forall {b : Type}, forall {c : Type}, (a -> b -> c) -> m a -> m b -> m c }.
 
@@ -38,14 +36,11 @@ Definition MonadZip (m : Type -> Type) `{GHC.Base.Monad m} :=
 Existing Class MonadZip.
 
 Definition munzip `{g__0__ : MonadZip m}
-   : forall {a : Type},
-     forall {b : Type},
-     m (GHC.Tuple.pair_type a b) -> GHC.Tuple.pair_type (m a) (m b) :=
+   : forall {a : Type}, forall {b : Type}, m (a * b)%type -> (m a * m b)%type :=
   g__0__ _ (munzip__ m).
 
 Definition mzip `{g__0__ : MonadZip m}
-   : forall {a : Type},
-     forall {b : Type}, m a -> m b -> m (GHC.Tuple.pair_type a b) :=
+   : forall {a : Type}, forall {b : Type}, m a -> m b -> m (a * b)%type :=
   g__0__ _ (mzip__ m).
 
 Definition mzipWith `{g__0__ : MonadZip m}
@@ -57,13 +52,12 @@ Definition mzipWith `{g__0__ : MonadZip m}
 
 Local Definition MonadZip__list_munzip
    : forall {a : Type},
-     forall {b : Type},
-     list (GHC.Tuple.pair_type a b) -> GHC.Tuple.pair_type (list a) (list b) :=
+     forall {b : Type}, list (a * b)%type -> (list a * list b)%type :=
   fun {a : Type} {b : Type} => GHC.List.unzip.
 
 Local Definition MonadZip__list_mzip
    : forall {a : Type},
-     forall {b : Type}, list a -> list b -> list (GHC.Tuple.pair_type a b) :=
+     forall {b : Type}, list a -> list b -> list (a * b)%type :=
   fun {a : Type} {b : Type} => GHC.List.zip.
 
 Local Definition MonadZip__list_mzipWith
@@ -82,15 +76,14 @@ Program Instance MonadZip__list : MonadZip list :=
 Local Definition MonadZip__NonEmpty_munzip
    : forall {a : Type},
      forall {b : Type},
-     GHC.Base.NonEmpty (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (GHC.Base.NonEmpty a) (GHC.Base.NonEmpty b) :=
+     GHC.Base.NonEmpty (a * b)%type ->
+     (GHC.Base.NonEmpty a * GHC.Base.NonEmpty b)%type :=
   fun {a : Type} {b : Type} => Data.List.NonEmpty.unzip.
 
 Local Definition MonadZip__NonEmpty_mzip
    : forall {a : Type},
      forall {b : Type},
-     GHC.Base.NonEmpty a ->
-     GHC.Base.NonEmpty b -> GHC.Base.NonEmpty (GHC.Tuple.pair_type a b) :=
+     GHC.Base.NonEmpty a -> GHC.Base.NonEmpty b -> GHC.Base.NonEmpty (a * b)%type :=
   fun {a : Type} {b : Type} => Data.List.NonEmpty.zip.
 
 Local Definition MonadZip__NonEmpty_mzipWith
@@ -111,9 +104,8 @@ Program Instance MonadZip__NonEmpty : MonadZip GHC.Base.NonEmpty :=
 Local Definition MonadZip__Identity_munzip
    : forall {a : Type},
      forall {b : Type},
-     Data.Functor.Identity.Identity (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (Data.Functor.Identity.Identity a)
-                         (Data.Functor.Identity.Identity b) :=
+     Data.Functor.Identity.Identity (a * b)%type ->
+     (Data.Functor.Identity.Identity a * Data.Functor.Identity.Identity b)%type :=
   fun {a : Type} {b : Type} =>
     fun '(Data.Functor.Identity.Mk_Identity (pair a b)) =>
       pair (Data.Functor.Identity.Mk_Identity a) (Data.Functor.Identity.Mk_Identity
@@ -133,7 +125,7 @@ Local Definition MonadZip__Identity_mzip
      forall {b : Type},
      Data.Functor.Identity.Identity a ->
      Data.Functor.Identity.Identity b ->
-     Data.Functor.Identity.Identity (GHC.Tuple.pair_type a b) :=
+     Data.Functor.Identity.Identity (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__Identity_mzipWith GHC.Tuple.pair2.
 
 Program Instance MonadZip__Identity : MonadZip Data.Functor.Identity.Identity :=
@@ -146,9 +138,8 @@ Program Instance MonadZip__Identity : MonadZip Data.Functor.Identity.Identity :=
 Local Definition MonadZip__Dual_munzip
    : forall {a : Type},
      forall {b : Type},
-     Data.SemigroupInternal.Dual (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (Data.SemigroupInternal.Dual a) (Data.SemigroupInternal.Dual
-                          b) :=
+     Data.SemigroupInternal.Dual (a * b)%type ->
+     (Data.SemigroupInternal.Dual a * Data.SemigroupInternal.Dual b)%type :=
   fun {a : Type} {b : Type} =>
     fun mab =>
       pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
@@ -166,8 +157,7 @@ Local Definition MonadZip__Dual_mzip
    : forall {a : Type},
      forall {b : Type},
      Data.SemigroupInternal.Dual a ->
-     Data.SemigroupInternal.Dual b ->
-     Data.SemigroupInternal.Dual (GHC.Tuple.pair_type a b) :=
+     Data.SemigroupInternal.Dual b -> Data.SemigroupInternal.Dual (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__Dual_mzipWith GHC.Tuple.pair2.
 
 Program Instance MonadZip__Dual : MonadZip Data.SemigroupInternal.Dual :=
@@ -180,9 +170,8 @@ Program Instance MonadZip__Dual : MonadZip Data.SemigroupInternal.Dual :=
 Local Definition MonadZip__Sum_munzip
    : forall {a : Type},
      forall {b : Type},
-     Data.SemigroupInternal.Sum (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (Data.SemigroupInternal.Sum a) (Data.SemigroupInternal.Sum
-                          b) :=
+     Data.SemigroupInternal.Sum (a * b)%type ->
+     (Data.SemigroupInternal.Sum a * Data.SemigroupInternal.Sum b)%type :=
   fun {a : Type} {b : Type} =>
     fun mab =>
       pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
@@ -200,8 +189,7 @@ Local Definition MonadZip__Sum_mzip
    : forall {a : Type},
      forall {b : Type},
      Data.SemigroupInternal.Sum a ->
-     Data.SemigroupInternal.Sum b ->
-     Data.SemigroupInternal.Sum (GHC.Tuple.pair_type a b) :=
+     Data.SemigroupInternal.Sum b -> Data.SemigroupInternal.Sum (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__Sum_mzipWith GHC.Tuple.pair2.
 
 Program Instance MonadZip__Sum : MonadZip Data.SemigroupInternal.Sum :=
@@ -213,9 +201,8 @@ Program Instance MonadZip__Sum : MonadZip Data.SemigroupInternal.Sum :=
 Local Definition MonadZip__Product_munzip
    : forall {a : Type},
      forall {b : Type},
-     Data.SemigroupInternal.Product (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (Data.SemigroupInternal.Product a)
-                         (Data.SemigroupInternal.Product b) :=
+     Data.SemigroupInternal.Product (a * b)%type ->
+     (Data.SemigroupInternal.Product a * Data.SemigroupInternal.Product b)%type :=
   fun {a : Type} {b : Type} =>
     fun mab =>
       pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
@@ -234,7 +221,7 @@ Local Definition MonadZip__Product_mzip
      forall {b : Type},
      Data.SemigroupInternal.Product a ->
      Data.SemigroupInternal.Product b ->
-     Data.SemigroupInternal.Product (GHC.Tuple.pair_type a b) :=
+     Data.SemigroupInternal.Product (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__Product_mzipWith GHC.Tuple.pair2.
 
 Program Instance MonadZip__Product : MonadZip Data.SemigroupInternal.Product :=
@@ -246,8 +233,7 @@ Program Instance MonadZip__Product : MonadZip Data.SemigroupInternal.Product :=
 
 Local Definition MonadZip__option_munzip
    : forall {a : Type},
-     forall {b : Type},
-     option (GHC.Tuple.pair_type a b) -> GHC.Tuple.pair_type (option a) (option b) :=
+     forall {b : Type}, option (a * b)%type -> (option a * option b)%type :=
   fun {a : Type} {b : Type} =>
     fun mab =>
       pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
@@ -260,7 +246,7 @@ Local Definition MonadZip__option_mzipWith
 
 Local Definition MonadZip__option_mzip
    : forall {a : Type},
-     forall {b : Type}, option a -> option b -> option (GHC.Tuple.pair_type a b) :=
+     forall {b : Type}, option a -> option b -> option (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__option_mzipWith GHC.Tuple.pair2.
 
 Program Instance MonadZip__option : MonadZip option :=
@@ -273,8 +259,8 @@ Program Instance MonadZip__option : MonadZip option :=
 Local Definition MonadZip__First_munzip
    : forall {a : Type},
      forall {b : Type},
-     Data.Monoid.First (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (Data.Monoid.First a) (Data.Monoid.First b) :=
+     Data.Monoid.First (a * b)%type ->
+     (Data.Monoid.First a * Data.Monoid.First b)%type :=
   fun {a : Type} {b : Type} =>
     fun mab =>
       pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
@@ -290,8 +276,7 @@ Local Definition MonadZip__First_mzipWith
 Local Definition MonadZip__First_mzip
    : forall {a : Type},
      forall {b : Type},
-     Data.Monoid.First a ->
-     Data.Monoid.First b -> Data.Monoid.First (GHC.Tuple.pair_type a b) :=
+     Data.Monoid.First a -> Data.Monoid.First b -> Data.Monoid.First (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__First_mzipWith GHC.Tuple.pair2.
 
 Program Instance MonadZip__First : MonadZip Data.Monoid.First :=
@@ -304,8 +289,8 @@ Program Instance MonadZip__First : MonadZip Data.Monoid.First :=
 Local Definition MonadZip__Last_munzip
    : forall {a : Type},
      forall {b : Type},
-     Data.Monoid.Last (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (Data.Monoid.Last a) (Data.Monoid.Last b) :=
+     Data.Monoid.Last (a * b)%type ->
+     (Data.Monoid.Last a * Data.Monoid.Last b)%type :=
   fun {a : Type} {b : Type} =>
     fun mab =>
       pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
@@ -321,8 +306,7 @@ Local Definition MonadZip__Last_mzipWith
 Local Definition MonadZip__Last_mzip
    : forall {a : Type},
      forall {b : Type},
-     Data.Monoid.Last a ->
-     Data.Monoid.Last b -> Data.Monoid.Last (GHC.Tuple.pair_type a b) :=
+     Data.Monoid.Last a -> Data.Monoid.Last b -> Data.Monoid.Last (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__Last_mzipWith GHC.Tuple.pair2.
 
 Program Instance MonadZip__Last : MonadZip Data.Monoid.Last :=
@@ -335,9 +319,9 @@ Program Instance MonadZip__Last : MonadZip Data.Monoid.Last :=
 Local Definition MonadZip__Alt_munzip {inst_f : Type -> Type} `{MonadZip inst_f}
    : forall {a : Type},
      forall {b : Type},
-     Data.SemigroupInternal.Alt Type inst_f (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (Data.SemigroupInternal.Alt Type inst_f a)
-                         (Data.SemigroupInternal.Alt Type inst_f b) :=
+     Data.SemigroupInternal.Alt inst_f (a * b)%type ->
+     (Data.SemigroupInternal.Alt inst_f a *
+      Data.SemigroupInternal.Alt inst_f b)%type :=
   fun {a : Type} {b : Type} =>
     fun mab =>
       pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
@@ -348,9 +332,8 @@ Local Definition MonadZip__Alt_mzipWith {inst_f : Type -> Type} `{MonadZip
      forall {b : Type},
      forall {c : Type},
      (a -> b -> c) ->
-     Data.SemigroupInternal.Alt Type inst_f a ->
-     Data.SemigroupInternal.Alt Type inst_f b ->
-     Data.SemigroupInternal.Alt Type inst_f c :=
+     Data.SemigroupInternal.Alt inst_f a ->
+     Data.SemigroupInternal.Alt inst_f b -> Data.SemigroupInternal.Alt inst_f c :=
   fun {a : Type} {b : Type} {c : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -361,13 +344,13 @@ Local Definition MonadZip__Alt_mzipWith {inst_f : Type -> Type} `{MonadZip
 Local Definition MonadZip__Alt_mzip {inst_f : Type -> Type} `{MonadZip inst_f}
    : forall {a : Type},
      forall {b : Type},
-     Data.SemigroupInternal.Alt Type inst_f a ->
-     Data.SemigroupInternal.Alt Type inst_f b ->
-     Data.SemigroupInternal.Alt Type inst_f (GHC.Tuple.pair_type a b) :=
+     Data.SemigroupInternal.Alt inst_f a ->
+     Data.SemigroupInternal.Alt inst_f b ->
+     Data.SemigroupInternal.Alt inst_f (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__Alt_mzipWith GHC.Tuple.pair2.
 
 Program Instance MonadZip__Alt {f : Type -> Type} `{MonadZip f}
-   : MonadZip (Data.SemigroupInternal.Alt Type f) :=
+   : MonadZip (Data.SemigroupInternal.Alt f) :=
   fun _ k__ =>
     k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Alt_munzip ;
            mzip__ := fun {a : Type} {b : Type} => MonadZip__Alt_mzip ;
@@ -376,8 +359,8 @@ Program Instance MonadZip__Alt {f : Type -> Type} `{MonadZip f}
 Local Definition MonadZip__Proxy_munzip
    : forall {a : Type},
      forall {b : Type},
-     Data.Proxy.Proxy Type (GHC.Tuple.pair_type a b) ->
-     GHC.Tuple.pair_type (Data.Proxy.Proxy Type a) (Data.Proxy.Proxy Type b) :=
+     Data.Proxy.Proxy (a * b)%type ->
+     (Data.Proxy.Proxy a * Data.Proxy.Proxy b)%type :=
   fun {a : Type} {b : Type} =>
     fun mab =>
       pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
@@ -387,18 +370,17 @@ Local Definition MonadZip__Proxy_mzipWith
      forall {b : Type},
      forall {c : Type},
      (a -> b -> c) ->
-     Data.Proxy.Proxy Type a -> Data.Proxy.Proxy Type b -> Data.Proxy.Proxy Type c :=
+     Data.Proxy.Proxy a -> Data.Proxy.Proxy b -> Data.Proxy.Proxy c :=
   fun {a : Type} {b : Type} {c : Type} =>
     fun arg_0__ arg_1__ arg_2__ => Data.Proxy.Mk_Proxy.
 
 Local Definition MonadZip__Proxy_mzip
    : forall {a : Type},
      forall {b : Type},
-     Data.Proxy.Proxy Type a ->
-     Data.Proxy.Proxy Type b -> Data.Proxy.Proxy Type (GHC.Tuple.pair_type a b) :=
+     Data.Proxy.Proxy a -> Data.Proxy.Proxy b -> Data.Proxy.Proxy (a * b)%type :=
   fun {a : Type} {b : Type} => MonadZip__Proxy_mzipWith GHC.Tuple.pair2.
 
-Program Instance MonadZip__Proxy : MonadZip (Data.Proxy.Proxy Type) :=
+Program Instance MonadZip__Proxy : MonadZip Data.Proxy.Proxy :=
   fun _ k__ =>
     k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Proxy_munzip ;
            mzip__ := fun {a : Type} {b : Type} => MonadZip__Proxy_mzip ;
@@ -421,12 +403,12 @@ Program Instance MonadZip__Proxy : MonadZip (Data.Proxy.Proxy Type) :=
    `Control.Monad.Zip.MonadZip' *)
 
 (* External variables:
-     Type list option pair Data.Functor.Identity.Identity
+     Type list op_zt__ option pair Data.Functor.Identity.Identity
      Data.Functor.Identity.Mk_Identity Data.List.NonEmpty.unzip
      Data.List.NonEmpty.zip Data.List.NonEmpty.zipWith Data.Monoid.First
      Data.Monoid.Last Data.Proxy.Mk_Proxy Data.Proxy.Proxy Data.SemigroupInternal.Alt
      Data.SemigroupInternal.Dual Data.SemigroupInternal.Mk_Alt
      Data.SemigroupInternal.Product Data.SemigroupInternal.Sum Data.Tuple.fst
      Data.Tuple.snd GHC.Base.Monad GHC.Base.NonEmpty GHC.Base.liftM GHC.Base.liftM2
-     GHC.List.unzip GHC.List.zip GHC.List.zipWith GHC.Tuple.pair2 GHC.Tuple.pair_type
+     GHC.List.unzip GHC.List.zip GHC.List.zipWith GHC.Tuple.pair2
 *)

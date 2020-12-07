@@ -414,15 +414,14 @@ Local Definition Eq2__Const_liftEq2
      forall {d : Type},
      (a -> b -> bool) ->
      (c -> d -> bool) ->
-     Data.Functor.Const.Const Type a c ->
-     Data.Functor.Const.Const Type b d -> bool :=
+     Data.Functor.Const.Const a c -> Data.Functor.Const.Const b d -> bool :=
   fun {a : Type} {b : Type} {c : Type} {d : Type} =>
     fun arg_0__ arg_1__ arg_2__ arg_3__ =>
       match arg_0__, arg_1__, arg_2__, arg_3__ with
       | eq, _, Data.Functor.Const.Mk_Const x, Data.Functor.Const.Mk_Const y => eq x y
       end.
 
-Program Instance Eq2__Const : Eq2 (Data.Functor.Const.Const Type) :=
+Program Instance Eq2__Const : Eq2 Data.Functor.Const.Const :=
   fun _ k__ =>
     k__ {| liftEq2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
              Eq2__Const_liftEq2 |}.
@@ -434,8 +433,7 @@ Local Definition Ord2__Const_liftCompare2
      forall {d : Type},
      (a -> b -> comparison) ->
      (c -> d -> comparison) ->
-     Data.Functor.Const.Const Type a c ->
-     Data.Functor.Const.Const Type b d -> comparison :=
+     Data.Functor.Const.Const a c -> Data.Functor.Const.Const b d -> comparison :=
   fun {a : Type} {b : Type} {c : Type} {d : Type} =>
     fun arg_0__ arg_1__ arg_2__ arg_3__ =>
       match arg_0__, arg_1__, arg_2__, arg_3__ with
@@ -443,7 +441,7 @@ Local Definition Ord2__Const_liftCompare2
           comp x y
       end.
 
-Program Instance Ord2__Const : Ord2 (Data.Functor.Const.Const Type) :=
+Program Instance Ord2__Const : Ord2 Data.Functor.Const.Const :=
   fun _ k__ =>
     k__ {| liftCompare2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
              Ord2__Const_liftCompare2 |}.
@@ -458,12 +456,12 @@ Local Definition Eq1__Const_liftEq {inst_a : Type} `{(GHC.Base.Eq_ inst_a)}
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> bool) ->
-     Data.Functor.Const.Const Type inst_a a ->
-     Data.Functor.Const.Const Type inst_a b -> bool :=
+     Data.Functor.Const.Const inst_a a ->
+     Data.Functor.Const.Const inst_a b -> bool :=
   fun {a : Type} {b : Type} => liftEq2 _GHC.Base.==_.
 
 Program Instance Eq1__Const {a : Type} `{(GHC.Base.Eq_ a)}
-   : Eq1 (Data.Functor.Const.Const Type a) :=
+   : Eq1 (Data.Functor.Const.Const a) :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__Const_liftEq |}.
 
@@ -472,12 +470,12 @@ Local Definition Ord1__Const_liftCompare {inst_a : Type} `{(GHC.Base.Ord
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> comparison) ->
-     Data.Functor.Const.Const Type inst_a a ->
-     Data.Functor.Const.Const Type inst_a b -> comparison :=
+     Data.Functor.Const.Const inst_a a ->
+     Data.Functor.Const.Const inst_a b -> comparison :=
   fun {a : Type} {b : Type} => liftCompare2 GHC.Base.compare.
 
 Program Instance Ord1__Const {a : Type} `{(GHC.Base.Ord a)}
-   : Ord1 (Data.Functor.Const.Const Type a) :=
+   : Ord1 (Data.Functor.Const.Const a) :=
   fun _ k__ =>
     k__ {| liftCompare__ := fun {a : Type} {b : Type} => Ord1__Const_liftCompare |}.
 
@@ -490,11 +488,10 @@ Program Instance Ord1__Const {a : Type} `{(GHC.Base.Ord a)}
 Local Definition Eq1__Proxy_liftEq
    : forall {a : Type},
      forall {b : Type},
-     (a -> b -> bool) ->
-     Data.Proxy.Proxy Type a -> Data.Proxy.Proxy Type b -> bool :=
+     (a -> b -> bool) -> Data.Proxy.Proxy a -> Data.Proxy.Proxy b -> bool :=
   fun {a : Type} {b : Type} => fun arg_0__ arg_1__ arg_2__ => true.
 
-Program Instance Eq1__Proxy : Eq1 (Data.Proxy.Proxy Type) :=
+Program Instance Eq1__Proxy : Eq1 Data.Proxy.Proxy :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__Proxy_liftEq |}.
 
@@ -502,10 +499,10 @@ Local Definition Ord1__Proxy_liftCompare
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> comparison) ->
-     Data.Proxy.Proxy Type a -> Data.Proxy.Proxy Type b -> comparison :=
+     Data.Proxy.Proxy a -> Data.Proxy.Proxy b -> comparison :=
   fun {a : Type} {b : Type} => fun arg_0__ arg_1__ arg_2__ => Eq.
 
-Program Instance Ord1__Proxy : Ord1 (Data.Proxy.Proxy Type) :=
+Program Instance Ord1__Proxy : Ord1 Data.Proxy.Proxy :=
   fun _ k__ =>
     k__ {| liftCompare__ := fun {a : Type} {b : Type} => Ord1__Proxy_liftCompare |}.
 

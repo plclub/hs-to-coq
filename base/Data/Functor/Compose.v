@@ -26,14 +26,14 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Compose (k : Type) (k1 : Type) (f : k -> Type) (g : k1 -> k) (a : k1)
+Inductive Compose {k : Type} {k1 : Type} (f : k -> Type) (g : k1 -> k) (a : k1)
    : Type :=
-  | Mk_Compose (getCompose : f (g a)) : Compose k k1 f g a.
+  | Mk_Compose (getCompose : f (g a)) : Compose f g a.
 
 Arguments Mk_Compose {_} {_} {_} {_} {_} _.
 
 Definition getCompose {k : Type} {k1 : Type} {f : k -> Type} {g : k1 -> k} {a
-   : k1} (arg_0__ : Compose k k1 f g a) :=
+   : k1} (arg_0__ : Compose f g a) :=
   let 'Mk_Compose getCompose := arg_0__ in
   getCompose.
 
@@ -54,8 +54,7 @@ Local Definition Eq1__Compose_liftEq {inst_f : Type -> Type} {inst_g
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> bool) ->
-     Compose Type Type inst_f inst_g a ->
-     Compose Type Type inst_f inst_g b -> bool :=
+     Compose inst_f inst_g a -> Compose inst_f inst_g b -> bool :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -65,7 +64,7 @@ Local Definition Eq1__Compose_liftEq {inst_f : Type -> Type} {inst_g
 
 Program Instance Eq1__Compose {f : Type -> Type} {g : Type -> Type}
   `{Data.Functor.Classes.Eq1 f} `{Data.Functor.Classes.Eq1 g}
-   : Data.Functor.Classes.Eq1 (Compose Type Type f g) :=
+   : Data.Functor.Classes.Eq1 (Compose f g) :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
              Eq1__Compose_liftEq |}.
@@ -76,8 +75,7 @@ Local Definition Ord1__Compose_liftCompare {inst_f : Type -> Type} {inst_g
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> comparison) ->
-     Compose Type Type inst_f inst_g a ->
-     Compose Type Type inst_f inst_g b -> comparison :=
+     Compose inst_f inst_g a -> Compose inst_f inst_g b -> comparison :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -87,7 +85,7 @@ Local Definition Ord1__Compose_liftCompare {inst_f : Type -> Type} {inst_g
 
 Program Instance Ord1__Compose {f : Type -> Type} {g : Type -> Type}
   `{Data.Functor.Classes.Ord1 f} `{Data.Functor.Classes.Ord1 g}
-   : Data.Functor.Classes.Ord1 (Compose Type Type f g) :=
+   : Data.Functor.Classes.Ord1 (Compose f g) :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
              Ord1__Compose_liftCompare |}.
@@ -101,20 +99,18 @@ Program Instance Ord1__Compose {f : Type -> Type} {g : Type -> Type}
 Local Definition Eq___Compose_op_zeze__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Eq1 inst_f}
   `{Data.Functor.Classes.Eq1 inst_g} `{GHC.Base.Eq_ inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a -> bool :=
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
   Data.Functor.Classes.eq1.
 
 Local Definition Eq___Compose_op_zsze__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Eq1 inst_f}
   `{Data.Functor.Classes.Eq1 inst_g} `{GHC.Base.Eq_ inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a -> bool :=
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
   fun x y => negb (Eq___Compose_op_zeze__ x y).
 
 Program Instance Eq___Compose {f : Type -> Type} {g : Type -> Type} {a : Type}
   `{Data.Functor.Classes.Eq1 f} `{Data.Functor.Classes.Eq1 g} `{GHC.Base.Eq_ a}
-   : GHC.Base.Eq_ (Compose Type Type f g a) :=
+   : GHC.Base.Eq_ (Compose f g a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Compose_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Compose_op_zsze__ |}.
@@ -122,57 +118,50 @@ Program Instance Eq___Compose {f : Type -> Type} {g : Type -> Type} {a : Type}
 Local Definition Ord__Compose_compare {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
   `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a -> comparison :=
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> comparison :=
   Data.Functor.Classes.compare1.
 
 Local Definition Ord__Compose_op_zl__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
   `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a -> bool :=
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
   fun x y => Ord__Compose_compare x y GHC.Base.== Lt.
 
 Local Definition Ord__Compose_op_zlze__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
   `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a -> bool :=
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
   fun x y => Ord__Compose_compare x y GHC.Base./= Gt.
 
 Local Definition Ord__Compose_op_zg__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
   `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a -> bool :=
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
   fun x y => Ord__Compose_compare x y GHC.Base.== Gt.
 
 Local Definition Ord__Compose_op_zgze__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
   `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a -> bool :=
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
   fun x y => Ord__Compose_compare x y GHC.Base./= Lt.
 
 Local Definition Ord__Compose_max {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
   `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a :=
+   : Compose inst_f inst_g inst_a ->
+     Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a :=
   fun x y => if Ord__Compose_op_zlze__ x y : bool then y else x.
 
 Local Definition Ord__Compose_min {inst_f : Type -> Type} {inst_g
    : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
   `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a ->
-     Compose Type Type inst_f inst_g inst_a :=
+   : Compose inst_f inst_g inst_a ->
+     Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a :=
   fun x y => if Ord__Compose_op_zlze__ x y : bool then x else y.
 
 Program Instance Ord__Compose {f : Type -> Type} {g : Type -> Type} {a : Type}
   `{Data.Functor.Classes.Ord1 f} `{Data.Functor.Classes.Ord1 g} `{GHC.Base.Ord a}
-   : GHC.Base.Ord (Compose Type Type f g a) :=
+   : GHC.Base.Ord (Compose f g a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Compose_op_zl__ ;
            GHC.Base.op_zlze____ := Ord__Compose_op_zlze__ ;
@@ -192,8 +181,7 @@ Local Definition Functor__Compose_fmap {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{GHC.Base.Functor inst_f} `{GHC.Base.Functor inst_g}
    : forall {a : Type},
      forall {b : Type},
-     (a -> b) ->
-     Compose Type Type inst_f inst_g a -> Compose Type Type inst_f inst_g b :=
+     (a -> b) -> Compose inst_f inst_g a -> Compose inst_f inst_g b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
@@ -203,13 +191,12 @@ Local Definition Functor__Compose_fmap {inst_f : Type -> Type} {inst_g
 Local Definition Functor__Compose_op_zlzd__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{GHC.Base.Functor inst_f} `{GHC.Base.Functor inst_g}
    : forall {a : Type},
-     forall {b : Type},
-     a -> Compose Type Type inst_f inst_g b -> Compose Type Type inst_f inst_g a :=
+     forall {b : Type}, a -> Compose inst_f inst_g b -> Compose inst_f inst_g a :=
   fun {a : Type} {b : Type} => Functor__Compose_fmap GHC.Base.∘ GHC.Base.const.
 
 Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
   `{GHC.Base.Functor f} `{GHC.Base.Functor g}
-   : GHC.Base.Functor (Compose Type Type f g) :=
+   : GHC.Base.Functor (Compose f g) :=
   fun _ k__ =>
     k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Compose_fmap ;
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
@@ -220,8 +207,7 @@ Local Definition Foldable__Compose_foldMap {inst_f : Type -> Type} {inst_g
   inst_g}
    : forall {m : Type},
      forall {a : Type},
-     forall `{GHC.Base.Monoid m},
-     (a -> m) -> Compose Type Type inst_f inst_g a -> m :=
+     forall `{GHC.Base.Monoid m}, (a -> m) -> Compose inst_f inst_g a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
@@ -232,15 +218,14 @@ Local Definition Foldable__Compose_fold {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, Compose Type Type inst_f inst_g m -> m :=
+     forall `{GHC.Base.Monoid m}, Compose inst_f inst_g m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Compose_foldMap GHC.Base.id.
 
 Local Definition Foldable__Compose_foldl {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {b : Type},
-     forall {a : Type},
-     (b -> a -> b) -> b -> Compose Type Type inst_f inst_g a -> b :=
+     forall {a : Type}, (b -> a -> b) -> b -> Compose inst_f inst_g a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
@@ -252,8 +237,7 @@ Local Definition Foldable__Compose_foldr {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type},
-     forall {b : Type},
-     (a -> b -> b) -> b -> Compose Type Type inst_f inst_g a -> b :=
+     forall {b : Type}, (a -> b -> b) -> b -> Compose inst_f inst_g a -> b :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__Compose_foldMap
@@ -263,8 +247,7 @@ Local Definition Foldable__Compose_foldl' {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {b : Type},
-     forall {a : Type},
-     (b -> a -> b) -> b -> Compose Type Type inst_f inst_g a -> b :=
+     forall {a : Type}, (b -> a -> b) -> b -> Compose inst_f inst_g a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in
@@ -274,8 +257,7 @@ Local Definition Foldable__Compose_foldr' {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type},
-     forall {b : Type},
-     (a -> b -> b) -> b -> Compose Type Type inst_f inst_g a -> b :=
+     forall {b : Type}, (a -> b -> b) -> b -> Compose inst_f inst_g a -> b :=
   fun {a : Type} {b : Type} =>
     fun f z0 xs =>
       let f' := fun k x z => k (f x z) in
@@ -284,7 +266,7 @@ Local Definition Foldable__Compose_foldr' {inst_f : Type -> Type} {inst_g
 Local Definition Foldable__Compose_length {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
-   : forall {a : Type}, Compose Type Type inst_f inst_g a -> GHC.Num.Int :=
+   : forall {a : Type}, Compose inst_f inst_g a -> GHC.Num.Int :=
   fun {a : Type} =>
     Foldable__Compose_foldl' (fun arg_0__ arg_1__ =>
                                 match arg_0__, arg_1__ with
@@ -294,14 +276,13 @@ Local Definition Foldable__Compose_length {inst_f : Type -> Type} {inst_g
 Local Definition Foldable__Compose_null {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
-   : forall {a : Type}, Compose Type Type inst_f inst_g a -> bool :=
+   : forall {a : Type}, Compose inst_f inst_g a -> bool :=
   fun {a : Type} => Foldable__Compose_foldr (fun arg_0__ arg_1__ => false) true.
 
 Local Definition Foldable__Compose_product {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Compose Type Type inst_f inst_g a -> a :=
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
                                (Foldable__Compose_foldMap Data.SemigroupInternal.Mk_Product).
@@ -309,8 +290,7 @@ Local Definition Foldable__Compose_product {inst_f : Type -> Type} {inst_g
 Local Definition Foldable__Compose_sum {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Compose Type Type inst_f inst_g a -> a :=
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
                                (Foldable__Compose_foldMap Data.SemigroupInternal.Mk_Sum).
@@ -318,13 +298,13 @@ Local Definition Foldable__Compose_sum {inst_f : Type -> Type} {inst_g
 Local Definition Foldable__Compose_toList {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
-   : forall {a : Type}, Compose Type Type inst_f inst_g a -> list a :=
+   : forall {a : Type}, Compose inst_f inst_g a -> list a :=
   fun {a : Type} =>
     fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__Compose_foldr c n t)).
 
 Program Instance Foldable__Compose {f : Type -> Type} {g : Type -> Type}
   `{Data.Foldable.Foldable f} `{Data.Foldable.Foldable g}
-   : Data.Foldable.Foldable (Compose Type Type f g) :=
+   : Data.Foldable.Foldable (Compose f g) :=
   fun _ k__ =>
     k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__Compose_fold ;
@@ -351,8 +331,7 @@ Local Definition Traversable__Compose_traverse {inst_f : Type -> Type} {inst_g
      forall {a : Type},
      forall {b : Type},
      forall `{GHC.Base.Applicative f},
-     (a -> f b) ->
-     Compose Type Type inst_f inst_g a -> f (Compose Type Type inst_f inst_g b) :=
+     (a -> f b) -> Compose inst_f inst_g a -> f (Compose inst_f inst_g b) :=
   fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
@@ -368,8 +347,7 @@ Local Definition Traversable__Compose_mapM {inst_f : Type -> Type} {inst_g
      forall {a : Type},
      forall {b : Type},
      forall `{GHC.Base.Monad m},
-     (a -> m b) ->
-     Compose Type Type inst_f inst_g a -> m (Compose Type Type inst_f inst_g b) :=
+     (a -> m b) -> Compose inst_f inst_g a -> m (Compose inst_f inst_g b) :=
   fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
     Traversable__Compose_traverse.
 
@@ -379,8 +357,7 @@ Local Definition Traversable__Compose_sequenceA {inst_f : Type -> Type} {inst_g
    : forall {f : Type -> Type},
      forall {a : Type},
      forall `{GHC.Base.Applicative f},
-     Compose Type Type inst_f inst_g (f a) ->
-     f (Compose Type Type inst_f inst_g a) :=
+     Compose inst_f inst_g (f a) -> f (Compose inst_f inst_g a) :=
   fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
     Traversable__Compose_traverse GHC.Base.id.
 
@@ -390,14 +367,13 @@ Local Definition Traversable__Compose_sequence {inst_f : Type -> Type} {inst_g
    : forall {m : Type -> Type},
      forall {a : Type},
      forall `{GHC.Base.Monad m},
-     Compose Type Type inst_f inst_g (m a) ->
-     m (Compose Type Type inst_f inst_g a) :=
+     Compose inst_f inst_g (m a) -> m (Compose inst_f inst_g a) :=
   fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
     Traversable__Compose_sequenceA.
 
 Program Instance Traversable__Compose {f : Type -> Type} {g : Type -> Type}
   `{Data.Traversable.Traversable f} `{Data.Traversable.Traversable g}
-   : Data.Traversable.Traversable (Compose Type Type f g) :=
+   : Data.Traversable.Traversable (Compose f g) :=
   fun _ k__ =>
     k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
            {a : Type}
@@ -424,8 +400,7 @@ Local Definition Applicative__Compose_liftA2 {inst_f : Type -> Type} {inst_g
      forall {b : Type},
      forall {c : Type},
      (a -> b -> c) ->
-     Compose Type Type inst_f inst_g a ->
-     Compose Type Type inst_f inst_g b -> Compose Type Type inst_f inst_g c :=
+     Compose inst_f inst_g a -> Compose inst_f inst_g b -> Compose inst_f inst_g c :=
   fun {a : Type} {b : Type} {c : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -438,8 +413,8 @@ Local Definition Applicative__Compose_op_zlztzg__ {inst_f : Type -> Type}
   inst_g}
    : forall {a : Type},
      forall {b : Type},
-     Compose Type Type inst_f inst_g (a -> b) ->
-     Compose Type Type inst_f inst_g a -> Compose Type Type inst_f inst_g b :=
+     Compose inst_f inst_g (a -> b) ->
+     Compose inst_f inst_g a -> Compose inst_f inst_g b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
@@ -450,19 +425,18 @@ Local Definition Applicative__Compose_op_ztzg__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{GHC.Base.Applicative inst_f} `{GHC.Base.Applicative inst_g}
    : forall {a : Type},
      forall {b : Type},
-     Compose Type Type inst_f inst_g a ->
-     Compose Type Type inst_f inst_g b -> Compose Type Type inst_f inst_g b :=
+     Compose inst_f inst_g a -> Compose inst_f inst_g b -> Compose inst_f inst_g b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__Compose_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
 Local Definition Applicative__Compose_pure {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{GHC.Base.Applicative inst_f} `{GHC.Base.Applicative inst_g}
-   : forall {a : Type}, a -> Compose Type Type inst_f inst_g a :=
+   : forall {a : Type}, a -> Compose inst_f inst_g a :=
   fun {a : Type} => fun x => Mk_Compose (GHC.Base.pure (GHC.Base.pure x)).
 
 Program Instance Applicative__Compose {f : Type -> Type} {g : Type -> Type}
   `{GHC.Base.Applicative f} `{GHC.Base.Applicative g}
-   : GHC.Base.Applicative (Compose Type Type f g) :=
+   : GHC.Base.Applicative (Compose f g) :=
   fun _ k__ =>
     k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
              Applicative__Compose_liftA2 ;

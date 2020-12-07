@@ -99,39 +99,38 @@ classDefns:
     (Forall (Typed Ungeneralizable Implicit (Ident (Bare "d") :| []) (Qualid (Bare
     "Type")) :| []) (Arrow (App (App (Qualid (Bare "a")) (PosArg (Qualid (Bare "b"))
     :| [])) (PosArg (Qualid (Bare "c")) :| [])) (App (App (Qualid (Bare "a")) (PosArg
-    (App (Qualid (Qualified "GHC.Tuple" "pair_type")) (PosArg (Qualid (Bare "b"))
-    :| [PosArg (Qualid (Bare "d"))])) :| [])) (PosArg (App (Qualid (Qualified "GHC.Tuple"
-    "pair_type")) (PosArg (Qualid (Bare "c")) :| [PosArg (Qualid (Bare "d"))])) :|
-    [])))))),(Qualified "Control.Arrow" "op_zazaza__",Forall (Typed Ungeneralizable
+    (InScope (App (Qualid (Bare "op_zt__")) (PosArg (Qualid (Bare "b")) :| [PosArg
+    (Qualid (Bare "d"))])) "type") :| [])) (PosArg (InScope (App (Qualid (Bare "op_zt__"))
+    (PosArg (Qualid (Bare "c")) :| [PosArg (Qualid (Bare "d"))])) "type") :| [])))))),(Qualified
+    "Control.Arrow" "op_zazaza__",Forall (Typed Ungeneralizable Implicit (Ident (Bare
+    "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit
+    (Ident (Bare "c") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable
+    Implicit (Ident (Bare "c'") :| []) (Qualid (Bare "Type")) :| []) (Arrow (App (App
+    (Qualid (Bare "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare
+    "c")) :| [])) (Arrow (App (App (Qualid (Bare "a")) (PosArg (Qualid (Bare "b"))
+    :| [])) (PosArg (Qualid (Bare "c'")) :| [])) (App (App (Qualid (Bare "a")) (PosArg
+    (Qualid (Bare "b")) :| [])) (PosArg (InScope (App (Qualid (Bare "op_zt__")) (PosArg
+    (Qualid (Bare "c")) :| [PosArg (Qualid (Bare "c'"))])) "type") :| []))))))),(Qualified
+    "Control.Arrow" "op_ztztzt__",Forall (Typed Ungeneralizable Implicit (Ident (Bare
+    "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit
+    (Ident (Bare "c") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable
+    Implicit (Ident (Bare "b'") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed
+    Ungeneralizable Implicit (Ident (Bare "c'") :| []) (Qualid (Bare "Type")) :| [])
+    (Arrow (App (App (Qualid (Bare "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg
+    (Qualid (Bare "c")) :| [])) (Arrow (App (App (Qualid (Bare "a")) (PosArg (Qualid
+    (Bare "b'")) :| [])) (PosArg (Qualid (Bare "c'")) :| [])) (App (App (Qualid (Bare
+    "a")) (PosArg (InScope (App (Qualid (Bare "op_zt__")) (PosArg (Qualid (Bare "b"))
+    :| [PosArg (Qualid (Bare "b'"))])) "type") :| [])) (PosArg (InScope (App (Qualid
+    (Bare "op_zt__")) (PosArg (Qualid (Bare "c")) :| [PosArg (Qualid (Bare "c'"))]))
+    "type") :| [])))))))),(Qualified "Control.Arrow" "second",Forall (Typed Ungeneralizable
     Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed
     Ungeneralizable Implicit (Ident (Bare "c") :| []) (Qualid (Bare "Type")) :| [])
-    (Forall (Typed Ungeneralizable Implicit (Ident (Bare "c'") :| []) (Qualid (Bare
+    (Forall (Typed Ungeneralizable Implicit (Ident (Bare "d") :| []) (Qualid (Bare
     "Type")) :| []) (Arrow (App (App (Qualid (Bare "a")) (PosArg (Qualid (Bare "b"))
-    :| [])) (PosArg (Qualid (Bare "c")) :| [])) (Arrow (App (App (Qualid (Bare "a"))
-    (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare "c'")) :| [])) (App
-    (App (Qualid (Bare "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (App (Qualid
-    (Qualified "GHC.Tuple" "pair_type")) (PosArg (Qualid (Bare "c")) :| [PosArg (Qualid
-    (Bare "c'"))])) :| []))))))),(Qualified "Control.Arrow" "op_ztztzt__",Forall (Typed
-    Ungeneralizable Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type")) :| [])
-    (Forall (Typed Ungeneralizable Implicit (Ident (Bare "c") :| []) (Qualid (Bare
-    "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "b'") :|
-    []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident
-    (Bare "c'") :| []) (Qualid (Bare "Type")) :| []) (Arrow (App (App (Qualid (Bare
-    "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare "c")) :| []))
-    (Arrow (App (App (Qualid (Bare "a")) (PosArg (Qualid (Bare "b'")) :| [])) (PosArg
-    (Qualid (Bare "c'")) :| [])) (App (App (Qualid (Bare "a")) (PosArg (App (Qualid
-    (Qualified "GHC.Tuple" "pair_type")) (PosArg (Qualid (Bare "b")) :| [PosArg (Qualid
-    (Bare "b'"))])) :| [])) (PosArg (App (Qualid (Qualified "GHC.Tuple" "pair_type"))
-    (PosArg (Qualid (Bare "c")) :| [PosArg (Qualid (Bare "c'"))])) :| [])))))))),(Qualified
-    "Control.Arrow" "second",Forall (Typed Ungeneralizable Implicit (Ident (Bare "b")
-    :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident
-    (Bare "c") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable
-    Implicit (Ident (Bare "d") :| []) (Qualid (Bare "Type")) :| []) (Arrow (App (App
-    (Qualid (Bare "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare
-    "c")) :| [])) (App (App (Qualid (Bare "a")) (PosArg (App (Qualid (Qualified "GHC.Tuple"
-    "pair_type")) (PosArg (Qualid (Bare "d")) :| [PosArg (Qualid (Bare "b"))])) :|
-    [])) (PosArg (App (Qualid (Qualified "GHC.Tuple" "pair_type")) (PosArg (Qualid
-    (Bare "d")) :| [PosArg (Qualid (Bare "c"))])) :| []))))))]
+    :| [])) (PosArg (Qualid (Bare "c")) :| [])) (App (App (Qualid (Bare "a")) (PosArg
+    (InScope (App (Qualid (Bare "op_zt__")) (PosArg (Qualid (Bare "d")) :| [PosArg
+    (Qualid (Bare "b"))])) "type") :| [])) (PosArg (InScope (App (Qualid (Bare "op_zt__"))
+    (PosArg (Qualid (Bare "d")) :| [PosArg (Qualid (Bare "c"))])) "type") :| []))))))]
   Control.Arrow.ArrowApply: ClassDefinition (Qualified "Control.Arrow" "ArrowApply")
     [Typed Ungeneralizable Explicit (Ident (Bare "a") :| []) (Arrow (Qualid (Bare
     "Type")) (Arrow (Qualid (Bare "Type")) (Qualid (Bare "Type")))),Generalized Implicit
@@ -139,10 +138,10 @@ classDefns:
     :| []))] Nothing [(Qualified "Control.Arrow" "app",Forall (Typed Ungeneralizable
     Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed
     Ungeneralizable Implicit (Ident (Bare "c") :| []) (Qualid (Bare "Type")) :| [])
-    (App (App (Qualid (Bare "a")) (PosArg (App (Qualid (Qualified "GHC.Tuple" "pair_type"))
+    (App (App (Qualid (Bare "a")) (PosArg (InScope (App (Qualid (Bare "op_zt__"))
     (PosArg (App (App (Qualid (Bare "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg
-    (Qualid (Bare "c")) :| [])) :| [PosArg (Qualid (Bare "b"))])) :| [])) (PosArg
-    (Qualid (Bare "c")) :| []))))]
+    (Qualid (Bare "c")) :| [])) :| [PosArg (Qualid (Bare "b"))])) "type") :| []))
+    (PosArg (Qualid (Bare "c")) :| []))))]
   Control.Arrow.ArrowChoice: ClassDefinition (Qualified "Control.Arrow" "ArrowChoice")
     [Typed Ungeneralizable Explicit (Ident (Bare "a") :| []) (Arrow (Qualid (Bare
     "Type")) (Arrow (Qualid (Bare "Type")) (Qualid (Bare "Type")))),Generalized Implicit
@@ -213,10 +212,10 @@ classDefns:
     Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed
     Ungeneralizable Implicit (Ident (Bare "d") :| []) (Qualid (Bare "Type")) :| [])
     (Forall (Typed Ungeneralizable Implicit (Ident (Bare "c") :| []) (Qualid (Bare
-    "Type")) :| []) (Arrow (App (App (Qualid (Bare "a")) (PosArg (App (Qualid (Qualified
-    "GHC.Tuple" "pair_type")) (PosArg (Qualid (Bare "b")) :| [PosArg (Qualid (Bare
-    "d"))])) :| [])) (PosArg (App (Qualid (Qualified "GHC.Tuple" "pair_type")) (PosArg
-    (Qualid (Bare "c")) :| [PosArg (Qualid (Bare "d"))])) :| [])) (App (App (Qualid
+    "Type")) :| []) (Arrow (App (App (Qualid (Bare "a")) (PosArg (InScope (App (Qualid
+    (Bare "op_zt__")) (PosArg (Qualid (Bare "b")) :| [PosArg (Qualid (Bare "d"))]))
+    "type") :| [])) (PosArg (InScope (App (Qualid (Bare "op_zt__")) (PosArg (Qualid
+    (Bare "c")) :| [PosArg (Qualid (Bare "d"))])) "type") :| [])) (App (App (Qualid
     (Bare "a")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare "c")) :|
     []))))))]
 constructorTypes:

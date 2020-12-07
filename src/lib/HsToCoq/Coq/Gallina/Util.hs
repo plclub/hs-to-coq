@@ -37,6 +37,7 @@ module HsToCoq.Coq.Gallina.Util (
   nameToTerm, nameToPattern,
   binderArgs,
   consolidateTypedBinders,
+  normalizeType,
 
   -- * Manipulating 'Sentence's
   isComment
@@ -335,3 +336,10 @@ unconsOneBinderFromType _              = Nothing
 isComment :: Sentence -> Bool
 isComment CommentSentence{} = True
 isComment _ = False
+
+normalizeType :: Term -> Term
+normalizeType (Parens t)                = normalizeType t
+-- We need to normalize the merge of two [App]s becuase there might be a thrid [App]
+normalizeType (App (App t args1) args2) = normalizeType $ App t $ args1 <> args2
+normalizeType (HasType t _)             = normalizeType t
+normalizeType t                         = t

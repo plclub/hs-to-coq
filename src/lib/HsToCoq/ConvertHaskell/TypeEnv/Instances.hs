@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, RecordWildCards, FlexibleContexts #-}
+{-# LANGUAGE DeriveDataTypeable, RecordWildCards, FlexibleContexts, OverloadedStrings #-}
 module HsToCoq.ConvertHaskell.TypeEnv.Instances where
 
 import Data.Foldable
@@ -19,6 +19,8 @@ import HsToCoq.ConvertHaskell.Variables
 import HscTypes
 import InstEnv
 import Var
+
+import Debug.Trace
 
 data ConvertedInstance =
   ConvertedInstance { convertedInstanceClass :: ConvertedTyCl
@@ -45,13 +47,13 @@ convertInstance inst = do
   convertedInstanceTops <- mapM (var TypeNS) (catMaybes $ is_tcs inst)
   pure ConvertedInstance{..}
   where tyVarToBinder tv = do
-          name <- var TypeNS $ varName tv
+          name <- var TypeNS  $ varName tv
           typ  <- convertType $ varType tv
           pure $ mkTypedBinder Implicit (Ident name) typ
 
-lookupInstance :: ConversionMonad r m => Qualid -> Qualid -> ConvertedInstanceEnv -> m ConvertedInstance
-lookupInstance top className env = case find matchInstance env of
+lookupInstance :: ConversionMonad r m => Term -> Qualid -> ConvertedInstanceEnv -> m ConvertedInstance
+lookupInstance instTy className env = case find matchInstance env of
   Just t -> pure t
-  _ -> throwProgramError $ "The class " <> showP className <> " of " <> showP top <> " is not found"
-  where matchInstance i = elem top (convertedInstanceTops i) &&
+  _      -> throwProgramError $ "The class " <> showP className <> " of " <> showP instTy <> " is not found"
+  where matchInstance i = elem instTy (convertedInstanceTypes i) &&
           convertedTyClName (convertedInstanceClass i) == className

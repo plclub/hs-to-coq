@@ -354,8 +354,7 @@ Local Definition Bifunctor__Const_bimap
      forall {c : Type},
      forall {d : Type},
      (a -> b) ->
-     (c -> d) ->
-     Data.Functor.Const.Const Type a c -> Data.Functor.Const.Const Type b d :=
+     (c -> d) -> Data.Functor.Const.Const a c -> Data.Functor.Const.Const b d :=
   fun {a : Type} {b : Type} {c : Type} {d : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -366,8 +365,7 @@ Local Definition Bifunctor__Const_first
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
-     (a -> b) ->
-     Data.Functor.Const.Const Type a c -> Data.Functor.Const.Const Type b c :=
+     (a -> b) -> Data.Functor.Const.Const a c -> Data.Functor.Const.Const b c :=
   fun {a : Type} {b : Type} {c : Type} =>
     fun f => Bifunctor__Const_bimap f GHC.Base.id.
 
@@ -375,11 +373,10 @@ Local Definition Bifunctor__Const_second
    : forall {b : Type},
      forall {c : Type},
      forall {a : Type},
-     (b -> c) ->
-     Data.Functor.Const.Const Type a b -> Data.Functor.Const.Const Type a c :=
+     (b -> c) -> Data.Functor.Const.Const a b -> Data.Functor.Const.Const a c :=
   fun {b : Type} {c : Type} {a : Type} => Bifunctor__Const_bimap GHC.Base.id.
 
-Program Instance Bifunctor__Const : Bifunctor (Data.Functor.Const.Const Type) :=
+Program Instance Bifunctor__Const : Bifunctor Data.Functor.Const.Const :=
   fun _ k__ =>
     k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
              Bifunctor__Const_bimap ;

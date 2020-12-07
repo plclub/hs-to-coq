@@ -298,7 +298,7 @@ Local Definition Bitraversable__Const_bitraverse
      forall `{GHC.Base.Applicative f},
      (a -> f c) ->
      (b -> f d) ->
-     Data.Functor.Const.Const Type a b -> f (Data.Functor.Const.Const Type c d) :=
+     Data.Functor.Const.Const a b -> f (Data.Functor.Const.Const c d) :=
   fun {f : Type -> Type}
   {a : Type}
   {c : Type}
@@ -312,7 +312,7 @@ Local Definition Bitraversable__Const_bitraverse
       end.
 
 Program Instance Bitraversable__Const
-   : Bitraversable (Data.Functor.Const.Const Type) :=
+   : Bitraversable Data.Functor.Const.Const :=
   fun _ k__ =>
     k__ {| bitraverse__ := fun {f : Type -> Type}
            {a : Type}
@@ -352,9 +352,8 @@ Definition biforM {t : Type -> Type -> Type} {f : Type -> Type} {a : Type} {b
 
 Definition bimapAccumL {t : Type -> Type -> Type} {a : Type} {b : Type} {c
    : Type} {d : Type} {e : Type} `{Bitraversable t}
-   : (a -> b -> GHC.Tuple.pair_type a c) ->
-     (a -> d -> GHC.Tuple.pair_type a e) ->
-     a -> t b d -> GHC.Tuple.pair_type a (t c e) :=
+   : (a -> b -> (a * c)%type) ->
+     (a -> d -> (a * e)%type) -> a -> t b d -> (a * t c e)%type :=
   fun f g s t =>
     Data.Functor.Utils.runStateL (bitraverse (Data.Functor.Utils.Mk_StateL
                                               GHC.Base.∘
@@ -363,9 +362,8 @@ Definition bimapAccumL {t : Type -> Type -> Type} {a : Type} {b : Type} {c
 
 Definition bimapAccumR {t : Type -> Type -> Type} {a : Type} {b : Type} {c
    : Type} {d : Type} {e : Type} `{Bitraversable t}
-   : (a -> b -> GHC.Tuple.pair_type a c) ->
-     (a -> d -> GHC.Tuple.pair_type a e) ->
-     a -> t b d -> GHC.Tuple.pair_type a (t c e) :=
+   : (a -> b -> (a * c)%type) ->
+     (a -> d -> (a * e)%type) -> a -> t b d -> (a * t c e)%type :=
   fun f g s t =>
     Data.Functor.Utils.runStateR (bitraverse (Data.Functor.Utils.Mk_StateR
                                               GHC.Base.∘
@@ -379,21 +377,16 @@ Definition bimapDefault {t : Type -> Type -> Type} {a : Type} {b : Type} {c
                    (c -> Data.Functor.Identity.Identity d) ->
                    t a c -> Data.Functor.Identity.Identity (t b d)).
 
-Definition bifoldMapDefault {t : Type -> Type -> Type} {m : Type} {a : Type} {b
-   : Type} `{Bitraversable t} `{GHC.Base.Monoid m}
-   : (a -> m) -> (b -> m) -> t a b -> m :=
-  GHC.Prim.coerce (bitraverse : (a -> Data.Functor.Const.Const Type m unit) ->
-                   (b -> Data.Functor.Const.Const Type m unit) ->
-                   t a b -> Data.Functor.Const.Const Type m (t unit unit)).
+(* Skipping definition `Data.Bitraversable.bifoldMapDefault' *)
 
 (* External variables:
-     Type pair unit Data.Bifoldable.Bifoldable Data.Bifunctor.Bifunctor
+     Type op_zt__ pair Data.Bifoldable.Bifoldable Data.Bifunctor.Bifunctor
      Data.Either.Either Data.Either.Left Data.Either.Right Data.Functor.op_zlzdzg__
      Data.Functor.Const.Const Data.Functor.Const.Mk_Const
      Data.Functor.Identity.Identity Data.Functor.Utils.Mk_StateL
      Data.Functor.Utils.Mk_StateR Data.Functor.Utils.runStateL
-     Data.Functor.Utils.runStateR GHC.Base.Applicative GHC.Base.Monoid GHC.Base.flip
-     GHC.Base.id GHC.Base.liftA2 GHC.Base.op_z2218U__ GHC.Prim.coerce GHC.Tuple.pair2
+     Data.Functor.Utils.runStateR GHC.Base.Applicative GHC.Base.flip GHC.Base.id
+     GHC.Base.liftA2 GHC.Base.op_z2218U__ GHC.Prim.coerce GHC.Tuple.pair2
      GHC.Tuple.pair3 GHC.Tuple.pair4 GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7
      GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type
      GHC.Tuple.sext_type GHC.Tuple.triple_type

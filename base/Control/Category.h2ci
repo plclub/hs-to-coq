@@ -4,7 +4,7 @@ classTypes:
   Control.Category.Category: fromList []
 classDefns:
   Control.Category.Category: ClassDefinition (Qualified "Control.Category" "Category")
-    [Typed Ungeneralizable Explicit (Ident (Bare "k") :| []) (Qualid (Bare "Type")),Typed
+    [Typed Ungeneralizable Implicit (Ident (Bare "k") :| []) (Qualid (Bare "Type")),Typed
     Ungeneralizable Explicit (Ident (Bare "cat") :| []) (Arrow (Qualid (Bare "k"))
     (Arrow (Qualid (Bare "k")) (Qualid (Bare "Type"))))] Nothing [(Qualified "Control.Category"
     "id",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid (Bare

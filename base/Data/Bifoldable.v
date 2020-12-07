@@ -126,7 +126,7 @@ Local Definition Bifoldable__Const_bifoldMap
      forall {a : Type},
      forall {b : Type},
      forall `{GHC.Base.Monoid m},
-     (a -> m) -> (b -> m) -> Data.Functor.Const.Const Type a b -> m :=
+     (a -> m) -> (b -> m) -> Data.Functor.Const.Const a b -> m :=
   fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
@@ -135,7 +135,7 @@ Local Definition Bifoldable__Const_bifoldMap
 
 Local Definition Bifoldable__Const_bifold
    : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, Data.Functor.Const.Const Type m m -> m :=
+     forall `{GHC.Base.Monoid m}, Data.Functor.Const.Const m m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} =>
     Bifoldable__Const_bifoldMap GHC.Base.id GHC.Base.id.
 
@@ -143,7 +143,7 @@ Local Definition Bifoldable__Const_bifoldl
    : forall {c : Type},
      forall {a : Type},
      forall {b : Type},
-     (c -> a -> c) -> (c -> b -> c) -> c -> Data.Functor.Const.Const Type a b -> c :=
+     (c -> a -> c) -> (c -> b -> c) -> c -> Data.Functor.Const.Const a b -> c :=
   fun {c : Type} {a : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
@@ -159,15 +159,14 @@ Local Definition Bifoldable__Const_bifoldr
    : forall {a : Type},
      forall {c : Type},
      forall {b : Type},
-     (a -> c -> c) -> (b -> c -> c) -> c -> Data.Functor.Const.Const Type a b -> c :=
+     (a -> c -> c) -> (b -> c -> c) -> c -> Data.Functor.Const.Const a b -> c :=
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__Const_bifoldMap
                                       (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
                                       (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
-Program Instance Bifoldable__Const
-   : Bifoldable (Data.Functor.Const.Const Type) :=
+Program Instance Bifoldable__Const : Bifoldable Data.Functor.Const.Const :=
   fun _ k__ =>
     k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Bifoldable__Const_bifold ;

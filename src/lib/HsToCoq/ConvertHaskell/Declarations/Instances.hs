@@ -49,6 +49,7 @@ import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.ConvertHaskell.Expr
 import HsToCoq.ConvertHaskell.Axiomatize
 import HsToCoq.ConvertHaskell.Declarations.Class
+import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 import HsToCoq.ConvertHaskell.TypeEnv.Instances
 
 --------------------------------------------------------------------------------
@@ -243,7 +244,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
       -- failure will be caught and cause the instance to be skipped
       (className, instTy) <- either convUnsupportedHere pure $ decomposeClassTy classTy
       
-      _inst@ConvertedInstance{..} <- lookupInstance instanceTy className env
+      _inst@ConvertedInstance{..} <- lookupInstance instTy className env
       let binds = convertedInstanceBinds ++ filter (\b -> binderGeneralizability b == Generalizable) binds'
 
       -- Get the methods of this class (this should already exclude skipped ones)
@@ -274,7 +275,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
 
       let allLocalNames = M.fromList $  [ (m, Qualid (localNameFor m)) | m <- classMethods ]
 
-      let quantify sub meth body = ((maybeFun ?? body) . subst sub) <$> getImplicitBindersForClassMember className meth
+      let quantify sub meth body = (maybeFun ?? body) . subst sub <$> getImplicitBindersForClassMember className meth
 
       -- For each method, look for
       --  * explicit definitions
@@ -349,7 +350,8 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
                                                       qbody
                                                       NotExistingClass
 
-      let instHeadTy = appList (Qualid className) (PosArg <$> convertedInstanceTypes)
+      let instHeadTy = appList (Qualid className)
+            (PosArg <$> filterVisibleVars convertedInstanceClass convertedInstanceTypes)
       instance_sentence <- view (edits.simpleClasses.contains className) >>= \case
         True  -> do
           methods <- traverse (\m -> (m,) <$> quantify M.empty m (Qualid $ localNameFor m)) classMethods
@@ -441,7 +443,7 @@ makeInstanceMethodSubst params =
 -- TODO: multiparameter type classes   "instance C t1 t2 where"
 --       instances with contexts       "instance C a => C (Maybe a) where"
 decomposeClassTy :: Term -> Either String (Qualid, Term)
-decomposeClassTy (App1 (Qualid cn) a) = Right (cn, a)
+decomposeClassTy (App1 (Qualid cn) a) = Right (cn, normalizeType a)
 decomposeClassTy ty                   =  Left $ "type class instance head `" ++ showP ty ++ "'"
 
 decomposeForall :: Term -> ([Binder], Term)
