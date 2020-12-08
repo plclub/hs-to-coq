@@ -93,6 +93,7 @@ library
                      , HsToCoq.ConvertHaskell.Declarations.Instances
                      , HsToCoq.ConvertHaskell.Declarations.TyCl
                      , HsToCoq.ConvertHaskell.TypeEnv.Id
+                     , HsToCoq.ConvertHaskell.TypeEnv.TyCon
                      , HsToCoq.ConvertHaskell.TypeEnv.TyCl
                      , HsToCoq.ConvertHaskell.TypeEnv.Instances
                      , HsToCoq.ConvertHaskell.Module

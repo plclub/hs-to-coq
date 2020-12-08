@@ -2,7 +2,11 @@
 
 #include "ghc-compat.h"
 
-module HsToCoq.ConvertHaskell.Type (convertType, convertPredType) where
+module HsToCoq.ConvertHaskell.Type (
+  convertType,
+  convertKind,
+  convertTyCon,
+  convertPredType) where
 
 import Data.List.NonEmpty (NonEmpty(..))
 import Control.Lens
@@ -22,8 +26,10 @@ import HsToCoq.ConvertHaskell.Monad
 
 convertTyConApp :: ConversionMonad r m => Bool -> TyCon -> [KindOrType] -> Qualid -> m Term
 convertTyConApp b tc ts ctc = do
-  let cond = if b then const True else isVisibleTyConBinder . fst
-  ts' <- mapM (convertType . snd) $ filter cond $ zip (tyConBinders tc) ts
+  let cond = if b then const True else fst
+  let rest = repeat True
+  ts' <- mapM (convertType . snd) $ filter cond $
+    zip ((isVisibleTyConBinder <$> tyConBinders tc) <> rest) ts
   case ts' of
     ct : cts' -> pure $ App (Qualid ctc) $ PosArg <$> (ct :| cts')
     _         -> pure $ Qualid ctc
