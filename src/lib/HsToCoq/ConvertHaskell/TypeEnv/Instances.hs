@@ -20,8 +20,6 @@ import HscTypes
 import InstEnv
 import Var
 
-import Debug.Trace
-
 data ConvertedInstance =
   ConvertedInstance { convertedInstanceClass :: ConvertedTyCl
                     , convertedInstanceBinds :: [Binder]
