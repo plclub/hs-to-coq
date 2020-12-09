@@ -41,30 +41,33 @@ Arguments Mk_ExceptT {_} {_} {_} _.
 
 (* Converted value declarations: *)
 
-Local Definition Eq1__ExceptT_liftEq {inst_e} {inst_m} `{GHC.Base.Eq_ inst_e}
-  `{Data.Functor.Classes.Eq1 inst_m}
-   : forall {a} {b},
+Local Definition Eq1__ExceptT_liftEq {inst_e : Type} {inst_m : Type -> Type}
+  `{GHC.Base.Eq_ inst_e} `{Data.Functor.Classes.Eq1 inst_m}
+   : forall {a : Type},
+     forall {b : Type},
      (a -> b -> bool) ->
-     (ExceptT inst_e inst_m) a -> (ExceptT inst_e inst_m) b -> bool :=
-  fun {a} {b} =>
+     ExceptT inst_e inst_m a -> ExceptT inst_e inst_m b -> bool :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | eq, Mk_ExceptT x, Mk_ExceptT y =>
           (@Data.Functor.Classes.liftEq inst_m _ _ _ (Data.Functor.Classes.liftEq eq)) x y
       end.
 
-Program Instance Eq1__ExceptT {e} {m} `{GHC.Base.Eq_ e}
+Program Instance Eq1__ExceptT {e : Type} {m : Type -> Type} `{GHC.Base.Eq_ e}
   `{Data.Functor.Classes.Eq1 m}
    : Data.Functor.Classes.Eq1 (ExceptT e m) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a} {b} => Eq1__ExceptT_liftEq |}.
+    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+             Eq1__ExceptT_liftEq |}.
 
-Local Definition Ord1__ExceptT_liftCompare {inst_e} {inst_m} `{GHC.Base.Ord
-  inst_e} `{Data.Functor.Classes.Ord1 inst_m}
-   : forall {a} {b},
+Local Definition Ord1__ExceptT_liftCompare {inst_e : Type} {inst_m
+   : Type -> Type} `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m}
+   : forall {a : Type},
+     forall {b : Type},
      (a -> b -> comparison) ->
-     (ExceptT inst_e inst_m) a -> (ExceptT inst_e inst_m) b -> comparison :=
-  fun {a} {b} =>
+     ExceptT inst_e inst_m a -> ExceptT inst_e inst_m b -> comparison :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | comp, Mk_ExceptT x, Mk_ExceptT y =>
@@ -72,11 +75,11 @@ Local Definition Ord1__ExceptT_liftCompare {inst_e} {inst_m} `{GHC.Base.Ord
            (Data.Functor.Classes.liftCompare comp)) x y
       end.
 
-Program Instance Ord1__ExceptT {e} {m} `{GHC.Base.Ord e}
+Program Instance Ord1__ExceptT {e : Type} {m : Type -> Type} `{GHC.Base.Ord e}
   `{Data.Functor.Classes.Ord1 m}
    : Data.Functor.Classes.Ord1 (ExceptT e m) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a} {b} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
              Ord1__ExceptT_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
@@ -85,65 +88,71 @@ Program Instance Ord1__ExceptT {e} {m} `{GHC.Base.Ord e}
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Control.Monad.Trans.Except.Show1__ExceptT' *)
 
-Local Definition Eq___ExceptT_op_zeze__ {inst_e} {inst_m} {inst_a}
-  `{GHC.Base.Eq_ inst_e} `{Data.Functor.Classes.Eq1 inst_m} `{GHC.Base.Eq_ inst_a}
-   : (ExceptT inst_e inst_m inst_a) -> (ExceptT inst_e inst_m inst_a) -> bool :=
+Local Definition Eq___ExceptT_op_zeze__ {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Eq_ inst_e} `{Data.Functor.Classes.Eq1 inst_m}
+  `{GHC.Base.Eq_ inst_a}
+   : ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a -> bool :=
   Data.Functor.Classes.eq1.
 
-Local Definition Eq___ExceptT_op_zsze__ {inst_e} {inst_m} {inst_a}
-  `{GHC.Base.Eq_ inst_e} `{Data.Functor.Classes.Eq1 inst_m} `{GHC.Base.Eq_ inst_a}
-   : (ExceptT inst_e inst_m inst_a) -> (ExceptT inst_e inst_m inst_a) -> bool :=
+Local Definition Eq___ExceptT_op_zsze__ {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Eq_ inst_e} `{Data.Functor.Classes.Eq1 inst_m}
+  `{GHC.Base.Eq_ inst_a}
+   : ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a -> bool :=
   fun x y => negb (Eq___ExceptT_op_zeze__ x y).
 
-Program Instance Eq___ExceptT {e} {m} {a} `{GHC.Base.Eq_ e}
-  `{Data.Functor.Classes.Eq1 m} `{GHC.Base.Eq_ a}
+Program Instance Eq___ExceptT {e : Type} {m : Type -> Type} {a : Type}
+  `{GHC.Base.Eq_ e} `{Data.Functor.Classes.Eq1 m} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (ExceptT e m a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___ExceptT_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___ExceptT_op_zsze__ |}.
 
-Local Definition Ord__ExceptT_compare {inst_e} {inst_m} {inst_a} `{GHC.Base.Ord
-  inst_e} `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord inst_a}
-   : (ExceptT inst_e inst_m inst_a) ->
-     (ExceptT inst_e inst_m inst_a) -> comparison :=
+Local Definition Ord__ExceptT_compare {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m}
+  `{GHC.Base.Ord inst_a}
+   : ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a -> comparison :=
   Data.Functor.Classes.compare1.
 
-Local Definition Ord__ExceptT_op_zl__ {inst_e} {inst_m} {inst_a} `{GHC.Base.Ord
-  inst_e} `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord inst_a}
-   : (ExceptT inst_e inst_m inst_a) -> (ExceptT inst_e inst_m inst_a) -> bool :=
+Local Definition Ord__ExceptT_op_zl__ {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m}
+  `{GHC.Base.Ord inst_a}
+   : ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a -> bool :=
   fun x y => Ord__ExceptT_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__ExceptT_op_zlze__ {inst_e} {inst_m} {inst_a}
-  `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord
-  inst_a}
-   : (ExceptT inst_e inst_m inst_a) -> (ExceptT inst_e inst_m inst_a) -> bool :=
+Local Definition Ord__ExceptT_op_zlze__ {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m}
+  `{GHC.Base.Ord inst_a}
+   : ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a -> bool :=
   fun x y => Ord__ExceptT_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__ExceptT_op_zg__ {inst_e} {inst_m} {inst_a} `{GHC.Base.Ord
-  inst_e} `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord inst_a}
-   : (ExceptT inst_e inst_m inst_a) -> (ExceptT inst_e inst_m inst_a) -> bool :=
+Local Definition Ord__ExceptT_op_zg__ {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m}
+  `{GHC.Base.Ord inst_a}
+   : ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a -> bool :=
   fun x y => Ord__ExceptT_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__ExceptT_op_zgze__ {inst_e} {inst_m} {inst_a}
-  `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord
-  inst_a}
-   : (ExceptT inst_e inst_m inst_a) -> (ExceptT inst_e inst_m inst_a) -> bool :=
+Local Definition Ord__ExceptT_op_zgze__ {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m}
+  `{GHC.Base.Ord inst_a}
+   : ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a -> bool :=
   fun x y => Ord__ExceptT_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__ExceptT_max {inst_e} {inst_m} {inst_a} `{GHC.Base.Ord
-  inst_e} `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord inst_a}
-   : (ExceptT inst_e inst_m inst_a) ->
-     (ExceptT inst_e inst_m inst_a) -> (ExceptT inst_e inst_m inst_a) :=
+Local Definition Ord__ExceptT_max {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m}
+  `{GHC.Base.Ord inst_a}
+   : ExceptT inst_e inst_m inst_a ->
+     ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a :=
   fun x y => if Ord__ExceptT_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__ExceptT_min {inst_e} {inst_m} {inst_a} `{GHC.Base.Ord
-  inst_e} `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord inst_a}
-   : (ExceptT inst_e inst_m inst_a) ->
-     (ExceptT inst_e inst_m inst_a) -> (ExceptT inst_e inst_m inst_a) :=
+Local Definition Ord__ExceptT_min {inst_e : Type} {inst_m : Type -> Type}
+  {inst_a : Type} `{GHC.Base.Ord inst_e} `{Data.Functor.Classes.Ord1 inst_m}
+  `{GHC.Base.Ord inst_a}
+   : ExceptT inst_e inst_m inst_a ->
+     ExceptT inst_e inst_m inst_a -> ExceptT inst_e inst_m inst_a :=
   fun x y => if Ord__ExceptT_op_zlze__ x y : bool then x else y.
 
-Program Instance Ord__ExceptT {e} {m} {a} `{GHC.Base.Ord e}
-  `{Data.Functor.Classes.Ord1 m} `{GHC.Base.Ord a}
+Program Instance Ord__ExceptT {e : Type} {m : Type -> Type} {a : Type}
+  `{GHC.Base.Ord e} `{Data.Functor.Classes.Ord1 m} `{GHC.Base.Ord a}
    : GHC.Base.Ord (ExceptT e m a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__ExceptT_op_zl__ ;
@@ -160,138 +169,153 @@ Program Instance Ord__ExceptT {e} {m} {a} `{GHC.Base.Ord e}
 (* Skipping all instances of class `GHC.Show.Show', including
    `Control.Monad.Trans.Except.Show__ExceptT' *)
 
-Definition runExceptT {e} {m} {a}
+Definition runExceptT {e : Type} {m : Type -> Type} {a : Type}
    : ExceptT e m a -> m (Data.Either.Either e a) :=
   fun '(Mk_ExceptT m) => m.
 
-Local Definition Functor__ExceptT_fmap {inst_m} {inst_e} `{(GHC.Base.Functor
-   inst_m)}
-   : forall {a} {b},
-     (a -> b) -> (ExceptT inst_e inst_m) a -> (ExceptT inst_e inst_m) b :=
-  fun {a} {b} =>
+Local Definition Functor__ExceptT_fmap {inst_m : Type -> Type} {inst_e : Type}
+  `{(GHC.Base.Functor inst_m)}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b) -> ExceptT inst_e inst_m a -> ExceptT inst_e inst_m b :=
+  fun {a : Type} {b : Type} =>
     fun f =>
       Mk_ExceptT GHC.Base.∘ (GHC.Base.fmap (GHC.Base.fmap f) GHC.Base.∘ runExceptT).
 
-Local Definition Functor__ExceptT_op_zlzd__ {inst_m} {inst_e}
-  `{(GHC.Base.Functor inst_m)}
-   : forall {a} {b},
-     a -> (ExceptT inst_e inst_m) b -> (ExceptT inst_e inst_m) a :=
-  fun {a} {b} => Functor__ExceptT_fmap GHC.Base.∘ GHC.Base.const.
+Local Definition Functor__ExceptT_op_zlzd__ {inst_m : Type -> Type} {inst_e
+   : Type} `{(GHC.Base.Functor inst_m)}
+   : forall {a : Type},
+     forall {b : Type}, a -> ExceptT inst_e inst_m b -> ExceptT inst_e inst_m a :=
+  fun {a : Type} {b : Type} => Functor__ExceptT_fmap GHC.Base.∘ GHC.Base.const.
 
-Program Instance Functor__ExceptT {m} {e} `{(GHC.Base.Functor m)}
+Program Instance Functor__ExceptT {m : Type -> Type} {e : Type}
+  `{(GHC.Base.Functor m)}
    : GHC.Base.Functor (ExceptT e m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__ExceptT_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__ExceptT_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__ExceptT_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__ExceptT_op_zlzd__ |}.
 
-Local Definition Foldable__ExceptT_foldMap {inst_f} {inst_e}
-  `{(Data.Foldable.Foldable inst_f)}
-   : forall {m} {a},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> (ExceptT inst_e inst_f) a -> m :=
-  fun {m} {a} `{GHC.Base.Monoid m} =>
+Local Definition Foldable__ExceptT_foldMap {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Foldable.Foldable inst_f)}
+   : forall {m : Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monoid m}, (a -> m) -> ExceptT inst_e inst_f a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_ExceptT a =>
           Data.Foldable.foldMap (Data.Either.either (GHC.Base.const GHC.Base.mempty) f) a
       end.
 
-Local Definition Foldable__ExceptT_fold {inst_f} {inst_e}
+Local Definition Foldable__ExceptT_fold {inst_f : Type -> Type} {inst_e : Type}
   `{(Data.Foldable.Foldable inst_f)}
-   : forall {m}, forall `{GHC.Base.Monoid m}, (ExceptT inst_e inst_f) m -> m :=
-  fun {m} `{GHC.Base.Monoid m} => Foldable__ExceptT_foldMap GHC.Base.id.
+   : forall {m : Type},
+     forall `{GHC.Base.Monoid m}, ExceptT inst_e inst_f m -> m :=
+  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__ExceptT_foldMap GHC.Base.id.
 
-Local Definition Foldable__ExceptT_foldl {inst_f} {inst_e}
+Local Definition Foldable__ExceptT_foldl {inst_f : Type -> Type} {inst_e : Type}
   `{(Data.Foldable.Foldable inst_f)}
-   : forall {b} {a}, (b -> a -> b) -> b -> (ExceptT inst_e inst_f) a -> b :=
-  fun {b} {a} =>
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> ExceptT inst_e inst_f a -> b :=
+  fun {b : Type} {a : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
                                       (Foldable__ExceptT_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
                                                                   (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                    GHC.Base.flip f)) t)) z.
 
-Local Definition Foldable__ExceptT_foldr {inst_f} {inst_e}
+Local Definition Foldable__ExceptT_foldr {inst_f : Type -> Type} {inst_e : Type}
   `{(Data.Foldable.Foldable inst_f)}
-   : forall {a} {b}, (a -> b -> b) -> b -> (ExceptT inst_e inst_f) a -> b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> ExceptT inst_e inst_f a -> b :=
+  fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__ExceptT_foldMap
                                       (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
-Local Definition Foldable__ExceptT_foldl' {inst_f} {inst_e}
-  `{(Data.Foldable.Foldable inst_f)}
-   : forall {b} {a}, (b -> a -> b) -> b -> (ExceptT inst_e inst_f) a -> b :=
-  fun {b} {a} =>
+Local Definition Foldable__ExceptT_foldl' {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Foldable.Foldable inst_f)}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> ExceptT inst_e inst_f a -> b :=
+  fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in
       Foldable__ExceptT_foldr f' GHC.Base.id xs z0.
 
-Local Definition Foldable__ExceptT_foldr' {inst_f} {inst_e}
-  `{(Data.Foldable.Foldable inst_f)}
-   : forall {a} {b}, (a -> b -> b) -> b -> (ExceptT inst_e inst_f) a -> b :=
-  fun {a} {b} =>
+Local Definition Foldable__ExceptT_foldr' {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Foldable.Foldable inst_f)}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> ExceptT inst_e inst_f a -> b :=
+  fun {a : Type} {b : Type} =>
     fun f z0 xs =>
       let f' := fun k x z => k (f x z) in
       Foldable__ExceptT_foldl f' GHC.Base.id xs z0.
 
-Local Definition Foldable__ExceptT_length {inst_f} {inst_e}
-  `{(Data.Foldable.Foldable inst_f)}
-   : forall {a}, (ExceptT inst_e inst_f) a -> GHC.Num.Int :=
-  fun {a} =>
+Local Definition Foldable__ExceptT_length {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Foldable.Foldable inst_f)}
+   : forall {a : Type}, ExceptT inst_e inst_f a -> GHC.Num.Int :=
+  fun {a : Type} =>
     Foldable__ExceptT_foldl' (fun arg_0__ arg_1__ =>
                                 match arg_0__, arg_1__ with
                                 | c, _ => c GHC.Num.+ #1
                                 end) #0.
 
-Local Definition Foldable__ExceptT_null {inst_f} {inst_e}
+Local Definition Foldable__ExceptT_null {inst_f : Type -> Type} {inst_e : Type}
   `{(Data.Foldable.Foldable inst_f)}
-   : forall {a}, (ExceptT inst_e inst_f) a -> bool :=
-  fun {a} => Foldable__ExceptT_foldr (fun arg_0__ arg_1__ => false) true.
+   : forall {a : Type}, ExceptT inst_e inst_f a -> bool :=
+  fun {a : Type} => Foldable__ExceptT_foldr (fun arg_0__ arg_1__ => false) true.
 
-Local Definition Foldable__ExceptT_product {inst_f} {inst_e}
-  `{(Data.Foldable.Foldable inst_f)}
-   : forall {a}, forall `{GHC.Num.Num a}, (ExceptT inst_e inst_f) a -> a :=
-  fun {a} `{GHC.Num.Num a} =>
+Local Definition Foldable__ExceptT_product {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Foldable.Foldable inst_f)}
+   : forall {a : Type}, forall `{GHC.Num.Num a}, ExceptT inst_e inst_f a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
                                (Foldable__ExceptT_foldMap Data.SemigroupInternal.Mk_Product).
 
-Local Definition Foldable__ExceptT_sum {inst_f} {inst_e}
+Local Definition Foldable__ExceptT_sum {inst_f : Type -> Type} {inst_e : Type}
   `{(Data.Foldable.Foldable inst_f)}
-   : forall {a}, forall `{GHC.Num.Num a}, (ExceptT inst_e inst_f) a -> a :=
-  fun {a} `{GHC.Num.Num a} =>
+   : forall {a : Type}, forall `{GHC.Num.Num a}, ExceptT inst_e inst_f a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
                                (Foldable__ExceptT_foldMap Data.SemigroupInternal.Mk_Sum).
 
-Local Definition Foldable__ExceptT_toList {inst_f} {inst_e}
-  `{(Data.Foldable.Foldable inst_f)}
-   : forall {a}, (ExceptT inst_e inst_f) a -> list a :=
-  fun {a} =>
+Local Definition Foldable__ExceptT_toList {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Foldable.Foldable inst_f)}
+   : forall {a : Type}, ExceptT inst_e inst_f a -> list a :=
+  fun {a : Type} =>
     fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__ExceptT_foldr c n t)).
 
-Program Instance Foldable__ExceptT {f} {e} `{(Data.Foldable.Foldable f)}
+Program Instance Foldable__ExceptT {f : Type -> Type} {e : Type}
+  `{(Data.Foldable.Foldable f)}
    : Data.Foldable.Foldable (ExceptT e f) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__ExceptT_fold ;
-           Data.Foldable.foldMap__ := fun {m} {a} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__ExceptT_foldMap ;
-           Data.Foldable.foldl__ := fun {b} {a} => Foldable__ExceptT_foldl ;
-           Data.Foldable.foldl'__ := fun {b} {a} => Foldable__ExceptT_foldl' ;
-           Data.Foldable.foldr__ := fun {a} {b} => Foldable__ExceptT_foldr ;
-           Data.Foldable.foldr'__ := fun {a} {b} => Foldable__ExceptT_foldr' ;
-           Data.Foldable.length__ := fun {a} => Foldable__ExceptT_length ;
-           Data.Foldable.null__ := fun {a} => Foldable__ExceptT_null ;
-           Data.Foldable.product__ := fun {a} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__ExceptT_foldl ;
+           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} =>
+             Foldable__ExceptT_foldl' ;
+           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__ExceptT_foldr ;
+           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} =>
+             Foldable__ExceptT_foldr' ;
+           Data.Foldable.length__ := fun {a : Type} => Foldable__ExceptT_length ;
+           Data.Foldable.null__ := fun {a : Type} => Foldable__ExceptT_null ;
+           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
              Foldable__ExceptT_product ;
-           Data.Foldable.sum__ := fun {a} `{GHC.Num.Num a} => Foldable__ExceptT_sum ;
-           Data.Foldable.toList__ := fun {a} => Foldable__ExceptT_toList |}.
+           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+             Foldable__ExceptT_sum ;
+           Data.Foldable.toList__ := fun {a : Type} => Foldable__ExceptT_toList |}.
 
-Local Definition Traversable__ExceptT_traverse {inst_f} {inst_e}
-  `{(Data.Traversable.Traversable inst_f)}
-   : forall {f} {a} {b},
+Local Definition Traversable__ExceptT_traverse {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Traversable.Traversable inst_f)}
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
      forall `{GHC.Base.Applicative f},
-     (a -> f b) -> (ExceptT inst_e inst_f) a -> f ((ExceptT inst_e inst_f) b) :=
-  fun {f} {a} {b} `{GHC.Base.Applicative f} =>
+     (a -> f b) -> ExceptT inst_e inst_f a -> f (ExceptT inst_e inst_f b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_ExceptT a =>
@@ -301,47 +325,64 @@ Local Definition Traversable__ExceptT_traverse {inst_f} {inst_e}
                                                                             f)) a
       end.
 
-Local Definition Traversable__ExceptT_mapM {inst_f} {inst_e}
-  `{(Data.Traversable.Traversable inst_f)}
-   : forall {m} {a} {b},
+Local Definition Traversable__ExceptT_mapM {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Traversable.Traversable inst_f)}
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
      forall `{GHC.Base.Monad m},
-     (a -> m b) -> (ExceptT inst_e inst_f) a -> m ((ExceptT inst_e inst_f) b) :=
-  fun {m} {a} {b} `{GHC.Base.Monad m} => Traversable__ExceptT_traverse.
+     (a -> m b) -> ExceptT inst_e inst_f a -> m (ExceptT inst_e inst_f b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__ExceptT_traverse.
 
-Local Definition Traversable__ExceptT_sequenceA {inst_f} {inst_e}
-  `{(Data.Traversable.Traversable inst_f)}
-   : forall {f} {a},
+Local Definition Traversable__ExceptT_sequenceA {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Traversable.Traversable inst_f)}
+   : forall {f : Type -> Type},
+     forall {a : Type},
      forall `{GHC.Base.Applicative f},
-     (ExceptT inst_e inst_f) (f a) -> f ((ExceptT inst_e inst_f) a) :=
-  fun {f} {a} `{GHC.Base.Applicative f} =>
+     ExceptT inst_e inst_f (f a) -> f (ExceptT inst_e inst_f a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
     Traversable__ExceptT_traverse GHC.Base.id.
 
-Local Definition Traversable__ExceptT_sequence {inst_f} {inst_e}
-  `{(Data.Traversable.Traversable inst_f)}
-   : forall {m} {a},
+Local Definition Traversable__ExceptT_sequence {inst_f : Type -> Type} {inst_e
+   : Type} `{(Data.Traversable.Traversable inst_f)}
+   : forall {m : Type -> Type},
+     forall {a : Type},
      forall `{GHC.Base.Monad m},
-     (ExceptT inst_e inst_f) (m a) -> m ((ExceptT inst_e inst_f) a) :=
-  fun {m} {a} `{GHC.Base.Monad m} => Traversable__ExceptT_sequenceA.
+     ExceptT inst_e inst_f (m a) -> m (ExceptT inst_e inst_f a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__ExceptT_sequenceA.
 
-Program Instance Traversable__ExceptT {f} {e} `{(Data.Traversable.Traversable
-   f)}
+Program Instance Traversable__ExceptT {f : Type -> Type} {e : Type}
+  `{(Data.Traversable.Traversable f)}
    : Data.Traversable.Traversable (ExceptT e f) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m} {a} {b} `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
              Traversable__ExceptT_mapM ;
-           Data.Traversable.sequence__ := fun {m} {a} `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun {m : Type -> Type}
+           {a : Type}
+           `{GHC.Base.Monad m} =>
              Traversable__ExceptT_sequence ;
-           Data.Traversable.sequenceA__ := fun {f} {a} `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
+           {a : Type}
+           `{GHC.Base.Applicative f} =>
              Traversable__ExceptT_sequenceA ;
-           Data.Traversable.traverse__ := fun {f} {a} {b} `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
              Traversable__ExceptT_traverse |}.
 
-Local Definition Applicative__ExceptT_op_zlztzg__ {inst_m} {inst_e}
-  `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
-   : forall {a} {b},
-     (ExceptT inst_e inst_m) (a -> b) ->
-     (ExceptT inst_e inst_m) a -> (ExceptT inst_e inst_m) b :=
-  fun {a} {b} =>
+Local Definition Applicative__ExceptT_op_zlztzg__ {inst_m : Type -> Type}
+  {inst_e : Type} `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
+   : forall {a : Type},
+     forall {b : Type},
+     ExceptT inst_e inst_m (a -> b) ->
+     ExceptT inst_e inst_m a -> ExceptT inst_e inst_m b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | Mk_ExceptT f, Mk_ExceptT v =>
@@ -359,19 +400,20 @@ Local Definition Applicative__ExceptT_op_zlztzg__ {inst_m} {inst_e}
                          end))
       end.
 
-Local Definition Applicative__ExceptT_liftA2 {inst_m} {inst_e}
-  `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
-   : forall {a} {b} {c},
+Local Definition Applicative__ExceptT_liftA2 {inst_m : Type -> Type} {inst_e
+   : Type} `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
      (a -> b -> c) ->
-     (ExceptT inst_e inst_m) a ->
-     (ExceptT inst_e inst_m) b -> (ExceptT inst_e inst_m) c :=
-  fun {a} {b} {c} =>
+     ExceptT inst_e inst_m a -> ExceptT inst_e inst_m b -> ExceptT inst_e inst_m c :=
+  fun {a : Type} {b : Type} {c : Type} =>
     fun f x => Applicative__ExceptT_op_zlztzg__ (GHC.Base.fmap f x).
 
-Local Definition Applicative__ExceptT_pure {inst_m} {inst_e} `{GHC.Base.Functor
-  inst_m} `{GHC.Base.Monad inst_m}
-   : forall {a}, a -> (ExceptT inst_e inst_m) a :=
-  fun {a} => fun a => Mk_ExceptT (GHC.Base.return_ (Data.Either.Right a)).
+Local Definition Applicative__ExceptT_pure {inst_m : Type -> Type} {inst_e
+   : Type} `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
+   : forall {a : Type}, a -> ExceptT inst_e inst_m a :=
+  fun {a : Type} => fun a => Mk_ExceptT (GHC.Base.return_ (Data.Either.Right a)).
 
 Definition Applicative__ExceptT_op_ztzg__ {inst_m} {inst_s} `{_
    : GHC.Base.Monad inst_m}
@@ -382,14 +424,17 @@ Definition Applicative__ExceptT_op_ztzg__ {inst_m} {inst_s} `{_
       Applicative__ExceptT_op_zlztzg__ (Applicative__ExceptT_op_zlztzg__
                                         (Applicative__ExceptT_pure (fun x y => x)) k) m.
 
-Program Instance Applicative__ExceptT {m} {e} `{GHC.Base.Functor m}
-  `{GHC.Base.Monad m}
+Program Instance Applicative__ExceptT {m : Type -> Type} {e : Type}
+  `{GHC.Base.Functor m} `{GHC.Base.Monad m}
    : GHC.Base.Applicative (ExceptT e m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__ExceptT_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__ExceptT_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__ExceptT_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__ExceptT_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__ExceptT_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__ExceptT_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__ExceptT_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__ExceptT_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Monad.Trans.Except.Alternative__ExceptT' *)
@@ -408,45 +453,54 @@ Definition Monad__ExceptT_op_zgzgze__ {inst_m} {inst_e} `{_
                      | Data.Either.Right x => runExceptT (k x)
                      end)).
 
-Local Definition Monad__ExceptT_op_zgzg__ {inst_m} {inst_e} `{(GHC.Base.Monad
-   inst_m)}
-   : forall {a} {b},
-     (ExceptT inst_e inst_m) a ->
-     (ExceptT inst_e inst_m) b -> (ExceptT inst_e inst_m) b :=
-  fun {a} {b} => fun m k => Monad__ExceptT_op_zgzgze__ m (fun arg_0__ => k).
+Local Definition Monad__ExceptT_op_zgzg__ {inst_m : Type -> Type} {inst_e
+   : Type} `{(GHC.Base.Monad inst_m)}
+   : forall {a : Type},
+     forall {b : Type},
+     ExceptT inst_e inst_m a -> ExceptT inst_e inst_m b -> ExceptT inst_e inst_m b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__ExceptT_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__ExceptT_return_ {inst_m} {inst_e} `{(GHC.Base.Monad
-   inst_m)}
-   : forall {a}, a -> (ExceptT inst_e inst_m) a :=
-  fun {a} => GHC.Base.pure.
+Local Definition Monad__ExceptT_return_ {inst_m : Type -> Type} {inst_e : Type}
+  `{(GHC.Base.Monad inst_m)}
+   : forall {a : Type}, a -> ExceptT inst_e inst_m a :=
+  fun {a : Type} => GHC.Base.pure.
 
-Program Instance Monad__ExceptT {m} {e} `{(GHC.Base.Monad m)}
+Program Instance Monad__ExceptT {m : Type -> Type} {e : Type} `{(GHC.Base.Monad
+   m)}
    : GHC.Base.Monad (ExceptT e m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__ExceptT_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__ExceptT_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__ExceptT_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__ExceptT_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+             Monad__ExceptT_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__ExceptT_return_ |}.
 
-Local Definition MonadTrans__ExceptT_lift {inst_e}
-   : forall {m} {a}, forall `{(GHC.Base.Monad m)}, m a -> (ExceptT inst_e) m a :=
-  fun {m} {a} `{(GHC.Base.Monad m)} =>
+Local Definition MonadTrans__ExceptT_lift {inst_e : Type}
+   : forall {m : Type -> Type},
+     forall {a : Type}, forall `{GHC.Base.Monad m}, m a -> ExceptT inst_e m a :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
     Mk_ExceptT GHC.Base.∘ GHC.Base.liftM Data.Either.Right.
 
-Program Instance MonadTrans__ExceptT {e}
+Program Instance MonadTrans__ExceptT {e : Type}
    : Control.Monad.Trans.Class.MonadTrans (ExceptT e) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Trans.Class.lift__ := fun {m} {a} `{(GHC.Base.Monad m)} =>
+    k__ {| Control.Monad.Trans.Class.lift__ := fun {m : Type -> Type}
+           {a : Type}
+           `{GHC.Base.Monad m} =>
              MonadTrans__ExceptT_lift |}.
 
-Local Definition MonadFail__ExceptT_fail {inst_m} {inst_e}
+Local Definition MonadFail__ExceptT_fail {inst_m : Type -> Type} {inst_e : Type}
   `{(Control.Monad.Fail.MonadFail inst_m)}
-   : forall {a}, GHC.Base.String -> (ExceptT inst_e inst_m) a :=
-  fun {a} => Mk_ExceptT GHC.Base.∘ Control.Monad.Fail.fail.
+   : forall {a : Type}, GHC.Base.String -> ExceptT inst_e inst_m a :=
+  fun {a : Type} => Mk_ExceptT GHC.Base.∘ Control.Monad.Fail.fail.
 
-Program Instance MonadFail__ExceptT {m} {e} `{(Control.Monad.Fail.MonadFail m)}
+Program Instance MonadFail__ExceptT {m : Type -> Type} {e : Type}
+  `{(Control.Monad.Fail.MonadFail m)}
    : Control.Monad.Fail.MonadFail (ExceptT e m) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a} => MonadFail__ExceptT_fail |}.
+    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} =>
+             MonadFail__ExceptT_fail |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Control.Monad.Trans.Except.MonadPlus__ExceptT' *)
@@ -460,37 +514,44 @@ Program Instance MonadFail__ExceptT {m} {e} `{(Control.Monad.Fail.MonadFail m)}
 (* Skipping all instances of class `Control.Monad.Zip.MonadZip', including
    `Control.Monad.Trans.Except.MonadZip__ExceptT' *)
 
-Definition except {e} {a} : Data.Either.Either e a -> Except e a :=
+Definition except {e : Type} {a : Type}
+   : Data.Either.Either e a -> Except e a :=
   fun m => Mk_ExceptT (Data.Functor.Identity.Mk_Identity m).
 
-Definition runExcept {e} {a} : Except e a -> Data.Either.Either e a :=
+Definition runExcept {e : Type} {a : Type}
+   : Except e a -> Data.Either.Either e a :=
   fun '(Mk_ExceptT m) => Data.Functor.Identity.runIdentity m.
 
-Definition mapExceptT {m} {e} {a} {n} {e'} {b}
+Definition mapExceptT {m : Type -> Type} {e : Type} {a : Type} {n
+   : Type -> Type} {e' : Type} {b : Type}
    : (m (Data.Either.Either e a) -> n (Data.Either.Either e' b)) ->
      ExceptT e m a -> ExceptT e' n b :=
   fun f m => Mk_ExceptT (f (runExceptT m)).
 
-Definition mapExcept {e} {a} {e'} {b}
+Definition mapExcept {e : Type} {a : Type} {e' : Type} {b : Type}
    : (Data.Either.Either e a -> Data.Either.Either e' b) ->
      Except e a -> Except e' b :=
   fun f =>
     mapExceptT (Data.Functor.Identity.Mk_Identity GHC.Base.∘
                 (f GHC.Base.∘ Data.Functor.Identity.runIdentity)).
 
-Definition withExceptT {m} {e} {e'} {a} `{(GHC.Base.Functor m)}
+Definition withExceptT {m : Type -> Type} {e : Type} {e' : Type} {a : Type}
+  `{GHC.Base.Functor m}
    : (e -> e') -> ExceptT e m a -> ExceptT e' m a :=
   fun f =>
     mapExceptT (GHC.Base.fmap (Data.Either.either (Data.Either.Left GHC.Base.∘ f)
                                                   Data.Either.Right)).
 
-Definition withExcept {e} {e'} {a} : (e -> e') -> Except e a -> Except e' a :=
+Definition withExcept {e : Type} {e' : Type} {a : Type}
+   : (e -> e') -> Except e a -> Except e' a :=
   withExceptT.
 
-Definition throwE {m} {e} {a} `{(GHC.Base.Monad m)} : e -> ExceptT e m a :=
+Definition throwE {m : Type -> Type} {e : Type} {a : Type} `{GHC.Base.Monad m}
+   : e -> ExceptT e m a :=
   Mk_ExceptT GHC.Base.∘ (GHC.Base.return_ GHC.Base.∘ Data.Either.Left).
 
-Definition catchE {m} {e} {a} {e'} `{(GHC.Base.Monad m)}
+Definition catchE {m : Type -> Type} {e : Type} {a : Type} {e' : Type}
+  `{GHC.Base.Monad m}
    : ExceptT e m a -> (e -> ExceptT e' m a) -> ExceptT e' m a :=
   fun m h =>
     Mk_ExceptT (runExceptT m GHC.Base.>>=
@@ -500,15 +561,16 @@ Definition catchE {m} {e} {a} {e'} `{(GHC.Base.Monad m)}
                    | Data.Either.Right r => GHC.Base.return_ (Data.Either.Right r)
                    end)).
 
-Definition liftCallCC {m} {e} {a} {b}
+Definition liftCallCC {m : Type -> Type} {e : Type} {a : Type} {b : Type}
    : Control.Monad.Signatures.CallCC m (Data.Either.Either e a)
-     (Data.Either.Either e b) ->
+                                     (Data.Either.Either e b) ->
      Control.Monad.Signatures.CallCC (ExceptT e m) a b :=
   fun callCC f =>
     Mk_ExceptT (callCC (fun c =>
                           runExceptT (f (fun a => Mk_ExceptT (c (Data.Either.Right a)))))).
 
-Definition liftListen {m} {w} {e} {a} `{(GHC.Base.Monad m)}
+Definition liftListen {m : Type -> Type} {w : Type} {e : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : Control.Monad.Signatures.Listen w m (Data.Either.Either e a) ->
      Control.Monad.Signatures.Listen w (ExceptT e m) a :=
   fun listen =>
@@ -518,7 +580,8 @@ Definition liftListen {m} {w} {e} {a} `{(GHC.Base.Monad m)}
                     GHC.Base.return_ (GHC.Base.fmap (fun r => pair r w) a) in
                   listen m GHC.Base.>>= cont_0__).
 
-Definition liftPass {m} {w} {e} {a} `{(GHC.Base.Monad m)}
+Definition liftPass {m : Type -> Type} {w : Type} {e : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : Control.Monad.Signatures.Pass w m (Data.Either.Either e a) ->
      Control.Monad.Signatures.Pass w (ExceptT e m) a :=
   fun pass =>
@@ -531,8 +594,8 @@ Definition liftPass {m} {w} {e} {a} `{(GHC.Base.Monad m)}
                                              end)))).
 
 (* External variables:
-     Gt Lt bool comparison false list negb pair true Control.Monad.Fail.MonadFail
-     Control.Monad.Fail.fail Control.Monad.Fail.fail__
+     Gt Lt Type bool comparison false list negb pair true
+     Control.Monad.Fail.MonadFail Control.Monad.Fail.fail Control.Monad.Fail.fail__
      Control.Monad.Signatures.CallCC Control.Monad.Signatures.Listen
      Control.Monad.Signatures.Pass Control.Monad.Trans.Class.MonadTrans
      Control.Monad.Trans.Class.lift__ Coq.Program.Basics.compose Data.Either.Either
