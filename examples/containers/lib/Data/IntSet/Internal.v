@@ -27,6 +27,7 @@ Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
+Require GHC.Tuple.
 Require GHC.Wf.
 Require Utils.Containers.Internal.BitUtil.
 Import Data.Bits.Notations.
@@ -164,7 +165,8 @@ Local Definition Monoid__IntSet_mappend : IntSet -> IntSet -> IntSet :=
 Definition empty : IntSet :=
   Nil.
 
-Definition unions {f} `{Data.Foldable.Foldable f} : f IntSet -> IntSet :=
+Definition unions {f : Type -> Type} `{Data.Foldable.Foldable f}
+   : f IntSet -> IntSet :=
   fun xs => Data.Foldable.foldl' union empty xs.
 
 Local Definition Monoid__IntSet_mconcat : list IntSet -> IntSet :=
@@ -269,7 +271,7 @@ Program Definition foldrBits {a}
     go (revNatSafe bitmap) z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
-Definition foldr {b} : (Key -> b -> b) -> b -> IntSet -> b :=
+Definition foldr {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -819,7 +821,7 @@ Program Definition foldl'Bits {a}
     go bitmap z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
-Fixpoint filter (predicate : (Key -> bool)) (t : IntSet) : IntSet
+Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
   := let bitPred :=
        fun kx bm bi =>
          if predicate (kx GHC.Num.+ bi) : bool
@@ -890,7 +892,8 @@ Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
     | _ => j_21__
     end.
 
-Definition splitMember : Key -> IntSet -> (IntSet * bool * IntSet)%type :=
+Definition splitMember
+   : Key -> IntSet -> GHC.Tuple.triple_type IntSet bool IntSet :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -998,7 +1001,7 @@ Definition toList : IntSet -> list Key :=
 Definition map : (Key -> Key) -> IntSet -> IntSet :=
   fun f => fromList GHC.Base.∘ (GHC.Base.map f GHC.Base.∘ toList).
 
-Definition fold {b} : (Key -> b -> b) -> b -> IntSet -> b :=
+Definition fold {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   foldr.
 
 Program Definition foldr'Bits {a}
@@ -1023,7 +1026,7 @@ Program Definition foldr'Bits {a}
     go (revNatSafe bitmap) z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
-Definition foldr' {b} : (Key -> b -> b) -> b -> IntSet -> b :=
+Definition foldr' {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1057,7 +1060,7 @@ Program Definition foldlBits {a}
     go bitmap z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
-Definition foldl {a} : (a -> Key -> a) -> a -> IntSet -> a :=
+Definition foldl {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1071,7 +1074,7 @@ Definition foldl {a} : (a -> Key -> a) -> a -> IntSet -> a :=
       | _ => go z t
       end.
 
-Definition foldl' {a} : (a -> Key -> a) -> a -> IntSet -> a :=
+Definition foldl' {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1143,7 +1146,7 @@ Infix "Data.IntSet.Internal.\\" := (_\\_) (at level 99).
 End Notations.
 
 (* External variables:
-     Bool.Sumbool.sumbool_of_bool Eq Gt Lt N None Some andb bool comparison cons
+     Bool.Sumbool.sumbool_of_bool Eq Gt Lt N None Some Type andb bool comparison cons
      false id list negb nil op_zm__ op_zp__ op_zt__ op_zv__ option orb pair size_nat
      true Coq.Init.Peano.lt Coq.NArith.BinNat.N.ldiff Coq.NArith.BinNat.N.log2
      Coq.NArith.BinNat.N.lxor Coq.NArith.BinNat.N.modulo Coq.NArith.BinNat.N.ones
@@ -1157,8 +1160,8 @@ End Notations.
      GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____
      GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Err.Build_Default GHC.Err.Default
-     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Wf.wfFix2
-     Utils.Containers.Internal.BitUtil.bitcount
+     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Tuple.triple_type
+     GHC.Wf.wfFix2 Utils.Containers.Internal.BitUtil.bitcount
      Utils.Containers.Internal.BitUtil.highestBitMask
      Utils.Containers.Internal.BitUtil.lowestBitMask
      Utils.Containers.Internal.BitUtil.shiftLL

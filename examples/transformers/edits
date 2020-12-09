@@ -31,15 +31,6 @@ redefine Definition Control.Monad.Trans.Accum.Monad__AccumT_op_zgzgze__ {inst_w}
 
 
 
-data kinds Control.Monad.Trans.Identity.IdentityT (Type -> Type) 
-data kinds Control.Monad.Trans.Reader.ReaderT Type,(Type -> Type)
-data kinds Control.Monad.Trans.Cont.ContT Type,(Type -> Type)
-data kinds Control.Monad.Trans.Writer.Lazy.WriterT Type,(Type -> Type)
-data kinds Data.Functor.Constant.Constant Type,Type
-data kinds Data.Functor.Reverse.Reverse (Type -> Type),Type
-data kinds Control.Applicative.Backwards.Backwards (Type->Type),Type
-
-
 ## punning
 rename value Data.Functor.Constant.Constant = Data.Functor.Constant.Mk_Constant
 rename value Data.Functor.Reverse.Reverse = Data.Functor.Reverse.Mk_Reverse
@@ -89,12 +80,6 @@ redefine Definition Control.Monad.Trans.State.Lazy.Applicative__StateT_op_ztzg__
      ((StateT inst_s inst_m b) -> (StateT inst_s inst_m b)) :=
   fun {a} {b} => fun m k => Control.Monad.Trans.State.Lazy.Applicative__StateT_op_zlztzg__ (Control.Monad.Trans.State.Lazy.Applicative__StateT_op_zlztzg__ (Applicative__StateT_pure (fun x y => x)) k) m.
 
-
-redefine Definition Control.Monad.Trans.Cont.Applicative__ContT_op_ztzg__ {inst_m} {inst_s}
-   : forall {a} {b},
-     (ContT inst_s inst_m a) ->
-     ((ContT inst_s inst_m b) -> (ContT inst_s inst_m b)) :=
-  fun {a} {b} => fun m k => Control.Monad.Trans.Cont.Applicative__ContT_op_zlztzg__ (Control.Monad.Trans.Cont.Applicative__ContT_op_zlztzg__ (Applicative__ContT_pure (fun x y => x)) k) m.
 
 redefine Definition Control.Monad.Trans.Except.Applicative__ExceptT_op_ztzg__ {inst_m} {inst_s} `{_ : GHC.Base.Monad inst_m}
    : forall {a} {b},

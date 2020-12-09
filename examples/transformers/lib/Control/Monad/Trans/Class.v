@@ -16,19 +16,22 @@ Require GHC.Base.
 
 (* Converted type declarations: *)
 
-Record MonadTrans__Dict t := MonadTrans__Dict_Build {
-  lift__ : forall {m} {a}, forall `{(GHC.Base.Monad m)}, m a -> t m a }.
+Record MonadTrans__Dict (t : (Type -> Type) -> Type -> Type) :=
+  MonadTrans__Dict_Build {
+  lift__ : forall {m : Type -> Type},
+  forall {a : Type}, forall `{GHC.Base.Monad m}, m a -> t m a }.
 
-Definition MonadTrans t :=
+Definition MonadTrans (t : (Type -> Type) -> Type -> Type) :=
   forall r__, (MonadTrans__Dict t -> r__) -> r__.
 Existing Class MonadTrans.
 
 Definition lift `{g__0__ : MonadTrans t}
-   : forall {m} {a}, forall `{(GHC.Base.Monad m)}, m a -> t m a :=
+   : forall {m : Type -> Type},
+     forall {a : Type}, forall `{GHC.Base.Monad m}, m a -> t m a :=
   g__0__ _ (lift__ t).
 
 (* No value declarations to convert. *)
 
 (* External variables:
-     GHC.Base.Monad
+     Type GHC.Base.Monad
 *)

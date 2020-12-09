@@ -1,3 +1,15 @@
+polykinds Control.Monad.Trans.Cont.ContT k
+data kinds Control.Monad.Trans.Cont.ContT k, k -> Type, Type
+
+redefine Definition Control.Monad.Trans.Cont.Applicative__ContT_op_ztzg__ {inst_k} {inst_m : inst_k -> Type} {inst_s : inst_k}
+   : forall {a} {b},
+     ContT inst_s inst_m a -> ContT inst_s inst_m b -> ContT inst_s inst_m b :=
+  fun {a} {b} =>
+    fun m k =>
+      Applicative__ContT_op_zlztzg__ (Applicative__ContT_op_zlztzg__
+                                      (Applicative__ContT_pure (fun x y => x)) k) m.
+
+
 order Control.Monad.Trans.Cont.Functor__ContT          Control.Monad.Trans.Cont.Applicative__ContT_liftA2
 order Control.Monad.Trans.Cont.Applicative__ContT_pure Control.Monad.Trans.Cont.Applicative__ContT_op_ztzg__
 order Control.Monad.Trans.Cont.Applicative__ContT      Control.Monad.Trans.Cont.Monad__ContT_return_

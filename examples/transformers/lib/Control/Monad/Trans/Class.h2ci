@@ -4,9 +4,13 @@ classTypes:
   Control.Monad.Trans.Class.MonadTrans: fromList []
 classDefns:
   Control.Monad.Trans.Class.MonadTrans: ClassDefinition (Qualified "Control.Monad.Trans.Class"
-    "MonadTrans") [ExplicitBinder (Ident (Bare "t"))] Nothing [(Qualified "Control.Monad.Trans.Class"
-    "lift",Forall (ImplicitBinders (Ident (Bare "m") :| []) :| [ImplicitBinders (Ident
-    (Bare "a") :| [])]) (Forall (Generalized Implicit (Parens (App (Qualid (Qualified
-    "GHC.Base" "Monad")) (PosArg (Qualid (Bare "m")) :| []))) :| []) (Arrow (App (Qualid
-    (Bare "m")) (PosArg (Qualid (Bare "a")) :| [])) (App (App (Qualid (Bare "t"))
-    (PosArg (Qualid (Bare "m")) :| [])) (PosArg (Qualid (Bare "a")) :| [])))))]
+    "MonadTrans") [Typed Ungeneralizable Explicit (Ident (Bare "t") :| []) (Arrow
+    (Arrow (Qualid (Bare "Type")) (Qualid (Bare "Type"))) (Arrow (Qualid (Bare "Type"))
+    (Qualid (Bare "Type"))))] Nothing [(Qualified "Control.Monad.Trans.Class" "lift",Forall
+    (Typed Ungeneralizable Implicit (Ident (Bare "m") :| []) (Arrow (Qualid (Bare
+    "Type")) (Qualid (Bare "Type"))) :| []) (Forall (Typed Ungeneralizable Implicit
+    (Ident (Bare "a") :| []) (Qualid (Bare "Type")) :| []) (Forall (Generalized Implicit
+    (App (Qualid (Qualified "GHC.Base" "Monad")) (PosArg (Qualid (Bare "m")) :| []))
+    :| []) (Arrow (App (Qualid (Bare "m")) (PosArg (Qualid (Bare "a")) :| [])) (App
+    (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "m")) :| [])) (PosArg (Qualid (Bare
+    "a")) :| []))))))]
