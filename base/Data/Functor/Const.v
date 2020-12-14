@@ -316,10 +316,12 @@ Local Definition Applicative__Const_liftA2 {inst_m : Type} `{GHC.Base.Monoid
       | _, Mk_Const x, Mk_Const y => Mk_Const (GHC.Base.mappend x y)
       end.
 
-Local Definition Applicative__Const_op_zlztzg__ {inst_m} `{GHC.Base.Monoid
-  inst_m}
-   : forall {a} {b}, Const inst_m (a -> b) -> Const inst_m a -> Const inst_m b :=
-  fun {a} {b} => GHC.Prim.coerce GHC.Base.mappend.
+Local Definition Applicative__Const_op_zlztzg__ {inst_m : Type}
+  `{GHC.Base.Monoid inst_m}
+   : forall {a : Type},
+     forall {b : Type}, Const inst_m (a -> b) -> Const inst_m a -> Const inst_m b :=
+  fun {a : Type} {b : Type} =>
+    GHC.Prim.coerce (GHC.Base.mappend : inst_m -> inst_m -> inst_m).
 
 Local Definition Applicative__Const_op_ztzg__ {inst_m : Type} `{GHC.Base.Monoid
   inst_m}

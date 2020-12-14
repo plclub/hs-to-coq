@@ -639,8 +639,7 @@ Fixpoint exprIsBig {b : Type} (arg_0__ : Core.Expr b) : bool
 Definition eqExpr : Core.InScopeSet -> Core.CoreExpr -> Core.CoreExpr -> bool :=
   fun in_scope e1 e2 =>
     let fix go arg_0__ arg_1__ arg_2__
-      := let go_alt (arg_18__ : Core.RnEnv2) (arg_19__ arg_20__ : Core.CoreAlt)
-          : bool :=
+      := let go_alt arg_18__ arg_19__ arg_20__ :=
            match arg_18__, arg_19__, arg_20__ with
            | env, pair (pair c1 bs1) e1, pair (pair c2 bs2) e2 =>
                andb (c1 GHC.Base.== c2) (go (Core.rnBndrs2 env bs1 bs2) e1 e2)
@@ -675,7 +674,7 @@ Definition eqExpr : Core.InScopeSet -> Core.CoreExpr -> Core.CoreExpr -> bool :=
                                                                           b2)) id id a1 a2)
          | _, _, _ => false
          end in
-    let go_alt : Core.RnEnv2 -> Core.CoreAlt -> Core.CoreAlt -> bool :=
+    let go_alt :=
       fun arg_18__ arg_19__ arg_20__ =>
         match arg_18__, arg_19__, arg_20__ with
         | env, pair (pair c1 bs1) e1, pair (pair c2 bs2) e2 =>
