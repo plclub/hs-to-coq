@@ -1209,7 +1209,7 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
 (* Skipping all instances of class `GHC.Num.Num', including
    `BasicTypes.Num__IntWithInf' *)
 
-Definition pickLR {a} : LeftOrRight -> (a * a)%type -> a :=
+Definition pickLR {a : Type} : LeftOrRight -> (a * a)%type -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | CLeft, pair l _ => l
@@ -1254,7 +1254,8 @@ Definition flipSwap : SwapFlag -> SwapFlag :=
 Definition isSwapped : SwapFlag -> bool :=
   fun arg_0__ => match arg_0__ with | IsSwapped => true | NotSwapped => false end.
 
-Definition unSwap {a} {b} : SwapFlag -> (a -> a -> b) -> a -> a -> b :=
+Definition unSwap {a : Type} {b : Type}
+   : SwapFlag -> (a -> a -> b) -> a -> a -> b :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
     | NotSwapped, f, a, b => f a b
@@ -1716,8 +1717,8 @@ Definition mkIntWithInf : GHC.Num.Int -> IntWithInf :=
   Int.
 
 (* External variables:
-     Eq Gt Lt None Some andb bool comparison cons false list nat negb op_zt__ option
-     pair true tt unit Data.Function.on Datatypes.id FastString.FastString
+     Eq Gt Lt None Some Type andb bool comparison cons false list nat negb op_zt__
+     option pair true tt unit Data.Function.on Datatypes.id FastString.FastString
      GHC.Base.Eq_ GHC.Base.Ord GHC.Base.String GHC.Base.compare GHC.Base.compare__
      GHC.Base.mappend GHC.Base.max__ GHC.Base.min__ GHC.Base.op_zeze__
      GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__

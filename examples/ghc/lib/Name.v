@@ -44,11 +44,11 @@ Inductive Name : Type :=
   (n_loc : SrcLoc.SrcSpan)
    : Name.
 
-Record NamedThing__Dict a := NamedThing__Dict_Build {
+Record NamedThing__Dict (a : Type) := NamedThing__Dict_Build {
   getName__ : a -> Name ;
   getOccName__ : a -> OccName.OccName }.
 
-Definition NamedThing a :=
+Definition NamedThing (a : Type) :=
   forall r__, (NamedThing__Dict a -> r__) -> r__.
 Existing Class NamedThing.
 
@@ -205,17 +205,17 @@ Program Instance NamedThing__Name : NamedThing Name :=
 (* Skipping all instances of class `Outputable.OutputableBndr', including
    `Name.OutputableBndr__Name' *)
 
-Local Definition NamedThing__GenLocated_getName {inst_e} {inst_l} `{NamedThing
-  inst_e}
-   : (SrcLoc.GenLocated inst_l inst_e) -> Name :=
+Local Definition NamedThing__GenLocated_getName {inst_e : Type} {inst_l : Type}
+  `{NamedThing inst_e}
+   : SrcLoc.GenLocated inst_l inst_e -> Name :=
   getName GHC.Base.∘ SrcLoc.unLoc.
 
-Local Definition NamedThing__GenLocated_getOccName {inst_e} {inst_l}
-  `{NamedThing inst_e}
-   : (SrcLoc.GenLocated inst_l inst_e) -> OccName.OccName :=
+Local Definition NamedThing__GenLocated_getOccName {inst_e : Type} {inst_l
+   : Type} `{NamedThing inst_e}
+   : SrcLoc.GenLocated inst_l inst_e -> OccName.OccName :=
   fun n => nameOccName (NamedThing__GenLocated_getName n).
 
-Program Instance NamedThing__GenLocated {e} {l} `{NamedThing e}
+Program Instance NamedThing__GenLocated {e : Type} {l : Type} `{NamedThing e}
    : NamedThing (SrcLoc.GenLocated l e) :=
   fun _ k__ =>
     k__ {| getName__ := NamedThing__GenLocated_getName ;
@@ -464,16 +464,16 @@ Definition nameStableString : Name -> GHC.Base.String :=
     Coq.Init.Datatypes.app (nameSortStableString n_sort) (Coq.Init.Datatypes.app
                             (GHC.Base.hs_string__ "$") (OccName.occNameString n_occ)).
 
-Definition getSrcLoc {a} `{NamedThing a} : a -> SrcLoc.SrcLoc :=
+Definition getSrcLoc {a : Type} `{NamedThing a} : a -> SrcLoc.SrcLoc :=
   nameSrcLoc GHC.Base.∘ getName.
 
-Definition getSrcSpan {a} `{NamedThing a} : a -> SrcLoc.SrcSpan :=
+Definition getSrcSpan {a : Type} `{NamedThing a} : a -> SrcLoc.SrcSpan :=
   nameSrcSpan GHC.Base.∘ getName.
 
-Definition getOccString {a} `{NamedThing a} : a -> GHC.Base.String :=
+Definition getOccString {a : Type} `{NamedThing a} : a -> GHC.Base.String :=
   OccName.occNameString GHC.Base.∘ getOccName.
 
-Definition getOccFS {a} `{NamedThing a} : a -> FastString.FastString :=
+Definition getOccFS {a : Type} `{NamedThing a} : a -> FastString.FastString :=
   OccName.occNameFS GHC.Base.∘ getOccName.
 
 (* Skipping definition `Name.pprInfixName' *)
@@ -481,7 +481,7 @@ Definition getOccFS {a} `{NamedThing a} : a -> FastString.FastString :=
 (* Skipping definition `Name.pprPrefixName' *)
 
 (* External variables:
-     Eq Gt Lt None Some andb bool comparison default false negb option orb true
+     Eq Gt Lt None Some Type andb bool comparison default false negb option orb true
      AxiomatizedTypes.TyThing Coq.Init.Datatypes.app FastString.FastString
      GHC.Base.Eq_ GHC.Base.Ord GHC.Base.String GHC.Base.compare GHC.Base.compare__
      GHC.Base.max__ GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__

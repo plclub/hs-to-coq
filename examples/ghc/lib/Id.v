@@ -139,13 +139,13 @@ Definition mkSysLocalOrCoVar
      Unique.Unique -> AxiomatizedTypes.Type_ -> Core.Id :=
   fun fs uniq ty => mkLocalIdOrCoVar (Name.mkSystemVarName uniq fs) ty.
 
-Definition mkSysLocalM {m} `{UniqSupply.MonadUnique m}
+Definition mkSysLocalM {m : Type -> Type} `{UniqSupply.MonadUnique m}
    : FastString.FastString -> AxiomatizedTypes.Type_ -> m Core.Id :=
   fun fs ty =>
     UniqSupply.getUniqueM GHC.Base.>>=
     (fun uniq => GHC.Base.return_ (mkSysLocal fs uniq ty)).
 
-Definition mkSysLocalOrCoVarM {m} `{UniqSupply.MonadUnique m}
+Definition mkSysLocalOrCoVarM {m : Type -> Type} `{UniqSupply.MonadUnique m}
    : FastString.FastString -> AxiomatizedTypes.Type_ -> m Core.Id :=
   fun fs ty =>
     UniqSupply.getUniqueM GHC.Base.>>=
@@ -616,7 +616,7 @@ Definition isNeverLevPolyId : Core.Id -> bool :=
   Core.isNeverLevPolyIdInfo GHC.Base.∘ Core.idInfo.
 
 (* External variables:
-     None Some andb bool false list nat negb nil option orb pair true
+     None Some Type andb bool false list nat negb nil option orb pair true
      AxiomatizedTypes.ForeignCall AxiomatizedTypes.Kind AxiomatizedTypes.PrimOp
      AxiomatizedTypes.Type_ BasicTypes.Activation BasicTypes.Arity
      BasicTypes.InlinePragma BasicTypes.JoinArity BasicTypes.NoOneShotInfo

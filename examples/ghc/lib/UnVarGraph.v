@@ -94,7 +94,7 @@ Definition delUnVarSet : UnVarSet -> Core.Var -> UnVarSet :=
 Definition mkUnVarSet : list Core.Var -> UnVarSet :=
   fun vs => Mk_UnVarSet (Data.IntSet.Internal.fromList (GHC.Base.map k vs)).
 
-Definition varEnvDom {a} : Core.VarEnv a -> UnVarSet :=
+Definition varEnvDom {a : Type} : Core.VarEnv a -> UnVarSet :=
   fun ae => Mk_UnVarSet (UniqFM.ufmToSet_Directly ae).
 
 Definition unionUnVarSet : UnVarSet -> UnVarSet -> UnVarSet :=
@@ -167,10 +167,10 @@ Definition delNode : UnVarGraph -> Core.Var -> UnVarGraph :=
     end.
 
 (* External variables:
-     andb bool cons list negb nil Bag.Bag Bag.bagToList Bag.emptyBag Bag.filterBag
-     Bag.mapBag Bag.unionBags Bag.unitBag Coq.Init.Datatypes.app Core.Var Core.VarEnv
-     Data.Foldable.concatMap Data.Foldable.foldl' Data.Foldable.foldr
-     Data.IntSet.Internal.IntSet Data.IntSet.Internal.delete
+     Type andb bool cons list negb nil Bag.Bag Bag.bagToList Bag.emptyBag
+     Bag.filterBag Bag.mapBag Bag.unionBags Bag.unitBag Coq.Init.Datatypes.app
+     Core.Var Core.VarEnv Data.Foldable.concatMap Data.Foldable.foldl'
+     Data.Foldable.foldr Data.IntSet.Internal.IntSet Data.IntSet.Internal.delete
      Data.IntSet.Internal.empty Data.IntSet.Internal.fromList
      Data.IntSet.Internal.member Data.IntSet.Internal.null Data.IntSet.Internal.union
      GHC.Base.Eq_ GHC.Base.map GHC.Base.op_zeze__ GHC.Base.op_zeze____

@@ -17,6 +17,7 @@ Require BasicTypes.
 Require Core.
 Require FieldLabel.
 Require GHC.Base.
+Require GHC.Tuple.
 Require Name.
 Require Unique.
 
@@ -72,11 +73,9 @@ Axiom conLikeResTy : ConLike ->
                      list AxiomatizedTypes.Type_ -> AxiomatizedTypes.Type_.
 
 Axiom conLikeFullSig : ConLike ->
-                       (list Core.TyVar * list Core.TyVar * list Core.EqSpec *
-                        AxiomatizedTypes.ThetaType *
-                        AxiomatizedTypes.ThetaType *
-                        list AxiomatizedTypes.Type_ *
-                        AxiomatizedTypes.Type_)%type.
+                       GHC.Tuple.sept_type (list Core.TyVar) (list Core.TyVar) (list Core.EqSpec)
+                                           AxiomatizedTypes.ThetaType AxiomatizedTypes.ThetaType (list
+                                            AxiomatizedTypes.Type_) AxiomatizedTypes.Type_.
 
 Axiom conLikeFieldType : ConLike ->
                          FieldLabel.FieldLabelString -> AxiomatizedTypes.Type_.
@@ -87,8 +86,8 @@ Axiom conLikesWithFields : list ConLike ->
 Axiom conLikeIsInfix : ConLike -> bool.
 
 (* External variables:
-     bool list op_zt__ option AxiomatizedTypes.ThetaType AxiomatizedTypes.Type_
+     bool list option AxiomatizedTypes.ThetaType AxiomatizedTypes.Type_
      BasicTypes.Arity Core.DataCon Core.EqSpec Core.HsImplBang Core.Id Core.PatSyn
      Core.TyVar FieldLabel.FieldLabel FieldLabel.FieldLabelString GHC.Base.Eq_
-     Name.Name Name.NamedThing Unique.Uniquable
+     GHC.Tuple.sept_type Name.Name Name.NamedThing Unique.Uniquable
 *)

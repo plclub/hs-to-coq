@@ -221,20 +221,21 @@ Program Instance Eq___SrcSpan : GHC.Base.Eq_ SrcSpan :=
 (* Skipping all instances of class `GHC.Show.Show', including
    `SrcLoc.Show__SrcSpan' *)
 
-Local Definition Eq___GenLocated_op_zeze__ {inst_l} {inst_e} `{GHC.Base.Eq_
-  inst_l} `{GHC.Base.Eq_ inst_e}
+Local Definition Eq___GenLocated_op_zeze__ {inst_l : Type} {inst_e : Type}
+  `{GHC.Base.Eq_ inst_l} `{GHC.Base.Eq_ inst_e}
    : GenLocated inst_l inst_e -> GenLocated inst_l inst_e -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | L a1 a2, L b1 b2 => (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
     end.
 
-Local Definition Eq___GenLocated_op_zsze__ {inst_l} {inst_e} `{GHC.Base.Eq_
-  inst_l} `{GHC.Base.Eq_ inst_e}
+Local Definition Eq___GenLocated_op_zsze__ {inst_l : Type} {inst_e : Type}
+  `{GHC.Base.Eq_ inst_l} `{GHC.Base.Eq_ inst_e}
    : GenLocated inst_l inst_e -> GenLocated inst_l inst_e -> bool :=
   fun x y => negb (Eq___GenLocated_op_zeze__ x y).
 
-Program Instance Eq___GenLocated {l} {e} `{GHC.Base.Eq_ l} `{GHC.Base.Eq_ e}
+Program Instance Eq___GenLocated {l : Type} {e : Type} `{GHC.Base.Eq_ l}
+  `{GHC.Base.Eq_ e}
    : GHC.Base.Eq_ (GenLocated l e) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___GenLocated_op_zeze__ ;
@@ -245,155 +246,188 @@ Program Instance Eq___GenLocated {l} {e} `{GHC.Base.Eq_ l} `{GHC.Base.Eq_ e}
 (* Skipping all instances of class `Data.Data.Data', including
    `SrcLoc.Data__GenLocated' *)
 
-Local Definition Functor__GenLocated_fmap {inst_l}
-   : forall {a} {b}, (a -> b) -> GenLocated inst_l a -> GenLocated inst_l b :=
-  fun {a} {b} =>
+Local Definition Functor__GenLocated_fmap {inst_l : Type}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> GenLocated inst_l a -> GenLocated inst_l b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, L a1 a2 => L ((fun b1 => b1) a1) (f a2)
       end.
 
-Local Definition Functor__GenLocated_op_zlzd__ {inst_l}
-   : forall {a} {b}, a -> GenLocated inst_l b -> GenLocated inst_l a :=
-  fun {a} {b} =>
+Local Definition Functor__GenLocated_op_zlzd__ {inst_l : Type}
+   : forall {a : Type},
+     forall {b : Type}, a -> GenLocated inst_l b -> GenLocated inst_l a :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | z, L a1 a2 => L ((fun b1 => b1) a1) ((fun b2 => z) a2)
       end.
 
-Program Instance Functor__GenLocated {l} : GHC.Base.Functor (GenLocated l) :=
+Program Instance Functor__GenLocated {l : Type}
+   : GHC.Base.Functor (GenLocated l) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__GenLocated_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__GenLocated_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+             Functor__GenLocated_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__GenLocated_op_zlzd__ |}.
 
-Local Definition Foldable__GenLocated_foldMap {inst_l}
-   : forall {m} {a},
+Local Definition Foldable__GenLocated_foldMap {inst_l : Type}
+   : forall {m : Type},
+     forall {a : Type},
      forall `{GHC.Base.Monoid m}, (a -> m) -> GenLocated inst_l a -> m :=
-  fun {m} {a} `{GHC.Base.Monoid m} =>
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | f, L a1 a2 => f a2 end.
 
-Local Definition Foldable__GenLocated_fold {inst_l}
-   : forall {m}, forall `{GHC.Base.Monoid m}, GenLocated inst_l m -> m :=
-  fun {m} `{GHC.Base.Monoid m} => Foldable__GenLocated_foldMap GHC.Base.id.
+Local Definition Foldable__GenLocated_fold {inst_l : Type}
+   : forall {m : Type}, forall `{GHC.Base.Monoid m}, GenLocated inst_l m -> m :=
+  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__GenLocated_foldMap GHC.Base.id.
 
-Local Definition Foldable__GenLocated_foldl {inst_l}
-   : forall {b} {a}, (b -> a -> b) -> b -> GenLocated inst_l a -> b :=
-  fun {b} {a} =>
+Local Definition Foldable__GenLocated_foldl {inst_l : Type}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> GenLocated inst_l a -> b :=
+  fun {b : Type} {a : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
                                       (Foldable__GenLocated_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
                                                                      (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                       GHC.Base.flip f)) t)) z.
 
-Local Definition Foldable__GenLocated_foldr {inst_l}
-   : forall {a} {b}, (a -> b -> b) -> b -> GenLocated inst_l a -> b :=
-  fun {a} {b} =>
+Local Definition Foldable__GenLocated_foldr {inst_l : Type}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> GenLocated inst_l a -> b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | f, z, L a1 a2 => f a2 z
       end.
 
-Local Definition Foldable__GenLocated_foldl' {inst_l}
-   : forall {b} {a}, (b -> a -> b) -> b -> GenLocated inst_l a -> b :=
-  fun {b} {a} =>
+Local Definition Foldable__GenLocated_foldl' {inst_l : Type}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> GenLocated inst_l a -> b :=
+  fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in
       Foldable__GenLocated_foldr f' GHC.Base.id xs z0.
 
-Local Definition Foldable__GenLocated_foldr' {inst_l}
-   : forall {a} {b}, (a -> b -> b) -> b -> GenLocated inst_l a -> b :=
-  fun {a} {b} =>
+Local Definition Foldable__GenLocated_foldr' {inst_l : Type}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> GenLocated inst_l a -> b :=
+  fun {a : Type} {b : Type} =>
     fun f z0 xs =>
       let f' := fun k x z => k (f x z) in
       Foldable__GenLocated_foldl f' GHC.Base.id xs z0.
 
-Local Definition Foldable__GenLocated_length {inst_l}
-   : forall {a}, GenLocated inst_l a -> GHC.Num.Int :=
-  fun {a} =>
+Local Definition Foldable__GenLocated_length {inst_l : Type}
+   : forall {a : Type}, GenLocated inst_l a -> GHC.Num.Int :=
+  fun {a : Type} =>
     Foldable__GenLocated_foldl' (fun arg_0__ arg_1__ =>
                                    match arg_0__, arg_1__ with
                                    | c, _ => c GHC.Num.+ #1
                                    end) #0.
 
-Local Definition Foldable__GenLocated_null {inst_l}
-   : forall {a}, GenLocated inst_l a -> bool :=
-  fun {a} => fun '(L _ _) => false.
+Local Definition Foldable__GenLocated_null {inst_l : Type}
+   : forall {a : Type}, GenLocated inst_l a -> bool :=
+  fun {a : Type} => fun '(L _ _) => false.
 
-Local Definition Foldable__GenLocated_product {inst_l}
-   : forall {a}, forall `{GHC.Num.Num a}, GenLocated inst_l a -> a :=
-  fun {a} `{GHC.Num.Num a} =>
+Local Definition Foldable__GenLocated_product {inst_l : Type}
+   : forall {a : Type}, forall `{GHC.Num.Num a}, GenLocated inst_l a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
                                (Foldable__GenLocated_foldMap Data.SemigroupInternal.Mk_Product).
 
-Local Definition Foldable__GenLocated_sum {inst_l}
-   : forall {a}, forall `{GHC.Num.Num a}, GenLocated inst_l a -> a :=
-  fun {a} `{GHC.Num.Num a} =>
+Local Definition Foldable__GenLocated_sum {inst_l : Type}
+   : forall {a : Type}, forall `{GHC.Num.Num a}, GenLocated inst_l a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
                                (Foldable__GenLocated_foldMap Data.SemigroupInternal.Mk_Sum).
 
-Local Definition Foldable__GenLocated_toList {inst_l}
-   : forall {a}, GenLocated inst_l a -> list a :=
-  fun {a} =>
+Local Definition Foldable__GenLocated_toList {inst_l : Type}
+   : forall {a : Type}, GenLocated inst_l a -> list a :=
+  fun {a : Type} =>
     fun t =>
       GHC.Base.build' (fun _ => (fun c n => Foldable__GenLocated_foldr c n t)).
 
-Program Instance Foldable__GenLocated {l}
+Program Instance Foldable__GenLocated {l : Type}
    : Data.Foldable.Foldable (GenLocated l) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__GenLocated_fold ;
-           Data.Foldable.foldMap__ := fun {m} {a} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__GenLocated_foldMap ;
-           Data.Foldable.foldl__ := fun {b} {a} => Foldable__GenLocated_foldl ;
-           Data.Foldable.foldl'__ := fun {b} {a} => Foldable__GenLocated_foldl' ;
-           Data.Foldable.foldr__ := fun {a} {b} => Foldable__GenLocated_foldr ;
-           Data.Foldable.foldr'__ := fun {a} {b} => Foldable__GenLocated_foldr' ;
-           Data.Foldable.length__ := fun {a} => Foldable__GenLocated_length ;
-           Data.Foldable.null__ := fun {a} => Foldable__GenLocated_null ;
-           Data.Foldable.product__ := fun {a} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun {b : Type} {a : Type} =>
+             Foldable__GenLocated_foldl ;
+           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} =>
+             Foldable__GenLocated_foldl' ;
+           Data.Foldable.foldr__ := fun {a : Type} {b : Type} =>
+             Foldable__GenLocated_foldr ;
+           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} =>
+             Foldable__GenLocated_foldr' ;
+           Data.Foldable.length__ := fun {a : Type} => Foldable__GenLocated_length ;
+           Data.Foldable.null__ := fun {a : Type} => Foldable__GenLocated_null ;
+           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
              Foldable__GenLocated_product ;
-           Data.Foldable.sum__ := fun {a} `{GHC.Num.Num a} => Foldable__GenLocated_sum ;
-           Data.Foldable.toList__ := fun {a} => Foldable__GenLocated_toList |}.
+           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+             Foldable__GenLocated_sum ;
+           Data.Foldable.toList__ := fun {a : Type} => Foldable__GenLocated_toList |}.
 
-Local Definition Traversable__GenLocated_traverse {inst_l}
-   : forall {f} {a} {b},
+Local Definition Traversable__GenLocated_traverse {inst_l : Type}
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
      forall `{GHC.Base.Applicative f},
      (a -> f b) -> GenLocated inst_l a -> f (GenLocated inst_l b) :=
-  fun {f} {a} {b} `{GHC.Base.Applicative f} =>
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, L a1 a2 => GHC.Base.fmap (fun b2 => L a1 b2) (f a2)
       end.
 
-Local Definition Traversable__GenLocated_mapM {inst_l}
-   : forall {m} {a} {b},
+Local Definition Traversable__GenLocated_mapM {inst_l : Type}
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
      forall `{GHC.Base.Monad m},
      (a -> m b) -> GenLocated inst_l a -> m (GenLocated inst_l b) :=
-  fun {m} {a} {b} `{GHC.Base.Monad m} => Traversable__GenLocated_traverse.
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__GenLocated_traverse.
 
-Local Definition Traversable__GenLocated_sequenceA {inst_l}
-   : forall {f} {a},
+Local Definition Traversable__GenLocated_sequenceA {inst_l : Type}
+   : forall {f : Type -> Type},
+     forall {a : Type},
      forall `{GHC.Base.Applicative f},
      GenLocated inst_l (f a) -> f (GenLocated inst_l a) :=
-  fun {f} {a} `{GHC.Base.Applicative f} =>
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
     Traversable__GenLocated_traverse GHC.Base.id.
 
-Local Definition Traversable__GenLocated_sequence {inst_l}
-   : forall {m} {a},
+Local Definition Traversable__GenLocated_sequence {inst_l : Type}
+   : forall {m : Type -> Type},
+     forall {a : Type},
      forall `{GHC.Base.Monad m},
      GenLocated inst_l (m a) -> m (GenLocated inst_l a) :=
-  fun {m} {a} `{GHC.Base.Monad m} => Traversable__GenLocated_sequenceA.
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__GenLocated_sequenceA.
 
-Program Instance Traversable__GenLocated {l}
+Program Instance Traversable__GenLocated {l : Type}
    : Data.Traversable.Traversable (GenLocated l) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m} {a} {b} `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
              Traversable__GenLocated_mapM ;
-           Data.Traversable.sequence__ := fun {m} {a} `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun {m : Type -> Type}
+           {a : Type}
+           `{GHC.Base.Monad m} =>
              Traversable__GenLocated_sequence ;
-           Data.Traversable.sequenceA__ := fun {f} {a} `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
+           {a : Type}
+           `{GHC.Base.Applicative f} =>
              Traversable__GenLocated_sequenceA ;
-           Data.Traversable.traverse__ := fun {f} {a} {b} `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
              Traversable__GenLocated_traverse |}.
 
 (* Skipping all instances of class `Outputable.Outputable', including
@@ -624,26 +658,27 @@ Definition srcSpanFileName_maybe : SrcSpan -> option FastString.FastString :=
 
 (* Skipping definition `SrcLoc.pprUserRealSpan' *)
 
-Definition unLoc {l} {e} : GenLocated l e -> e :=
+Definition unLoc {l : Type} {e : Type} : GenLocated l e -> e :=
   fun '(L _ e) => e.
 
-Definition getLoc {l} {e} : GenLocated l e -> l :=
+Definition getLoc {l : Type} {e : Type} : GenLocated l e -> l :=
   fun '(L l _) => l.
 
-Definition noLoc {e} : e -> Located e :=
+Definition noLoc {e : Type} : e -> Located e :=
   fun e => L noSrcSpan e.
 
-Definition mkGeneralLocated {e} : GHC.Base.String -> e -> Located e :=
+Definition mkGeneralLocated {e : Type} : GHC.Base.String -> e -> Located e :=
   fun s e => L (mkGeneralSrcSpan (FastString.fsLit s)) e.
 
 (* Skipping definition `SrcLoc.combineLocs' *)
 
 (* Skipping definition `SrcLoc.addCLoc' *)
 
-Definition eqLocated {a} `{GHC.Base.Eq_ a} : Located a -> Located a -> bool :=
+Definition eqLocated {a : Type} `{GHC.Base.Eq_ a}
+   : Located a -> Located a -> bool :=
   fun a b => unLoc a GHC.Base.== unLoc b.
 
-Definition cmpLocated {a} `{GHC.Base.Ord a}
+Definition cmpLocated {a : Type} `{GHC.Base.Ord a}
    : Located a -> Located a -> comparison :=
   fun a b => GHC.Base.compare (unLoc a) (unLoc b).
 
@@ -658,8 +693,8 @@ Definition cmpLocated {a} `{GHC.Base.Ord a}
 (* Skipping definition `SrcLoc.isSubspanOf' *)
 
 (* External variables:
-     Eq Gt Lt None Ord__RealSrcLoc_op_zl Some andb bool comparison false list negb
-     option true Coq.Program.Basics.compose Data.Foldable.Foldable
+     Eq Gt Lt None Ord__RealSrcLoc_op_zl Some Type andb bool comparison false list
+     negb option true Coq.Program.Basics.compose Data.Foldable.Foldable
      Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
      Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
      Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__

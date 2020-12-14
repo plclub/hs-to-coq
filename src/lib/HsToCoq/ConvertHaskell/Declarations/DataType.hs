@@ -40,14 +40,11 @@ import HsToCoq.Util.GHC.HsTypes (noExtCon)
 import HsToCoq.Coq.Gallina as Coq
 import HsToCoq.Coq.Gallina.Util
 
-import HsToCoq.Util.GHC.Module
-
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.HsType
-import HsToCoq.ConvertHaskell.TypeEnv.TyCon
 
 import qualified Data.List.NonEmpty as NE
 
@@ -192,9 +189,6 @@ convertDataDecl :: ConversionMonad r m
                 -> m IndBody
 convertDataDecl name tvs defn = do
   coqName   <- var TypeNS $ unLoc name
-
-  mod <- view (currentModule.modDetails)
-  env <- withCurrentDefinition coqName $ tyConsOfModDetails mod
 
   addKindVars <- view (edits.polyKinds.at coqName) >>= \case
     Just ids -> pure $ (++) ((\id -> mkTypedBinder Implicit (Ident $ Bare id) $ Qualid (Bare "Type")) <$> toList ids)

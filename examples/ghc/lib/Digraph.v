@@ -67,10 +67,12 @@ Axiom emptyGraph : forall {a}, Graph a.
 Axiom graphFromEdgedVertices : forall {key} {payload},
                                ReduceFn key payload -> list (Node key payload) -> Graph (Node key payload).
 
-Axiom graphFromEdgedVerticesOrd : forall {key} {payload},
+Axiom graphFromEdgedVerticesOrd : forall {key : Type},
+                                  forall {payload : Type},
                                   forall `{GHC.Base.Ord key}, list (Node key payload) -> Graph (Node key payload).
 
-Axiom graphFromEdgedVerticesUniq : forall {key} {payload},
+Axiom graphFromEdgedVerticesUniq : forall {key : Type},
+                                   forall {payload : Type},
                                    forall `{Unique.Uniquable key},
                                    list (Node key payload) -> Graph (Node key payload).
 
@@ -82,7 +84,8 @@ Axiom reduceNodesIntoVerticesOrd : forall {key} {payload},
 Axiom reduceNodesIntoVerticesUniq : forall {key} {payload},
                                     forall `{Unique.Uniquable key}, ReduceFn key payload.
 
-Axiom findCycle : forall {payload} {key},
+Axiom findCycle : forall {payload : Type},
+                  forall {key : Type},
                   forall `{GHC.Base.Ord key}, list (Node key payload) -> option (list payload).
 
 (* Skipping definition `Digraph.stronglyConnCompG' *)
@@ -97,33 +100,33 @@ Axiom findCycle : forall {payload} {key},
 
 (* Skipping definition `Digraph.stronglyConnCompFromEdgedVerticesUniqR' *)
 
-Axiom topologicalSortG : forall {node}, Graph node -> list node.
+Axiom topologicalSortG : forall {node : Type}, Graph node -> list node.
 
-Axiom dfsTopSortG : forall {node}, Graph node -> list (list node).
+Axiom dfsTopSortG : forall {node : Type}, Graph node -> list (list node).
 
-Axiom reachableG : forall {node}, Graph node -> node -> list node.
+Axiom reachableG : forall {node : Type}, Graph node -> node -> list node.
 
-Axiom reachablesG : forall {node}, Graph node -> list node -> list node.
+Axiom reachablesG : forall {node : Type}, Graph node -> list node -> list node.
 
-Axiom hasVertexG : forall {node}, Graph node -> node -> bool.
+Axiom hasVertexG : forall {node : Type}, Graph node -> node -> bool.
 
-Axiom verticesG : forall {node}, Graph node -> list node.
+Axiom verticesG : forall {node : Type}, Graph node -> list node.
 
-Axiom edgesG : forall {node}, Graph node -> list (Edge node).
+Axiom edgesG : forall {node : Type}, Graph node -> list (Edge node).
 
-Axiom transposeG : forall {node}, Graph node -> Graph node.
+Axiom transposeG : forall {node : Type}, Graph node -> Graph node.
 
-Axiom outdegreeG : forall {node}, Graph node -> node -> option nat.
+Axiom outdegreeG : forall {node : Type}, Graph node -> node -> option nat.
 
-Axiom indegreeG : forall {node}, Graph node -> node -> option nat.
+Axiom indegreeG : forall {node : Type}, Graph node -> node -> option nat.
 
 (* Skipping definition `Digraph.degreeG' *)
 
 (* Skipping definition `Digraph.vertexGroupsG' *)
 
-Axiom emptyG : forall {node}, Graph node -> bool.
+Axiom emptyG : forall {node : Type}, Graph node -> bool.
 
-Axiom componentsG : forall {node}, Graph node -> list (list node).
+Axiom componentsG : forall {node : Type}, Graph node -> list (list node).
 
 (* Skipping definition `Digraph.graphEmpty' *)
 
