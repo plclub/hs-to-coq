@@ -1,2 +1,1 @@
 skip Control.Monad.Fail.MonadFail__IO
-class kinds Control.Monad.Fail.MonadFail (Type -> Type)
