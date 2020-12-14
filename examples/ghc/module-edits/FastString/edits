@@ -1,10 +1,5 @@
 axiomatize module FastString
 
-redefine Axiom FastString.FastString : Type.
-redefine Axiom  FastString.LitString : Type.
-
-redefine Axiom FastString.FastStringTable : Type.
-
 skip FastString.updTbl
 skip FastString.op_mkLitStringzh__ 
 skip FastString.op_mkFastStringzh__

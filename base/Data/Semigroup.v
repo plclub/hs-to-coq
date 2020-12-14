@@ -610,10 +610,10 @@ Program Instance Ord__Option {a : Type} `{GHC.Base.Ord a}
 (* Skipping all instances of class `GHC.Enum.Enum', including
    `Data.Semigroup.Enum__Min' *)
 
-Local Definition Semigroup__Min_op_zlzlzgzg__ {inst_a} `{_
-   : GHC.Base.Ord inst_a}
+Local Definition Semigroup__Min_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
+  inst_a}
    : Min inst_a -> Min inst_a -> Min inst_a :=
-  GHC.Prim.coerce (@GHC.Base.min inst_a _ _).
+  GHC.Prim.coerce (GHC.Base.min : inst_a -> inst_a -> inst_a).
 
 Program Instance Semigroup__Min {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Semigroup (Min a) :=
@@ -828,10 +828,10 @@ Program Instance Monad__Min : GHC.Base.Monad Min :=
 (* Skipping all instances of class `GHC.Enum.Enum', including
    `Data.Semigroup.Enum__Max' *)
 
-Local Definition Semigroup__Max_op_zlzlzgzg__ {inst_a} `{_
-   : GHC.Base.Ord inst_a}
+Local Definition Semigroup__Max_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
+  inst_a}
    : Max inst_a -> Max inst_a -> Max inst_a :=
-  GHC.Prim.coerce (@GHC.Base.max inst_a _ _).
+  GHC.Prim.coerce (GHC.Base.max : inst_a -> inst_a -> inst_a).
 
 Program Instance Semigroup__Max {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Semigroup (Max a) :=
@@ -1773,10 +1773,10 @@ Program Instance Monad__Last : GHC.Base.Monad Last :=
 (* Skipping all instances of class `Control.Monad.Fix.MonadFix', including
    `Data.Semigroup.MonadFix__Last' *)
 
-Local Definition Semigroup__WrappedMonoid_op_zlzlzgzg__ {inst_m} `{_
-   : GHC.Base.Monoid inst_m}
+Local Definition Semigroup__WrappedMonoid_op_zlzlzgzg__ {inst_m : Type}
+  `{GHC.Base.Monoid inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> WrappedMonoid inst_m :=
-  GHC.Prim.coerce (@GHC.Base.mappend inst_m _ _).
+  GHC.Prim.coerce (GHC.Base.mappend : inst_m -> inst_m -> inst_m).
 
 Program Instance Semigroup__WrappedMonoid {m : Type} `{GHC.Base.Monoid m}
    : GHC.Base.Semigroup (WrappedMonoid m) :=
@@ -2042,10 +2042,11 @@ Program Instance Traversable__Option : Data.Traversable.Traversable Option :=
            `{GHC.Base.Applicative f} =>
              Traversable__Option_traverse |}.
 
-Local Definition Semigroup__Option_op_zlzlzgzg__ {inst_a} `{_
-   : GHC.Base.Semigroup inst_a}
+Local Definition Semigroup__Option_op_zlzlzgzg__ {inst_a : Type}
+  `{GHC.Base.Semigroup inst_a}
    : Option inst_a -> Option inst_a -> Option inst_a :=
-  GHC.Prim.coerce (@GHC.Base.op_zlzlzgzg__ (option inst_a) _).
+  GHC.Prim.coerce (_GHC.Base.<<>>_ : option inst_a ->
+                   option inst_a -> option inst_a).
 
 Program Instance Semigroup__Option {a : Type} `{GHC.Base.Semigroup a}
    : GHC.Base.Semigroup (Option a) :=

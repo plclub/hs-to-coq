@@ -19,7 +19,6 @@ Implicit Type inst_k: unit_class.
 
 (* Converted imports: *)
 
-Require Coq.Program.Basics.
 Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
@@ -692,9 +691,10 @@ Program Instance Monad__Dual : GHC.Base.Monad Dual :=
 Instance Unpeel_Endo a : GHC.Prim.Unpeel (Endo a) (a -> a) :=
   GHC.Prim.Build_Unpeel _ _ appEndo Mk_Endo.
 
-Local Definition Semigroup__Endo_op_zlzlzgzg__ {inst_a}
+Local Definition Semigroup__Endo_op_zlzlzgzg__ {inst_a : Type}
    : Endo inst_a -> Endo inst_a -> Endo inst_a :=
-  GHC.Prim.coerce Coq.Program.Basics.compose.
+  GHC.Prim.coerce (_GHC.Base.∘_ : (inst_a -> inst_a) ->
+                   (inst_a -> inst_a) -> (inst_a -> inst_a)).
 
 Program Instance Semigroup__Endo {a : Type} : GHC.Base.Semigroup (Endo a) :=
   fun _ k__ =>
@@ -759,9 +759,10 @@ Program Instance Monoid__Any : GHC.Base.Monoid Any :=
            GHC.Base.mconcat__ := Monoid__Any_mconcat ;
            GHC.Base.mempty__ := Monoid__Any_mempty |}.
 
-Local Definition Semigroup__Sum_op_zlzlzgzg__ {inst_a} `{GHC.Num.Num inst_a}
+Local Definition Semigroup__Sum_op_zlzlzgzg__ {inst_a : Type} `{GHC.Num.Num
+  inst_a}
    : Sum inst_a -> Sum inst_a -> Sum inst_a :=
-  GHC.Prim.coerce _GHC.Num.+_.
+  GHC.Prim.coerce (_GHC.Num.+_ : inst_a -> inst_a -> inst_a).
 
 Program Instance Semigroup__Sum {a : Type} `{GHC.Num.Num a}
    : GHC.Base.Semigroup (Sum a) :=
@@ -847,9 +848,10 @@ Program Instance Monad__Sum : GHC.Base.Monad Sum :=
            GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Sum_op_zgzgze__ ;
            GHC.Base.return___ := fun {a : Type} => Monad__Sum_return_ |}.
 
-Local Definition Semigroup__Product_op_zlzlzgzg__ {inst_a} `{GHC.Num.Num inst_a}
+Local Definition Semigroup__Product_op_zlzlzgzg__ {inst_a : Type} `{GHC.Num.Num
+  inst_a}
    : Product inst_a -> Product inst_a -> Product inst_a :=
-  GHC.Prim.coerce _GHC.Num.*_.
+  GHC.Prim.coerce (_GHC.Num.*_ : inst_a -> inst_a -> inst_a).
 
 Program Instance Semigroup__Product {a : Type} `{GHC.Num.Num a}
    : GHC.Base.Semigroup (Product a) :=
@@ -970,22 +972,22 @@ Definition stimesIdempotentMonoid {b : Type} {a : Type} `{GHC.Real.Integral b}
 (* Skipping definition `Data.SemigroupInternal.stimesList' *)
 
 (* External variables:
-     Eq Gt Lt Type andb bool comparison false list orb true
-     Coq.Program.Basics.compose GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor
-     GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.compare
-     GHC.Base.compare__ GHC.Base.const GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr
-     GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__ GHC.Base.mappend__ GHC.Base.max
-     GHC.Base.max__ GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.min
-     GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____
-     GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____
-     GHC.Base.op_zgzg__ GHC.Base.op_zgzg____ GHC.Base.op_zgzgze__
-     GHC.Base.op_zgzgze____ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd__
-     GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
-     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__
-     GHC.Base.op_zlztzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
-     GHC.Base.op_ztzg__ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return_ GHC.Base.return___ GHC.Err.Build_Default GHC.Err.Default
-     GHC.Err.default GHC.Err.errorWithoutStackTrace GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel
-     GHC.Prim.coerce GHC.Real.Integral
+     Eq Gt Lt Type andb bool comparison false list orb true GHC.Base.Applicative
+     GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord
+     GHC.Base.Semigroup GHC.Base.compare GHC.Base.compare__ GHC.Base.const
+     GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr GHC.Base.id GHC.Base.liftA2
+     GHC.Base.liftA2__ GHC.Base.mappend__ GHC.Base.max GHC.Base.max__
+     GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.min GHC.Base.min__
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__
+     GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zgzg__
+     GHC.Base.op_zgzg____ GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____
+     GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
+     GHC.Base.op_zlze__ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
+     GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____
+     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg__ GHC.Base.op_ztzg____
+     GHC.Base.pure GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___
+     GHC.Err.Build_Default GHC.Err.Default GHC.Err.default
+     GHC.Err.errorWithoutStackTrace GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
+     GHC.Num.op_zt__ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel GHC.Prim.coerce
+     GHC.Real.Integral
 *)

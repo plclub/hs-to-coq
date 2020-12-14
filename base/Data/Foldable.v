@@ -1004,7 +1004,8 @@ Definition concatMap {t : Type -> Type} {a : Type} {b : Type} `{Foldable t}
   fun f xs =>
     GHC.Base.build' (fun _ => (fun c n => foldr (fun x b => foldr c b (f x)) n xs)).
 
-Definition concat {t} {a} `{Foldable t} : t (list a) -> list a :=
+Definition concat {t : Type -> Type} {a : Type} `{Foldable t}
+   : t (list a) -> list a :=
   fun xs =>
     GHC.Base.build' (fun _ =>
                        fun c n => foldr (fun x y => (@foldr _ Foldable__list _ _ c y x)) n xs).
