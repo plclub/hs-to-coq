@@ -26,9 +26,6 @@ order Data.List.Shuffle.length_halve Data.List.Shuffle.shuffleLength
 ################################################################################
 # MonadRandom
 
-# Kind inference
-class kinds Control.Monad.Random.Class.MonadInterleave (Type -> Type)
-
 # Functional dependencies
 skip class Control.Monad.Random.Class.MonadSplit
 

@@ -58,14 +58,13 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Record RandomGen__Dict g := RandomGen__Dict_Build {
+Record RandomGen__Dict (g : Type) := RandomGen__Dict_Build {
   genRange__ : g -> (GHC.Num.Int * GHC.Num.Int)%type ;
   next__ : g -> (GHC.Num.Int * g)%type ;
   split__ : g -> (g * g)%type }.
 
-Definition RandomGen g :=
+Definition RandomGen (g : Type) :=
   forall r__, (RandomGen__Dict g -> r__) -> r__.
-
 Existing Class RandomGen.
 
 Definition genRange `{g__0__ : RandomGen g}
@@ -78,68 +77,183 @@ Definition next `{g__0__ : RandomGen g} : g -> (GHC.Num.Int * g)%type :=
 Definition split `{g__0__ : RandomGen g} : g -> (g * g)%type :=
   g__0__ _ (split__ g).
 
-Record Random__Dict a := Random__Dict_Build {
-  random__ : forall {g}, forall `{RandomGen g}, g -> (a * g)%type ;
-  randomR__ : forall {g},
+Record Random__Dict (a : Type) := Random__Dict_Build {
+  random__ : forall {g : Type}, forall `{RandomGen g}, g -> (a * g)%type ;
+  randomR__ : forall {g : Type},
   forall `{RandomGen g}, (a * a)%type -> g -> (a * g)%type }.
 
-Definition Random a :=
+Definition Random (a : Type) :=
   forall r__, (Random__Dict a -> r__) -> r__.
-
 Existing Class Random.
 
 Definition random `{g__0__ : Random a}
-   : forall {g}, forall `{RandomGen g}, g -> (a * g)%type :=
+   : forall {g : Type}, forall `{RandomGen g}, g -> (a * g)%type :=
   g__0__ _ (random__ a).
 
 Definition randomR `{g__0__ : Random a}
-   : forall {g}, forall `{RandomGen g}, (a * a)%type -> g -> (a * g)%type :=
+   : forall {g : Type},
+     forall `{RandomGen g}, (a * a)%type -> g -> (a * g)%type :=
   g__0__ _ (randomR__ a).
 
 (* Converted value declarations: *)
 
-Definition stdRange : (GHC.Num.Int * GHC.Num.Int)%type :=
-  pair #1 #2147483562.
+(* Skipping instance `System.Random.RandomGen__StdGen' of class
+   `System.Random.RandomGen' *)
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `System.Random.Show__StdGen' *)
+
+(* Skipping all instances of class `GHC.Read.Read', including
+   `System.Random.Read__StdGen' *)
 
 Axiom randomIvalInteger : forall {g} {a},
                           forall `{RandomGen g} `{GHC.Num.Num a},
                           (GHC.Num.Integer * GHC.Num.Integer)%type -> g -> (a * g)%type.
+
+Local Definition Random__Integer_randomR
+   : forall {g : Type},
+     forall `{RandomGen g},
+     (GHC.Num.Integer * GHC.Num.Integer)%type -> g -> (GHC.Num.Integer * g)%type :=
+  fun {g : Type} `{RandomGen g} => fun ival g => randomIvalInteger ival g.
+
+Local Definition Random__Integer_random
+   : forall {g : Type}, forall `{RandomGen g}, g -> (GHC.Num.Integer * g)%type :=
+  fun {g : Type} `{RandomGen g} =>
+    fun g =>
+      Random__Integer_randomR (pair (GHC.Real.toInteger
+                                     (GHC.Enum.minBound : GHC.Num.Int)) (GHC.Real.toInteger
+                                     (GHC.Enum.maxBound : GHC.Num.Int))) g.
+
+Program Instance Random__Integer : Random GHC.Num.Integer :=
+  fun _ k__ =>
+    k__ {| random__ := fun {g : Type} `{RandomGen g} => Random__Integer_random ;
+           randomR__ := fun {g : Type} `{RandomGen g} => Random__Integer_randomR |}.
 
 Definition randomIvalIntegral {g} {a} `{RandomGen g} `{GHC.Real.Integral a}
    : (a * a)%type -> g -> (a * g)%type :=
   fun '(pair l h) =>
     randomIvalInteger (pair (GHC.Real.toInteger l) (GHC.Real.toInteger h)).
 
-Definition randomBounded {g} {a} `{RandomGen g} `{Random a} `{GHC.Enum.Bounded
-  a}
-   : g -> (a * g)%type :=
-  randomR (pair GHC.Enum.minBound GHC.Enum.maxBound).
+Local Definition Random__Int_randomR
+   : forall {g : Type},
+     forall `{RandomGen g},
+     (GHC.Num.Int * GHC.Num.Int)%type -> g -> (GHC.Num.Int * g)%type :=
+  fun {g : Type} `{RandomGen g} => randomIvalIntegral.
 
-(* Skipping all instances of class `GHC.Read.Read', including
-   `System.Random.Read__StdGen' *)
+Local Definition Random__Int_random
+   : forall {g : Type}, forall `{RandomGen g}, g -> (GHC.Num.Int * g)%type :=
+  fun {g : Type} `{RandomGen g} =>
+    Random__Int_randomR (pair GHC.Enum.minBound GHC.Enum.maxBound).
 
-(* Skipping all instances of class `GHC.Show.Show', including
-   `System.Random.Show__StdGen' *)
+Program Instance Random__Int : Random GHC.Num.Int :=
+  fun _ k__ =>
+    k__ {| random__ := fun {g : Type} `{RandomGen g} => Random__Int_random ;
+           randomR__ := fun {g : Type} `{RandomGen g} => Random__Int_randomR |}.
 
-(* Skipping instance `System.Random.RandomGen__StdGen' of class
-   `System.Random.RandomGen' *)
-
-(* Skipping instance `System.Random.Random__CDouble' of class
+(* Skipping instance `System.Random.Random__Int8' of class
    `System.Random.Random' *)
 
-(* Skipping instance `System.Random.Random__CFloat' of class
+(* Skipping instance `System.Random.Random__Int16' of class
    `System.Random.Random' *)
 
-(* Skipping instance `System.Random.Random__Float' of class
+(* Skipping instance `System.Random.Random__Int32' of class
    `System.Random.Random' *)
 
-(* Skipping instance `System.Random.Random__Double' of class
+(* Skipping instance `System.Random.Random__Int64' of class
+   `System.Random.Random' *)
+
+Local Definition Random__Word_randomR
+   : forall {g : Type},
+     forall `{RandomGen g},
+     (GHC.Num.Word * GHC.Num.Word)%type -> g -> (GHC.Num.Word * g)%type :=
+  fun {g : Type} `{RandomGen g} => randomIvalIntegral.
+
+Local Definition Random__Word_random
+   : forall {g : Type}, forall `{RandomGen g}, g -> (GHC.Num.Word * g)%type :=
+  fun {g : Type} `{RandomGen g} =>
+    Random__Word_randomR (pair GHC.Enum.minBound GHC.Enum.maxBound).
+
+Program Instance Random__Word : Random GHC.Num.Word :=
+  fun _ k__ =>
+    k__ {| random__ := fun {g : Type} `{RandomGen g} => Random__Word_random ;
+           randomR__ := fun {g : Type} `{RandomGen g} => Random__Word_randomR |}.
+
+(* Skipping instance `System.Random.Random__Word8' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__Word16' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__Word32' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__Word64' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CChar' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CSChar' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CUChar' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CShort' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CUShort' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CInt' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CUInt' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CLong' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CULong' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CPtrdiff' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CSize' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CWchar' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CSigAtomic' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CLLong' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CULLong' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CIntPtr' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CUIntPtr' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CIntMax' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__CUIntMax' of class
+   `System.Random.Random' *)
+
+(* Skipping instance `System.Random.Random__Char' of class
    `System.Random.Random' *)
 
 Local Definition Random__bool_randomR
-   : forall {g},
+   : forall {g : Type},
      forall `{RandomGen g}, (bool * bool)%type -> g -> (bool * g)%type :=
-  fun {g} `{RandomGen g} =>
+  fun {g : Type} `{RandomGen g} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | pair a b, g =>
@@ -152,152 +266,73 @@ Local Definition Random__bool_randomR
       end.
 
 Local Definition Random__bool_random
-   : forall {g}, forall `{RandomGen g}, g -> (bool * g)%type :=
-  fun {g} `{RandomGen g} =>
+   : forall {g : Type}, forall `{RandomGen g}, g -> (bool * g)%type :=
+  fun {g : Type} `{RandomGen g} =>
     fun g => Random__bool_randomR (pair GHC.Enum.minBound GHC.Enum.maxBound) g.
 
 Program Instance Random__bool : Random bool :=
   fun _ k__ =>
-    k__ {| random__ := fun {g} `{RandomGen g} => Random__bool_random ;
-           randomR__ := fun {g} `{RandomGen g} => Random__bool_randomR |}.
+    k__ {| random__ := fun {g : Type} `{RandomGen g} => Random__bool_random ;
+           randomR__ := fun {g : Type} `{RandomGen g} => Random__bool_randomR |}.
 
-(* Skipping instance `System.Random.Random__Char' of class
+(* Skipping instance `System.Random.Random__Double' of class
    `System.Random.Random' *)
 
-(* Skipping instance `System.Random.Random__CUIntMax' of class
+(* Skipping instance `System.Random.Random__Float' of class
    `System.Random.Random' *)
 
-(* Skipping instance `System.Random.Random__CIntMax' of class
+(* Skipping instance `System.Random.Random__CFloat' of class
    `System.Random.Random' *)
 
-(* Skipping instance `System.Random.Random__CUIntPtr' of class
+(* Skipping instance `System.Random.Random__CDouble' of class
    `System.Random.Random' *)
 
-(* Skipping instance `System.Random.Random__CIntPtr' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.getTime' *)
 
-(* Skipping instance `System.Random.Random__CULLong' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.stdFromString' *)
 
-(* Skipping instance `System.Random.Random__CLLong' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.mkStdGen' *)
 
-(* Skipping instance `System.Random.Random__CSigAtomic' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.mkStdGen32' *)
 
-(* Skipping instance `System.Random.Random__CWchar' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.createStdGen' *)
 
-(* Skipping instance `System.Random.Random__CSize' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.buildRandoms' *)
 
-(* Skipping instance `System.Random.Random__CPtrdiff' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.randomRFloating' *)
 
-(* Skipping instance `System.Random.Random__CULong' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.mkStdRNG' *)
 
-(* Skipping instance `System.Random.Random__CLong' of class
-   `System.Random.Random' *)
+Definition randomBounded {g} {a} `{RandomGen g} `{Random a} `{GHC.Enum.Bounded
+  a}
+   : g -> (a * g)%type :=
+  randomR (pair GHC.Enum.minBound GHC.Enum.maxBound).
 
-(* Skipping instance `System.Random.Random__CUInt' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.randomFrac' *)
 
-(* Skipping instance `System.Random.Random__CInt' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.randomIvalDouble' *)
 
-(* Skipping instance `System.Random.Random__CUShort' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.int32Count' *)
 
-(* Skipping instance `System.Random.Random__CShort' of class
-   `System.Random.Random' *)
+Definition stdRange : (GHC.Num.Int * GHC.Num.Int)%type :=
+  pair #1 #2147483562.
 
-(* Skipping instance `System.Random.Random__CUChar' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.stdNext' *)
 
-(* Skipping instance `System.Random.Random__CSChar' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.stdSplit' *)
 
-(* Skipping instance `System.Random.Random__CChar' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.setStdGen' *)
 
-(* Skipping instance `System.Random.Random__Word64' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.getStdGen' *)
 
-(* Skipping instance `System.Random.Random__Word32' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.theStdGen' *)
 
-(* Skipping instance `System.Random.Random__Word16' of class
-   `System.Random.Random' *)
+(* Skipping definition `System.Random.newStdGen' *)
 
-(* Skipping instance `System.Random.Random__Word8' of class
-   `System.Random.Random' *)
-
-Local Definition Random__Word_randomR
-   : forall {g},
-     forall `{RandomGen g},
-     (GHC.Num.Word * GHC.Num.Word)%type -> g -> (GHC.Num.Word * g)%type :=
-  fun {g} `{RandomGen g} => randomIvalIntegral.
-
-Local Definition Random__Word_random
-   : forall {g}, forall `{RandomGen g}, g -> (GHC.Num.Word * g)%type :=
-  fun {g} `{RandomGen g} =>
-    Random__Word_randomR (pair GHC.Enum.minBound GHC.Enum.maxBound).
-
-Program Instance Random__Word : Random GHC.Num.Word :=
-  fun _ k__ =>
-    k__ {| random__ := fun {g} `{RandomGen g} => Random__Word_random ;
-           randomR__ := fun {g} `{RandomGen g} => Random__Word_randomR |}.
-
-(* Skipping instance `System.Random.Random__Int64' of class
-   `System.Random.Random' *)
-
-(* Skipping instance `System.Random.Random__Int32' of class
-   `System.Random.Random' *)
-
-(* Skipping instance `System.Random.Random__Int16' of class
-   `System.Random.Random' *)
-
-(* Skipping instance `System.Random.Random__Int8' of class
-   `System.Random.Random' *)
-
-Local Definition Random__Int_randomR
-   : forall {g},
-     forall `{RandomGen g},
-     (GHC.Num.Int * GHC.Num.Int)%type -> g -> (GHC.Num.Int * g)%type :=
-  fun {g} `{RandomGen g} => randomIvalIntegral.
-
-Local Definition Random__Int_random
-   : forall {g}, forall `{RandomGen g}, g -> (GHC.Num.Int * g)%type :=
-  fun {g} `{RandomGen g} =>
-    Random__Int_randomR (pair GHC.Enum.minBound GHC.Enum.maxBound).
-
-Program Instance Random__Int : Random GHC.Num.Int :=
-  fun _ k__ =>
-    k__ {| random__ := fun {g} `{RandomGen g} => Random__Int_random ;
-           randomR__ := fun {g} `{RandomGen g} => Random__Int_randomR |}.
-
-Local Definition Random__Integer_randomR
-   : forall {g},
-     forall `{RandomGen g},
-     (GHC.Num.Integer * GHC.Num.Integer)%type -> g -> (GHC.Num.Integer * g)%type :=
-  fun {g} `{RandomGen g} => fun ival g => randomIvalInteger ival g.
-
-Local Definition Random__Integer_random
-   : forall {g}, forall `{RandomGen g}, g -> (GHC.Num.Integer * g)%type :=
-  fun {g} `{RandomGen g} =>
-    fun g =>
-      Random__Integer_randomR (pair (GHC.Real.toInteger
-                                     (GHC.Enum.minBound : GHC.Num.Int)) (GHC.Real.toInteger
-                                     (GHC.Enum.maxBound : GHC.Num.Int))) g.
-
-Program Instance Random__Integer : Random GHC.Num.Integer :=
-  fun _ k__ =>
-    k__ {| random__ := fun {g} `{RandomGen g} => Random__Integer_random ;
-           randomR__ := fun {g} `{RandomGen g} => Random__Integer_randomR |}.
+(* Skipping definition `System.Random.getStdRandom' *)
 
 (* External variables:
-     bool false op_zt__ pair true GHC.Base.op_zeze__ GHC.Enum.Bounded
+     Type bool false op_zt__ pair true GHC.Base.op_zeze__ GHC.Enum.Bounded
      GHC.Enum.maxBound GHC.Enum.minBound GHC.Num.Int GHC.Num.Integer GHC.Num.Num
      GHC.Num.Word GHC.Num.fromInteger GHC.Real.Integral GHC.Real.toInteger
 *)
