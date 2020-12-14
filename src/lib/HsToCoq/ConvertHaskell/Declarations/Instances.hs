@@ -377,7 +377,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
 
       pure $ methodSentences ++ [instance_sentence]
 #if __GLASGOW_HASKELL__ >= 806
-convertClsInstDecl (XClsInstDecl v) = noExtCon v
+convertClsInstDecl _env (XClsInstDecl v) = noExtCon v
 #endif
 
 --------------------------------------------------------------------------------

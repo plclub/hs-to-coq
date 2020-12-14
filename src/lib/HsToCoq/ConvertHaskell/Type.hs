@@ -11,6 +11,9 @@ module HsToCoq.ConvertHaskell.Type (
 import Data.List.NonEmpty (NonEmpty(..))
 import Control.Lens
 
+#if __GLASGOW_HASKELL__ >= 808
+import Var
+#endif
 import TyCoRep
 import TyCon
 import Type (isPredTy)
@@ -50,10 +53,17 @@ convertType' b (ForAllTy tv ty) = do
   convertedTv <- convertTyVarBinder Coq.Implicit tv
   convertedTy <- convertType' b ty
   pure $ Forall (convertedTv :| []) convertedTy
+#if __GLASGOW_HASKELL__ >= 810
+convertType' b (FunTy InvisArg ty1 ty2)  = do
+  cons <- convertPredType ty1
+  Forall (Generalized Coq.Implicit cons :| []) <$> convertType' b ty2
+convertType' b (FunTy VisArg ty1 ty2) = Arrow <$> convertType' b ty1 <*> convertType' b ty2
+#else
 convertType' b (FunTy ty1 ty2) | isPredTy ty1 = do
-                                cons <- convertPredType ty1
-                                Forall (Generalized Coq.Implicit cons :| []) <$> convertType' b ty2
-                            | otherwise    = Arrow <$> convertType' b ty1 <*> convertType' b ty2
+                                   cons <- convertPredType ty1
+                                   Forall (Generalized Coq.Implicit cons :| []) <$> convertType' b ty2
+                               | otherwise    = Arrow <$> convertType' b ty1 <*> convertType' b ty2
+#endif                                   
 convertType' _ (LitTy tl) = case tl of
   NumTyLit int -> either convUnsupported' (pure . Num) $ convertInteger "type-level integers" int
   StrTyLit str -> pure $ convertFastString str
@@ -75,5 +85,9 @@ convertTyCon tc = var TypeNS $ getName tc
 convertTyVarBinder :: ConversionMonad r m => Explicitness -> TyVarBinder -> m Binder
 convertTyVarBinder ex bndr = do
   tv <- Ident <$> var TypeNS (getName $ binderVar bndr)
+#if __GLASGOW_HASKELL__ >= 808
+  tk <- convertKind $ binderType bndr
+#else
   tk <- convertKind $ binderKind bndr
+#endif
   pure $ mkBinders ex (tv :| []) tk
