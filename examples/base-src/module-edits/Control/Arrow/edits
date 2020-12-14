@@ -1,8 +1,3 @@
-class kinds Control.Arrow.Arrow (Type -> (Type -> Type))
-class kinds Control.Arrow.ArrowApply (Type -> (Type -> Type))
-class kinds Control.Arrow.ArrowZero (Type -> (Type -> Type))
-class kinds Control.Arrow.ArrowPlus (Type -> (Type -> Type))
-
 data kinds Control.Arrow.ArrowMonad (Type -> (Type -> Type))
 data kinds Control.Arrow.Kleisli (Type -> Type)
 
