@@ -103,4 +103,4 @@ convertTyCl cl = do
 
 filterVisibleVars :: ConvertedTyCl -> [Term] -> [Term]
 filterVisibleVars ConvertedTyCl{..} tms =
-  snd <$> filter (\(ex, t) -> ex == Explicit) (zip convertedTyClVisibility tms)
+  snd <$> filter (\(ex, _t) -> ex == Explicit) (zip convertedTyClVisibility tms)

@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, FlexibleContexts, RecordWildCards #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, FlexibleContexts, RecordWildCards #-}
 
 module HsToCoq.ConvertHaskell.TypeEnv.TyCon (
   tyConsOfModDetails,
@@ -41,7 +41,11 @@ convertTycon tc = do
 
 convertTyConBinder :: ConversionMonad r m => TyConBinder -> m Binder
 convertTyConBinder b = do
+#if __GLASGOW_HASKELL__ >= 808
+  tk <- convertKind $ binderType b
+#else
   tk <- convertKind $ binderKind b
+#endif
   let ex = if isVisibleTyConBinder b then Explicit else Implicit
   if isNamedTyConBinder b then do
     tv <- Ident <$> var TypeNS (getName $ binderVar b)
