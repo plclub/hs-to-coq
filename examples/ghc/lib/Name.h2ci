@@ -27,10 +27,10 @@ recordFieldTypes:
   Name.n_uniq: Qualified "Name" "Name"
   Name.n_occ: Qualified "Name" "Name"
 classDefns:
-  Name.NamedThing: ClassDefinition (Qualified "Name" "NamedThing") [ExplicitBinder
-    (Ident (Bare "a"))] Nothing [(Qualified "Name" "getName",Arrow (Qualid (Bare "a"))
-    (Qualid (Qualified "Name" "Name"))),(Qualified "Name" "getOccName",Arrow (Qualid
-    (Bare "a")) (Qualid (Qualified "OccName" "OccName")))]
+  Name.NamedThing: ClassDefinition (Qualified "Name" "NamedThing") [Typed Ungeneralizable
+    Explicit (Ident (Bare "a") :| []) (Qualid (Bare "Type"))] Nothing [(Qualified
+    "Name" "getName",Arrow (Qualid (Bare "a")) (Qualid (Qualified "Name" "Name"))),(Qualified
+    "Name" "getOccName",Arrow (Qualid (Bare "a")) (Qualid (Qualified "OccName" "OccName")))]
 constructorTypes:
   Name.Internal: Qualified "Name" "NameSort"
   Name.UserSyntax: Qualified "Name" "BuiltInSyntax"

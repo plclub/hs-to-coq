@@ -10,7 +10,5 @@ skip AxiomatizedTypes.BranchIndex
 skip AxiomatizedTypes.CoAxiomRule
 skip AxiomatizedTypes.CoAxBranch
 
-
-redefine Axiom CoAxiom.Branches : Type -> Type.
-
-
+redefine Axiom CoAxiom.Branches : AxiomatizedTypes.BranchFlag -> Type.
+skip AxiomatizedTypes.BranchFlag

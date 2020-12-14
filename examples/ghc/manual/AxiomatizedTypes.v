@@ -10,9 +10,10 @@ Axiom TyThing            : Type.
 Definition Kind          : Type := Type_.
 Definition PredType      : Type := Type_.
 
-Axiom CoAxiom            : Type -> Type.
-Axiom Branched           : Type.
-Axiom Unbranched         : Type.
+Axiom BranchFlag         : Type.
+Axiom CoAxiom            : BranchFlag -> Type.
+Axiom Branched           : BranchFlag.
+Axiom Unbranched         : BranchFlag.
 Axiom BuiltInSynFamily   : Type.
 Axiom BranchIndex        : Type.
 Axiom CoAxiomRule        : Type.
@@ -57,14 +58,6 @@ Instance Default__CoAxiom
    : forall {a}, GHC.Err.Default (CoAxiom a).
 Admitted.
 
-
-Instance Default__Branched
-   : GHC.Err.Default Branched.
-Admitted.
-
-Instance Default__Unbranched
-   : GHC.Err.Default Unbranched.
-Admitted.
 
 Instance Default__BuiltInSynFamily
    : GHC.Err.Default BuiltInSynFamily.

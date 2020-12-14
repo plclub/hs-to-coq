@@ -177,7 +177,7 @@ Definition mkCharExpr : GHC.Char.Char -> Core.CoreExpr :=
 Definition mkNilExpr : AxiomatizedTypes.Type_ -> Core.CoreExpr :=
   fun ty => mkCoreConApps TysWiredIn.nilDataCon (cons (Core.Mk_Type ty) nil).
 
-Definition mkStringExprFSWith {m} `{GHC.Base.Monad m}
+Definition mkStringExprFSWith {m : Type -> Type} `{GHC.Base.Monad m}
    : (Name.Name -> m Core.Id) -> FastString.FastString -> m Core.CoreExpr :=
   fun lookupM str =>
     let lit := Core.Lit (Literal.MachStr (FastString.fastStringToByteString str)) in
@@ -490,7 +490,7 @@ Definition mkAbsentErrorApp
                                                      err_string nil)).
 
 (* External variables:
-     andb bool cons list nat negb nil op_zt__ pair tt AxiomatizedTypes.PredType
+     Type andb bool cons list nat negb nil op_zt__ pair tt AxiomatizedTypes.PredType
      AxiomatizedTypes.Type_ BasicTypes.Boxed BasicTypes.Boxity BasicTypes.Unboxed
      Coq.Init.Datatypes.app Coq.Lists.List.flat_map Coq.Lists.List.length Core.AltCon
      Core.App Core.Case Core.CoreAlt Core.CoreBind Core.CoreBndr Core.CoreExpr

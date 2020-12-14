@@ -17,7 +17,6 @@ Require BasicTypes.
 Require Core.
 Require FastString.
 Require GHC.Base.
-Require GHC.Err.
 Require Name.
 Require Pair.
 Require SrcLoc.
@@ -28,14 +27,7 @@ Require Unique.
 Definition TypeEqn :=
   (Pair.Pair AxiomatizedTypes.Type_)%type.
 
-Axiom Branches : Type -> Type.
-
-Inductive BranchFlag : Type :=
-  | Branched : BranchFlag
-  | Unbranched : BranchFlag.
-
-Instance Default__BranchFlag : GHC.Err.Default BranchFlag :=
-  GHC.Err.Build_Default _ Branched.
+Axiom Branches : AxiomatizedTypes.BranchFlag -> Type.
 
 (* Converted value declarations: *)
 
@@ -112,51 +104,56 @@ Axiom toBranched : forall {br},
 Axiom toUnbranched : forall {br},
                      Branches br -> Branches AxiomatizedTypes.Unbranched.
 
-Axiom fromBranches : forall {br},
+Axiom fromBranches : forall {br : AxiomatizedTypes.BranchFlag},
                      Branches br -> list AxiomatizedTypes.CoAxBranch.
 
 Axiom branchesNth : forall {br},
                     Branches br -> AxiomatizedTypes.BranchIndex -> AxiomatizedTypes.CoAxBranch.
 
-Axiom numBranches : forall {br}, Branches br -> nat.
+Axiom numBranches : forall {br : AxiomatizedTypes.BranchFlag},
+                    Branches br -> nat.
 
-Axiom mapAccumBranches : forall {br},
+Axiom mapAccumBranches : forall {br : AxiomatizedTypes.BranchFlag},
                          (list AxiomatizedTypes.CoAxBranch ->
                           AxiomatizedTypes.CoAxBranch -> AxiomatizedTypes.CoAxBranch) ->
                          Branches br -> Branches br.
 
-Axiom toBranchedAxiom : forall {br},
+Axiom toBranchedAxiom : forall {br : AxiomatizedTypes.BranchFlag},
                         AxiomatizedTypes.CoAxiom br ->
                         AxiomatizedTypes.CoAxiom AxiomatizedTypes.Branched.
 
-Axiom toUnbranchedAxiom : forall {br},
+Axiom toUnbranchedAxiom : forall {br : AxiomatizedTypes.BranchFlag},
                           AxiomatizedTypes.CoAxiom br ->
                           AxiomatizedTypes.CoAxiom AxiomatizedTypes.Unbranched.
 
-Axiom coAxiomNumPats : forall {br}, AxiomatizedTypes.CoAxiom br -> nat.
+Axiom coAxiomNumPats : forall {br : AxiomatizedTypes.BranchFlag},
+                       AxiomatizedTypes.CoAxiom br -> nat.
 
-Axiom coAxiomNthBranch : forall {br},
+Axiom coAxiomNthBranch : forall {br : AxiomatizedTypes.BranchFlag},
                          AxiomatizedTypes.CoAxiom br ->
                          AxiomatizedTypes.BranchIndex -> AxiomatizedTypes.CoAxBranch.
 
-Axiom coAxiomArity : forall {br},
+Axiom coAxiomArity : forall {br : AxiomatizedTypes.BranchFlag},
                      AxiomatizedTypes.CoAxiom br -> AxiomatizedTypes.BranchIndex -> BasicTypes.Arity.
 
-Axiom coAxiomName : forall {br}, AxiomatizedTypes.CoAxiom br -> Name.Name.
+Axiom coAxiomName : forall {br : AxiomatizedTypes.BranchFlag},
+                    AxiomatizedTypes.CoAxiom br -> Name.Name.
 
-Axiom coAxiomRole : forall {br},
+Axiom coAxiomRole : forall {br : AxiomatizedTypes.BranchFlag},
                     AxiomatizedTypes.CoAxiom br -> AxiomatizedTypes.Role.
 
-Axiom coAxiomBranches : forall {br}, AxiomatizedTypes.CoAxiom br -> Branches br.
+Axiom coAxiomBranches : forall {br : AxiomatizedTypes.BranchFlag},
+                        AxiomatizedTypes.CoAxiom br -> Branches br.
 
-Axiom coAxiomSingleBranch_maybe : forall {br},
+Axiom coAxiomSingleBranch_maybe : forall {br : AxiomatizedTypes.BranchFlag},
                                   AxiomatizedTypes.CoAxiom br -> option AxiomatizedTypes.CoAxBranch.
 
 Axiom coAxiomSingleBranch : AxiomatizedTypes.CoAxiom
                             AxiomatizedTypes.Unbranched ->
                             AxiomatizedTypes.CoAxBranch.
 
-Axiom coAxiomTyCon : forall {br}, AxiomatizedTypes.CoAxiom br -> Core.TyCon.
+Axiom coAxiomTyCon : forall {br : AxiomatizedTypes.BranchFlag},
+                     AxiomatizedTypes.CoAxiom br -> Core.TyCon.
 
 Axiom coAxBranchTyVars : AxiomatizedTypes.CoAxBranch -> list Core.TyVar.
 
@@ -172,7 +169,8 @@ Axiom coAxBranchRoles : AxiomatizedTypes.CoAxBranch ->
 
 Axiom coAxBranchSpan : AxiomatizedTypes.CoAxBranch -> SrcLoc.SrcSpan.
 
-Axiom isImplicitCoAxiom : forall {br}, AxiomatizedTypes.CoAxiom br -> bool.
+Axiom isImplicitCoAxiom : forall {br : AxiomatizedTypes.BranchFlag},
+                          AxiomatizedTypes.CoAxiom br -> bool.
 
 Axiom coAxBranchIncomps : AxiomatizedTypes.CoAxBranch ->
                           list AxiomatizedTypes.CoAxBranch.
@@ -184,11 +182,11 @@ Axiom fsFromRole : AxiomatizedTypes.Role -> FastString.FastString.
 Axiom trivialBuiltInFamily : AxiomatizedTypes.BuiltInSynFamily.
 
 (* External variables:
-     Type bool list nat option AxiomatizedTypes.BranchIndex AxiomatizedTypes.Branched
+     Type bool list nat option AxiomatizedTypes.BranchFlag
+     AxiomatizedTypes.BranchIndex AxiomatizedTypes.Branched
      AxiomatizedTypes.BuiltInSynFamily AxiomatizedTypes.CoAxBranch
      AxiomatizedTypes.CoAxiom AxiomatizedTypes.CoAxiomRule AxiomatizedTypes.Role
      AxiomatizedTypes.Type_ AxiomatizedTypes.Unbranched BasicTypes.Arity Core.CoVar
-     Core.TyCon Core.TyVar FastString.FastString GHC.Base.Eq_ GHC.Base.Ord
-     GHC.Err.Build_Default GHC.Err.Default Name.Name Name.NamedThing Pair.Pair
-     SrcLoc.SrcSpan Unique.Uniquable
+     Core.TyCon Core.TyVar FastString.FastString GHC.Base.Eq_ GHC.Base.Ord Name.Name
+     Name.NamedThing Pair.Pair SrcLoc.SrcSpan Unique.Uniquable
 *)

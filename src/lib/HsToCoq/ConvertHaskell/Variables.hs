@@ -98,7 +98,7 @@ rename ns = go S.empty
     go seen qid | qid `S.member` seen =
         failIO $ explainStrItems showP "no" "," "and" "Cyclic renaming" "Cyclic renamings" seen
     go seen qid = view (edits . renamed ns qid) >>= \case
-        Nothing ->   return qid
+        Nothing ->  return qid
             -- A self rename is also fine, it signals stopping.
         Just qid' | qid' == qid -> return qid
         Just qid' -> go (S.insert qid seen) qid'

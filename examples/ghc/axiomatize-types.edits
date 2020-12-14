@@ -217,6 +217,7 @@ rename type TyCoRep.Kind          = AxiomatizedTypes.Kind
 rename type TyCoRep.PredType      = AxiomatizedTypes.PredType
 
 rename type CoAxiom.CoAxiom            = AxiomatizedTypes.CoAxiom
+rename type CoAxiom.BranchFlag         = AxiomatizedTypes.BranchFlag
 rename type CoAxiom.Branched           = AxiomatizedTypes.Branched
 rename type CoAxiom.Unbranched         = AxiomatizedTypes.Unbranched
 rename type CoAxiom.BuiltInSynFamily   = AxiomatizedTypes.BuiltInSynFamily

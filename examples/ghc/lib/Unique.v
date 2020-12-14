@@ -28,10 +28,10 @@ Import GHC.Num.Notations.
 
 Inductive Unique : Type := | MkUnique : BinNums.N -> Unique.
 
-Record Uniquable__Dict a := Uniquable__Dict_Build {
+Record Uniquable__Dict (a : Type) := Uniquable__Dict_Build {
   getUnique__ : a -> Unique }.
 
-Definition Uniquable a :=
+Definition Uniquable (a : Type) :=
   forall r__, (Uniquable__Dict a -> r__) -> r__.
 Existing Class Uniquable.
 
@@ -138,7 +138,7 @@ Definition isValidKnownKeyUnique : Unique -> bool :=
     let 'pair c x := unpkUnique u in
     andb (GHC.Base.ord c GHC.Base.< #255) (x GHC.Base.<= (Data.Bits.shiftL #1 #22)).
 
-Definition hasKey {a} `{Uniquable a} : a -> Unique -> bool :=
+Definition hasKey {a : Type} `{Uniquable a} : a -> Unique -> bool :=
   fun x k => getUnique x GHC.Base.== k.
 
 Definition nonDetCmpUnique : Unique -> Unique -> comparison :=
@@ -244,8 +244,8 @@ Definition getWordKey : Unique -> GHC.Num.Word :=
 Axiom isLocalUnique : Unique -> bool.
 
 (* External variables:
-     Eq Gt Lt andb bool comparison negb op_zt__ pair BasicTypes.Arity BinNat.N.of_nat
-     BinNums.N Coq.ZArith.BinInt.Z.land Coq.ZArith.BinInt.Z.lor
+     Eq Gt Lt Type andb bool comparison negb op_zt__ pair BasicTypes.Arity
+     BinNat.N.of_nat BinNums.N Coq.ZArith.BinInt.Z.land Coq.ZArith.BinInt.Z.lor
      Coq.ZArith.BinInt.Z.of_N Coq.ZArith.BinInt.Z.to_N Data.Bits.shiftL
      Data.Bits.shiftR FastString.FastString FastString.uniqueOfFS GHC.Base.Eq_
      GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zl__ GHC.Base.op_zlze__

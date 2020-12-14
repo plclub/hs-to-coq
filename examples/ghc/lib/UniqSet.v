@@ -35,11 +35,12 @@ Definition getUniqSet' {a} (arg_0__ : UniqSet a) :=
 (* Skipping all instances of class `Data.Data.Data', including
    `UniqSet.Data__UniqSet' *)
 
-Local Definition Semigroup__UniqSet_op_zlzlzgzg__ {inst_a}
+Local Definition Semigroup__UniqSet_op_zlzlzgzg__ {inst_a : Type}
    : UniqSet inst_a -> UniqSet inst_a -> UniqSet inst_a :=
   GHC.Prim.coerce _GHC.Base.<<>>_.
 
-Program Instance Semigroup__UniqSet {a} : GHC.Base.Semigroup (UniqSet a) :=
+Program Instance Semigroup__UniqSet {a : Type}
+   : GHC.Base.Semigroup (UniqSet a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__UniqSet_op_zlzlzgzg__ |}.
 
@@ -47,18 +48,18 @@ Instance Unpeel_UniqSet ele
    : GHC.Prim.Unpeel (UniqSet ele) (UniqFM.UniqFM ele) :=
   GHC.Prim.Build_Unpeel _ _ (fun '(Mk_UniqSet y) => y) Mk_UniqSet.
 
-Local Definition Monoid__UniqSet_mappend {inst_a}
+Local Definition Monoid__UniqSet_mappend {inst_a : Type}
    : UniqSet inst_a -> UniqSet inst_a -> UniqSet inst_a :=
   GHC.Prim.coerce GHC.Base.mappend.
 
-Local Definition Monoid__UniqSet_mconcat {inst_a}
+Local Definition Monoid__UniqSet_mconcat {inst_a : Type}
    : list (UniqSet inst_a) -> UniqSet inst_a :=
   GHC.Prim.coerce GHC.Base.mconcat.
 
 Local Definition Monoid__UniqSet_mempty {inst_a} : UniqSet inst_a :=
   Mk_UniqSet GHC.Base.mempty.
 
-Program Instance Monoid__UniqSet {a} : GHC.Base.Monoid (UniqSet a) :=
+Program Instance Monoid__UniqSet {a : Type} : GHC.Base.Monoid (UniqSet a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__UniqSet_mappend ;
            GHC.Base.mconcat__ := Monoid__UniqSet_mconcat ;
@@ -69,55 +70,55 @@ Program Instance Monoid__UniqSet {a} : GHC.Base.Monoid (UniqSet a) :=
 (* Skipping all instances of class `Outputable.Outputable', including
    `UniqSet.Outputable__UniqSet' *)
 
-Definition emptyUniqSet {a} : UniqSet a :=
+Definition emptyUniqSet {a : Type} : UniqSet a :=
   Mk_UniqSet UniqFM.emptyUFM.
 
-Definition unitUniqSet {a} `{Unique.Uniquable a} : a -> UniqSet a :=
+Definition unitUniqSet {a : Type} `{Unique.Uniquable a} : a -> UniqSet a :=
   fun x => Mk_UniqSet (UniqFM.unitUFM x x).
 
-Definition addOneToUniqSet {a} `{Unique.Uniquable a}
+Definition addOneToUniqSet {a : Type} `{Unique.Uniquable a}
    : UniqSet a -> a -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet set, x => Mk_UniqSet (UniqFM.addToUFM set x x)
     end.
 
-Definition mkUniqSet {a} `{Unique.Uniquable a} : list a -> UniqSet a :=
+Definition mkUniqSet {a : Type} `{Unique.Uniquable a} : list a -> UniqSet a :=
   Data.Foldable.foldl' addOneToUniqSet emptyUniqSet.
 
-Definition addListToUniqSet {a} `{Unique.Uniquable a}
+Definition addListToUniqSet {a : Type} `{Unique.Uniquable a}
    : UniqSet a -> list a -> UniqSet a :=
   Data.Foldable.foldl' addOneToUniqSet.
 
-Definition delOneFromUniqSet {a} `{Unique.Uniquable a}
+Definition delOneFromUniqSet {a : Type} `{Unique.Uniquable a}
    : UniqSet a -> a -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, a => Mk_UniqSet (UniqFM.delFromUFM s a)
     end.
 
-Definition delOneFromUniqSet_Directly {a}
+Definition delOneFromUniqSet_Directly {a : Type}
    : UniqSet a -> Unique.Unique -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, u => Mk_UniqSet (UniqFM.delFromUFM_Directly s u)
     end.
 
-Definition delListFromUniqSet {a} `{Unique.Uniquable a}
+Definition delListFromUniqSet {a : Type} `{Unique.Uniquable a}
    : UniqSet a -> list a -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, l => Mk_UniqSet (UniqFM.delListFromUFM s l)
     end.
 
-Definition delListFromUniqSet_Directly {a}
+Definition delListFromUniqSet_Directly {a : Type}
    : UniqSet a -> list Unique.Unique -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, l => Mk_UniqSet (UniqFM.delListFromUFM_Directly s l)
     end.
 
-Definition unionUniqSets {a} : UniqSet a -> UniqSet a -> UniqSet a :=
+Definition unionUniqSets {a : Type} : UniqSet a -> UniqSet a -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, Mk_UniqSet t => Mk_UniqSet (UniqFM.plusUFM s t)
@@ -129,131 +130,132 @@ Definition unionManyUniqSets {a} (xs : list (UniqSet a)) : UniqSet a :=
   | cons uset usets => Data.Foldable.foldr unionUniqSets uset usets
   end.
 
-Definition minusUniqSet {a} : UniqSet a -> UniqSet a -> UniqSet a :=
+Definition minusUniqSet {a : Type} : UniqSet a -> UniqSet a -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, Mk_UniqSet t => Mk_UniqSet (UniqFM.minusUFM s t)
     end.
 
-Definition intersectUniqSets {a} : UniqSet a -> UniqSet a -> UniqSet a :=
+Definition intersectUniqSets {a : Type} : UniqSet a -> UniqSet a -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, Mk_UniqSet t => Mk_UniqSet (UniqFM.intersectUFM s t)
     end.
 
-Definition restrictUniqSetToUFM {a} {b}
+Definition restrictUniqSetToUFM {a : Type} {b : Type}
    : UniqSet a -> UniqFM.UniqFM b -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, m => Mk_UniqSet (UniqFM.intersectUFM s m)
     end.
 
-Definition uniqSetMinusUFM {a} {b}
+Definition uniqSetMinusUFM {a : Type} {b : Type}
    : UniqSet a -> UniqFM.UniqFM b -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, t => Mk_UniqSet (UniqFM.minusUFM s t)
     end.
 
-Definition elementOfUniqSet {a} `{Unique.Uniquable a}
+Definition elementOfUniqSet {a : Type} `{Unique.Uniquable a}
    : a -> UniqSet a -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | a, Mk_UniqSet s => UniqFM.elemUFM a s
     end.
 
-Definition elemUniqSet_Directly {a} : Unique.Unique -> UniqSet a -> bool :=
+Definition elemUniqSet_Directly {a : Type}
+   : Unique.Unique -> UniqSet a -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | a, Mk_UniqSet s => UniqFM.elemUFM_Directly a s
     end.
 
-Definition filterUniqSet {a} : (a -> bool) -> UniqSet a -> UniqSet a :=
+Definition filterUniqSet {a : Type} : (a -> bool) -> UniqSet a -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | p, Mk_UniqSet s => Mk_UniqSet (UniqFM.filterUFM p s)
     end.
 
-Definition filterUniqSet_Directly {elt}
+Definition filterUniqSet_Directly {elt : Type}
    : (Unique.Unique -> elt -> bool) -> UniqSet elt -> UniqSet elt :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, Mk_UniqSet s => Mk_UniqSet (UniqFM.filterUFM_Directly f s)
     end.
 
-Definition partitionUniqSet {a}
+Definition partitionUniqSet {a : Type}
    : (a -> bool) -> UniqSet a -> (UniqSet a * UniqSet a)%type :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | p, Mk_UniqSet s => GHC.Prim.coerce (UniqFM.partitionUFM p s)
     end.
 
-Definition uniqSetAny {a} : (a -> bool) -> UniqSet a -> bool :=
+Definition uniqSetAny {a : Type} : (a -> bool) -> UniqSet a -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | p, Mk_UniqSet s => UniqFM.anyUFM p s
     end.
 
-Definition uniqSetAll {a} : (a -> bool) -> UniqSet a -> bool :=
+Definition uniqSetAll {a : Type} : (a -> bool) -> UniqSet a -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | p, Mk_UniqSet s => UniqFM.allUFM p s
     end.
 
-Definition sizeUniqSet {a} : UniqSet a -> nat :=
+Definition sizeUniqSet {a : Type} : UniqSet a -> nat :=
   fun '(Mk_UniqSet s) => UniqFM.sizeUFM s.
 
-Definition isEmptyUniqSet {a} : UniqSet a -> bool :=
+Definition isEmptyUniqSet {a : Type} : UniqSet a -> bool :=
   fun '(Mk_UniqSet s) => UniqFM.isNullUFM s.
 
-Definition lookupUniqSet {a} {b} `{Unique.Uniquable a}
+Definition lookupUniqSet {a : Type} {b : Type} `{Unique.Uniquable a}
    : UniqSet b -> a -> option b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, k => UniqFM.lookupUFM s k
     end.
 
-Definition lookupUniqSet_Directly {a}
+Definition lookupUniqSet_Directly {a : Type}
    : UniqSet a -> Unique.Unique -> option a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UniqSet s, k => UniqFM.lookupUFM_Directly s k
     end.
 
-Definition nonDetEltsUniqSet {elt} : UniqSet elt -> list elt :=
+Definition nonDetEltsUniqSet {elt : Type} : UniqSet elt -> list elt :=
   UniqFM.nonDetEltsUFM GHC.Base.∘ getUniqSet'.
 
-Definition nonDetKeysUniqSet {elt} : UniqSet elt -> list Unique.Unique :=
+Definition nonDetKeysUniqSet {elt : Type} : UniqSet elt -> list Unique.Unique :=
   UniqFM.nonDetKeysUFM GHC.Base.∘ getUniqSet'.
 
-Definition nonDetFoldUniqSet {elt} {a}
+Definition nonDetFoldUniqSet {elt : Type} {a : Type}
    : (elt -> a -> a) -> a -> UniqSet elt -> a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | c, n, Mk_UniqSet s => UniqFM.nonDetFoldUFM c n s
     end.
 
-Definition nonDetFoldUniqSet_Directly {elt} {a}
+Definition nonDetFoldUniqSet_Directly {elt : Type} {a : Type}
    : (Unique.Unique -> elt -> a -> a) -> a -> UniqSet elt -> a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | f, n, Mk_UniqSet s => UniqFM.nonDetFoldUFM_Directly f n s
     end.
 
-Definition mapUniqSet {b} {a} `{Unique.Uniquable b}
+Definition mapUniqSet {b : Type} {a : Type} `{Unique.Uniquable b}
    : (a -> b) -> UniqSet a -> UniqSet b :=
   fun f => mkUniqSet GHC.Base.∘ (GHC.Base.map f GHC.Base.∘ nonDetEltsUniqSet).
 
-Definition getUniqSet {a} : UniqSet a -> UniqFM.UniqFM a :=
+Definition getUniqSet {a : Type} : UniqSet a -> UniqFM.UniqFM a :=
   getUniqSet'.
 
-Definition unsafeUFMToUniqSet {a} : UniqFM.UniqFM a -> UniqSet a :=
+Definition unsafeUFMToUniqSet {a : Type} : UniqFM.UniqFM a -> UniqSet a :=
   Mk_UniqSet.
 
 (* Skipping definition `UniqSet.pprUniqSet' *)
 
 (* External variables:
-     bool cons list nat op_zt__ option Data.Foldable.foldl' Data.Foldable.foldr
+     Type bool cons list nat op_zt__ option Data.Foldable.foldl' Data.Foldable.foldr
      GHC.Base.Monoid GHC.Base.Semigroup GHC.Base.map GHC.Base.mappend
      GHC.Base.mappend__ GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty
      GHC.Base.mempty__ GHC.Base.op_z2218U__ GHC.Base.op_zlzlzgzg__

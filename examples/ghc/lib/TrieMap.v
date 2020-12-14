@@ -42,13 +42,13 @@ Inductive TyLitMap a : Type :=
     : Data.Map.Internal.Map FastString.FastString a)
    : TyLitMap a.
 
-Class TrieMap m := {
+Class TrieMap (m : Type -> Type) := {
   Key : Type ;
-  alterTM : forall {b}, Key -> XT b -> m b -> m b ;
-  emptyTM : forall {a}, m a ;
-  foldTM : forall {a} {b}, (a -> b -> b) -> m a -> b -> b ;
-  lookupTM : forall {b}, Key -> m b -> option b ;
-  mapTM : forall {a} {b}, (a -> b) -> m a -> m b }.
+  alterTM : forall {b : Type}, Key -> XT b -> m b -> m b ;
+  emptyTM : forall {a : Type}, m a ;
+  foldTM : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> m a -> b -> b ;
+  lookupTM : forall {b : Type}, Key -> m b -> option b ;
+  mapTM : forall {a : Type}, forall {b : Type}, (a -> b) -> m a -> m b }.
 
 Arguments Key _ {_}.
 
@@ -195,109 +195,113 @@ Definition xtInt {a}
   fun k f m => IntMap.alter f k m.
 
 Local Definition TrieMap__IntMap_alterTM
-   : forall {b},
+   : forall {b : Type},
      TrieMap__IntMap_Key -> XT b -> IntMap.IntMap b -> IntMap.IntMap b :=
-  fun {b} => xtInt.
+  fun {b : Type} => xtInt.
 
-Local Definition TrieMap__IntMap_emptyTM : forall {a}, IntMap.IntMap a :=
-  fun {a} => IntMap.empty.
+Local Definition TrieMap__IntMap_emptyTM : forall {a : Type}, IntMap.IntMap a :=
+  fun {a : Type} => IntMap.empty.
 
 Local Definition TrieMap__IntMap_foldTM
-   : forall {a} {b}, (a -> b -> b) -> IntMap.IntMap a -> b -> b :=
-  fun {a} {b} => fun k m z => IntMap.foldr k z m.
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> IntMap.IntMap a -> b -> b :=
+  fun {a : Type} {b : Type} => fun k m z => IntMap.foldr k z m.
 
 Local Definition TrieMap__IntMap_lookupTM
-   : forall {b}, TrieMap__IntMap_Key -> IntMap.IntMap b -> option b :=
-  fun {b} => fun k m => IntMap.lookup k m.
+   : forall {b : Type}, TrieMap__IntMap_Key -> IntMap.IntMap b -> option b :=
+  fun {b : Type} => fun k m => IntMap.lookup k m.
 
 Local Definition TrieMap__IntMap_mapTM
-   : forall {a} {b}, (a -> b) -> IntMap.IntMap a -> IntMap.IntMap b :=
-  fun {a} {b} => fun f m => IntMap.map f m.
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> IntMap.IntMap a -> IntMap.IntMap b :=
+  fun {a : Type} {b : Type} => fun f m => IntMap.map f m.
 
 Program Instance TrieMap__IntMap : TrieMap IntMap.IntMap :=
   {
   Key := TrieMap__IntMap_Key ;
-  alterTM := fun {b} => TrieMap__IntMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__IntMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__IntMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__IntMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__IntMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__IntMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__IntMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__IntMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__IntMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__IntMap_mapTM }.
 
-Local Definition TrieMap__Map_Key {k} `{GHC.Base.Ord k} : Type :=
+Local Definition TrieMap__Map_Key {k : Type} `{GHC.Base.Ord k} : Type :=
   k.
 
-Local Definition TrieMap__Map_alterTM {inst_k} `{GHC.Base.Ord inst_k}
-   : forall {b},
+Local Definition TrieMap__Map_alterTM {inst_k : Type} `{GHC.Base.Ord inst_k}
+   : forall {b : Type},
      TrieMap__Map_Key ->
-     XT b -> (Data.Map.Internal.Map inst_k) b -> (Data.Map.Internal.Map inst_k) b :=
-  fun {b} => fun k f m => Data.Map.Internal.alter f k m.
+     XT b -> Data.Map.Internal.Map inst_k b -> Data.Map.Internal.Map inst_k b :=
+  fun {b : Type} => fun k f m => Data.Map.Internal.alter f k m.
 
-Local Definition TrieMap__Map_emptyTM {inst_k} `{GHC.Base.Ord inst_k}
-   : forall {a}, (Data.Map.Internal.Map inst_k) a :=
-  fun {a} => Data.Map.Internal.empty.
+Local Definition TrieMap__Map_emptyTM {inst_k : Type} `{GHC.Base.Ord inst_k}
+   : forall {a : Type}, Data.Map.Internal.Map inst_k a :=
+  fun {a : Type} => Data.Map.Internal.empty.
 
-Local Definition TrieMap__Map_foldTM {inst_k} `{GHC.Base.Ord inst_k}
-   : forall {a} {b},
-     (a -> b -> b) -> (Data.Map.Internal.Map inst_k) a -> b -> b :=
-  fun {a} {b} => fun k m z => Data.Map.Internal.foldr k z m.
+Local Definition TrieMap__Map_foldTM {inst_k : Type} `{GHC.Base.Ord inst_k}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> Data.Map.Internal.Map inst_k a -> b -> b :=
+  fun {a : Type} {b : Type} => fun k m z => Data.Map.Internal.foldr k z m.
 
-Local Definition TrieMap__Map_lookupTM {inst_k} `{GHC.Base.Ord inst_k}
-   : forall {b},
-     TrieMap__Map_Key -> (Data.Map.Internal.Map inst_k) b -> option b :=
-  fun {b} => Data.Map.Internal.lookup.
+Local Definition TrieMap__Map_lookupTM {inst_k : Type} `{GHC.Base.Ord inst_k}
+   : forall {b : Type},
+     TrieMap__Map_Key -> Data.Map.Internal.Map inst_k b -> option b :=
+  fun {b : Type} => Data.Map.Internal.lookup.
 
-Local Definition TrieMap__Map_mapTM {inst_k} `{GHC.Base.Ord inst_k}
-   : forall {a} {b},
-     (a -> b) ->
-     (Data.Map.Internal.Map inst_k) a -> (Data.Map.Internal.Map inst_k) b :=
-  fun {a} {b} => fun f m => Data.Map.Internal.map f m.
+Local Definition TrieMap__Map_mapTM {inst_k : Type} `{GHC.Base.Ord inst_k}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b) -> Data.Map.Internal.Map inst_k a -> Data.Map.Internal.Map inst_k b :=
+  fun {a : Type} {b : Type} => fun f m => Data.Map.Internal.map f m.
 
-Program Instance TrieMap__Map {k} `{GHC.Base.Ord k}
+Program Instance TrieMap__Map {k : Type} `{GHC.Base.Ord k}
    : TrieMap (Data.Map.Internal.Map k) :=
   {
   Key := TrieMap__Map_Key ;
-  alterTM := fun {b} => TrieMap__Map_alterTM ;
-  emptyTM := fun {a} => TrieMap__Map_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__Map_foldTM ;
-  lookupTM := fun {b} => TrieMap__Map_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__Map_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__Map_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__Map_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__Map_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__Map_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__Map_mapTM }.
 
 Local Definition TrieMap__UniqFM_Key : Type :=
   Unique.Unique.
 
 Local Definition TrieMap__UniqFM_alterTM
-   : forall {b},
+   : forall {b : Type},
      TrieMap__UniqFM_Key -> XT b -> UniqFM.UniqFM b -> UniqFM.UniqFM b :=
-  fun {b} => fun k f m => UniqFM.alterUFM f m k.
+  fun {b : Type} => fun k f m => UniqFM.alterUFM f m k.
 
-Local Definition TrieMap__UniqFM_emptyTM : forall {a}, UniqFM.UniqFM a :=
-  fun {a} => UniqFM.emptyUFM.
+Local Definition TrieMap__UniqFM_emptyTM : forall {a : Type}, UniqFM.UniqFM a :=
+  fun {a : Type} => UniqFM.emptyUFM.
 
 Local Definition TrieMap__UniqFM_foldTM
-   : forall {a} {b}, (a -> b -> b) -> UniqFM.UniqFM a -> b -> b :=
-  fun {a} {b} => fun k m z => UniqFM.nonDetFoldUFM k z m.
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> UniqFM.UniqFM a -> b -> b :=
+  fun {a : Type} {b : Type} => fun k m z => UniqFM.nonDetFoldUFM k z m.
 
 Local Definition TrieMap__UniqFM_lookupTM
-   : forall {b}, TrieMap__UniqFM_Key -> UniqFM.UniqFM b -> option b :=
-  fun {b} => fun k m => UniqFM.lookupUFM m k.
+   : forall {b : Type}, TrieMap__UniqFM_Key -> UniqFM.UniqFM b -> option b :=
+  fun {b : Type} => fun k m => UniqFM.lookupUFM m k.
 
 Local Definition TrieMap__UniqFM_mapTM
-   : forall {a} {b}, (a -> b) -> UniqFM.UniqFM a -> UniqFM.UniqFM b :=
-  fun {a} {b} => fun f m => UniqFM.mapUFM f m.
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> UniqFM.UniqFM a -> UniqFM.UniqFM b :=
+  fun {a : Type} {b : Type} => fun f m => UniqFM.mapUFM f m.
 
 Program Instance TrieMap__UniqFM : TrieMap UniqFM.UniqFM :=
   {
   Key := TrieMap__UniqFM_Key ;
-  alterTM := fun {b} => TrieMap__UniqFM_alterTM ;
-  emptyTM := fun {a} => TrieMap__UniqFM_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__UniqFM_foldTM ;
-  lookupTM := fun {b} => TrieMap__UniqFM_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__UniqFM_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__UniqFM_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__UniqFM_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__UniqFM_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__UniqFM_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__UniqFM_mapTM }.
 
-Local Definition TrieMap__MaybeMap_Key {m} `{TrieMap m} : Type :=
+Local Definition TrieMap__MaybeMap_Key {m : Type -> Type} `{TrieMap m} : Type :=
   option (Key m).
 
-Definition op_zbzg__ {a} {b} : a -> (a -> b) -> b :=
+Definition op_zbzg__ {a : Type} {b : Type} : a -> (a -> b) -> b :=
   fun x f => f x.
 
 Notation "'_|>_'" := (op_zbzg__).
@@ -317,14 +321,16 @@ Definition xtMaybe {k} {m} {a}
         MM mm_nothing_9__ (mm_just m |> tr _ x f)
     end.
 
-Local Definition TrieMap__MaybeMap_alterTM {inst_m} `{TrieMap inst_m}
-   : forall {b},
-     TrieMap__MaybeMap_Key -> XT b -> (MaybeMap inst_m) b -> (MaybeMap inst_m) b :=
-  fun {b} => xtMaybe (fun {b} => alterTM).
+Local Definition TrieMap__MaybeMap_alterTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {b : Type},
+     TrieMap__MaybeMap_Key -> XT b -> MaybeMap inst_m b -> MaybeMap inst_m b :=
+  fun {b : Type} => xtMaybe (fun {b} => alterTM).
 
-Local Definition TrieMap__MaybeMap_emptyTM {inst_m} `{TrieMap inst_m}
-   : forall {a}, (MaybeMap inst_m) a :=
-  fun {a} => MM None emptyTM.
+Local Definition TrieMap__MaybeMap_emptyTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {a : Type}, MaybeMap inst_m a :=
+  fun {a : Type} => MM None emptyTM.
 
 Definition foldMaybe {a} {b} : (a -> b -> b) -> option a -> b -> b :=
   fun arg_0__ arg_1__ arg_2__ =>
@@ -337,11 +343,14 @@ Definition fdMaybe {m} {a} {b} `{TrieMap m}
    : (a -> b -> b) -> MaybeMap m a -> b -> b :=
   fun k m => foldMaybe k (mm_nothing m) GHC.Base.∘ foldTM k (mm_just m).
 
-Local Definition TrieMap__MaybeMap_foldTM {inst_m} `{TrieMap inst_m}
-   : forall {a} {b}, (a -> b -> b) -> (MaybeMap inst_m) a -> b -> b :=
-  fun {a} {b} => fdMaybe.
+Local Definition TrieMap__MaybeMap_foldTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> MaybeMap inst_m a -> b -> b :=
+  fun {a : Type} {b : Type} => fdMaybe.
 
-Definition op_zgzizg__ {a} {b} {c} : (a -> b) -> (b -> c) -> a -> c :=
+Definition op_zgzizg__ {a : Type} {b : Type} {c : Type}
+   : (a -> b) -> (b -> c) -> a -> c :=
   fun f g x => g (f x).
 
 Notation "'_>.>_'" := (op_zgzizg__).
@@ -356,9 +365,10 @@ Definition lkMaybe {k} {m} {a}
     | lk, Some x => mm_just >.> lk _ x
     end.
 
-Local Definition TrieMap__MaybeMap_lookupTM {inst_m} `{TrieMap inst_m}
-   : forall {b}, TrieMap__MaybeMap_Key -> (MaybeMap inst_m) b -> option b :=
-  fun {b} => lkMaybe (fun {b} => lookupTM).
+Local Definition TrieMap__MaybeMap_lookupTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {b : Type}, TrieMap__MaybeMap_Key -> MaybeMap inst_m b -> option b :=
+  fun {b : Type} => lkMaybe (fun {b} => lookupTM).
 
 Definition mapMb {m} {a} {b} `{TrieMap m}
    : (a -> b) -> MaybeMap m a -> MaybeMap m b :=
@@ -367,20 +377,23 @@ Definition mapMb {m} {a} {b} `{TrieMap m}
     | f, MM mn mj => MM (GHC.Base.fmap f mn) (mapTM f mj)
     end.
 
-Local Definition TrieMap__MaybeMap_mapTM {inst_m} `{TrieMap inst_m}
-   : forall {a} {b}, (a -> b) -> (MaybeMap inst_m) a -> (MaybeMap inst_m) b :=
-  fun {a} {b} => mapMb.
+Local Definition TrieMap__MaybeMap_mapTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> MaybeMap inst_m a -> MaybeMap inst_m b :=
+  fun {a : Type} {b : Type} => mapMb.
 
-Program Instance TrieMap__MaybeMap {m} `{TrieMap m} : TrieMap (MaybeMap m) :=
+Program Instance TrieMap__MaybeMap {m : Type -> Type} `{TrieMap m}
+   : TrieMap (MaybeMap m) :=
   {
   Key := TrieMap__MaybeMap_Key ;
-  alterTM := fun {b} => TrieMap__MaybeMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__MaybeMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__MaybeMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__MaybeMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__MaybeMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__MaybeMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__MaybeMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__MaybeMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__MaybeMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__MaybeMap_mapTM }.
 
-Local Definition TrieMap__ListMap_Key {m} `{TrieMap m} : Type :=
+Local Definition TrieMap__ListMap_Key {m : Type -> Type} `{TrieMap m} : Type :=
   list (Key m).
 
 Axiom xtList : forall {m} {k} {a},
@@ -388,43 +401,50 @@ Axiom xtList : forall {m} {k} {a},
                (forall {b}, k -> XT b -> m b -> m b) ->
                list k -> XT a -> ListMap m a -> ListMap m a.
 
-Local Definition TrieMap__ListMap_alterTM {inst_m} `{TrieMap inst_m}
-   : forall {b},
-     TrieMap__ListMap_Key -> XT b -> (ListMap inst_m) b -> (ListMap inst_m) b :=
-  fun {b} => xtList (fun {b} => alterTM).
+Local Definition TrieMap__ListMap_alterTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {b : Type},
+     TrieMap__ListMap_Key -> XT b -> ListMap inst_m b -> ListMap inst_m b :=
+  fun {b : Type} => xtList (fun {b} => alterTM).
 
 Axiom TrieMap__ListMap_emptyTM : forall {m} {a} `{TrieMap m}, ListMap m a.
 
 Axiom fdList : forall {m} {a} {b},
                forall `{TrieMap m}, (a -> b -> b) -> ListMap m a -> b -> b.
 
-Local Definition TrieMap__ListMap_foldTM {inst_m} `{TrieMap inst_m}
-   : forall {a} {b}, (a -> b -> b) -> (ListMap inst_m) a -> b -> b :=
-  fun {a} {b} => fdList.
+Local Definition TrieMap__ListMap_foldTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> ListMap inst_m a -> b -> b :=
+  fun {a : Type} {b : Type} => fdList.
 
 Axiom lkList : forall {m} {k} {a},
                forall `{TrieMap m},
                (forall {b}, k -> m b -> option b) -> list k -> ListMap m a -> option a.
 
-Local Definition TrieMap__ListMap_lookupTM {inst_m} `{TrieMap inst_m}
-   : forall {b}, TrieMap__ListMap_Key -> (ListMap inst_m) b -> option b :=
-  fun {b} => lkList (fun {b} => lookupTM).
+Local Definition TrieMap__ListMap_lookupTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {b : Type}, TrieMap__ListMap_Key -> ListMap inst_m b -> option b :=
+  fun {b : Type} => lkList (fun {b} => lookupTM).
 
 Axiom mapList : forall {m} {a} {b},
                 forall `{TrieMap m}, (a -> b) -> ListMap m a -> ListMap m b.
 
-Local Definition TrieMap__ListMap_mapTM {inst_m} `{TrieMap inst_m}
-   : forall {a} {b}, (a -> b) -> (ListMap inst_m) a -> (ListMap inst_m) b :=
-  fun {a} {b} => mapList.
+Local Definition TrieMap__ListMap_mapTM {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> ListMap inst_m a -> ListMap inst_m b :=
+  fun {a : Type} {b : Type} => mapList.
 
-Program Instance TrieMap__ListMap {m} `{TrieMap m} : TrieMap (ListMap m) :=
+Program Instance TrieMap__ListMap {m : Type -> Type} `{TrieMap m}
+   : TrieMap (ListMap m) :=
   {
   Key := TrieMap__ListMap_Key ;
-  alterTM := fun {b} => TrieMap__ListMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__ListMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__ListMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__ListMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__ListMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__ListMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__ListMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__ListMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__ListMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__ListMap_mapTM }.
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `TrieMap.Outputable__ListMap' *)
@@ -467,31 +487,33 @@ Axiom xtE : forall {a},
             DeBruijn Core.CoreExpr -> XT a -> CoreMapX a -> CoreMapX a.
 
 Local Definition TrieMap__CoreMapX_alterTM
-   : forall {b}, TrieMap__CoreMapX_Key -> XT b -> CoreMapX b -> CoreMapX b :=
-  fun {b} => xtE.
+   : forall {b : Type},
+     TrieMap__CoreMapX_Key -> XT b -> CoreMapX b -> CoreMapX b :=
+  fun {b : Type} => xtE.
 
 Axiom emptyE : forall {a}, CoreMapX a.
 
-Local Definition TrieMap__CoreMapX_emptyTM : forall {a}, CoreMapX a :=
-  fun {a} => emptyE.
+Local Definition TrieMap__CoreMapX_emptyTM : forall {a : Type}, CoreMapX a :=
+  fun {a : Type} => emptyE.
 
 Axiom fdE : forall {a} {b}, (a -> b -> b) -> CoreMapX a -> b -> b.
 
 Local Definition TrieMap__CoreMapX_foldTM
-   : forall {a} {b}, (a -> b -> b) -> CoreMapX a -> b -> b :=
-  fun {a} {b} => fdE.
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> CoreMapX a -> b -> b :=
+  fun {a : Type} {b : Type} => fdE.
 
 Axiom lkE : forall {a}, DeBruijn Core.CoreExpr -> CoreMapX a -> option a.
 
 Local Definition TrieMap__CoreMapX_lookupTM
-   : forall {b}, TrieMap__CoreMapX_Key -> CoreMapX b -> option b :=
-  fun {b} => lkE.
+   : forall {b : Type}, TrieMap__CoreMapX_Key -> CoreMapX b -> option b :=
+  fun {b : Type} => lkE.
 
 Axiom mapE : forall {a} {b}, (a -> b) -> CoreMapX a -> CoreMapX b.
 
 Local Definition TrieMap__CoreMapX_mapTM
-   : forall {a} {b}, (a -> b) -> CoreMapX a -> CoreMapX b :=
-  fun {a} {b} => mapE.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> CoreMapX a -> CoreMapX b :=
+  fun {a : Type} {b : Type} => mapE.
 
 Instance Eq___DeBruijn__CoreExpr : GHC.Base.Eq_ (DeBruijn Core.CoreExpr).
 Proof.
@@ -500,44 +522,44 @@ Admitted.
 Program Instance TrieMap__CoreMapX : TrieMap CoreMapX :=
   {
   Key := TrieMap__CoreMapX_Key ;
-  alterTM := fun {b} => TrieMap__CoreMapX_alterTM ;
-  emptyTM := fun {a} => TrieMap__CoreMapX_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__CoreMapX_foldTM ;
-  lookupTM := fun {b} => TrieMap__CoreMapX_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__CoreMapX_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__CoreMapX_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__CoreMapX_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__CoreMapX_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__CoreMapX_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__CoreMapX_mapTM }.
 
 Instance TrieMap__CoreMapG : TrieMap CoreMapG := TrieMap__GenMap.
 
 Local Definition TrieMap__CoreMap_alterTM
-   : forall {b}, TrieMap__CoreMap_Key -> XT b -> CoreMap b -> CoreMap b :=
-  fun {b} =>
+   : forall {b : Type}, TrieMap__CoreMap_Key -> XT b -> CoreMap b -> CoreMap b :=
+  fun {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | k, f, Mk_CoreMap m => Mk_CoreMap (alterTM (m := CoreMapG) (deBruijnize k) f m)
       end.
 
-Local Definition TrieMap__CoreMap_emptyTM : forall {a}, CoreMap a :=
-  fun {a} => Mk_CoreMap emptyTM.
+Local Definition TrieMap__CoreMap_emptyTM : forall {a : Type}, CoreMap a :=
+  fun {a : Type} => Mk_CoreMap emptyTM.
 
 Local Definition TrieMap__CoreMap_foldTM
-   : forall {a} {b}, (a -> b -> b) -> CoreMap a -> b -> b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> CoreMap a -> b -> b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | k, Mk_CoreMap m => foldTM k m
       end.
 
 Local Definition TrieMap__CoreMap_lookupTM
-   : forall {b}, TrieMap__CoreMap_Key -> CoreMap b -> option b :=
-  fun {b} =>
+   : forall {b : Type}, TrieMap__CoreMap_Key -> CoreMap b -> option b :=
+  fun {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | k, Mk_CoreMap m => lookupTM (m := CoreMapG) (deBruijnize k) m
       end.
 
 Local Definition TrieMap__CoreMap_mapTM
-   : forall {a} {b}, (a -> b) -> CoreMap a -> CoreMap b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> CoreMap a -> CoreMap b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_CoreMap m => Mk_CoreMap (mapTM f m)
@@ -546,11 +568,11 @@ Local Definition TrieMap__CoreMap_mapTM
 Program Instance TrieMap__CoreMap : TrieMap CoreMap :=
   {
   Key := TrieMap__CoreMap_Key ;
-  alterTM := fun {b} => TrieMap__CoreMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__CoreMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__CoreMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__CoreMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__CoreMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__CoreMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__CoreMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__CoreMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__CoreMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__CoreMap_mapTM }.
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `TrieMap.Outputable__CoreMap' *)
@@ -561,7 +583,8 @@ Local Definition TrieMap__AltMap_Key : Type :=
 Definition deMaybe {m} {a} `{TrieMap m} : option (m a) -> m a :=
   fun arg_0__ => match arg_0__ with | None => emptyTM | Some m => m end.
 
-Definition op_zbzgzg__ {m2} {a} {m1} `{TrieMap m2}
+Definition op_zbzgzg__ {m2 : Type -> Type} {a : Type} {m1 : Type -> Type}
+  `{TrieMap m2}
    : (XT (m2 a) -> m1 (m2 a) -> m1 (m2 a)) ->
      (m2 a -> m2 a) -> m1 (m2 a) -> m1 (m2 a) :=
   fun f g => f (Some GHC.Base.∘ (g GHC.Base.∘ deMaybe)).
@@ -579,7 +602,7 @@ Definition extendCME : CmEnv -> Core.Var -> CmEnv :=
 Definition extendCMEs : CmEnv -> list Core.Var -> CmEnv :=
   fun env vs => Data.Foldable.foldl extendCME env vs.
 
-Definition xtDNamed {n} {a} `{Name.NamedThing n}
+Definition xtDNamed {n : Type} {a : Type} `{Name.NamedThing n}
    : n -> XT a -> NameEnv.DNameEnv a -> NameEnv.DNameEnv a :=
   fun tc f m => NameEnv.alterDNameEnv f m (Name.getName tc).
 
@@ -605,14 +628,14 @@ Definition xtA {a} : CmEnv -> Core.CoreAlt -> XT a -> AltMap a -> AltMap a :=
     end.
 
 Local Definition TrieMap__AltMap_alterTM
-   : forall {b}, TrieMap__AltMap_Key -> XT b -> AltMap b -> AltMap b :=
-  fun {b} => xtA emptyCME.
+   : forall {b : Type}, TrieMap__AltMap_Key -> XT b -> AltMap b -> AltMap b :=
+  fun {b : Type} => xtA emptyCME.
 
 Definition emptyLiteralMap {a} : LiteralMap a :=
   emptyTM.
 
-Local Definition TrieMap__AltMap_emptyTM : forall {a}, AltMap a :=
-  fun {a} => AM emptyTM NameEnv.emptyDNameEnv emptyLiteralMap.
+Local Definition TrieMap__AltMap_emptyTM : forall {a : Type}, AltMap a :=
+  fun {a : Type} => AM emptyTM NameEnv.emptyDNameEnv emptyLiteralMap.
 
 Definition fdA {a} {b} : (a -> b -> b) -> AltMap a -> b -> b :=
   fun k m =>
@@ -620,14 +643,14 @@ Definition fdA {a} {b} : (a -> b -> b) -> AltMap a -> b -> b :=
     (foldTM (foldTM k) (am_data m) GHC.Base.∘ foldTM (foldTM k) (am_lit m)).
 
 Local Definition TrieMap__AltMap_foldTM
-   : forall {a} {b}, (a -> b -> b) -> AltMap a -> b -> b :=
-  fun {a} {b} => fdA.
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> AltMap a -> b -> b :=
+  fun {a : Type} {b : Type} => fdA.
 
 Axiom lkA : forall {a}, CmEnv -> Core.CoreAlt -> AltMap a -> option a.
 
 Local Definition TrieMap__AltMap_lookupTM
-   : forall {b}, TrieMap__AltMap_Key -> AltMap b -> option b :=
-  fun {b} => lkA emptyCME.
+   : forall {b : Type}, TrieMap__AltMap_Key -> AltMap b -> option b :=
+  fun {b : Type} => lkA emptyCME.
 
 Definition mapA {a} {b} : (a -> b) -> AltMap a -> AltMap b :=
   fun arg_0__ arg_1__ =>
@@ -637,17 +660,17 @@ Definition mapA {a} {b} : (a -> b) -> AltMap a -> AltMap b :=
     end.
 
 Local Definition TrieMap__AltMap_mapTM
-   : forall {a} {b}, (a -> b) -> AltMap a -> AltMap b :=
-  fun {a} {b} => mapA.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> AltMap a -> AltMap b :=
+  fun {a : Type} {b : Type} => mapA.
 
 Program Instance TrieMap__AltMap : TrieMap AltMap :=
   {
   Key := TrieMap__AltMap_Key ;
-  alterTM := fun {b} => TrieMap__AltMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__AltMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__AltMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__AltMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__AltMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__AltMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__AltMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__AltMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__AltMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__AltMap_mapTM }.
 
 Instance Eq___DeBruijn__CoreAlt : GHC.Base.Eq_ (DeBruijn Core.CoreAlt).
 Proof.
@@ -672,56 +695,60 @@ Definition xtC {a}
     end.
 
 Local Definition TrieMap__CoercionMapX_alterTM
-   : forall {b},
+   : forall {b : Type},
      TrieMap__CoercionMapX_Key -> XT b -> CoercionMapX b -> CoercionMapX b :=
-  fun {b} => xtC.
+  fun {b : Type} => xtC.
 
 Local Definition TrieMap__TypeMapX_Key : Type :=
   DeBruijn AxiomatizedTypes.Type_.
 
 Local Definition TrieMap__TypeMapX_alterTM
-   : forall {b}, TrieMap__TypeMapX_Key -> XT b -> TypeMapX b -> TypeMapX b :=
-  fun {b} => xtT.
+   : forall {b : Type},
+     TrieMap__TypeMapX_Key -> XT b -> TypeMapX b -> TypeMapX b :=
+  fun {b : Type} => xtT.
 
 Axiom emptyT : forall {a}, TypeMapX a.
 
-Local Definition TrieMap__TypeMapX_emptyTM : forall {a}, TypeMapX a :=
-  fun {a} => emptyT.
+Local Definition TrieMap__TypeMapX_emptyTM : forall {a : Type}, TypeMapX a :=
+  fun {a : Type} => emptyT.
 
 Axiom fdT : forall {a} {b}, (a -> b -> b) -> TypeMapX a -> b -> b.
 
 Local Definition TrieMap__TypeMapX_foldTM
-   : forall {a} {b}, (a -> b -> b) -> TypeMapX a -> b -> b :=
-  fun {a} {b} => fdT.
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> TypeMapX a -> b -> b :=
+  fun {a : Type} {b : Type} => fdT.
 
 Axiom lkT : forall {a},
             DeBruijn AxiomatizedTypes.Type_ -> TypeMapX a -> option a.
 
 Local Definition TrieMap__TypeMapX_lookupTM
-   : forall {b}, TrieMap__TypeMapX_Key -> TypeMapX b -> option b :=
-  fun {b} => lkT.
+   : forall {b : Type}, TrieMap__TypeMapX_Key -> TypeMapX b -> option b :=
+  fun {b : Type} => lkT.
 
 Axiom mapT : forall {a} {b}, (a -> b) -> TypeMapX a -> TypeMapX b.
 
 Local Definition TrieMap__TypeMapX_mapTM
-   : forall {a} {b}, (a -> b) -> TypeMapX a -> TypeMapX b :=
-  fun {a} {b} => mapT.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> TypeMapX a -> TypeMapX b :=
+  fun {a : Type} {b : Type} => mapT.
 
 Program Instance TrieMap__TypeMapX : TrieMap TypeMapX :=
   {
   Key := TrieMap__TypeMapX_Key ;
-  alterTM := fun {b} => TrieMap__TypeMapX_alterTM ;
-  emptyTM := fun {a} => TrieMap__TypeMapX_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__TypeMapX_foldTM ;
-  lookupTM := fun {b} => TrieMap__TypeMapX_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__TypeMapX_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__TypeMapX_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__TypeMapX_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__TypeMapX_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__TypeMapX_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__TypeMapX_mapTM }.
 
-Local Definition TrieMap__CoercionMapX_emptyTM : forall {a}, CoercionMapX a :=
-  fun {a} => Mk_CoercionMapX emptyTM.
+Local Definition TrieMap__CoercionMapX_emptyTM
+   : forall {a : Type}, CoercionMapX a :=
+  fun {a : Type} => Mk_CoercionMapX emptyTM.
 
 Local Definition TrieMap__CoercionMapX_foldTM
-   : forall {a} {b}, (a -> b -> b) -> CoercionMapX a -> b -> b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> CoercionMapX a -> b -> b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_CoercionMapX core_tm => foldTM f core_tm
@@ -736,12 +763,13 @@ Definition lkC {a}
     end.
 
 Local Definition TrieMap__CoercionMapX_lookupTM
-   : forall {b}, TrieMap__CoercionMapX_Key -> CoercionMapX b -> option b :=
-  fun {b} => lkC.
+   : forall {b : Type}, TrieMap__CoercionMapX_Key -> CoercionMapX b -> option b :=
+  fun {b : Type} => lkC.
 
 Local Definition TrieMap__CoercionMapX_mapTM
-   : forall {a} {b}, (a -> b) -> CoercionMapX a -> CoercionMapX b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> CoercionMapX a -> CoercionMapX b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_CoercionMapX core_tm => Mk_CoercionMapX (mapTM f core_tm)
@@ -752,8 +780,8 @@ Proof.
 Admitted.
 
 Local Definition Eq___DeBruijn__Coercion_op_zeze__
-   : (DeBruijn AxiomatizedTypes.Coercion) ->
-     (DeBruijn AxiomatizedTypes.Coercion) -> bool :=
+   : DeBruijn AxiomatizedTypes.Coercion ->
+     DeBruijn AxiomatizedTypes.Coercion -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | D env1 co1, D env2 co2 =>
@@ -761,8 +789,8 @@ Local Definition Eq___DeBruijn__Coercion_op_zeze__
     end.
 
 Local Definition Eq___DeBruijn__Coercion_op_zsze__
-   : (DeBruijn AxiomatizedTypes.Coercion) ->
-     (DeBruijn AxiomatizedTypes.Coercion) -> bool :=
+   : DeBruijn AxiomatizedTypes.Coercion ->
+     DeBruijn AxiomatizedTypes.Coercion -> bool :=
   fun x y => negb (Eq___DeBruijn__Coercion_op_zeze__ x y).
 
 Program Instance Eq___DeBruijn__Coercion
@@ -774,45 +802,48 @@ Program Instance Eq___DeBruijn__Coercion
 Program Instance TrieMap__CoercionMapX : TrieMap CoercionMapX :=
   {
   Key := TrieMap__CoercionMapX_Key ;
-  alterTM := fun {b} => TrieMap__CoercionMapX_alterTM ;
-  emptyTM := fun {a} => TrieMap__CoercionMapX_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__CoercionMapX_foldTM ;
-  lookupTM := fun {b} => TrieMap__CoercionMapX_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__CoercionMapX_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__CoercionMapX_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__CoercionMapX_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__CoercionMapX_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__CoercionMapX_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__CoercionMapX_mapTM }.
 
 Instance TrieMap__CoercionMapG : TrieMap CoercionMapG := TrieMap__GenMap.
 
 Local Definition TrieMap__CoercionMap_alterTM
-   : forall {b},
+   : forall {b : Type},
      TrieMap__CoercionMap_Key -> XT b -> CoercionMap b -> CoercionMap b :=
-  fun {b} =>
+  fun {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | k, f, Mk_CoercionMap m => Mk_CoercionMap (alterTM (deBruijnize k) f m)
       end.
 
-Local Definition TrieMap__CoercionMap_emptyTM : forall {a}, CoercionMap a :=
-  fun {a} => Mk_CoercionMap emptyTM.
+Local Definition TrieMap__CoercionMap_emptyTM
+   : forall {a : Type}, CoercionMap a :=
+  fun {a : Type} => Mk_CoercionMap emptyTM.
 
 Local Definition TrieMap__CoercionMap_foldTM
-   : forall {a} {b}, (a -> b -> b) -> CoercionMap a -> b -> b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> CoercionMap a -> b -> b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | k, Mk_CoercionMap m => foldTM k m
       end.
 
 Local Definition TrieMap__CoercionMap_lookupTM
-   : forall {b}, TrieMap__CoercionMap_Key -> CoercionMap b -> option b :=
-  fun {b} =>
+   : forall {b : Type}, TrieMap__CoercionMap_Key -> CoercionMap b -> option b :=
+  fun {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | k, Mk_CoercionMap m => lookupTM (deBruijnize k) m
       end.
 
 Local Definition TrieMap__CoercionMap_mapTM
-   : forall {a} {b}, (a -> b) -> CoercionMap a -> CoercionMap b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> CoercionMap a -> CoercionMap b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_CoercionMap m => Mk_CoercionMap (mapTM f m)
@@ -821,11 +852,11 @@ Local Definition TrieMap__CoercionMap_mapTM
 Program Instance TrieMap__CoercionMap : TrieMap CoercionMap :=
   {
   Key := TrieMap__CoercionMap_Key ;
-  alterTM := fun {b} => TrieMap__CoercionMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__CoercionMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__CoercionMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__CoercionMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__CoercionMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__CoercionMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__CoercionMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__CoercionMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__CoercionMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__CoercionMap_mapTM }.
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `TrieMap.Outputable__TypeMapG' *)
@@ -850,15 +881,15 @@ Definition xtTT {a}
     end.
 
 Local Definition TrieMap__TypeMap_alterTM
-   : forall {b}, TrieMap__TypeMap_Key -> XT b -> TypeMap b -> TypeMap b :=
-  fun {b} => fun k f m => xtTT (deBruijnize k) f m.
+   : forall {b : Type}, TrieMap__TypeMap_Key -> XT b -> TypeMap b -> TypeMap b :=
+  fun {b : Type} => fun k f m => xtTT (deBruijnize k) f m.
 
-Local Definition TrieMap__TypeMap_emptyTM : forall {a}, TypeMap a :=
-  fun {a} => Mk_TypeMap emptyTM.
+Local Definition TrieMap__TypeMap_emptyTM : forall {a : Type}, TypeMap a :=
+  fun {a : Type} => Mk_TypeMap emptyTM.
 
 Local Definition TrieMap__TypeMap_foldTM
-   : forall {a} {b}, (a -> b -> b) -> TypeMap a -> b -> b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> TypeMap a -> b -> b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | k, Mk_TypeMap m => foldTM (foldTM k) m
@@ -874,12 +905,12 @@ Definition lkTT {a}
     end.
 
 Local Definition TrieMap__TypeMap_lookupTM
-   : forall {b}, TrieMap__TypeMap_Key -> TypeMap b -> option b :=
-  fun {b} => fun k m => lkTT (deBruijnize k) m.
+   : forall {b : Type}, TrieMap__TypeMap_Key -> TypeMap b -> option b :=
+  fun {b : Type} => fun k m => lkTT (deBruijnize k) m.
 
 Local Definition TrieMap__TypeMap_mapTM
-   : forall {a} {b}, (a -> b) -> TypeMap a -> TypeMap b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> TypeMap a -> TypeMap b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_TypeMap m => Mk_TypeMap (mapTM (mapTM f) m)
@@ -888,47 +919,50 @@ Local Definition TrieMap__TypeMap_mapTM
 Program Instance TrieMap__TypeMap : TrieMap TypeMap :=
   {
   Key := TrieMap__TypeMap_Key ;
-  alterTM := fun {b} => TrieMap__TypeMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__TypeMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__TypeMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__TypeMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__TypeMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__TypeMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__TypeMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__TypeMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__TypeMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__TypeMap_mapTM }.
 
 Local Definition TrieMap__LooseTypeMap_Key : Type :=
   AxiomatizedTypes.Type_.
 
 Local Definition TrieMap__LooseTypeMap_alterTM
-   : forall {b},
+   : forall {b : Type},
      TrieMap__LooseTypeMap_Key -> XT b -> LooseTypeMap b -> LooseTypeMap b :=
-  fun {b} =>
+  fun {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | k, f, Mk_LooseTypeMap m =>
           Mk_LooseTypeMap (alterTM (m := TypeMapG) (deBruijnize k) f m)
       end.
 
-Local Definition TrieMap__LooseTypeMap_emptyTM : forall {a}, LooseTypeMap a :=
-  fun {a} => Mk_LooseTypeMap emptyTM.
+Local Definition TrieMap__LooseTypeMap_emptyTM
+   : forall {a : Type}, LooseTypeMap a :=
+  fun {a : Type} => Mk_LooseTypeMap emptyTM.
 
 Local Definition TrieMap__LooseTypeMap_foldTM
-   : forall {a} {b}, (a -> b -> b) -> LooseTypeMap a -> b -> b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> LooseTypeMap a -> b -> b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_LooseTypeMap m => foldTM f m
       end.
 
 Local Definition TrieMap__LooseTypeMap_lookupTM
-   : forall {b}, TrieMap__LooseTypeMap_Key -> LooseTypeMap b -> option b :=
-  fun {b} =>
+   : forall {b : Type}, TrieMap__LooseTypeMap_Key -> LooseTypeMap b -> option b :=
+  fun {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | k, Mk_LooseTypeMap m => lookupTM (m := TypeMapG) (deBruijnize k) m
       end.
 
 Local Definition TrieMap__LooseTypeMap_mapTM
-   : forall {a} {b}, (a -> b) -> LooseTypeMap a -> LooseTypeMap b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> LooseTypeMap a -> LooseTypeMap b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_LooseTypeMap m => Mk_LooseTypeMap (mapTM f m)
@@ -937,11 +971,11 @@ Local Definition TrieMap__LooseTypeMap_mapTM
 Program Instance TrieMap__LooseTypeMap : TrieMap LooseTypeMap :=
   {
   Key := TrieMap__LooseTypeMap_Key ;
-  alterTM := fun {b} => TrieMap__LooseTypeMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__LooseTypeMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__LooseTypeMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__LooseTypeMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__LooseTypeMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__LooseTypeMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__LooseTypeMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__LooseTypeMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__LooseTypeMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__LooseTypeMap_mapTM }.
 
 Definition Eq___DeBruijn__list_op_zeze__ {a} `{GHC.Base.Eq_ (DeBruijn a)}
   (dbl_xs dbl_ys : DeBruijn (list a))
@@ -958,12 +992,12 @@ Definition Eq___DeBruijn__list_op_zeze__ {a} `{GHC.Base.Eq_ (DeBruijn a)}
       equal xs0 ys0
   end.
 
-Local Definition Eq___DeBruijn__list_op_zsze__ {inst_a} `{GHC.Base.Eq_ (DeBruijn
-                                                                        inst_a)}
-   : (DeBruijn (list inst_a)) -> (DeBruijn (list inst_a)) -> bool :=
+Local Definition Eq___DeBruijn__list_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_
+  (DeBruijn inst_a)}
+   : DeBruijn (list inst_a) -> DeBruijn (list inst_a) -> bool :=
   fun x y => negb (Eq___DeBruijn__list_op_zeze__ x y).
 
-Program Instance Eq___DeBruijn__list {a} `{GHC.Base.Eq_ (DeBruijn a)}
+Program Instance Eq___DeBruijn__list {a : Type} `{GHC.Base.Eq_ (DeBruijn a)}
    : GHC.Base.Eq_ (DeBruijn (list a)) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___DeBruijn__list_op_zeze__ ;
@@ -978,7 +1012,7 @@ Definition lookupCME : CmEnv -> Core.Var -> option BoundVar :=
     | CME _ env, v => Core.lookupVarEnv env v
     end.
 
-Definition xtDFreeVar {a}
+Definition xtDFreeVar {a : Type}
    : Core.Var -> XT a -> Core.DVarEnv a -> Core.DVarEnv a :=
   fun v f m => Core.alterDVarEnv f m v.
 
@@ -994,20 +1028,20 @@ Definition xtVar {a} : CmEnv -> Core.Var -> XT a -> VarMap a -> VarMap a :=
     end.
 
 Local Definition TrieMap__VarMap_alterTM
-   : forall {b}, TrieMap__VarMap_Key -> XT b -> VarMap b -> VarMap b :=
-  fun {b} => xtVar emptyCME.
+   : forall {b : Type}, TrieMap__VarMap_Key -> XT b -> VarMap b -> VarMap b :=
+  fun {b : Type} => xtVar emptyCME.
 
-Local Definition TrieMap__VarMap_emptyTM : forall {a}, VarMap a :=
-  fun {a} => VM IntMap.empty Core.emptyDVarEnv.
+Local Definition TrieMap__VarMap_emptyTM : forall {a : Type}, VarMap a :=
+  fun {a : Type} => VM IntMap.empty Core.emptyDVarEnv.
 
 Definition fdVar {a} {b} : (a -> b -> b) -> VarMap a -> b -> b :=
   fun k m => foldTM k (vm_bvar m) GHC.Base.∘ foldTM k (vm_fvar m).
 
 Local Definition TrieMap__VarMap_foldTM
-   : forall {a} {b}, (a -> b -> b) -> VarMap a -> b -> b :=
-  fun {a} {b} => fdVar.
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> VarMap a -> b -> b :=
+  fun {a : Type} {b : Type} => fdVar.
 
-Definition lkDFreeVar {a} : Core.Var -> Core.DVarEnv a -> option a :=
+Definition lkDFreeVar {a : Type} : Core.Var -> Core.DVarEnv a -> option a :=
   fun var env => Core.lookupDVarEnv env var.
 
 Definition lkVar {a} : CmEnv -> Core.Var -> VarMap a -> option a :=
@@ -1018,8 +1052,8 @@ Definition lkVar {a} : CmEnv -> Core.Var -> VarMap a -> option a :=
     end.
 
 Local Definition TrieMap__VarMap_lookupTM
-   : forall {b}, TrieMap__VarMap_Key -> VarMap b -> option b :=
-  fun {b} => lkVar emptyCME.
+   : forall {b : Type}, TrieMap__VarMap_Key -> VarMap b -> option b :=
+  fun {b : Type} => lkVar emptyCME.
 
 Definition mapVar {a} {b} : (a -> b) -> VarMap a -> VarMap b :=
   fun arg_0__ arg_1__ =>
@@ -1028,41 +1062,45 @@ Definition mapVar {a} {b} : (a -> b) -> VarMap a -> VarMap b :=
     end.
 
 Local Definition TrieMap__VarMap_mapTM
-   : forall {a} {b}, (a -> b) -> VarMap a -> VarMap b :=
-  fun {a} {b} => mapVar.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> VarMap a -> VarMap b :=
+  fun {a : Type} {b : Type} => mapVar.
 
 Program Instance TrieMap__VarMap : TrieMap VarMap :=
   {
   Key := TrieMap__VarMap_Key ;
-  alterTM := fun {b} => TrieMap__VarMap_alterTM ;
-  emptyTM := fun {a} => TrieMap__VarMap_emptyTM ;
-  foldTM := fun {a} {b} => TrieMap__VarMap_foldTM ;
-  lookupTM := fun {b} => TrieMap__VarMap_lookupTM ;
-  mapTM := fun {a} {b} => TrieMap__VarMap_mapTM }.
+  alterTM := fun {b : Type} => TrieMap__VarMap_alterTM ;
+  emptyTM := fun {a : Type} => TrieMap__VarMap_emptyTM ;
+  foldTM := fun {a : Type} {b : Type} => TrieMap__VarMap_foldTM ;
+  lookupTM := fun {b : Type} => TrieMap__VarMap_lookupTM ;
+  mapTM := fun {a : Type} {b : Type} => TrieMap__VarMap_mapTM }.
 
-Definition insertTM {m} {a} `{TrieMap m} : Key m -> a -> m a -> m a :=
+Definition insertTM {m : Type -> Type} {a : Type} `{TrieMap m}
+   : Key m -> a -> m a -> m a :=
   fun k v m => alterTM k (fun arg_0__ => Some v) m.
 
-Definition deleteTM {m} {a} `{TrieMap m} : Key m -> m a -> m a :=
+Definition deleteTM {m : Type -> Type} {a : Type} `{TrieMap m}
+   : Key m -> m a -> m a :=
   fun k m => alterTM k (fun arg_0__ => None) m.
 
-Definition lkDNamed {n} {a} `{Name.NamedThing n}
+Definition lkDNamed {n : Type} {a : Type} `{Name.NamedThing n}
    : n -> NameEnv.DNameEnv a -> option a :=
   fun n env => NameEnv.lookupDNameEnv env (Name.getName n).
 
 Definition lkLit {a} : Literal.Literal -> LiteralMap a -> option a :=
   lookupTM (m := LiteralMap).
 
-Definition lookupCoreMap {a} : CoreMap a -> Core.CoreExpr -> option a :=
+Definition lookupCoreMap {a : Type} : CoreMap a -> Core.CoreExpr -> option a :=
   fun cm e => lookupTM (m := CoreMap) e cm.
 
-Definition extendCoreMap {a} : CoreMap a -> Core.CoreExpr -> a -> CoreMap a :=
+Definition extendCoreMap {a : Type}
+   : CoreMap a -> Core.CoreExpr -> a -> CoreMap a :=
   fun m e v => alterTM (m := CoreMap) e (fun arg_0__ => Some v) m.
 
-Definition foldCoreMap {a} {b} : (a -> b -> b) -> b -> CoreMap a -> b :=
+Definition foldCoreMap {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> CoreMap a -> b :=
   fun k z m => foldTM k m z.
 
-Definition emptyCoreMap {a} : CoreMap a :=
+Definition emptyCoreMap {a : Type} : CoreMap a :=
   emptyTM.
 
 Definition lkTickish {a} : Core.Tickish Core.Id -> TickishMap a -> option a :=
@@ -1092,25 +1130,26 @@ Definition foldTyLit {a} {b} : (a -> b -> b) -> TyLitMap a -> b -> b :=
     GHC.Base.flip (Data.Map.Internal.foldr l) (tlm_string m) GHC.Base.∘
     GHC.Base.flip (Data.Map.Internal.foldr l) (tlm_number m).
 
-Definition foldTypeMap {a} {b} : (a -> b -> b) -> b -> TypeMap a -> b :=
+Definition foldTypeMap {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> TypeMap a -> b :=
   fun k z m => foldTM k m z.
 
-Definition emptyTypeMap {a} : TypeMap a :=
+Definition emptyTypeMap {a : Type} : TypeMap a :=
   emptyTM.
 
-Definition lookupTypeMap {a}
+Definition lookupTypeMap {a : Type}
    : TypeMap a -> AxiomatizedTypes.Type_ -> option a :=
   fun cm t => lookupTM (m := TypeMap) t cm.
 
-Definition extendTypeMap {a}
+Definition extendTypeMap {a : Type}
    : TypeMap a -> AxiomatizedTypes.Type_ -> a -> TypeMap a :=
   fun m t v => alterTM (m := TypeMap) t (GHC.Base.const (Some v)) m.
 
-Definition lookupTypeMapWithScope {a}
+Definition lookupTypeMapWithScope {a : Type}
    : TypeMap a -> CmEnv -> AxiomatizedTypes.Type_ -> option a :=
   fun m cm t => lkTT (D cm t) m.
 
-Definition extendTypeMapWithScope {a}
+Definition extendTypeMapWithScope {a : Type}
    : TypeMap a -> CmEnv -> AxiomatizedTypes.Type_ -> a -> TypeMap a :=
   fun m cm t v => xtTT (D cm t) (GHC.Base.const (Some v)) m.
 
