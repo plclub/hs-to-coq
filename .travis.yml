@@ -1,4 +1,3 @@
-sudo: false
 language: generic
 
 # Travis slack notification
@@ -87,7 +86,6 @@ jobs:
       depth: false
       submodules: false
     cache: false
-    addons: false
     before_install:
       - docker pull lastland/hs-to-coq-testbed
       - sudo chown 1000:1000 . -R
@@ -104,13 +102,15 @@ jobs:
       - drun "cd hs-to-coq; make -j -C examples/ghc/theories"
       - drun "cd hs-to-coq; make -j -C examples/core-semantics/lib"
 
-  - name: Other examples
+  - name: Tests, base tests, and other examples
     git:
       depth: false
       submodules: false
     script:
       - eval $(opam config env)
       - make -j -C base
+      - make -j -C examples/tests
+      - make -j -C examples/base-tests
       - make -j -C base-thy
       - make -j -C examples/successors
       - make -j -C examples/compiler
@@ -121,61 +121,32 @@ jobs:
       - make -j -C examples/intervals
       - make -j -C examples/coinduction
 
-  - name: tests and base tests
-    git:
-      depth: false
-      submodules: false
-    script:
-      - eval $(opam config env)
-      - make -j -C base
-      - make -j -C examples/tests
-      - make -j -C examples/base-tests
-
-  - name: Translating base (ensures convenience copy is up-to-date)
+  - name: Translation (ensures convenience copy is up-to-date)
     script:
       - stack --no-terminal --install-ghc install
       - eval $(opam config env)
+      # Base
       - make -C examples/base-src clean
       - make -C examples/base-src vfiles
-      # Check that the files in git are identical to the generated ones
       - git add base
-      - git status
       - git diff-index --cached --quiet HEAD -- base
-
-  - name: Translating containers (ensures convenience copy is up-to-date)
-    script:
-      - stack --no-terminal --install-ghc install
-      - eval $(opam config env)
+      # Containers
       - make -C examples/containers clean
       - make -C examples/containers vfiles
-      # Check that the files in git are identical to the generated ones
       - git add examples/containers/lib
-      - git status
-      - git diff-index --cached --quiet HEAD -- examples/containers/lib/
-
-  - name: Translating transformers (ensures convenience copy is up-to-date)
-    script:
-      - stack --no-terminal --install-ghc install
-      - eval $(opam config env)
+      - git diff-index --cached --quiet HEAD -- containers
+      # transformers
       - make -C examples/transformers clean
       - make -C examples/transformers vfiles
-      # Check that the files in git are identical to the generated ones
       - git add examples/transformers/lib
-      - git status
-      - git diff-index --cached --quiet HEAD -- examples/transformers/lib/
-
-  - name: Translating GHC (ensures convenience copy is up-to-date)
-    script:
-      - stack --no-terminal --install-ghc install
-      - eval $(opam config env)
+      - git diff-index --cached --quiet HEAD -- transformers
+      # GHC and core-semantics
       - make -C examples/ghc clean
       - make -C examples/ghc vfiles
       - make -C examples/core-semantics clean
       - make -C examples/core-semantics vfiles
-      # Check that the files in git are identical to the generated ones
       - git add examples/ghc/lib
       - git add examples/core-semantics/lib
-      - git status
       - git diff-index --cached --quiet HEAD -- examples/ghc/lib/
 
   - stage: Publishing
