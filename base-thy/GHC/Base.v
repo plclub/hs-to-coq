@@ -8,6 +8,7 @@
  *)
 
 Require Import GHC.Base.
+Require Import GHC.Maybe.
 Require Import Data.Semigroup.
 
 Set Warnings "-notation-overridden".
@@ -276,7 +277,7 @@ Ltac unfold_zeze :=
   Eq_pair___ ,
   Eq_list,
   Eq___NonEmpty, Base.Eq___NonEmpty_op_zeze__,
-  Eq___option, Base.Eq___option_op_zeze__.
+  Eq___option, Maybe.Eq___option_op_zeze__.
 
 Ltac unfold_zsze :=
   repeat unfold op_zsze__, op_zsze____,
@@ -297,7 +298,7 @@ Lemma simpl_option_some_eq a `{Eq_ a} (x y :a) :
   (Some x == Some y) = (x == y).
 Proof.
     repeat unfold Eq___option, op_zeze__, op_zeze____,
-           Base.Eq___option_op_zeze__, op_zeze____.
+           Maybe.Eq___option_op_zeze__, op_zeze____.
     auto.
 Qed.
 
@@ -305,7 +306,7 @@ Lemma simpl_option_none_eq a `{Eq_ a} :
   ((None : option a) == None) = true.
 Proof.
     repeat unfold Eq___option, op_zeze__, op_zeze____,
-           Base.Eq___option_op_zeze__, op_zeze____.
+           Maybe.Eq___option_op_zeze__, op_zeze____.
     auto.
 Qed.
 
@@ -598,7 +599,7 @@ Proof.
       Base.Semigroup__option_op_zlzlzgzg__.
   - intros x y z.
     destruct x; destruct y; destruct z; try apply Eq_refl.
-    unfold op_zeze__, Eq___option, op_zeze____, Base.Eq___option_op_zeze__.
+    unfold op_zeze__, Eq___option, op_zeze____, Maybe.Eq___option_op_zeze__.
     apply semigroup_assoc.
 Qed.
 
