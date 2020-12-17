@@ -14,7 +14,6 @@ Require Coq.Program.Wf.
 
 Require Data.Either.
 Require GHC.Base.
-Require GHC.Tuple.
 
 (* No type declarations to convert. *)
 
@@ -67,8 +66,7 @@ Axiom mapAndUnzip3M : forall {m : Type -> Type},
                       forall {c : Type},
                       forall {d : Type},
                       forall `{GHC.Base.Monad m},
-                      (a -> m (GHC.Tuple.triple_type b c d)) ->
-                      list a -> m (GHC.Tuple.triple_type (list b) (list c) (list d)).
+                      (a -> m (b * c * d)%type) -> list a -> m (list b * list c * list d)%type.
 
 Axiom mapAndUnzip4M : forall {m : Type -> Type},
                       forall {a : Type},
@@ -77,8 +75,8 @@ Axiom mapAndUnzip4M : forall {m : Type -> Type},
                       forall {d : Type},
                       forall {e : Type},
                       forall `{GHC.Base.Monad m},
-                      (a -> m (GHC.Tuple.quad_type b c d e)) ->
-                      list a -> m (GHC.Tuple.quad_type (list b) (list c) (list d) (list e)).
+                      (a -> m (b * c * d * e)%type) ->
+                      list a -> m (list b * list c * list d * list e)%type.
 
 Axiom mapAndUnzip5M : forall {m : Type -> Type},
                       forall {a : Type},
@@ -88,8 +86,8 @@ Axiom mapAndUnzip5M : forall {m : Type -> Type},
                       forall {e : Type},
                       forall {f : Type},
                       forall `{GHC.Base.Monad m},
-                      (a -> m (GHC.Tuple.quint_type b c d e f)) ->
-                      list a -> m (GHC.Tuple.quint_type (list b) (list c) (list d) (list e) (list f)).
+                      (a -> m (b * c * d * e * f)%type) ->
+                      list a -> m (list b * list c * list d * list e * list f)%type.
 
 Axiom mapAccumLM : forall {m : Type -> Type},
                    forall {acc : Type},
@@ -167,5 +165,4 @@ Axiom whenM : forall {m : Type -> Type},
 
 (* External variables:
      Type bool list op_zt__ option unit Data.Either.Either GHC.Base.Monad
-     GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.triple_type
 *)

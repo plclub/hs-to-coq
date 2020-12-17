@@ -27,7 +27,6 @@ Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
-Require GHC.Tuple.
 Require GHC.Wf.
 Require Utils.Containers.Internal.BitUtil.
 Import Data.Bits.Notations.
@@ -892,8 +891,7 @@ Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
     | _ => j_21__
     end.
 
-Definition splitMember
-   : Key -> IntSet -> GHC.Tuple.triple_type IntSet bool IntSet :=
+Definition splitMember : Key -> IntSet -> (IntSet * bool * IntSet)%type :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1160,8 +1158,8 @@ End Notations.
      GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____
      GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Err.Build_Default GHC.Err.Default
-     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Tuple.triple_type
-     GHC.Wf.wfFix2 Utils.Containers.Internal.BitUtil.bitcount
+     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Wf.wfFix2
+     Utils.Containers.Internal.BitUtil.bitcount
      Utils.Containers.Internal.BitUtil.highestBitMask
      Utils.Containers.Internal.BitUtil.lowestBitMask
      Utils.Containers.Internal.BitUtil.shiftLL

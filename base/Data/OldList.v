@@ -505,7 +505,7 @@ Fixpoint zipWith4 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type}
      end.
 
 Definition zip4 {a : Type} {b : Type} {c : Type} {d : Type}
-   : list a -> list b -> list c -> list d -> list (GHC.Tuple.quad_type a b c d) :=
+   : list a -> list b -> list c -> list d -> list (a * b * c * d)%type :=
   zipWith4 GHC.Tuple.pair4.
 
 Fixpoint zipWith5 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
@@ -519,7 +519,7 @@ Fixpoint zipWith5 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
 
 Definition zip5 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type}
    : list a ->
-     list b -> list c -> list d -> list e -> list (GHC.Tuple.quint_type a b c d e) :=
+     list b -> list c -> list d -> list e -> list (a * b * c * d * e)%type :=
   zipWith5 GHC.Tuple.pair5.
 
 Fixpoint zipWith6 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
@@ -536,8 +536,7 @@ Definition zip6 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
    : Type}
    : list a ->
      list b ->
-     list c ->
-     list d -> list e -> list f -> list (GHC.Tuple.sext_type a b c d e f) :=
+     list c -> list d -> list e -> list f -> list (a * b * c * d * e * f)%type :=
   zipWith6 GHC.Tuple.pair6.
 
 Fixpoint zipWith7 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
@@ -569,13 +568,11 @@ Definition zip7 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
    : list a ->
      list b ->
      list c ->
-     list d ->
-     list e -> list f -> list g -> list (GHC.Tuple.sept_type a b c d e f g) :=
+     list d -> list e -> list f -> list g -> list (a * b * c * d * e * f * g)%type :=
   zipWith7 GHC.Tuple.pair7.
 
 Definition unzip4 {a : Type} {b : Type} {c : Type} {d : Type}
-   : list (GHC.Tuple.quad_type a b c d) ->
-     GHC.Tuple.quad_type (list a) (list b) (list c) (list d) :=
+   : list (a * b * c * d)%type -> (list a * list b * list c * list d)%type :=
   foldr (fun arg_0__ arg_1__ =>
            match arg_0__, arg_1__ with
            | pair (pair (pair a b) c) d, pair (pair (pair as_ bs) cs) ds =>
@@ -583,8 +580,8 @@ Definition unzip4 {a : Type} {b : Type} {c : Type} {d : Type}
            end) (pair (pair (pair nil nil) nil) nil).
 
 Definition unzip5 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type}
-   : list (GHC.Tuple.quint_type a b c d e) ->
-     GHC.Tuple.quint_type (list a) (list b) (list c) (list d) (list e) :=
+   : list (a * b * c * d * e)%type ->
+     (list a * list b * list c * list d * list e)%type :=
   foldr (fun arg_0__ arg_1__ =>
            match arg_0__, arg_1__ with
            | pair (pair (pair (pair a b) c) d) e
@@ -595,8 +592,8 @@ Definition unzip5 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type}
 
 Definition unzip6 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
    : Type}
-   : list (GHC.Tuple.sext_type a b c d e f) ->
-     GHC.Tuple.sext_type (list a) (list b) (list c) (list d) (list e) (list f) :=
+   : list (a * b * c * d * e * f)%type ->
+     (list a * list b * list c * list d * list e * list f)%type :=
   foldr (fun arg_0__ arg_1__ =>
            match arg_0__, arg_1__ with
            | pair (pair (pair (pair (pair a b) c) d) e) f
@@ -607,9 +604,8 @@ Definition unzip6 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
 
 Definition unzip7 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
    : Type} {g : Type}
-   : list (GHC.Tuple.sept_type a b c d e f g) ->
-     GHC.Tuple.sept_type (list a) (list b) (list c) (list d) (list e) (list f) (list
-                          g) :=
+   : list (a * b * c * d * e * f * g)%type ->
+     (list a * list b * list c * list d * list e * list f * list g)%type :=
   foldr (fun arg_0__ arg_1__ =>
            match arg_0__, arg_1__ with
            | pair (pair (pair (pair (pair (pair a b) c) d) e) f) g
@@ -713,6 +709,5 @@ End Notations.
      GHC.Err.errorWithoutStackTrace GHC.List.any GHC.List.filter GHC.List.foldl1
      GHC.List.null GHC.List.reverse GHC.Num.Num GHC.Num.Word GHC.Num.fromInteger
      GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq GHC.Real.Integral GHC.Tuple.pair4
-     GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7 GHC.Tuple.quad_type
-     GHC.Tuple.quint_type GHC.Tuple.sept_type GHC.Tuple.sext_type
+     GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7
 *)

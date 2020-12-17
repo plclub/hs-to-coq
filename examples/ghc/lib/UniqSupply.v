@@ -200,15 +200,14 @@ Definition uniqFromSupply : UniqSupply -> Unique.Unique :=
   fun '(MkSplitUniqSupply n _ _) => Unique.mkUniqueGrimily n.
 
 Definition splitUniqSupply3
-   : UniqSupply -> GHC.Tuple.triple_type UniqSupply UniqSupply UniqSupply :=
+   : UniqSupply -> (UniqSupply * UniqSupply * UniqSupply)%type :=
   fun us =>
     let 'pair us1 us' := splitUniqSupply us in
     let 'pair us2 us3 := splitUniqSupply us' in
     pair (pair us1 us2) us3.
 
 Definition splitUniqSupply4
-   : UniqSupply ->
-     GHC.Tuple.quad_type UniqSupply UniqSupply UniqSupply UniqSupply :=
+   : UniqSupply -> (UniqSupply * UniqSupply * UniqSupply * UniqSupply)%type :=
   fun us =>
     let 'pair (pair us1 us2) us' := splitUniqSupply3 us in
     let 'pair us3 us4 := splitUniqSupply us' in
@@ -235,7 +234,7 @@ Definition lazyThenUs {a : Type} {b : Type}
            unUSM (cont result) us').
 
 Definition getUniqueSupplyM3 {m : Type -> Type} `{MonadUnique m}
-   : m (GHC.Tuple.triple_type UniqSupply UniqSupply UniqSupply) :=
+   : m (UniqSupply * UniqSupply * UniqSupply)%type :=
   GHC.Base.liftM3 GHC.Tuple.pair3 getUniqueSupplyM getUniqueSupplyM
   getUniqueSupplyM.
 
@@ -261,5 +260,5 @@ Fixpoint lazyMapUs {a : Type} {b : Type} (arg_0__ : a -> UniqSM b) (arg_1__
      GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd____
      GHC.Base.op_zlztzg____ GHC.Base.op_ztzg__ GHC.Base.op_ztzg____ GHC.Base.pure
      GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ GHC.Tuple.pair3
-     GHC.Tuple.quad_type GHC.Tuple.triple_type Unique.Unique Unique.mkUniqueGrimily
+     Unique.Unique Unique.mkUniqueGrimily
 *)

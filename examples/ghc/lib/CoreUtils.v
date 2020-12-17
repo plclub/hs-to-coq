@@ -29,7 +29,6 @@ Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
-Require GHC.Tuple.
 Require Id.
 Require Literal.
 Require NestedRecursionHelpers.
@@ -264,8 +263,8 @@ Definition mkAltExpr
     end.
 
 Definition findDefault {a : Type} {b : Type}
-   : list (GHC.Tuple.triple_type Core.AltCon (list a) b) ->
-     (list (GHC.Tuple.triple_type Core.AltCon (list a) b) * option b)%type :=
+   : list (Core.AltCon * list a * b)%type ->
+     (list (Core.AltCon * list a * b)%type * option b)%type :=
   fun arg_0__ =>
     match arg_0__ with
     | cons (pair (pair Core.DEFAULT args) rhs) alts =>
@@ -277,8 +276,8 @@ Definition findDefault {a : Type} {b : Type}
     end.
 
 Definition addDefault {a : Type} {b : Type}
-   : list (GHC.Tuple.triple_type Core.AltCon (list a) b) ->
-     option b -> list (GHC.Tuple.triple_type Core.AltCon (list a) b) :=
+   : list (Core.AltCon * list a * b)%type ->
+     option b -> list (Core.AltCon * list a * b)%type :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | alts, None => alts
@@ -286,7 +285,7 @@ Definition addDefault {a : Type} {b : Type}
     end.
 
 Definition isDefaultAlt {a : Type} {b : Type}
-   : GHC.Tuple.triple_type Core.AltCon a b -> bool :=
+   : (Core.AltCon * a * b)%type -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | pair (pair Core.DEFAULT _) _ => true
@@ -295,8 +294,7 @@ Definition isDefaultAlt {a : Type} {b : Type}
 
 Definition findAlt {a : Type} {b : Type}
    : Core.AltCon ->
-     list (GHC.Tuple.triple_type Core.AltCon a b) ->
-     option (GHC.Tuple.triple_type Core.AltCon a b) :=
+     list (Core.AltCon * a * b)%type -> option (Core.AltCon * a * b)%type :=
   fun con alts =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -318,11 +316,10 @@ Definition findAlt {a : Type} {b : Type}
     end.
 
 Definition mergeAlts {a : Type} {b : Type}
-   : list (GHC.Tuple.triple_type Core.AltCon a b) ->
-     list (GHC.Tuple.triple_type Core.AltCon a b) ->
-     list (GHC.Tuple.triple_type Core.AltCon a b) :=
+   : list (Core.AltCon * a * b)%type ->
+     list (Core.AltCon * a * b)%type -> list (Core.AltCon * a * b)%type :=
   GHC.DeferredFix.deferredFix1 (fun mergeAlts
-                                (arg_0__ arg_1__ : list (GHC.Tuple.triple_type Core.AltCon a b)) =>
+                                (arg_0__ arg_1__ : list (Core.AltCon * a * b)%type) =>
                                   match arg_0__, arg_1__ with
                                   | nil, as2 => as2
                                   | as1, nil => as1
@@ -355,9 +352,8 @@ Definition filterAlts {a : Type}
    : Core.TyCon ->
      list AxiomatizedTypes.Type_ ->
      list Core.AltCon ->
-     list (GHC.Tuple.triple_type Core.AltCon (list Core.Var) a) ->
-     (list Core.AltCon *
-      list (GHC.Tuple.triple_type Core.AltCon (list Core.Var) a))%type :=
+     list (Core.AltCon * list Core.Var * a)%type ->
+     (list Core.AltCon * list (Core.AltCon * list Core.Var * a)%type)%type :=
   fun _tycon inst_tys imposs_cons alts =>
     let impossible_alt {a} {b}
      : list AxiomatizedTypes.Type_ -> (Core.AltCon * a * b)%type -> bool :=
@@ -386,8 +382,7 @@ Axiom refineDefaultAlt : list Unique.Unique ->
                          list Core.AltCon -> list Core.CoreAlt -> (bool * list Core.CoreAlt)%type.
 
 Axiom combineIdenticalAlts : list Core.AltCon ->
-                             list Core.CoreAlt ->
-                             GHC.Tuple.triple_type bool (list Core.AltCon) (list Core.CoreAlt).
+                             list Core.CoreAlt -> (bool * list Core.AltCon * list Core.CoreAlt)%type.
 
 Fixpoint exprIsTrivial (arg_0__ : Core.CoreExpr) : bool
   := match arg_0__ with
@@ -722,8 +717,8 @@ Axiom tryEtaReduce : list Core.Var -> Core.CoreExpr -> option Core.CoreExpr.
 
 Definition collectMakeStaticArgs
    : Core.CoreExpr ->
-     option (GHC.Tuple.quad_type Core.CoreExpr AxiomatizedTypes.Type_ Core.CoreExpr
-                                 Core.CoreExpr) :=
+     option (Core.CoreExpr * AxiomatizedTypes.Type_ * Core.CoreExpr *
+             Core.CoreExpr)%type :=
   fun '(e) =>
     match Core.collectArgsTicks (GHC.Base.const true) e with
     | pair (pair (Core.Mk_Var b as fun_) (cons (Core.Mk_Type t) (cons loc (cons arg
@@ -766,13 +761,12 @@ Definition isJoinBind : Core.CoreBind -> bool :=
      FastString.FastString GHC.Base.String GHC.Base.const GHC.Base.map
      GHC.Base.mappend GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zg__
      GHC.Base.op_zgze__ GHC.Base.op_zl__ GHC.DeferredFix.deferredFix1 GHC.Err.error
-     GHC.List.unzip GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__
-     GHC.Tuple.quad_type GHC.Tuple.triple_type Id.idArity Id.idName Id.idUnfolding
-     Id.isBottomingId Id.isConLikeId Id.isDataConWorkId Id.isJoinId Literal.MachStr
-     Literal.litIsDupable Literal.litIsTrivial NestedRecursionHelpers.all2Map
-     OrdList.OrdList OrdList.appOL OrdList.concatOL OrdList.fromOL OrdList.nilOL
-     Pair.Mk_Pair Pair.pSnd Panic.assertPanic Panic.panic Panic.panicStr
-     Panic.someSDoc Panic.warnPprTrace PrelNames.absentErrorIdKey
-     PrelNames.makeStaticName Unique.Unique Unique.hasKey Util.debugIsOn
-     Util.dropList Util.equalLength Util.filterOut Util.lengthIs
+     GHC.List.unzip GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ Id.idArity
+     Id.idName Id.idUnfolding Id.isBottomingId Id.isConLikeId Id.isDataConWorkId
+     Id.isJoinId Literal.MachStr Literal.litIsDupable Literal.litIsTrivial
+     NestedRecursionHelpers.all2Map OrdList.OrdList OrdList.appOL OrdList.concatOL
+     OrdList.fromOL OrdList.nilOL Pair.Mk_Pair Pair.pSnd Panic.assertPanic
+     Panic.panic Panic.panicStr Panic.someSDoc Panic.warnPprTrace
+     PrelNames.absentErrorIdKey PrelNames.makeStaticName Unique.Unique Unique.hasKey
+     Util.debugIsOn Util.dropList Util.equalLength Util.filterOut Util.lengthIs
 *)

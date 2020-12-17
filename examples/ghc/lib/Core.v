@@ -22,7 +22,6 @@ Require FastString.
 Require FieldLabel.
 Require GHC.Base.
 Require GHC.Num.
-Require GHC.Tuple.
 Require Module.
 Require Name.
 Require OccName.
@@ -3990,14 +3989,13 @@ Axiom dataConImplBangs : DataCon -> list HsImplBang.
 Axiom dataConBoxer : DataCon -> option DataConBoxer.
 
 Axiom dataConSig : DataCon ->
-                   GHC.Tuple.quad_type (list TyVar) ThetaType (list Type_) Type_.
+                   (list TyVar * ThetaType * list Type_ * Type_)%type.
 
 Axiom dataConInstSig : DataCon ->
-                       list Type_ -> GHC.Tuple.triple_type (list TyVar) ThetaType (list Type_).
+                       list Type_ -> (list TyVar * ThetaType * list Type_)%type.
 
 Axiom dataConFullSig : DataCon ->
-                       GHC.Tuple.sext_type (list TyVar) (list TyVar) (list EqSpec) ThetaType (list
-                                            Type_) Type_.
+                       (list TyVar * list TyVar * list EqSpec * ThetaType * list Type_ * Type_)%type.
 
 Axiom dataConOrigResTy : DataCon -> Type_.
 
@@ -4038,7 +4036,7 @@ Axiom dataConUserTyVarsArePermuted : DataCon -> bool.
 Axiom promoteDataCon : DataCon -> TyCon.
 
 Axiom splitDataProductType_maybe : Type_ ->
-                                   option (GHC.Tuple.quad_type TyCon (list Type_) DataCon (list Type_)).
+                                   option (TyCon * list Type_ * DataCon * list Type_)%type.
 
 Axiom buildAlgTyCon : Name.Name ->
                       list TyVar ->
@@ -4401,8 +4399,7 @@ Axiom patSynExTyVars : PatSyn -> list TyVar.
 Axiom patSynExTyVarBinders : PatSyn -> list TyVarBinder.
 
 Axiom patSynSig : PatSyn ->
-                  GHC.Tuple.sext_type (list TyVar) ThetaType (list TyVar) ThetaType (list Type_)
-                                      Type_.
+                  (list TyVar * ThetaType * list TyVar * ThetaType * list Type_ * Type_)%type.
 
 Axiom patSynMatcher : PatSyn -> (Id * bool)%type.
 
@@ -4449,11 +4446,11 @@ Axiom classTvsFds : Class -> (list TyVar * list (FunDep TyVar))%type.
 Axiom classHasFds : Class -> bool.
 
 Axiom classBigSig : Class ->
-                    GHC.Tuple.quad_type (list TyVar) (list PredType) (list Id) (list ClassOpItem).
+                    (list TyVar * list PredType * list Id * list ClassOpItem)%type.
 
 Axiom classExtraBigSig : Class ->
-                         GHC.Tuple.sext_type (list TyVar) (list (FunDep TyVar)) (list PredType) (list Id)
-                                             (list ClassATItem) (list ClassOpItem).
+                         (list TyVar * list (FunDep TyVar) * list PredType * list Id * list ClassATItem *
+                          list ClassOpItem)%type.
 
 Axiom isAbstractClass : Class -> bool.
 
@@ -4494,12 +4491,11 @@ Axiom splitAppCo_maybe : Coercion -> option (Coercion * Coercion)%type.
 Axiom splitFunCo_maybe : Coercion -> option (Coercion * Coercion)%type.
 
 Axiom splitForAllCo_maybe : Coercion ->
-                            option (GHC.Tuple.triple_type TyVar Coercion Coercion).
+                            option (TyVar * Coercion * Coercion)%type.
 
 Axiom coVarTypes : CoVar -> Pair.Pair Type_.
 
-Axiom coVarKindsTypesRole : CoVar ->
-                            GHC.Tuple.quint_type Kind Kind Type_ Type_ Role.
+Axiom coVarKindsTypesRole : CoVar -> (Kind * Kind * Type_ * Type_ * Role)%type.
 
 Axiom coVarKind : CoVar -> Type_.
 
@@ -4695,8 +4691,7 @@ Axiom zapLiftingContext : LiftingContext -> LiftingContext.
 
 Axiom substForAllCoBndrCallbackLC : bool ->
                                     (Coercion -> Coercion) ->
-                                    LiftingContext ->
-                                    TyVar -> Coercion -> GHC.Tuple.triple_type LiftingContext TyVar Coercion.
+                                    LiftingContext -> TyVar -> Coercion -> (LiftingContext * TyVar * Coercion)%type.
 
 Axiom ty_co_subst : LiftingContext -> Role -> Type_ -> Coercion.
 
@@ -4707,7 +4702,7 @@ Axiom liftCoSubstVarBndr : LiftingContext ->
 
 Axiom liftCoSubstVarBndrCallback : forall {a : Type},
                                    (LiftingContext -> Type_ -> (Coercion * a)%type) ->
-                                   LiftingContext -> TyVar -> GHC.Tuple.quad_type LiftingContext TyVar Coercion a.
+                                   LiftingContext -> TyVar -> (LiftingContext * TyVar * Coercion * a)%type.
 
 Axiom isMappedByLC : TyCoVar -> LiftingContext -> bool.
 
@@ -4997,14 +4992,14 @@ Axiom substCos : forall `{Util.HasDebugCallStack},
 Axiom subst_co : TCvSubst -> Coercion -> Coercion.
 
 Axiom substForAllCoBndr : TCvSubst ->
-                          TyVar -> Coercion -> GHC.Tuple.triple_type TCvSubst TyVar Coercion.
+                          TyVar -> Coercion -> (TCvSubst * TyVar * Coercion)%type.
 
 Axiom substForAllCoBndrUnchecked : TCvSubst ->
                                    TyVar -> Coercion -> (TCvSubst * TyVar * Coercion)%type.
 
 Axiom substForAllCoBndrCallback : bool ->
                                   (Coercion -> Coercion) ->
-                                  TCvSubst -> TyVar -> Coercion -> GHC.Tuple.triple_type TCvSubst TyVar Coercion.
+                                  TCvSubst -> TyVar -> Coercion -> (TCvSubst * TyVar * Coercion)%type.
 
 Axiom substCoVar : TCvSubst -> CoVar -> Coercion.
 
@@ -5268,10 +5263,10 @@ Axiom isGenInjAlgRhs : AlgTyConRhs -> bool.
 Axiom isNewTyCon : TyCon -> bool.
 
 Axiom unwrapNewTyCon_maybe : TyCon ->
-                             option (GHC.Tuple.triple_type (list TyVar) Type_ (CoAxiom Unbranched)).
+                             option (list TyVar * Type_ * CoAxiom Unbranched)%type.
 
 Axiom unwrapNewTyConEtad_maybe : TyCon ->
-                                 option (GHC.Tuple.triple_type (list TyVar) Type_ (CoAxiom Unbranched)).
+                                 option (list TyVar * Type_ * CoAxiom Unbranched)%type.
 
 Axiom isProductTyCon : TyCon -> bool.
 
@@ -5346,8 +5341,7 @@ Axiom isTcLevPoly : TyCon -> bool.
 
 Axiom expandSynTyCon_maybe : forall {tyco : Type},
                              TyCon ->
-                             list tyco ->
-                             option (GHC.Tuple.triple_type (list (TyVar * tyco)%type) Type_ (list tyco)).
+                             list tyco -> option (list (TyVar * tyco)%type * Type_ * list tyco)%type.
 
 Axiom isTyConWithSrcDataCons : TyCon -> bool.
 
@@ -5400,7 +5394,7 @@ Axiom tyConATs : TyCon -> list TyCon.
 Axiom isFamInstTyCon : TyCon -> bool.
 
 Axiom tyConFamInstSig_maybe : TyCon ->
-                              option (GHC.Tuple.triple_type TyCon (list Type_) (CoAxiom Unbranched)).
+                              option (TyCon * list Type_ * CoAxiom Unbranched)%type.
 
 Axiom tyConFamInst_maybe : TyCon -> option (TyCon * list Type_)%type.
 
@@ -5649,8 +5643,7 @@ Axiom getClassPredTys_maybe : PredType -> option (Class * list Type_)%type.
 
 Axiom getEqPredTys : PredType -> (Type_ * Type_)%type.
 
-Axiom getEqPredTys_maybe : PredType ->
-                           option (GHC.Tuple.triple_type Role Type_ Type_).
+Axiom getEqPredTys_maybe : PredType -> option (Role * Type_ * Type_)%type.
 
 Axiom getEqPredRole : PredType -> Role.
 
@@ -7115,16 +7108,14 @@ Definition cmpAltCon : AltCon -> AltCon -> comparison :=
     end.
 
 Definition cmpAlt {a : Type} {b : Type}
-   : GHC.Tuple.triple_type AltCon a b ->
-     GHC.Tuple.triple_type AltCon a b -> comparison :=
+   : (AltCon * a * b)%type -> (AltCon * a * b)%type -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | pair (pair con1 _) _, pair (pair con2 _) _ => cmpAltCon con1 con2
     end.
 
 Definition ltAlt {a : Type} {b : Type}
-   : GHC.Tuple.triple_type AltCon a b ->
-     GHC.Tuple.triple_type AltCon a b -> bool :=
+   : (AltCon * a * b)%type -> (AltCon * a * b)%type -> bool :=
   fun a1 a2 => (cmpAlt a1 a2) GHC.Base.== Lt.
 
 Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
@@ -7342,7 +7333,7 @@ Definition collectValBinders : CoreExpr -> (list Id * CoreExpr)%type :=
     go nil expr.
 
 Definition collectTyAndValBinders
-   : CoreExpr -> GHC.Tuple.triple_type (list TyVar) (list Id) CoreExpr :=
+   : CoreExpr -> (list TyVar * list Id * CoreExpr)%type :=
   fun expr =>
     let 'pair tvs body1 := collectTyBinders expr in
     let 'pair ids body := collectValBinders body1 in
@@ -7374,7 +7365,7 @@ Definition collectArgs {b : Type} : Expr b -> (Expr b * list (Arg b))%type :=
 
 Definition collectArgsTicks {b : Type}
    : (Tickish Id -> bool) ->
-     Expr b -> GHC.Tuple.triple_type (Expr b) (list (Arg b)) (list (Tickish Id)) :=
+     Expr b -> (Expr b * list (Arg b) * list (Tickish Id))%type :=
   fun skipTick expr =>
     let fix go arg_0__ arg_1__ arg_2__
       := match arg_0__, arg_1__, arg_2__ with
@@ -7424,8 +7415,7 @@ Solve Obligations with (solve_collectAnnArgsTicks).
 
 Program Definition collectAnnArgsTicks {b : Type} {a : Type}
    : (Tickish Var -> bool) ->
-     AnnExpr b a ->
-     GHC.Tuple.triple_type (AnnExpr b a) (list (AnnExpr b a)) (list (Tickish Var)) :=
+     AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a) * list (Tickish Var))%type :=
   fun tickishOk expr =>
     let go :=
       GHC.Wf.wfFix3 Coq.Init.Peano.lt (fun arg_0__ arg_1__ arg_2__ =>
@@ -7561,34 +7551,33 @@ Program Definition collectAnnBndrs {bndr : Type} {annot : Type}
      GHC.Err.Build_Default GHC.Err.Default GHC.Err.default GHC.Err.error
      GHC.List.reverse GHC.Num.Integer GHC.Num.fromInteger GHC.Num.op_zm__
      GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.coerce GHC.Prim.seq GHC.Real.Rational
-     GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sext_type
-     GHC.Tuple.triple_type GHC.Wf.wfFix2 GHC.Wf.wfFix3 Maybes.orElse Module.Module
-     Module.ModuleSet Module.emptyModuleSet Module.mkModuleSet Name.Name
-     Name.NamedThing Name.getName__ Name.getOccName__ Name.nameOccName
-     Name.nameUnique Name.setNameUnique NameEnv.NameEnv NameEnv.emptyNameEnv
-     OccName.HasOccName OccName.OccName OccName.TidyOccEnv OccName.emptyTidyOccEnv
-     OccName.occName__ Pair.Pair Panic.assertPanic Panic.panicStr Panic.someSDoc
-     Panic.warnPprTrace SrcLoc.RealSrcSpan SrcLoc.SrcSpan UniqFM.UniqFM
-     UniqFM.addListToUFM UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C
-     UniqFM.addToUFM_Directly UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM
-     UniqFM.delFromUFM_Directly UniqFM.delListFromUFM UniqFM.disjointUFM
-     UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.eltsUFM UniqFM.emptyUFM
-     UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.intersectUFM UniqFM.isNullUFM
-     UniqFM.listToUFM UniqFM.listToUFM_Directly UniqFM.lookupUFM
-     UniqFM.lookupUFM_Directly UniqFM.lookupWithDefaultUFM UniqFM.mapUFM
-     UniqFM.minusUFM UniqFM.nonDetFoldUFM UniqFM.nonDetUFMToList UniqFM.partitionUFM
-     UniqFM.plusMaybeUFM_C UniqFM.plusUFM UniqFM.plusUFMList UniqFM.plusUFM_C
-     UniqFM.plusUFM_CD UniqFM.unitUFM UniqSet.UniqSet UniqSet.addListToUniqSet
-     UniqSet.addOneToUniqSet UniqSet.delListFromUniqSet UniqSet.delOneFromUniqSet
-     UniqSet.delOneFromUniqSet_Directly UniqSet.elemUniqSet_Directly
-     UniqSet.elementOfUniqSet UniqSet.emptyUniqSet UniqSet.filterUniqSet
-     UniqSet.getUniqSet UniqSet.intersectUniqSets UniqSet.isEmptyUniqSet
-     UniqSet.lookupUniqSet UniqSet.lookupUniqSet_Directly UniqSet.minusUniqSet
-     UniqSet.mkUniqSet UniqSet.nonDetEltsUniqSet UniqSet.nonDetFoldUniqSet
-     UniqSet.partitionUniqSet UniqSet.sizeUniqSet UniqSet.unionManyUniqSets
-     UniqSet.unionUniqSets UniqSet.uniqSetAll UniqSet.uniqSetAny UniqSet.unitUniqSet
-     UniqSupply.UniqSupply Unique.Uniquable Unique.Unique Unique.deriveUnique
-     Unique.getKey Unique.getUnique Unique.getUnique__ Unique.isLocalUnique
-     Unique.mkUniqueGrimily Unique.nonDetCmpUnique Util.HasDebugCallStack Util.count
-     Util.debugIsOn Util.foldl2 Util.zipEqual
+     GHC.Wf.wfFix2 GHC.Wf.wfFix3 Maybes.orElse Module.Module Module.ModuleSet
+     Module.emptyModuleSet Module.mkModuleSet Name.Name Name.NamedThing
+     Name.getName__ Name.getOccName__ Name.nameOccName Name.nameUnique
+     Name.setNameUnique NameEnv.NameEnv NameEnv.emptyNameEnv OccName.HasOccName
+     OccName.OccName OccName.TidyOccEnv OccName.emptyTidyOccEnv OccName.occName__
+     Pair.Pair Panic.assertPanic Panic.panicStr Panic.someSDoc Panic.warnPprTrace
+     SrcLoc.RealSrcSpan SrcLoc.SrcSpan UniqFM.UniqFM UniqFM.addListToUFM
+     UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C UniqFM.addToUFM_Directly
+     UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM UniqFM.delFromUFM_Directly
+     UniqFM.delListFromUFM UniqFM.disjointUFM UniqFM.elemUFM UniqFM.elemUFM_Directly
+     UniqFM.eltsUFM UniqFM.emptyUFM UniqFM.filterUFM UniqFM.filterUFM_Directly
+     UniqFM.intersectUFM UniqFM.isNullUFM UniqFM.listToUFM UniqFM.listToUFM_Directly
+     UniqFM.lookupUFM UniqFM.lookupUFM_Directly UniqFM.lookupWithDefaultUFM
+     UniqFM.mapUFM UniqFM.minusUFM UniqFM.nonDetFoldUFM UniqFM.nonDetUFMToList
+     UniqFM.partitionUFM UniqFM.plusMaybeUFM_C UniqFM.plusUFM UniqFM.plusUFMList
+     UniqFM.plusUFM_C UniqFM.plusUFM_CD UniqFM.unitUFM UniqSet.UniqSet
+     UniqSet.addListToUniqSet UniqSet.addOneToUniqSet UniqSet.delListFromUniqSet
+     UniqSet.delOneFromUniqSet UniqSet.delOneFromUniqSet_Directly
+     UniqSet.elemUniqSet_Directly UniqSet.elementOfUniqSet UniqSet.emptyUniqSet
+     UniqSet.filterUniqSet UniqSet.getUniqSet UniqSet.intersectUniqSets
+     UniqSet.isEmptyUniqSet UniqSet.lookupUniqSet UniqSet.lookupUniqSet_Directly
+     UniqSet.minusUniqSet UniqSet.mkUniqSet UniqSet.nonDetEltsUniqSet
+     UniqSet.nonDetFoldUniqSet UniqSet.partitionUniqSet UniqSet.sizeUniqSet
+     UniqSet.unionManyUniqSets UniqSet.unionUniqSets UniqSet.uniqSetAll
+     UniqSet.uniqSetAny UniqSet.unitUniqSet UniqSupply.UniqSupply Unique.Uniquable
+     Unique.Unique Unique.deriveUnique Unique.getKey Unique.getUnique
+     Unique.getUnique__ Unique.isLocalUnique Unique.mkUniqueGrimily
+     Unique.nonDetCmpUnique Util.HasDebugCallStack Util.count Util.debugIsOn
+     Util.foldl2 Util.zipEqual
 *)

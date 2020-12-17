@@ -69,7 +69,6 @@ Require Coq.Init.Datatypes.
 Require Import GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
-Require GHC.Tuple.
 Import GHC.Num.Notations.
 
 (* No type declarations to convert. *)
@@ -458,7 +457,7 @@ Definition zipFB {a} {b} {c} {d}
   fun c => fun x y r => c (pair x y) r.
 
 Fixpoint zip3 {a : Type} {b : Type} {c : Type} (arg_0__ : list a) (arg_1__
-                : list b) (arg_2__ : list c) : list (GHC.Tuple.triple_type a b c)
+                : list b) (arg_2__ : list c) : list (a * b * c)%type
   := match arg_0__, arg_1__, arg_2__ with
      | cons a as_, cons b bs, cons c cs => cons (pair (pair a b) c) (zip3 as_ bs cs)
      | _, _, _ => nil
@@ -497,8 +496,7 @@ Definition unzip {a : Type} {b : Type}
            end) (pair nil nil).
 
 Definition unzip3 {a : Type} {b : Type} {c : Type}
-   : list (GHC.Tuple.triple_type a b c) ->
-     GHC.Tuple.triple_type (list a) (list b) (list c) :=
+   : list (a * b * c)%type -> (list a * list b * list c)%type :=
   foldr (fun arg_0__ arg_1__ =>
            match arg_0__, arg_1__ with
            | pair (pair a b) c, pair (pair as_ bs) cs =>
@@ -515,5 +513,5 @@ End Notations.
      list max min nil op_zeze__ op_zl__ op_zsze__ op_zt__ option orb pair true
      Coq.Init.Datatypes.app GHC.Err.Default GHC.Err.errorWithoutStackTrace
      GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Tuple.triple_type
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__
 *)

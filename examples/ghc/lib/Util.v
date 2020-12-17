@@ -29,7 +29,6 @@ Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
 Require GHC.Prim.
-Require GHC.Tuple.
 Require Panic.
 Import Data.Bits.Notations.
 Import GHC.Base.Notations.
@@ -84,41 +83,38 @@ Definition isWindowsHost : bool :=
 
 (* Skipping definition `Util.nTimes' *)
 
-Definition fstOf3 {a : Type} {b : Type} {c : Type}
-   : GHC.Tuple.triple_type a b c -> a :=
+Definition fstOf3 {a : Type} {b : Type} {c : Type} : (a * b * c)%type -> a :=
   fun '(pair (pair a _) _) => a.
 
-Definition sndOf3 {a : Type} {b : Type} {c : Type}
-   : GHC.Tuple.triple_type a b c -> b :=
+Definition sndOf3 {a : Type} {b : Type} {c : Type} : (a * b * c)%type -> b :=
   fun '(pair (pair _ b) _) => b.
 
-Definition thdOf3 {a : Type} {b : Type} {c : Type}
-   : GHC.Tuple.triple_type a b c -> c :=
+Definition thdOf3 {a : Type} {b : Type} {c : Type} : (a * b * c)%type -> c :=
   fun '(pair (pair _ _) c) => c.
 
 Definition fst3 {a : Type} {d : Type} {b : Type} {c : Type}
-   : (a -> d) -> GHC.Tuple.triple_type a b c -> GHC.Tuple.triple_type d b c :=
+   : (a -> d) -> (a * b * c)%type -> (d * b * c)%type :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, pair (pair a b) c => pair (pair (f a) b) c
     end.
 
 Definition snd3 {b : Type} {d : Type} {a : Type} {c : Type}
-   : (b -> d) -> GHC.Tuple.triple_type a b c -> GHC.Tuple.triple_type a d c :=
+   : (b -> d) -> (a * b * c)%type -> (a * d * c)%type :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, pair (pair a b) c => pair (pair a (f b)) c
     end.
 
 Definition third3 {c : Type} {d : Type} {a : Type} {b : Type}
-   : (c -> d) -> GHC.Tuple.triple_type a b c -> GHC.Tuple.triple_type a b d :=
+   : (c -> d) -> (a * b * c)%type -> (a * b * d)%type :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, pair (pair a b) c => pair (pair a b) (f c)
     end.
 
 Definition uncurry3 {a : Type} {b : Type} {c : Type} {d : Type}
-   : (a -> b -> c -> d) -> GHC.Tuple.triple_type a b c -> d :=
+   : (a -> b -> c -> d) -> (a * b * c)%type -> d :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, pair (pair a b) c => f a b c
@@ -148,8 +144,7 @@ Definition firstM {m : Type -> Type} {a : Type} {c : Type} {b : Type}
 
 Definition first3M {m : Type -> Type} {a : Type} {d : Type} {b : Type} {c
    : Type} `{GHC.Base.Monad m}
-   : (a -> m d) ->
-     GHC.Tuple.triple_type a b c -> m (GHC.Tuple.triple_type d b c) :=
+   : (a -> m d) -> (a * b * c)%type -> m (d * b * c)%type :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, pair (pair x y) z => GHC.Base.liftM (fun x' => pair (pair x' y) z) (f x)
@@ -296,8 +291,7 @@ Fixpoint mapAndUnzip {a : Type} {b : Type} {c : Type} (arg_0__
      end.
 
 Fixpoint mapAndUnzip3 {a : Type} {b : Type} {c : Type} {d : Type} (arg_0__
-                        : a -> GHC.Tuple.triple_type b c d) (arg_1__ : list a) : GHC.Tuple.triple_type
-                                                                                 (list b) (list c) (list d)
+                        : a -> (b * c * d)%type) (arg_1__ : list a) : (list b * list c * list d)%type
   := match arg_0__, arg_1__ with
      | _, nil => pair (pair nil nil) nil
      | f, cons x xs =>
@@ -761,6 +755,5 @@ End Notations.
      GHC.DeferredFix.deferredFix2 GHC.Err.Build_Default GHC.Err.Default
      GHC.Err.patternFailure GHC.List.break GHC.List.reverse GHC.List.zip
      GHC.List.zipWith GHC.List.zipWith3 GHC.Num.Integer GHC.Num.fromInteger
-     GHC.Num.negate GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq
-     GHC.Tuple.triple_type Panic.panic
+     GHC.Num.negate GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq Panic.panic
 *)

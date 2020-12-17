@@ -20,7 +20,6 @@ Require GHC.Base.
 Require GHC.Char.
 Require GHC.Err.
 Require GHC.Num.
-Require GHC.Tuple.
 Require Module.
 Require SrcLoc.
 
@@ -1274,12 +1273,14 @@ Axiom safeImplicitImpsReq : DynFlags -> bool.
 
 (* Skipping definition `DynFlags.combineSafeFlags' *)
 
-Axiom unsafeFlags : list (GHC.Tuple.quad_type GHC.Base.String (DynFlags ->
-                                               SrcLoc.SrcSpan) (DynFlags -> bool) (DynFlags -> DynFlags)).
+Axiom unsafeFlags : list (GHC.Base.String * (DynFlags -> SrcLoc.SrcSpan) *
+                          (DynFlags -> bool) *
+                          (DynFlags -> DynFlags))%type.
 
-Axiom unsafeFlagsForInfer : list (GHC.Tuple.quad_type GHC.Base.String
-                                                      (DynFlags -> SrcLoc.SrcSpan) (DynFlags -> bool) (DynFlags ->
-                                                       DynFlags)).
+Axiom unsafeFlagsForInfer : list (GHC.Base.String * (DynFlags -> SrcLoc.SrcSpan)
+                                  *
+                                  (DynFlags -> bool) *
+                                  (DynFlags -> DynFlags))%type.
 
 Axiom getOpts : forall {a : Type}, DynFlags -> (DynFlags -> list a) -> list a.
 
@@ -1749,6 +1750,6 @@ Axiom emptyFilesToClean : FilesToClean.
      Type bool list op_zt__ option BinNums.N Data.Either.Either
      Data.Set.Internal.Set_ EnumSet.EnumSet GHC.Base.Eq_ GHC.Base.Ord GHC.Base.String
      GHC.Char.Char GHC.Err.Build_Default GHC.Err.Default GHC.Err.default
-     GHC.Num.Integer GHC.Tuple.quad_type Module.ComponentId Module.Module
-     Module.ModuleName Module.UnitId SrcLoc.Located SrcLoc.SrcSpan
+     GHC.Num.Integer Module.ComponentId Module.Module Module.ModuleName Module.UnitId
+     SrcLoc.Located SrcLoc.SrcSpan
 *)

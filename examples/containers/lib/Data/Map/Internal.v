@@ -34,7 +34,6 @@ Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.Num.
 Require GHC.Prim.
-Require GHC.Tuple.
 Require Nat.
 Require Utils.Containers.Internal.PtrEquality.
 Import Data.Functor.Notations.
@@ -1695,7 +1694,7 @@ Definition maxView {k : Type} {a : Type}
     end.
 
 Definition splitLookup {k : Type} {a : Type} `{GHC.Base.Ord k}
-   : k -> Map k a -> GHC.Tuple.triple_type (Map k a) (option a) (Map k a) :=
+   : k -> Map k a -> (Map k a * option a * Map k a)%type :=
   fun k0 m =>
     let go {k} {a} `{GHC.Base.Ord k}
      : k -> Map k a -> StrictTriple (Map k a) (option a) (Map k a) :=
@@ -2667,6 +2666,5 @@ End Notations.
      GHC.DeferredFix.deferredFix2 GHC.DeferredFix.deferredFix3 GHC.Err.Build_Default
      GHC.Err.Default GHC.Err.error GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num
      GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__
-     GHC.Prim.coerce GHC.Prim.seq GHC.Tuple.triple_type Nat.add
-     Utils.Containers.Internal.PtrEquality.ptrEq
+     GHC.Prim.coerce GHC.Prim.seq Nat.add Utils.Containers.Internal.PtrEquality.ptrEq
 *)

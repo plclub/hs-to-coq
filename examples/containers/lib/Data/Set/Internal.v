@@ -760,7 +760,7 @@ Definition delete {a : Type} `{GHC.Base.Ord a} : a -> Set_ a -> Set_ a :=
   go.
 
 Fixpoint splitMember {a : Type} `{GHC.Base.Ord a} (arg_0__ : a) (arg_1__
-                       : Set_ a) : GHC.Tuple.triple_type (Set_ a) bool (Set_ a)
+                       : Set_ a) : (Set_ a * bool * Set_ a)%type
   := match arg_0__, arg_1__ with
      | _, Tip => pair (pair Tip false) Tip
      | x, Bin _ y l r =>
@@ -1305,6 +1305,6 @@ End Notations.
      GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
      GHC.DeferredFix.deferredFix2 GHC.DeferredFix.deferredFix3 GHC.Err.error
      GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Tuple.pair2
-     GHC.Tuple.triple_type Nat.add Utils.Containers.Internal.PtrEquality.ptrEq
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Tuple.pair2 Nat.add
+     Utils.Containers.Internal.PtrEquality.ptrEq
 *)

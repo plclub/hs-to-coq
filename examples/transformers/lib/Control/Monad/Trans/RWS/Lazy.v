@@ -18,7 +18,6 @@ Require Control.Monad.Trans.Class.
 Require Data.Functor.Identity.
 Require Data.Tuple.
 Require GHC.Base.
-Require GHC.Tuple.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
@@ -229,11 +228,11 @@ Program Instance MonadFail__RWST {w : Type} {m : Type -> Type} {r : Type} {s
    `Control.Monad.Trans.RWS.Lazy.MonadIO__RWST' *)
 
 Definition rws {r : Type} {s : Type} {a : Type} {w : Type}
-   : (r -> s -> GHC.Tuple.triple_type a s w) -> RWS r w s a :=
+   : (r -> s -> (a * s * w)%type) -> RWS r w s a :=
   fun f => Mk_RWST (fun r s => Data.Functor.Identity.Mk_Identity (f r s)).
 
 Definition runRWS {r : Type} {w : Type} {s : Type} {a : Type}
-   : RWS r w s a -> r -> s -> GHC.Tuple.triple_type a s w :=
+   : RWS r w s a -> r -> s -> (a * s * w)%type :=
   fun m r s => Data.Functor.Identity.runIdentity (runRWST m r s).
 
 Definition evalRWS {r : Type} {w : Type} {s : Type} {a : Type}
@@ -246,14 +245,13 @@ Definition execRWS {r : Type} {w : Type} {s : Type} {a : Type}
 
 Definition mapRWST {m : Type -> Type} {a : Type} {s : Type} {w : Type} {n
    : Type -> Type} {b : Type} {w' : Type} {r : Type}
-   : (m (GHC.Tuple.triple_type a s w) -> n (GHC.Tuple.triple_type b s w')) ->
+   : (m (a * s * w)%type -> n (b * s * w')%type) ->
      RWST r w s m a -> RWST r w' s n b :=
   fun f m => Mk_RWST (fun r s => f (runRWST m r s)).
 
 Definition mapRWS {a : Type} {s : Type} {w : Type} {b : Type} {w' : Type} {r
    : Type}
-   : (GHC.Tuple.triple_type a s w -> GHC.Tuple.triple_type b s w') ->
-     RWS r w s a -> RWS r w' s b :=
+   : ((a * s * w)%type -> (b * s * w')%type) -> RWS r w s a -> RWS r w' s b :=
   fun f =>
     mapRWST (Data.Functor.Identity.Mk_Identity GHC.Base.∘
              (f GHC.Base.∘ Data.Functor.Identity.runIdentity)).
@@ -409,8 +407,7 @@ Definition gets {w : Type} {m : Type -> Type} {s : Type} {a : Type} {r : Type}
 
 Definition liftCallCC {w : Type} {m : Type -> Type} {a : Type} {s : Type} {b
    : Type} {r : Type} `{GHC.Base.Monoid w}
-   : Control.Monad.Signatures.CallCC m (GHC.Tuple.triple_type a s w)
-                                     (GHC.Tuple.triple_type b s w) ->
+   : Control.Monad.Signatures.CallCC m (a * s * w)%type (b * s * w)%type ->
      Control.Monad.Signatures.CallCC (RWST r w s m) a b :=
   fun callCC f =>
     Mk_RWST (fun r s =>
@@ -420,8 +417,7 @@ Definition liftCallCC {w : Type} {m : Type -> Type} {a : Type} {s : Type} {b
 
 Definition liftCallCC' {w : Type} {m : Type -> Type} {a : Type} {s : Type} {b
    : Type} {r : Type} `{GHC.Base.Monoid w}
-   : Control.Monad.Signatures.CallCC m (GHC.Tuple.triple_type a s w)
-                                     (GHC.Tuple.triple_type b s w) ->
+   : Control.Monad.Signatures.CallCC m (a * s * w)%type (b * s * w)%type ->
      Control.Monad.Signatures.CallCC (RWST r w s m) a b :=
   fun callCC f =>
     Mk_RWST (fun r s =>
@@ -446,5 +442,5 @@ Definition liftCallCC' {w : Type} {m : Type -> Type} {a : Type} {s : Type} {b
      GHC.Base.op_z2218U__ GHC.Base.op_zgzg____ GHC.Base.op_zgzgze__
      GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
      GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return_ GHC.Base.return___ GHC.Tuple.triple_type
+     GHC.Base.return_ GHC.Base.return___
 *)

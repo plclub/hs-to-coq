@@ -32,7 +32,6 @@ Require GHC.Base.
 Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.Num.
-Require GHC.Tuple.
 Require Utils.Containers.Internal.BitUtil.
 Import Data.Bits.Notations.
 Import Data.Functor.Notations.
@@ -1837,7 +1836,7 @@ Definition mapGT {a}
 
 Definition splitLookup {a : Type}
    : Data.IntSet.Internal.Key ->
-     IntMap a -> GHC.Tuple.triple_type (IntMap a) (option a) (IntMap a) :=
+     IntMap a -> (IntMap a * option a * IntMap a)%type :=
   fun k t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -2072,7 +2071,7 @@ End Notations.
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.pure
      GHC.DeferredFix.deferredFix2 GHC.DeferredFix.deferredFix4 GHC.Err.error
      GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.Word GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Tuple.triple_type
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__
      Utils.Containers.Internal.BitUtil.highestBitMask
      Utils.Containers.Internal.BitUtil.shiftLL
      Utils.Containers.Internal.BitUtil.shiftRL
