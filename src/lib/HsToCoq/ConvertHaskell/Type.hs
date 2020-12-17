@@ -46,8 +46,12 @@ convertType' b (TyConApp tc ts@(_:_)) = do
   case convertedTc of
     (Qualified m t) | m == "GHC.Prim" && t == "TYPE"
                       -> pure $ Qualid (Bare "Type")
-                    | m == "GHC.Tuple" && (t == "pair_type" || t == "op_Z2T__") && length ts > 1
-                      -> (`InScope` "type") . foldl1 (mkInfix ?? "*") <$> traverse (convertType' b) ts
+                    | m == "GHC.Tuple" && length ts > 1 ->
+                      if (t == "pair_type" || t == "op_Z2T__") || (t == "triple_type" && length ts > 2) ||
+                         (t == "quad_type" && length ts > 3) || (t == "quint_type" && length ts > 4) ||
+                         (t == "sext_type" && length ts > 5) || (t == "sept_type" && length ts > 6)
+                      then (`InScope` "type") . foldl1 (mkInfix ?? "*") <$> traverse (convertType' b) ts
+                      else convertTyConApp b tc ts convertedTc
     _ -> convertTyConApp b tc ts convertedTc
 convertType' b (ForAllTy tv ty) = do
   convertedTv <- convertTyVarBinder Coq.Implicit tv

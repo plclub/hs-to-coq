@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, OverloadedLists, OverloadedStrings, FlexibleContexts #-}
+{-# LANGUAGE OverloadedLists, OverloadedStrings, FlexibleContexts #-}
 
 module HsToCoq.ConvertHaskell.Axiomatize (
   translationFailedComment, translationFailedCommentText,
