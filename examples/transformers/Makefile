@@ -66,7 +66,7 @@ VFILES = $(VFILES_GEN_TEST) $(VFILES_GEN) $(VFILES_MAN) $(VFILES_SPECIAL) $(VFIL
 
 all: vfiles coq
 
-vfiles: $(OUT)/edits  $(OUT)/README.md $(OUT)/Makefile $(VFILES)
+vfiles: $(OUT)/edits  $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
 
 $(OUT)/_CoqProject : Makefile
 	mkdir -p $(OUT)

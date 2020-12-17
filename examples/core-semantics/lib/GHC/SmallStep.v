@@ -37,21 +37,21 @@ Import GHC.Num.Notations.
 Definition TrivialArg :=
   Core.CoreArg%type.
 
-Inductive Value : Type
-  := | DataConApp : Core.DataCon -> list TrivialArg -> Value
-  |  LitVal : Literal.Literal -> Value
-  |  LamVal : Core.Var -> Core.CoreExpr -> Value
-  |  CoercionVal : AxiomatizedTypes.Coercion -> Value.
+Inductive Value : Type :=
+  | DataConApp : Core.DataCon -> list TrivialArg -> Value
+  | LitVal : Literal.Literal -> Value
+  | LamVal : Core.Var -> Core.CoreExpr -> Value
+  | CoercionVal : AxiomatizedTypes.Coercion -> Value.
 
-Inductive Step a : Type
-  := | Error : GHC.Base.String -> Step a
-  |  Done : Step a
-  |  Mk_Step : a -> Step a.
+Inductive Step a : Type :=
+  | Error : GHC.Base.String -> Step a
+  | Done : Step a
+  | Mk_Step : a -> Step a.
 
-Inductive StackElem : Type
-  := | ApplyTo : Core.CoreExpr -> StackElem
-  |  Alts : Core.CoreBndr -> list Core.CoreAlt -> StackElem
-  |  Update : Core.Var -> StackElem.
+Inductive StackElem : Type :=
+  | ApplyTo : Core.CoreExpr -> StackElem
+  | Alts : Core.CoreBndr -> list Core.CoreAlt -> StackElem
+  | Update : Core.Var -> StackElem.
 
 Definition Stack :=
   (list StackElem)%type.
@@ -168,63 +168,63 @@ Definition valueToExpr : Value -> Core.CoreExpr :=
     end.
 
 Fixpoint exprIsTrivial' (arg_0__ : Core.CoreExpr) : bool
-           := let j_2__ :=
-                match arg_0__ with
-                | Core.Cast e _ => exprIsTrivial' e
-                | Core.Mk_Var _ => true
-                | Core.Lit _ => true
-                | Core.Mk_Coercion _ => true
-                | _ => false
-                end in
-              match arg_0__ with
-              | Core.App e a => if Core.isTypeArg a : bool then exprIsTrivial' e else j_2__
-              | Core.Lam v e => if negb (Core.isId v) : bool then exprIsTrivial' e else j_2__
-              | _ => j_2__
-              end.
+  := let j_2__ :=
+       match arg_0__ with
+       | Core.Cast e _ => exprIsTrivial' e
+       | Core.Mk_Var _ => true
+       | Core.Lit _ => true
+       | Core.Mk_Coercion _ => true
+       | _ => false
+       end in
+     match arg_0__ with
+     | Core.App e a => if Core.isTypeArg a : bool then exprIsTrivial' e else j_2__
+     | Core.Lam v e => if negb (Core.isId v) : bool then exprIsTrivial' e else j_2__
+     | _ => j_2__
+     end.
 
 Definition isDataConApp
    : Core.CoreExpr -> option (Core.DataCon * list Core.CoreArg)%type :=
   let fix go arg_0__ arg_1__
-            := let j_4__ :=
-                 match arg_0__, arg_1__ with
-                 | args, Core.App e a => go (cons a args) e
-                 | args, Core.Mk_Var v =>
-                     match Id.isDataConWorkId_maybe v with
-                     | Some dc =>
-                         if Core.dataConRepArity dc GHC.Base.== Coq.Lists.List.length args : bool
-                         then Some (pair dc args) else
-                         None
-                     | _ => None
-                     end
-                 | _, _ => None
-                 end in
-               match arg_0__, arg_1__ with
-               | args, Core.App e a => if Core.isTypeArg a : bool then go args e else j_4__
-               | _, _ => j_4__
-               end in
+    := let j_4__ :=
+         match arg_0__, arg_1__ with
+         | args, Core.App e a => go (cons a args) e
+         | args, Core.Mk_Var v =>
+             match Id.isDataConWorkId_maybe v with
+             | Some dc =>
+                 if Core.dataConRepArity dc GHC.Base.== Coq.Lists.List.length args : bool
+                 then Some (pair dc args) else
+                 None
+             | _ => None
+             end
+         | _, _ => None
+         end in
+       match arg_0__, arg_1__ with
+       | args, Core.App e a => if Core.isTypeArg a : bool then go args e else j_4__
+       | _, _ => j_4__
+       end in
   go nil.
 
 Fixpoint isValue_maybe (arg_0__ : Core.CoreExpr) : option Value
-           := let j_6__ :=
-                match arg_0__ with
-                | Core.Cast e _ => isValue_maybe e
-                | Core.Lit l => Some (LitVal l)
-                | Core.Mk_Coercion c => Some (CoercionVal c)
-                | Core.Lam v e => Some (LamVal v e)
-                | e =>
-                    match isDataConApp e with
-                    | Some (pair dc args) =>
-                        if Data.Foldable.all exprIsTrivial' args : bool
-                        then Some (DataConApp dc args) else
-                        None
-                    | _ => None
-                    end
-                end in
-              match arg_0__ with
-              | Core.App e a => if Core.isTypeArg a : bool then isValue_maybe e else j_6__
-              | Core.Lam v e => if negb (Core.isId v) : bool then isValue_maybe e else j_6__
-              | _ => j_6__
-              end.
+  := let j_6__ :=
+       match arg_0__ with
+       | Core.Cast e _ => isValue_maybe e
+       | Core.Lit l => Some (LitVal l)
+       | Core.Mk_Coercion c => Some (CoercionVal c)
+       | Core.Lam v e => Some (LamVal v e)
+       | e =>
+           match isDataConApp e with
+           | Some (pair dc args) =>
+               if Data.Foldable.all exprIsTrivial' args : bool
+               then Some (DataConApp dc args) else
+               None
+           | _ => None
+           end
+       end in
+     match arg_0__ with
+     | Core.App e a => if Core.isTypeArg a : bool then isValue_maybe e else j_6__
+     | Core.Lam v e => if negb (Core.isId v) : bool then isValue_maybe e else j_6__
+     | _ => j_6__
+     end.
 
 Definition isValue : Core.CoreExpr -> bool :=
   fun e => Data.Maybe.isJust (isValue_maybe e).
@@ -315,83 +315,83 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
 
 Program Fixpoint step (arg_0__ : Conf) {measure (step_measure arg_0__)} : Step
                                                                           Conf
-                   := let j_16__ :=
-                        match arg_0__ with
-                        | pair (pair heap (Core.Mk_Var v)) s =>
-                            Error (GHC.Base.hs_string__ "unbound variable")
-                        | pair (pair heap (Core.App e a)) s =>
-                            Mk_Step (pair (pair heap e) (cons (ApplyTo a) s))
-                        | pair (pair heap (Core.Let (Core.NonRec v rhs) e)) s =>
-                            let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
-                            let 'pair subst1 v' := CoreSubst.substBndr subst0 v in
-                            let e' := CoreSubst.substExpr Panic.someSDoc subst1 e in
-                            Mk_Step (pair (pair (addToHeap v' rhs heap) e') s)
-                        | pair (pair heap (Core.Let (Core.Rec pairs) e)) s =>
-                            let 'pair vars rhss := GHC.List.unzip pairs in
-                            let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
-                            let 'pair subst1 vars' := CoreSubst.substRecBndrs subst0 vars in
-                            let rhss' := GHC.Base.map (CoreSubst.substExpr Panic.someSDoc subst1) rhss in
-                            let e' := CoreSubst.substExpr Panic.someSDoc subst1 e in
-                            Mk_Step (pair (pair (addManyToHeap vars' rhss' heap) e') s)
-                        | pair (pair heap (Core.Case e b _ alts)) s =>
-                            Mk_Step (pair (pair heap e) (cons (Alts b alts) s))
-                        | pair (pair heap (Core.Mk_Type _)) s =>
-                            Error (GHC.Base.hs_string__ "type expression in control position")
-                        | _ => Error (GHC.Base.hs_string__ "Should be unreachable")
-                        end in
-                      let j_18__ :=
-                        match arg_0__ with
-                        | pair (pair heap (Core.Mk_Var v)) s =>
-                            match lookupHeap v heap with
-                            | Some e => Mk_Step (pair (pair heap e) (cons (Update v) s))
-                            | _ => j_16__
-                            end
-                        | _ => j_16__
-                        end in
-                      let j_20__ :=
-                        match arg_0__ with
-                        | pair (pair heap (Core.Mk_Var v)) s =>
-                            match lookupHeap v heap with
-                            | Some e =>
-                                if Bool.Sumbool.sumbool_of_bool (isValue e)
-                                then Mk_Step (pair (pair heap e) s) else
-                                j_18__
-                            | _ => j_18__
-                            end
-                        | _ => j_18__
-                        end in
-                      let j_22__ :=
-                        match arg_0__ with
-                        | pair (pair heap (Core.Mk_Var v)) s =>
-                            match Id.isDataConWorkId_maybe v with
-                            | Some dc =>
-                                if Bool.Sumbool.sumbool_of_bool (Core.dataConRepArity dc GHC.Base.> #0)
-                                then Mk_Step (pair (pair heap (etaExpandDCWorker dc)) s) else
-                                j_20__
-                            | _ => j_20__
-                            end
-                        | _ => j_20__
-                        end in
-                      let j_25__ :=
-                        match arg_0__ with
-                        | pair (pair heap (Core.Cast e _)) s => step (pair (pair heap e) s)
-                        | pair (pair heap e) s =>
-                            match isValue_maybe e with
-                            | Some val => valStep (pair (pair heap val) s)
-                            | _ => j_22__
-                            end
-                        end in
-                      match arg_0__ with
-                      | pair (pair heap (Core.App e a)) s =>
-                          if Bool.Sumbool.sumbool_of_bool (Core.isTypeArg a)
-                          then step (pair (pair heap e) s) else
-                          j_25__
-                      | pair (pair heap (Core.Lam v e)) s =>
-                          if Bool.Sumbool.sumbool_of_bool (negb (Core.isId v))
-                          then step (pair (pair heap e) s) else
-                          j_25__
-                      | _ => j_25__
-                      end.
+  := let j_16__ :=
+       match arg_0__ with
+       | pair (pair heap (Core.Mk_Var v)) s =>
+           Error (GHC.Base.hs_string__ "unbound variable")
+       | pair (pair heap (Core.App e a)) s =>
+           Mk_Step (pair (pair heap e) (cons (ApplyTo a) s))
+       | pair (pair heap (Core.Let (Core.NonRec v rhs) e)) s =>
+           let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+           let 'pair subst1 v' := CoreSubst.substBndr subst0 v in
+           let e' := CoreSubst.substExpr Panic.someSDoc subst1 e in
+           Mk_Step (pair (pair (addToHeap v' rhs heap) e') s)
+       | pair (pair heap (Core.Let (Core.Rec pairs) e)) s =>
+           let 'pair vars rhss := GHC.List.unzip pairs in
+           let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+           let 'pair subst1 vars' := CoreSubst.substRecBndrs subst0 vars in
+           let rhss' := GHC.Base.map (CoreSubst.substExpr Panic.someSDoc subst1) rhss in
+           let e' := CoreSubst.substExpr Panic.someSDoc subst1 e in
+           Mk_Step (pair (pair (addManyToHeap vars' rhss' heap) e') s)
+       | pair (pair heap (Core.Case e b _ alts)) s =>
+           Mk_Step (pair (pair heap e) (cons (Alts b alts) s))
+       | pair (pair heap (Core.Mk_Type _)) s =>
+           Error (GHC.Base.hs_string__ "type expression in control position")
+       | _ => Error (GHC.Base.hs_string__ "Should be unreachable")
+       end in
+     let j_18__ :=
+       match arg_0__ with
+       | pair (pair heap (Core.Mk_Var v)) s =>
+           match lookupHeap v heap with
+           | Some e => Mk_Step (pair (pair heap e) (cons (Update v) s))
+           | _ => j_16__
+           end
+       | _ => j_16__
+       end in
+     let j_20__ :=
+       match arg_0__ with
+       | pair (pair heap (Core.Mk_Var v)) s =>
+           match lookupHeap v heap with
+           | Some e =>
+               if Bool.Sumbool.sumbool_of_bool (isValue e)
+               then Mk_Step (pair (pair heap e) s) else
+               j_18__
+           | _ => j_18__
+           end
+       | _ => j_18__
+       end in
+     let j_22__ :=
+       match arg_0__ with
+       | pair (pair heap (Core.Mk_Var v)) s =>
+           match Id.isDataConWorkId_maybe v with
+           | Some dc =>
+               if Bool.Sumbool.sumbool_of_bool (Core.dataConRepArity dc GHC.Base.> #0)
+               then Mk_Step (pair (pair heap (etaExpandDCWorker dc)) s) else
+               j_20__
+           | _ => j_20__
+           end
+       | _ => j_20__
+       end in
+     let j_25__ :=
+       match arg_0__ with
+       | pair (pair heap (Core.Cast e _)) s => step (pair (pair heap e) s)
+       | pair (pair heap e) s =>
+           match isValue_maybe e with
+           | Some val => valStep (pair (pair heap val) s)
+           | _ => j_22__
+           end
+       end in
+     match arg_0__ with
+     | pair (pair heap (Core.App e a)) s =>
+         if Bool.Sumbool.sumbool_of_bool (Core.isTypeArg a)
+         then step (pair (pair heap e) s) else
+         j_25__
+     | pair (pair heap (Core.Lam v e)) s =>
+         if Bool.Sumbool.sumbool_of_bool (negb (Core.isId v))
+         then step (pair (pair heap e) s) else
+         j_25__
+     | _ => j_25__
+     end.
 Admit Obligations.
 
 (* External variables:

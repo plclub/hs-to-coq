@@ -124,21 +124,27 @@ have sphinx-build && make -C ../doc html
 coq-test make -C tests
 
 make -C base-src vfiles
-coq make -C ../base
+coq make -C base-src coq
+(cd ../base-thy; coq coq_makefile -f _CoqProject -o Makefile)
 coq make -C ../base-thy
 coq-test make -C base-tests
 
 make -C containers vfiles
 coq make -C containers coq
+(cd containers/theories; coq coq_makefile -f _CoqProject -o Makefile)
 coq make -C containers/theories
+
 make -C transformers vfiles
 coq make -C transformers coq
 #coq make -C transformers/theories no theories yet
+
 make -C ghc vfiles
 coq make -C ghc/lib
+(cd ghc/theories; coq coq_makefile -f _CoqProject -o Makefile)
 coq make -C ghc/theories
+
 make -C core-semantics vfiles
-coq make -C core-semantics/lib
+coq make -C core-semantics coq
 #coq make -C core-semantics/theories theories yet
 
 coq make -C successors

@@ -28,7 +28,7 @@ VFILES   = $(VFILES_GEN) $(VFILES_MAN)
 
 all: vfiles coq
 
-vfiles: $(OUT)/edits  $(OUT)/README.md $(OUT)/Makefile $(VFILES)
+vfiles: $(OUT)/edits  $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
 
 $(OUT)/_CoqProject : $(OUT)/README.md Makefile
 	> $@

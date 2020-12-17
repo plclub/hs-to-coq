@@ -168,7 +168,7 @@ EDITFILES = edits $(CORE_EDITS) $(addsuffix /edits,$(EDITPATHS)) $(addsuffix /*.
 
 all: vfiles coq
 
-vfiles: $(OUT)/edits  $(OUT)/README.md $(OUT)/Makefile $(OUTFILES)
+vfiles: $(OUT)/edits  $(OUT)/README.md $(OUT)/_CoqProject $(OUTFILES)
 
 core: $(OUT)/README.md coq
 

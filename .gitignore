@@ -24,6 +24,7 @@ Makefile.bak
 Makefile.conf
 .Makefile.d
 .lia.cache
+Makefile
 
 # Haskell
 *.o

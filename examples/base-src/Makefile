@@ -90,7 +90,7 @@ all:  vfiles coq
 filelist:
 	@ls -1 $(addprefix base/,$(addsuffix .hs,$(MODULES)))
 
-vfiles: $(OUT)/edits $(OUT)/README.md $(OUT)/Makefile $(VFILES)
+vfiles: $(OUT)/edits $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
 
 $(OUT)/_CoqProject : Makefile
 	mkdir -p $(OUT)
