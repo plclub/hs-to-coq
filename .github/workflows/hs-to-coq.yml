@@ -65,6 +65,7 @@ jobs:
           opam repo add coq-released http://coq.inria.fr/opam/released || true
           opam list -i coq.8.10.2 --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
           opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
+          opam install -y coq-equations.1.2+8.10
 
   cross-build-hs-to-coq:
     name: Cross building hs-to-coq with multiple GHC versions
@@ -122,11 +123,13 @@ jobs:
       - name: Set up Coq
         if: steps.caching-opam.outputs.cache-hit != 'true'
         run: |
-          if ! [ -e $HOME/.opam/config ]; then opam init -j 2 -n -y; fi
+          opam init -j 2 -n -y
+      - name: Installing Coq dependencies
+        run: |
           opam repo add coq-released http://coq.inria.fr/opam/released || true
           opam list -i coq.8.10.2 --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
           opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
-
+          opam install -y coq-equations.1.2+8.10
       - name: Compiling base
         run: |
           eval $(opam config env)
@@ -208,6 +211,16 @@ jobs:
         uses: avsm/setup-ocaml@v1
         with:
           ocaml-version: ${{ matrix.ocaml }}
+      - name: Set up Coq
+        if: steps.caching-opam.outputs.cache-hit != 'true'
+        run: |
+          opam init -j 2 -n -y
+      - name: Installing Coq dependencies
+        run: |
+          opam repo add coq-released http://coq.inria.fr/opam/released || true
+          opam list -i coq.8.10.2 --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
+          opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
+          opam install -y coq-equations.1.2+8.10
       - name: Run tests
         run: |
           eval $(opam config env)
@@ -309,11 +322,11 @@ jobs:
           git add examples/core-semantics/lib
           git status
           git diff-index --cached --quiet HEAD -- examples/ghc/lib/
-      - name: Translating transformers
+      - name: Translating Graph (FGL)
         run: |
           make -C examples/graph clean
           make -C examples/graph vfiles
-      - name: Comparing convenience copy of transformers
+      - name: Comparing convenience copy of Graph (FGL)
         run: |
           git add examples/graph/lib
           git status
@@ -364,6 +377,16 @@ jobs:
         uses: avsm/setup-ocaml@v1
         with:
           ocaml-version: ${{ matrix.ocaml }}
+      - name: Set up Coq
+        if: steps.caching-opam.outputs.cache-hit != 'true'
+        run: |
+          opam init -j 2 -n -y
+      - name: Installing Coq dependencies
+        run: |
+          opam repo add coq-released http://coq.inria.fr/opam/released || true
+          opam list -i coq.8.10.2 --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
+          opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
+          opam install -y coq-equations.1.2+8.10
       - name: Extract containers
         run: |
           stack --no-terminal --install-ghc build
