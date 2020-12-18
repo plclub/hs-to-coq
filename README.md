@@ -1,8 +1,7 @@
 
 # hs-to-coq
 
-[![Travis CI Build
-Status](https://travis-ci.org/antalsz/hs-to-coq.svg?branch=master)](https://travis-ci.org/antalsz/hs-to-coq)
+![hs-to-coq](https://github.com/plclub/hs-to-coq/workflows/hs-to-coq/badge.svg?branch=master)
 
 Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-coq-devs.20.26.20users)
 
