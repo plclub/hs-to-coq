@@ -83,20 +83,20 @@ Inductive IndefModule : Type :=
     : ModuleName)
    : IndefModule.
 
-Record ContainsModule__Dict t := ContainsModule__Dict_Build {
+Record ContainsModule__Dict (t : Type) := ContainsModule__Dict_Build {
   extractModule__ : t -> Module }.
 
-Definition ContainsModule t :=
+Definition ContainsModule (t : Type) :=
   forall r__, (ContainsModule__Dict t -> r__) -> r__.
 Existing Class ContainsModule.
 
 Definition extractModule `{g__0__ : ContainsModule t} : t -> Module :=
   g__0__ _ (extractModule__ t).
 
-Record HasModule__Dict m := HasModule__Dict_Build {
+Record HasModule__Dict (m : Type -> Type) := HasModule__Dict_Build {
   getModule__ : m Module }.
 
-Definition HasModule m :=
+Definition HasModule (m : Type -> Type) :=
   forall r__, (HasModule__Dict m -> r__) -> r__.
 Existing Class HasModule.
 
@@ -1002,17 +1002,17 @@ Definition installedModuleEq : InstalledModule -> Module -> bool :=
 Definition installedUnitIdEq : InstalledUnitId -> UnitId -> bool :=
   fun iuid uid => Data.Tuple.fst (splitUnitIdInsts uid) GHC.Base.== iuid.
 
-Definition emptyInstalledModuleEnv {a} : InstalledModuleEnv a :=
+Definition emptyInstalledModuleEnv {a : Type} : InstalledModuleEnv a :=
   Mk_InstalledModuleEnv Data.Map.Internal.empty.
 
-Definition lookupInstalledModuleEnv {a}
+Definition lookupInstalledModuleEnv {a : Type}
    : InstalledModuleEnv a -> InstalledModule -> option a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_InstalledModuleEnv e, m => Data.Map.Internal.lookup m e
     end.
 
-Definition extendInstalledModuleEnv {a}
+Definition extendInstalledModuleEnv {a : Type}
    : InstalledModuleEnv a -> InstalledModule -> a -> InstalledModuleEnv a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
@@ -1020,7 +1020,7 @@ Definition extendInstalledModuleEnv {a}
         Mk_InstalledModuleEnv (Data.Map.Internal.insert m x e)
     end.
 
-Definition filterInstalledModuleEnv {a}
+Definition filterInstalledModuleEnv {a : Type}
    : (InstalledModule -> a -> bool) ->
      InstalledModuleEnv a -> InstalledModuleEnv a :=
   fun arg_0__ arg_1__ =>
@@ -1029,7 +1029,7 @@ Definition filterInstalledModuleEnv {a}
         Mk_InstalledModuleEnv (Data.Map.Internal.filterWithKey f e)
     end.
 
-Definition delInstalledModuleEnv {a}
+Definition delInstalledModuleEnv {a : Type}
    : InstalledModuleEnv a -> InstalledModule -> InstalledModuleEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -1119,7 +1119,7 @@ Definition isInteractiveModule : Module -> bool :=
 
 (* Skipping definition `Module.wiredInUnitIds' *)
 
-Definition filterModuleEnv {a}
+Definition filterModuleEnv {a : Type}
    : (Module -> a -> bool) -> ModuleEnv a -> ModuleEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -1127,20 +1127,21 @@ Definition filterModuleEnv {a}
         Mk_ModuleEnv (Data.Map.Internal.filterWithKey (f GHC.Base.∘ unNDModule) e)
     end.
 
-Definition elemModuleEnv {a} : Module -> ModuleEnv a -> bool :=
+Definition elemModuleEnv {a : Type} : Module -> ModuleEnv a -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | m, Mk_ModuleEnv e => Data.Map.Internal.member (Mk_NDModule m) e
     end.
 
-Definition extendModuleEnv {a} : ModuleEnv a -> Module -> a -> ModuleEnv a :=
+Definition extendModuleEnv {a : Type}
+   : ModuleEnv a -> Module -> a -> ModuleEnv a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | Mk_ModuleEnv e, m, x =>
         Mk_ModuleEnv (Data.Map.Internal.insert (Mk_NDModule m) x e)
     end.
 
-Definition extendModuleEnvWith {a}
+Definition extendModuleEnvWith {a : Type}
    : (a -> a -> a) -> ModuleEnv a -> Module -> a -> ModuleEnv a :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
@@ -1148,7 +1149,7 @@ Definition extendModuleEnvWith {a}
         Mk_ModuleEnv (Data.Map.Internal.insertWith f (Mk_NDModule m) x e)
     end.
 
-Definition extendModuleEnvList {a}
+Definition extendModuleEnvList {a : Type}
    : ModuleEnv a -> list (Module * a)%type -> ModuleEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -1159,7 +1160,7 @@ Definition extendModuleEnvList {a}
                                             Coq.Lists.List.flat_map cont_2__ xs) e)
     end.
 
-Definition extendModuleEnvList_C {a}
+Definition extendModuleEnvList_C {a : Type}
    : (a -> a -> a) -> ModuleEnv a -> list (Module * a)%type -> ModuleEnv a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
@@ -1170,7 +1171,7 @@ Definition extendModuleEnvList_C {a}
                                                   Coq.Lists.List.flat_map cont_3__ xs) e)
     end.
 
-Definition plusModuleEnv_C {a}
+Definition plusModuleEnv_C {a : Type}
    : (a -> a -> a) -> ModuleEnv a -> ModuleEnv a -> ModuleEnv a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
@@ -1178,39 +1179,43 @@ Definition plusModuleEnv_C {a}
         Mk_ModuleEnv (Data.Map.Internal.unionWith f e1 e2)
     end.
 
-Definition delModuleEnvList {a} : ModuleEnv a -> list Module -> ModuleEnv a :=
+Definition delModuleEnvList {a : Type}
+   : ModuleEnv a -> list Module -> ModuleEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_ModuleEnv e, ms =>
         Mk_ModuleEnv (FiniteMap.deleteList (GHC.Base.map Mk_NDModule ms) e)
     end.
 
-Definition delModuleEnv {a} : ModuleEnv a -> Module -> ModuleEnv a :=
+Definition delModuleEnv {a : Type} : ModuleEnv a -> Module -> ModuleEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_ModuleEnv e, m => Mk_ModuleEnv (Data.Map.Internal.delete (Mk_NDModule m) e)
     end.
 
-Definition plusModuleEnv {a} : ModuleEnv a -> ModuleEnv a -> ModuleEnv a :=
+Definition plusModuleEnv {a : Type}
+   : ModuleEnv a -> ModuleEnv a -> ModuleEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_ModuleEnv e1, Mk_ModuleEnv e2 =>
         Mk_ModuleEnv (Data.Map.Internal.union e1 e2)
     end.
 
-Definition lookupModuleEnv {a} : ModuleEnv a -> Module -> option a :=
+Definition lookupModuleEnv {a : Type} : ModuleEnv a -> Module -> option a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_ModuleEnv e, m => Data.Map.Internal.lookup (Mk_NDModule m) e
     end.
 
-Definition lookupWithDefaultModuleEnv {a} : ModuleEnv a -> a -> Module -> a :=
+Definition lookupWithDefaultModuleEnv {a : Type}
+   : ModuleEnv a -> a -> Module -> a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | Mk_ModuleEnv e, x, m => Data.Map.Internal.findWithDefault x (Mk_NDModule m) e
     end.
 
-Definition mapModuleEnv {a} {b} : (a -> b) -> ModuleEnv a -> ModuleEnv b :=
+Definition mapModuleEnv {a : Type} {b : Type}
+   : (a -> b) -> ModuleEnv a -> ModuleEnv b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, Mk_ModuleEnv e =>
@@ -1220,21 +1225,21 @@ Definition mapModuleEnv {a} {b} : (a -> b) -> ModuleEnv a -> ModuleEnv b :=
                                                       end) e)
     end.
 
-Definition mkModuleEnv {a} : list (Module * a)%type -> ModuleEnv a :=
+Definition mkModuleEnv {a : Type} : list (Module * a)%type -> ModuleEnv a :=
   fun xs =>
     Mk_ModuleEnv (Data.Map.Internal.fromList (let cont_0__ arg_1__ :=
                                                 let 'pair k v := arg_1__ in
                                                 cons (pair (Mk_NDModule k) v) nil in
                                               Coq.Lists.List.flat_map cont_0__ xs)).
 
-Definition emptyModuleEnv {a} : ModuleEnv a :=
+Definition emptyModuleEnv {a : Type} : ModuleEnv a :=
   Mk_ModuleEnv Data.Map.Internal.empty.
 
-Definition moduleEnvKeys {a} : ModuleEnv a -> list Module :=
+Definition moduleEnvKeys {a : Type} : ModuleEnv a -> list Module :=
   fun '(Mk_ModuleEnv e) =>
     Data.OldList.sort (GHC.Base.map unNDModule (Data.Map.Internal.keys e)).
 
-Definition moduleEnvToList {a} : ModuleEnv a -> list (Module * a)%type :=
+Definition moduleEnvToList {a : Type} : ModuleEnv a -> list (Module * a)%type :=
   fun '(Mk_ModuleEnv e) =>
     Data.OldList.sortBy (Data.Ord.comparing Data.Tuple.fst) (let cont_1__ arg_2__ :=
                                                                let 'pair (Mk_NDModule m) v := arg_2__ in
@@ -1242,13 +1247,13 @@ Definition moduleEnvToList {a} : ModuleEnv a -> list (Module * a)%type :=
                                                              Coq.Lists.List.flat_map cont_1__ (Data.Map.Internal.toList
                                                                                       e)).
 
-Definition moduleEnvElts {a} : ModuleEnv a -> list a :=
+Definition moduleEnvElts {a : Type} : ModuleEnv a -> list a :=
   fun e => GHC.Base.map Data.Tuple.snd (moduleEnvToList e).
 
-Definition unitModuleEnv {a} : Module -> a -> ModuleEnv a :=
+Definition unitModuleEnv {a : Type} : Module -> a -> ModuleEnv a :=
   fun m x => Mk_ModuleEnv (Data.Map.Internal.singleton (Mk_NDModule m) x).
 
-Definition isEmptyModuleEnv {a} : ModuleEnv a -> bool :=
+Definition isEmptyModuleEnv {a : Type} : ModuleEnv a -> bool :=
   fun '(Mk_ModuleEnv e) => Data.Map.Internal.null e.
 
 Definition mkModuleSet : list Module -> ModuleSet :=
@@ -1288,15 +1293,16 @@ Definition unitModuleSet : Module -> ModuleSet :=
   GHC.Prim.coerce Data.Set.Internal.singleton.
 
 (* External variables:
-     Eq Gt Lt None Some andb bool comparison cons false list negb nil op_zt__ option
-     pair true Coq.Init.Datatypes.app Coq.Lists.List.flat_map Data.Foldable.foldl'
-     Data.Map.Internal.Map Data.Map.Internal.delete Data.Map.Internal.empty
-     Data.Map.Internal.filterWithKey Data.Map.Internal.findWithDefault
-     Data.Map.Internal.fromList Data.Map.Internal.insert Data.Map.Internal.insertWith
-     Data.Map.Internal.keys Data.Map.Internal.lookup Data.Map.Internal.mapWithKey
-     Data.Map.Internal.member Data.Map.Internal.null Data.Map.Internal.singleton
-     Data.Map.Internal.toList Data.Map.Internal.union Data.Map.Internal.unionWith
-     Data.OldList.sort Data.OldList.sortBy Data.Ord.comparing Data.Set.Internal.Set_
+     Eq Gt Lt None Some Type andb bool comparison cons false list negb nil op_zt__
+     option pair true Coq.Init.Datatypes.app Coq.Lists.List.flat_map
+     Data.Foldable.foldl' Data.Map.Internal.Map Data.Map.Internal.delete
+     Data.Map.Internal.empty Data.Map.Internal.filterWithKey
+     Data.Map.Internal.findWithDefault Data.Map.Internal.fromList
+     Data.Map.Internal.insert Data.Map.Internal.insertWith Data.Map.Internal.keys
+     Data.Map.Internal.lookup Data.Map.Internal.mapWithKey Data.Map.Internal.member
+     Data.Map.Internal.null Data.Map.Internal.singleton Data.Map.Internal.toList
+     Data.Map.Internal.union Data.Map.Internal.unionWith Data.OldList.sort
+     Data.OldList.sortBy Data.Ord.comparing Data.Set.Internal.Set_
      Data.Set.Internal.delete Data.Set.Internal.difference Data.Set.Internal.empty
      Data.Set.Internal.fromList Data.Set.Internal.insert
      Data.Set.Internal.intersection Data.Set.Internal.member

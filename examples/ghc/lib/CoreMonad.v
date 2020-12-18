@@ -297,7 +297,7 @@ Axiom pprFloatOutSwitches : FloatOutSwitches -> GHC.Base.String.
 
 Axiom runWhen : bool -> CoreToDo -> CoreToDo.
 
-Axiom runMaybe : forall {a}, option a -> (a -> CoreToDo) -> CoreToDo.
+Axiom runMaybe : forall {a : Type}, option a -> (a -> CoreToDo) -> CoreToDo.
 
 (* Skipping definition `CoreMonad.bindsOnlyPass' *)
 

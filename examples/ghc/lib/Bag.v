@@ -60,7 +60,8 @@ Instance Default_Bag {a} : GHC.Err.Default (Bag a):=
 (* Skipping all instances of class `Data.Data.Data', including
    `Bag.Data__Bag' *)
 
-Fixpoint mapBag {a} {b} (arg_0__ : (a -> b)) (arg_1__ : Bag a) : Bag b
+Fixpoint mapBag {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__ : Bag a) : Bag
+                                                                             b
   := match arg_0__, arg_1__ with
      | _, EmptyBag => EmptyBag
      | f, UnitBag x => UnitBag (f x)
@@ -69,19 +70,20 @@ Fixpoint mapBag {a} {b} (arg_0__ : (a -> b)) (arg_1__ : Bag a) : Bag b
      end.
 
 Local Definition Functor__Bag_fmap
-   : forall {a} {b}, (a -> b) -> Bag a -> Bag b :=
-  fun {a} {b} => mapBag.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> Bag a -> Bag b :=
+  fun {a : Type} {b : Type} => mapBag.
 
-Local Definition Functor__Bag_op_zlzd__ : forall {a} {b}, a -> Bag b -> Bag a :=
-  fun {a} {b} => Functor__Bag_fmap GHC.Base.∘ GHC.Base.const.
+Local Definition Functor__Bag_op_zlzd__
+   : forall {a : Type}, forall {b : Type}, a -> Bag b -> Bag a :=
+  fun {a : Type} {b : Type} => Functor__Bag_fmap GHC.Base.∘ GHC.Base.const.
 
 Program Instance Functor__Bag : GHC.Base.Functor Bag :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__Bag_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__Bag_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Bag_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Bag_op_zlzd__ |}.
 
-Fixpoint foldrBag {a} {r} (arg_0__ : (a -> r -> r)) (arg_1__ : r) (arg_2__
-                    : Bag a) : r
+Fixpoint foldrBag {a : Type} {r : Type} (arg_0__ : a -> r -> r) (arg_1__ : r)
+                  (arg_2__ : Bag a) : r
   := match arg_0__, arg_1__, arg_2__ with
      | _, z, EmptyBag => z
      | k, z, UnitBag x => k x z
@@ -90,21 +92,22 @@ Fixpoint foldrBag {a} {r} (arg_0__ : (a -> r -> r)) (arg_1__ : r) (arg_2__
      end.
 
 Local Definition Foldable__Bag_foldr
-   : forall {a} {b}, (a -> b -> b) -> b -> Bag a -> b :=
-  fun {a} {b} => foldrBag.
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Bag a -> b :=
+  fun {a : Type} {b : Type} => foldrBag.
 
 Local Definition Foldable__Bag_foldMap
-   : forall {m} {a}, forall `{GHC.Base.Monoid m}, (a -> m) -> Bag a -> m :=
-  fun {m} {a} `{GHC.Base.Monoid m} =>
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Bag a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun f => Foldable__Bag_foldr (GHC.Base.mappend GHC.Base.∘ f) GHC.Base.mempty.
 
 Local Definition Foldable__Bag_fold
-   : forall {m}, forall `{GHC.Base.Monoid m}, Bag m -> m :=
-  fun {m} `{GHC.Base.Monoid m} => Foldable__Bag_foldMap GHC.Base.id.
+   : forall {m : Type}, forall `{GHC.Base.Monoid m}, Bag m -> m :=
+  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Bag_foldMap GHC.Base.id.
 
 Local Definition Foldable__Bag_foldl
-   : forall {b} {a}, (b -> a -> b) -> b -> Bag a -> b :=
-  fun {b} {a} =>
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Bag a -> b :=
+  fun {b : Type} {a : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
                                       (Foldable__Bag_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
@@ -112,66 +115,68 @@ Local Definition Foldable__Bag_foldl
                                                                GHC.Base.flip f)) t)) z.
 
 Local Definition Foldable__Bag_foldl'
-   : forall {b} {a}, (b -> a -> b) -> b -> Bag a -> b :=
-  fun {b} {a} =>
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Bag a -> b :=
+  fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Bag_foldr f' GHC.Base.id xs z0.
 
 Local Definition Foldable__Bag_foldr'
-   : forall {a} {b}, (a -> b -> b) -> b -> Bag a -> b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Bag a -> b :=
+  fun {a : Type} {b : Type} =>
     fun f z0 xs =>
       let f' := fun k x z => k (f x z) in Foldable__Bag_foldl f' GHC.Base.id xs z0.
 
-Local Definition Foldable__Bag_length : forall {a}, Bag a -> GHC.Num.Int :=
-  fun {a} =>
+Local Definition Foldable__Bag_length
+   : forall {a : Type}, Bag a -> GHC.Num.Int :=
+  fun {a : Type} =>
     Foldable__Bag_foldl' (fun arg_0__ arg_1__ =>
                             match arg_0__, arg_1__ with
                             | c, _ => c GHC.Num.+ #1
                             end) #0.
 
-Local Definition Foldable__Bag_null : forall {a}, Bag a -> bool :=
-  fun {a} => Foldable__Bag_foldr (fun arg_0__ arg_1__ => false) true.
+Local Definition Foldable__Bag_null : forall {a : Type}, Bag a -> bool :=
+  fun {a : Type} => Foldable__Bag_foldr (fun arg_0__ arg_1__ => false) true.
 
 Local Definition Foldable__Bag_product
-   : forall {a}, forall `{GHC.Num.Num a}, Bag a -> a :=
-  fun {a} `{GHC.Num.Num a} =>
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Bag a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
                                (Foldable__Bag_foldMap Data.SemigroupInternal.Mk_Product).
 
 Local Definition Foldable__Bag_sum
-   : forall {a}, forall `{GHC.Num.Num a}, Bag a -> a :=
-  fun {a} `{GHC.Num.Num a} =>
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Bag a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Bag_foldMap
                                 Data.SemigroupInternal.Mk_Sum).
 
-Local Definition Foldable__Bag_toList : forall {a}, Bag a -> list a :=
-  fun {a} =>
+Local Definition Foldable__Bag_toList : forall {a : Type}, Bag a -> list a :=
+  fun {a : Type} =>
     fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__Bag_foldr c n t)).
 
 Program Instance Foldable__Bag : Data.Foldable.Foldable Bag :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__Bag_fold ;
-           Data.Foldable.foldMap__ := fun {m} {a} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Bag_foldMap ;
-           Data.Foldable.foldl__ := fun {b} {a} => Foldable__Bag_foldl ;
-           Data.Foldable.foldl'__ := fun {b} {a} => Foldable__Bag_foldl' ;
-           Data.Foldable.foldr__ := fun {a} {b} => Foldable__Bag_foldr ;
-           Data.Foldable.foldr'__ := fun {a} {b} => Foldable__Bag_foldr' ;
-           Data.Foldable.length__ := fun {a} => Foldable__Bag_length ;
-           Data.Foldable.null__ := fun {a} => Foldable__Bag_null ;
-           Data.Foldable.product__ := fun {a} `{GHC.Num.Num a} => Foldable__Bag_product ;
-           Data.Foldable.sum__ := fun {a} `{GHC.Num.Num a} => Foldable__Bag_sum ;
-           Data.Foldable.toList__ := fun {a} => Foldable__Bag_toList |}.
+           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Bag_foldl ;
+           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Bag_foldl' ;
+           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Bag_foldr ;
+           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} => Foldable__Bag_foldr' ;
+           Data.Foldable.length__ := fun {a : Type} => Foldable__Bag_length ;
+           Data.Foldable.null__ := fun {a : Type} => Foldable__Bag_null ;
+           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+             Foldable__Bag_product ;
+           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Bag_sum ;
+           Data.Foldable.toList__ := fun {a : Type} => Foldable__Bag_toList |}.
 
-Definition emptyBag {a} : Bag a :=
+Definition emptyBag {a : Type} : Bag a :=
   EmptyBag.
 
-Definition unitBag {a} : a -> Bag a :=
+Definition unitBag {a : Type} : a -> Bag a :=
   UnitBag.
 
-Fixpoint lengthBag {a} (arg_0__ : Bag a) : nat
+Fixpoint lengthBag {a : Type} (arg_0__ : Bag a) : nat
   := match arg_0__ with
      | EmptyBag => #0
      | UnitBag _ => #1
@@ -179,7 +184,8 @@ Fixpoint lengthBag {a} (arg_0__ : Bag a) : nat
      | ListBag xs => BinInt.Z.to_nat (Data.Foldable.length xs)
      end.
 
-Fixpoint elemBag {a} `{GHC.Base.Eq_ a} (arg_0__ : a) (arg_1__ : Bag a) : bool
+Fixpoint elemBag {a : Type} `{GHC.Base.Eq_ a} (arg_0__ : a) (arg_1__ : Bag a)
+  : bool
   := match arg_0__, arg_1__ with
      | _, EmptyBag => false
      | x, UnitBag y => x GHC.Base.== y
@@ -187,7 +193,7 @@ Fixpoint elemBag {a} `{GHC.Base.Eq_ a} (arg_0__ : a) (arg_1__ : Bag a) : bool
      | x, ListBag ys => Data.Foldable.any (fun arg_4__ => x GHC.Base.== arg_4__) ys
      end.
 
-Definition unionBags {a} : Bag a -> Bag a -> Bag a :=
+Definition unionBags {a : Type} : Bag a -> Bag a -> Bag a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | EmptyBag, b => b
@@ -195,19 +201,19 @@ Definition unionBags {a} : Bag a -> Bag a -> Bag a :=
     | b1, b2 => TwoBags b1 b2
     end.
 
-Definition unionManyBags {a} : list (Bag a) -> Bag a :=
+Definition unionManyBags {a : Type} : list (Bag a) -> Bag a :=
   fun xs => Data.Foldable.foldr unionBags EmptyBag xs.
 
-Definition consBag {a} : a -> Bag a -> Bag a :=
+Definition consBag {a : Type} : a -> Bag a -> Bag a :=
   fun elt bag => unionBags (unitBag elt) bag.
 
-Definition snocBag {a} : Bag a -> a -> Bag a :=
+Definition snocBag {a : Type} : Bag a -> a -> Bag a :=
   fun bag elt => unionBags bag (unitBag elt).
 
-Definition isEmptyBag {a} : Bag a -> bool :=
+Definition isEmptyBag {a : Type} : Bag a -> bool :=
   fun arg_0__ => match arg_0__ with | EmptyBag => true | _ => false end.
 
-Definition isSingletonBag {a} : Bag a -> bool :=
+Definition isSingletonBag {a : Type} : Bag a -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | EmptyBag => false
@@ -216,10 +222,10 @@ Definition isSingletonBag {a} : Bag a -> bool :=
     | ListBag xs => Util.isSingleton xs
     end.
 
-Definition listToBag {a} : list a -> Bag a :=
+Definition listToBag {a : Type} : list a -> Bag a :=
   fun arg_0__ => match arg_0__ with | nil => EmptyBag | vs => ListBag vs end.
 
-Fixpoint filterBag {a} (arg_0__ : (a -> bool)) (arg_1__ : Bag a) : Bag a
+Fixpoint filterBag {a : Type} (arg_0__ : a -> bool) (arg_1__ : Bag a) : Bag a
   := match arg_0__, arg_1__ with
      | _, EmptyBag => EmptyBag
      | pred, (UnitBag val as b) => if pred val : bool then b else EmptyBag
@@ -229,8 +235,8 @@ Fixpoint filterBag {a} (arg_0__ : (a -> bool)) (arg_1__ : Bag a) : Bag a
      | pred, ListBag vs => listToBag (GHC.List.filter pred vs)
      end.
 
-Fixpoint filterBagM {m} {a} `{GHC.Base.Monad m} (arg_0__ : (a -> m bool))
-                    (arg_1__ : Bag a) : m (Bag a)
+Fixpoint filterBagM {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} (arg_0__
+                      : a -> m bool) (arg_1__ : Bag a) : m (Bag a)
   := match arg_0__, arg_1__ with
      | _, EmptyBag => GHC.Base.return_ EmptyBag
      | pred, (UnitBag val as b) =>
@@ -249,7 +255,7 @@ Fixpoint filterBagM {m} {a} `{GHC.Base.Monad m} (arg_0__ : (a -> m bool))
          (fun sat => GHC.Base.return_ (listToBag sat))
      end.
 
-Fixpoint allBag {a} (arg_0__ : (a -> bool)) (arg_1__ : Bag a) : bool
+Fixpoint allBag {a : Type} (arg_0__ : a -> bool) (arg_1__ : Bag a) : bool
   := match arg_0__, arg_1__ with
      | _, EmptyBag => true
      | p, UnitBag v => p v
@@ -257,7 +263,7 @@ Fixpoint allBag {a} (arg_0__ : (a -> bool)) (arg_1__ : Bag a) : bool
      | p, ListBag xs => Data.Foldable.all p xs
      end.
 
-Fixpoint anyBag {a} (arg_0__ : (a -> bool)) (arg_1__ : Bag a) : bool
+Fixpoint anyBag {a : Type} (arg_0__ : a -> bool) (arg_1__ : Bag a) : bool
   := match arg_0__, arg_1__ with
      | _, EmptyBag => false
      | p, UnitBag v => p v
@@ -265,8 +271,8 @@ Fixpoint anyBag {a} (arg_0__ : (a -> bool)) (arg_1__ : Bag a) : bool
      | p, ListBag xs => Data.Foldable.any p xs
      end.
 
-Fixpoint anyBagM {m} {a} `{GHC.Base.Monad m} (arg_0__ : (a -> m bool)) (arg_1__
-                   : Bag a) : m bool
+Fixpoint anyBagM {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} (arg_0__
+                   : a -> m bool) (arg_1__ : Bag a) : m bool
   := match arg_0__, arg_1__ with
      | _, EmptyBag => GHC.Base.return_ false
      | p, UnitBag v => p v
@@ -276,10 +282,10 @@ Fixpoint anyBagM {m} {a} `{GHC.Base.Monad m} (arg_0__ : (a -> m bool)) (arg_1__
      | p, ListBag xs => MonadUtils.anyM p xs
      end.
 
-Definition concatBag {a} : Bag (Bag a) -> Bag a :=
+Definition concatBag {a : Type} : Bag (Bag a) -> Bag a :=
   fun bss => let add := fun bs rs => unionBags bs rs in foldrBag add emptyBag bss.
 
-Definition catBagMaybes {a} : Bag (option a) -> Bag a :=
+Definition catBagMaybes {a : Type} : Bag (option a) -> Bag a :=
   fun bs =>
     let add :=
       fun arg_0__ arg_1__ =>
@@ -289,8 +295,9 @@ Definition catBagMaybes {a} : Bag (option a) -> Bag a :=
         end in
     foldrBag add emptyBag bs.
 
-Fixpoint partitionBag {a} (arg_0__ : (a -> bool)) (arg_1__ : Bag a) : (Bag a *
-                                                                       Bag a)%type
+Fixpoint partitionBag {a : Type} (arg_0__ : a -> bool) (arg_1__ : Bag a) : (Bag
+                                                                            a *
+                                                                            Bag a)%type
   := match arg_0__, arg_1__ with
      | _, EmptyBag => pair EmptyBag EmptyBag
      | pred, (UnitBag val as b) =>
@@ -306,8 +313,8 @@ Fixpoint partitionBag {a} (arg_0__ : (a -> bool)) (arg_1__ : Bag a) : (Bag a *
          pair (listToBag sats) (listToBag fails)
      end.
 
-Fixpoint partitionBagWith {a} {b} {c} (arg_0__ : (a -> Data.Either.Either b c))
-                          (arg_1__ : Bag a) : (Bag b * Bag c)%type
+Fixpoint partitionBagWith {a : Type} {b : Type} {c : Type} (arg_0__
+                            : a -> Data.Either.Either b c) (arg_1__ : Bag a) : (Bag b * Bag c)%type
   := match arg_0__, arg_1__ with
      | _, EmptyBag => pair EmptyBag EmptyBag
      | pred, UnitBag val =>
@@ -324,8 +331,8 @@ Fixpoint partitionBagWith {a} {b} {c} (arg_0__ : (a -> Data.Either.Either b c))
          pair (listToBag sats) (listToBag fails)
      end.
 
-Fixpoint foldBag {r} {a} (arg_0__ : (r -> r -> r)) (arg_1__ : (a -> r)) (arg_2__
-                   : r) (arg_3__ : Bag a) : r
+Fixpoint foldBag {r : Type} {a : Type} (arg_0__ : r -> r -> r) (arg_1__
+                   : a -> r) (arg_2__ : r) (arg_3__ : Bag a) : r
   := match arg_0__, arg_1__, arg_2__, arg_3__ with
      | _, _, e, EmptyBag => e
      | t, u, e, UnitBag x => t (u x) e
@@ -333,8 +340,8 @@ Fixpoint foldBag {r} {a} (arg_0__ : (r -> r -> r)) (arg_1__ : (a -> r)) (arg_2__
      | t, u, e, ListBag xs => Data.Foldable.foldr (t GHC.Base.∘ u) e xs
      end.
 
-Fixpoint foldlBag {r} {a} (arg_0__ : (r -> a -> r)) (arg_1__ : r) (arg_2__
-                    : Bag a) : r
+Fixpoint foldlBag {r : Type} {a : Type} (arg_0__ : r -> a -> r) (arg_1__ : r)
+                  (arg_2__ : Bag a) : r
   := match arg_0__, arg_1__, arg_2__ with
      | _, z, EmptyBag => z
      | k, z, UnitBag x => k z x
@@ -342,8 +349,8 @@ Fixpoint foldlBag {r} {a} (arg_0__ : (r -> a -> r)) (arg_1__ : r) (arg_2__
      | k, z, ListBag xs => Data.Foldable.foldl k z xs
      end.
 
-Fixpoint foldrBagM {m} {a} {b} `{(GHC.Base.Monad m)} (arg_0__ : (a -> b -> m b))
-                   (arg_1__ : b) (arg_2__ : Bag a) : m b
+Fixpoint foldrBagM {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m}
+                   (arg_0__ : a -> b -> m b) (arg_1__ : b) (arg_2__ : Bag a) : m b
   := match arg_0__, arg_1__, arg_2__ with
      | _, z, EmptyBag => GHC.Base.return_ z
      | k, z, UnitBag x => k x z
@@ -352,8 +359,8 @@ Fixpoint foldrBagM {m} {a} {b} `{(GHC.Base.Monad m)} (arg_0__ : (a -> b -> m b))
      | k, z, ListBag xs => MonadUtils.foldrM k z xs
      end.
 
-Fixpoint foldlBagM {m} {b} {a} `{(GHC.Base.Monad m)} (arg_0__ : (b -> a -> m b))
-                   (arg_1__ : b) (arg_2__ : Bag a) : m b
+Fixpoint foldlBagM {m : Type -> Type} {b : Type} {a : Type} `{GHC.Base.Monad m}
+                   (arg_0__ : b -> a -> m b) (arg_1__ : b) (arg_2__ : Bag a) : m b
   := match arg_0__, arg_1__, arg_2__ with
      | _, z, EmptyBag => GHC.Base.return_ z
      | k, z, UnitBag x => k z x
@@ -362,7 +369,8 @@ Fixpoint foldlBagM {m} {b} {a} `{(GHC.Base.Monad m)} (arg_0__ : (b -> a -> m b))
      | k, z, ListBag xs => MonadUtils.foldlM k z xs
      end.
 
-Fixpoint concatMapBag {a} {b} (arg_0__ : (a -> Bag b)) (arg_1__ : Bag a) : Bag b
+Fixpoint concatMapBag {a : Type} {b : Type} (arg_0__ : a -> Bag b) (arg_1__
+                        : Bag a) : Bag b
   := match arg_0__, arg_1__ with
      | _, EmptyBag => EmptyBag
      | f, UnitBag x => f x
@@ -370,8 +378,8 @@ Fixpoint concatMapBag {a} {b} (arg_0__ : (a -> Bag b)) (arg_1__ : Bag a) : Bag b
      | f, ListBag xs => Data.Foldable.foldr (unionBags GHC.Base.∘ f) emptyBag xs
      end.
 
-Fixpoint mapMaybeBag {a} {b} (arg_0__ : (a -> option b)) (arg_1__ : Bag a) : Bag
-                                                                             b
+Fixpoint mapMaybeBag {a : Type} {b : Type} (arg_0__ : a -> option b) (arg_1__
+                       : Bag a) : Bag b
   := match arg_0__, arg_1__ with
      | _, EmptyBag => EmptyBag
      | f, UnitBag x => match f x with | None => EmptyBag | Some y => UnitBag y end
@@ -379,8 +387,8 @@ Fixpoint mapMaybeBag {a} {b} (arg_0__ : (a -> option b)) (arg_1__ : Bag a) : Bag
      | f, ListBag xs => ListBag (Data.Maybe.mapMaybe f xs)
      end.
 
-Fixpoint mapBagM {m} {a} {b} `{GHC.Base.Monad m} (arg_0__ : (a -> m b)) (arg_1__
-                   : Bag a) : m (Bag b)
+Fixpoint mapBagM {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m}
+                 (arg_0__ : a -> m b) (arg_1__ : Bag a) : m (Bag b)
   := match arg_0__, arg_1__ with
      | _, EmptyBag => GHC.Base.return_ EmptyBag
      | f, UnitBag x => f x GHC.Base.>>= (fun r => GHC.Base.return_ (UnitBag r))
@@ -393,8 +401,8 @@ Fixpoint mapBagM {m} {a} {b} `{GHC.Base.Monad m} (arg_0__ : (a -> m b)) (arg_1__
          (fun rs => GHC.Base.return_ (ListBag rs))
      end.
 
-Fixpoint mapBagM_ {m} {a} {b} `{GHC.Base.Monad m} (arg_0__ : (a -> m b))
-                  (arg_1__ : Bag a) : m unit
+Fixpoint mapBagM_ {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m}
+                  (arg_0__ : a -> m b) (arg_1__ : Bag a) : m unit
   := match arg_0__, arg_1__ with
      | _, EmptyBag => GHC.Base.return_ tt
      | f, UnitBag x => f x GHC.Base.>> GHC.Base.return_ tt
@@ -402,8 +410,8 @@ Fixpoint mapBagM_ {m} {a} {b} `{GHC.Base.Monad m} (arg_0__ : (a -> m b))
      | f, ListBag xs => Data.Foldable.mapM_ f xs
      end.
 
-Fixpoint flatMapBagM {m} {a} {b} `{GHC.Base.Monad m} (arg_0__
-                       : (a -> m (Bag b))) (arg_1__ : Bag a) : m (Bag b)
+Fixpoint flatMapBagM {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad
+                     m} (arg_0__ : a -> m (Bag b)) (arg_1__ : Bag a) : m (Bag b)
   := match arg_0__, arg_1__ with
      | _, EmptyBag => GHC.Base.return_ EmptyBag
      | f, UnitBag x => f x
@@ -417,8 +425,9 @@ Fixpoint flatMapBagM {m} {a} {b} `{GHC.Base.Monad m} (arg_0__
          MonadUtils.foldrM k EmptyBag xs
      end.
 
-Fixpoint flatMapBagPairM {m} {a} {b} {c} `{GHC.Base.Monad m} (arg_0__
-                           : (a -> m (Bag b * Bag c)%type)) (arg_1__ : Bag a) : m (Bag b * Bag c)%type
+Fixpoint flatMapBagPairM {m : Type -> Type} {a : Type} {b : Type} {c : Type}
+                         `{GHC.Base.Monad m} (arg_0__ : a -> m (Bag b * Bag c)%type) (arg_1__ : Bag a)
+  : m (Bag b * Bag c)%type
   := match arg_0__, arg_1__ with
      | _, EmptyBag => GHC.Base.return_ (pair EmptyBag EmptyBag)
      | f, UnitBag x => f x
@@ -443,8 +452,10 @@ Fixpoint flatMapBagPairM {m} {a} {b} {c} `{GHC.Base.Monad m} (arg_0__
          MonadUtils.foldrM k (pair EmptyBag EmptyBag) xs
      end.
 
-Fixpoint mapAndUnzipBagM {m} {a} {b} {c} `{GHC.Base.Monad m} (arg_0__
-                           : (a -> m (b * c)%type)) (arg_1__ : Bag a) : m (Bag b * Bag c)%type
+Fixpoint mapAndUnzipBagM {m : Type -> Type} {a : Type} {b : Type} {c : Type}
+                         `{GHC.Base.Monad m} (arg_0__ : a -> m (b * c)%type) (arg_1__ : Bag a) : m (Bag b
+                                                                                                    *
+                                                                                                    Bag c)%type
   := match arg_0__, arg_1__ with
      | _, EmptyBag => GHC.Base.return_ (pair EmptyBag EmptyBag)
      | f, UnitBag x =>
@@ -467,8 +478,9 @@ Fixpoint mapAndUnzipBagM {m} {a} {b} {c} `{GHC.Base.Monad m} (arg_0__
             GHC.Base.return_ (pair (ListBag rs) (ListBag ss)))
      end.
 
-Fixpoint mapAccumBagL {acc} {x} {y} (arg_0__ : (acc -> x -> (acc * y)%type))
-                      (arg_1__ : acc) (arg_2__ : Bag x) : (acc * Bag y)%type
+Fixpoint mapAccumBagL {acc : Type} {x : Type} {y : Type} (arg_0__
+                        : acc -> x -> (acc * y)%type) (arg_1__ : acc) (arg_2__ : Bag x) : (acc *
+                                                                                           Bag y)%type
   := match arg_0__, arg_1__, arg_2__ with
      | _, s, EmptyBag => pair s EmptyBag
      | f, s, UnitBag x => let 'pair s1 x1 := f s x in pair s1 (UnitBag x1)
@@ -481,9 +493,9 @@ Fixpoint mapAccumBagL {acc} {x} {y} (arg_0__ : (acc -> x -> (acc * y)%type))
          pair s' (ListBag xs')
      end.
 
-Fixpoint mapAccumBagLM {m} {acc} {x} {y} `{GHC.Base.Monad m} (arg_0__
-                         : (acc -> x -> m (acc * y)%type)) (arg_1__ : acc) (arg_2__ : Bag x) : m (acc *
-                                                                                                  Bag y)%type
+Fixpoint mapAccumBagLM {m : Type -> Type} {acc : Type} {x : Type} {y : Type}
+                       `{GHC.Base.Monad m} (arg_0__ : acc -> x -> m (acc * y)%type) (arg_1__ : acc)
+                       (arg_2__ : Bag x) : m (acc * Bag y)%type
   := match arg_0__, arg_1__, arg_2__ with
      | _, s, EmptyBag => GHC.Base.return_ (pair s EmptyBag)
      | f, s, UnitBag x =>
@@ -506,12 +518,12 @@ Fixpoint mapAccumBagLM {m} {acc} {x} {y} `{GHC.Base.Monad m} (arg_0__
          MonadUtils.mapAccumLM f s xs GHC.Base.>>= cont_12__
      end.
 
-Definition bagToList {a} : Bag a -> list a :=
+Definition bagToList {a : Type} : Bag a -> list a :=
   fun b => foldrBag cons nil b.
 
 (* External variables:
-     None Some andb bool cons false list nat nil op_zt__ option orb pair true tt unit
-     BinInt.Z.to_nat Control.Monad.filterM Coq.Program.Basics.compose
+     None Some Type andb bool cons false list nat nil op_zt__ option orb pair true tt
+     unit BinInt.Z.to_nat Control.Monad.filterM Coq.Program.Basics.compose
      Data.Either.Either Data.Either.Left Data.Either.Right Data.Foldable.Foldable
      Data.Foldable.all Data.Foldable.any Data.Foldable.foldMap__ Data.Foldable.fold__
      Data.Foldable.foldl Data.Foldable.foldl'__ Data.Foldable.foldl__

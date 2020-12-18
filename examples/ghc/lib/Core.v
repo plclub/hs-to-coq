@@ -2993,16 +2993,16 @@ Program Instance Eq___LevityInfo : GHC.Base.Eq_ LevityInfo :=
     k__ {| GHC.Base.op_zeze____ := Eq___LevityInfo_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___LevityInfo_op_zsze__ |}.
 
-Local Definition Eq___JointDmd_op_zeze__ {inst_s} {inst_u} `{GHC.Base.Eq_
-  inst_s} `{GHC.Base.Eq_ inst_u}
+Local Definition Eq___JointDmd_op_zeze__ {inst_s : Type} {inst_u : Type}
+  `{GHC.Base.Eq_ inst_s} `{GHC.Base.Eq_ inst_u}
    : JointDmd inst_s inst_u -> JointDmd inst_s inst_u -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | JD a1 a2, JD b1 b2 => (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
     end.
 
-Local Definition Eq___JointDmd_op_zsze__ {inst_s} {inst_u} `{GHC.Base.Eq_
-  inst_s} `{GHC.Base.Eq_ inst_u}
+Local Definition Eq___JointDmd_op_zsze__ {inst_s : Type} {inst_u : Type}
+  `{GHC.Base.Eq_ inst_s} `{GHC.Base.Eq_ inst_u}
    : JointDmd inst_s inst_u -> JointDmd inst_s inst_u -> bool :=
   fun x y => negb (Eq___JointDmd_op_zeze__ x y).
 
@@ -3022,7 +3022,7 @@ Program Instance Eq___ExnStr : GHC.Base.Eq_ ExnStr :=
     k__ {| GHC.Base.op_zeze____ := Eq___ExnStr_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___ExnStr_op_zsze__ |}.
 
-Local Definition Eq___Str_op_zeze__ {inst_s} `{GHC.Base.Eq_ inst_s}
+Local Definition Eq___Str_op_zeze__ {inst_s : Type} `{GHC.Base.Eq_ inst_s}
    : Str inst_s -> Str inst_s -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -3032,11 +3032,11 @@ Local Definition Eq___Str_op_zeze__ {inst_s} `{GHC.Base.Eq_ inst_s}
     | _, _ => false
     end.
 
-Local Definition Eq___Str_op_zsze__ {inst_s} `{GHC.Base.Eq_ inst_s}
+Local Definition Eq___Str_op_zsze__ {inst_s : Type} `{GHC.Base.Eq_ inst_s}
    : Str inst_s -> Str inst_s -> bool :=
   fun x y => negb (Eq___Str_op_zeze__ x y).
 
-Program Instance Eq___Str {s} `{GHC.Base.Eq_ s} : GHC.Base.Eq_ (Str s) :=
+Program Instance Eq___Str {s : Type} `{GHC.Base.Eq_ s} : GHC.Base.Eq_ (Str s) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Str_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Str_op_zsze__ |}.
@@ -3060,7 +3060,8 @@ Program Instance Eq___StrDmd : GHC.Base.Eq_ StrDmd :=
     k__ {| GHC.Base.op_zeze____ := Eq___StrDmd_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___StrDmd_op_zsze__ |}.
 
-Program Instance Eq___JointDmd {s} {u} `{GHC.Base.Eq_ s} `{GHC.Base.Eq_ u}
+Program Instance Eq___JointDmd {s : Type} {u : Type} `{GHC.Base.Eq_ s}
+  `{GHC.Base.Eq_ u}
    : GHC.Base.Eq_ (JointDmd s u) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___JointDmd_op_zeze__ ;
@@ -3097,7 +3098,7 @@ Program Instance Eq___Count : GHC.Base.Eq_ Count :=
 (* Skipping all instances of class `GHC.Show.Show', including
    `Core.Show__Count' *)
 
-Local Definition Eq___Use_op_zeze__ {inst_u} `{GHC.Base.Eq_ inst_u}
+Local Definition Eq___Use_op_zeze__ {inst_u : Type} `{GHC.Base.Eq_ inst_u}
    : Use inst_u -> Use inst_u -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -3107,11 +3108,11 @@ Local Definition Eq___Use_op_zeze__ {inst_u} `{GHC.Base.Eq_ inst_u}
     | _, _ => false
     end.
 
-Local Definition Eq___Use_op_zsze__ {inst_u} `{GHC.Base.Eq_ inst_u}
+Local Definition Eq___Use_op_zsze__ {inst_u : Type} `{GHC.Base.Eq_ inst_u}
    : Use inst_u -> Use inst_u -> bool :=
   fun x y => negb (Eq___Use_op_zeze__ x y).
 
-Program Instance Eq___Use {u} `{GHC.Base.Eq_ u} : GHC.Base.Eq_ (Use u) :=
+Program Instance Eq___Use {u : Type} `{GHC.Base.Eq_ u} : GHC.Base.Eq_ (Use u) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Use_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Use_op_zsze__ |}.
@@ -3141,7 +3142,8 @@ Program Instance Eq___UseDmd : GHC.Base.Eq_ UseDmd :=
 (* Skipping all instances of class `GHC.Show.Show', including
    `Core.Show__UseDmd' *)
 
-Local Definition Eq___Termination_op_zeze__ {inst_r} `{GHC.Base.Eq_ inst_r}
+Local Definition Eq___Termination_op_zeze__ {inst_r : Type} `{GHC.Base.Eq_
+  inst_r}
    : Termination inst_r -> Termination inst_r -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -3151,11 +3153,12 @@ Local Definition Eq___Termination_op_zeze__ {inst_r} `{GHC.Base.Eq_ inst_r}
     | _, _ => false
     end.
 
-Local Definition Eq___Termination_op_zsze__ {inst_r} `{GHC.Base.Eq_ inst_r}
+Local Definition Eq___Termination_op_zsze__ {inst_r : Type} `{GHC.Base.Eq_
+  inst_r}
    : Termination inst_r -> Termination inst_r -> bool :=
   fun x y => negb (Eq___Termination_op_zeze__ x y).
 
-Program Instance Eq___Termination {r} `{GHC.Base.Eq_ r}
+Program Instance Eq___Termination {r : Type} `{GHC.Base.Eq_ r}
    : GHC.Base.Eq_ (Termination r) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Termination_op_zeze__ ;
@@ -3298,7 +3301,7 @@ Program Instance Eq___AltCon : GHC.Base.Eq_ AltCon :=
 (* Skipping all instances of class `Data.Data.Data', including
    `Core.Data__AltCon' *)
 
-Local Definition Eq___Tickish_op_zeze__ {inst_id} `{GHC.Base.Eq_ inst_id}
+Local Definition Eq___Tickish_op_zeze__ {inst_id : Type} `{GHC.Base.Eq_ inst_id}
    : Tickish inst_id -> Tickish inst_id -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -3313,17 +3316,17 @@ Local Definition Eq___Tickish_op_zeze__ {inst_id} `{GHC.Base.Eq_ inst_id}
     | _, _ => false
     end.
 
-Local Definition Eq___Tickish_op_zsze__ {inst_id} `{GHC.Base.Eq_ inst_id}
+Local Definition Eq___Tickish_op_zsze__ {inst_id : Type} `{GHC.Base.Eq_ inst_id}
    : Tickish inst_id -> Tickish inst_id -> bool :=
   fun x y => negb (Eq___Tickish_op_zeze__ x y).
 
-Program Instance Eq___Tickish {id} `{GHC.Base.Eq_ id}
+Program Instance Eq___Tickish {id : Type} `{GHC.Base.Eq_ id}
    : GHC.Base.Eq_ (Tickish id) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Tickish_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Tickish_op_zsze__ |}.
 
-Local Definition Ord__Tickish_compare {inst_id} `{GHC.Base.Ord inst_id}
+Local Definition Ord__Tickish_compare {inst_id : Type} `{GHC.Base.Ord inst_id}
    : Tickish inst_id -> Tickish inst_id -> comparison :=
   fun a b =>
     match a with
@@ -3376,31 +3379,31 @@ Local Definition Ord__Tickish_compare {inst_id} `{GHC.Base.Ord inst_id}
         end
     end.
 
-Local Definition Ord__Tickish_op_zl__ {inst_id} `{GHC.Base.Ord inst_id}
+Local Definition Ord__Tickish_op_zl__ {inst_id : Type} `{GHC.Base.Ord inst_id}
    : Tickish inst_id -> Tickish inst_id -> bool :=
   fun x y => Ord__Tickish_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__Tickish_op_zlze__ {inst_id} `{GHC.Base.Ord inst_id}
+Local Definition Ord__Tickish_op_zlze__ {inst_id : Type} `{GHC.Base.Ord inst_id}
    : Tickish inst_id -> Tickish inst_id -> bool :=
   fun x y => Ord__Tickish_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__Tickish_op_zg__ {inst_id} `{GHC.Base.Ord inst_id}
+Local Definition Ord__Tickish_op_zg__ {inst_id : Type} `{GHC.Base.Ord inst_id}
    : Tickish inst_id -> Tickish inst_id -> bool :=
   fun x y => Ord__Tickish_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__Tickish_op_zgze__ {inst_id} `{GHC.Base.Ord inst_id}
+Local Definition Ord__Tickish_op_zgze__ {inst_id : Type} `{GHC.Base.Ord inst_id}
    : Tickish inst_id -> Tickish inst_id -> bool :=
   fun x y => Ord__Tickish_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__Tickish_max {inst_id} `{GHC.Base.Ord inst_id}
+Local Definition Ord__Tickish_max {inst_id : Type} `{GHC.Base.Ord inst_id}
    : Tickish inst_id -> Tickish inst_id -> Tickish inst_id :=
   fun x y => if Ord__Tickish_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__Tickish_min {inst_id} `{GHC.Base.Ord inst_id}
+Local Definition Ord__Tickish_min {inst_id : Type} `{GHC.Base.Ord inst_id}
    : Tickish inst_id -> Tickish inst_id -> Tickish inst_id :=
   fun x y => if Ord__Tickish_op_zlze__ x y : bool then x else y.
 
-Program Instance Ord__Tickish {id} `{GHC.Base.Ord id}
+Program Instance Ord__Tickish {id : Type} `{GHC.Base.Ord id}
    : GHC.Base.Ord (Tickish id) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Tickish_op_zl__ ;
@@ -4043,9 +4046,9 @@ Axiom buildAlgTyCon : Name.Name ->
 Axiom buildSynTyCon : Name.Name ->
                       list TyConBinder -> Kind -> list Role -> Type_ -> TyCon.
 
-Axiom getStrDmd : forall {s} {u}, JointDmd s u -> s.
+Axiom getStrDmd : forall {s : Type}, forall {u : Type}, JointDmd s u -> s.
 
-Axiom getUseDmd : forall {s} {u}, JointDmd s u -> u.
+Axiom getUseDmd : forall {s : Type}, forall {u : Type}, JointDmd s u -> u.
 
 Axiom mkJointDmd : forall {s} {u}, s -> u -> JointDmd s u.
 
@@ -4129,7 +4132,7 @@ Definition seqArgUse : ArgUse -> unit :=
 
 Axiom splitUseProdDmd : nat -> UseDmd -> option (list ArgUse).
 
-Axiom useCount : forall {u}, Use u -> Count.
+Axiom useCount : forall {u : Type}, Use u -> Count.
 
 Axiom bothCleanDmd : CleanDemand -> CleanDemand -> CleanDemand.
 
@@ -4463,11 +4466,12 @@ Axiom setCoVarUnique : CoVar -> Unique.Unique -> CoVar.
 
 Axiom setCoVarName : CoVar -> Name.Name -> CoVar.
 
-Axiom pprCoAxiom : forall {br}, CoAxiom br -> GHC.Base.String.
+Axiom pprCoAxiom : forall {br : BranchFlag}, CoAxiom br -> GHC.Base.String.
 
-Axiom pprCoAxBranch : forall {br}, CoAxiom br -> CoAxBranch -> GHC.Base.String.
+Axiom pprCoAxBranch : forall {br : BranchFlag},
+                      CoAxiom br -> CoAxBranch -> GHC.Base.String.
 
-Axiom pprCoAxBranchHdr : forall {br},
+Axiom pprCoAxBranchHdr : forall {br : BranchFlag},
                          CoAxiom br -> BranchIndex -> GHC.Base.String.
 
 Axiom ppr_co_ax_branch : forall {br},
@@ -4548,7 +4552,7 @@ Axiom mkHomoForAllCos_NoRefl : list TyVar -> Coercion -> Coercion.
 
 Axiom isCoVar_maybe : Coercion -> option CoVar.
 
-Axiom mkAxInstCo : forall {br},
+Axiom mkAxInstCo : forall {br : BranchFlag},
                    Role -> CoAxiom br -> BranchIndex -> list Type_ -> list Coercion -> Coercion.
 
 Axiom mkAxiomInstCo : CoAxiom Branched ->
@@ -4557,13 +4561,13 @@ Axiom mkAxiomInstCo : CoAxiom Branched ->
 Axiom mkUnbranchedAxInstCo : Role ->
                              CoAxiom Unbranched -> list Type_ -> list Coercion -> Coercion.
 
-Axiom mkAxInstRHS : forall {br},
+Axiom mkAxInstRHS : forall {br : BranchFlag},
                     CoAxiom br -> BranchIndex -> list Type_ -> list Coercion -> Type_.
 
 Axiom mkUnbranchedAxInstRHS : CoAxiom Unbranched ->
                               list Type_ -> list Coercion -> Type_.
 
-Axiom mkAxInstLHS : forall {br},
+Axiom mkAxInstLHS : forall {br : BranchFlag},
                     CoAxiom br -> BranchIndex -> list Type_ -> list Coercion -> Type_.
 
 Axiom mkUnbranchedAxInstLHS : CoAxiom Unbranched ->
@@ -4642,15 +4646,16 @@ Axiom mkCoCast : Coercion -> Coercion -> Coercion.
 Axiom instNewTyCon_maybe : TyCon ->
                            list Type_ -> option (Type_ * Coercion)%type.
 
-Axiom mapStepResult : forall {ev1} {ev2},
+Axiom mapStepResult : forall {ev1 : Type},
+                      forall {ev2 : Type},
                       (ev1 -> ev2) -> NormaliseStepResult ev1 -> NormaliseStepResult ev2.
 
-Axiom composeSteppers : forall {ev},
+Axiom composeSteppers : forall {ev : Type},
                         NormaliseStepper ev -> NormaliseStepper ev -> NormaliseStepper ev.
 
 Axiom unwrapNewTypeStepper : NormaliseStepper Coercion.
 
-Axiom topNormaliseTypeX : forall {ev},
+Axiom topNormaliseTypeX : forall {ev : Type},
                           NormaliseStepper ev -> (ev -> ev -> ev) -> Type_ -> option (ev * Type_)%type.
 
 Axiom topNormaliseNewType_maybe : Type_ -> option (Coercion * Type_)%type.
@@ -4695,7 +4700,7 @@ Axiom liftCoSubstTyVar : LiftingContext -> Role -> TyVar -> option Coercion.
 Axiom liftCoSubstVarBndr : LiftingContext ->
                            TyVar -> (LiftingContext * TyVar * Coercion)%type.
 
-Axiom liftCoSubstVarBndrCallback : forall {a},
+Axiom liftCoSubstVarBndrCallback : forall {a : Type},
                                    (LiftingContext -> Type_ -> (Coercion * a)%type) ->
                                    LiftingContext -> TyVar -> (LiftingContext * TyVar * Coercion * a)%type.
 
@@ -4950,7 +4955,7 @@ Axiom substTyAddInScope : TCvSubst -> Type_ -> Type_.
 
 Axiom isValidTCvSubst : TCvSubst -> bool.
 
-Axiom checkValidSubst : forall {a},
+Axiom checkValidSubst : forall {a : Type},
                         forall `{Util.HasDebugCallStack},
                         TCvSubst -> list Type_ -> list Coercion -> a -> a.
 
@@ -5083,10 +5088,10 @@ Axiom tidyTyCoVarBndr : TidyEnv -> TyCoVar -> (TidyEnv * TyCoVar)%type.
 
 Axiom getHelpfulOccName : TyCoVar -> OccName.OccName.
 
-Axiom tidyTyVarBinder : forall {vis},
+Axiom tidyTyVarBinder : forall {vis : Type},
                         TidyEnv -> TyVarBndr TyVar vis -> (TidyEnv * TyVarBndr TyVar vis)%type.
 
-Axiom tidyTyVarBinders : forall {vis},
+Axiom tidyTyVarBinders : forall {vis : Type},
                          TidyEnv ->
                          list (TyVarBndr TyVar vis) -> (TidyEnv * list (TyVarBndr TyVar vis))%type.
 
@@ -5139,11 +5144,13 @@ Axiom tyConBinderArgFlag : TyConBinder -> ArgFlag.
 
 Axiom isNamedTyConBinder : TyConBinder -> bool.
 
-Axiom isVisibleTyConBinder : forall {tv}, TyVarBndr tv TyConBndrVis -> bool.
+Axiom isVisibleTyConBinder : forall {tv : Type},
+                             TyVarBndr tv TyConBndrVis -> bool.
 
 Axiom isVisibleTcbVis : TyConBndrVis -> bool.
 
-Axiom isInvisibleTyConBinder : forall {tv}, TyVarBndr tv TyConBndrVis -> bool.
+Axiom isInvisibleTyConBinder : forall {tv : Type},
+                               TyVarBndr tv TyConBndrVis -> bool.
 
 Axiom mkTyConKind : list TyConBinder -> Kind -> Kind.
 
@@ -5332,7 +5339,7 @@ Axiom isTcTyCon : TyCon -> bool.
 
 Axiom isTcLevPoly : TyCon -> bool.
 
-Axiom expandSynTyCon_maybe : forall {tyco},
+Axiom expandSynTyCon_maybe : forall {tyco : Type},
                              TyCon ->
                              list tyco -> option (list (TyVar * tyco)%type * Type_ * list tyco)%type.
 
@@ -5415,10 +5422,12 @@ Axiom tcView : Type_ -> option Type_.
 
 Axiom expandTypeSynonyms : Type_ -> Type_.
 
-Axiom mapType : forall {m} {env},
+Axiom mapType : forall {m : Type -> Type},
+                forall {env : Type},
                 forall `{GHC.Base.Monad m}, TyCoMapper env m -> env -> Type_ -> m Type_.
 
-Axiom mapCoercion : forall {m} {env},
+Axiom mapCoercion : forall {m : Type -> Type},
+                    forall {env : Type},
                     forall `{GHC.Base.Monad m}, TyCoMapper env m -> env -> Coercion -> m Coercion.
 
 Axiom getTyVar : GHC.Base.String -> Type_ -> TyVar.
@@ -5568,7 +5577,7 @@ Axiom splitPiTysInvisible : Type_ -> (list TyBinder * Type_)%type.
 
 Axiom filterOutInvisibleTypes : TyCon -> list Type_ -> list Type_.
 
-Axiom partitionInvisibles : forall {a},
+Axiom partitionInvisibles : forall {a : Type},
                             TyCon -> (a -> Type_) -> list a -> (list a * list a)%type.
 
 Axiom isTauTy : Type_ -> bool.
@@ -5583,7 +5592,7 @@ Axiom tyBinderType : TyBinder -> Type_.
 
 Axiom binderRelevantType_maybe : TyBinder -> option Type_.
 
-Axiom caseBinder : forall {a},
+Axiom caseBinder : forall {a : Type},
                    TyBinder -> (TyVarBinder -> a) -> (Type_ -> a) -> a.
 
 Axiom isPredTy : Type_ -> bool.
@@ -5650,7 +5659,7 @@ Axiom tyCoVarsOfTypesWellScoped : list Type_ -> list TyVar.
 
 Axiom mkFamilyTyConApp : TyCon -> list Type_ -> Type_.
 
-Axiom coAxNthLHS : forall {br}, CoAxiom br -> nat -> Type_.
+Axiom coAxNthLHS : forall {br : BranchFlag}, CoAxiom br -> nat -> Type_.
 
 Axiom pprSourceTyCon : TyCon -> GHC.Base.String.
 
@@ -6056,7 +6065,7 @@ Definition updateVarType : (Type_ -> Type_) -> Id -> Id :=
     Mk_Id varName_0__ realUnique_1__ (f (varType id)) idScope_3__ id_details_4__
           id_info_5__.
 
-Definition updateVarTypeM {m} `{GHC.Base.Monad m}
+Definition updateVarTypeM {m : Type -> Type} `{GHC.Base.Monad m}
    : (Type_ -> m Type_) -> Id -> m Id :=
   fun f id =>
     f (varType id) GHC.Base.>>=
@@ -6080,19 +6089,21 @@ Definition sameVis : ArgFlag -> ArgFlag -> bool :=
     | _, _ => true
     end.
 
-Definition binderVar {tv} {argf} : TyVarBndr tv argf -> tv :=
+Definition binderVar {tv : Type} {argf : Type} : TyVarBndr tv argf -> tv :=
   fun '(TvBndr v _) => v.
 
-Definition binderVars {tv} {argf} : list (TyVarBndr tv argf) -> list tv :=
+Definition binderVars {tv : Type} {argf : Type}
+   : list (TyVarBndr tv argf) -> list tv :=
   fun tvbs => GHC.Base.map binderVar tvbs.
 
-Definition binderArgFlag {tv} {argf} : TyVarBndr tv argf -> argf :=
+Definition binderArgFlag {tv : Type} {argf : Type}
+   : TyVarBndr tv argf -> argf :=
   fun '(TvBndr _ argf) => argf.
 
 Definition tyVarKind : TyVar -> Kind :=
   varType.
 
-Definition binderKind {argf} : TyVarBndr TyVar argf -> Kind :=
+Definition binderKind {argf : Type} : TyVarBndr TyVar argf -> Kind :=
   fun '(TvBndr tv _) => tyVarKind tv.
 
 Definition mkTyVarBinder : ArgFlag -> Var -> TyVarBinder :=
@@ -6123,7 +6134,7 @@ Definition updateTyVarKind : (Kind -> Kind) -> TyVar -> TyVar :=
     Mk_Id varName_0__ realUnique_1__ (update (tyVarKind tv)) idScope_3__
           id_details_4__ id_info_5__.
 
-Definition updateTyVarKindM {m} `{(GHC.Base.Monad m)}
+Definition updateTyVarKindM {m : Type -> Type} `{GHC.Base.Monad m}
    : (Kind -> m Kind) -> TyVar -> m TyVar :=
   fun update tv =>
     update (tyVarKind tv) GHC.Base.>>=
@@ -6224,32 +6235,33 @@ Definition getInScopeVars : InScopeSet -> VarSet :=
 Definition mkInScopeSet : VarSet -> InScopeSet :=
   fun in_scope => InScope in_scope #1.
 
-Definition extendDVarEnv {a} : DVarEnv a -> Var -> a -> DVarEnv a :=
+Definition extendDVarEnv {a : Type} : DVarEnv a -> Var -> a -> DVarEnv a :=
   UniqFM.addToUFM.
 
-Definition extendVarEnv {a} : VarEnv a -> Var -> a -> VarEnv a :=
+Definition extendVarEnv {a : Type} : VarEnv a -> Var -> a -> VarEnv a :=
   UniqFM.addToUFM.
 
-Definition extendDVarEnvList {a}
+Definition extendDVarEnvList {a : Type}
    : DVarEnv a -> list (Var * a)%type -> DVarEnv a :=
   UniqFM.addListToUFM.
 
-Definition extendVarEnvList {a} : VarEnv a -> list (Var * a)%type -> VarEnv a :=
+Definition extendVarEnvList {a : Type}
+   : VarEnv a -> list (Var * a)%type -> VarEnv a :=
   UniqFM.addListToUFM.
 
-Definition extendDVarEnv_C {a}
+Definition extendDVarEnv_C {a : Type}
    : (a -> a -> a) -> DVarEnv a -> Var -> a -> DVarEnv a :=
   UniqFM.addToUFM_C.
 
-Definition extendVarEnv_Acc {a} {b}
+Definition extendVarEnv_Acc {a : Type} {b : Type}
    : (a -> b -> b) -> (a -> b) -> VarEnv b -> Var -> a -> VarEnv b :=
   UniqFM.addToUFM_Acc.
 
-Definition extendVarEnv_C {a}
+Definition extendVarEnv_C {a : Type}
    : (a -> a -> a) -> VarEnv a -> Var -> a -> VarEnv a :=
   UniqFM.addToUFM_C.
 
-Definition extendVarEnv_Directly {a}
+Definition extendVarEnv_Directly {a : Type}
    : VarEnv a -> Unique.Unique -> a -> VarEnv a :=
   UniqFM.addToUFM_Directly.
 
@@ -6281,24 +6293,24 @@ Definition extendInScopeSetSet : InScopeSet -> VarSet -> InScopeSet :=
         InScope (unionVarSet in_scope vs) (n GHC.Num.+ UniqSet.sizeUniqSet vs)
     end.
 
-Definition alterDVarEnv {a}
+Definition alterDVarEnv {a : Type}
    : (option a -> option a) -> DVarEnv a -> Var -> DVarEnv a :=
   UniqFM.alterUFM.
 
-Definition alterVarEnv {a}
+Definition alterVarEnv {a : Type}
    : (option a -> option a) -> VarEnv a -> Var -> VarEnv a :=
   UniqFM.alterUFM.
 
-Definition delDVarEnv {a} : DVarEnv a -> Var -> DVarEnv a :=
+Definition delDVarEnv {a : Type} : DVarEnv a -> Var -> DVarEnv a :=
   UniqFM.delFromUFM.
 
-Definition delVarEnv {a} : VarEnv a -> Var -> VarEnv a :=
+Definition delVarEnv {a : Type} : VarEnv a -> Var -> VarEnv a :=
   UniqFM.delFromUFM.
 
-Definition delDVarEnvList {a} : DVarEnv a -> list Var -> DVarEnv a :=
+Definition delDVarEnvList {a : Type} : DVarEnv a -> list Var -> DVarEnv a :=
   UniqFM.delListFromUFM.
 
-Definition delVarEnvList {a} : VarEnv a -> list Var -> VarEnv a :=
+Definition delVarEnvList {a : Type} : VarEnv a -> list Var -> VarEnv a :=
   UniqFM.delListFromUFM.
 
 Definition delDVarSet : DVarSet -> Var -> DVarSet :=
@@ -6319,16 +6331,17 @@ Definition delDVarSetList : DVarSet -> list Var -> DVarSet :=
 Definition delVarSetList : VarSet -> list Var -> VarSet :=
   UniqSet.delListFromUniqSet.
 
-Definition delVarEnv_Directly {a} : VarEnv a -> Unique.Unique -> VarEnv a :=
+Definition delVarEnv_Directly {a : Type}
+   : VarEnv a -> Unique.Unique -> VarEnv a :=
   UniqFM.delFromUFM_Directly.
 
 Definition delVarSetByKey : VarSet -> Unique.Unique -> VarSet :=
   UniqSet.delOneFromUniqSet_Directly.
 
-Definition elemDVarEnv {a} : Var -> DVarEnv a -> bool :=
+Definition elemDVarEnv {a : Type} : Var -> DVarEnv a -> bool :=
   UniqFM.elemUFM.
 
-Definition elemVarEnv {a} : Var -> VarEnv a -> bool :=
+Definition elemVarEnv {a : Type} : Var -> VarEnv a -> bool :=
   UniqFM.elemUFM.
 
 Definition elemDVarSet : Var -> DVarSet -> bool :=
@@ -6343,13 +6356,14 @@ Definition elemInScopeSet : Var -> InScopeSet -> bool :=
     | v, InScope in_scope _ => elemVarSet v in_scope
     end.
 
-Definition lookupDVarEnv {a} : DVarEnv a -> Var -> option a :=
+Definition lookupDVarEnv {a : Type} : DVarEnv a -> Var -> option a :=
   UniqFM.lookupUFM.
 
-Definition lookupVarEnv {a} : VarEnv a -> Var -> option a :=
+Definition lookupVarEnv {a : Type} : VarEnv a -> Var -> option a :=
   UniqFM.lookupUFM.
 
-Definition lookupVarEnv_Directly {a} : VarEnv a -> Unique.Unique -> option a :=
+Definition lookupVarEnv_Directly {a : Type}
+   : VarEnv a -> Unique.Unique -> option a :=
   UniqFM.lookupUFM_Directly.
 
 Definition lookupVarEnv_NF {a} `{_ : GHC.Err.Default a} (env : VarEnv a) id
@@ -6406,10 +6420,10 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
 Definition elemVarSetByKey : Unique.Unique -> VarSet -> bool :=
   UniqSet.elemUniqSet_Directly.
 
-Definition mkDVarEnv {a} : list (Var * a)%type -> DVarEnv a :=
+Definition mkDVarEnv {a : Type} : list (Var * a)%type -> DVarEnv a :=
   UniqFM.listToUFM.
 
-Definition mkVarEnv {a} : list (Var * a)%type -> VarEnv a :=
+Definition mkVarEnv {a : Type} : list (Var * a)%type -> VarEnv a :=
   UniqFM.listToUFM.
 
 Definition mkDVarSet : list Var -> DVarSet :=
@@ -6440,7 +6454,7 @@ Definition uniqAway' : InScopeSet -> Var -> Var :=
         try #1
     end.
 
-Definition emptyVarEnv {a} : VarEnv a :=
+Definition emptyVarEnv {a : Type} : VarEnv a :=
   UniqFM.emptyUFM.
 
 Definition mkRnEnv2 : InScopeSet -> RnEnv2 :=
@@ -6603,66 +6617,68 @@ Definition rnSwap : RnEnv2 -> RnEnv2 :=
 Definition emptyTidyEnv : TidyEnv :=
   pair OccName.emptyTidyOccEnv emptyVarEnv.
 
-Definition elemVarEnvByKey {a} : Unique.Unique -> VarEnv a -> bool :=
+Definition elemVarEnvByKey {a : Type} : Unique.Unique -> VarEnv a -> bool :=
   UniqFM.elemUFM_Directly.
 
-Definition disjointVarEnv {a} : VarEnv a -> VarEnv a -> bool :=
+Definition disjointVarEnv {a : Type} : VarEnv a -> VarEnv a -> bool :=
   UniqFM.disjointUFM.
 
-Definition plusVarEnv_C {a}
+Definition plusVarEnv_C {a : Type}
    : (a -> a -> a) -> VarEnv a -> VarEnv a -> VarEnv a :=
   UniqFM.plusUFM_C.
 
-Definition plusVarEnv_CD {a}
+Definition plusVarEnv_CD {a : Type}
    : (a -> a -> a) -> VarEnv a -> a -> VarEnv a -> a -> VarEnv a :=
   UniqFM.plusUFM_CD.
 
-Definition plusMaybeVarEnv_C {a}
+Definition plusMaybeVarEnv_C {a : Type}
    : (a -> a -> option a) -> VarEnv a -> VarEnv a -> VarEnv a :=
   UniqFM.plusMaybeUFM_C.
 
-Definition minusVarEnv {a} {b} : VarEnv a -> VarEnv b -> VarEnv a :=
+Definition minusVarEnv {a : Type} {b : Type}
+   : VarEnv a -> VarEnv b -> VarEnv a :=
   UniqFM.minusUFM.
 
-Definition isEmptyVarEnv {a} : VarEnv a -> bool :=
+Definition isEmptyVarEnv {a : Type} : VarEnv a -> bool :=
   UniqFM.isNullUFM.
 
-Definition intersectsVarEnv {a} : VarEnv a -> VarEnv a -> bool :=
+Definition intersectsVarEnv {a : Type} : VarEnv a -> VarEnv a -> bool :=
   fun e1 e2 => negb (isEmptyVarEnv (UniqFM.intersectUFM e1 e2)).
 
-Definition plusVarEnv {a} : VarEnv a -> VarEnv a -> VarEnv a :=
+Definition plusVarEnv {a : Type} : VarEnv a -> VarEnv a -> VarEnv a :=
   UniqFM.plusUFM.
 
-Definition plusVarEnvList {a} : list (VarEnv a) -> VarEnv a :=
+Definition plusVarEnvList {a : Type} : list (VarEnv a) -> VarEnv a :=
   UniqFM.plusUFMList.
 
-Definition filterVarEnv {a} : (a -> bool) -> VarEnv a -> VarEnv a :=
+Definition filterVarEnv {a : Type} : (a -> bool) -> VarEnv a -> VarEnv a :=
   UniqFM.filterUFM.
 
-Definition lookupWithDefaultVarEnv {a} : VarEnv a -> a -> Var -> a :=
+Definition lookupWithDefaultVarEnv {a : Type} : VarEnv a -> a -> Var -> a :=
   UniqFM.lookupWithDefaultUFM.
 
-Definition mapVarEnv {a} {b} : (a -> b) -> VarEnv a -> VarEnv b :=
+Definition mapVarEnv {a : Type} {b : Type} : (a -> b) -> VarEnv a -> VarEnv b :=
   UniqFM.mapUFM.
 
-Definition mkVarEnv_Directly {a} : list (Unique.Unique * a)%type -> VarEnv a :=
+Definition mkVarEnv_Directly {a : Type}
+   : list (Unique.Unique * a)%type -> VarEnv a :=
   UniqFM.listToUFM_Directly.
 
-Definition unitDVarEnv {a} : Var -> a -> DVarEnv a :=
+Definition unitDVarEnv {a : Type} : Var -> a -> DVarEnv a :=
   UniqFM.unitUFM.
 
-Definition unitVarEnv {a} : Var -> a -> VarEnv a :=
+Definition unitVarEnv {a : Type} : Var -> a -> VarEnv a :=
   UniqFM.unitUFM.
 
-Definition filterVarEnv_Directly {a}
+Definition filterVarEnv_Directly {a : Type}
    : (Unique.Unique -> a -> bool) -> VarEnv a -> VarEnv a :=
   UniqFM.filterUFM_Directly.
 
-Definition partitionVarEnv {a}
+Definition partitionVarEnv {a : Type}
    : (a -> bool) -> VarEnv a -> (VarEnv a * VarEnv a)%type :=
   UniqFM.partitionUFM.
 
-Definition restrictVarEnv {a} : VarEnv a -> VarSet -> VarEnv a :=
+Definition restrictVarEnv {a : Type} : VarEnv a -> VarSet -> VarEnv a :=
   fun env vs =>
     let keep :=
       fun arg_0__ arg_1__ =>
@@ -6671,18 +6687,18 @@ Definition restrictVarEnv {a} : VarEnv a -> VarSet -> VarEnv a :=
         end in
     filterVarEnv_Directly keep env.
 
-Definition zipVarEnv {a} : list Var -> list a -> VarEnv a :=
+Definition zipVarEnv {a : Type} : list Var -> list a -> VarEnv a :=
   fun tyvars tys =>
     mkVarEnv (Util.zipEqual (GHC.Base.hs_string__ "zipVarEnv") tyvars tys).
 
-Definition modifyVarEnv {a} : (a -> a) -> VarEnv a -> Var -> VarEnv a :=
+Definition modifyVarEnv {a : Type} : (a -> a) -> VarEnv a -> Var -> VarEnv a :=
   fun mangle_fn env key =>
     match (lookupVarEnv env key) with
     | None => env
     | Some xx => extendVarEnv env key (mangle_fn xx)
     end.
 
-Definition modifyVarEnv_Directly {a}
+Definition modifyVarEnv_Directly {a : Type}
    : (a -> a) -> UniqFM.UniqFM a -> Unique.Unique -> UniqFM.UniqFM a :=
   fun mangle_fn env key =>
     match (UniqFM.lookupUFM_Directly env key) with
@@ -6690,46 +6706,50 @@ Definition modifyVarEnv_Directly {a}
     | Some xx => UniqFM.addToUFM_Directly env key (mangle_fn xx)
     end.
 
-Definition emptyDVarEnv {a} : DVarEnv a :=
+Definition emptyDVarEnv {a : Type} : DVarEnv a :=
   UniqFM.emptyUFM.
 
-Definition dVarEnvElts {a} : DVarEnv a -> list a :=
+Definition dVarEnvElts {a : Type} : DVarEnv a -> list a :=
   UniqFM.eltsUFM.
 
-Definition minusDVarEnv {a} {a'} : DVarEnv a -> DVarEnv a' -> DVarEnv a :=
+Definition minusDVarEnv {a : Type} {a' : Type}
+   : DVarEnv a -> DVarEnv a' -> DVarEnv a :=
   UniqFM.minusUFM.
 
-Definition foldDVarEnv {a} {b} : (a -> b -> b) -> b -> DVarEnv a -> b :=
+Definition foldDVarEnv {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> DVarEnv a -> b :=
   UniqFM.nonDetFoldUFM.
 
-Definition mapDVarEnv {a} {b} : (a -> b) -> DVarEnv a -> DVarEnv b :=
+Definition mapDVarEnv {a : Type} {b : Type}
+   : (a -> b) -> DVarEnv a -> DVarEnv b :=
   UniqFM.mapUFM.
 
-Definition filterDVarEnv {a} : (a -> bool) -> DVarEnv a -> DVarEnv a :=
+Definition filterDVarEnv {a : Type} : (a -> bool) -> DVarEnv a -> DVarEnv a :=
   UniqFM.filterUFM.
 
-Definition plusDVarEnv {a} : DVarEnv a -> DVarEnv a -> DVarEnv a :=
+Definition plusDVarEnv {a : Type} : DVarEnv a -> DVarEnv a -> DVarEnv a :=
   UniqFM.plusUFM.
 
-Definition plusDVarEnv_C {a}
+Definition plusDVarEnv_C {a : Type}
    : (a -> a -> a) -> DVarEnv a -> DVarEnv a -> DVarEnv a :=
   UniqFM.plusUFM_C.
 
-Definition isEmptyDVarEnv {a} : DVarEnv a -> bool :=
+Definition isEmptyDVarEnv {a : Type} : DVarEnv a -> bool :=
   UniqFM.isNullUFM.
 
-Definition modifyDVarEnv {a} : (a -> a) -> DVarEnv a -> Var -> DVarEnv a :=
+Definition modifyDVarEnv {a : Type}
+   : (a -> a) -> DVarEnv a -> Var -> DVarEnv a :=
   fun mangle_fn env key =>
     match (lookupDVarEnv env key) with
     | None => env
     | Some xx => extendDVarEnv env key (mangle_fn xx)
     end.
 
-Definition partitionDVarEnv {a}
+Definition partitionDVarEnv {a : Type}
    : (a -> bool) -> DVarEnv a -> (DVarEnv a * DVarEnv a)%type :=
   UniqFM.partitionUFM.
 
-Definition anyDVarEnv {a} : (a -> bool) -> DVarEnv a -> bool :=
+Definition anyDVarEnv {a : Type} : (a -> bool) -> DVarEnv a -> bool :=
   UniqFM.anyUFM.
 
 Definition unitDVarSet : Var -> DVarSet :=
@@ -6761,7 +6781,7 @@ Definition filterVarSet : (Var -> bool) -> VarSet -> VarSet :=
 
 (* Skipping definition `Core.partitionVarSet' *)
 
-Definition mapUnionVarSet {a} : (a -> VarSet) -> list a -> VarSet :=
+Definition mapUnionVarSet {a : Type} : (a -> VarSet) -> list a -> VarSet :=
   fun get_set xs =>
     Data.Foldable.foldr (unionVarSet GHC.Base.∘ get_set) emptyVarSet xs.
 
@@ -6781,7 +6801,7 @@ Definition allVarSet : (Var -> bool) -> VarSet -> bool :=
 
 Definition fixVarSet : (VarSet -> VarSet) -> VarSet -> VarSet :=
   GHC.DeferredFix.deferredFix2 (fun fixVarSet
-                                (fn : (VarSet -> VarSet))
+                                (fn : VarSet -> VarSet)
                                 (vars : VarSet) =>
                                   let new_vars := fn vars in
                                   if subVarSet new_vars vars : bool then vars else
@@ -6821,7 +6841,7 @@ Definition unionDVarSet : DVarSet -> DVarSet -> DVarSet :=
 Definition unionDVarSets : list DVarSet -> DVarSet :=
   UniqSet.unionManyUniqSets.
 
-Definition mapUnionDVarSet {a} : (a -> DVarSet) -> list a -> DVarSet :=
+Definition mapUnionDVarSet {a : Type} : (a -> DVarSet) -> list a -> DVarSet :=
   fun get_set xs =>
     Data.Foldable.foldr (unionDVarSet GHC.Base.∘ get_set) emptyDVarSet xs.
 
@@ -6840,7 +6860,7 @@ Definition intersectsDVarSet : DVarSet -> DVarSet -> bool :=
 Definition dVarSetMinusVarSet : DVarSet -> VarSet -> DVarSet :=
   UniqSet.minusUniqSet.
 
-Definition foldDVarSet {a} : (Var -> a -> a) -> a -> DVarSet -> a :=
+Definition foldDVarSet {a : Type} : (Var -> a -> a) -> a -> DVarSet -> a :=
   UniqSet.nonDetFoldUniqSet.
 
 Definition anyDVarSet :=
@@ -6874,9 +6894,9 @@ Definition transCloDVarSet : (DVarSet -> DVarSet) -> DVarSet -> DVarSet :=
                                       go (unionDVarSet acc new_vs) new_vs) in
     go seeds seeds.
 
-Axiom tickishCounts : forall {id}, Tickish id -> bool.
+Axiom tickishCounts : forall {id : Type}, Tickish id -> bool.
 
-Definition tickishScoped {id} : Tickish id -> TickishScoping :=
+Definition tickishScoped {id : Type} : Tickish id -> TickishScoping :=
   fun arg_0__ =>
     match arg_0__ with
     | (ProfNote _ _ _ as n) =>
@@ -6887,7 +6907,8 @@ Definition tickishScoped {id} : Tickish id -> TickishScoping :=
     | SourceNote _ _ => SoftScope
     end.
 
-Definition tickishScopesLike {id} : Tickish id -> TickishScoping -> bool :=
+Definition tickishScopesLike {id : Type}
+   : Tickish id -> TickishScoping -> bool :=
   fun t scope =>
     let like :=
       fun arg_0__ arg_1__ =>
@@ -6900,7 +6921,7 @@ Definition tickishScopesLike {id} : Tickish id -> TickishScoping -> bool :=
         end in
     like (tickishScoped t) scope.
 
-Definition tickishFloatable {id} : Tickish id -> bool :=
+Definition tickishFloatable {id : Type} : Tickish id -> bool :=
   fun t => andb (tickishScopesLike t SoftScope) (negb (tickishCounts t)).
 
 (* Skipping definition `Core.tickishCanSplit' *)
@@ -6909,9 +6930,9 @@ Definition tickishFloatable {id} : Tickish id -> bool :=
 
 (* Skipping definition `Core.mkNoScope' *)
 
-Axiom tickishIsCode : forall {id}, Tickish id -> bool.
+Axiom tickishIsCode : forall {id : Type}, Tickish id -> bool.
 
-Definition tickishPlace {id} : Tickish id -> TickishPlacement :=
+Definition tickishPlace {id : Type} : Tickish id -> TickishPlacement :=
   fun arg_0__ =>
     match arg_0__ with
     | (ProfNote _ _ _ as n) =>
@@ -7086,19 +7107,19 @@ Definition cmpAltCon : AltCon -> AltCon -> comparison :=
         Lt
     end.
 
-Definition cmpAlt {a} {b}
+Definition cmpAlt {a : Type} {b : Type}
    : (AltCon * a * b)%type -> (AltCon * a * b)%type -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | pair (pair con1 _) _, pair (pair con2 _) _ => cmpAltCon con1 con2
     end.
 
-Definition ltAlt {a} {b}
+Definition ltAlt {a : Type} {b : Type}
    : (AltCon * a * b)%type -> (AltCon * a * b)%type -> bool :=
   fun a1 a2 => (cmpAlt a1 a2) GHC.Base.== Lt.
 
-Fixpoint deTagExpr {t} (arg_0__ : TaggedExpr t) : CoreExpr
-  := let deTagBind (arg_0__ : TaggedBind t) : CoreBind :=
+Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
+  := let deTagBind {t} (arg_0__ : TaggedBind t) : CoreBind :=
        match arg_0__ with
        | NonRec (TB b _) rhs => NonRec b (deTagExpr rhs)
        | Rec prs =>
@@ -7107,7 +7128,7 @@ Fixpoint deTagExpr {t} (arg_0__ : TaggedExpr t) : CoreExpr
                   cons (pair b (deTagExpr rhs)) nil in
                 Coq.Lists.List.flat_map cont_2__ prs)
        end in
-     let deTagAlt (arg_0__ : TaggedAlt t) : CoreAlt :=
+     let deTagAlt {t} (arg_0__ : TaggedAlt t) : CoreAlt :=
        let 'pair (pair con bndrs) rhs := arg_0__ in
        pair (pair con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
                    Coq.Lists.List.flat_map cont_1__ bndrs)) (deTagExpr rhs) in
@@ -7140,36 +7161,36 @@ Definition deTagAlt {t} : TaggedAlt t -> CoreAlt :=
     pair (pair con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
                 Coq.Lists.List.flat_map cont_1__ bndrs)) (deTagExpr rhs).
 
-Definition mkApps {b} : Expr b -> list (Arg b) -> Expr b :=
+Definition mkApps {b : Type} : Expr b -> list (Arg b) -> Expr b :=
   fun f args => Data.Foldable.foldl App f args.
 
-Definition mkCoApps {b} : Expr b -> list Coercion -> Expr b :=
+Definition mkCoApps {b : Type} : Expr b -> list Coercion -> Expr b :=
   fun f args => Data.Foldable.foldl (fun e a => App e (Mk_Coercion a)) f args.
 
-Definition varToCoreExpr {b} : CoreBndr -> Expr b :=
+Definition varToCoreExpr {b : Type} : CoreBndr -> Expr b :=
   fun v =>
     if andb Util.debugIsOn (negb (true)) : bool
     then (Panic.assertPanic (GHC.Base.hs_string__ "ghc/compiler/coreSyn/CoreSyn.hs")
           #1920)
     else Mk_Var v.
 
-Definition mkVarApps {b} : Expr b -> list Var -> Expr b :=
+Definition mkVarApps {b : Type} : Expr b -> list Var -> Expr b :=
   fun f vars => Data.Foldable.foldl (fun e a => App e (varToCoreExpr a)) f vars.
 
-Definition mkConApp {b} : DataCon -> list (Arg b) -> Expr b :=
+Definition mkConApp {b : Type} : DataCon -> list (Arg b) -> Expr b :=
   fun con args => mkApps (Mk_Var (dataConWorkId con)) args.
 
-Definition mkTyArg {b} : Type_ -> Expr b :=
+Definition mkTyArg {b : Type} : Type_ -> Expr b :=
   fun ty =>
     match isCoercionTy_maybe ty with
     | Some co => Mk_Coercion co
     | _ => Mk_Type ty
     end.
 
-Definition mkTyApps {b} : Expr b -> list Type_ -> Expr b :=
+Definition mkTyApps {b : Type} : Expr b -> list Type_ -> Expr b :=
   fun f args => Data.Foldable.foldl (fun e a => App e (mkTyArg a)) f args.
 
-Definition mkConApp2 {b} : DataCon -> list Type_ -> list Var -> Expr b :=
+Definition mkConApp2 {b : Type} : DataCon -> list Type_ -> list Var -> Expr b :=
   fun con tys arg_ids =>
     mkApps (mkApps (Mk_Var (dataConWorkId con)) (GHC.Base.map Mk_Type tys))
            (GHC.Base.map varToCoreExpr arg_ids).
@@ -7186,39 +7207,39 @@ Definition mkConApp2 {b} : DataCon -> list Type_ -> list Var -> Expr b :=
 
 (* Skipping definition `Core.mkInt64LitInt64' *)
 
-Definition mkCharLit {b} : GHC.Char.Char -> Expr b :=
+Definition mkCharLit {b : Type} : GHC.Char.Char -> Expr b :=
   fun c => Lit (mkMachChar c).
 
-Definition mkStringLit {b} : GHC.Base.String -> Expr b :=
+Definition mkStringLit {b : Type} : GHC.Base.String -> Expr b :=
   fun s => Lit (mkMachString s).
 
-Definition mkFloatLit {b} : GHC.Real.Rational -> Expr b :=
+Definition mkFloatLit {b : Type} : GHC.Real.Rational -> Expr b :=
   fun f => Lit (mkMachFloat f).
 
 (* Skipping definition `Core.mkFloatLitFloat' *)
 
-Definition mkDoubleLit {b} : GHC.Real.Rational -> Expr b :=
+Definition mkDoubleLit {b : Type} : GHC.Real.Rational -> Expr b :=
   fun d => Lit (mkMachDouble d).
 
 (* Skipping definition `Core.mkDoubleLitDouble' *)
 
-Definition mkLams {b} : list b -> Expr b -> Expr b :=
+Definition mkLams {b : Type} : list b -> Expr b -> Expr b :=
   fun binders body => Data.Foldable.foldr Lam body binders.
 
-Definition mkLet {b} : Bind b -> Expr b -> Expr b :=
+Definition mkLet {b : Type} : Bind b -> Expr b -> Expr b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Rec nil, body => body
     | bind, body => Let bind body
     end.
 
-Definition mkLets {b} : list (Bind b) -> Expr b -> Expr b :=
+Definition mkLets {b : Type} : list (Bind b) -> Expr b -> Expr b :=
   fun binds body => Data.Foldable.foldr mkLet body binds.
 
-Definition mkLetNonRec {b} : b -> Expr b -> Expr b -> Expr b :=
+Definition mkLetNonRec {b : Type} : b -> Expr b -> Expr b -> Expr b :=
   fun b rhs body => Let (NonRec b rhs) body.
 
-Definition mkLetRec {b} : list (b * Expr b)%type -> Expr b -> Expr b :=
+Definition mkLetRec {b : Type} : list (b * Expr b)%type -> Expr b -> Expr b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | nil, body => body
@@ -7231,7 +7252,7 @@ Definition mkTyBind : TyVar -> Type_ -> CoreBind :=
 Definition mkCoBind : CoVar -> Coercion -> CoreBind :=
   fun cv co => NonRec cv (Mk_Coercion co).
 
-Definition varsToCoreExprs {b} : list CoreBndr -> list (Expr b) :=
+Definition varsToCoreExprs {b : Type} : list CoreBndr -> list (Expr b) :=
   fun vs => GHC.Base.map varToCoreExpr vs.
 
 (* Skipping definition `Core.applyTypeToArg' *)
@@ -7241,7 +7262,7 @@ Definition varsToCoreExprs {b} : list CoreBndr -> list (Expr b) :=
 Definition exprToCoercion_maybe : CoreExpr -> option Coercion :=
   fun arg_0__ => match arg_0__ with | Mk_Coercion co => Some co | _ => None end.
 
-Definition bindersOf {b} : Bind b -> list b :=
+Definition bindersOf {b : Type} : Bind b -> list b :=
   fun arg_0__ =>
     match arg_0__ with
     | NonRec binder _ => cons binder nil
@@ -7250,11 +7271,11 @@ Definition bindersOf {b} : Bind b -> list b :=
         Coq.Lists.List.flat_map cont_2__ pairs
     end.
 
-Definition bindersOfBinds {b} : list (Bind b) -> list b :=
+Definition bindersOfBinds {b : Type} : list (Bind b) -> list b :=
   fun binds =>
     Data.Foldable.foldr (Coq.Init.Datatypes.app GHC.Base.∘ bindersOf) nil binds.
 
-Definition rhssOfBind {b} : Bind b -> list (Expr b) :=
+Definition rhssOfBind {b : Type} : Bind b -> list (Expr b) :=
   fun arg_0__ =>
     match arg_0__ with
     | NonRec _ rhs => cons rhs nil
@@ -7263,19 +7284,20 @@ Definition rhssOfBind {b} : Bind b -> list (Expr b) :=
         Coq.Lists.List.flat_map cont_2__ pairs
     end.
 
-Definition rhssOfAlts {b} : list (Alt b) -> list (Expr b) :=
+Definition rhssOfAlts {b : Type} : list (Alt b) -> list (Expr b) :=
   fun alts =>
     let cont_0__ arg_1__ := let 'pair (pair _ _) e := arg_1__ in cons e nil in
     Coq.Lists.List.flat_map cont_0__ alts.
 
-Fixpoint flattenBinds {b} (arg_0__ : list (Bind b)) : list (b * Expr b)%type
+Fixpoint flattenBinds {b : Type} (arg_0__ : list (Bind b)) : list (b *
+                                                                   Expr b)%type
   := match arg_0__ with
      | cons (NonRec b r) binds => cons (pair b r) (flattenBinds binds)
      | cons (Rec prs1) binds => Coq.Init.Datatypes.app prs1 (flattenBinds binds)
      | nil => nil
      end.
 
-Definition collectBinders {b} : Expr b -> (list b * Expr b)%type :=
+Definition collectBinders {b : Type} : Expr b -> (list b * Expr b)%type :=
   fun expr =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -7317,7 +7339,8 @@ Definition collectTyAndValBinders
     let 'pair ids body := collectValBinders body1 in
     pair (pair tvs ids) body.
 
-Definition collectNBinders {b} : nat -> Expr b -> (list b * Expr b)%type :=
+Definition collectNBinders {b : Type}
+   : nat -> Expr b -> (list b * Expr b)%type :=
   fun orig_n orig_expr =>
     let fix go arg_0__ arg_1__ arg_2__
       := match arg_0__, arg_1__, arg_2__ with
@@ -7331,7 +7354,7 @@ Definition collectNBinders {b} : nat -> Expr b -> (list b * Expr b)%type :=
          end in
     go orig_n nil orig_expr.
 
-Definition collectArgs {b} : Expr b -> (Expr b * list (Arg b))%type :=
+Definition collectArgs {b : Type} : Expr b -> (Expr b * list (Arg b))%type :=
   fun expr =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -7340,7 +7363,7 @@ Definition collectArgs {b} : Expr b -> (Expr b * list (Arg b))%type :=
          end in
     go expr nil.
 
-Definition collectArgsTicks {b}
+Definition collectArgsTicks {b : Type}
    : (Tickish Id -> bool) ->
      Expr b -> (Expr b * list (Arg b) * list (Tickish Id))%type :=
   fun skipTick expr =>
@@ -7354,16 +7377,16 @@ Definition collectArgsTicks {b}
 Definition isRuntimeVar : Var -> bool :=
   isId.
 
-Definition isTypeArg {b} : Expr b -> bool :=
+Definition isTypeArg {b : Type} : Expr b -> bool :=
   fun arg_0__ => match arg_0__ with | Mk_Type _ => true | _ => false end.
 
-Definition isValArg {b} : Expr b -> bool :=
+Definition isValArg {b : Type} : Expr b -> bool :=
   fun e => negb (isTypeArg e).
 
 Definition isRuntimeArg : CoreExpr -> bool :=
   isValArg.
 
-Definition isTyCoArg {b} : Expr b -> bool :=
+Definition isTyCoArg {b : Type} : Expr b -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | Mk_Type _ => true
@@ -7374,10 +7397,10 @@ Definition isTyCoArg {b} : Expr b -> bool :=
 Definition valBndrCount : list CoreBndr -> nat :=
   Util.count isId.
 
-Definition valArgCount {b} : list (Arg b) -> nat :=
+Definition valArgCount {b : Type} : list (Arg b) -> nat :=
   Util.count isValArg.
 
-Program Definition collectAnnArgs {b} {a}
+Program Definition collectAnnArgs {b : Type} {a : Type}
    : AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a))%type :=
   fun expr =>
     let go :=
@@ -7390,7 +7413,7 @@ Program Definition collectAnnArgs {b} {a}
     go expr nil.
 Solve Obligations with (solve_collectAnnArgsTicks).
 
-Program Definition collectAnnArgsTicks {b} {a}
+Program Definition collectAnnArgsTicks {b : Type} {a : Type}
    : (Tickish Var -> bool) ->
      AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a) * list (Tickish Var))%type :=
   fun tickishOk expr =>
@@ -7405,12 +7428,13 @@ Program Definition collectAnnArgsTicks {b} {a}
 Solve Obligations with (solve_collectAnnArgsTicks).
 
 Definition deAnnotate'
-   : forall {bndr} {annot}, AnnExpr' bndr annot -> Expr bndr :=
-  fix deAnnotate' {bndr} {annot} (arg_0__ : AnnExpr' bndr annot) : Expr bndr
-    := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
+   : forall {bndr : Type} {annot : Type}, AnnExpr' bndr annot -> Expr bndr :=
+  fix deAnnotate' {bndr annot : Type} (arg_0__ : AnnExpr' bndr annot) : Expr bndr
+    := let deAnnotate {bndr annot : Type} (arg_0__ : AnnExpr bndr annot)
+        : Expr bndr :=
          let 'pair _ e := arg_0__ in
          deAnnotate' e in
-       let deAnnAlt {bndr} {annot} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
+       let deAnnAlt {bndr annot : Type} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
          let 'pair (pair con args) rhs := arg_0__ in
          pair (pair con args) (deAnnotate rhs) in
        match arg_0__ with
@@ -7425,8 +7449,9 @@ Definition deAnnotate'
        | AnnCase scrut v t alts =>
            Case (deAnnotate scrut) v t (GHC.Base.map deAnnAlt alts)
        end
-  with deAnnBind {b} {annot} (arg_0__ : AnnBind b annot) : Bind b
-    := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
+  with deAnnBind {b annot : Type} (arg_0__ : AnnBind b annot) : Bind b
+    := let deAnnotate {bndr annot : Type} (arg_0__ : AnnExpr bndr annot)
+        : Expr bndr :=
          let 'pair _ e := arg_0__ in
          deAnnotate' e in
        match arg_0__ with
@@ -7438,18 +7463,22 @@ Definition deAnnotate'
                 Coq.Lists.List.flat_map cont_2__ pairs)
        end for deAnnotate'.
 
-Definition deAnnotate {bndr} {annot} : AnnExpr bndr annot -> Expr bndr :=
+Definition deAnnotate {bndr : Type} {annot : Type}
+   : AnnExpr bndr annot -> Expr bndr :=
   fun '(pair _ e) => deAnnotate' e.
 
-Definition deAnnAlt {bndr} {annot} : AnnAlt bndr annot -> Alt bndr :=
+Definition deAnnAlt {bndr : Type} {annot : Type}
+   : AnnAlt bndr annot -> Alt bndr :=
   fun '(pair (pair con args) rhs) => pair (pair con args) (deAnnotate rhs).
 
-Definition deAnnBind : forall {b} {annot}, AnnBind b annot -> Bind b :=
-  fix deAnnotate' {bndr} {annot} (arg_0__ : AnnExpr' bndr annot) : Expr bndr
-    := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
+Definition deAnnBind
+   : forall {b : Type} {annot : Type}, AnnBind b annot -> Bind b :=
+  fix deAnnotate' {bndr annot : Type} (arg_0__ : AnnExpr' bndr annot) : Expr bndr
+    := let deAnnotate {bndr annot : Type} (arg_0__ : AnnExpr bndr annot)
+        : Expr bndr :=
          let 'pair _ e := arg_0__ in
          deAnnotate' e in
-       let deAnnAlt {bndr} {annot} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
+       let deAnnAlt {bndr annot : Type} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
          let 'pair (pair con args) rhs := arg_0__ in
          pair (pair con args) (deAnnotate rhs) in
        match arg_0__ with
@@ -7464,8 +7493,9 @@ Definition deAnnBind : forall {b} {annot}, AnnBind b annot -> Bind b :=
        | AnnCase scrut v t alts =>
            Case (deAnnotate scrut) v t (GHC.Base.map deAnnAlt alts)
        end
-  with deAnnBind {b} {annot} (arg_0__ : AnnBind b annot) : Bind b
-    := let deAnnotate {bndr} {annot} (arg_0__ : AnnExpr bndr annot) : Expr bndr :=
+  with deAnnBind {b annot : Type} (arg_0__ : AnnBind b annot) : Bind b
+    := let deAnnotate {bndr annot : Type} (arg_0__ : AnnExpr bndr annot)
+        : Expr bndr :=
          let 'pair _ e := arg_0__ in
          deAnnotate' e in
        match arg_0__ with
@@ -7477,7 +7507,7 @@ Definition deAnnBind : forall {b} {annot}, AnnBind b annot -> Bind b :=
                 Coq.Lists.List.flat_map cont_2__ pairs)
        end for deAnnBind.
 
-Program Definition collectAnnBndrs {bndr} {annot}
+Program Definition collectAnnBndrs {bndr : Type} {annot : Type}
    : AnnExpr bndr annot -> (list bndr * AnnExpr bndr annot)%type :=
   fun e =>
     let collect :=
@@ -7492,11 +7522,11 @@ Program Definition collectAnnBndrs {bndr} {annot}
 (* Skipping definition `Core.collectNAnnBndrs' *)
 
 (* External variables:
-     BranchIndex Branched BuiltInSynFamily CType CoAxBranch CoAxiom CoAxiomRule
-     Coercion CostCentre DataConBoxer Eq ForeignCall Gt Kind Literal Lt None PredType
-     PrimOp Role Some ThetaType TyBinder TyThing Type Type_ Unbranched andb bool
-     comparison cons false list mkMachChar mkMachDouble mkMachFloat mkMachString nat
-     negb nil op_zt__ option orb pair size_AnnExpr' snd true tt unit
+     BranchFlag BranchIndex Branched BuiltInSynFamily CType CoAxBranch CoAxiom
+     CoAxiomRule Coercion CostCentre DataConBoxer Eq ForeignCall Gt Kind Literal Lt
+     None PredType PrimOp Role Some ThetaType TyBinder TyThing Type Type_ Unbranched
+     andb bool comparison cons false list mkMachChar mkMachDouble mkMachFloat
+     mkMachString nat negb nil op_zt__ option orb pair size_AnnExpr' snd true tt unit
      BasicTypes.Activation BasicTypes.AlwaysActive BasicTypes.Arity BasicTypes.Boxity
      BasicTypes.ConTag BasicTypes.ConTagZ BasicTypes.DefMethSpec
      BasicTypes.IAmALoopBreaker BasicTypes.IAmDead BasicTypes.InlinePragma

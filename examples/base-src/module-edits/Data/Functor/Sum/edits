@@ -1,4 +1,5 @@
-data kinds Data.Functor.Sum.Sum (Type -> Type),(Type -> Type)
+polykinds Data.Functor.Sum.Sum k
+data kinds Data.Functor.Sum.Sum (k -> Type),(k -> Type), k
 
 order Data.Functor.Sum.Eq___Sum Data.Functor.Sum.Ord__Sum
 

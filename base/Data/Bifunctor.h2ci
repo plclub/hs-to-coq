@@ -15,22 +15,29 @@ classTypes:
   Data.Bifunctor.Bifunctor: fromList []
 classDefns:
   Data.Bifunctor.Bifunctor: ClassDefinition (Qualified "Data.Bifunctor" "Bifunctor")
-    [ExplicitBinder (Ident (Bare "p"))] Nothing [(Qualified "Data.Bifunctor" "bimap",Forall
-    (ImplicitBinders (Ident (Bare "a") :| []) :| [ImplicitBinders (Ident (Bare "b")
-    :| []),ImplicitBinders (Ident (Bare "c") :| []),ImplicitBinders (Ident (Bare "d")
-    :| [])]) (Arrow (Parens (Arrow (Qualid (Bare "a")) (Qualid (Bare "b")))) (Arrow
-    (Parens (Arrow (Qualid (Bare "c")) (Qualid (Bare "d")))) (Arrow (App (App (Qualid
-    (Bare "p")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid (Bare "c")) :|
-    [])) (App (App (Qualid (Bare "p")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg
-    (Qualid (Bare "d")) :| [])))))),(Qualified "Data.Bifunctor" "first",Forall (ImplicitBinders
-    (Ident (Bare "a") :| []) :| [ImplicitBinders (Ident (Bare "b") :| []),ImplicitBinders
-    (Ident (Bare "c") :| [])]) (Arrow (Parens (Arrow (Qualid (Bare "a")) (Qualid (Bare
-    "b")))) (Arrow (App (App (Qualid (Bare "p")) (PosArg (Qualid (Bare "a")) :| []))
-    (PosArg (Qualid (Bare "c")) :| [])) (App (App (Qualid (Bare "p")) (PosArg (Qualid
-    (Bare "b")) :| [])) (PosArg (Qualid (Bare "c")) :| []))))),(Qualified "Data.Bifunctor"
-    "second",Forall (ImplicitBinders (Ident (Bare "b") :| []) :| [ImplicitBinders
-    (Ident (Bare "c") :| []),ImplicitBinders (Ident (Bare "a") :| [])]) (Arrow (Parens
-    (Arrow (Qualid (Bare "b")) (Qualid (Bare "c")))) (Arrow (App (App (Qualid (Bare
-    "p")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid (Bare "b")) :| []))
+    [Typed Ungeneralizable Explicit (Ident (Bare "p") :| []) (Arrow (Qualid (Bare
+    "Type")) (Arrow (Qualid (Bare "Type")) (Qualid (Bare "Type"))))] Nothing [(Qualified
+    "Data.Bifunctor" "bimap",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a")
+    :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident
+    (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable
+    Implicit (Ident (Bare "c") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed
+    Ungeneralizable Implicit (Ident (Bare "d") :| []) (Qualid (Bare "Type")) :| [])
+    (Arrow (Arrow (Qualid (Bare "a")) (Qualid (Bare "b"))) (Arrow (Arrow (Qualid (Bare
+    "c")) (Qualid (Bare "d"))) (Arrow (App (App (Qualid (Bare "p")) (PosArg (Qualid
+    (Bare "a")) :| [])) (PosArg (Qualid (Bare "c")) :| [])) (App (App (Qualid (Bare
+    "p")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare "d")) :| []))))))))),(Qualified
+    "Data.Bifunctor" "first",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a")
+    :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident
+    (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable
+    Implicit (Ident (Bare "c") :| []) (Qualid (Bare "Type")) :| []) (Arrow (Arrow
+    (Qualid (Bare "a")) (Qualid (Bare "b"))) (Arrow (App (App (Qualid (Bare "p"))
+    (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid (Bare "c")) :| [])) (App (App
+    (Qualid (Bare "p")) (PosArg (Qualid (Bare "b")) :| [])) (PosArg (Qualid (Bare
+    "c")) :| []))))))),(Qualified "Data.Bifunctor" "second",Forall (Typed Ungeneralizable
+    Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed
+    Ungeneralizable Implicit (Ident (Bare "c") :| []) (Qualid (Bare "Type")) :| [])
+    (Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid (Bare
+    "Type")) :| []) (Arrow (Arrow (Qualid (Bare "b")) (Qualid (Bare "c"))) (Arrow
     (App (App (Qualid (Bare "p")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid
-    (Bare "c")) :| [])))))]
+    (Bare "b")) :| [])) (App (App (Qualid (Bare "p")) (PosArg (Qualid (Bare "a"))
+    :| [])) (PosArg (Qualid (Bare "c")) :| [])))))))]

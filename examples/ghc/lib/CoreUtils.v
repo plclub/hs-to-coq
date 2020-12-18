@@ -129,13 +129,13 @@ Definition isSaturatedConApp : Core.CoreExpr -> bool :=
 
 (* Skipping definition `CoreUtils.stripTicksTop' *)
 
-Definition stripTicksTopE {b}
+Definition stripTicksTopE {b : Type}
    : (Core.Tickish Core.Id -> bool) -> Core.Expr b -> Core.Expr b :=
   fun p => let go := fun '(other) => other in go.
 
 (* Skipping definition `CoreUtils.stripTicksTopT' *)
 
-Definition stripTicksE {b}
+Definition stripTicksE {b : Type}
    : (Core.Tickish Core.Id -> bool) -> Core.Expr b -> Core.Expr b :=
   fun p expr =>
     let go :=
@@ -186,7 +186,7 @@ Definition stripTicksE {b}
       fun '(pair (pair c bs) e) => pair (pair c bs) (go e) in
     go expr.
 
-Definition stripTicksT {b}
+Definition stripTicksT {b : Type}
    : (Core.Tickish Core.Id -> bool) ->
      Core.Expr b -> list (Core.Tickish Core.Id) :=
   fun p expr =>
@@ -262,7 +262,7 @@ Definition mkAltExpr
     | Core.DEFAULT, _, _ => Panic.panic (GHC.Base.hs_string__ "mkAltExpr DEFAULT")
     end.
 
-Definition findDefault {a} {b}
+Definition findDefault {a : Type} {b : Type}
    : list (Core.AltCon * list a * b)%type ->
      (list (Core.AltCon * list a * b)%type * option b)%type :=
   fun arg_0__ =>
@@ -275,7 +275,7 @@ Definition findDefault {a} {b}
     | alts => pair alts None
     end.
 
-Definition addDefault {a} {b}
+Definition addDefault {a : Type} {b : Type}
    : list (Core.AltCon * list a * b)%type ->
      option b -> list (Core.AltCon * list a * b)%type :=
   fun arg_0__ arg_1__ =>
@@ -284,14 +284,15 @@ Definition addDefault {a} {b}
     | alts, Some rhs => cons (pair (pair Core.DEFAULT nil) rhs) alts
     end.
 
-Definition isDefaultAlt {a} {b} : (Core.AltCon * a * b)%type -> bool :=
+Definition isDefaultAlt {a : Type} {b : Type}
+   : (Core.AltCon * a * b)%type -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | pair (pair Core.DEFAULT _) _ => true
     | _ => false
     end.
 
-Definition findAlt {a} {b}
+Definition findAlt {a : Type} {b : Type}
    : Core.AltCon ->
      list (Core.AltCon * a * b)%type -> option (Core.AltCon * a * b)%type :=
   fun con alts =>
@@ -314,7 +315,7 @@ Definition findAlt {a} {b}
     | _ => go alts None
     end.
 
-Definition mergeAlts {a} {b}
+Definition mergeAlts {a : Type} {b : Type}
    : list (Core.AltCon * a * b)%type ->
      list (Core.AltCon * a * b)%type -> list (Core.AltCon * a * b)%type :=
   GHC.DeferredFix.deferredFix1 (fun mergeAlts
@@ -347,7 +348,7 @@ Definition trimConArgs
     | Core.DataAlt dc, args => Util.dropList (Core.dataConUnivTyVars dc) args
     end.
 
-Definition filterAlts {a}
+Definition filterAlts {a : Type}
    : Core.TyCon ->
      list AxiomatizedTypes.Type_ ->
      list Core.AltCon ->
@@ -531,7 +532,7 @@ Axiom expr_ok : (AxiomatizedTypes.PrimOp -> bool) -> Core.CoreExpr -> bool.
 Axiom app_ok : (AxiomatizedTypes.PrimOp -> bool) ->
                Core.Id -> list Core.CoreExpr -> bool.
 
-Definition altsAreExhaustive {b} : list (Core.Alt b) -> bool :=
+Definition altsAreExhaustive {b : Type} : list (Core.Alt b) -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | nil => false
@@ -612,13 +613,13 @@ Axiom dataConInstPat : list FastString.FastString ->
                        Core.DataCon ->
                        list AxiomatizedTypes.Type_ -> (list Core.TyVar * list Core.Id)%type.
 
-Axiom cheapEqExpr' : forall {b},
+Axiom cheapEqExpr' : forall {b : Type},
                      (Core.Tickish Core.Id -> bool) -> Core.Expr b -> Core.Expr b -> bool.
 
-Definition cheapEqExpr {b} : Core.Expr b -> Core.Expr b -> bool :=
+Definition cheapEqExpr {b : Type} : Core.Expr b -> Core.Expr b -> bool :=
   cheapEqExpr' (GHC.Base.const false).
 
-Fixpoint exprIsBig {b} (arg_0__ : Core.Expr b) : bool
+Fixpoint exprIsBig {b : Type} (arg_0__ : Core.Expr b) : bool
   := match arg_0__ with
      | Core.Lit _ => false
      | Core.Mk_Var _ => false
@@ -633,8 +634,7 @@ Fixpoint exprIsBig {b} (arg_0__ : Core.Expr b) : bool
 Definition eqExpr : Core.InScopeSet -> Core.CoreExpr -> Core.CoreExpr -> bool :=
   fun in_scope e1 e2 =>
     let fix go arg_0__ arg_1__ arg_2__
-      := let go_alt (arg_18__ : Core.RnEnv2) (arg_19__ arg_20__ : Core.CoreAlt)
-          : bool :=
+      := let go_alt arg_18__ arg_19__ arg_20__ :=
            match arg_18__, arg_19__, arg_20__ with
            | env, pair (pair c1 bs1) e1, pair (pair c2 bs2) e2 =>
                andb (c1 GHC.Base.== c2) (go (Core.rnBndrs2 env bs1 bs2) e1 e2)
@@ -669,7 +669,7 @@ Definition eqExpr : Core.InScopeSet -> Core.CoreExpr -> Core.CoreExpr -> bool :=
                                                                           b2)) id id a1 a2)
          | _, _, _ => false
          end in
-    let go_alt : Core.RnEnv2 -> Core.CoreAlt -> Core.CoreAlt -> bool :=
+    let go_alt :=
       fun arg_18__ arg_19__ arg_20__ =>
         match arg_18__, arg_19__, arg_20__ with
         | env, pair (pair c1 bs1) e1, pair (pair c2 bs2) e2 =>
@@ -738,8 +738,8 @@ Definition isJoinBind : Core.CoreBind -> bool :=
     end.
 
 (* External variables:
-     Eq Gt Lt None Some andb bool cons false id list nat negb nil op_zt__ option orb
-     pair snd true AxiomatizedTypes.Coercion AxiomatizedTypes.PrimOp
+     Eq Gt Lt None Some Type andb bool cons false id list nat negb nil op_zt__ option
+     orb pair snd true AxiomatizedTypes.Coercion AxiomatizedTypes.PrimOp
      AxiomatizedTypes.Representational AxiomatizedTypes.Type_ BasicTypes.Arity
      Coq.Init.Datatypes.app Coq.Lists.List.flat_map Core.Alt Core.AltCon Core.App
      Core.Breakpoint Core.Case Core.Cast Core.CoreAlt Core.CoreArg Core.CoreBind

@@ -45,15 +45,15 @@ Instance Unpeel_Identity a : Prim.Unpeel (Identity a) a :=
 (* Skipping all instances of class `GHC.Enum.Enum', including
    `Data.Functor.Identity.Enum__Identity' *)
 
-Local Definition Eq___Identity_op_zeze__ {inst_a} `{GHC.Base.Eq_ inst_a}
+Local Definition Eq___Identity_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.==_.
 
-Local Definition Eq___Identity_op_zsze__ {inst_a} `{GHC.Base.Eq_ inst_a}
+Local Definition Eq___Identity_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base./=_.
 
-Program Instance Eq___Identity {a} `{GHC.Base.Eq_ a}
+Program Instance Eq___Identity {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (Identity a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Identity_op_zeze__ ;
@@ -80,29 +80,32 @@ Program Instance Eq___Identity {a} `{GHC.Base.Eq_ a}
 (* Skipping all instances of class `GHC.Arr.Ix', including
    `Data.Functor.Identity.Ix__Identity' *)
 
-Local Definition Semigroup__Identity_op_zlzlzgzg__ {inst_a} `{GHC.Base.Semigroup
-  inst_a}
+Local Definition Semigroup__Identity_op_zlzlzgzg__ {inst_a : Type}
+  `{GHC.Base.Semigroup inst_a}
    : Identity inst_a -> Identity inst_a -> Identity inst_a :=
   GHC.Prim.coerce _GHC.Base.<<>>_.
 
-Program Instance Semigroup__Identity {a} `{GHC.Base.Semigroup a}
+Program Instance Semigroup__Identity {a : Type} `{GHC.Base.Semigroup a}
    : GHC.Base.Semigroup (Identity a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Identity_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__Identity_mappend {inst_a} `{GHC.Base.Monoid inst_a}
+Local Definition Monoid__Identity_mappend {inst_a : Type} `{GHC.Base.Monoid
+  inst_a}
    : Identity inst_a -> Identity inst_a -> Identity inst_a :=
   GHC.Prim.coerce GHC.Base.mappend.
 
-Local Definition Monoid__Identity_mconcat {inst_a} `{GHC.Base.Monoid inst_a}
+Local Definition Monoid__Identity_mconcat {inst_a : Type} `{GHC.Base.Monoid
+  inst_a}
    : list (Identity inst_a) -> Identity inst_a :=
   GHC.Prim.coerce GHC.Base.mconcat.
 
-Local Definition Monoid__Identity_mempty {inst_a} `{GHC.Base.Monoid inst_a}
+Local Definition Monoid__Identity_mempty {inst_a : Type} `{GHC.Base.Monoid
+  inst_a}
    : Identity inst_a :=
   GHC.Prim.coerce GHC.Base.mempty.
 
-Program Instance Monoid__Identity {a} `{GHC.Base.Monoid a}
+Program Instance Monoid__Identity {a : Type} `{GHC.Base.Monoid a}
    : GHC.Base.Monoid (Identity a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Identity_mappend ;
@@ -112,35 +115,35 @@ Program Instance Monoid__Identity {a} `{GHC.Base.Monoid a}
 (* Skipping all instances of class `GHC.Num.Num', including
    `Data.Functor.Identity.Num__Identity' *)
 
-Local Definition Ord__Identity_op_zl__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Identity_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<_.
 
-Local Definition Ord__Identity_op_zlze__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Identity_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.<=_.
 
-Local Definition Ord__Identity_op_zg__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Identity_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>_.
 
-Local Definition Ord__Identity_op_zgze__ {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Identity_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> bool :=
   GHC.Prim.coerce _GHC.Base.>=_.
 
-Local Definition Ord__Identity_compare {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Identity_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> comparison :=
   GHC.Prim.coerce GHC.Base.compare.
 
-Local Definition Ord__Identity_max {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Identity_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> Identity inst_a :=
   GHC.Prim.coerce GHC.Base.max.
 
-Local Definition Ord__Identity_min {inst_a} `{GHC.Base.Ord inst_a}
+Local Definition Ord__Identity_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Identity inst_a -> Identity inst_a -> Identity inst_a :=
   GHC.Prim.coerce GHC.Base.min.
 
-Program Instance Ord__Identity {a} `{GHC.Base.Ord a}
+Program Instance Ord__Identity {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (Identity a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Identity_op_zl__ ;
@@ -170,127 +173,150 @@ Program Instance Ord__Identity {a} `{GHC.Base.Ord a}
    `Data.Functor.Identity.Show__Identity' *)
 
 Local Definition Foldable__Identity_foldMap
-   : forall {m} {a}, forall `{GHC.Base.Monoid m}, (a -> m) -> Identity a -> m :=
-  fun {m} {a} `{GHC.Base.Monoid m} => GHC.Prim.coerce.
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Identity a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} => GHC.Prim.coerce.
 
 Local Definition Foldable__Identity_fold
-   : forall {m}, forall `{GHC.Base.Monoid m}, Identity m -> m :=
-  fun {m} `{GHC.Base.Monoid m} => Foldable__Identity_foldMap GHC.Base.id.
+   : forall {m : Type}, forall `{GHC.Base.Monoid m}, Identity m -> m :=
+  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Identity_foldMap GHC.Base.id.
 
 Local Definition Foldable__Identity_foldl
-   : forall {b} {a}, (b -> a -> b) -> b -> Identity a -> b :=
-  fun {b} {a} => GHC.Prim.coerce.
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Identity a -> b :=
+  fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
 Local Definition Foldable__Identity_foldl'
-   : forall {b} {a}, (b -> a -> b) -> b -> Identity a -> b :=
-  fun {b} {a} => GHC.Prim.coerce.
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Identity a -> b :=
+  fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
 Local Definition Foldable__Identity_foldr
-   : forall {a} {b}, (a -> b -> b) -> b -> Identity a -> b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> Identity a -> b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | f, z, Mk_Identity x => f x z
       end.
 
 Local Definition Foldable__Identity_foldr'
-   : forall {a} {b}, (a -> b -> b) -> b -> Identity a -> b :=
-  fun {a} {b} => Foldable__Identity_foldr.
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> Identity a -> b :=
+  fun {a : Type} {b : Type} => Foldable__Identity_foldr.
 
 Local Definition Foldable__Identity_length
-   : forall {a}, Identity a -> GHC.Num.Int :=
-  fun {a} => fun arg_0__ => #1.
+   : forall {a : Type}, Identity a -> GHC.Num.Int :=
+  fun {a : Type} => fun arg_0__ => #1.
 
-Local Definition Foldable__Identity_null : forall {a}, Identity a -> bool :=
-  fun {a} => fun arg_0__ => false.
+Local Definition Foldable__Identity_null
+   : forall {a : Type}, Identity a -> bool :=
+  fun {a : Type} => fun arg_0__ => false.
 
 Local Definition Foldable__Identity_product
-   : forall {a}, forall `{GHC.Num.Num a}, Identity a -> a :=
-  fun {a} `{GHC.Num.Num a} => runIdentity.
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Identity a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} => runIdentity.
 
 Local Definition Foldable__Identity_sum
-   : forall {a}, forall `{GHC.Num.Num a}, Identity a -> a :=
-  fun {a} `{GHC.Num.Num a} => runIdentity.
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Identity a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} => runIdentity.
 
-Local Definition Foldable__Identity_toList : forall {a}, Identity a -> list a :=
-  fun {a} => fun '(Mk_Identity x) => cons x nil.
+Local Definition Foldable__Identity_toList
+   : forall {a : Type}, Identity a -> list a :=
+  fun {a : Type} => fun '(Mk_Identity x) => cons x nil.
 
 Program Instance Foldable__Identity : Data.Foldable.Foldable Identity :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__Identity_fold ;
-           Data.Foldable.foldMap__ := fun {m} {a} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Identity_foldMap ;
-           Data.Foldable.foldl__ := fun {b} {a} => Foldable__Identity_foldl ;
-           Data.Foldable.foldl'__ := fun {b} {a} => Foldable__Identity_foldl' ;
-           Data.Foldable.foldr__ := fun {a} {b} => Foldable__Identity_foldr ;
-           Data.Foldable.foldr'__ := fun {a} {b} => Foldable__Identity_foldr' ;
-           Data.Foldable.length__ := fun {a} => Foldable__Identity_length ;
-           Data.Foldable.null__ := fun {a} => Foldable__Identity_null ;
-           Data.Foldable.product__ := fun {a} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Identity_foldl ;
+           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} =>
+             Foldable__Identity_foldl' ;
+           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Identity_foldr ;
+           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} =>
+             Foldable__Identity_foldr' ;
+           Data.Foldable.length__ := fun {a : Type} => Foldable__Identity_length ;
+           Data.Foldable.null__ := fun {a : Type} => Foldable__Identity_null ;
+           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
              Foldable__Identity_product ;
-           Data.Foldable.sum__ := fun {a} `{GHC.Num.Num a} => Foldable__Identity_sum ;
-           Data.Foldable.toList__ := fun {a} => Foldable__Identity_toList |}.
+           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+             Foldable__Identity_sum ;
+           Data.Foldable.toList__ := fun {a : Type} => Foldable__Identity_toList |}.
 
 Local Definition Functor__Identity_fmap
-   : forall {a} {b}, (a -> b) -> Identity a -> Identity b :=
-  fun {a} {b} => GHC.Prim.coerce.
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> Identity a -> Identity b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce.
 
 Local Definition Functor__Identity_op_zlzd__
-   : forall {a} {b}, a -> Identity b -> Identity a :=
-  fun {a} {b} => Functor__Identity_fmap GHC.Base.∘ GHC.Base.const.
+   : forall {a : Type}, forall {b : Type}, a -> Identity b -> Identity a :=
+  fun {a : Type} {b : Type} => Functor__Identity_fmap GHC.Base.∘ GHC.Base.const.
 
 Program Instance Functor__Identity : GHC.Base.Functor Identity :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__Identity_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__Identity_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Identity_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__Identity_op_zlzd__ |}.
 
 Local Definition Applicative__Identity_liftA2
-   : forall {a} {b} {c},
-     (a -> b -> c) -> Identity a -> Identity b -> Identity c :=
-  fun {a} {b} {c} => GHC.Prim.coerce.
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type}, (a -> b -> c) -> Identity a -> Identity b -> Identity c :=
+  fun {a : Type} {b : Type} {c : Type} => GHC.Prim.coerce.
 
 Local Definition Applicative__Identity_op_zlztzg__
-   : forall {a} {b}, Identity (a -> b) -> Identity a -> Identity b :=
-  fun {a} {b} => GHC.Prim.coerce.
+   : forall {a : Type},
+     forall {b : Type}, Identity (a -> b) -> Identity a -> Identity b :=
+  fun {a : Type} {b : Type} => GHC.Prim.coerce.
 
 Local Definition Applicative__Identity_op_ztzg__
-   : forall {a} {b}, Identity a -> Identity b -> Identity b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, Identity a -> Identity b -> Identity b :=
+  fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__Identity_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__Identity_pure : forall {a}, a -> Identity a :=
-  fun {a} => Mk_Identity.
+Local Definition Applicative__Identity_pure
+   : forall {a : Type}, a -> Identity a :=
+  fun {a : Type} => Mk_Identity.
 
 Program Instance Applicative__Identity : GHC.Base.Applicative Identity :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__Identity_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__Identity_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__Identity_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__Identity_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__Identity_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Identity_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Identity_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__Identity_pure |}.
 
 Local Definition Monad__Identity_op_zgzgze__
-   : forall {a} {b}, Identity a -> (a -> Identity b) -> Identity b :=
-  fun {a} {b} => fun m k => k (runIdentity m).
+   : forall {a : Type},
+     forall {b : Type}, Identity a -> (a -> Identity b) -> Identity b :=
+  fun {a : Type} {b : Type} => fun m k => k (runIdentity m).
 
 Local Definition Monad__Identity_op_zgzg__
-   : forall {a} {b}, Identity a -> Identity b -> Identity b :=
-  fun {a} {b} => fun m k => Monad__Identity_op_zgzgze__ m (fun arg_0__ => k).
+   : forall {a : Type},
+     forall {b : Type}, Identity a -> Identity b -> Identity b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__Identity_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__Identity_return_ : forall {a}, a -> Identity a :=
-  fun {a} => GHC.Base.pure.
+Local Definition Monad__Identity_return_ : forall {a : Type}, a -> Identity a :=
+  fun {a : Type} => GHC.Base.pure.
 
 Program Instance Monad__Identity : GHC.Base.Monad Identity :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__Identity_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__Identity_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__Identity_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__Identity_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+             Monad__Identity_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__Identity_return_ |}.
 
 (* Skipping all instances of class `Control.Monad.Fix.MonadFix', including
    `Data.Functor.Identity.MonadFix__Identity' *)
 
 (* External variables:
-     bool comparison cons false list nil Data.Foldable.Foldable
+     Type bool comparison cons false list nil Data.Foldable.Foldable
      Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
      Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
      Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__

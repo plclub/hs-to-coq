@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE BangPatterns, TupleSections, LambdaCase, RecordWildCards, TypeApplications, FlexibleContexts, DeriveDataTypeable, OverloadedLists, OverloadedStrings, ScopedTypeVariables, MultiWayIf, RankNTypes  #-}
+{-# LANGUAGE BangPatterns, LambdaCase, RecordWildCards, TypeApplications, FlexibleContexts, DeriveDataTypeable, OverloadedLists, OverloadedStrings, ScopedTypeVariables, MultiWayIf, RankNTypes  #-}
 
 #include "ghc-compat.h"
 
@@ -9,8 +9,6 @@ module HsToCoq.ConvertHaskell.Module (
   convertModules, convertModule,
   -- ** Extract all the declarations from a module
   ModuleDeclarations(..), moduleDeclarations,
-  -- * Convert declaration groups
-  ConvertedModuleDeclarations(..), convertHsGroup,
 ) where
 
 import Control.Lens
@@ -58,6 +56,7 @@ import HsToCoq.ConvertHaskell.Declarations.TyCl
 import HsToCoq.ConvertHaskell.Declarations.Instances
 import HsToCoq.ConvertHaskell.Declarations.Notations
 import HsToCoq.ConvertHaskell.Axiomatize
+import HsToCoq.ConvertHaskell.TypeEnv.Instances
 import HsToCoq.Coq.Preamble
 import HsToCoq.Coq.Pretty (textP)
 
@@ -72,13 +71,14 @@ data ConvertedModuleDeclarations =
                               }
   deriving (Eq, Ord, Show, Data)
 
-annotateFixpoint :: [Binder] -> (Maybe Term) -> [Binder]
+
+annotateFixpoint :: [Binder] -> Maybe Term -> [Binder]
 annotateFixpoint [] _ = []
 annotateFixpoint (ExplicitBinder n:tl) (Just (Arrow x y)) =
-  (Typed Generalizable Explicit (fromList [n]) x):(annotateFixpoint tl (Just y))
+  Typed Generalizable Explicit (fromList [n]) x:annotateFixpoint tl (Just y)
 annotateFixpoint (ImplicitBinders ns:tl) (Just (Arrow x y)) =
-  (Typed Generalizable Implicit ns x):(annotateFixpoint tl (Just y))
-annotateFixpoint (a:tl) (Just (Arrow _ y)) = a:(annotateFixpoint tl (Just y))
+  Typed Generalizable Implicit ns x:annotateFixpoint tl (Just y)
+annotateFixpoint (a:tl) (Just (Arrow _ y)) = a:annotateFixpoint tl (Just y)
 annotateFixpoint x _ = x
 
 convertedBindingName :: ConvertedBinding -> Maybe Qualid
@@ -105,9 +105,9 @@ convertBinding sigs (ConvertedDefinitionBinding cdef@ConvertedDefinition{_convDe
                                          (cdef^.convDefType)
                                          (cdef^.convDefBody) NotExistingClass
           in pure $
-             [ case (cdef^.convDefBody) of
+             [ case cdef^.convDefBody of
                  Fix (FixOne (FixBody qual bind ord mterm term))
-                   -> FixpointSentence (Fixpoint [(FixBody qual (fromList $ (cdef^.convDefArgs) ++ annotateFixpoint (toList (bind)) (cdef^.convDefType)) ord mterm term)] [])
+                   -> FixpointSentence (Fixpoint [FixBody qual (fromList $ (cdef^.convDefArgs) ++ annotateFixpoint (toList bind) (cdef^.convDefType)) ord mterm term] [])
                  _ -> if useProgram
                       then ProgramSentence (DefinitionSentence def) obl
                       else DefinitionSentence def ] ++
@@ -169,18 +169,17 @@ convertHsGroup HsGroup{..} = do
 
         -- defnsMap    :: Map Qualid [Sentence]
         -- sentenceBVs :: Map Qualid (Set Qualid)
-        let sentenceBVs = (S.unions . (fmap (getFreeVars' . bvOf @Qualid))) <$> defnsMap
+        let sentenceBVs = S.unions . fmap (getFreeVars' . bvOf @Qualid) <$> defnsMap
 
         -- transitiveClosure :: Ord a => Reflexivity -> Map a (Set a) -> Map a (Set a)
         let tc = transitiveClosure Reflexive sentenceBVs                -- :: Map Qualid (Set Qualid)
-        let depsList = map (\k -> M.lookup k tc) (S.toList promotions)  -- :: [Maybe (Set Qualid)]
+        let depsList = map (`M.lookup` tc) (S.toList promotions)        -- :: [Maybe (Set Qualid)]
         let depsSet = S.unions $ map (fromMaybe S.empty) depsList       -- :: Set Qualid
                 
         let (promotedSentences, namedSentences') =
               partition (\(name, _) -> name `S.member` depsSet) namedSentences
 
-        pure $ (unnamedSentences ++ (concat (snd <$> namedSentences')),
-                concat (snd <$> promotedSentences))
+        pure (unnamedSentences ++ concat (snd <$> namedSentences'), concat (snd <$> promotedSentences))
 
   -- Derived instances have an UnhelpfulSpan, we put those to the top because
   -- they tend to be self-contained and everything else depends on them.
@@ -188,7 +187,10 @@ convertHsGroup HsGroup{..} = do
       compareSpan (UnhelpfulSpan _) (RealSrcSpan _) = LT
       compareSpan (RealSrcSpan _) (UnhelpfulSpan _) = GT
       compareSpan (RealSrcSpan p) (RealSrcSpan q) = compare p q
-  convertedClsInstDecls <- convertClsInstDecls . map unLoc $ sortBy (compareSpan `on` getLoc)
+
+  instEnv <- view (currentModule.modDetails) >>= instancesOfModDetails
+  
+  convertedClsInstDecls <- convertClsInstDecls instEnv . map unLoc $ sortBy (compareSpan `on` getLoc)
     [L l cid | grp <- hs_tyclds, L l (ClsInstD NOEXTP cid) <- group_instds grp]
 
   (convertedAddedTyCls,convertedAddedDecls) <- view (edits.additions.at mod.non ([],[]))
@@ -227,8 +229,8 @@ renameModule :: GlobalMonad r m => ModuleName -> m ModuleName
 renameModule mod = view $ edits.renamedModules.at mod.non mod
 
 -- Assumes module renaming has been accomplished
-convertModule' :: GlobalMonad r m => ModuleData -> HsGroup GhcRn -> m (ConvertedModule, [ModuleName])
-convertModule' convModData group = do
+convertModule :: GlobalMonad r m => ModuleData -> HsGroup GhcRn -> m (ConvertedModule, [ModuleName])
+convertModule convModData group = do
   withCurrentModule convModData $ do
     ConvertedModuleDeclarations { convertedTyClDecls    = convModTyClDecls
                                 , convertedValDecls     = convModValDecls
@@ -266,13 +268,8 @@ convertModule' convModData group = do
             | mn <- notationModules
             , mn `S.notMember` imported_modules
             ]
-    pure (ConvertedModule{..}, modules)
 
--- Handles module renaming
-convertModule :: GlobalMonad r m => ModuleData -> HsGroup GhcRn -> m (ConvertedModule, [ModuleName])
-convertModule modData@(ModuleData { _modName = convModNameOrig }) group = do
-    convModName <- renameModule convModNameOrig
-    convertModule' modData{ _modName = convModName } group
+    pure (ConvertedModule{..}, modules)
 
 -- Module-local
 data Convert_Module_Mode = Mode_Initial
@@ -296,31 +293,33 @@ instance Monoid Convert_Module_Mode where
 convertModules :: GlobalMonad r m => [(ModuleData, HsGroup GhcRn)] -> m [NonEmpty ConvertedModule]
 convertModules sources = do
   -- Collect modules with the same post-`rename module` name
-  mergedModulesNELs <-  traverse (foldrM buildGroups (emptyRnGroup, emptyRnGroup, mempty, mempty))
+  mergedModulesNELs <-  traverse (foldrM buildGroups (emptyRnGroup, emptyRnGroup, mempty, mempty, mempty))
                     =<< M.fromListWith (<>)
                     <$> traverse (renameModule . _modName . fst <&&&> pure . pure @NonEmpty) sources
 
-  cmods <- for (M.toList mergedModulesNELs) $ \(name, (axGrp, convGrp, mode, combinedExports)) -> 
-            let modData = ModuleData {_modName = name, _modExports = combinedExports} in 
+  cmods <- for (M.toList mergedModulesNELs) $ \(name, (axGrp, convGrp, mode, combinedExports, combinedDetails)) -> 
+            let modData = ModuleData {_modName = name, _modExports = combinedExports, _modDetails = combinedDetails} in 
               case mode of
                 Mode_Axiomatize -> axiomatizeModule' modData (axGrp `appendGroups` convGrp)
-                Mode_Convert    -> convertModule' modData convGrp
-                Mode_Both       -> combineModules <$> axiomatizeModule' modData axGrp <*> convertModule' modData convGrp
+                Mode_Convert    -> convertModule modData convGrp
+                Mode_Both       -> combineModules <$> axiomatizeModule' modData axGrp <*> convertModule modData convGrp
                 Mode_Initial    -> error "INTERNAL ERROR: impossible, `foldrM` over a `NonEmpty`"
 
   pure $ stronglyConnCompNE [(cmod, convModName cmod, imps) | (cmod, imps) <- cmods]
 
   where
-    buildGroups (modData, modGrp) (axGrp, convGrp, mode, combinedExports) =
+    buildGroups (modData, modGrp) (axGrp, convGrp, mode, combinedExports, combinedDetails) =
       view (edits.axiomatizedOriginalModuleNames.contains (modData^.modName)) <&> \case
         True  -> ( modGrp{hs_tyclds = []}                     `appendGroups` axGrp
                  , emptyRnGroup{hs_tyclds = hs_tyclds modGrp} `appendGroups` convGrp
                  , Mode_Axiomatize <> mode
-                 , (modData^.modExports) <> combinedExports )
+                 , (modData^.modExports) <> combinedExports
+                 , (modData^.modDetails) <> combinedDetails )
         False -> ( axGrp
                  , modGrp `appendGroups` convGrp
                  , Mode_Convert <> mode
-                 , (modData^.modExports) <> combinedExports )
+                 , (modData^.modExports) <> combinedExports
+                 , (modData^.modDetails) <> combinedDetails )
 
     combineModules (ConvertedModule name  imports1 tyClDecls1 valDecls1 clsInstDecls1 addedTyCls1 addedDecls1, imps1)
                    (ConvertedModule _name imports2 tyClDecls2 valDecls2 clsInstDecls2 _addedTyCls2 _addedDecls2, imps2) =
@@ -335,7 +334,7 @@ convertModules sources = do
       -- It's OK not to worry about ordering the declarations
       -- because we 'topoSortByVariablesBy' them in 'moduleDeclarations'.
 
-    axiomatizeModule' modData = local (edits.axiomatizedModules %~ S.insert (modData ^. modName)) . convertModule' modData
+    axiomatizeModule' modData = local (edits.axiomatizedModules %~ S.insert (modData ^. modName)) . convertModule modData
 
 data ModuleDeclarations = ModuleDeclarations { moduleTypeDeclarations  :: ![Sentence]
                                              , moduleValueDeclarations :: ![Sentence] }

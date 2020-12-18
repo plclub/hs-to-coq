@@ -41,8 +41,6 @@ axiomatize definition CoreUtils.cheapEqExpr'
 in CoreUtils.eqExpr       inline mutual go_alt
 in CoreUtils.exprIsCheapX inline mutual ok
 
-in CoreUtils.eqExpr set type go_alt : Core.RnEnv2 -> (Core.CoreAlt -> (Core.CoreAlt -> bool))
-
 # Justified by `NestedRecursionHelpers.all2Map_is_all2_map_map` plus changing
 #
 #     let '(xs,ys) := unzip xys in … ys …

@@ -56,6 +56,7 @@ import HsToCoq.Util.GHC.Exception
 import qualified Outputable as GHC
 
 import HsToCoq.Util.GHC
+import HsToCoq.Util.GHC.Module
 import HsToCoq.Util.GHC.Name hiding (Name)
 import HsToCoq.Util.GHC.HsExpr
 import HsToCoq.Util.GHC.HsTypes (selectorFieldOcc_, fieldOcc)
@@ -77,10 +78,12 @@ import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Definitions
 import HsToCoq.ConvertHaskell.Literals
-import HsToCoq.ConvertHaskell.Type
+import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.ConvertHaskell.Pattern
 import HsToCoq.ConvertHaskell.Sigs
 import HsToCoq.ConvertHaskell.Axiomatize
+
+import HsToCoq.ConvertHaskell.TypeEnv.Id
 
 --------------------------------------------------------------------------------
 
@@ -301,7 +304,7 @@ convertExpr_ (RecordUpd recVal fields PlaceHolder PlaceHolder PlaceHolder PlaceH
         let quote f = "`" ++ T.unpack (qualidToIdent f) ++ "'"
         in explainStrItems quote "no" "," "and" what (what ++ "s") updFields
 
-  recType <- S.minView . S.fromList <$> traverse (\field -> lookupRecordFieldType field) updFields >>= \case
+  recType <- S.minView . S.fromList <$> traverse lookupRecordFieldType updFields >>= \case
                Just (Just recType, []) -> pure recType
                Just (Nothing,      []) -> convUnsupported $ "invalid record update with " ++ prettyUpdFields "non-record-field"
                _                       -> convUnsupported $ "invalid mixed-data-type record updates with " ++ prettyUpdFields "the given field"
@@ -538,7 +541,7 @@ convertFunction _ mg | Just alt <- isTrivialMatch mg = convTrivialMatch alt
 convertFunction skipEqns mg = do
   let n_args = matchGroupArity mg
   args <- replicateM n_args (genqid "arg") >>= maybe err pure . nonEmpty
-  let argBinders = (mkBinder Coq.Explicit . Ident) <$> args
+  let argBinders = mkBinder Coq.Explicit . Ident <$> args
   match <- convertMatchGroup skipEqns (Qualid <$> args) mg
   pure (argBinders, match)
  where
@@ -566,9 +569,9 @@ convTrivialMatch ::  LocalConvMonad r m =>
   Match GhcRn (LHsExpr GhcRn) ->  m (Binders, Term)
 convTrivialMatch alt = do
   (MultPattern pats, _, rhs) <- convertMatch alt
-                                  <&> maybe (error "internal error: convTrivialMatch: not a trivial match!") id
+                                  <&> fromMaybe (error "internal error: convTrivialMatch: not a trivial match!")
   names <- mapM patToName pats
-  let argBinders = (mkBinder Explicit) <$> names
+  let argBinders = mkBinder Explicit <$> names
   body <- rhs patternFailure
   return (argBinders, body)
 
@@ -814,7 +817,7 @@ groupMatches pats = map (map snd) . go <$> mapM summarize pats
         -- Append to a group, if mutually exclusive with all members
                | all (mutExcls ps . fst) g -> ((ps,x):g)  : gs
         -- Otherwise, start a new group
-        gs                                 -> ((ps,x):[]) : gs
+        gs                                 -> [(ps,x)]    : gs
 
 
 convertMatch :: LocalConvMonad r m =>
@@ -1081,7 +1084,7 @@ wfFix _ fb = convUnsupportedIn "well-founded recursion cannot handle annotations
 -- find the first name in a pattern binding
 patBindName :: ConversionMonad r m => Pat GhcRn -> m Qualid
 patBindName p = case p of
-  WildPat _ -> convUnsupported' ("no name in binding pattern")
+  WildPat _ -> convUnsupported' "no name in binding pattern"
   GHC.VarPat NOEXTP (L _ hsName)  -> var ExprNS hsName
   LazyPat NOEXTP p -> lpatBindName p
   GHC.AsPat NOEXTP (L _ hsName) _ -> var ExprNS hsName
@@ -1210,10 +1213,16 @@ convertMultipleBindings convertSingleBinding defns0 sigs build mhandler =
        -- nothing else
        runMaybeT . wrap defn . fmap Right $ do
          ty <- case defn of
-                 FunBind{fun_id = L _ hsName} ->
-                   fmap (fmap sigType) . (`lookupSig` sigs) =<< var ExprNS hsName
-                 _ ->
-                   pure Nothing
+                 FunBind{fun_id = L _ hsName} -> do
+                   coqName <- var ExprNS hsName
+                   mod <- view (currentModule.modDetails)
+                   env <- withCurrentDefinition coqName $ idEnvOfModDetails mod
+                   case convertedIdType coqName env of
+                     Nothing -> fmap sigType <$> lookupSig coqName sigs
+                     t       -> view (edits.replacedTypes.at coqName) >>= \case
+                       Nothing -> pure t
+                       _       -> fmap sigType <$> lookupSig coqName sigs
+                 _ -> pure Nothing
          MaybeT $ convertSingleBinding ty defn
 
 -- ALMOST a 'ConvertedDefinition', but:
@@ -1344,7 +1353,7 @@ addRecursion eBindings = do
 
 fixConvertedDefinition ::
   ConversionMonad r m => ConvertedDefinition -> m (RecDef, Maybe TerminationArgument)
-fixConvertedDefinition (ConvertedDefinition{_convDefBody = Fun args body, ..}) = do
+fixConvertedDefinition ConvertedDefinition{_convDefBody = Fun args body, ..} = do
   let fullType = maybeForall _convDefArgs <$> _convDefType
       allArgs = _convDefArgs <++ args
       (resultType, convArgs') = case fullType of
@@ -1384,12 +1393,12 @@ splitArgs cds = do
 convertLocalBinds :: LocalConvMonad r m => HsLocalBinds GhcRn -> m Term -> m Term
 #if __GLASGOW_HASKELL__ >= 806
 convertLocalBinds (XHsLocalBindsLR v) _ = noExtCon v
-convertLocalBinds (HsValBinds _ (ValBinds{})) _ =
+convertLocalBinds (HsValBinds _ ValBinds{}) _ =
   convUnsupported "Unexpected ValBinds in post-renamer AST"
 
 convertLocalBinds (HsValBinds _ (XValBindsLR (NValBinds recBinds lsigs))) body = do
 #else
-convertLocalBinds (HsValBinds (ValBindsIn{})) _ =
+convertLocalBinds (HsValBinds ValBindsIn{}) _ =
   convUnsupported "Unexpected ValBindsIn in post-renamer AST"
 
 convertLocalBinds (HsValBinds (ValBindsOut recBinds lsigs)) body = do
@@ -1402,7 +1411,7 @@ convertLocalBinds (HsValBinds (ValBindsOut recBinds lsigs)) body = do
   let convDefs = concat convDefss
 
   let fromConvertedBinding cb body = case cb of
-        ConvertedDefinitionBinding (ConvertedDefinition{..}) ->
+        ConvertedDefinitionBinding ConvertedDefinition{..} ->
           pure (Let _convDefName _convDefArgs _convDefType _convDefBody body)
         ConvertedPatternBinding pat term -> do
           is_complete <- isCompleteMultiPattern [MultPattern [pat]]

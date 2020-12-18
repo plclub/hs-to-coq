@@ -1,4 +1,9 @@
+polykinds Control.Monad.Trans.Reader.ReaderT k
+data kinds Control.Monad.Trans.Reader.ReaderT Type, k -> Type, k
+
 order Control.Monad.Trans.Reader.Functor__ReaderT Control.Monad.Trans.Reader.Applicative__ReaderT_liftA2
 order Control.Monad.Trans.Reader.MonadTrans__ReaderT Control.Monad.Trans.Reader.MonadFail__ReaderT_fail
 order Control.Monad.Trans.Reader.Monad__ReaderT Control.Monad.Trans.Reader.MonadFail__ReaderT_fail
 
+# liftReaderT is not in the type enviroment (possibly because of inlining?)
+set type Control.Monad.Trans.Reader.liftReaderT : forall {k} {m : k -> Type} {r : Type} {a : k}, m a -> ReaderT r m a

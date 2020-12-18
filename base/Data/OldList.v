@@ -226,14 +226,15 @@ Defined.
 
 (* Converted value declarations: *)
 
-Definition dropWhileEnd {a} : (a -> bool) -> list a -> list a :=
+Definition dropWhileEnd {a : Type} : (a -> bool) -> list a -> list a :=
   fun p =>
     foldr (fun x xs =>
              if andb (p x) (GHC.List.null xs) : bool
              then nil
              else cons x xs) nil.
 
-Fixpoint stripPrefix {a} `{Eq_ a} (arg_0__ arg_1__ : list a) : option (list a)
+Fixpoint stripPrefix {a : Type} `{Eq_ a} (arg_0__ arg_1__ : list a) : option
+                                                                      (list a)
   := match arg_0__, arg_1__ with
      | nil, ys => Some ys
      | cons x xs, cons y ys => if x == y : bool then stripPrefix xs ys else None
@@ -244,14 +245,14 @@ Fixpoint stripPrefix {a} `{Eq_ a} (arg_0__ arg_1__ : list a) : option (list a)
 
 (* Skipping definition `Data.OldList.elemIndices' *)
 
-Definition find {a} : (a -> bool) -> list a -> option a :=
+Definition find {a : Type} : (a -> bool) -> list a -> option a :=
   fun p => Data.Maybe.listToMaybe ∘ GHC.List.filter p.
 
 (* Skipping definition `Data.OldList.findIndex' *)
 
 (* Skipping definition `Data.OldList.findIndices' *)
 
-Fixpoint isPrefixOf {a} `{(Eq_ a)} (arg_0__ arg_1__ : list a) : bool
+Fixpoint isPrefixOf {a : Type} `{Eq_ a} (arg_0__ arg_1__ : list a) : bool
   := match arg_0__, arg_1__ with
      | nil, _ => true
      | _, nil => false
@@ -273,7 +274,7 @@ Fixpoint dropLengthMaybe {a} {b} (arg_0__ : list a) (arg_1__ : list b) : option
      | cons _ x', cons _ y' => dropLengthMaybe x' y'
      end.
 
-Definition isSuffixOf {a} `{(Eq_ a)} : list a -> list a -> bool :=
+Definition isSuffixOf {a : Type} `{Eq_ a} : list a -> list a -> bool :=
   fun ns hs =>
     Data.Maybe.maybe false id (dropLengthMaybe ns hs >>=
                                (fun delta => return_ (ns == dropLength delta hs))).
@@ -287,7 +288,7 @@ Fixpoint elem_by {a} (arg_0__ : (a -> a -> bool)) (arg_1__ : a) (arg_2__
      | eq, y, cons x xs => orb (eq x y) (elem_by eq y xs)
      end.
 
-Definition nubBy {a} : (a -> a -> bool) -> list a -> list a :=
+Definition nubBy {a : Type} : (a -> a -> bool) -> list a -> list a :=
   fun eq l =>
     let fix nubBy' arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -298,34 +299,36 @@ Definition nubBy {a} : (a -> a -> bool) -> list a -> list a :=
          end in
     nubBy' l nil.
 
-Definition nub {a} `{(Eq_ a)} : list a -> list a :=
+Definition nub {a : Type} `{Eq_ a} : list a -> list a :=
   nubBy _==_.
 
-Fixpoint deleteBy {a} (arg_0__ : (a -> a -> bool)) (arg_1__ : a) (arg_2__
+Fixpoint deleteBy {a : Type} (arg_0__ : a -> a -> bool) (arg_1__ : a) (arg_2__
                     : list a) : list a
   := match arg_0__, arg_1__, arg_2__ with
      | _, _, nil => nil
      | eq, x, cons y ys => if eq x y : bool then ys else cons y (deleteBy eq x ys)
      end.
 
-Definition delete {a} `{(Eq_ a)} : a -> list a -> list a :=
+Definition delete {a : Type} `{Eq_ a} : a -> list a -> list a :=
   deleteBy _==_.
 
-Definition op_zrzr__ {a} `{(Eq_ a)} : list a -> list a -> list a :=
+Definition op_zrzr__ {a : Type} `{Eq_ a} : list a -> list a -> list a :=
   foldl (flip delete).
 
 Notation "'_\\_'" := (op_zrzr__).
 
 Infix "\\" := (_\\_) (at level 99).
 
-Definition unionBy {a} : (a -> a -> bool) -> list a -> list a -> list a :=
+Definition unionBy {a : Type}
+   : (a -> a -> bool) -> list a -> list a -> list a :=
   fun eq xs ys =>
     Coq.Init.Datatypes.app xs (foldl (flip (deleteBy eq)) (nubBy eq ys) xs).
 
-Definition union {a} `{(Eq_ a)} : list a -> list a -> list a :=
+Definition union {a : Type} `{Eq_ a} : list a -> list a -> list a :=
   unionBy _==_.
 
-Definition intersectBy {a} : (a -> a -> bool) -> list a -> list a -> list a :=
+Definition intersectBy {a : Type}
+   : (a -> a -> bool) -> list a -> list a -> list a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | _, nil, _ => nil
@@ -336,7 +339,7 @@ Definition intersectBy {a} : (a -> a -> bool) -> list a -> list a -> list a :=
                                    nil) xs
     end.
 
-Definition intersect {a} `{(Eq_ a)} : list a -> list a -> list a :=
+Definition intersect {a : Type} `{Eq_ a} : list a -> list a -> list a :=
   intersectBy _==_.
 
 (* Skipping definition `Data.OldList.intersperse' *)
@@ -360,11 +363,13 @@ Definition select {a}
         pair ts (cons x fs)
     end.
 
-Definition partition {a} : (a -> bool) -> list a -> (list a * list a)%type :=
+Definition partition {a : Type}
+   : (a -> bool) -> list a -> (list a * list a)%type :=
   fun p xs => foldr (select p) (pair nil nil) xs.
 
-Fixpoint mapAccumL {acc} {x} {y} (arg_0__ : (acc -> x -> (acc * y)%type))
-                   (arg_1__ : acc) (arg_2__ : list x) : (acc * list y)%type
+Fixpoint mapAccumL {acc : Type} {x : Type} {y : Type} (arg_0__
+                     : acc -> x -> (acc * y)%type) (arg_1__ : acc) (arg_2__ : list x) : (acc *
+                                                                                         list y)%type
   := match arg_0__, arg_1__, arg_2__ with
      | _, s, nil => pair s nil
      | f, s, cons x xs =>
@@ -386,8 +391,9 @@ Definition mapAccumLF {acc} {x} {y}
          let 'pair s'' ys := r s' in
          pair s'' (cons y ys)).
 
-Fixpoint mapAccumR {acc} {x} {y} (arg_0__ : (acc -> x -> (acc * y)%type))
-                   (arg_1__ : acc) (arg_2__ : list x) : (acc * list y)%type
+Fixpoint mapAccumR {acc : Type} {x : Type} {y : Type} (arg_0__
+                     : acc -> x -> (acc * y)%type) (arg_1__ : acc) (arg_2__ : list x) : (acc *
+                                                                                         list y)%type
   := match arg_0__, arg_1__, arg_2__ with
      | _, s, nil => pair s nil
      | f, s, cons x xs =>
@@ -396,8 +402,8 @@ Fixpoint mapAccumR {acc} {x} {y} (arg_0__ : (acc -> x -> (acc * y)%type))
          pair s'' (cons y ys)
      end.
 
-Fixpoint insertBy {a} (arg_0__ : (a -> a -> comparison)) (arg_1__ : a) (arg_2__
-                    : list a) : list a
+Fixpoint insertBy {a : Type} (arg_0__ : a -> a -> comparison) (arg_1__ : a)
+                  (arg_2__ : list a) : list a
   := match arg_0__, arg_1__, arg_2__ with
      | _, x, nil => cons x nil
      | cmp, x, (cons y ys' as ys) =>
@@ -407,7 +413,7 @@ Fixpoint insertBy {a} (arg_0__ : (a -> a -> comparison)) (arg_1__ : a) (arg_2__
          end
      end.
 
-Definition insert {a} `{Ord a} : a -> list a -> list a :=
+Definition insert {a : Type} `{Ord a} : a -> list a -> list a :=
   fun e ls => insertBy (compare) e ls.
 
 Definition maximumBy {a} {_ : GHC.Err.Default a} {_ : Eq_ a} {_ : Ord a}
@@ -434,7 +440,8 @@ Definition minimumBy {a} {_ : GHC.Err.Default a} {_ : Eq_ a} {_ : Ord a}
         GHC.List.foldl1 minBy xs
     end.
 
-Fixpoint genericLength {i} {a} `{(GHC.Num.Num i)} (arg_0__ : list a) : i
+Fixpoint genericLength {i : Type} {a : Type} `{GHC.Num.Num i} (arg_0__ : list a)
+  : i
   := match arg_0__ with
      | nil => #0
      | cons _ l => #1 GHC.Num.+ genericLength l
@@ -449,8 +456,8 @@ Definition strictGenericLength {i} {b} `{(GHC.Num.Num i)} : list b -> i :=
          end in
     gl l #0.
 
-Fixpoint genericTake {i} {a} `{(GHC.Real.Integral i)} (arg_0__ : i) (arg_1__
-                       : list a) : list a
+Fixpoint genericTake {i : Type} {a : Type} `{GHC.Real.Integral i} (arg_0__ : i)
+                     (arg_1__ : list a) : list a
   := match arg_0__, arg_1__ with
      | n, _ =>
          if n <= #0 : bool then nil else
@@ -460,8 +467,8 @@ Fixpoint genericTake {i} {a} `{(GHC.Real.Integral i)} (arg_0__ : i) (arg_1__
          end
      end.
 
-Fixpoint genericDrop {i} {a} `{(GHC.Real.Integral i)} (arg_0__ : i) (arg_1__
-                       : list a) : list a
+Fixpoint genericDrop {i : Type} {a : Type} `{GHC.Real.Integral i} (arg_0__ : i)
+                     (arg_1__ : list a) : list a
   := match arg_0__, arg_1__ with
      | n, xs =>
          if n <= #0 : bool then xs else
@@ -471,8 +478,8 @@ Fixpoint genericDrop {i} {a} `{(GHC.Real.Integral i)} (arg_0__ : i) (arg_1__
          end
      end.
 
-Fixpoint genericSplitAt {i} {a} `{(GHC.Real.Integral i)} (arg_0__ : i) (arg_1__
-                          : list a) : (list a * list a)%type
+Fixpoint genericSplitAt {i : Type} {a : Type} `{GHC.Real.Integral i} (arg_0__
+                          : i) (arg_1__ : list a) : (list a * list a)%type
   := match arg_0__, arg_1__ with
      | n, xs =>
          if n <= #0 : bool then pair nil xs else
@@ -488,53 +495,54 @@ Fixpoint genericSplitAt {i} {a} `{(GHC.Real.Integral i)} (arg_0__ : i) (arg_1__
 
 (* Skipping definition `Data.OldList.genericReplicate' *)
 
-Fixpoint zipWith4 {a} {b} {c} {d} {e} (arg_0__ : (a -> b -> c -> d -> e))
-                  (arg_1__ : list a) (arg_2__ : list b) (arg_3__ : list c) (arg_4__ : list d)
-  : list e
+Fixpoint zipWith4 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type}
+                  (arg_0__ : a -> b -> c -> d -> e) (arg_1__ : list a) (arg_2__ : list b) (arg_3__
+                    : list c) (arg_4__ : list d) : list e
   := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
      | z, cons a as_, cons b bs, cons c cs, cons d ds =>
          cons (z a b c d) (zipWith4 z as_ bs cs ds)
      | _, _, _, _, _ => nil
      end.
 
-Definition zip4 {a} {b} {c} {d}
+Definition zip4 {a : Type} {b : Type} {c : Type} {d : Type}
    : list a -> list b -> list c -> list d -> list (a * b * c * d)%type :=
   zipWith4 GHC.Tuple.pair4.
 
-Fixpoint zipWith5 {a} {b} {c} {d} {e} {f} (arg_0__
-                    : (a -> b -> c -> d -> e -> f)) (arg_1__ : list a) (arg_2__ : list b) (arg_3__
-                    : list c) (arg_4__ : list d) (arg_5__ : list e) : list f
+Fixpoint zipWith5 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
+                   : Type} (arg_0__ : a -> b -> c -> d -> e -> f) (arg_1__ : list a) (arg_2__
+                    : list b) (arg_3__ : list c) (arg_4__ : list d) (arg_5__ : list e) : list f
   := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__, arg_5__ with
      | z, cons a as_, cons b bs, cons c cs, cons d ds, cons e es =>
          cons (z a b c d e) (zipWith5 z as_ bs cs ds es)
      | _, _, _, _, _, _ => nil
      end.
 
-Definition zip5 {a} {b} {c} {d} {e}
+Definition zip5 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type}
    : list a ->
      list b -> list c -> list d -> list e -> list (a * b * c * d * e)%type :=
   zipWith5 GHC.Tuple.pair5.
 
-Fixpoint zipWith6 {a} {b} {c} {d} {e} {f} {g} (arg_0__
-                    : (a -> b -> c -> d -> e -> f -> g)) (arg_1__ : list a) (arg_2__ : list b)
-                  (arg_3__ : list c) (arg_4__ : list d) (arg_5__ : list e) (arg_6__ : list f)
-  : list g
+Fixpoint zipWith6 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
+                   : Type} {g : Type} (arg_0__ : a -> b -> c -> d -> e -> f -> g) (arg_1__
+                    : list a) (arg_2__ : list b) (arg_3__ : list c) (arg_4__ : list d) (arg_5__
+                    : list e) (arg_6__ : list f) : list g
   := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__, arg_5__, arg_6__ with
      | z, cons a as_, cons b bs, cons c cs, cons d ds, cons e es, cons f fs =>
          cons (z a b c d e f) (zipWith6 z as_ bs cs ds es fs)
      | _, _, _, _, _, _, _ => nil
      end.
 
-Definition zip6 {a} {b} {c} {d} {e} {f}
+Definition zip6 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
+   : Type}
    : list a ->
      list b ->
      list c -> list d -> list e -> list f -> list (a * b * c * d * e * f)%type :=
   zipWith6 GHC.Tuple.pair6.
 
-Fixpoint zipWith7 {a} {b} {c} {d} {e} {f} {g} {h} (arg_0__
-                    : (a -> b -> c -> d -> e -> f -> g -> h)) (arg_1__ : list a) (arg_2__ : list b)
-                  (arg_3__ : list c) (arg_4__ : list d) (arg_5__ : list e) (arg_6__ : list f)
-                  (arg_7__ : list g) : list h
+Fixpoint zipWith7 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
+                   : Type} {g : Type} {h : Type} (arg_0__ : a -> b -> c -> d -> e -> f -> g -> h)
+                  (arg_1__ : list a) (arg_2__ : list b) (arg_3__ : list c) (arg_4__ : list d)
+                  (arg_5__ : list e) (arg_6__ : list f) (arg_7__ : list g) : list h
   := match arg_0__
          , arg_1__
          , arg_2__
@@ -555,14 +563,15 @@ Fixpoint zipWith7 {a} {b} {c} {d} {e} {f} {g} {h} (arg_0__
      | _, _, _, _, _, _, _, _ => nil
      end.
 
-Definition zip7 {a} {b} {c} {d} {e} {f} {g}
+Definition zip7 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
+   : Type} {g : Type}
    : list a ->
      list b ->
      list c ->
      list d -> list e -> list f -> list g -> list (a * b * c * d * e * f * g)%type :=
   zipWith7 GHC.Tuple.pair7.
 
-Definition unzip4 {a} {b} {c} {d}
+Definition unzip4 {a : Type} {b : Type} {c : Type} {d : Type}
    : list (a * b * c * d)%type -> (list a * list b * list c * list d)%type :=
   foldr (fun arg_0__ arg_1__ =>
            match arg_0__, arg_1__ with
@@ -570,7 +579,7 @@ Definition unzip4 {a} {b} {c} {d}
                pair (pair (pair (cons a as_) (cons b bs)) (cons c cs)) (cons d ds)
            end) (pair (pair (pair nil nil) nil) nil).
 
-Definition unzip5 {a} {b} {c} {d} {e}
+Definition unzip5 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type}
    : list (a * b * c * d * e)%type ->
      (list a * list b * list c * list d * list e)%type :=
   foldr (fun arg_0__ arg_1__ =>
@@ -581,7 +590,8 @@ Definition unzip5 {a} {b} {c} {d} {e}
                      e es)
            end) (pair (pair (pair (pair nil nil) nil) nil) nil).
 
-Definition unzip6 {a} {b} {c} {d} {e} {f}
+Definition unzip6 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
+   : Type}
    : list (a * b * c * d * e * f)%type ->
      (list a * list b * list c * list d * list e * list f)%type :=
   foldr (fun arg_0__ arg_1__ =>
@@ -592,7 +602,8 @@ Definition unzip6 {a} {b} {c} {d} {e} {f}
                           (cons e es)) (cons f fs)
            end) (pair (pair (pair (pair (pair nil nil) nil) nil) nil) nil).
 
-Definition unzip7 {a} {b} {c} {d} {e} {f} {g}
+Definition unzip7 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type} {f
+   : Type} {g : Type}
    : list (a * b * c * d * e * f * g)%type ->
      (list a * list b * list c * list d * list e * list f * list g)%type :=
   foldr (fun arg_0__ arg_1__ =>
@@ -603,7 +614,7 @@ Definition unzip7 {a} {b} {c} {d} {e} {f} {g}
                                        d ds)) (cons e es)) (cons f fs)) (cons g gs)
            end) (pair (pair (pair (pair (pair (pair nil nil) nil) nil) nil) nil) nil).
 
-Definition deleteFirstsBy {a}
+Definition deleteFirstsBy {a : Type}
    : (a -> a -> bool) -> list a -> list a -> list a :=
   fun eq => foldl (flip (deleteBy eq)).
 
@@ -613,7 +624,7 @@ Definition deleteFirstsBy {a}
 
 (* Skipping definition `Data.OldList.inits' *)
 
-Definition tails {a} : list a -> list (list a) :=
+Definition tails {a : Type} : list a -> list (list a) :=
   fun lst =>
     build' (fun _ =>
               (fun c n =>
@@ -635,10 +646,11 @@ Fixpoint nonEmptySubsequences {a} (arg_0__ : list a) : list (list a)
 
 (* Skipping definition `Data.OldList.sortBy' *)
 
-Definition sort {a} `{(Ord a)} : list a -> list a :=
+Definition sort {a : Type} `{Ord a} : list a -> list a :=
   sortBy compare.
 
-Definition sortOn {b} {a} `{Ord b} : (a -> b) -> list a -> list a :=
+Definition sortOn {b : Type} {a : Type} `{Ord b}
+   : (a -> b) -> list a -> list a :=
   fun f =>
     map Data.Tuple.snd ∘
     (sortBy (Data.Ord.comparing Data.Tuple.fst) ∘
@@ -689,9 +701,9 @@ Infix "Data.OldList.\\" := (_\\_) (at level 99).
 End Notations.
 
 (* External variables:
-     Eq_ Gt None Ord Some String andb bool build' compare comparison cons false flip
-     foldl foldr id list map nil op_z2218U__ op_zeze__ op_zgzgze__ op_zlze__ op_zt__
-     option orb pair return_ sortBy true Coq.Init.Datatypes.app
+     Eq_ Gt None Ord Some String Type andb bool build' compare comparison cons false
+     flip foldl foldr id list map nil op_z2218U__ op_zeze__ op_zgzgze__ op_zlze__
+     op_zt__ option orb pair return_ sortBy true Coq.Init.Datatypes.app
      Coq.Lists.List.flat_map Data.Maybe.listToMaybe Data.Maybe.maybe
      Data.Ord.comparing Data.Tuple.fst Data.Tuple.snd GHC.Err.Default
      GHC.Err.errorWithoutStackTrace GHC.List.any GHC.List.filter GHC.List.foldl1

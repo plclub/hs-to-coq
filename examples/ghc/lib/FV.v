@@ -74,7 +74,7 @@ Definition filterFV : InterestingVarFun -> FV -> FV :=
   fun fv_cand2 fv fv_cand1 in_scope acc =>
     fv (fun v => andb (fv_cand1 v) (fv_cand2 v)) in_scope acc.
 
-Fixpoint mapUnionFV {a} `(arg_0__ : (a -> FV)) `(arg_1__ : list a) arg_2__
+Fixpoint mapUnionFV {a : Type} `(arg_0__ : a -> FV) `(arg_1__ : list a) arg_2__
                     arg_3__ arg_4__
   := match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
      | _f, nil, _fv_cand, _in_scope, acc => acc
@@ -89,7 +89,7 @@ Definition mkFVs : list Core.Var -> FV :=
   fun vars fv_cand in_scope acc => mapUnionFV unitFV vars fv_cand in_scope acc.
 
 (* External variables:
-     andb bool cons list nil op_zt__ pair true Core.DVarSet Core.Id Core.Var
+     Type andb bool cons list nil op_zt__ pair true Core.DVarSet Core.Id Core.Var
      Core.VarSet Core.elemVarSet Core.emptyVarSet Core.extendVarSet Core.unionVarSet
      Data.Tuple.fst Data.Tuple.snd GHC.Base.const GHC.Base.id GHC.Base.op_z2218U__
 *)

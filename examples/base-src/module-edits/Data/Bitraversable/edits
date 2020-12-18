@@ -1,1 +1,3 @@
 skip Data.Bitraversable.Bitraversable__K1
+
+skip Data.Bitraversable.bifoldMapDefault

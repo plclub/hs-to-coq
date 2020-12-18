@@ -1,3 +1,6 @@
+polykinds Data.Functor.Reverse.Reverse k
+data kinds Data.Functor.Reverse.Reverse (k -> Type), k
+
 # Can't use rename because we get a cyclic renaming error
 in Data.Functor.Reverse.Foldable__Reverse_foldr rewrite forall, Data.Functor.Reverse.Foldable__Reverse_foldl = Data.Foldable.foldl
 in Data.Functor.Reverse.Foldable__Reverse_foldl rewrite forall, Data.Functor.Reverse.Foldable__Reverse_foldr = Data.Foldable.foldr

@@ -56,8 +56,8 @@ escapeReservedNames x =
     <> if | T.all (== '.') x  -> pure $ T.map (const '∘') x
           | T.all (== '∘') x  -> pure $ "⟨" <> x <> "⟩"
 -- these type operators aren't parsed by the renaming file
-          | x == "(->)"       -> pure $ ("arrow")
-          | x == "#."       -> pure $ ("hash_compose")  -- Data.Foldable
+          | x == "(->)"       -> pure $ "arrow"
+          | x == "#."         -> pure $ "hash_compose"  -- Data.Foldable
 -- Maybe add this as part of an Int# solution? But don't want to
 -- always replace these, if we make "Int#" a notation for "Int_h"
 --          | T.isInfixOf "#" x -> pure $ T.replace "#" "_h" x
@@ -98,7 +98,7 @@ rename ns = go S.empty
     go seen qid | qid `S.member` seen =
         failIO $ explainStrItems showP "no" "," "and" "Cyclic renaming" "Cyclic renamings" seen
     go seen qid = view (edits . renamed ns qid) >>= \case
-        Nothing ->   return qid
+        Nothing ->  return qid
             -- A self rename is also fine, it signals stopping.
         Just qid' | qid' == qid -> return qid
         Just qid' -> go (S.insert qid seen) qid'

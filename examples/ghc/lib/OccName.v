@@ -45,10 +45,10 @@ Inductive OccName : Type :=
 Definition OccSet :=
   (UniqSet.UniqSet OccName)%type.
 
-Record HasOccName__Dict name := HasOccName__Dict_Build {
+Record HasOccName__Dict (name : Type) := HasOccName__Dict_Build {
   occName__ : name -> OccName }.
 
-Definition HasOccName name :=
+Definition HasOccName (name : Type) :=
   forall r__, (HasOccName__Dict name -> r__) -> r__.
 Existing Class HasOccName.
 
@@ -357,26 +357,26 @@ Definition otherNameSpace : NameSpace -> NameSpace :=
 Definition nameSpacesRelated : NameSpace -> NameSpace -> bool :=
   fun ns1 ns2 => orb (ns1 GHC.Base.== ns2) (otherNameSpace ns1 GHC.Base.== ns2).
 
-Definition emptyOccEnv {a} : OccEnv a :=
+Definition emptyOccEnv {a : Type} : OccEnv a :=
   A UniqFM.emptyUFM.
 
 Definition unitOccSet : OccName -> OccSet :=
   UniqSet.unitUniqSet.
 
-Definition unitOccEnv {a} : OccName -> a -> OccEnv a :=
+Definition unitOccEnv {a : Type} : OccName -> a -> OccEnv a :=
   fun x y => A (UniqFM.unitUFM x y).
 
 Definition mkOccSet : list OccName -> OccSet :=
   UniqSet.mkUniqSet.
 
-Definition mkOccEnv_C {a}
+Definition mkOccEnv_C {a : Type}
    : (a -> a -> a) -> list (OccName * a)%type -> OccEnv a :=
   fun comb l => A (UniqFM.addListToUFM_C comb UniqFM.emptyUFM l).
 
-Definition mkOccEnv {a} : list (OccName * a)%type -> OccEnv a :=
+Definition mkOccEnv {a : Type} : list (OccName * a)%type -> OccEnv a :=
   fun l => A (UniqFM.listToUFM l).
 
-Definition lookupOccEnv {a} : OccEnv a -> OccName -> option a :=
+Definition lookupOccEnv {a : Type} : OccEnv a -> OccName -> option a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | A x, y => UniqFM.lookupUFM x y
@@ -390,7 +390,8 @@ Definition initTidyOccEnv : list OccName -> TidyOccEnv :=
       end in
   Data.Foldable.foldl add UniqFM.emptyUFM.
 
-Definition foldOccEnv {a} {b} : (a -> b -> b) -> b -> OccEnv a -> b :=
+Definition foldOccEnv {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> OccEnv a -> b :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | a, b, A c => UniqFM.foldUFM a b c
@@ -405,80 +406,82 @@ Definition extendOccSetList : OccSet -> list OccName -> OccSet :=
 Definition extendOccSet : OccSet -> OccName -> OccSet :=
   UniqSet.addOneToUniqSet.
 
-Definition extendOccEnv_C {a}
+Definition extendOccEnv_C {a : Type}
    : (a -> a -> a) -> OccEnv a -> OccName -> a -> OccEnv a :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
     | f, A x, y, z => A (UniqFM.addToUFM_C f x y z)
     end.
 
-Definition extendOccEnv_Acc {a} {b}
+Definition extendOccEnv_Acc {a : Type} {b : Type}
    : (a -> b -> b) -> (a -> b) -> OccEnv b -> OccName -> a -> OccEnv b :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
     | f, g, A x, y, z => A (UniqFM.addToUFM_Acc f g x y z)
     end.
 
-Definition extendOccEnvList {a}
+Definition extendOccEnvList {a : Type}
    : OccEnv a -> list (OccName * a)%type -> OccEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | A x, l => A (UniqFM.addListToUFM x l)
     end.
 
-Definition extendOccEnv {a} : OccEnv a -> OccName -> a -> OccEnv a :=
+Definition extendOccEnv {a : Type} : OccEnv a -> OccName -> a -> OccEnv a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | A x, y, z => A (UniqFM.addToUFM x y z)
     end.
 
-Definition elemOccEnv {a} : OccName -> OccEnv a -> bool :=
+Definition elemOccEnv {a : Type} : OccName -> OccEnv a -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | x, A y => UniqFM.elemUFM x y
     end.
 
-Definition occEnvElts {a} : OccEnv a -> list a :=
+Definition occEnvElts {a : Type} : OccEnv a -> list a :=
   fun '(A x) => UniqFM.eltsUFM x.
 
-Definition plusOccEnv {a} : OccEnv a -> OccEnv a -> OccEnv a :=
+Definition plusOccEnv {a : Type} : OccEnv a -> OccEnv a -> OccEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | A x, A y => A (UniqFM.plusUFM x y)
     end.
 
-Definition plusOccEnv_C {a}
+Definition plusOccEnv_C {a : Type}
    : (a -> a -> a) -> OccEnv a -> OccEnv a -> OccEnv a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | f, A x, A y => A (UniqFM.plusUFM_C f x y)
     end.
 
-Definition mapOccEnv {a} {b} : (a -> b) -> OccEnv a -> OccEnv b :=
+Definition mapOccEnv {a : Type} {b : Type} : (a -> b) -> OccEnv a -> OccEnv b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, A x => A (UniqFM.mapUFM f x)
     end.
 
-Definition delFromOccEnv {a} : OccEnv a -> OccName -> OccEnv a :=
+Definition delFromOccEnv {a : Type} : OccEnv a -> OccName -> OccEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | A x, y => A (UniqFM.delFromUFM x y)
     end.
 
-Definition delListFromOccEnv {a} : OccEnv a -> list OccName -> OccEnv a :=
+Definition delListFromOccEnv {a : Type}
+   : OccEnv a -> list OccName -> OccEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | A x, y => A (UniqFM.delListFromUFM x y)
     end.
 
-Definition filterOccEnv {elt} : (elt -> bool) -> OccEnv elt -> OccEnv elt :=
+Definition filterOccEnv {elt : Type}
+   : (elt -> bool) -> OccEnv elt -> OccEnv elt :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | x, A y => A (UniqFM.filterUFM x y)
     end.
 
-Definition alterOccEnv {elt}
+Definition alterOccEnv {elt : Type}
    : (option elt -> option elt) -> OccEnv elt -> OccName -> OccEnv elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
@@ -751,24 +754,24 @@ Definition avoidClashesOccEnv : TidyOccEnv -> list OccName -> TidyOccEnv :=
 Axiom tidyOccName : TidyOccEnv -> OccName -> (TidyOccEnv * OccName)%type.
 
 (* External variables:
-     Eq Gt Lt None Some andb bool comparison cons false list negb nil op_zt__ option
-     orb true tt Coq.Init.Datatypes.app Data.Foldable.foldl FastString.FastString
-     FastString.concatFS FastString.fsLit FastString.mkFastString FastString.unpackFS
-     GHC.Base.Eq_ GHC.Base.Ord GHC.Base.String GHC.Base.compare GHC.Base.compare__
-     GHC.Base.id GHC.Base.max__ GHC.Base.min__ GHC.Base.op_zeze__
-     GHC.Base.op_zeze____ GHC.Base.op_zg____ GHC.Base.op_zgze____
-     GHC.Base.op_zgzgze__ GHC.Base.op_zl____ GHC.Base.op_zlze____ GHC.Base.op_zsze__
-     GHC.Base.op_zsze____ GHC.Base.return_ GHC.Err.Build_Default GHC.Err.Default
-     GHC.Num.Int GHC.Num.fromInteger UniqFM.UniqFM UniqFM.addListToUFM
-     UniqFM.addListToUFM_C UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C
-     UniqFM.alterUFM UniqFM.delFromUFM UniqFM.delListFromUFM UniqFM.elemUFM
-     UniqFM.eltsUFM UniqFM.emptyUFM UniqFM.filterUFM UniqFM.foldUFM UniqFM.listToUFM
-     UniqFM.lookupUFM UniqFM.mapUFM UniqFM.plusUFM UniqFM.plusUFM_C UniqFM.unitUFM
-     UniqSet.UniqSet UniqSet.addListToUniqSet UniqSet.addOneToUniqSet
-     UniqSet.elementOfUniqSet UniqSet.emptyUniqSet UniqSet.filterUniqSet
-     UniqSet.intersectUniqSets UniqSet.isEmptyUniqSet UniqSet.minusUniqSet
-     UniqSet.mkUniqSet UniqSet.unionManyUniqSets UniqSet.unionUniqSets
-     UniqSet.unitUniqSet Unique.Uniquable Unique.Unique Unique.getUnique__
-     Unique.mkDataOccUnique Unique.mkTcOccUnique Unique.mkTvOccUnique
-     Unique.mkVarOccUnique Util.thenCmp
+     Eq Gt Lt None Some Type andb bool comparison cons false list negb nil op_zt__
+     option orb true tt Coq.Init.Datatypes.app Data.Foldable.foldl
+     FastString.FastString FastString.concatFS FastString.fsLit
+     FastString.mkFastString FastString.unpackFS GHC.Base.Eq_ GHC.Base.Ord
+     GHC.Base.String GHC.Base.compare GHC.Base.compare__ GHC.Base.id GHC.Base.max__
+     GHC.Base.min__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg____
+     GHC.Base.op_zgze____ GHC.Base.op_zgzgze__ GHC.Base.op_zl____
+     GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.return_
+     GHC.Err.Build_Default GHC.Err.Default GHC.Num.Int GHC.Num.fromInteger
+     UniqFM.UniqFM UniqFM.addListToUFM UniqFM.addListToUFM_C UniqFM.addToUFM
+     UniqFM.addToUFM_Acc UniqFM.addToUFM_C UniqFM.alterUFM UniqFM.delFromUFM
+     UniqFM.delListFromUFM UniqFM.elemUFM UniqFM.eltsUFM UniqFM.emptyUFM
+     UniqFM.filterUFM UniqFM.foldUFM UniqFM.listToUFM UniqFM.lookupUFM UniqFM.mapUFM
+     UniqFM.plusUFM UniqFM.plusUFM_C UniqFM.unitUFM UniqSet.UniqSet
+     UniqSet.addListToUniqSet UniqSet.addOneToUniqSet UniqSet.elementOfUniqSet
+     UniqSet.emptyUniqSet UniqSet.filterUniqSet UniqSet.intersectUniqSets
+     UniqSet.isEmptyUniqSet UniqSet.minusUniqSet UniqSet.mkUniqSet
+     UniqSet.unionManyUniqSets UniqSet.unionUniqSets UniqSet.unitUniqSet
+     Unique.Uniquable Unique.Unique Unique.getUnique__ Unique.mkDataOccUnique
+     Unique.mkTcOccUnique Unique.mkTvOccUnique Unique.mkVarOccUnique Util.thenCmp
 *)

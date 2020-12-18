@@ -1,4 +1,5 @@
-data kinds Data.Functor.Product.Product (Type -> Type), (Type -> Type)
+polykinds Data.Functor.Product.Product k
+data kinds Data.Functor.Product.Product (k -> Type), (k -> Type), k
 
 order Data.Functor.Product.Eq___Product Data.Functor.Product.Ord__Product
 

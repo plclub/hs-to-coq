@@ -165,7 +165,8 @@ Local Definition Monoid__IntSet_mappend : IntSet -> IntSet -> IntSet :=
 Definition empty : IntSet :=
   Nil.
 
-Definition unions {f} `{Data.Foldable.Foldable f} : f IntSet -> IntSet :=
+Definition unions {f : Type -> Type} `{Data.Foldable.Foldable f}
+   : f IntSet -> IntSet :=
   fun xs => Data.Foldable.foldl' union empty xs.
 
 Local Definition Monoid__IntSet_mconcat : list IntSet -> IntSet :=
@@ -263,7 +264,7 @@ Program Definition foldrBits {a}
     go (revNat bitmap) z.
 Admit Obligations.
 
-Definition foldr {b} : (Key -> b -> b) -> b -> IntSet -> b :=
+Definition foldr {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -799,7 +800,7 @@ Program Definition foldl'Bits {a}
     go bitmap z.
 Admit Obligations.
 
-Fixpoint filter (predicate : (Key -> bool)) (t : IntSet) : IntSet
+Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
   := let bitPred :=
        fun kx bm bi =>
          if predicate (kx GHC.Num.+ bi) : bool
@@ -972,7 +973,7 @@ Definition toList : IntSet -> list Key :=
 Definition map : (Key -> Key) -> IntSet -> IntSet :=
   fun f => fromList GHC.Base.∘ (GHC.Base.map f GHC.Base.∘ toList).
 
-Definition fold {b} : (Key -> b -> b) -> b -> IntSet -> b :=
+Definition fold {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   foldr.
 
 Program Definition foldr'Bits {a}
@@ -996,7 +997,7 @@ Program Definition foldr'Bits {a}
     go (revNat bitmap) z.
 Admit Obligations.
 
-Definition foldr' {b} : (Key -> b -> b) -> b -> IntSet -> b :=
+Definition foldr' {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1029,7 +1030,7 @@ Program Definition foldlBits {a}
     go bitmap z.
 Admit Obligations.
 
-Definition foldl {a} : (a -> Key -> a) -> a -> IntSet -> a :=
+Definition foldl {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1043,7 +1044,7 @@ Definition foldl {a} : (a -> Key -> a) -> a -> IntSet -> a :=
       | _ => go z t
       end.
 
-Definition foldl' {a} : (a -> Key -> a) -> a -> IntSet -> a :=
+Definition foldl' {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1113,19 +1114,20 @@ Infix "Data.IntSet.InternalWord.\\" := (_\\_) (at level 99).
 End Notations.
 
 (* External variables:
-     Bool.Sumbool.sumbool_of_bool Eq Gt Lt None Some andb bool comparison cons false
-     id list negb nil op_zp__ op_zt__ option orb pair size_nat true Coq.Init.Peano.lt
-     Data.Bits.complement Data.Bits.op_zizazi__ Data.Bits.op_zizbzi__ Data.Bits.xor
-     Data.Foldable.Foldable Data.Foldable.foldl' Data.Maybe.maybe Data.Tuple.snd
-     GHC.Base.Eq_ GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.compare
-     GHC.Base.compare__ GHC.Base.flip GHC.Base.map GHC.Base.mappend__ GHC.Base.max__
-     GHC.Base.mconcat__ GHC.Base.mempty__ GHC.Base.min__ GHC.Base.op_z2218U__
-     GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____
-     GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____
-     GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
-     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Err.Build_Default GHC.Err.Default
-     GHC.Err.error GHC.Num.fromInteger GHC.Num.negate GHC.Num.op_zm__ GHC.Num.op_zp__
-     GHC.Wf.wfFix2 IntWord.Int IntWord.Word IntWord.bitcount IntWord.highestBitMask
+     Bool.Sumbool.sumbool_of_bool Eq Gt Lt None Some Type andb bool comparison cons
+     false id list negb nil op_zp__ op_zt__ option orb pair size_nat true
+     Coq.Init.Peano.lt Data.Bits.complement Data.Bits.op_zizazi__
+     Data.Bits.op_zizbzi__ Data.Bits.xor Data.Foldable.Foldable Data.Foldable.foldl'
+     Data.Maybe.maybe Data.Tuple.snd GHC.Base.Eq_ GHC.Base.Monoid GHC.Base.Ord
+     GHC.Base.Semigroup GHC.Base.compare GHC.Base.compare__ GHC.Base.flip
+     GHC.Base.map GHC.Base.mappend__ GHC.Base.max__ GHC.Base.mconcat__
+     GHC.Base.mempty__ GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__
+     GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__
+     GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlze____
+     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__
+     GHC.Base.op_zsze____ GHC.Err.Build_Default GHC.Err.Default GHC.Err.error
+     GHC.Num.fromInteger GHC.Num.negate GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Wf.wfFix2
+     IntWord.Int IntWord.Word IntWord.bitcount IntWord.highestBitMask
      IntWord.indexOfTheOnlyBit IntWord.intFromWord IntWord.shiftLWord
      IntWord.shiftRWord IntWord.wordFromInt IntWord.wordTonat
 *)

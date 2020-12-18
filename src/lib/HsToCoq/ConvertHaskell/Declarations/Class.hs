@@ -40,12 +40,12 @@ import HsToCoq.ConvertHaskell.TypeInfo
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Definitions
-import HsToCoq.ConvertHaskell.Type
+import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.ConvertHaskell.Expr
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Sigs
 import HsToCoq.ConvertHaskell.Declarations.Notations
-
+import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 
 data ClassBody = ClassBody ClassDefinition [Notation]
                deriving (Eq, Ord, Read, Show)
@@ -60,7 +60,7 @@ getImplicitBindersForClassMember className memberName = do
   classDef <- lookupClassDefn className
   case classDef of
     (Just (ClassDefinition _ _ _ sigs)) ->
-        case (lookup memberName sigs) of
+        case lookup memberName sigs of
           Just sigType -> return $ getImplicits sigType
           Nothing -> return []
     Nothing -> return []
@@ -71,6 +71,7 @@ getImplicits (Forall bs t) = if length bs == length imps then imps ++ getImplici
     imps = NE.takeWhile (\b -> case b of
                                  ImplicitBinders _ -> True
                                  Generalized Implicit _ -> True
+                                 Typed _ Implicit _ _ -> True
                                  _ -> False) bs
 getImplicits _ = []
 
@@ -100,11 +101,11 @@ convertAssociatedType classArgs FamilyDecl{..} = do
 
   result <- case unLoc fdResultSig of
     NoSig NOEXTP                     -> pure $ Sort Type
-    KindSig NOEXTP k                 -> withCurrentDefinition name $ convertLType k
+    KindSig NOEXTP k                 -> withCurrentDefinition name $ convertLHsType k
     TyVarSig NOEXTP (L _ (UserTyVar NOEXTP _))
       -> pure $ Sort Type -- Maybe not a thing inside type classes?
     TyVarSig NOEXTP (L _ (KindedTyVar NOEXTP _ k))
-      -> withCurrentDefinition name $ convertLType k   -- Maybe not a thing inside type classes?
+      -> withCurrentDefinition name $ convertLHsType k   -- Maybe not a thing inside type classes?
 #if __GLASGOW_HASKELL__ >= 806
     TyVarSig _ (L _ (XTyVarBndr v)) -> noExtCon v
     XFamilyResultSig v -> noExtCon v
@@ -139,7 +140,7 @@ convertAssociatedTypeDefault classArgs
     convUnsupportedIn_lname "associated type family defaults with argument lists that differ from the class's"
                             "associated type equation"
                             feqn_tycon
-  ty <- withCurrentDefinition n $ convertLType feqn_rhs
+  ty <- withCurrentDefinition n $ convertLHsType feqn_rhs
   pure (n, ty)
   -- Skipping feqn_fixity
 
@@ -151,7 +152,8 @@ convertAssociatedTypeDefault _ (XFamEqn v) = noExtCon v
 #endif
 
 convertClassDecl :: ConversionMonad r m
-                 => LHsContext GhcRn                      -- ^@tcdCtxt@    Context
+                 => ConvertedTyClEnv
+                 -> LHsContext GhcRn                      -- ^@tcdCtxt@    Context
                  -> Located GHC.Name                      -- ^@tcdLName@   name of the class
                  -> [LHsTyVarBndr GhcRn]                  -- ^@tcdTyVars@  class type variables
                  -> [Located (FunDep (Located GHC.Name))] -- ^@tcdFDs@     functional dependencies
@@ -160,31 +162,32 @@ convertClassDecl :: ConversionMonad r m
                  -> [LFamilyDecl GhcRn]                   -- ^@tcdATs@     associated types
                  -> [LTyFamDefltDecl GhcRn]               -- ^@tcdATDefs@  associated types defaults
                  -> m ClassBody
-convertClassDecl (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefaults = do
+convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefaults = do
   name <- var TypeNS hsName
+  let tycl = convertedTyCl name env
   
   let convUnsupportedHere what = convUnsupportedIn what "type class" (showP name)
   unless (null fds) $ convUnsupportedHere "functional dependencies"
 
-  let aux x = withCurrentDefinition name $ convertLType x
-  ctx  <- traverse (fmap (Generalized Coq.Implicit) . aux) hsCtx
+  let aux x = withCurrentDefinition name $ convertLHsType x
+  ctx' <- traverse (fmap (Generalized Coq.Implicit) . aux) hsCtx
+  let ctx = maybe ctx' (fmap (Generalized Coq.Implicit) . convertedTyClPredTypes) tycl
 
   storeSuperclassCount name . sum <=< for ctx $ \case
     Generalized _ (termHead -> Just super) -> maybe 1 (+ 1) <$> lookupSuperclassCount super
     _                                      -> pure 1
 
-  args <- withCurrentDefinition name $ convertLHsTyVarBndrs Coq.Explicit ltvs
-  kinds <- (++ repeat Nothing) . map Just . maybe [] NE.toList <$> view (edits.classKinds.at name)
-  let args' = zipWith go args kinds
-       where go (ExplicitBinder  name)  (Just t) = mkBinders Explicit (name NE.:| []) t
-             go (ImplicitBinders names) (Just t) = mkBinders Implicit names t
-             go a _ = a
+  args <- fromMaybe <$> withCurrentDefinition name (convertLHsTyVarBndrs Coq.Explicit ltvs) <*> pure (convertedTyClBinderArgs <$> tycl)
   
   let argNames = foldMap (toListOf binderIdents) args
 
   type_sigs  <- M.fromList . map (second $ Signature ?? Nothing)
                   <$> traverse (convertAssociatedType argNames . unLoc) types
-  value_sigs <- convertLSigs lsigs
+  value_sigs_from_sigs <- convertLSigs lsigs
+  let value_sigs_from_typs = M.mapWithKey
+        (\k t -> Signature (unpeelTyClVars t name) (sigFixity =<< M.lookup k value_sigs_from_sigs)) .
+        (M.fromList . convertedTyClMethods) <$> tycl
+  let value_sigs = fromMaybe value_sigs_from_sigs value_sigs_from_typs
   storeClassTypes name $ M.keysSet type_sigs
   -- We don't use 'lookupSig' here because type classes depend on the exact list
   -- of signatures.  This also means all the signatures should be present, so
@@ -227,10 +230,7 @@ convertClassDecl (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types typeDefa
   let defs = type_defs <> value_defs
   unless (null defs) $ storeDefaultMethods name defs
 
---  liftIO (traceIO (show name))
---  liftIO (traceIO (show defs))
-
-  let classDefn = (ClassDefinition name (args' ++ ctx) Nothing (second sigType <$> M.toList sigs))
+  let classDefn = ClassDefinition name (args ++ ctx) Nothing (second sigType <$> M.toList sigs)
 
   storeClassDefn name classDefn
 
@@ -261,7 +261,7 @@ cpsClassSentences (ClassBody (ClassDefinition name args ty methods) nots) = do
   -- result_ty <- genqid "r"
   -- cont_name <- genqid "g"
   let class_ty = Forall [ ExplicitBinder $ Ident result_ty ] $
-                   (app_args dict_name `Arrow` Qualid result_ty) `Arrow` Qualid result_ty
+                   (app_args_im dict_name `Arrow` Qualid result_ty) `Arrow` Qualid result_ty
   
   let wholeClassSentences =
         [ RecordSentence dict_record
@@ -277,21 +277,21 @@ cpsClassSentences (ClassBody (ClassDefinition name args ty methods) nots) = do
     dict_name = qualidExtendBase "__Dict" name
     dict_build = qualidExtendBase "__Dict_Build" name
     dict_methods = [ (qualidExtendBase "__" name, ty) | (name, ty) <- methods ]
-    dict_record  = RecordDefinition dict_name inst_args ty (Just dict_build) dict_methods
+    dict_record  = RecordDefinition dict_name dict_args ty (Just dict_build) dict_methods
     
-    -- The dictionary needs all explicit (type) arguments,
-    -- but none of the implicit (constraint) arguments
-    inst_args = filter (\b -> binderExplicitness b == Explicit) args
-    app_args f = foldl App1 (Qualid f) (map Qualid (foldMap (toListOf binderIdents) inst_args))
+    dict_args     = filter (\b -> binderGeneralizability b == Ungeneralizable) args
+    impl_args     = filter (\b -> binderExplicitness b == Explicit) args
+    app_args_ex f = foldl App1 (Qualid f) (map Qualid (foldMap (toListOf binderIdents) args))
+    app_args_im f = foldl App1 (Qualid f) (map Qualid (foldMap (toListOf binderIdents) impl_args))
     
     method_def g meth ty = do
       explicitArgs <- fromMaybe [] <$> lookupExplicitMethodArguments meth
       pure $ DefinitionDef
                Global
                meth
-               (explicitArgs ++ [Typed Generalizable Implicit [Ident g] $ app_args name])
+               (explicitArgs ++ [Typed Generalizable Implicit [Ident g] $ app_args_ex name])
                (Just ty)
-               (App2 (Qualid g) Underscore . app_args $ qualidExtendBase "__" meth)
+               (App2 (Qualid g) Underscore . app_args_im $ qualidExtendBase "__" meth)
                NotExistingClass
 
 classSentences :: ConversionMonad r m => ClassBody -> m [Sentence]

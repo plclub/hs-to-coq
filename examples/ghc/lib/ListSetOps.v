@@ -47,7 +47,8 @@ Definition unionLists {a} `{GHC.Base.Eq_ a} : list a -> list a -> list a :=
                                                                                             then cons x nil else
                                                                                             nil) xs) ys).
 
-Definition minusList {a} `{GHC.Base.Ord a} : list a -> list a -> list a :=
+Definition minusList {a : Type} `{GHC.Base.Ord a}
+   : list a -> list a -> list a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | nil, _ => nil
@@ -62,8 +63,8 @@ Definition minusList {a} `{GHC.Base.Ord a} : list a -> list a -> list a :=
         end
     end.
 
-Fixpoint assocDefaultUsing {a} {b} (arg_0__ : (a -> a -> bool)) (arg_1__ : b)
-                           (arg_2__ : Assoc a b) (arg_3__ : a) : b
+Fixpoint assocDefaultUsing {a : Type} {b : Type} (arg_0__ : a -> a -> bool)
+                           (arg_1__ : b) (arg_2__ : Assoc a b) (arg_3__ : a) : b
   := match arg_0__, arg_1__, arg_2__, arg_3__ with
      | _, deflt, nil, _ => deflt
      | eq, deflt, cons (pair k v) rest, key =>
@@ -77,7 +78,7 @@ Definition assoc {a} {b} `{GHC.Base.Eq_ a} `{GHC.Err.Default b}
     assocDefaultUsing _GHC.Base.==_ (Panic.panic (Coq.Init.Datatypes.app
                                                   (GHC.Base.hs_string__ "Failed in assoc: ") crash_msg)) list key.
 
-Definition assocDefault {a} {b} `{(GHC.Base.Eq_ a)}
+Definition assocDefault {a : Type} {b : Type} `{GHC.Base.Eq_ a}
    : b -> Assoc a b -> a -> b :=
   fun deflt list key => assocDefaultUsing _GHC.Base.==_ deflt list key.
 
@@ -87,7 +88,7 @@ Definition assocUsing {a} {b} `{GHC.Err.Default b}
     assocDefaultUsing eq (Panic.panic (Coq.Init.Datatypes.app (GHC.Base.hs_string__
                                                                "Failed in assoc: ") crash_msg)) list key.
 
-Definition assocMaybe {a} {b} `{(GHC.Base.Eq_ a)}
+Definition assocMaybe {a : Type} {b : Type} `{GHC.Base.Eq_ a}
    : Assoc a b -> a -> option b :=
   fun alist key =>
     let fix lookup arg_0__
@@ -100,7 +101,7 @@ Definition assocMaybe {a} {b} `{(GHC.Base.Eq_ a)}
          end in
     lookup alist.
 
-Definition hasNoDups {a} `{(GHC.Base.Eq_ a)} : list a -> bool :=
+Definition hasNoDups {a : Type} `{GHC.Base.Eq_ a} : list a -> bool :=
   fun xs =>
     let is_elem := Util.isIn (GHC.Base.hs_string__ "hasNoDups") in
     let fix f arg_1__ arg_2__
@@ -113,10 +114,10 @@ Definition hasNoDups {a} `{(GHC.Base.Eq_ a)} : list a -> bool :=
          end in
     f nil xs.
 
-Axiom equivClasses : forall {a},
+Axiom equivClasses : forall {a : Type},
                      (a -> a -> comparison) -> list a -> list (GHC.Base.NonEmpty a).
 
-Definition removeDups {a}
+Definition removeDups {a : Type}
    : (a -> a -> comparison) ->
      list a -> (list a * list (GHC.Base.NonEmpty a))%type :=
   fun arg_0__ arg_1__ =>
@@ -140,7 +141,7 @@ Definition removeDups {a}
 (* Skipping definition `ListSetOps.findDupsEq' *)
 
 (* External variables:
-     None Some bool comparison cons false list nil op_zt__ option orb pair true
+     None Some Type bool comparison cons false list nil op_zt__ option orb pair true
      Coq.Init.Datatypes.app Coq.Lists.List.flat_map Data.Foldable.elem
      Data.Set.Internal.fromList Data.Set.Internal.notMember
      Data.Traversable.mapAccumR GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty

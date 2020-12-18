@@ -28,8 +28,8 @@ Arguments Right {_} {_} _.
 
 (* Converted value declarations: *)
 
-Local Definition Eq___Either_op_zeze__ {inst_a} {inst_b} `{GHC.Base.Eq_ inst_a}
-  `{GHC.Base.Eq_ inst_b}
+Local Definition Eq___Either_op_zeze__ {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Eq_ inst_a} `{GHC.Base.Eq_ inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -38,19 +38,20 @@ Local Definition Eq___Either_op_zeze__ {inst_a} {inst_b} `{GHC.Base.Eq_ inst_a}
     | _, _ => false
     end.
 
-Local Definition Eq___Either_op_zsze__ {inst_a} {inst_b} `{GHC.Base.Eq_ inst_a}
-  `{GHC.Base.Eq_ inst_b}
+Local Definition Eq___Either_op_zsze__ {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Eq_ inst_a} `{GHC.Base.Eq_ inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> bool :=
   fun x y => negb (Eq___Either_op_zeze__ x y).
 
-Program Instance Eq___Either {a} {b} `{GHC.Base.Eq_ a} `{GHC.Base.Eq_ b}
+Program Instance Eq___Either {a : Type} {b : Type} `{GHC.Base.Eq_ a}
+  `{GHC.Base.Eq_ b}
    : GHC.Base.Eq_ (Either a b) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Either_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Either_op_zsze__ |}.
 
-Local Definition Ord__Either_op_zl__ {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
-  `{GHC.Base.Ord inst_b}
+Local Definition Ord__Either_op_zl__ {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Ord inst_a} `{GHC.Base.Ord inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> bool :=
   fun a b =>
     match a with
@@ -58,23 +59,23 @@ Local Definition Ord__Either_op_zl__ {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
     | Right a1 => match b with | Right b1 => (a1 GHC.Base.< b1) | _ => false end
     end.
 
-Local Definition Ord__Either_op_zlze__ {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
-  `{GHC.Base.Ord inst_b}
+Local Definition Ord__Either_op_zlze__ {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Ord inst_a} `{GHC.Base.Ord inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> bool :=
   fun a b => negb (Ord__Either_op_zl__ b a).
 
-Local Definition Ord__Either_op_zg__ {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
-  `{GHC.Base.Ord inst_b}
+Local Definition Ord__Either_op_zg__ {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Ord inst_a} `{GHC.Base.Ord inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> bool :=
   fun a b => Ord__Either_op_zl__ b a.
 
-Local Definition Ord__Either_op_zgze__ {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
-  `{GHC.Base.Ord inst_b}
+Local Definition Ord__Either_op_zgze__ {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Ord inst_a} `{GHC.Base.Ord inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> bool :=
   fun a b => negb (Ord__Either_op_zl__ a b).
 
-Local Definition Ord__Either_compare {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
-  `{GHC.Base.Ord inst_b}
+Local Definition Ord__Either_compare {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Ord inst_a} `{GHC.Base.Ord inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> comparison :=
   fun a b =>
     match a with
@@ -82,17 +83,18 @@ Local Definition Ord__Either_compare {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
     | Right a1 => match b with | Right b1 => (GHC.Base.compare a1 b1) | _ => Gt end
     end.
 
-Local Definition Ord__Either_max {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
-  `{GHC.Base.Ord inst_b}
+Local Definition Ord__Either_max {inst_a : Type} {inst_b : Type} `{GHC.Base.Ord
+  inst_a} `{GHC.Base.Ord inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> Either inst_a inst_b :=
   fun x y => if Ord__Either_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__Either_min {inst_a} {inst_b} `{GHC.Base.Ord inst_a}
-  `{GHC.Base.Ord inst_b}
+Local Definition Ord__Either_min {inst_a : Type} {inst_b : Type} `{GHC.Base.Ord
+  inst_a} `{GHC.Base.Ord inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> Either inst_a inst_b :=
   fun x y => if Ord__Either_op_zlze__ x y : bool then x else y.
 
-Program Instance Ord__Either {a} {b} `{GHC.Base.Ord a} `{GHC.Base.Ord b}
+Program Instance Ord__Either {a : Type} {b : Type} `{GHC.Base.Ord a}
+  `{GHC.Base.Ord b}
    : GHC.Base.Ord (Either a b) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Either_op_zl__ ;
@@ -109,102 +111,118 @@ Program Instance Ord__Either {a} {b} `{GHC.Base.Ord a} `{GHC.Base.Ord b}
 (* Skipping all instances of class `GHC.Show.Show', including
    `Data.Either.Show__Either' *)
 
-Local Definition Functor__Either_fmap {inst_a}
-   : forall {a} {b}, (a -> b) -> (Either inst_a) a -> (Either inst_a) b :=
-  fun {a} {b} =>
+Local Definition Functor__Either_fmap {inst_a : Type}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> Either inst_a a -> Either inst_a b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | _, Left x => Left x
       | f, Right y => Right (f y)
       end.
 
-Local Definition Functor__Either_op_zlzd__ {inst_a}
-   : forall {a} {b}, a -> (Either inst_a) b -> (Either inst_a) a :=
-  fun {a} {b} => Functor__Either_fmap GHC.Base.∘ GHC.Base.const.
+Local Definition Functor__Either_op_zlzd__ {inst_a : Type}
+   : forall {a : Type},
+     forall {b : Type}, a -> Either inst_a b -> Either inst_a a :=
+  fun {a : Type} {b : Type} => Functor__Either_fmap GHC.Base.∘ GHC.Base.const.
 
-Program Instance Functor__Either {a} : GHC.Base.Functor (Either a) :=
+Program Instance Functor__Either {a : Type} : GHC.Base.Functor (Either a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__Either_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__Either_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Either_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__Either_op_zlzd__ |}.
 
-Local Definition Semigroup__Either_op_zlzlzgzg__ {inst_a} {inst_b}
-   : (Either inst_a inst_b) -> (Either inst_a inst_b) -> (Either inst_a inst_b) :=
+Local Definition Semigroup__Either_op_zlzlzgzg__ {inst_a : Type} {inst_b : Type}
+   : Either inst_a inst_b -> Either inst_a inst_b -> Either inst_a inst_b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Left _, b => b
     | a, _ => a
     end.
 
-Program Instance Semigroup__Either {a} {b} : GHC.Base.Semigroup (Either a b) :=
+Program Instance Semigroup__Either {a : Type} {b : Type}
+   : GHC.Base.Semigroup (Either a b) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Either_op_zlzlzgzg__ |}.
 
-Local Definition Applicative__Either_op_zlztzg__ {inst_e}
-   : forall {a} {b},
-     (Either inst_e) (a -> b) -> (Either inst_e) a -> (Either inst_e) b :=
-  fun {a} {b} =>
+Local Definition Applicative__Either_op_zlztzg__ {inst_e : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     Either inst_e (a -> b) -> Either inst_e a -> Either inst_e b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | Left e, _ => Left e
       | Right f, r => GHC.Base.fmap f r
       end.
 
-Local Definition Applicative__Either_liftA2 {inst_e}
-   : forall {a} {b} {c},
-     (a -> b -> c) -> (Either inst_e) a -> (Either inst_e) b -> (Either inst_e) c :=
-  fun {a} {b} {c} =>
+Local Definition Applicative__Either_liftA2 {inst_e : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     (a -> b -> c) -> Either inst_e a -> Either inst_e b -> Either inst_e c :=
+  fun {a : Type} {b : Type} {c : Type} =>
     fun f x => Applicative__Either_op_zlztzg__ (GHC.Base.fmap f x).
 
-Local Definition Applicative__Either_op_ztzg__ {inst_e}
-   : forall {a} {b},
-     (Either inst_e) a -> (Either inst_e) b -> (Either inst_e) b :=
-  fun {a} {b} =>
+Local Definition Applicative__Either_op_ztzg__ {inst_e : Type}
+   : forall {a : Type},
+     forall {b : Type}, Either inst_e a -> Either inst_e b -> Either inst_e b :=
+  fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__Either_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__Either_pure {inst_e}
-   : forall {a}, a -> (Either inst_e) a :=
-  fun {a} => Right.
+Local Definition Applicative__Either_pure {inst_e : Type}
+   : forall {a : Type}, a -> Either inst_e a :=
+  fun {a : Type} => Right.
 
-Program Instance Applicative__Either {e} : GHC.Base.Applicative (Either e) :=
+Program Instance Applicative__Either {e : Type}
+   : GHC.Base.Applicative (Either e) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__Either_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__Either_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__Either_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__Either_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__Either_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Either_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__Either_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__Either_pure |}.
 
-Local Definition Monad__Either_op_zgzgze__ {inst_e}
-   : forall {a} {b},
-     (Either inst_e) a -> (a -> (Either inst_e) b) -> (Either inst_e) b :=
-  fun {a} {b} =>
+Local Definition Monad__Either_op_zgzgze__ {inst_e : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     Either inst_e a -> (a -> Either inst_e b) -> Either inst_e b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | Left l, _ => Left l
       | Right r, k => k r
       end.
 
-Local Definition Monad__Either_op_zgzg__ {inst_e}
-   : forall {a} {b},
-     (Either inst_e) a -> (Either inst_e) b -> (Either inst_e) b :=
-  fun {a} {b} => fun m k => Monad__Either_op_zgzgze__ m (fun arg_0__ => k).
+Local Definition Monad__Either_op_zgzg__ {inst_e : Type}
+   : forall {a : Type},
+     forall {b : Type}, Either inst_e a -> Either inst_e b -> Either inst_e b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__Either_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__Either_return_ {inst_e}
-   : forall {a}, a -> (Either inst_e) a :=
-  fun {a} => GHC.Base.pure.
+Local Definition Monad__Either_return_ {inst_e : Type}
+   : forall {a : Type}, a -> Either inst_e a :=
+  fun {a : Type} => GHC.Base.pure.
 
-Program Instance Monad__Either {e} : GHC.Base.Monad (Either e) :=
+Program Instance Monad__Either {e : Type} : GHC.Base.Monad (Either e) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__Either_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__Either_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__Either_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__Either_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+             Monad__Either_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__Either_return_ |}.
 
-Definition either {a} {c} {b} : (a -> c) -> (b -> c) -> Either a b -> c :=
+Definition either {a : Type} {c : Type} {b : Type}
+   : (a -> c) -> (b -> c) -> Either a b -> c :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | f, _, Left x => f x
     | _, g, Right y => g y
     end.
 
-Definition lefts {a} {b} : list (Either a b) -> list a :=
+Definition lefts {a : Type} {b : Type} : list (Either a b) -> list a :=
   fun x =>
     let cont_0__ arg_1__ :=
       match arg_1__ with
@@ -213,7 +231,7 @@ Definition lefts {a} {b} : list (Either a b) -> list a :=
       end in
     Coq.Lists.List.flat_map cont_0__ x.
 
-Definition rights {a} {b} : list (Either a b) -> list b :=
+Definition rights {a : Type} {b : Type} : list (Either a b) -> list b :=
   fun x =>
     let cont_0__ arg_1__ :=
       match arg_1__ with
@@ -222,7 +240,7 @@ Definition rights {a} {b} : list (Either a b) -> list b :=
       end in
     Coq.Lists.List.flat_map cont_0__ x.
 
-Definition partitionEithers {a} {b}
+Definition partitionEithers {a : Type} {b : Type}
    : list (Either a b) -> (list a * list b)%type :=
   let right_ :=
     fun arg_0__ arg_1__ =>
@@ -236,20 +254,20 @@ Definition partitionEithers {a} {b}
       end in
   GHC.Base.foldr (either left_ right_) (pair nil nil).
 
-Definition isLeft {a} {b} : Either a b -> bool :=
+Definition isLeft {a : Type} {b : Type} : Either a b -> bool :=
   fun arg_0__ => match arg_0__ with | Left _ => true | Right _ => false end.
 
-Definition isRight {a} {b} : Either a b -> bool :=
+Definition isRight {a : Type} {b : Type} : Either a b -> bool :=
   fun arg_0__ => match arg_0__ with | Left _ => false | Right _ => true end.
 
-Definition fromLeft {a} {b} : a -> Either a b -> a :=
+Definition fromLeft {a : Type} {b : Type} : a -> Either a b -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | _, Left a => a
     | a, _ => a
     end.
 
-Definition fromRight {b} {a} : b -> Either a b -> b :=
+Definition fromRight {b : Type} {a : Type} : b -> Either a b -> b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | _, Right b => b
@@ -257,7 +275,7 @@ Definition fromRight {b} {a} : b -> Either a b -> b :=
     end.
 
 (* External variables:
-     Gt Lt bool comparison cons false list negb nil op_zt__ pair true
+     Gt Lt Type bool comparison cons false list negb nil op_zt__ pair true
      Coq.Lists.List.flat_map GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor
      GHC.Base.Monad GHC.Base.Ord GHC.Base.Semigroup GHC.Base.compare
      GHC.Base.compare__ GHC.Base.const GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr

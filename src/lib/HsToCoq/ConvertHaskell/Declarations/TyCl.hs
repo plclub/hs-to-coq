@@ -10,7 +10,6 @@ module HsToCoq.ConvertHaskell.Declarations.TyCl (
   convertModuleTyClDecls,
   -- * Convert single declarations
   ConvertedDeclaration(..), convDeclName,
-  convertTyClDecl,
   -- * Mutually-recursive declaration groups
   DeclarationGroup(..), singletonDeclarationGroup,
   -- * Converting 'DeclarationGroup's
@@ -52,6 +51,7 @@ import HsToCoq.Util.FVs
 #if __GLASGOW_HASKELL__ >= 806
 import HsToCoq.Util.GHC.HsTypes (noExtCon)
 #endif
+import HsToCoq.Util.GHC.Module
 
 import Data.Generics hiding (Generic, Fixity(..))
 
@@ -64,6 +64,7 @@ import HsToCoq.ConvertHaskell.Declarations.TypeSynonym
 import HsToCoq.ConvertHaskell.Declarations.DataType
 import HsToCoq.ConvertHaskell.Declarations.Class
 import HsToCoq.ConvertHaskell.Declarations.Notations (buildInfixNotations)
+import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 
 --------------------------------------------------------------------------------
 
@@ -92,8 +93,8 @@ failTyClDecl :: ConversionMonad r m => Qualid -> GhcException -> m (Maybe Conver
 failTyClDecl name e = pure $ Just $
     ConvFailure name $ translationFailedComment (qualidBase name) e
 
-convertTyClDecl :: ConversionMonad r m => TyClDecl GhcRn -> m (Maybe ConvertedDeclaration)
-convertTyClDecl decl = do
+convertTyClDecl :: ConversionMonad r m => ConvertedTyClEnv -> TyClDecl GhcRn -> m (Maybe ConvertedDeclaration)
+convertTyClDecl env decl = do
   coqName <- var TypeNS . unLoc $ tyClDeclLName decl
   withCurrentDefinition coqName $ handleIfPermissive (failTyClDecl coqName) $
     view (edits.skippedClasses.contains coqName) >>= \case
@@ -120,9 +121,9 @@ convertTyClDecl decl = do
                 case ind of
                   Inductive   (body :| [])  []    -> pure $ ConvData False body
                   CoInductive (body :| [])  []    -> pure $ ConvData True body
-                  Inductive   (_    :| _:_) _     -> editFailure $ "cannot redefine data type to mutually-recursive types"
-                  Inductive   _             (_:_) -> editFailure $ "cannot redefine data type to include notations"
-                  CoInductive _             _     -> editFailure $ "cannot redefine data type to be coinductive"
+                  Inductive   (_    :| _:_) _     -> editFailure "cannot redefine data type to mutually-recursive types"
+                  Inductive   _             (_:_) -> editFailure "cannot redefine data type to include notations"
+                  CoInductive _             _     -> editFailure "cannot redefine data type to be coinductive"
               
               (FamDecl{}, _) ->
                 editFailure "cannot redefine type/data families"
@@ -171,9 +172,9 @@ convertTyClDecl decl = do
       let isCoind = view (edits.coinductiveTypes.contains coqName)
       in Just <$> case decl of
            FamDecl{}     -> convUnsupported "type/data families"
-           SynDecl{..}   -> ConvSyn              <$> convertSynDecl           tcdLName (hsq_explicit tcdTyVars) tcdRhs
-           DataDecl{..}  -> ConvData <$> isCoind <*> convertDataDecl          tcdLName (hsq_explicit tcdTyVars) tcdDataDefn
-           ClassDecl{..} -> ConvClass            <$> convertClassDecl tcdCtxt tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
+           SynDecl{..}   -> ConvSyn              <$> convertSynDecl               tcdLName (hsq_explicit tcdTyVars) tcdRhs
+           DataDecl{..}  -> ConvData <$> isCoind <*> convertDataDecl              tcdLName (hsq_explicit tcdTyVars) tcdDataDefn
+           ClassDecl{..} -> ConvClass            <$> convertClassDecl env tcdCtxt tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
 #if __GLASGOW_HASKELL__ >= 806
            XTyClDecl v -> noExtCon v
 #endif
@@ -225,7 +226,7 @@ convertDeclarationGroup DeclarationGroup{..} =
       let synDefs  = recSynDefs inds syns
           synDefs' = expandAllDefs synDefs
       in pure $  [InductiveSentence $ Inductive (subst synDefs' inds) []]
-              ++ (orderRecSynDefs $ synDefs)
+              ++ orderRecSynDefs synDefs
     
     (Nothing, Nothing, Nothing, Just (classDef :| []), Nothing) ->
       classSentences classDef
@@ -370,7 +371,7 @@ generateDefaultInstance (IndBody tyName _ _ cons)
         False -> pure $ pure $ InstanceSentence $
             InstanceTerm inst_name []
                      (App1 "GHC.Err.Default" (Qualid tyName))
-                     (App2 "GHC.Err.Build_Default" Underscore (foldr (\_ acc -> (App1 acc "GHC.Err.default")) (Qualid con) bndrs))
+                     (App2 "GHC.Err.Build_Default" Underscore (foldr (\_ acc -> App1 acc "GHC.Err.default") (Qualid con) bndrs))
                      Nothing
   where
     inst_name = qualidMapBase ("Default__" <>) tyName
@@ -434,7 +435,7 @@ generateRecordAccessors (IndBody tyName params resTy cons) = do
                                [Ident arg] (appList (Qualid tyName) $ binderArgs typeArgs)
 
     pure . (\ m -> DefinitionDef Global field (implicitArgs ++ [argBinder]) Nothing m NotExistingClass) $
-      (Coq.Match [MatchItem (Qualid arg) Nothing Nothing] Nothing equations) 
+      Coq.Match [MatchItem (Qualid arg) Nothing Nothing] Nothing equations 
 
 generateGroupRecordAccessors :: ConversionMonad r m => DeclarationGroup -> m [Sentence]
 generateGroupRecordAccessors = fmap (fmap DefinitionSentence)
@@ -460,7 +461,9 @@ generateGroupDataInfixNotations =
 groupTyClDecls :: ConversionMonad r m
                => [TyClDecl GhcRn] -> m [DeclarationGroup]
 groupTyClDecls decls = do
-  bodies <- traverse convertTyClDecl decls <&>
+  mod <- view (currentModule.modDetails)
+  env <- convertTyClEnv mod
+  bodies <- traverse (convertTyClDecl env) decls <&>
               M.fromList . map (convDeclName &&& id) . catMaybes
 
   -- We need to do this here, becaues topoSortEnvironment expects
@@ -471,7 +474,7 @@ groupTyClDecls decls = do
         -- they are constructor names:
         -- ctypes <- setMapMaybeM lookupConstructorType vars
         -- With interface loading, this is too crude.
-        return $ vars -- <> ctypes
+        return vars -- <> ctypes
 
   pure $ map (foldMap $ singletonDeclarationGroup . (bodies M.!))
        $ topoSortEnvironmentWith id bodies_fvars
@@ -485,4 +488,4 @@ convertModuleTyClDecls =  fork [ foldTraverse convertDeclarationGroup
                                , foldTraverse generateGroupDataInfixNotations
                                ]
                        <=< groupTyClDecls
-  where fork fns x = mconcat <$> sequence (map ($x) fns)
+  where fork fns x = mconcat <$> mapM ($x) fns

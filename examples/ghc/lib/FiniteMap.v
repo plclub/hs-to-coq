@@ -20,7 +20,7 @@ Require GHC.Base.
 
 (* Converted value declarations: *)
 
-Definition insertList {key} {elt} `{GHC.Base.Ord key}
+Definition insertList {key : Type} {elt : Type} `{GHC.Base.Ord key}
    : list (key * elt)%type ->
      Data.Map.Internal.Map key elt -> Data.Map.Internal.Map key elt :=
   fun xs m =>
@@ -29,7 +29,7 @@ Definition insertList {key} {elt} `{GHC.Base.Ord key}
                            | m, pair k v => Data.Map.Internal.insert k v m
                            end) m xs.
 
-Definition insertListWith {key} {elt} `{GHC.Base.Ord key}
+Definition insertListWith {key : Type} {elt : Type} `{GHC.Base.Ord key}
    : (elt -> elt -> elt) ->
      list (key * elt)%type ->
      Data.Map.Internal.Map key elt -> Data.Map.Internal.Map key elt :=
@@ -39,20 +39,20 @@ Definition insertListWith {key} {elt} `{GHC.Base.Ord key}
                            | m, pair k v => Data.Map.Internal.insertWith f k v m
                            end) m0 xs.
 
-Definition deleteList {key} {elt} `{GHC.Base.Ord key}
+Definition deleteList {key : Type} {elt : Type} `{GHC.Base.Ord key}
    : list key -> Data.Map.Internal.Map key elt -> Data.Map.Internal.Map key elt :=
   fun ks m => Data.Foldable.foldl (GHC.Base.flip Data.Map.Internal.delete) m ks.
 
-Definition foldRight {elt} {a} {key}
+Definition foldRight {elt : Type} {a : Type} {key : Type}
    : (elt -> a -> a) -> a -> Data.Map.Internal.Map key elt -> a :=
   Data.Map.Internal.foldr.
 
-Definition foldRightWithKey {key} {elt} {a}
+Definition foldRightWithKey {key : Type} {elt : Type} {a : Type}
    : (key -> elt -> a -> a) -> a -> Data.Map.Internal.Map key elt -> a :=
   Data.Map.Internal.foldrWithKey.
 
 (* External variables:
-     list op_zt__ pair Data.Foldable.foldl Data.Map.Internal.Map
+     Type list op_zt__ pair Data.Foldable.foldl Data.Map.Internal.Map
      Data.Map.Internal.delete Data.Map.Internal.foldr Data.Map.Internal.foldrWithKey
      Data.Map.Internal.insert Data.Map.Internal.insertWith GHC.Base.Ord GHC.Base.flip
 *)

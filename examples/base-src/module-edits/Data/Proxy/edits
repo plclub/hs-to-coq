@@ -1,4 +1,5 @@
-data kinds Data.Proxy.Proxy Type
+polykinds Data.Proxy.Proxy k
+data kinds Data.Proxy.Proxy k
 data kinds Data.Proxy.KProxy Type
 
 order Data.Proxy.Eq___Proxy         Data.Proxy.Ord__Proxy

@@ -110,44 +110,53 @@ defaultMethods:
 classTypes:
   Data.Foldable.Foldable: fromList []
 classDefns:
-  Data.Foldable.Foldable: ClassDefinition (Qualified "Data.Foldable" "Foldable") [ExplicitBinder
-    (Ident (Bare "t"))] Nothing [(Qualified "Data.Foldable" "fold",Forall (ImplicitBinders
-    (Ident (Bare "m") :| []) :| []) (Forall (Generalized Implicit (App (Qualid (Qualified
-    "GHC.Base" "Monoid")) (PosArg (Qualid (Bare "m")) :| [])) :| []) (Arrow (App (Qualid
-    (Bare "t")) (PosArg (Qualid (Bare "m")) :| [])) (Qualid (Bare "m"))))),(Qualified
-    "Data.Foldable" "foldMap",Forall (ImplicitBinders (Ident (Bare "m") :| []) :|
-    [ImplicitBinders (Ident (Bare "a") :| [])]) (Forall (Generalized Implicit (App
-    (Qualid (Qualified "GHC.Base" "Monoid")) (PosArg (Qualid (Bare "m")) :| [])) :|
-    []) (Arrow (Parens (Arrow (Qualid (Bare "a")) (Qualid (Bare "m")))) (Arrow (App
-    (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "m")))))),(Qualified
-    "Data.Foldable" "foldl",Forall (ImplicitBinders (Ident (Bare "b") :| []) :| [ImplicitBinders
-    (Ident (Bare "a") :| [])]) (Arrow (Parens (Arrow (Qualid (Bare "b")) (Arrow (Qualid
-    (Bare "a")) (Qualid (Bare "b"))))) (Arrow (Qualid (Bare "b")) (Arrow (App (Qualid
-    (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "b")))))),(Qualified
-    "Data.Foldable" "foldl'",Forall (ImplicitBinders (Ident (Bare "b") :| []) :| [ImplicitBinders
-    (Ident (Bare "a") :| [])]) (Arrow (Parens (Arrow (Qualid (Bare "b")) (Arrow (Qualid
-    (Bare "a")) (Qualid (Bare "b"))))) (Arrow (Qualid (Bare "b")) (Arrow (App (Qualid
-    (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "b")))))),(Qualified
-    "Data.Foldable" "foldr",Forall (ImplicitBinders (Ident (Bare "a") :| []) :| [ImplicitBinders
-    (Ident (Bare "b") :| [])]) (Arrow (Parens (Arrow (Qualid (Bare "a")) (Arrow (Qualid
-    (Bare "b")) (Qualid (Bare "b"))))) (Arrow (Qualid (Bare "b")) (Arrow (App (Qualid
-    (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "b")))))),(Qualified
-    "Data.Foldable" "foldr'",Forall (ImplicitBinders (Ident (Bare "a") :| []) :| [ImplicitBinders
-    (Ident (Bare "b") :| [])]) (Arrow (Parens (Arrow (Qualid (Bare "a")) (Arrow (Qualid
-    (Bare "b")) (Qualid (Bare "b"))))) (Arrow (Qualid (Bare "b")) (Arrow (App (Qualid
-    (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "b")))))),(Qualified
-    "Data.Foldable" "length",Forall (ImplicitBinders (Ident (Bare "a") :| []) :| [])
-    (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Qualified
-    "GHC.Num" "Int")))),(Qualified "Data.Foldable" "null",Forall (ImplicitBinders
-    (Ident (Bare "a") :| []) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid
-    (Bare "a")) :| [])) (Qualid (Bare "bool")))),(Qualified "Data.Foldable" "product",Forall
-    (ImplicitBinders (Ident (Bare "a") :| []) :| []) (Forall (Generalized Implicit
-    (App (Qualid (Qualified "GHC.Num" "Num")) (PosArg (Qualid (Bare "a")) :| []))
-    :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid
-    (Bare "a"))))),(Qualified "Data.Foldable" "sum",Forall (ImplicitBinders (Ident
-    (Bare "a") :| []) :| []) (Forall (Generalized Implicit (App (Qualid (Qualified
-    "GHC.Num" "Num")) (PosArg (Qualid (Bare "a")) :| [])) :| []) (Arrow (App (Qualid
-    (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "a"))))),(Qualified
-    "Data.Foldable" "toList",Forall (ImplicitBinders (Ident (Bare "a") :| []) :| [])
-    (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (App (Qualid
-    (Bare "list")) (PosArg (Qualid (Bare "a")) :| []))))]
+  Data.Foldable.Foldable: ClassDefinition (Qualified "Data.Foldable" "Foldable") [Typed
+    Ungeneralizable Explicit (Ident (Bare "t") :| []) (Arrow (Qualid (Bare "Type"))
+    (Qualid (Bare "Type")))] Nothing [(Qualified "Data.Foldable" "fold",Forall (Typed
+    Ungeneralizable Implicit (Ident (Bare "m") :| []) (Qualid (Bare "Type")) :| [])
+    (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Base" "Monoid")) (PosArg
+    (Qualid (Bare "m")) :| [])) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid
+    (Bare "m")) :| [])) (Qualid (Bare "m"))))),(Qualified "Data.Foldable" "foldMap",Forall
+    (Typed Ungeneralizable Implicit (Ident (Bare "m") :| []) (Qualid (Bare "Type"))
+    :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid
+    (Bare "Type")) :| []) (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Base"
+    "Monoid")) (PosArg (Qualid (Bare "m")) :| [])) :| []) (Arrow (Arrow (Qualid (Bare
+    "a")) (Qualid (Bare "m"))) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare
+    "a")) :| [])) (Qualid (Bare "m"))))))),(Qualified "Data.Foldable" "foldl",Forall
+    (Typed Ungeneralizable Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type"))
+    :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid
+    (Bare "Type")) :| []) (Arrow (Arrow (Qualid (Bare "b")) (Arrow (Qualid (Bare "a"))
+    (Qualid (Bare "b")))) (Arrow (Qualid (Bare "b")) (Arrow (App (Qualid (Bare "t"))
+    (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "b"))))))),(Qualified "Data.Foldable"
+    "foldl'",Forall (Typed Ungeneralizable Implicit (Ident (Bare "b") :| []) (Qualid
+    (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "a")
+    :| []) (Qualid (Bare "Type")) :| []) (Arrow (Arrow (Qualid (Bare "b")) (Arrow
+    (Qualid (Bare "a")) (Qualid (Bare "b")))) (Arrow (Qualid (Bare "b")) (Arrow (App
+    (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "b"))))))),(Qualified
+    "Data.Foldable" "foldr",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a")
+    :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident
+    (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Arrow (Arrow (Qualid (Bare "a"))
+    (Arrow (Qualid (Bare "b")) (Qualid (Bare "b")))) (Arrow (Qualid (Bare "b")) (Arrow
+    (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "b"))))))),(Qualified
+    "Data.Foldable" "foldr'",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a")
+    :| []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident
+    (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Arrow (Arrow (Qualid (Bare "a"))
+    (Arrow (Qualid (Bare "b")) (Qualid (Bare "b")))) (Arrow (Qualid (Bare "b")) (Arrow
+    (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (Qualid (Bare "b"))))))),(Qualified
+    "Data.Foldable" "length",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a")
+    :| []) (Qualid (Bare "Type")) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid
+    (Bare "a")) :| [])) (Qualid (Qualified "GHC.Num" "Int")))),(Qualified "Data.Foldable"
+    "null",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid
+    (Bare "Type")) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a"))
+    :| [])) (Qualid (Bare "bool")))),(Qualified "Data.Foldable" "product",Forall (Typed
+    Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid (Bare "Type")) :| [])
+    (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Num" "Num")) (PosArg
+    (Qualid (Bare "a")) :| [])) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid
+    (Bare "a")) :| [])) (Qualid (Bare "a"))))),(Qualified "Data.Foldable" "sum",Forall
+    (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid (Bare "Type"))
+    :| []) (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Num" "Num"))
+    (PosArg (Qualid (Bare "a")) :| [])) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg
+    (Qualid (Bare "a")) :| [])) (Qualid (Bare "a"))))),(Qualified "Data.Foldable"
+    "toList",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid
+    (Bare "Type")) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a"))
+    :| [])) (App (Qualid (Bare "list")) (PosArg (Qualid (Bare "a")) :| []))))]

@@ -115,10 +115,5 @@ skip GHC.Base.MonadPlus__list
 skip GHC.Base.Alternative__option
 skip GHC.Base.MonadPlus__option
 
-# Haskell’s definition of passes the f around, which trips over the
-# termination checker when a function does nested recursion through map
-# If we have a local fix for just the argument, then things often work out
+# For hs_coq_map theorem
 redefine Definition GHC.Base.map {A B :Type} (f : A -> B) xs := Coq.Lists.List.map f xs.
-
-class kinds GHC.Base.MonadPlus (Type -> Type)
-class kinds GHC.Base.Alternative (Type -> Type)

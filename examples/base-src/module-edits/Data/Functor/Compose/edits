@@ -1,6 +1,7 @@
 in Data.Functor.Compose.Applicative__Compose_op_zlztzg__ rewrite forall , Data.Functor.Compose.Applicative__Compose_liftA2 = GHC.Base.liftA2
 
-data kinds Data.Functor.Compose.Compose (Type -> Type), (Type -> Type), Type
+polykinds Data.Functor.Compose.Compose k k1
+data kinds Data.Functor.Compose.Compose (k -> Type), (k1 -> k), k1
 
 order Data.Functor.Compose.Functor__Compose Data.Functor.Compose.Applicative__Compose_op_ztzg__
 

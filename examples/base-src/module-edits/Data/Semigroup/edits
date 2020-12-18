@@ -80,37 +80,3 @@ order Data.Semigroup.Functor__Option Data.Semigroup.Traversable__Option
 # Semigroup (,) and Semigroup (,,) clash
 skip Data.Semigroup.Semigroup__op_zt__
 
-# https://github.com/antalsz/hs-to-coq/issues/51
-# doing these by hand
-redefine Local Definition Data.Semigroup.Semigroup__Endo_op_zlzlzgzg__ {a} : 
-			(Data.Monoid.Endo a) -> ((Data.Monoid.Endo a) -> (Data.Monoid.Endo a)) :=
-  GHC.Prim.coerce (@GHC.Base.op_z2218U__ a a a).
-redefine Local Definition Data.Semigroup.Semigroup__Sum_op_zlzlzgzg__ {inst_a} `{_: GHC.Num.Num inst_a}
-    : (Data.Monoid.Sum inst_a) -> ((Data.Monoid.Sum inst_a) -> ((Data.Monoid.Sum
-      inst_a))) :=
-  GHC.Prim.coerce (@GHC.Num.op_zp__ inst_a _).
-redefine Local Definition Data.Semigroup.Semigroup__Product_op_zlzlzgzg__ {inst_a} `{_:GHC.Num.Num inst_a}
-    : (Data.Monoid.Product inst_a) -> 
-	 ((Data.Monoid.Product inst_a) -> (Data.Monoid.Product inst_a)) :=
-  GHC.Prim.coerce (@GHC.Num.op_zm__ inst_a _).
-
-redefine Local Definition Data.Semigroup.Semigroup__Const_op_zlzlzgzg__ {inst_a} {inst_b} `{_:GHC.Base.Semigroup  inst_a} : 
-  (Data.Functor.Const.Const inst_a inst_b) -> 
-  ((Data.Functor.Const.Const inst_a inst_b) -> 
-   (Data.Functor.Const.Const inst_a inst_b)) :=
-  GHC.Prim.coerce (@GHC.Base.op_zlzlzgzg__ inst_a _).
-
-redefine Local Definition Data.Semigroup.Semigroup__Min_op_zlzlzgzg__ {inst_a} `{_:GHC.Base.Ord inst_a} : (Min inst_a) -> ((Min inst_a) -> (Min inst_a)) :=
-  GHC.Prim.coerce (@GHC.Base.min inst_a _ _).
-
-redefine Local Definition Data.Semigroup.Semigroup__Max_op_zlzlzgzg__ {inst_a} `{_:GHC.Base.Ord inst_a} : (Max inst_a) -> ((Max inst_a) -> (Max inst_a)) :=
-  GHC.Prim.coerce (@GHC.Base.max inst_a _ _).
-
-redefine Local Definition Data.Semigroup.Semigroup__WrappedMonoid_op_zlzlzgzg__ {inst_m} `{_:GHC.Base.Monoid inst_m} : (WrappedMonoid inst_m) -> ((WrappedMonoid inst_m) -> (WrappedMonoid inst_m)) :=
-  GHC.Prim.coerce (@GHC.Base.mappend inst_m _ _).
-
-redefine Local Definition Data.Semigroup.Semigroup__Option_op_zlzlzgzg__ {inst_a} `{_: GHC.Base.Semigroup inst_a}
-    : (Option inst_a) -> ((Option inst_a) -> (Option inst_a)) :=
-  GHC.Prim.coerce (@GHC.Base.op_zlzlzgzg__ (option inst_a) _).
-
-

@@ -1,3 +1,6 @@
+polykinds Data.Functor.Constant.Constant k
+data kinds Data.Functor.Constant.Constant Type, k
+
 delete unused type variables Data.Functor.Constant.Eq___Constant
 delete unused type variables Data.Functor.Constant.Ord__Constant
 

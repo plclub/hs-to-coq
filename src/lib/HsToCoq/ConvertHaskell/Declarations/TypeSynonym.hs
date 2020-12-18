@@ -19,7 +19,7 @@ import HsToCoq.Util.FVs
 
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
-import HsToCoq.ConvertHaskell.Type
+import HsToCoq.ConvertHaskell.HsType
 import HsToCoq.Edits.Types
 
 --------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ convertSynDecl :: LocalConvMonad r m
 convertSynDecl name args def  = do
   coqName <- freeVar $ unLoc name
   params <- convertLHsTyVarBndrs Coq.Explicit args
-  rhs    <- convertLType def
+  rhs    <- convertLHsType def
   let (params', rhs') = etaContract params rhs
   SynBody <$> var TypeNS (unLoc name)
           <*> pure params'

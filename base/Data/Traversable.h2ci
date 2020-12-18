@@ -13,33 +13,41 @@ classTypes:
   Data.Traversable.Traversable: fromList []
 classDefns:
   Data.Traversable.Traversable: ClassDefinition (Qualified "Data.Traversable" "Traversable")
-    [ExplicitBinder (Ident (Bare "t")),Generalized Implicit (App (Qualid (Qualified
+    [Typed Ungeneralizable Explicit (Ident (Bare "t") :| []) (Arrow (Qualid (Bare
+    "Type")) (Qualid (Bare "Type"))),Generalized Implicit (App (Qualid (Qualified
     "GHC.Base" "Functor")) (PosArg (Qualid (Bare "t")) :| [])),Generalized Implicit
     (App (Qualid (Qualified "Data.Foldable" "Foldable")) (PosArg (Qualid (Bare "t"))
-    :| []))] Nothing [(Qualified "Data.Traversable" "mapM",Forall (ImplicitBinders
-    (Ident (Bare "m") :| []) :| [ImplicitBinders (Ident (Bare "a") :| []),ImplicitBinders
-    (Ident (Bare "b") :| [])]) (Forall (Generalized Implicit (App (Qualid (Qualified
-    "GHC.Base" "Monad")) (PosArg (Qualid (Bare "m")) :| [])) :| []) (Arrow (Parens
-    (Arrow (Qualid (Bare "a")) (App (Qualid (Bare "m")) (PosArg (Qualid (Bare "b"))
-    :| [])))) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| []))
-    (App (Qualid (Bare "m")) (PosArg (Parens (App (Qualid (Bare "t")) (PosArg (Qualid
-    (Bare "b")) :| []))) :| [])))))),(Qualified "Data.Traversable" "sequence",Forall
-    (ImplicitBinders (Ident (Bare "m") :| []) :| [ImplicitBinders (Ident (Bare "a")
-    :| [])]) (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Base" "Monad"))
-    (PosArg (Qualid (Bare "m")) :| [])) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg
-    (Parens (App (Qualid (Bare "m")) (PosArg (Qualid (Bare "a")) :| []))) :| []))
-    (App (Qualid (Bare "m")) (PosArg (Parens (App (Qualid (Bare "t")) (PosArg (Qualid
-    (Bare "a")) :| []))) :| []))))),(Qualified "Data.Traversable" "sequenceA",Forall
-    (ImplicitBinders (Ident (Bare "f") :| []) :| [ImplicitBinders (Ident (Bare "a")
-    :| [])]) (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Base" "Applicative"))
-    (PosArg (Qualid (Bare "f")) :| [])) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg
-    (Parens (App (Qualid (Bare "f")) (PosArg (Qualid (Bare "a")) :| []))) :| []))
-    (App (Qualid (Bare "f")) (PosArg (Parens (App (Qualid (Bare "t")) (PosArg (Qualid
-    (Bare "a")) :| []))) :| []))))),(Qualified "Data.Traversable" "traverse",Forall
-    (ImplicitBinders (Ident (Bare "f") :| []) :| [ImplicitBinders (Ident (Bare "a")
-    :| []),ImplicitBinders (Ident (Bare "b") :| [])]) (Forall (Generalized Implicit
-    (App (Qualid (Qualified "GHC.Base" "Applicative")) (PosArg (Qualid (Bare "f"))
-    :| [])) :| []) (Arrow (Parens (Arrow (Qualid (Bare "a")) (App (Qualid (Bare "f"))
-    (PosArg (Qualid (Bare "b")) :| [])))) (Arrow (App (Qualid (Bare "t")) (PosArg
-    (Qualid (Bare "a")) :| [])) (App (Qualid (Bare "f")) (PosArg (Parens (App (Qualid
-    (Bare "t")) (PosArg (Qualid (Bare "b")) :| []))) :| []))))))]
+    :| []))] Nothing [(Qualified "Data.Traversable" "mapM",Forall (Typed Ungeneralizable
+    Implicit (Ident (Bare "m") :| []) (Arrow (Qualid (Bare "Type")) (Qualid (Bare
+    "Type"))) :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :|
+    []) (Qualid (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident
+    (Bare "b") :| []) (Qualid (Bare "Type")) :| []) (Forall (Generalized Implicit
+    (App (Qualid (Qualified "GHC.Base" "Monad")) (PosArg (Qualid (Bare "m")) :| []))
+    :| []) (Arrow (Arrow (Qualid (Bare "a")) (App (Qualid (Bare "m")) (PosArg (Qualid
+    (Bare "b")) :| []))) (Arrow (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a"))
+    :| [])) (App (Qualid (Bare "m")) (PosArg (App (Qualid (Bare "t")) (PosArg (Qualid
+    (Bare "b")) :| [])) :| [])))))))),(Qualified "Data.Traversable" "sequence",Forall
+    (Typed Ungeneralizable Implicit (Ident (Bare "m") :| []) (Arrow (Qualid (Bare
+    "Type")) (Qualid (Bare "Type"))) :| []) (Forall (Typed Ungeneralizable Implicit
+    (Ident (Bare "a") :| []) (Qualid (Bare "Type")) :| []) (Forall (Generalized Implicit
+    (App (Qualid (Qualified "GHC.Base" "Monad")) (PosArg (Qualid (Bare "m")) :| []))
+    :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (App (Qualid (Bare "m")) (PosArg
+    (Qualid (Bare "a")) :| [])) :| [])) (App (Qualid (Bare "m")) (PosArg (App (Qualid
+    (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) :| [])))))),(Qualified "Data.Traversable"
+    "sequenceA",Forall (Typed Ungeneralizable Implicit (Ident (Bare "f") :| []) (Arrow
+    (Qualid (Bare "Type")) (Qualid (Bare "Type"))) :| []) (Forall (Typed Ungeneralizable
+    Implicit (Ident (Bare "a") :| []) (Qualid (Bare "Type")) :| []) (Forall (Generalized
+    Implicit (App (Qualid (Qualified "GHC.Base" "Applicative")) (PosArg (Qualid (Bare
+    "f")) :| [])) :| []) (Arrow (App (Qualid (Bare "t")) (PosArg (App (Qualid (Bare
+    "f")) (PosArg (Qualid (Bare "a")) :| [])) :| [])) (App (Qualid (Bare "f")) (PosArg
+    (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) :| [])))))),(Qualified
+    "Data.Traversable" "traverse",Forall (Typed Ungeneralizable Implicit (Ident (Bare
+    "f") :| []) (Arrow (Qualid (Bare "Type")) (Qualid (Bare "Type"))) :| []) (Forall
+    (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid (Bare "Type"))
+    :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "b") :| []) (Qualid
+    (Bare "Type")) :| []) (Forall (Generalized Implicit (App (Qualid (Qualified "GHC.Base"
+    "Applicative")) (PosArg (Qualid (Bare "f")) :| [])) :| []) (Arrow (Arrow (Qualid
+    (Bare "a")) (App (Qualid (Bare "f")) (PosArg (Qualid (Bare "b")) :| []))) (Arrow
+    (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (App (Qualid (Bare
+    "f")) (PosArg (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "b")) :| [])) :|
+    []))))))))]

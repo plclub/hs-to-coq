@@ -26,12 +26,12 @@ Inductive UniqSupply : Type :=
 Inductive UniqSM result : Type :=
   | USM (unUSM : UniqSupply -> (result * UniqSupply)%type) : UniqSM result.
 
-Record MonadUnique__Dict m := MonadUnique__Dict_Build {
+Record MonadUnique__Dict (m : Type -> Type) := MonadUnique__Dict_Build {
   getUniqueM__ : m Unique.Unique ;
   getUniqueSupplyM__ : m UniqSupply ;
   getUniquesM__ : m (list Unique.Unique) }.
 
-Definition MonadUnique m `{GHC.Base.Monad m} :=
+Definition MonadUnique (m : Type -> Type) `{GHC.Base.Monad m} :=
   forall r__, (MonadUnique__Dict m -> r__) -> r__.
 Existing Class MonadUnique.
 
@@ -59,8 +59,9 @@ Admitted.
 (* Converted value declarations: *)
 
 Local Definition Applicative__UniqSM_op_zlztzg__
-   : forall {a} {b}, UniqSM (a -> b) -> UniqSM a -> UniqSM b :=
-  fun {a} {b} =>
+   : forall {a : Type},
+     forall {b : Type}, UniqSM (a -> b) -> UniqSM a -> UniqSM b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | USM f, USM x =>
@@ -71,25 +72,28 @@ Local Definition Applicative__UniqSM_op_zlztzg__
       end.
 
 Local Definition Functor__UniqSM_fmap
-   : forall {a} {b}, (a -> b) -> UniqSM a -> UniqSM b :=
-  fun {a} {b} =>
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> UniqSM a -> UniqSM b :=
+  fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, USM x => USM (fun us => let 'pair r us' := x us in pair (f r) us')
       end.
 
 Local Definition Functor__UniqSM_op_zlzd__
-   : forall {a} {b}, a -> UniqSM b -> UniqSM a :=
-  fun {a} {b} => Functor__UniqSM_fmap GHC.Base.∘ GHC.Base.const.
+   : forall {a : Type}, forall {b : Type}, a -> UniqSM b -> UniqSM a :=
+  fun {a : Type} {b : Type} => Functor__UniqSM_fmap GHC.Base.∘ GHC.Base.const.
 
 Program Instance Functor__UniqSM : GHC.Base.Functor UniqSM :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a} {b} => Functor__UniqSM_fmap ;
-           GHC.Base.op_zlzd____ := fun {a} {b} => Functor__UniqSM_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__UniqSM_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__UniqSM_op_zlzd__ |}.
 
 Local Definition Applicative__UniqSM_liftA2
-   : forall {a} {b} {c}, (a -> b -> c) -> UniqSM a -> UniqSM b -> UniqSM c :=
-  fun {a} {b} {c} =>
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type}, (a -> b -> c) -> UniqSM a -> UniqSM b -> UniqSM c :=
+  fun {a : Type} {b : Type} {c : Type} =>
     fun f x => Applicative__UniqSM_op_zlztzg__ (GHC.Base.fmap f x).
 
 Definition thenUs_ {a} {b} : UniqSM a -> UniqSM b -> UniqSM b :=
@@ -99,25 +103,28 @@ Definition thenUs_ {a} {b} : UniqSM a -> UniqSM b -> UniqSM b :=
     end.
 
 Local Definition Applicative__UniqSM_op_ztzg__
-   : forall {a} {b}, UniqSM a -> UniqSM b -> UniqSM b :=
-  fun {a} {b} => thenUs_.
+   : forall {a : Type}, forall {b : Type}, UniqSM a -> UniqSM b -> UniqSM b :=
+  fun {a : Type} {b : Type} => thenUs_.
 
 Definition returnUs {a} : a -> UniqSM a :=
   fun result => USM (fun us => pair result us).
 
-Local Definition Applicative__UniqSM_pure : forall {a}, a -> UniqSM a :=
-  fun {a} => returnUs.
+Local Definition Applicative__UniqSM_pure : forall {a : Type}, a -> UniqSM a :=
+  fun {a : Type} => returnUs.
 
 Program Instance Applicative__UniqSM : GHC.Base.Applicative UniqSM :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a} {b} {c} => Applicative__UniqSM_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a} {b} => Applicative__UniqSM_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a} {b} => Applicative__UniqSM_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a} => Applicative__UniqSM_pure |}.
+    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__UniqSM_liftA2 ;
+           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__UniqSM_op_zlztzg__ ;
+           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__UniqSM_op_ztzg__ ;
+           GHC.Base.pure__ := fun {a : Type} => Applicative__UniqSM_pure |}.
 
 Local Definition Monad__UniqSM_op_zgzg__
-   : forall {a} {b}, UniqSM a -> UniqSM b -> UniqSM b :=
-  fun {a} {b} => _GHC.Base.*>_.
+   : forall {a : Type}, forall {b : Type}, UniqSM a -> UniqSM b -> UniqSM b :=
+  fun {a : Type} {b : Type} => _GHC.Base.*>_.
 
 Definition thenUs {a} {b} : UniqSM a -> (a -> UniqSM b) -> UniqSM b :=
   fun arg_0__ arg_1__ =>
@@ -127,17 +134,20 @@ Definition thenUs {a} {b} : UniqSM a -> (a -> UniqSM b) -> UniqSM b :=
     end.
 
 Local Definition Monad__UniqSM_op_zgzgze__
-   : forall {a} {b}, UniqSM a -> (a -> UniqSM b) -> UniqSM b :=
-  fun {a} {b} => thenUs.
+   : forall {a : Type},
+     forall {b : Type}, UniqSM a -> (a -> UniqSM b) -> UniqSM b :=
+  fun {a : Type} {b : Type} => thenUs.
 
-Local Definition Monad__UniqSM_return_ : forall {a}, a -> UniqSM a :=
-  fun {a} => GHC.Base.pure.
+Local Definition Monad__UniqSM_return_ : forall {a : Type}, a -> UniqSM a :=
+  fun {a : Type} => GHC.Base.pure.
 
 Program Instance Monad__UniqSM : GHC.Base.Monad UniqSM :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a} {b} => Monad__UniqSM_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a} {b} => Monad__UniqSM_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a} => Monad__UniqSM_return_ |}.
+    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__UniqSM_op_zgzg__ ;
+           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+             Monad__UniqSM_op_zgzgze__ ;
+           GHC.Base.return___ := fun {a : Type} => Monad__UniqSM_return_ |}.
 
 (* Skipping all instances of class `Control.Monad.Fix.MonadFix', including
    `UniqSupply.MonadFix__UniqSM' *)
@@ -203,10 +213,11 @@ Definition splitUniqSupply4
     let 'pair us3 us4 := splitUniqSupply us' in
     pair (pair (pair us1 us2) us3) us4.
 
-Definition initUs {a} : UniqSupply -> UniqSM a -> (a * UniqSupply)%type :=
+Definition initUs {a : Type}
+   : UniqSupply -> UniqSM a -> (a * UniqSupply)%type :=
   fun init_us m => let 'pair r us := unUSM m init_us in pair r us.
 
-Definition initUs_ {a} : UniqSupply -> UniqSM a -> a :=
+Definition initUs_ {a : Type} : UniqSupply -> UniqSM a -> a :=
   fun init_us m => let 'pair r _ := unUSM m init_us in r.
 
 Definition liftUSM {a} : UniqSM a -> UniqSupply -> (a * UniqSupply)%type :=
@@ -215,24 +226,26 @@ Definition liftUSM {a} : UniqSM a -> UniqSupply -> (a * UniqSupply)%type :=
     | USM m, us => let 'pair a us' := m us in pair a us'
     end.
 
-Definition lazyThenUs {a} {b} : UniqSM a -> (a -> UniqSM b) -> UniqSM b :=
+Definition lazyThenUs {a : Type} {b : Type}
+   : UniqSM a -> (a -> UniqSM b) -> UniqSM b :=
   fun expr cont =>
     USM (fun us =>
            let 'pair result us' := liftUSM expr us in
            unUSM (cont result) us').
 
-Definition getUniqueSupplyM3 {m} `{MonadUnique m}
+Definition getUniqueSupplyM3 {m : Type -> Type} `{MonadUnique m}
    : m (UniqSupply * UniqSupply * UniqSupply)%type :=
   GHC.Base.liftM3 GHC.Tuple.pair3 getUniqueSupplyM getUniqueSupplyM
   getUniqueSupplyM.
 
-Definition liftUs {m} {a} `{MonadUnique m} : UniqSM a -> m a :=
+Definition liftUs {m : Type -> Type} {a : Type} `{MonadUnique m}
+   : UniqSM a -> m a :=
   fun m =>
     getUniqueSupplyM GHC.Base.>>=
     (GHC.Base.return_ GHC.Base.∘ GHC.Base.flip initUs_ m).
 
-Fixpoint lazyMapUs {a} {b} (arg_0__ : (a -> UniqSM b)) (arg_1__ : list a)
-  : UniqSM (list b)
+Fixpoint lazyMapUs {a : Type} {b : Type} (arg_0__ : a -> UniqSM b) (arg_1__
+                     : list a) : UniqSM (list b)
   := match arg_0__, arg_1__ with
      | _, nil => returnUs nil
      | f, cons x xs =>
@@ -241,7 +254,7 @@ Fixpoint lazyMapUs {a} {b} (arg_0__ : (a -> UniqSM b)) (arg_1__ : list a)
      end.
 
 (* External variables:
-     cons list nil op_zt__ pair BinNums.N GHC.Base.Applicative GHC.Base.Functor
+     Type cons list nil op_zt__ pair BinNums.N GHC.Base.Applicative GHC.Base.Functor
      GHC.Base.Monad GHC.Base.const GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__
      GHC.Base.liftA2__ GHC.Base.liftM3 GHC.Base.op_z2218U__ GHC.Base.op_zgzg____
      GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd____

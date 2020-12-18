@@ -388,10 +388,10 @@ Inductive DynLibLoader : Type :=
 
 Axiom DynFlags : Type.
 
-Record HasDynFlags__Dict m := HasDynFlags__Dict_Build {
+Record HasDynFlags__Dict (m : Type -> Type) := HasDynFlags__Dict_Build {
   getDynFlags__ : m DynFlags }.
 
-Definition HasDynFlags m :=
+Definition HasDynFlags (m : Type -> Type) :=
   forall r__, (HasDynFlags__Dict m -> r__) -> r__.
 Existing Class HasDynFlags.
 
@@ -485,10 +485,10 @@ Inductive Deprecation : Type :=
   | NotDeprecated : Deprecation
   | Deprecated : Deprecation.
 
-Record ContainsDynFlags__Dict t := ContainsDynFlags__Dict_Build {
+Record ContainsDynFlags__Dict (t : Type) := ContainsDynFlags__Dict_Build {
   extractDynFlags__ : t -> DynFlags }.
 
-Definition ContainsDynFlags t :=
+Definition ContainsDynFlags (t : Type) :=
   forall r__, (ContainsDynFlags__Dict t -> r__) -> r__.
 Existing Class ContainsDynFlags.
 
@@ -1282,7 +1282,7 @@ Axiom unsafeFlagsForInfer : list (GHC.Base.String * (DynFlags -> SrcLoc.SrcSpan)
                                   (DynFlags -> bool) *
                                   (DynFlags -> DynFlags))%type.
 
-Axiom getOpts : forall {a}, DynFlags -> (DynFlags -> list a) -> list a.
+Axiom getOpts : forall {a : Type}, DynFlags -> (DynFlags -> list a) -> list a.
 
 Axiom getVerbFlags : DynFlags -> list GHC.Base.String.
 
