@@ -26,13 +26,16 @@ Arguments MkQueue {_} _ _.
 
 (* Converted value declarations: *)
 
-Definition queuePut {a} : a -> Queue a -> Queue a :=
+Definition mkQueue {a : Type} : Queue a :=
+  MkQueue nil nil.
+
+Definition queuePut {a : Type} : a -> Queue a -> Queue a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | item, MkQueue ins outs => MkQueue (cons item ins) outs
     end.
 
-Definition queuePutList {a} : list a -> Queue a -> Queue a :=
+Definition queuePutList {a : Type} : list a -> Queue a -> Queue a :=
   fun xs q => Data.Foldable.foldl' (GHC.Base.flip queuePut) q xs.
 
 Definition queueGet {a} `{Err.Default (a * Queue a)} : Queue a -> a * Queue a :=
@@ -42,14 +45,12 @@ Definition queueGet {a} `{Err.Default (a * Queue a)} : Queue a -> a * Queue a :=
                                   | MkQueue ins nil => queueGet (MkQueue nil (GHC.List.reverse ins))
                                   end).
 
-Definition queueEmpty {a} : Queue a -> bool :=
+Definition queueEmpty {a : Type} : Queue a -> bool :=
   fun '(MkQueue ins outs) =>
     andb (Data.Foldable.null ins) (Data.Foldable.null outs).
 
-Definition mkQueue {a} : Queue a :=
-  MkQueue nil nil.
-
 (* External variables:
-     andb bool cons list nil op_zt__ pair Data.Foldable.foldl' Data.Foldable.null
-     Err.Default GHC.Base.flip GHC.DeferredFix.deferredFix1 GHC.List.reverse
+     Type andb bool cons list nil op_zt__ pair Data.Foldable.foldl'
+     Data.Foldable.null Err.Default GHC.Base.flip GHC.DeferredFix.deferredFix1
+     GHC.List.reverse
 *)

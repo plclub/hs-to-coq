@@ -157,6 +157,13 @@ jobs:
           make -j -C examples/ghc/theories
           (cd examples/core-semantics/lib; coq_makefile -f _CoqProject -o Makefile)
           make -j -C examples/core-semantics/lib
+      - name: Compiling Graph (FGL)
+        run: |
+          eval $(opam config env)
+          (cd examples/graph/lib; coq_makefile -f _CoqProject -o Makefile)
+          make -j -C examples/graph/lib
+          (cd examples/graph/theories; coq_makefile -f _CoqProject -o Makefile)
+          make -j -C examples/graph/theories
 
   tests:
     name: Tests, base tests, and other examples
@@ -280,7 +287,7 @@ jobs:
         run: |
           git add examples/containers/lib
           git status
-          git diff-index --cached --quiet HEAD -- containers
+          git diff-index --cached --quiet HEAD -- examples/containers/lib
       - name: Translating transformers
         run: |
           make -C examples/transformers clean
@@ -289,7 +296,7 @@ jobs:
         run: |
           git add examples/transformers/lib
           git status
-          git diff-index --cached --quiet HEAD -- transformers
+          git diff-index --cached --quiet HEAD -- examples/transformers/lib
       - name: Translating GHC and core-semantics
         run: |
           make -C examples/ghc clean
@@ -302,6 +309,15 @@ jobs:
           git add examples/core-semantics/lib
           git status
           git diff-index --cached --quiet HEAD -- examples/ghc/lib/
+      - name: Translating transformers
+        run: |
+          make -C examples/graph clean
+          make -C examples/graph vfiles
+      - name: Comparing convenience copy of transformers
+        run: |
+          git add examples/graph/lib
+          git status
+          git diff-index --cached --quiet HEAD -- examples/graph/lib
 
   test-container-extraction:
     name: Testing containers extraction

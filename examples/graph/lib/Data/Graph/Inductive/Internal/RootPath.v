@@ -32,6 +32,16 @@ Definition LRTree a :=
 Definition first {a} : (list a -> bool) -> list (list a) -> list a :=
   fun p xss => match GHC.List.filter p xss with | nil => nil | cons x _ => x end.
 
+Fixpoint findP {a} (arg_0__ : Data.Graph.Inductive.Graph.Node) (arg_1__
+                 : LRTree a) : list (Data.Graph.Inductive.Graph.LNode a)
+  := match arg_0__, arg_1__ with
+     | _, nil => nil
+     | v, cons (Data.Graph.Inductive.Graph.LP nil) ps => findP v ps
+     | v, cons (Data.Graph.Inductive.Graph.LP (cons (pair w _) _ as p)) ps =>
+         if v GHC.Base.== w : bool then p else
+         findP v ps
+     end.
+
 Definition getPath
    : Data.Graph.Inductive.Graph.Node ->
      RTree -> Data.Graph.Inductive.Graph.Path :=
@@ -43,30 +53,17 @@ Definition getPath
              | _ => GHC.Err.patternFailure
              end).
 
-Definition findP {a}
-   : Data.Graph.Inductive.Graph.Node ->
-     LRTree a -> list (Data.Graph.Inductive.Graph.LNode a) :=
-  fix findP (arg_0__ : Data.Graph.Inductive.Graph.Node) (arg_1__ : LRTree a)
-        : list (Data.Graph.Inductive.Graph.LNode a)
-        := match arg_0__, arg_1__ with
-           | _, nil => nil
-           | v, cons (Data.Graph.Inductive.Graph.LP nil) ps => findP v ps
-           | v, cons (Data.Graph.Inductive.Graph.LP (cons (pair w _) _ as p)) ps =>
-               if v GHC.Base.== w : bool then p else
-               findP v ps
-           end.
-
-Definition getDistance {a}
-   : Data.Graph.Inductive.Graph.Node -> LRTree a -> option a :=
-  fun v t => match findP v t with | nil => None | cons (pair _ d) _ => Some d end.
-
-Definition getLPath {a}
+Definition getLPath {a : Type}
    : Data.Graph.Inductive.Graph.Node ->
      LRTree a -> Data.Graph.Inductive.Graph.LPath a :=
   fun v =>
     Data.Graph.Inductive.Graph.LP GHC.Base.∘ (GHC.List.reverse GHC.Base.∘ findP v).
 
-Definition getLPathNodes {a}
+Definition getDistance {a : Type}
+   : Data.Graph.Inductive.Graph.Node -> LRTree a -> option a :=
+  fun v t => match findP v t with | nil => None | cons (pair _ d) _ => Some d end.
+
+Definition getLPathNodes {a : Type}
    : Data.Graph.Inductive.Graph.Node ->
      LRTree a -> Data.Graph.Inductive.Graph.Path :=
   fun v =>
@@ -75,7 +72,7 @@ Definition getLPathNodes {a}
     getLPath v.
 
 (* External variables:
-     None Some bool cons list nil option pair Data.Graph.Inductive.Graph.LNode
+     None Some Type bool cons list nil option pair Data.Graph.Inductive.Graph.LNode
      Data.Graph.Inductive.Graph.LP Data.Graph.Inductive.Graph.LPath
      Data.Graph.Inductive.Graph.Node Data.Graph.Inductive.Graph.Path Data.Tuple.fst
      GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Err.patternFailure

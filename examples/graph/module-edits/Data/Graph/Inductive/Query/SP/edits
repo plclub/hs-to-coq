@@ -1,3 +1,37 @@
 set type Data.Graph.Inductive.Query.SP.dijkstra: forall {gr} {b} {a} `{Data.Graph.Inductive.Graph.Graph gr} `{GHC.Real.Real b} `{Err.Default b}, (Data.Graph.Inductive.Internal.Heap.Heap b (Data.Graph.Inductive.Graph.LPath b)) -> ((gr a b) -> (Data.Graph.Inductive.Internal.RootPath.LRTree b))
 
 termination Data.Graph.Inductive.Query.SP.dijkstra      deferred
+
+redefine Definition Data.Graph.Inductive.Query.SP.dijkstra {gr} {b} {a} `{Data.Graph.Inductive.Graph.Graph gr}
+  `{GHC.Real.Real b} `{Err.Default b}
+   : Data.Graph.Inductive.Internal.Heap.Heap b (Data.Graph.Inductive.Graph.LPath
+                                              b) ->
+     gr a b -> Data.Graph.Inductive.Internal.RootPath.LRTree b :=
+  GHC.DeferredFix.deferredFix2 (fun dijkstra
+                                (arg_0__
+                                  : Data.Graph.Inductive.Internal.Heap.Heap b (Data.Graph.Inductive.Graph.LPath
+                                                                             b))
+                                (arg_1__ : gr a b) =>
+                                  match arg_0__, arg_1__ with
+                                  | h, g =>
+                                      if orb (Data.Graph.Inductive.Internal.Heap.isEmpty h)
+                                             (Data.Graph.Inductive.Graph.isEmpty g) : bool
+                                      then nil else
+                                      match arg_0__, arg_1__ with
+                                      | h, g =>
+                                          match Data.Graph.Inductive.Internal.Heap.splitMin h with
+                                          | pair (pair _ (Data.Graph.Inductive.Graph.LP (cons (pair v d) _) as p)) h' =>
+                                              match Data.Graph.Inductive.Graph.match_ v g with
+                                              | pair (Some c) g' =>
+                                                  cons p (dijkstra (Data.Graph.Inductive.Internal.Heap.mergeAll (cons h'
+                                                                                                                      (expand
+                                                                                                                       d
+                                                                                                                       p
+                                                                                                                       c)))
+                                                        g')
+                                              | pair None g' => dijkstra h' g'
+                                              end
+                                          | _ => GHC.Err.patternFailure
+                                          end
+                                       end
+                                    end).

@@ -63,7 +63,7 @@ VFILES = $(VFILES_GEN_TEST) $(VFILES_GEN) $(VFILES_HS_SPEC_GEN) $(VFILES_MAN) $(
 
 all: vfiles coq
 
-vfiles: $(OUT)/edits  $(HS_SPEC)/README.md $(OUT)/README.md $(OUT)/Makefile $(VFILES)
+vfiles: $(OUT)/edits  $(HS_SPEC)/README.md $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
 
 $(OUT)/_CoqProject : Makefile $(OUT)/README.md
 	> $@
