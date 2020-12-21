@@ -1,6 +1,6 @@
 Require Import GHC.Base.
 Require State.
-Require Traversable.
+Require Data.Traversable.
 
 Set Bullet Behavior "Strict Subproofs".
 

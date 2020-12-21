@@ -15,7 +15,6 @@ Require Coq.Program.Wf.
 Require Data.Graph.Inductive.Graph.
 Require Data.Graph.Inductive.Internal.Heap.
 Require Data.Graph.Inductive.Internal.RootPath.
-Require Err.
 Require GHC.Base.
 Require GHC.DeferredFix.
 Require GHC.Err.
@@ -50,7 +49,7 @@ Definition expand {b} {a} `{(GHC.Real.Real b)}
     end.
 
 Definition dijkstra {gr} {b} {a} `{Data.Graph.Inductive.Graph.Graph gr}
-  `{GHC.Real.Real b} `{Err.Default b}
+  `{GHC.Real.Real b} `{GHC.Err.Default b}
    : Data.Graph.Inductive.Internal.Heap.Heap b (Data.Graph.Inductive.Graph.LPath
                                               b) ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.LRTree b :=
@@ -129,7 +128,7 @@ Definition sp {gr : Type -> Type -> Type} {b : Type} {a : Type}
      Data.Graph.Inductive.Internal.Heap.unit
      Data.Graph.Inductive.Internal.RootPath.LRTree
      Data.Graph.Inductive.Internal.RootPath.getDistance
-     Data.Graph.Inductive.Internal.RootPath.getLPathNodes Err.Default GHC.Base.map
-     GHC.Base.op_z2218U__ GHC.DeferredFix.deferredFix2 GHC.Err.patternFailure
-     GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Real.Real
+     Data.Graph.Inductive.Internal.RootPath.getLPathNodes GHC.Base.map
+     GHC.Base.op_z2218U__ GHC.DeferredFix.deferredFix2 GHC.Err.Default
+     GHC.Err.patternFailure GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Real.Real
 *)

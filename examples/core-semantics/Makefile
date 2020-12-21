@@ -33,7 +33,7 @@ vfiles: $(OUT)/edits  $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
 $(OUT)/_CoqProject : $(OUT)/README.md Makefile
 	> $@
 	echo '-Q . ""' >> $@
-	echo '-R ../../../base ""' >> $@
+	echo '-Q ../../../base ""' >> $@
 	echo '-Q ../../../base-thy  Proofs' >> $@
 	echo '-Q ../../containers/lib   ""' >> $@
 	echo '-Q ../../containers/theories   ""' >> $@

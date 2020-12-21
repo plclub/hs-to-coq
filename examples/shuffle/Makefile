@@ -22,7 +22,7 @@ coq: $(OUT)/Makefile
 $(OUT)/_CoqProject: $(OUT) Makefile
 	mkdir -p $(OUT)
 	echo '-Q .                      ""' >  $@
-	echo '-R ../../../base          ""' >> $@
+	echo '-Q ../../../base          ""' >> $@
 	echo '-Q ../../containers/lib   ""' >> $@
 	echo '-Q ../../transformers/lib ""' >> $@
 	(cd $(OUT) && find . -name '*.v')   >> $@

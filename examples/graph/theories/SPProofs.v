@@ -7,7 +7,7 @@ Require Import Equations.Equations.
 Require Import Coq.Bool.Bool.
 Require Import Data.Graph.Inductive.Graph.
 Require Import Coq.Lists.List.
-Require Import DeferredFix.
+Require Import GHC.DeferredFix.
 Require Import GHC.Num.
 Import GHC.Num.Notations.
 Require Import HeapProofs.

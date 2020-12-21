@@ -69,7 +69,7 @@ vfiles: $(OUT)/edits  $(HS_SPEC)/README.md $(OUT)/README.md $(OUT)/_CoqProject $
 $(OUT)/_CoqProject : Makefile $(OUT)/README.md
 	> $@
 	echo '-Q . ""' >> $@
-	echo '-R ../../../base ""' >> $@
+	echo '-Q ../../../base ""' >> $@
 	echo $(addsuffix .v,$(HANDMOD)) >> $@
 	echo $(addsuffix .v,$(MODULES)) >> $@
 	echo $(addsuffix .v,$(SPECIAL_MODULES)) >> $@

@@ -395,6 +395,7 @@ jobs:
           make -j2 -C base
           (cd examples/containers/lib; coq_makefile -f _CoqProject -o Makefile)
           make -j2 -C examples/containers/lib
+          (cd examples/containers/extraction/extracted-src; coq_makefile -f _CoqProject -o Makefile)
           make -j2 -C examples/containers/extraction/extracted-src/
           perl -i examples/containers/extraction/extracted-src/fixcode.pl examples/containers/extraction/extracted-src/*.hs
       - name: Testing containers extraction

@@ -1,6 +1,6 @@
 Require Import Data.Graph.Inductive.Internal.Queue.
 Require Import Coq.Lists.List.
-Require Import Foldable.
+Require Import Data.Foldable.
 Require Import GHC.DeferredFix.
 Require Import Omega.
 

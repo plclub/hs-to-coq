@@ -1,6 +1,6 @@
 -Q . Proofs
 
--R ../../../base     ""
+-Q ../../../base     ""
 -Q ../../../base-thy Proofs
 
 -Q ../../transformers/lib    ""

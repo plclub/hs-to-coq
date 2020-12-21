@@ -1,6 +1,6 @@
 -Q . ""
 -Q ../hs-spec ""
--R ../../../base ""
+-Q ../../../base ""
 -Q ../../../base-thy  Proofs
 -Q ../../containers/lib ""
 CustomTactics.v
