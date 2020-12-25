@@ -3,11 +3,11 @@ set type Data.Graph.Inductive.Query.SP.dijkstra: forall {gr} {b} {a} `{Data.Grap
 termination Data.Graph.Inductive.Query.SP.dijkstra      deferred
 
 redefine Definition Data.Graph.Inductive.Query.SP.dijkstra {gr} {b} {a} `{Data.Graph.Inductive.Graph.Graph gr}
-  `{GHC.Real.Real b} `{GHC.Err.Default b}
+  `{GHC.Real.Real b} `{HsToCoq.Err.Default b}
    : Data.Graph.Inductive.Internal.Heap.Heap b (Data.Graph.Inductive.Graph.LPath
                                               b) ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.LRTree b :=
-  GHC.DeferredFix.deferredFix2 (fun dijkstra
+  HsToCoq.DeferredFix.deferredFix2 (fun dijkstra
                                 (arg_0__
                                   : Data.Graph.Inductive.Internal.Heap.Heap b (Data.Graph.Inductive.Graph.LPath
                                                                              b))

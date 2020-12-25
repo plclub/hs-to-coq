@@ -18,7 +18,7 @@ Require Core.
 Require CoreSubst.
 Require CoreUtils.
 Require DynFlags.
-Require GHC.Err.
+Require HsToCoq.Err.
 
 (* Converted type declarations: *)
 
@@ -36,8 +36,8 @@ Inductive ArityType : Type :=
 Inductive ArityEnv : Type :=
   | AE (ae_cheap_fn : CheapFun) (ae_ped_bot : bool) : ArityEnv.
 
-Instance Default__ArityEnv : GHC.Err.Default ArityEnv :=
-  GHC.Err.Build_Default _ (AE GHC.Err.default GHC.Err.default).
+Instance Default__ArityEnv : HsToCoq.Err.Default ArityEnv :=
+  HsToCoq.Err.Build_Default _ (AE HsToCoq.Err.default HsToCoq.Err.default).
 
 Definition ae_cheap_fn (arg_0__ : ArityEnv) :=
   let 'AE ae_cheap_fn _ := arg_0__ in
@@ -124,5 +124,5 @@ Axiom freshEtaId : nat ->
      BasicTypes.Arity BasicTypes.JoinArity BasicTypes.OneShotInfo Core.CoreBndr
      Core.CoreExpr Core.CoreRule Core.Id Core.InScopeSet Core.StrictSig Core.TCvSubst
      Core.Var CoreSubst.Subst CoreUtils.CheapAppFun DynFlags.DynFlags
-     GHC.Err.Build_Default GHC.Err.Default GHC.Err.default
+     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
 *)

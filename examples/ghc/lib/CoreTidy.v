@@ -16,9 +16,9 @@ Require Core.
 Require CoreArity.
 Require Data.Traversable.
 Require GHC.Base.
-Require GHC.Err.
 Require GHC.List.
 Require GHC.Prim.
+Require HsToCoq.Err.
 Require Id.
 Require Maybes.
 Require Name.
@@ -147,7 +147,7 @@ Definition tidyBind
            (fun '(pair env' bndr') => pair env' (Core.NonRec bndr' (tidyExpr env' rhs)))
        | env, Core.Rec prs =>
            let 'pair env' bndrs' := Data.Traversable.mapAccumL (tidyLetBndr
-                                                                GHC.Err.default) env prs in
+                                                                HsToCoq.Err.default) env prs in
            GHC.Base.map (fun x => tidyExpr env' (snd x)) prs =:
            (fun rhss' => pair env' (Core.Rec (GHC.List.zip bndrs' rhss')))
        end for tidyBind.
@@ -187,7 +187,7 @@ Definition tidyExpr : Core.TidyEnv -> Core.CoreExpr -> Core.CoreExpr :=
            (fun '(pair env' bndr') => pair env' (Core.NonRec bndr' (tidyExpr env' rhs)))
        | env, Core.Rec prs =>
            let 'pair env' bndrs' := Data.Traversable.mapAccumL (tidyLetBndr
-                                                                GHC.Err.default) env prs in
+                                                                HsToCoq.Err.default) env prs in
            GHC.Base.map (fun x => tidyExpr env' (snd x)) prs =:
            (fun rhss' => pair env' (Core.Rec (GHC.List.zip bndrs' rhss')))
        end for tidyExpr.
@@ -240,7 +240,7 @@ End Notations.
      Core.setStrictnessInfo Core.setUnfoldingInfo Core.strictnessInfo Core.tidyCo
      Core.tidyTyCoVarBndr Core.tidyType Core.unfoldingInfo Core.vanillaIdInfo
      Core.zapUsageEnvSig CoreArity.exprArity Data.Traversable.mapAccumL GHC.Base.map
-     GHC.Err.default GHC.List.zip GHC.Prim.seq Id.idName Id.idType Id.idUnique
+     GHC.List.zip GHC.Prim.seq HsToCoq.Err.default Id.idName Id.idType Id.idUnique
      Id.mkLocalIdWithInfo Maybes.orElse Name.Name Name.getOccName Name.mkInternalName
      OccName.tidyOccName SrcLoc.noSrcSpan UniqFM.lookupUFM
 *)

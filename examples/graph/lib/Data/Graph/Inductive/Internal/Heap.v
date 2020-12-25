@@ -22,6 +22,7 @@ Require Data.Foldable.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Err.
+Require HsToCoq.Err.
 Require List.
 Require Nat.
 Import GHC.Base.Notations.
@@ -86,7 +87,7 @@ Fixpoint mergeAll {a : Type} {b : Type} `{GHC.Base.Ord a} (arg_0__
 Definition isEmpty {a : Type} {b : Type} : Heap a b -> bool :=
   fun arg_0__ => match arg_0__ with | Empty => true | _ => false end.
 
-Definition findMin {a} {b} `{GHC.Err.Default (a * b)} : Heap a b -> a * b :=
+Definition findMin {a} {b} `{HsToCoq.Err.Default (a * b)} : Heap a b -> a * b :=
   fun arg_0__ =>
     match arg_0__ with
     | Empty => GHC.Err.error (GHC.Base.hs_string__ "Heap.findMin: empty heap")
@@ -101,8 +102,8 @@ Definition deleteMin {a : Type} {b : Type} `{GHC.Base.Ord a}
     | Node _ _ hs => mergeAll hs
     end.
 
-Definition splitMin {a} {b} `{GHC.Base.Ord a} `{GHC.Err.Default (a * b *
-                                                                 Heap a b)}
+Definition splitMin {a} {b} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a * b *
+                                                                     Heap a b)}
    : Heap a b -> a * b * Heap a b :=
   fun arg_0__ =>
     match arg_0__ with
@@ -158,7 +159,7 @@ Proof.
   intros. assert (A: h <> Empty) by auto; apply deleteMin_size in A; omega.
 Qed.
 
-Program Fixpoint toList {a} {b} `{GHC.Base.Ord a} `{GHC.Err.Default (a * b)}
+Program Fixpoint toList {a} {b} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a * b)}
                         (arg_0__ : Heap a b) {measure (size arg_0__)} : list (a * b)
   := match arg_0__ with
      | Empty => nil
@@ -166,7 +167,7 @@ Program Fixpoint toList {a} {b} `{GHC.Base.Ord a} `{GHC.Err.Default (a * b)}
      end.
 Solve Obligations with ((Tactics.program_simpl; apply toList_termination; auto)).
 
-Definition heapsort {a} `{GHC.Base.Ord a} `{GHC.Err.Default (a * a)}
+Definition heapsort {a} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a * a)}
    : list a -> list a :=
   GHC.Base.map Data.Tuple.fst GHC.Base.∘
   (toList GHC.Base.∘ (build GHC.Base.∘ GHC.Base.map (fun x => pair x x))).
@@ -174,6 +175,6 @@ Definition heapsort {a} `{GHC.Base.Ord a} `{GHC.Err.Default (a * a)}
 (* External variables:
      Type bool cons false list nil op_ze__ op_zl__ op_zlzg__ op_zp__ op_zt__ pair
      plus true Data.Foldable.foldr Data.Tuple.fst GHC.Base.Ord GHC.Base.map
-     GHC.Base.op_z2218U__ GHC.Base.op_zl__ GHC.Err.Default GHC.Err.error
+     GHC.Base.op_z2218U__ GHC.Base.op_zl__ GHC.Err.error HsToCoq.Err.Default
      List.fold_right List.map Nat.add
 *)

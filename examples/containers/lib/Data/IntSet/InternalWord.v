@@ -25,7 +25,8 @@ Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
-Require GHC.Wf.
+Require HsToCoq.Err.
+Require HsToCoq.Wf.
 Require IntWord.
 Import Data.Bits.Notations.
 Import GHC.Base.Notations.
@@ -57,10 +58,11 @@ Inductive Stack : Type :=
   | Push : Prefix -> IntSet -> Stack -> Stack
   | Nada : Stack.
 
-Instance Default__IntSet : GHC.Err.Default IntSet :=
-  GHC.Err.Build_Default _ Nil.
+Instance Default__IntSet : HsToCoq.Err.Default IntSet :=
+  HsToCoq.Err.Build_Default _ Nil.
 
-Instance Default__Stack : GHC.Err.Default Stack := GHC.Err.Build_Default _ Nada.
+Instance Default__Stack : HsToCoq.Err.Default Stack :=
+  HsToCoq.Err.Build_Default _ Nada.
 
 (* Midamble *)
 
@@ -247,20 +249,20 @@ Program Definition foldrBits {a}
    : IntWord.Int -> (IntWord.Int -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
-      GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                       IntWord.wordTonat arg_0__) _ (fun arg_0__ arg_1__ go =>
-                       match arg_0__, arg_1__ with
-                       | num_2__, acc =>
-                           if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                           IntWord.wordTonat arg_0__) _ (fun arg_0__ arg_1__ go =>
                            match arg_0__, arg_1__ with
-                           | bm, acc =>
-                               let bitmask := lowestBitMask bm in
-                               let bi := indexOfTheOnlyBit bitmask in
-                               go (Data.Bits.xor bm bitmask) ((f ((prefix GHC.Num.+ (#64 GHC.Num.- #1))
-                                                                  GHC.Num.-
-                                                                  bi)) acc)
-                           end
-                       end) in
+                           | num_2__, acc =>
+                               if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+                               match arg_0__, arg_1__ with
+                               | bm, acc =>
+                                   let bitmask := lowestBitMask bm in
+                                   let bi := indexOfTheOnlyBit bitmask in
+                                   go (Data.Bits.xor bm bitmask) ((f ((prefix GHC.Num.+ (#64 GHC.Num.- #1))
+                                                                      GHC.Num.-
+                                                                      bi)) acc)
+                               end
+                           end) in
     go (revNat bitmap) z.
 Admit Obligations.
 
@@ -785,18 +787,18 @@ Program Definition foldl'Bits {a}
    : IntWord.Int -> (a -> IntWord.Int -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
-      GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                       IntWord.wordTonat arg_0__) _ (fun arg_0__ arg_1__ go =>
-                       match arg_0__, arg_1__ with
-                       | num_2__, acc =>
-                           if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                           IntWord.wordTonat arg_0__) _ (fun arg_0__ arg_1__ go =>
                            match arg_0__, arg_1__ with
-                           | bm, acc =>
-                               let bitmask := lowestBitMask bm in
-                               let bi := indexOfTheOnlyBit bitmask in
-                               go (Data.Bits.xor bm bitmask) (f acc (prefix GHC.Num.+ bi))
-                           end
-                       end) in
+                           | num_2__, acc =>
+                               if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+                               match arg_0__, arg_1__ with
+                               | bm, acc =>
+                                   let bitmask := lowestBitMask bm in
+                                   let bi := indexOfTheOnlyBit bitmask in
+                                   go (Data.Bits.xor bm bitmask) (f acc (prefix GHC.Num.+ bi))
+                               end
+                           end) in
     go bitmap z.
 Admit Obligations.
 
@@ -980,20 +982,20 @@ Program Definition foldr'Bits {a}
    : IntWord.Int -> (IntWord.Int -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
-      GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                       IntWord.wordTonat arg_0__) _ (fun arg_0__ arg_1__ go =>
-                       match arg_0__, arg_1__ with
-                       | num_2__, acc =>
-                           if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                           IntWord.wordTonat arg_0__) _ (fun arg_0__ arg_1__ go =>
                            match arg_0__, arg_1__ with
-                           | bm, acc =>
-                               let bitmask := lowestBitMask bm in
-                               let bi := indexOfTheOnlyBit bitmask in
-                               go (Data.Bits.xor bm bitmask) ((f ((prefix GHC.Num.+ (#64 GHC.Num.- #1))
-                                                                  GHC.Num.-
-                                                                  bi)) acc)
-                           end
-                       end) in
+                           | num_2__, acc =>
+                               if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+                               match arg_0__, arg_1__ with
+                               | bm, acc =>
+                                   let bitmask := lowestBitMask bm in
+                                   let bi := indexOfTheOnlyBit bitmask in
+                                   go (Data.Bits.xor bm bitmask) ((f ((prefix GHC.Num.+ (#64 GHC.Num.- #1))
+                                                                      GHC.Num.-
+                                                                      bi)) acc)
+                               end
+                           end) in
     go (revNat bitmap) z.
 Admit Obligations.
 
@@ -1015,18 +1017,18 @@ Program Definition foldlBits {a}
    : IntWord.Int -> (a -> IntWord.Int -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
-      GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                       IntWord.wordTonat arg_0__) _ (fun arg_0__ arg_1__ go =>
-                       match arg_0__, arg_1__ with
-                       | num_2__, acc =>
-                           if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                           IntWord.wordTonat arg_0__) _ (fun arg_0__ arg_1__ go =>
                            match arg_0__, arg_1__ with
-                           | bm, acc =>
-                               let bitmask := lowestBitMask bm in
-                               let bi := indexOfTheOnlyBit bitmask in
-                               go (Data.Bits.xor bm bitmask) (f acc (prefix GHC.Num.+ bi))
-                           end
-                       end) in
+                           | num_2__, acc =>
+                               if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+                               match arg_0__, arg_1__ with
+                               | bm, acc =>
+                                   let bitmask := lowestBitMask bm in
+                                   let bi := indexOfTheOnlyBit bitmask in
+                                   go (Data.Bits.xor bm bitmask) (f acc (prefix GHC.Num.+ bi))
+                               end
+                           end) in
     go bitmap z.
 Admit Obligations.
 
@@ -1125,9 +1127,9 @@ End Notations.
      GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__
      GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlze____
      GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__
-     GHC.Base.op_zsze____ GHC.Err.Build_Default GHC.Err.Default GHC.Err.error
-     GHC.Num.fromInteger GHC.Num.negate GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Wf.wfFix2
-     IntWord.Int IntWord.Word IntWord.bitcount IntWord.highestBitMask
-     IntWord.indexOfTheOnlyBit IntWord.intFromWord IntWord.shiftLWord
-     IntWord.shiftRWord IntWord.wordFromInt IntWord.wordTonat
+     GHC.Base.op_zsze____ GHC.Err.error GHC.Num.fromInteger GHC.Num.negate
+     GHC.Num.op_zm__ GHC.Num.op_zp__ HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Wf.wfFix2 IntWord.Int IntWord.Word IntWord.bitcount
+     IntWord.highestBitMask IntWord.indexOfTheOnlyBit IntWord.intFromWord
+     IntWord.shiftLWord IntWord.shiftRWord IntWord.wordFromInt IntWord.wordTonat
 *)

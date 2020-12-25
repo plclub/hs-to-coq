@@ -1,4 +1,4 @@
-Require Import GHC.DeferredFix.
+Require Import HsToCoq.DeferredFix.
 Require Import Data.Graph.Inductive.Query.BFS.
 Require Import Coq.Lists.List.
 Require Import Data.Graph.Inductive.Internal.Queue.
@@ -1982,7 +1982,7 @@ match l with
 | p :: l0 =>
     fun g0 : gr a b =>
     match p with
-    | nil => fun (_ : list Path) (g1 : gr a b) =>  if (isEmpty g) then nil else patternFailure
+    | nil => fun (_ : list Path) (g1 : gr a b) =>  if (isEmpty g) then nil else GHC.Err.patternFailure
     | n :: l1 =>
         fun (l2 : list Path) (g1 : gr a b) =>
         if isEmpty g1
@@ -2491,7 +2491,7 @@ match l with
     | LP unLPath =>
         fun (l2 : list (LPath b)) (g1 : gr a b) =>
         match unLPath with
-        | nil => fun (_ : list (LPath b)) (g2 : gr a b) => if isEmpty g2 then nil else patternFailure
+        | nil => fun (_ : list (LPath b)) (g2 : gr a b) => if isEmpty g2 then nil else GHC.Err.patternFailure
         | l3 :: l4 =>
             fun (l5 : list (LPath b)) (g2 : gr a b) =>
             (let (n, b0) := l3 in

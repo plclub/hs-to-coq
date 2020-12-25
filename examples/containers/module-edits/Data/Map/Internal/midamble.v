@@ -10,7 +10,7 @@ Fixpoint map_size {a} {b} (s : Map a b) : nat :=
   | Bin _ _ _ s1 s2 => 1 + map_size s1 + map_size s2
   end.
 
-Require Import GHC.Err.
+Require Import HsToCoq.Err.
 
 Instance Map_Default {k}{v} : Default (Map k v) :=
   Build_Default _ Tip.

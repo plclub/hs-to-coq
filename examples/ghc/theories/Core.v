@@ -199,7 +199,7 @@ Ltac name_go go :=
 
 
 Lemma HasNLams_deAnnotate:
-  forall { a v : Type} n (e : AnnExpr a v) `{GHC.Err.Default v},
+  forall { a v : Type} n (e : AnnExpr a v) `{HsToCoq.Err.Default v},
   HasNLams n (deAnnotate e) <-> AnnHasNLams n e.
 Proof.
   induction n; intros.
@@ -212,7 +212,7 @@ Qed.
 
 
 Lemma deAnnotate_snd_collectNAnnBndrs:
-  forall { a v : Type} n (e : AnnExpr a v) `{GHC.Err.Default v},
+  forall { a v : Type} n (e : AnnExpr a v) `{HsToCoq.Err.Default v},
   AnnHasNLams n e ->
   deAnnotate (snd (collectNAnnBndrs n e)) = 
   snd (collectNBinders n (deAnnotate e)).

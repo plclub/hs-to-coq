@@ -8,13 +8,13 @@ Require GHC.Num.
 Require GHC.Real.
 Require GHC.Enum.
 
-Instance Default_nat : GHC.Err.Default nat := 
-  GHC.Err.Build_Default _ 0.
+Instance Default_nat : HsToCoq.Err.Default nat := 
+  HsToCoq.Err.Build_Default _ 0.
 
 (* Question: should we replace the - instance with this 
    checked subtraction? *)
 Definition error_sub := 
-  fun x y => if Nat.ltb x y then GHC.Err.default else Nat.sub x y.
+  fun x y => if Nat.ltb x y then HsToCoq.Err.default else Nat.sub x y.
 
 Instance Num_nat : GHC.Num.Num nat := {
      op_zp__ := Nat.add;
@@ -37,7 +37,7 @@ Instance Ord_nat : GHC.Base.Ord nat :=
 Instance Real_nat : GHC.Real.Real nat :=
   {| Real.toRational := fun x : nat => QArith_base.inject_Z (BinInt.Z.of_nat x) |}.
 
-Definition enumFrom_nat : nat -> list nat := GHC.Err.default.
+Definition enumFrom_nat : nat -> list nat := HsToCoq.Err.default.
 Definition enumFromTo_nat : nat -> nat -> list nat := 
   fun start stop => List.seq start (error_sub stop start).
 
