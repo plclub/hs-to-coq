@@ -1,7 +1,7 @@
 Require Import Data.Graph.Inductive.Internal.Queue.
 Require Import Coq.Lists.List.
 Require Import Data.Foldable.
-Require Import GHC.DeferredFix.
+Require Import HsToCoq.DeferredFix.
 Require Import Omega.
 
 Section Queue.
@@ -94,7 +94,7 @@ Definition betterQueueGet (q: Queue a) (x : a) : (a * Queue a) :=
   | MkQueue _ _ => (x, MkQueue nil nil)
   end.
 
-Instance Queue__Default {a} : GHC.Err.Default (Data.Graph.Inductive.Internal.Queue.Queue a) :=
+Instance Queue__Default {a} : HsToCoq.Err.Default (Data.Graph.Inductive.Internal.Queue.Queue a) :=
   { default := Data.Graph.Inductive.Internal.Queue.MkQueue nil nil }.
 
 Lemma queueGet_def: forall q x `{Default a}, queueEmpty q = false -> queueGet q = betterQueueGet q x.

@@ -8,7 +8,7 @@ Require Import MapProofs.UnionIntersectDifferenceProofs.
 Require Import Coq.Sorting.Sorted.
 Require Import SortedUtil.
 Require Import Coq.Program.Tactics.
-Require Import GHC.DeferredFix.
+Require Import HsToCoq.DeferredFix.
 Require Import Coq.Wellfounded.Wellfounded.
 
 

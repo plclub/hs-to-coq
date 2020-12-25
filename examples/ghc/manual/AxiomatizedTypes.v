@@ -1,5 +1,5 @@
 Require GHC.Base.
-Require GHC.Err.
+Require HsToCoq.Err.
 
 Axiom Coercion           : Type.
 Axiom Type_              : Type.
@@ -34,75 +34,75 @@ Axiom DataConBoxer       : Type.
 (* -------------------- assumed default instances ------------------- *)
 
 Instance Default__Coercion
-   : GHC.Err.Default Coercion.
+   : HsToCoq.Err.Default Coercion.
 Admitted.
 
 Instance Default__Type_
-   : GHC.Err.Default Type_.
+   : HsToCoq.Err.Default Type_.
 Admitted.
 
 Instance Default__ThetaType
-   : GHC.Err.Default ThetaType.
+   : HsToCoq.Err.Default ThetaType.
 Admitted.
 
 
 Instance Default__TyBinder
-   : GHC.Err.Default TyBinder.
+   : HsToCoq.Err.Default TyBinder.
 Admitted.
 
 Instance Default__TyThing
-   : GHC.Err.Default TyThing.
+   : HsToCoq.Err.Default TyThing.
 Admitted.
 
 Instance Default__CoAxiom
-   : forall {a}, GHC.Err.Default (CoAxiom a).
+   : forall {a}, HsToCoq.Err.Default (CoAxiom a).
 Admitted.
 
 
 Instance Default__BuiltInSynFamily
-   : GHC.Err.Default BuiltInSynFamily.
+   : HsToCoq.Err.Default BuiltInSynFamily.
 Admitted.
 
 
 Instance Default__TcTyVarDetails
-   : GHC.Err.Default TcTyVarDetails.
+   : HsToCoq.Err.Default TcTyVarDetails.
 Admitted.
 
 Instance Default__Role
-   : GHC.Err.Default Role.
+   : HsToCoq.Err.Default Role.
 Admitted.
 
 
 Instance Default__BranchIndex
-   : GHC.Err.Default BranchIndex.
+   : HsToCoq.Err.Default BranchIndex.
 Admitted.
 
 Instance Default__CoAxiomRule
-   : GHC.Err.Default CoAxiomRule.
+   : HsToCoq.Err.Default CoAxiomRule.
 Admitted.
 
 Instance Default__CoAxiomBranch
-   : GHC.Err.Default CoAxBranch.
+   : HsToCoq.Err.Default CoAxBranch.
 Admitted.
 
 
 Instance Default__CostCentre
-   : GHC.Err.Default CostCentre.
+   : HsToCoq.Err.Default CostCentre.
 Admitted.
 
 Instance Default__DataConBoxer
-   : GHC.Err.Default DataConBoxer.
+   : HsToCoq.Err.Default DataConBoxer.
 Admitted.
 
 
 Instance Default__PrimOp
-   : GHC.Err.Default PrimOp.
+   : HsToCoq.Err.Default PrimOp.
 Admitted.
 Instance Default__ForeignCall
-   : GHC.Err.Default ForeignCall.
+   : HsToCoq.Err.Default ForeignCall.
 Admitted.
 Instance Default__CType
-   : GHC.Err.Default CType.
+   : HsToCoq.Err.Default CType.
 Admitted.
 
 

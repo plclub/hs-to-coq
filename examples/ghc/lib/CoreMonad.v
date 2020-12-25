@@ -24,6 +24,7 @@ Require DynFlags.
 Require FastString.
 Require GHC.Base.
 Require GHC.Err.
+Require HsToCoq.Err.
 Require Module.
 Require SrcLoc.
 Require UniqSupply.
@@ -112,30 +113,31 @@ Inductive CoreM a : Type :=
 
 Arguments Mk_CoreM {_} _.
 
-Instance Default__Tick : GHC.Err.Default Tick :=
-  GHC.Err.Build_Default _ LetFloatFromLet.
+Instance Default__Tick : HsToCoq.Err.Default Tick :=
+  HsToCoq.Err.Build_Default _ LetFloatFromLet.
 
-Instance Default__SimplMode : GHC.Err.Default SimplMode :=
-  GHC.Err.Build_Default _ (Mk_SimplMode GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default
-                         GHC.Err.default).
+Instance Default__SimplMode : HsToCoq.Err.Default SimplMode :=
+  HsToCoq.Err.Build_Default _ (Mk_SimplMode HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__SimplCount : GHC.Err.Default SimplCount :=
-  GHC.Err.Build_Default _ (Mk_SimplCount GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__SimplCount : HsToCoq.Err.Default SimplCount :=
+  HsToCoq.Err.Build_Default _ (Mk_SimplCount HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
-Instance Default__FloatOutSwitches : GHC.Err.Default FloatOutSwitches :=
-  GHC.Err.Build_Default _ (Mk_FloatOutSwitches GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default).
+Instance Default__FloatOutSwitches : HsToCoq.Err.Default FloatOutSwitches :=
+  HsToCoq.Err.Build_Default _ (Mk_FloatOutSwitches HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__CoreWriter : GHC.Err.Default CoreWriter :=
-  GHC.Err.Build_Default _ (Mk_CoreWriter GHC.Err.default).
+Instance Default__CoreWriter : HsToCoq.Err.Default CoreWriter :=
+  HsToCoq.Err.Build_Default _ (Mk_CoreWriter HsToCoq.Err.default).
 
-Instance Default__CoreToDo : GHC.Err.Default CoreToDo :=
-  GHC.Err.Build_Default _ CoreDoFloatInwards.
+Instance Default__CoreToDo : HsToCoq.Err.Default CoreToDo :=
+  HsToCoq.Err.Build_Default _ CoreDoFloatInwards.
 
-Instance Default__CoreState : GHC.Err.Default CoreState :=
-  GHC.Err.Build_Default _ (Mk_CoreState GHC.Err.default).
+Instance Default__CoreState : HsToCoq.Err.Default CoreState :=
+  HsToCoq.Err.Build_Default _ (Mk_CoreState HsToCoq.Err.default).
 
 Definition sm_case_case (arg_0__ : SimplMode) :=
   let 'Mk_SimplMode _ _ _ _ _ sm_case_case _ := arg_0__ in
@@ -407,8 +409,8 @@ Axiom dumpIfSet_dyn : DynFlags.DumpFlag ->
      Type bool comparison list nat op_zt__ option unit BasicTypes.CompilerPhase
      Core.Id Core.RuleBase Data.Map.Internal.Map DynFlags.DumpFlag DynFlags.DynFlags
      DynFlags.HasDynFlags FastString.FastString GHC.Base.Applicative GHC.Base.Eq_
-     GHC.Base.Functor GHC.Base.Monad GHC.Base.Ord GHC.Base.String
-     GHC.Err.Build_Default GHC.Err.Default GHC.Err.default GHC.Err.error
+     GHC.Base.Functor GHC.Base.Monad GHC.Base.Ord GHC.Base.String GHC.Err.error
+     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
      Module.HasModule Module.ModuleSet SrcLoc.SrcSpan UniqSupply.MonadUnique
      UniqSupply.UniqSupply
 *)

@@ -1052,7 +1052,7 @@ wfFix Deferred (FixBody ident argBinders Nothing Nothing rhs)
  = pure $ App1 (Qualid deferredFixN) $ Fun (mkBinder Explicit (Ident ident) NEL.<| argBinders ) rhs
   where
     deferredFixN = qualidMapBase (<> T.pack (show (NEL.length argBinders)))
-        "GHC.DeferredFix.deferredFix"
+        "HsToCoq.DeferredFix.deferredFix"
 
 wfFix (WellFoundedTA order) (FixBody ident argBinders Nothing Nothing rhs)
  = do (rel, measure) <- case order of
@@ -1067,7 +1067,7 @@ wfFix (WellFoundedTA order) (FixBody ident argBinders Nothing Nothing rhs)
         ]
   where
     wfFixN = qualidMapBase (<> T.pack (show (NEL.length argBinders)))
-        "GHC.Wf.wfFix"
+        "HsToCoq.Wf.wfFix"
 
 wfFix Corecursive fb = pure . Cofix $ FixOne fb
 

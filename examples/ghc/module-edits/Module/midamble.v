@@ -1,4 +1,4 @@
-Require Import GHC.Err.
+Require Import HsToCoq.Err.
 
 Instance Default__InstalledUnitId : Default InstalledUnitId := 
   Build_Default _ (Mk_InstalledUnitId default ).

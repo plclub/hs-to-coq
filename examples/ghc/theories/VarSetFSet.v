@@ -179,12 +179,12 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     unfold diffo'. intros.
     assert (forall i, sem s i = None).
     { intros. specialize (H3 i).
-      specialize (H (Mk_Id GHC.Err.default
+      specialize (H (Mk_Id HsToCoq.Err.default
                            i
-                           GHC.Err.default
-                           GHC.Err.default
-                           GHC.Err.default
-                           GHC.Err.default)).
+                           HsToCoq.Err.default
+                           HsToCoq.Err.default
+                           HsToCoq.Err.default
+                           HsToCoq.Err.default)).
       simpl in H.
       destruct (sem x0 i) eqn:Hsem0.
       - assumption.
@@ -234,12 +234,12 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     rewrite /IntMap.member /IntMap.null.
     move=> h. destruct i. simpl.
     destruct x.
-    - specialize (h (Mk_Id GHC.Err.default
+    - specialize (h (Mk_Id HsToCoq.Err.default
                            w0
-                           GHC.Err.default
-                           GHC.Err.default
-                           GHC.Err.default
-                           GHC.Err.default)).
+                           HsToCoq.Err.default
+                           HsToCoq.Err.default
+                           HsToCoq.Err.default
+                           HsToCoq.Err.default)).
       simpl in h.
       replace (compare w0 w0) with Eq in h.
       contradiction. cbn. symmetry. apply N.compare_refl.
@@ -600,12 +600,12 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     induction x.
     - rewrite toList_bin !fold_right_app.
       inversion w; subst. simpl.
-      remember (Mk_Id GHC.Err.default
+      remember (Mk_Id HsToCoq.Err.default
                       k
-                      GHC.Err.default
-                      GHC.Err.default
-                      GHC.Err.default
-                      GHC.Err.default) as kv.
+                      HsToCoq.Err.default
+                      HsToCoq.Err.default
+                      HsToCoq.Err.default
+                      HsToCoq.Err.default) as kv.
       specialize (Hmem kv) as Hkv.
       assert (f a = f kv).
       { apply Heq. symmetry. rewrite -E.eqb_eq.
@@ -801,12 +801,12 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
         rewrite !member_spec; try eassumption.
         move=>[[v' Hsem1] Hfv]. intuition.
         exists v'. simpl. rewrite Hsem1. reflexivity.
-      + remember (Mk_Id GHC.Err.default
+      + remember (Mk_Id HsToCoq.Err.default
                         k
-                        GHC.Err.default
-                        GHC.Err.default
-                        GHC.Err.default
-                        GHC.Err.default) as kv.
+                        HsToCoq.Err.default
+                        HsToCoq.Err.default
+                        HsToCoq.Err.default
+                        HsToCoq.Err.default) as kv.
         assert ((realUnique kv =? realUnique a)%N).
         {
           apply Hvalid. erewrite lookup_spec; try eassumption. simpl.
@@ -896,15 +896,15 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   (* These operations are part of the FSet interface but are not
      supported by GHC VarSets. *)
 
-  Definition min_elt : t -> option elt := GHC.Err.default.
-  Definition max_elt : t -> option elt := GHC.Err.default.
+  Definition min_elt : t -> option elt := HsToCoq.Err.default.
+  Definition max_elt : t -> option elt := HsToCoq.Err.default.
 
 
-  Definition partition : (elt -> bool) -> t -> t * t := GHC.Err.default.
+  Definition partition : (elt -> bool) -> t -> t * t := HsToCoq.Err.default.
 
-  Definition elements : t -> list elt := GHC.Err.default.
+  Definition elements : t -> list elt := HsToCoq.Err.default.
 
-  Definition choose : t -> option elt := GHC.Err.default.
+  Definition choose : t -> option elt := HsToCoq.Err.default.
 
 
 

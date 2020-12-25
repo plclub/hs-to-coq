@@ -52,39 +52,39 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
 
 (* ---------------------------------- *)
 
-Instance Default__Expr {b} : GHC.Err.Default (Expr b) :=
-  GHC.Err.Build_Default _ (Mk_Var GHC.Err.default).
+Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
+  HsToCoq.Err.Build_Default _ (Mk_Var HsToCoq.Err.default).
 
-Instance Default__Tickish {a} : GHC.Err.Default (Tickish a) :=
-  GHC.Err.Build_Default _ (Breakpoint GHC.Err.default GHC.Err.default).
+Instance Default__Tickish {a} : HsToCoq.Err.Default (Tickish a) :=
+  HsToCoq.Err.Build_Default _ (Breakpoint HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default_TaggedBndr {t}`{GHC.Err.Default t} : GHC.Err.Default (TaggedBndr t) :=
-  GHC.Err.Build_Default _ (TB GHC.Err.default GHC.Err.default).
+Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
+  HsToCoq.Err.Build_Default _ (TB HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__AnnExpr' {a}{b} : GHC.Err.Default (AnnExpr' a b) :=
-  GHC.Err.Build_Default _ (AnnVar GHC.Err.default). 
+Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
+  HsToCoq.Err.Build_Default _ (AnnVar HsToCoq.Err.default). 
 
-Instance Default__AnnBind {a}{b} : GHC.Err.Default (AnnBind a b) :=
-  GHC.Err.Build_Default _ (AnnRec GHC.Err.default). 
+Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
+  HsToCoq.Err.Build_Default _ (AnnRec HsToCoq.Err.default). 
 
-Instance Default__Bind {b} : GHC.Err.Default (Bind b) :=
-  GHC.Err.Build_Default _ (Rec GHC.Err.default). 
+Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
+  HsToCoq.Err.Build_Default _ (Rec HsToCoq.Err.default). 
 
-Instance Default__CoreVect : GHC.Err.Default CoreVect :=
-  GHC.Err.Build_Default _ (Vect GHC.Err.default GHC.Err.default). 
+Instance Default__CoreVect : HsToCoq.Err.Default CoreVect :=
+  HsToCoq.Err.Build_Default _ (Vect HsToCoq.Err.default HsToCoq.Err.default). 
 
-Instance Default__CoreRule : GHC.Err.Default CoreRule :=
-  GHC.Err.Build_Default _ (BuiltinRule GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__CoreRule : HsToCoq.Err.Default CoreRule :=
+  HsToCoq.Err.Build_Default _ (BuiltinRule HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__RuleEnv : GHC.Err.Default RuleEnv :=
-  GHC.Err.Build_Default _ (Mk_RuleEnv GHC.Err.default GHC.Err.default).
+Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv :=
+  HsToCoq.Err.Build_Default _ (Mk_RuleEnv HsToCoq.Err.default HsToCoq.Err.default).
 
 
 (* ---------------------------------- *)
 
 (* See comments in CoreSyn/edits file. We can't use termination edits for collect. *)
 
-Definition collectNAnnBndrs {bndr} {annot}`{GHC.Err.Default annot}
+Definition collectNAnnBndrs {bndr} {annot}`{HsToCoq.Err.Default annot}
     : nat -> AnnExpr bndr annot -> (list bndr * AnnExpr bndr annot)%type :=
           fun orig_n e =>
             let fix collect (arg_0__:nat) (arg_1__ : list bndr) (arg_2__:AnnExpr bndr annot) :=

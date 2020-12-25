@@ -370,8 +370,8 @@ generateDefaultInstance (IndBody tyName _ _ cons)
         True -> pure []
         False -> pure $ pure $ InstanceSentence $
             InstanceTerm inst_name []
-                     (App1 "GHC.Err.Default" (Qualid tyName))
-                     (App2 "GHC.Err.Build_Default" Underscore (foldr (\_ acc -> App1 acc "GHC.Err.default") (Qualid con) bndrs))
+                     (App1 "HsToCoq.Err.Default" (Qualid tyName))
+                     (App2 "HsToCoq.Err.Build_Default" Underscore (foldr (\_ acc -> App1 acc "HsToCoq.Err.default") (Qualid con) bndrs))
                      Nothing
   where
     inst_name = qualidMapBase ("Default__" <>) tyName

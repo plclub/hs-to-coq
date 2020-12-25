@@ -24,9 +24,9 @@ Require DynFlags.
 Require FastString.
 Require GHC.Base.
 Require GHC.Char.
-Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.Num.
+Require HsToCoq.DeferredFix.
 Require Id.
 Require Literal.
 Require Name.
@@ -289,30 +289,31 @@ Definition mkTupleSelector
    : list Core.Id -> Core.Id -> Core.Id -> Core.CoreExpr -> Core.CoreExpr :=
   fun vars the_var scrut_var scrut =>
     let mk_tup_sel :=
-      GHC.DeferredFix.deferredFix2 (fun mk_tup_sel arg_0__ arg_1__ =>
-                                      match arg_0__, arg_1__ with
-                                      | cons vars nil, the_var => mkSmallTupleSelector vars the_var scrut_var scrut
-                                      | vars_s, the_var =>
-                                          let tpl_tys :=
-                                            Coq.Lists.List.flat_map (fun gp =>
-                                                                       cons (TysWiredIn.mkBoxedTupleTy (GHC.Base.map
-                                                                                                        Id.idType gp))
-                                                                            nil) vars_s in
-                                          let tpl_vs := Id.mkTemplateLocals tpl_tys in
-                                          match (let cont_5__ arg_6__ :=
-                                                     let 'pair tpl gp := arg_6__ in
-                                                     if Data.Foldable.elem the_var gp : bool
-                                                     then cons (pair tpl gp) nil else
-                                                     nil in
-                                                   Coq.Lists.List.flat_map cont_5__ (Util.zipEqual (GHC.Base.hs_string__
-                                                                                                    "mkTupleSelector")
-                                                                            tpl_vs vars_s)) with
-                                          | cons (pair tpl_v group) nil =>
-                                              mkSmallTupleSelector group the_var tpl_v (mk_tup_sel (chunkify tpl_vs)
-                                                                                                   tpl_v)
-                                          | _ => GHC.Err.patternFailure
-                                          end
-                                      end) in
+      HsToCoq.DeferredFix.deferredFix2 (fun mk_tup_sel arg_0__ arg_1__ =>
+                                          match arg_0__, arg_1__ with
+                                          | cons vars nil, the_var => mkSmallTupleSelector vars the_var scrut_var scrut
+                                          | vars_s, the_var =>
+                                              let tpl_tys :=
+                                                Coq.Lists.List.flat_map (fun gp =>
+                                                                           cons (TysWiredIn.mkBoxedTupleTy (GHC.Base.map
+                                                                                                            Id.idType
+                                                                                                            gp)) nil)
+                                                                        vars_s in
+                                              let tpl_vs := Id.mkTemplateLocals tpl_tys in
+                                              match (let cont_5__ arg_6__ :=
+                                                         let 'pair tpl gp := arg_6__ in
+                                                         if Data.Foldable.elem the_var gp : bool
+                                                         then cons (pair tpl gp) nil else
+                                                         nil in
+                                                       Coq.Lists.List.flat_map cont_5__ (Util.zipEqual
+                                                                                (GHC.Base.hs_string__ "mkTupleSelector")
+                                                                                tpl_vs vars_s)) with
+                                              | cons (pair tpl_v group) nil =>
+                                                  mkSmallTupleSelector group the_var tpl_v (mk_tup_sel (chunkify tpl_vs)
+                                                                                                       tpl_v)
+                                              | _ => GHC.Err.patternFailure
+                                              end
+                                          end) in
     mk_tup_sel (chunkify vars) the_var.
 
 Definition mkTupleSelector1
@@ -353,18 +354,14 @@ Definition mkTupleCase
             pair (pair us' (cons scrut_var vs)) body'
         end in
     let mk_tuple_case :=
-      GHC.DeferredFix.deferredFix3 (fun mk_tuple_case arg_7__ arg_8__ arg_9__ =>
-                                      match arg_7__, arg_8__, arg_9__ with
-                                      | _, cons vars nil, body => mkSmallTupleCase vars body scrut_var scrut
-                                      | us, vars_s, body =>
-                                          let 'pair (pair us' vars') body' := Data.Foldable.foldr one_tuple_case (pair
-                                                                                                                  (pair
-                                                                                                                   us
-                                                                                                                   nil)
-                                                                                                                  body)
-                                                                                vars_s in
-                                          mk_tuple_case us' (chunkify vars') body'
-                                      end) in
+      HsToCoq.DeferredFix.deferredFix3 (fun mk_tuple_case arg_7__ arg_8__ arg_9__ =>
+                                          match arg_7__, arg_8__, arg_9__ with
+                                          | _, cons vars nil, body => mkSmallTupleCase vars body scrut_var scrut
+                                          | us, vars_s, body =>
+                                              let 'pair (pair us' vars') body' := Data.Foldable.foldr one_tuple_case
+                                                                                    (pair (pair us nil) body) vars_s in
+                                              mk_tuple_case us' (chunkify vars') body'
+                                          end) in
     mk_tuple_case uniqs (chunkify vars) body.
 
 Definition wrapFloat : FloatBind -> Core.CoreExpr -> Core.CoreExpr :=
@@ -504,10 +501,10 @@ Definition mkAbsentErrorApp
      FastString.fastStringToByteString FastString.fsLit FastString.nullFS
      FastString.unpackFS GHC.Base.Monad GHC.Base.String GHC.Base.map
      GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zgze__ GHC.Base.op_zgzgze__
-     GHC.Base.op_zlze__ GHC.Base.ord GHC.Base.return_ GHC.Char.Char
-     GHC.DeferredFix.deferredFix2 GHC.DeferredFix.deferredFix3 GHC.Err.error
+     GHC.Base.op_zlze__ GHC.Base.ord GHC.Base.return_ GHC.Char.Char GHC.Err.error
      GHC.Err.patternFailure GHC.Num.Integer GHC.Num.Word GHC.Num.fromInteger
-     Id.idType Id.isJoinId Id.mkLocalIdOrCoVar Id.mkSysLocal Id.mkTemplateLocals
+     HsToCoq.DeferredFix.deferredFix2 HsToCoq.DeferredFix.deferredFix3 Id.idType
+     Id.isJoinId Id.mkLocalIdOrCoVar Id.mkSysLocal Id.mkTemplateLocals
      Literal.MachStr Literal.mkMachString Name.Name Panic.assertPanic Panic.someSDoc
      PrelNames.absentErrorIdKey PrelNames.absentSumFieldErrorIdKey
      PrelNames.irrefutPatErrorIdKey PrelNames.noMethodBindingErrorIdKey

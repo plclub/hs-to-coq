@@ -24,6 +24,7 @@ Require GHC.Err.
 Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Real.
+Require HsToCoq.Err.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
@@ -54,11 +55,11 @@ Arguments Mk_Dual {_} _.
 
 Arguments Mk_Alt {_} {_} {_} _.
 
-Instance Default__Any : GHC.Err.Default Any :=
-  GHC.Err.Build_Default _ (Mk_Any GHC.Err.default).
+Instance Default__Any : HsToCoq.Err.Default Any :=
+  HsToCoq.Err.Build_Default _ (Mk_Any HsToCoq.Err.default).
 
-Instance Default__All : GHC.Err.Default All :=
-  GHC.Err.Build_Default _ (Mk_All GHC.Err.default).
+Instance Default__All : HsToCoq.Err.Default All :=
+  HsToCoq.Err.Build_Default _ (Mk_All HsToCoq.Err.default).
 
 Definition getSum {a} (arg_0__ : Sum a) :=
   let 'Mk_Sum getSum := arg_0__ in
@@ -986,8 +987,8 @@ Definition stimesIdempotentMonoid {b : Type} {a : Type} `{GHC.Real.Integral b}
      GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg__ GHC.Base.op_ztzg____
      GHC.Base.pure GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___
-     GHC.Err.Build_Default GHC.Err.Default GHC.Err.default
      GHC.Err.errorWithoutStackTrace GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
      GHC.Num.op_zt__ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel GHC.Prim.coerce
-     GHC.Real.Integral
+     GHC.Real.Integral HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default
 *)

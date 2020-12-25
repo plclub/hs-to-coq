@@ -1,4 +1,4 @@
-Require Import GHC.Nat.
+Require Import HsToCoq.Nat.
 
-Instance Default__CmmType : GHC.Err.Default CmmType :=
-	 { default := Mk_CmmType GHC.Err.default GHC.Err.default }.
+Instance Default__CmmType : HsToCoq.Err.Default CmmType :=
+	 { default := Mk_CmmType HsToCoq.Err.default HsToCoq.Err.default }.

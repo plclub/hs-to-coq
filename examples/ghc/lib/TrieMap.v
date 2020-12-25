@@ -19,8 +19,8 @@ Require Data.IntSet.Internal.
 Require Data.Map.Internal.
 Require FastString.
 Require GHC.Base.
-Require GHC.Err.
 Require GHC.Num.
+Require HsToCoq.Err.
 Require IntMap.
 Require Literal.
 Require Name.
@@ -132,8 +132,8 @@ Arguments D {_} _ _.
 
 Arguments AM {_} _ _ _.
 
-Instance Default__CmEnv : GHC.Err.Default CmEnv :=
-  GHC.Err.Build_Default _ (CME GHC.Err.default GHC.Err.default).
+Instance Default__CmEnv : HsToCoq.Err.Default CmEnv :=
+  HsToCoq.Err.Build_Default _ (CME HsToCoq.Err.default HsToCoq.Err.default).
 
 Definition tlm_number {a} (arg_0__ : TyLitMap a) :=
   let 'TLM tlm_number _ := arg_0__ in
@@ -1181,11 +1181,11 @@ End Notations.
      Data.Map.Internal.foldr Data.Map.Internal.lookup Data.Map.Internal.map
      FastString.FastString GHC.Base.Eq_ GHC.Base.Ord GHC.Base.const GHC.Base.flip
      GHC.Base.fmap GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____
-     GHC.Base.op_zgzgze__ GHC.Base.op_zsze____ GHC.Err.Build_Default GHC.Err.Default
-     GHC.Err.default GHC.Num.Integer GHC.Num.fromInteger GHC.Num.op_zp__
-     IntMap.IntMap IntMap.alter IntMap.empty IntMap.foldr IntMap.lookup IntMap.map
-     Literal.Literal Name.NamedThing Name.getName NameEnv.DNameEnv
-     NameEnv.alterDNameEnv NameEnv.emptyDNameEnv NameEnv.lookupDNameEnv UniqFM.UniqFM
-     UniqFM.alterUFM UniqFM.emptyUFM UniqFM.lookupUFM UniqFM.mapUFM
-     UniqFM.nonDetFoldUFM Unique.Unique
+     GHC.Base.op_zgzgze__ GHC.Base.op_zsze____ GHC.Num.Integer GHC.Num.fromInteger
+     GHC.Num.op_zp__ HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default IntMap.IntMap IntMap.alter IntMap.empty IntMap.foldr
+     IntMap.lookup IntMap.map Literal.Literal Name.NamedThing Name.getName
+     NameEnv.DNameEnv NameEnv.alterDNameEnv NameEnv.emptyDNameEnv
+     NameEnv.lookupDNameEnv UniqFM.UniqFM UniqFM.alterUFM UniqFM.emptyUFM
+     UniqFM.lookupUFM UniqFM.mapUFM UniqFM.nonDetFoldUFM Unique.Unique
 *)

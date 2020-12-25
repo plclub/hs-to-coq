@@ -25,8 +25,8 @@ Require Data.Traversable.
 Require Data.Tuple.
 Require FastString.
 Require GHC.Base.
-Require GHC.DeferredFix.
 Require GHC.Err.
+Require HsToCoq.DeferredFix.
 Require Id.
 Require State.
 Require Unique.
@@ -112,94 +112,100 @@ Definition exitifyRec
         end in
     let recursive_calls := Core.mkVarSet (GHC.Base.map Data.Tuple.fst pairs) in
     let go : list Core.Var -> CoreFVs.CoreExprWithFVs -> ExitifyM Core.CoreExpr :=
-      GHC.DeferredFix.deferredFix2 (fun go
-                                    (arg_19__ : list Core.Var)
-                                    (arg_20__ : CoreFVs.CoreExprWithFVs) =>
-                                      match arg_19__, arg_20__ with
-                                      | captured, ann_e =>
-                                          let j_22__ :=
-                                            match arg_19__, arg_20__ with
-                                            | _, ann_e => GHC.Base.return_ (Core.deAnnotate ann_e)
-                                            end in
-                                          let j_40__ :=
-                                            match arg_19__, arg_20__ with
-                                            | captured, pair _ (Core.AnnCase scrut bndr ty alts) =>
-                                                Data.Traversable.forM alts (fun '(pair (pair dc pats) rhs) =>
-                                                                              go (Coq.Init.Datatypes.app captured
-                                                                                                         (Coq.Init.Datatypes.app
-                                                                                                          (cons bndr
-                                                                                                                nil)
-                                                                                                          pats)) rhs
-                                                                              GHC.Base.>>=
-                                                                              (fun rhs' =>
-                                                                                 GHC.Base.return_ (pair (pair dc pats)
-                                                                                                        rhs')))
-                                                GHC.Base.>>=
-                                                (fun alts' =>
-                                                   GHC.Base.return_ (Core.Case (Core.deAnnotate scrut) bndr ty alts'))
-                                            | captured, pair _ (Core.AnnLet ann_bind body) =>
-                                                let bind := Core.deAnnBind ann_bind in
-                                                let j_37__ :=
-                                                  go (Coq.Init.Datatypes.app captured (Core.bindersOf bind)) body
-                                                  GHC.Base.>>=
-                                                  (fun body' => GHC.Base.return_ (Core.Let bind body')) in
-                                                let j_38__ :=
-                                                  match ann_bind with
-                                                  | Core.AnnRec pairs =>
-                                                      if Id.isJoinId (Data.Tuple.fst (GHC.Err.head pairs)) : bool
-                                                      then let js := GHC.Base.map Data.Tuple.fst pairs in
-                                                           Data.Traversable.forM pairs (fun '(pair j rhs) =>
-                                                                                          let join_arity :=
-                                                                                            Id.idJoinArity j in
-                                                                                          let 'pair params join_body :=
-                                                                                            Core.collectNAnnBndrs
-                                                                                              join_arity rhs in
-                                                                                          go (Coq.Init.Datatypes.app
-                                                                                              captured
-                                                                                              (Coq.Init.Datatypes.app js
-                                                                                                                      params))
-                                                                                          join_body GHC.Base.>>=
-                                                                                          (fun join_body' =>
-                                                                                             let rhs' :=
-                                                                                               Core.mkLams params
-                                                                                               join_body' in
-                                                                                             GHC.Base.return_ (pair j
-                                                                                                                    rhs')))
-                                                           GHC.Base.>>=
-                                                           (fun pairs' =>
-                                                              go (Coq.Init.Datatypes.app captured js) body GHC.Base.>>=
-                                                              (fun body' =>
-                                                                 GHC.Base.return_ (Core.Let (Core.Rec pairs')
-                                                                                            body'))) else
-                                                      j_37__
-                                                  | _ => j_37__
-                                                  end in
-                                                match ann_bind with
-                                                | Core.AnnNonRec j rhs =>
-                                                    match Id.isJoinId_maybe j with
-                                                    | Some join_arity =>
-                                                        let 'pair params join_body := Core.collectNAnnBndrs join_arity
-                                                                                        rhs in
-                                                        go (Coq.Init.Datatypes.app captured params) join_body
-                                                        GHC.Base.>>=
-                                                        (fun join_body' =>
-                                                           let rhs' := Core.mkLams params join_body' in
-                                                           go (Coq.Init.Datatypes.app captured (cons j nil)) body
-                                                           GHC.Base.>>=
-                                                           (fun body' =>
-                                                              GHC.Base.return_ (Core.Let (Core.NonRec j rhs') body')))
+      HsToCoq.DeferredFix.deferredFix2 (fun go
+                                        (arg_19__ : list Core.Var)
+                                        (arg_20__ : CoreFVs.CoreExprWithFVs) =>
+                                          match arg_19__, arg_20__ with
+                                          | captured, ann_e =>
+                                              let j_22__ :=
+                                                match arg_19__, arg_20__ with
+                                                | _, ann_e => GHC.Base.return_ (Core.deAnnotate ann_e)
+                                                end in
+                                              let j_40__ :=
+                                                match arg_19__, arg_20__ with
+                                                | captured, pair _ (Core.AnnCase scrut bndr ty alts) =>
+                                                    Data.Traversable.forM alts (fun '(pair (pair dc pats) rhs) =>
+                                                                                  go (Coq.Init.Datatypes.app captured
+                                                                                                             (Coq.Init.Datatypes.app
+                                                                                                              (cons bndr
+                                                                                                                    nil)
+                                                                                                              pats)) rhs
+                                                                                  GHC.Base.>>=
+                                                                                  (fun rhs' =>
+                                                                                     GHC.Base.return_ (pair (pair dc
+                                                                                                                  pats)
+                                                                                                            rhs')))
+                                                    GHC.Base.>>=
+                                                    (fun alts' =>
+                                                       GHC.Base.return_ (Core.Case (Core.deAnnotate scrut) bndr ty
+                                                                                   alts'))
+                                                | captured, pair _ (Core.AnnLet ann_bind body) =>
+                                                    let bind := Core.deAnnBind ann_bind in
+                                                    let j_37__ :=
+                                                      go (Coq.Init.Datatypes.app captured (Core.bindersOf bind)) body
+                                                      GHC.Base.>>=
+                                                      (fun body' => GHC.Base.return_ (Core.Let bind body')) in
+                                                    let j_38__ :=
+                                                      match ann_bind with
+                                                      | Core.AnnRec pairs =>
+                                                          if Id.isJoinId (Data.Tuple.fst (GHC.Err.head pairs)) : bool
+                                                          then let js := GHC.Base.map Data.Tuple.fst pairs in
+                                                               Data.Traversable.forM pairs (fun '(pair j rhs) =>
+                                                                                              let join_arity :=
+                                                                                                Id.idJoinArity j in
+                                                                                              let 'pair params
+                                                                                                 join_body :=
+                                                                                                Core.collectNAnnBndrs
+                                                                                                  join_arity rhs in
+                                                                                              go (Coq.Init.Datatypes.app
+                                                                                                  captured
+                                                                                                  (Coq.Init.Datatypes.app
+                                                                                                   js params)) join_body
+                                                                                              GHC.Base.>>=
+                                                                                              (fun join_body' =>
+                                                                                                 let rhs' :=
+                                                                                                   Core.mkLams params
+                                                                                                   join_body' in
+                                                                                                 GHC.Base.return_ (pair
+                                                                                                                   j
+                                                                                                                   rhs')))
+                                                               GHC.Base.>>=
+                                                               (fun pairs' =>
+                                                                  go (Coq.Init.Datatypes.app captured js) body
+                                                                  GHC.Base.>>=
+                                                                  (fun body' =>
+                                                                     GHC.Base.return_ (Core.Let (Core.Rec pairs')
+                                                                                                body'))) else
+                                                          j_37__
+                                                      | _ => j_37__
+                                                      end in
+                                                    match ann_bind with
+                                                    | Core.AnnNonRec j rhs =>
+                                                        match Id.isJoinId_maybe j with
+                                                        | Some join_arity =>
+                                                            let 'pair params join_body := Core.collectNAnnBndrs
+                                                                                            join_arity rhs in
+                                                            go (Coq.Init.Datatypes.app captured params) join_body
+                                                            GHC.Base.>>=
+                                                            (fun join_body' =>
+                                                               let rhs' := Core.mkLams params join_body' in
+                                                               go (Coq.Init.Datatypes.app captured (cons j nil)) body
+                                                               GHC.Base.>>=
+                                                               (fun body' =>
+                                                                  GHC.Base.return_ (Core.Let (Core.NonRec j rhs')
+                                                                                             body')))
+                                                        | _ => j_38__
+                                                        end
                                                     | _ => j_38__
                                                     end
-                                                | _ => j_38__
-                                                end
-                                            | _, _ => j_22__
-                                            end in
-                                          let fvs :=
-                                            Core.dVarSetToVarSet (CoreFVs.exprFreeVars (Core.deAnnotate ann_e)) in
-                                          if Core.disjointVarSet fvs recursive_calls : bool
-                                          then go_exit captured (Core.deAnnotate ann_e) fvs else
-                                          j_40__
-                                      end) in
+                                                | _, _ => j_22__
+                                                end in
+                                              let fvs :=
+                                                Core.dVarSetToVarSet (CoreFVs.exprFreeVars (Core.deAnnotate ann_e)) in
+                                              if Core.disjointVarSet fvs recursive_calls : bool
+                                              then go_exit captured (Core.deAnnotate ann_e) fvs else
+                                              j_40__
+                                          end) in
     let ann_pairs := GHC.Base.map (Data.Bifunctor.second CoreFVs.freeVars) pairs in
     let 'pair pairs' exits := (fun arg_45__ => State.runState arg_45__ nil)
                                 (Data.Traversable.forM ann_pairs (fun '(pair x rhs) =>
@@ -275,8 +281,8 @@ Definition exitifyProgram : Core.CoreProgram -> Core.CoreProgram :=
      CoreFVs.freeVars CoreUtils.exprType Data.Bifunctor.second Data.Foldable.all
      Data.Foldable.any Data.Foldable.elem Data.Foldable.foldr Data.Traversable.forM
      Data.Tuple.fst Data.Tuple.snd FastString.fsLit GHC.Base.map GHC.Base.op_z2218U__
-     GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__ GHC.Base.return_
-     GHC.DeferredFix.deferredFix2 GHC.Err.head Id.asJoinId Id.idJoinArity Id.isJoinId
+     GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__ GHC.Base.return_ GHC.Err.head
+     HsToCoq.DeferredFix.deferredFix2 Id.asJoinId Id.idJoinArity Id.isJoinId
      Id.isJoinId_maybe Id.mkSysLocal Id.setIdInfo State.State State.get State.put
      State.runState Unique.initExitJoinUnique Util.mapSnd
 *)

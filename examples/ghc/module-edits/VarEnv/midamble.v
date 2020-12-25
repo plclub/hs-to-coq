@@ -1,11 +1,9 @@
 (* ------------- VarEnv midamble.v ------------ *)
-Require GHC.Err.
-
-Instance Default__InScopeSet : GHC.Err.Default InScopeSet :=
-  GHC.Err.Build_Default _ (InScope GHC.Err.default GHC.Err.default).
-Instance Default__RnEnv2 : GHC.Err.Default RnEnv2 :=
-  GHC.Err.Build_Default _ (RV2 GHC.Err.default GHC.Err.default GHC.Err.default).
-Instance Default__TidyEnv : GHC.Err.Default TidyEnv :=
-  GHC.Err.Build_Default _ (pair GHC.Err.default GHC.Err.default).
+Instance Default__InScopeSet : HsToCoq.Err.Default InScopeSet :=
+  HsToCoq.Err.Build_Default _ (InScope HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__RnEnv2 : HsToCoq.Err.Default RnEnv2 :=
+  HsToCoq.Err.Build_Default _ (RV2 HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__TidyEnv : HsToCoq.Err.Default TidyEnv :=
+  HsToCoq.Err.Build_Default _ (pair HsToCoq.Err.default HsToCoq.Err.default).
 
 
