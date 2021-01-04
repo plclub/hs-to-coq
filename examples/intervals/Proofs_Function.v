@@ -9,7 +9,7 @@ It is a variant of Proofs.v that uses the Function command to use [deferredFix] 
 Require Import Intervals.
 
 Require Import GHC.Base.
-Require Import GHC.DeferredFix.
+Require Import HsToCoq.DeferredFix.
 
 Require Import Coq.Sets.Ensembles.
 Require Import Coq.Sets.Powerset_facts.
