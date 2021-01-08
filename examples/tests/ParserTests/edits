@@ -5,3 +5,9 @@ redefine Definition ParserTests.a1 `{C a} : a -> a := c.
 
 # Right-nested arrows
 redefine Definition ParserTests.a2 {a} {b} : (a -> b) -> a -> b := fun x => x.
+
+# Let-tick syntax
+skip module GHC.Err
+skip ParserTests.Default__Foo
+add ParserTests Definition ParserTests.letTick : (ParserTests.Test -> ParserTests.Foo) 
+  := fun x => let ' MkTest y := x in y.

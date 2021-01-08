@@ -61,12 +61,16 @@ isWordInit c = isAlpha c || c == '_'
 
 isWord :: Char -> Bool
 isWord c = isAlphaNum c || c == '_' || c == '\'' || c == '#'
+-- Note: a `'` can appear IN a word, but not at the beginning
 
 isOperator :: Char -> Bool
 isOperator c =
   c /= '_' && c /= '\'' &&
   generalCategory c `elem` [ ConnectorPunctuation, DashPunctuation, OtherPunctuation
                            , MathSymbol, CurrencySymbol, ModifierSymbol, OtherSymbol ]
+
+isTick :: Char -> Bool
+isTick c = c == '\''
 
 --------------------------------------------------------------------------------
 -- Tokens
@@ -87,6 +91,7 @@ proof tactics PEAdmitted = ProofAdmitted tactics
 data Token = TokWord    Ident
            | TokNat     Num
            | TokOp      Ident
+           | TokTick
            | TokOpen    Char
            | TokClose   Char
            | TokString  Text
@@ -100,6 +105,7 @@ tokenDescription :: Token -> String
 tokenDescription (TokWord    w) = "word `"              ++ T.unpack       w ++ "'"
 tokenDescription (TokNat     n) = "number `"            ++ show           n ++ "'"
 tokenDescription (TokOp      o) = "operator `"          ++ T.unpack       o ++ "'"
+tokenDescription TokTick        = "tick"
 tokenDescription (TokOpen    o) = "opening delimeter `" ++ pure           o ++ "'"
 tokenDescription (TokClose   c) = "closing delimeter `" ++ pure           c ++ "'"
 tokenDescription (TokString  s) = "string literal `"    ++ T.unpack       s ++ "'"
@@ -137,10 +143,11 @@ is = (==)
 data NameCategory = CatWord | CatSym
                   deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
-uword, word, op, unit, nil :: MonadParse m => m Ident
+uword, word, op, tick, unit, nil :: MonadParse m => m Ident
 uword = parseToken id isUpper    isWord
 word  = parseToken id isWordInit isWord
 op    = parseToken id isOperator isOperator
+tick  = parseToken id isTick isTick
 unit  = empty_brackets '(' ')'
 nil   = empty_brackets '[' ']'
 
@@ -199,6 +206,7 @@ token' = asum $
   [ Nothing          <$  comment
   , Nothing          <$  space
   , newlineToken     <*  newline
+  , Just TokTick     <$  tick
   , Just . TokString <$> stringLit
   , Just . TokNat    <$> nat
   , Just . TokOpen   <$> parseChar isOpen
