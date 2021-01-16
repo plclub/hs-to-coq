@@ -104,6 +104,12 @@ import HsToCoq.Edits.ParserState
   polyrec         { TokWord    "polyrec"        }
   except          { TokWord    "except"         }
   polykinds       { TokWord    "polykinds"      }
+  invariant       { TokWord    "invariant"      }
+  useSigmaType    { TokWord    "useSigmaType"   }
+  qid             { TokWord    "qid"            }
+  tyVars          { TokWord    "tyVars"         }
+  '['             { TokOpen    '['              } -- can't be TokOp
+  ']'             { TokClose   ']'              } -- can't be TokOp
   '='             { TokOp      "="              }
   ':->'           { TokOp      ":->"            }
   -- Tokens: Coq terms
@@ -304,6 +310,15 @@ Scope :: { Ident }
 ModuleName :: { ModuleName }
   : Word    {% fmap mkModuleNameT (expandModuleIdent $1) }
 
+InvariantEdit_ :: { Edit }
+  : add invariant '{' module '=' Word ','
+    qid '=' Qualid ','
+    tyVars '=' '[' SepBy(Binder,',') ']' ','
+    constructor '=' Word ','
+    useSigmaType '=' '[' SepBy(Qualid,',') ']' ','
+    invariant '=' CoqDefinition '}'
+  { InvariantEdit (mkModuleNameT $6) $10 $15 $20 $25 $30 }
+
 Edit :: { Edit }
   : type synonym Word ':->' Word                          { TypeSynonymTypeEdit              $3 $5                                 }
   | data type arguments Qualid DataTypeArguments          { DataTypeArgumentsEdit            $4 $5                                 }
@@ -344,6 +359,7 @@ Edit :: { Edit }
   | promote Qualid                                        { PromoteEdit                      $2                                    }
   | polyrec Qualid                                        { PolyrecEdit                      $2                                    }
   | except 'in' SepBy1(Qualid, ',') Edit                  { ExceptInEdit                     $3 $4                                 }
+  | InvariantEdit_                                        { $1 }
 
 Edits :: { [Edit] }
   : Lines(Edit)    { $1 }

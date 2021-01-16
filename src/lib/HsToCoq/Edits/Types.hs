@@ -9,7 +9,7 @@
 {-# LANGUAGE TemplateHaskell            #-}
 
 module HsToCoq.Edits.Types (
-  Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, polyKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs,
+  Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, polyKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs, invariants,
   HsNamespace(..), NamespacedIdent(..), Renamings,
   DataTypeArguments(..), dtParameters, dtIndices,
   CoqDefinition(..), definitionSentence,
@@ -19,7 +19,7 @@ module HsToCoq.Edits.Types (
   TerminationArgument(..),
   NormalizedPattern(), getNormalizedPattern, normalizePattern,
   Rewrite(..), Rewrites,
-  Edit(..), addEdit, buildEdits, subtractEdits,
+  Edit(..), addEdit, buildEdits, subtractEdits, addInvariantEdit,
   useProgram,
   Phase(..),
 ) where
@@ -32,7 +32,7 @@ import           HsToCoq.Util.Generics
 
 import           Control.Monad
 import           Control.Monad.Except
-import           Data.List.NonEmpty                (NonEmpty (..), tail, toList)
+import           Data.List.NonEmpty                (NonEmpty (..), tail, toList, fromList)
 import           Data.Semigroup
 import qualified Data.Text                         as T
 import           Data.Tuple
@@ -194,6 +194,7 @@ data Edit = TypeSynonymTypeEdit              Ident Ident
           | ExceptInEdit                     (NonEmpty Qualid) Edit
           | PromoteEdit                      Qualid
           | PolyrecEdit                      Qualid
+          | InvariantEdit                    ModuleName Qualid [Binder] Ident [Qualid] CoqDefinition
           deriving (Eq, Ord, Show)
 
 data HsNamespace = ExprNS | TypeNS
@@ -209,6 +210,23 @@ data NamespacedIdent = NamespacedIdent { niNS :: !HsNamespace
                      deriving (Eq, Ord, Show, Read)
 
 type Renamings = Map NamespacedIdent Qualid
+
+{-
+ Currently, addInvariant works by adding smaller edits.
+ It does this by modifying the fields of the Edits
+ structure that is passed along for later usage.
+
+However, some information isn't available at the time addInvariant is called,
+for example, the list of the module's exports.
+
+So instead of creating the smaller edits within addInvariant, we have to pass
+relevant information on so that those edits can be done when we do have
+the needed information
+ 
+-}
+data InvEditInfo = InvEditInfo { 
+
+                               } deriving (Eq, Ord, Show, Generic)
 
 data Edits = Edits { _typeSynonymTypes               :: !(Map Ident Ident)
                    , _dataTypeArguments              :: !(Map Qualid DataTypeArguments)
@@ -247,6 +265,8 @@ data Edits = Edits { _typeSynonymTypes               :: !(Map Ident Ident)
                    , _exceptInEdits                  :: !(Map Qualid Edits)
                    , _promotions                     :: !(Set Qualid)
                    , _polyrecs                       :: !(Set Qualid)
+                   , _invariants                     :: !(Map Qualid InvEditInfo)
+
                    }
            deriving (Eq, Ord, Show, Generic)
 instance Semigroup Edits where (<>)   = (%<>)
@@ -302,6 +322,7 @@ subtractEdits edits1 edits2 =
   , _exceptInEdits                  = edits1^.exceptInEdits
   , _promotions                     = edits1^.promotions
   , _polyrecs                       = (edits1^.polyrecs) S.\\ (edits2^.polyrecs)
+  , _invariants                     = edits1^.invariants
   }
 
 -- Derived edits
@@ -375,6 +396,7 @@ descDuplEdit = \case
   ExceptInEdit                     _ _          -> error "ExceptIn Edits are never duplicates"
   PromoteEdit                      _            -> error "Promote edits are never duplicates"
   PolyrecEdit                      _            -> error "Polyrec edits are never duplicates"
+  InvariantEdit                    _ qid _ _ _ _  -> duplicateQ_for "Duplicate invariant for the same definition"   qid
   where
     prettyScoped place name = let pplace = case place of
                                     SPValue       -> "value"
@@ -423,6 +445,8 @@ addEdit e = case e of
   PromoteEdit                      qid              -> addFresh e promotions                             qid                         ()
   PolyrecEdit                      qid              -> addFresh e polyrecs                               qid                         ()
   ExceptInEdit                     qids edit        -> addExceptInEdit qids edit
+  InvariantEdit                    mod qid binderList cName useSigmaQids def -> addInvariantEdit mod qid binderList cName useSigmaQids def
+
 
 
 addExceptInEdit :: MonadError String m => 
@@ -443,6 +467,127 @@ addExceptInEdit qids edit =
      -- currentQidFun :: Edits -> m Edits
     aux f qid = let currentQidFun = exceptInEdits.at qid.non mempty %%~ addEdit edit in
         \edits -> currentQidFun edits >>= f
+
+
+-- "Add sentence" edit: similar to an AddEdit, but you provide a sentence
+-- instead of a definition.
+-- We could make a new constructor for this kind of edit (e.g. AddSentenceEdit)
+-- and use addEdit to process it. But then we would have to define descDuplEdit
+-- for this kind of edit, even though it would not be user facing.
+-- So instead, we have the below function that accepts a Sentence and returns
+-- an (Edits -> m Edits)
+sentenceEdit :: MonadError String m => ModuleName -> Sentence -> Phase -> Edits -> m Edits
+sentenceEdit mod sent ph = return . (additions.at mod.non mempty %~ (addPhase ph sent))
+
+
+
+-- ECG: could use case match instead
+-- ECG: Note: for invariants, we only ever use the first constructor of Definition,
+-- i.e. DefinitionDef
+addInvariantEdit :: MonadError String m => 
+     ModuleName 
+  -> Qualid     -- qualid representing the type to which the invariant applies
+  -> [Binder]   -- type variable binders for the type (e.g. a b c)
+  -> Ident      -- the name of the constructor of the type to which the invariant applies
+  -> [Qualid]   -- list of Qualids that will use the sigma type (e.g. the module export list)
+  -> CoqDefinition -- the definition of the invariant
+  -> Edits 
+  -> m Edits
+addInvariantEdit modname qid binderList constrName useSigmaQids@(_:_) def@(CoqDefinitionDef _) = 
+
+  let useSigmaQidNE = fromList useSigmaQids
+    
+      defnSent = definitionSentence def
+      -- invariantQualid = getDefinitionQualid dfn -- ECG: use defName?
+      invariantQualid = defName def  -- e.g. Counter.NonNegInv
+
+      -- name of invariant (includes module name if invariantQualid is qualified)
+      -- e.g. "Counter.NonNegInv"
+      invariantName = qualidToIdent invariantQualid 
+
+      -- to rename the original type to the raw type
+      typeName = qualidBase qid      -- name of type to which the invariant applies, e.g. Counter
+      rawTypeName = "Raw" <> typeName
+      rawTypeQid = setQualidName qid rawTypeName
+      typeNamespacedIdent = NamespacedIdent { niNS = TypeNS, niId = qid }
+      rnTypeToRawEdit = RenameEdit typeNamespacedIdent rawTypeQid
+
+      -- to rename the original constructor to the raw constructor
+      -- (moduleNameText is defined in src/lib/HsToCoq/Util/GHC/Module.hs)
+      constrQid = Qualified (moduleNameText modname) constrName       -- could use setQualidName
+      rawConstrName = constrName <> "_Raw"
+      rawConstrQid = Qualified (moduleNameText modname) rawConstrName -- could use setQualidName
+      constrNamespacedIdent = NamespacedIdent { niNS = ExprNS, niId = constrQid }
+      rnConstrToRawEdit = RenameEdit constrNamespacedIdent rawConstrQid
+
+      -- to create the sigma type
+      sigmaQid = Qualified (moduleNameText modname) ("" <> typeName)
+      sigmaBoundVar = Bare "x" -- TODO: should generate fresh variable name using monad
+      
+      -- the type of the variable bound in the Sigma type definition
+      -- (i.e. the first part of the dependent pair type)
+      sigmaBVTypeParams = foldMap (toListOf binderIdents) binderList
+      tyArgs = fromList $ fmap (PosArg . Qualid) sigmaBVTypeParams -- could raise an error!
+      sigmaBVType = if null binderList
+        then (Qualid rawTypeQid)
+        else (App (Qualid rawTypeQid) tyArgs)
+
+      sigmaArg = PosArg (Qualid sigmaBoundVar)
+      sigmaPredicate = App (Qualid invariantQualid) (sigmaArg :| [])
+      sigmaTerm = Sigma sigmaBoundVar (Just sigmaBVType) sigmaPredicate
+
+      -- building the sigma type definition
+      sigmaDefType = Qualid $ Bare "Type"
+      sigmaDef = DefinitionDef Global sigmaQid binderList (Just sigmaDefType) sigmaTerm NotExistingClass -- ECG: is NotExistingClass correct?
+      sigmaSent = DefinitionSentence sigmaDef
+      
+
+      -- creating the notation (the "constructor" for the sigma type)
+
+      constructorName = constrName <> ""
+      rawConstructorApp = App (Qualid rawConstrQid) (fromList [PosArg $ Qualid $ Bare "y"])
+      -- Result: (<constructor_raw> y)
+      -- TODO: should generate fresh variable name using monad
+
+      notationFunctionName = "@existT"
+      notationFunctionQid = Bare notationFunctionName
+      notationTerm = App 
+        (Qualid notationFunctionQid) 
+        (fromList (map PosArg 
+          [Underscore, Underscore, rawConstructorApp, Underscore]))
+      -- Result: (@existT _ _ (<constructor_raw> y) _)
+
+      constructorNotation = Abbreviation Local constructorName ["y"] notationTerm
+      -- Result: Local Notation <constructor> y:= (@existT _ _ (<constructor_raw> y) _).
+
+      notationSent = NotationSentence constructorNotation
+
+
+      putInvDefAddEdit = sentenceEdit modname defnSent PhaseTyCl
+      putSigmaDefAddEdit = sentenceEdit modname sigmaSent PhaseTyCl
+      putNotationAddEdit = sentenceEdit modname notationSent PhaseTyCl
+      putRnTypeToRawEdit = addEdit $ ExceptInEdit useSigmaQidNE rnTypeToRawEdit
+      putRnConstrToRawEdit = addEdit $ ExceptInEdit useSigmaQidNE rnConstrToRawEdit
+      editList = [putInvDefAddEdit, putSigmaDefAddEdit, putNotationAddEdit, putRnTypeToRawEdit, putRnConstrToRawEdit]
+      
+      in sequenceEdits editList
+
+
+-- ECG: would this work: addInvariant modname = return
+-- \edits -> if picky then fail else return edits
+addInvariantEdit _ _ _ _ _ _ = \edits -> return edits
+
+
+
+
+sequenceEdits :: Monad m => [Edits -> m Edits] -> Edits -> m Edits
+sequenceEdits xs = foldl (>=>) return xs
+
+setQualidName :: Qualid -> Ident -> Qualid
+setQualidName (Bare _) name = Bare name
+setQualidName (Qualified moduleIdent _) name = Qualified moduleIdent name
+
+
 
 defName :: CoqDefinition -> Qualid
 defName (CoqDefinitionDef (DefinitionDef _ x _ _ _ _))              = x
