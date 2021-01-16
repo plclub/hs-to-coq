@@ -416,6 +416,12 @@ instance Gallina Term where
     "{|" <+> sepWith (<+>) (<!>) ";" (map (\(f,def) -> renderGallina f <+> ":=" <+> renderGallina def) defns)
         <+> "|}"
 
+  renderGallina' _ (Sigma x oty body) = "{" 
+    <+> renderGallina x 
+    <> render_opt_type oty 
+    <+> "&" <+> renderGallina body 
+    <+> "}"
+    
 renderFixBodies :: Doc -> FixBodies -> Doc
 renderFixBodies def (FixOne fb) = renderFixBody def fb
 renderFixBodies def (FixMany fb fbs var) =
@@ -712,6 +718,14 @@ instance Gallina Notation where
     "Infix" <+> dquotes (renderOp op) <+> ":="
       </> nest 2 (parensN (renderGallina def) </> parensN (assoc <> renderGallina level) <> ".")
     where assoc = maybe mempty (\assoc -> renderGallina assoc <+> "associativity," <> softline) oassoc
+  renderGallina' _ (Abbreviation loc name args body) = 
+    renderDef (renderLocality loc <> "Notation") (Bare name) (fmap Bare args) body
+    where 
+      renderDef def name args body = hang 2 ((def <+> renderGallina name
+                    <>  spaceIf args <> render_args H args
+                    <+> ":=") <$$> parensN (renderGallina body) <>  ".")
+    -- ECG: should parens be optional?
+    -- ECG: renderDef is quite similar to the renderDef defined in Definition
 
 instance Gallina NotationBinding where
   renderGallina' _ (NotationIdentBinding x def) =
