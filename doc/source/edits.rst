@@ -1101,6 +1101,7 @@ Examples:
 
     termination QuickSort.quicksort deferred
 
+.. _obligations:
 
 ``obligations`` -- Proof obligations in ``Program`` mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1396,8 +1397,8 @@ Format:
   As a result, when Coq encounters these definitions, it will enter Program mode.
   ``Program`` mode automatically applies or unwraps sigma types, which may
   generate proof obligations for the user.
-  
-  You **MUST** use an obligations edit to supply the proofs; see the example below.
+
+  You **MUST** use an :ref:`obligations edit<obligations>` to supply the proofs; see the example below.
   
 
   Example:
@@ -1406,7 +1407,7 @@ Format:
   as shown below. We say that a Counter is *valid* if its internal integer
   is non-negative.
 
-  Haskell code:
+  Below is the Haskell code:
 
   .. code-block:: haskell
 
@@ -1492,6 +1493,26 @@ Format:
     Local Notation MkC y :=
       (@existT _ _ (MkC_Raw y) _).
 
+    (* Converted value declarations: *)
+
+    Program Definition zeroCounter : Counter :=
+              MkC #0.
+    Admit Obligations.
+
+    Program Definition inc : Counter -> Counter :=
+              fun '(MkC x) => MkC (x GHC.Num.+ #1).
+    Admit Obligations.
+
+    Program Definition dec : Counter -> Counter :=
+              fun '(MkC x) =>
+                if Bool.Sumbool.sumbool_of_bool (x GHC.Base.> #0)
+                then MkC (x GHC.Num.- #1)
+                else MkC #0.
+    Admit Obligations.
+
+    Definition isZero : RawCounter -> bool :=
+      fun '(MkC_Raw x) => x GHC.Base.== #0.
+
 Notice that some renaming has occurred: ``Counter`` has been renamed to
 ``RawCounter`` and ``MkC`` has been renamed ``MkC_Raw``.
 
@@ -1499,7 +1520,9 @@ Note also that ``valid`` has been promoted to the
 type level. This is necessary, because ``NonNegInv`` refers to ``valid``.
 
 Finally, note the use of ``Program`` before the definitions of
-``zeroCounter``, ``inc``, and ``dec``
+``zeroCounter``, ``inc``, and ``dec``, and observe that these
+definitions use ``Counter`` and ``MkC``, while ``isZero`` uses
+``RawCounter`` and ``MkC_Raw``.
 
 
 Meta-edits
