@@ -1101,6 +1101,7 @@ Examples:
 
     termination QuickSort.quicksort deferred
 
+.. _obligations:
 
 ``obligations`` -- Proof obligations in ``Program`` mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1301,6 +1302,228 @@ Effect:
          | f, WithTree t ts => WithTree (mapTree f t) (mapForest f ts)
          end
        for mapTree.
+
+Invariant Edit
+----------------------
+
+``add invariant`` -- Specify an invariant that a datatype should satisfy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index::
+   single: invariant, edit
+
+**NOTE**: Currently only applies to datatypes with a single constructor!
+
+Format:
+  | **add invariant** {
+
+    module = *module*,
+
+    qid = *qualified_name*,
+
+    tyVars = [ *type_variables* ],
+
+    constructor = *qualified_name*,
+
+    useSigmaType = [ *names* ],
+
+    invariant = *coq_definition*
+
+  }
+
+  **Note:** Currently, you cannot leave any of the parameters out,
+  and they must appear in the order above.
+
+  Meaning of each parameter:
+
+  - ``module`` denotes the name of the module to which
+    the invariant applies.
+
+  - ``qid`` is a qualified name that denotes the type to which the invariant applies.
+
+  - ``tyVars`` is a list of the type variable arguments of the type
+    passed to ``qid``. For example, if the type passed to ``qid`` was declared
+    in Haskell as
+
+    .. code-block:: haskell
+
+      data Foo a b where
+      ...
+  
+    then ``tyVars`` should be set to ``[a, b]``.
+
+  - ``constructor`` is a qualified name referring to the constructor of the
+    type to which the invariant applies.
+
+  - ``useSigmaType`` is a list of **unqualified** names of the definitions that
+    should preserve the invariant. The ``Program`` keyword will be added in front
+    of these definitions, so that Coq generates the needed proof obligations
+    (see below under "Effect"). You must supply the proofs (see the edits
+    file of the extended example below).
+
+  - ``invariant`` is a Coq definition encoding the invariant.
+    Note that the type of the definition passed to ``invariant`` should be
+    a function type, where the argument type is the name
+    of the type passed to ``qid``, prefixed by "Raw", and the return type is ``Type``.
+    For instance, if the type passed to ``qid`` is ``MyModule.Foo``, the type of the
+    definition passed to ``invariant`` should be ``MyModule.RawFoo -> Type``.
+
+
+  Effect:
+
+  Inserts Coq code to support a datatype invariant for the type passed as
+  ``qid``, which we will henceforth refer to here as ``<ty_qid>``.
+
+  In particular, creates a sigma type that pairs a value of type ``<ty_qid>``
+  with a proof that it satisfies the invariant.
+  In the translated Coq file, the type ``<ty_qid>`` will now denote this sigma type.
+  The original type (which was denoted by ``<ty_qid>``)
+  will be renamed by prefixing "Raw" in front of the original unqualified name
+  (e.g. ``MyModule.Foo`` becomes ``MyModule.RawFoo``).
+
+  Also creates notation that acts as a constructor for this new sigma type.
+  Internally, this notation uses ``existT``. Note that the last argument to
+  ``existT`` is the proof part of the sigma type. Thus, wherever this notation
+  is used to construct a value of the sigma type, the corresponding proof must be provided.
+  Coq's Program mode automatically unwarps sigma types and generates the necessary
+  proof obligations (see below).
+
+  The original constructor will be renamed by adding the suffix
+  ``_Raw``.
+
+  The definitions specified in ``useSigmaType`` will use the sigma type instead
+  of the original type. Thus, we need a way to provide the proof part of the sigma type.
+  To this end, hs-to-coq will re-define these definitions using the ``Program`` keyword.
+  As a result, when Coq encounters these definitions, it will enter Program mode.
+  ``Program`` mode automatically applies or unwraps sigma types, which may
+  generate proof obligations for the user.
+
+  You **MUST** use an :ref:`obligations edit<obligations>` to supply the proofs; see the example below.
+  
+
+  Example:
+
+  Suppose we create a Haskell module representing a counter,
+  as shown below. We say that a Counter is *valid* if its internal integer
+  is non-negative.
+
+  Below is the Haskell code:
+
+  .. code-block:: haskell
+
+    module Counter(Counter, zeroCounter, inc, dec, isZero) where
+
+    data Counter = MkC Int
+        deriving Show
+
+    zeroCounter :: Counter
+    zeroCounter = MkC 0
+
+    inc :: Counter -> Counter
+    inc (MkC x) = MkC (x+1)
+
+    dec :: Counter -> Counter
+    dec (MkC x) = if x > 0 then MkC (x - 1) else MkC 0
+
+    isZero :: Counter -> Bool
+    isZero (MkC x) = x == 0
+
+    valid :: Counter -> Bool
+    valid (MkC x) = x >= 0
+
+  Notice that any ``Counter`` created using the public API has the property that it is
+  non-negative: ``zeroCounter`` is non-negative, and given a non-negative ``Counter``,
+  the public functions defined on ``Counter`` type preserve the fact that the counter
+  is non-negative.
+  
+  In Coq, we can formalize the invariant that the counter is non-negative
+  with the help of an ``invariant edit``.
+  
+  Here is the edits file:
+
+  .. code-block:: shell
+
+    add invariant { 
+      module = Counter,
+      qid = Counter.Counter,
+      tyVars = [],
+      constructor = MkC,
+      useSigmaType = [Counter.zeroCounter, Counter.inc, Counter.dec],
+      invariant = Definition Counter.NonNegInv : (Counter.RawCounter -> Type) 
+        := fun x => valid x = true. 
+      }
+
+      promote Counter.valid  # promote valid from the term-level to the type-level
+
+      obligations Counter.zeroCounter admit
+      obligations Counter.inc admit
+      obligations Counter.dec admit
+
+  Note that we have used a ``promote`` edit to lift the definition of ``valid``
+  from the term level to the type level. We need to do this because ``NonNegInv``,
+  which is in the type level, references ``valid``. We have also provided (trivial)
+  proof obligations for the definitions in the list passed to ``useSigmaType``.
+  
+  Here is the Coq output (relevant parts, cleaned up and with added comments):  
+  
+  .. code-block:: coq
+
+    (* Converted type declarations: *)
+
+    (* The original Counter datatype, now renamed to RawCounter.
+       Notice that the constructor MkC has been renamed to MkC_Raw. *)
+    Inductive RawCounter : Type := | MkC_Raw : GHC.Num.Int -> RawCounter.
+
+    (* The definition of validity. Note that this came directly
+       from the Haskell source. It is not suitable as an invariant,
+       because the return type is not Type. *)
+    Definition valid : RawCounter -> bool :=
+      fun '(MkC_Raw x) => x GHC.Base.>= #0.
+
+    (* The invariant. Notice the input has type RawCounter. *)
+    Definition NonNegInv : RawCounter -> Type :=
+      fun x => valid x = true.
+
+    (* The sigma type. *)
+    Definition Counter : Type :=
+      { x : RawCounter & NonNegInv x }. 
+
+    (* The "constructor" for the sigma type. The last argument
+       to @existT is the proof part of the sigma type. *)
+    Local Notation MkC y :=
+      (@existT _ _ (MkC_Raw y) _).
+
+    (* Converted value declarations: *)
+
+    Program Definition zeroCounter : Counter :=
+              MkC #0.
+    Admit Obligations.
+
+    Program Definition inc : Counter -> Counter :=
+              fun '(MkC x) => MkC (x GHC.Num.+ #1).
+    Admit Obligations.
+
+    Program Definition dec : Counter -> Counter :=
+              fun '(MkC x) =>
+                if Bool.Sumbool.sumbool_of_bool (x GHC.Base.> #0)
+                then MkC (x GHC.Num.- #1)
+                else MkC #0.
+    Admit Obligations.
+
+    Definition isZero : RawCounter -> bool :=
+      fun '(MkC_Raw x) => x GHC.Base.== #0.
+
+Notice that some renaming has occurred: ``Counter`` has been renamed to
+``RawCounter`` and ``MkC`` has been renamed ``MkC_Raw``.
+
+Note also that ``valid`` has been promoted to the
+type level. This is necessary, because ``NonNegInv`` refers to ``valid``.
+
+Finally, note the use of ``Program`` before the definitions of
+``zeroCounter``, ``inc``, and ``dec``, and observe that these
+definitions use ``Counter`` and ``MkC``, while ``isZero`` uses
+``RawCounter`` and ``MkC_Raw``.
+
 
 Meta-edits
 ----------

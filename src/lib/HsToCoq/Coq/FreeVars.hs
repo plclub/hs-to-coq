@@ -191,6 +191,7 @@ instance HasBV Qualid Notation where
   bvOf (ReservedNotationIdent _)     = mempty
   bvOf (NotationBinding nb)          = bvOf nb
   bvOf (InfixDefinition op defn _ _) = binder (Bare op) <> fvOf' defn
+  bvOf (Abbreviation _ name _ body)  = binder (Bare name) <> fvOf' body -- ECG: is this correct?
 
 instance HasBV Qualid NotationBinding where
   bvOf (NotationIdentBinding op def) = binder (Bare op) <> fvOf' def
@@ -262,6 +263,9 @@ instance HasFV Qualid Term where
   fvOf (Parens t)              = fvOf t
   fvOf (Bang t)                = fvOf t
   fvOf (Record defns)          = fvOf defns
+
+  fvOf (Sigma x oty body) =    
+    (fvOf oty) <> binder x  `scopesOver` fvOf body -- ECG: Is this correct?
 
 instance HasFV Qualid Arg where
   fvOf (PosArg      t) = fvOf t

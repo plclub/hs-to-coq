@@ -154,6 +154,7 @@ data Term = Forall Binders Term                                                 
           | Parens Term                                                                        -- ^@( /term/ )@
           | Bang Term                                                                          -- ^@! term - tmp suppress implicit arguments (for Instance decls)
           | Record [ (Qualid, Term) ]                                                          -- ^@{| /qualid/ := /term/; … |}@
+          | Sigma Qualid (Maybe Term) Term                                                     -- ^@{ /ident/ [: /term/] & /term/ }@
           deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 infixr 7 `Arrow`
@@ -398,6 +399,7 @@ newtype Level = Level Num                                                       
 data Notation = ReservedNotationIdent Ident                                                    -- ^@Reserved Notation "'/ident/'" .@
               | NotationBinding NotationBinding                                                -- ^@Notation /notation_binding/ .@
               | InfixDefinition Op Term (Maybe Associativity) Level                            -- ^@Infix "/op/" := ( /term/ ) ( [/associativity/ associativity ,] /level/ ) .@
+              | Abbreviation Locality Ident [Ident] Term                                       -- ^@[Local] Notation /ident/ [: /ident/] := /term/ .@   
               deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/notation_binding/ ::=@ /(extra)/
