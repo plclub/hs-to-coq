@@ -466,7 +466,7 @@ addExceptInEdit qids edit =
      -- f             :: Edits -> m Edits
      -- currentQidFun :: Edits -> m Edits
     aux f qid = let currentQidFun = exceptInEdits.at qid.non mempty %%~ addEdit edit in
-        \edits -> currentQidFun edits >>= f
+        currentQidFun >=> f
 
 
 -- "Add sentence" edit: similar to an AddEdit, but you provide a sentence
@@ -500,10 +500,6 @@ addInvariantEdit modname qid binderList constrName useSigmaQids@(_:_) def@(CoqDe
       defnSent = definitionSentence def
       -- invariantQualid = getDefinitionQualid dfn -- ECG: use defName?
       invariantQualid = defName def  -- e.g. Counter.NonNegInv
-
-      -- name of invariant (includes module name if invariantQualid is qualified)
-      -- e.g. "Counter.NonNegInv"
-      invariantName = qualidToIdent invariantQualid 
 
       -- to rename the original type to the raw type
       typeName = qualidBase qid      -- name of type to which the invariant applies, e.g. Counter
@@ -575,13 +571,13 @@ addInvariantEdit modname qid binderList constrName useSigmaQids@(_:_) def@(CoqDe
 
 -- ECG: would this work: addInvariant modname = return
 -- \edits -> if picky then fail else return edits
-addInvariantEdit _ _ _ _ _ _ = \edits -> return edits
+addInvariantEdit _ _ _ _ _ _ = return
 
 
 
 
 sequenceEdits :: Monad m => [Edits -> m Edits] -> Edits -> m Edits
-sequenceEdits xs = foldl (>=>) return xs
+sequenceEdits = foldl (>=>) return
 
 setQualidName :: Qualid -> Ident -> Qualid
 setQualidName (Bare _) name = Bare name
