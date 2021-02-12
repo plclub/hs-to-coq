@@ -1,0 +1,17 @@
+
+# NOTE: This relies on support for parsing the let-tick construct.
+# add invariant { module = Invariant, qid = Invariant.Counter, tyVars = [], constructor = MkC, useSigmaType = [zeroCounter, inc], invariant = Definition Invariant.NonNegInv : (Invariant.RawCounter -> Type) 
+#     := fun x => let ' MkC_Raw n := x in ((n GHC.Base.>= (0%Z)) = true). }
+
+promote Invariant.valid
+
+
+# So for now, we have:
+add invariant { module = Invariant, qid = Invariant.Counter, tyVars = [], constructor = MkC, useSigmaType = [Invariant.zeroCounter, Invariant.inc, Invariant.dec], invariant = Definition Invariant.NonNegInv : (Invariant.RawCounter -> Type) 
+    := fun x => valid x = true. }
+# Note: `valid x = true` has type `Prop`
+
+
+obligations Invariant.zeroCounter admit
+obligations Invariant.inc admit
+obligations Invariant.dec admit

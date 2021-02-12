@@ -17,6 +17,7 @@ PASS = \
   RecordConstruction \
   TalkExample \
   OrdTest \
+  Invariant
 
 
 # tests that *should* pass but currently fail

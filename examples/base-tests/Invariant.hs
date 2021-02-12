@@ -1,4 +1,4 @@
-module Counter(Counter, zeroCounter, inc, dec, isZero) where
+module Invariant(Counter, zeroCounter, inc, dec, isZero) where
 
     data Counter = MkC Int
         deriving Show
