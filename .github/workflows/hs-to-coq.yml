@@ -93,7 +93,7 @@ jobs:
           enable-stack: true
           stack-version: 'latest'
       - name: Replacing resolver
-        run: sed -i 's/lts-12.0/${{ matrix.resolver }}/g' stack.yaml
+        run: sed -i 's/lts-.*/${{ matrix.resolver }}/g' stack.yaml
       - name: Building hs-to-coq
         run: |
           stack --no-terminal --install-ghc test --only-dependencies
