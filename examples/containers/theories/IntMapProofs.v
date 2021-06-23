@@ -4,9 +4,9 @@ Require Import Coq.NArith.NArith.
 Require Import Coq.Bool.Bool.
 
 
-Require Import BitUtils.
 Require Import DyadicIntervals.
 Require Import CustomTactics.
+Require Import BitUtils.
 
 (** * The IntMap formalization *)
 
@@ -1316,3 +1316,84 @@ Proof.
   destruct H, H0.
   eexists. apply restrictKeys_Sem; eassumption.
 Qed.
+
+
+
+(****
+Mohamed Proofs
+***)
+
+(**  Definitions and Operations *)
+
+(***)
+
+
+
+Lemma link_Desc:
+    forall p1' s1 r1 f1 p2' s2 r2 f2 r f,
+    Desc s1 r1 f1 ->
+    Desc s2 r2 f2 ->
+    p1' = rPrefix r1 ->
+    p2' = rPrefix r2 ->
+    rangeDisjoint r1 r2 = true->
+    r = commonRangeDisj r1 r2 ->
+    (forall i, f i = oro (f1 i) (f2 i) ) ->
+    Desc (link p1' s1 p2' s2) r f..
+
+
+
+Lemma tip_Desc0:
+  forall p bm r f,
+    p = rPrefix r ->
+    rBits r = N.log2 WIDTH ->
+    (forall i, f i = (if i =? rPrefix r then Some bm else None)) ->
+    isBitMask0 bm ->
+    Desc0 (Tip p bm) r f.
+Proof.
+  intros.
+  Print isBitMask0_zero_or_isBitMask.
+  destruct H2; subst.
+  Print DescTip.
+    apply Desc_Desc0.
+    apply DescTip.
+    + apply H1.
+    + auto. Admitted.
+
+
+
+Lemma bin_Desc0:
+  forall s1 r1 f1 s2 r2 f2 p msk r f,
+    Desc0 s1 r1 f1 ->
+    Desc0 s2 r2 f2 ->
+    (0 < rBits r)%N ->
+    isSubrange r1 (halfRange r false) = true ->
+    isSubrange r2 (halfRange r true) = true ->
+    p = rPrefix r ->
+    msk = rMask r ->
+    (forall i, f i = f1 i || f2 i) ->
+    Desc0 (bin p msk s1 s2) r f.
+Proof.
+  intros.
+  destruct H, H0.
+  * apply Desc0Nil.
+    intro j. rewrite H6, H, H0. reflexivity.
+  * replace (bin _ _ _ _) with s by (destruct s; reflexivity).
+    eapply Desc0NotNil; eauto.
+    + isSubrange_true.
+    + solve_f_eq.
+  * replace (bin _ _ _ _) with s by (destruct s; reflexivity).
+    eapply Desc0NotNil; try eassumption.
+    + isSubrange_true.
+    + solve_f_eq.
+  * replace (bin p msk s s0) with (Bin p msk s s0)
+      by (destruct s, s0; try reflexivity; try inversion HD; try inversion HD0).
+    apply Desc_Desc0.
+    eapply DescBin; try eassumption.
+    + isSubrange_true.
+    + isSubrange_true.
+    + solve_f_eq.
+Qed.
+
+(****
+Mohamed Proofs
+***)
