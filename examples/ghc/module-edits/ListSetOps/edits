@@ -1,4 +1,3 @@
-
 ## needs notation (List.!!) and partial
 skip ListSetOps.getNth
 
@@ -11,6 +10,6 @@ axiomatize definition ListSetOps.equivClasses
 #
 # Added Default constraint
 #
-set type ListSetOps.assocUsing : forall {a} {b} `{GHC.Err.Default b}, (a -> (a -> bool)) -> (GHC.Base.String -> (Assoc a b -> (a -> b)))
-set type ListSetOps.assoc : forall {a} {b} `{GHC.Base.Eq_ a}`{GHC.Err.Default b} , (GHC.Base.String -> (ListSetOps.Assoc a b -> (a -> b)))
+set type ListSetOps.assocUsing : forall {a} {b} `{HsToCoq.Err.Default b}, (a -> (a -> bool)) -> (GHC.Base.String -> (Assoc a b -> (a -> b)))
+set type ListSetOps.assoc : forall {a} {b} `{GHC.Base.Eq_ a}`{HsToCoq.Err.Default b} , (GHC.Base.String -> (ListSetOps.Assoc a b -> (a -> b)))
 set type ListSetOps.unionLists : forall {a} `{GHC.Base.Eq_ a}, list a -> (list a -> list a)

@@ -4,7 +4,7 @@
 
 Require GHC.List.
 Require Import GHC.Base.
-Require Import GHC.Err.
+Require Import HsToCoq.Err.
 Require Import Coq.Numbers.BinNums.
 
 Definition FastString := String.
@@ -16,7 +16,7 @@ Instance instance_FastString_Ord : Ord FastString.
 eapply Ord_list.
 Qed.
 
-Instance instance_FastString_Default : GHC.Err.Default FastString.
+Instance instance_FastString_Default : HsToCoq.Err.Default FastString.
 eapply default_list.
 Qed.
 

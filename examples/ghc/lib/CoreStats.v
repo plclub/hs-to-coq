@@ -17,8 +17,8 @@ Require BasicTypes.
 Require Import Core.
 Require Import Data.Foldable.
 Require Import GHC.Base.
-Require GHC.Err.
 Require Import GHC.Num.
+Require HsToCoq.Err.
 Require Id.
 
 (* Converted type declarations: *)
@@ -27,9 +27,9 @@ Inductive CoreStats : Type :=
   | CS (cs_tm : nat) (cs_ty : nat) (cs_co : nat) (cs_vb : nat) (cs_jb : nat)
    : CoreStats.
 
-Instance Default__CoreStats : GHC.Err.Default CoreStats :=
-  GHC.Err.Build_Default _ (CS GHC.Err.default GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default).
+Instance Default__CoreStats : HsToCoq.Err.Default CoreStats :=
+  HsToCoq.Err.Build_Default _ (CS HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
 Definition cs_co (arg_0__ : CoreStats) :=
   let 'CS _ _ cs_co _ _ := arg_0__ in
@@ -231,6 +231,6 @@ Definition altSize : CoreAlt -> nat :=
      Mk_Var NonRec ProfNote Rec Tickish Var bool foldl' isTyVar list map nat
      op_z2218U__ op_zp__ op_zt__ orb pair sum varType AxiomatizedTypes.Coercion
      AxiomatizedTypes.Type_ BasicTypes.NotTopLevel BasicTypes.TopLevel
-     BasicTypes.TopLevelFlag BasicTypes.isTopLevel GHC.Err.Build_Default
-     GHC.Err.Default GHC.Err.default Id.isJoinId
+     BasicTypes.TopLevelFlag BasicTypes.isTopLevel HsToCoq.Err.Build_Default
+     HsToCoq.Err.Default HsToCoq.Err.default Id.isJoinId
 *)

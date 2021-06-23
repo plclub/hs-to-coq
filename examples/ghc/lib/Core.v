@@ -41,12 +41,13 @@ Require Data.Function.
 Require Data.Tuple.
 Require Datatypes.
 Require GHC.Char.
-Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.List.
 Require GHC.Prim.
 Require GHC.Real.
-Require GHC.Wf.
+Require HsToCoq.DeferredFix.
+Require HsToCoq.Err.
+Require HsToCoq.Wf.
 Require Import Literal.
 Require Maybes.
 Require NameEnv.
@@ -900,122 +901,123 @@ Arguments AnnNonRec {_} {_} _ _.
 
 Arguments AnnRec {_} {_} _.
 
-Instance Default__UnfoldingSource : GHC.Err.Default UnfoldingSource :=
-  GHC.Err.Build_Default _ InlineRhs.
+Instance Default__UnfoldingSource : HsToCoq.Err.Default UnfoldingSource :=
+  HsToCoq.Err.Build_Default _ InlineRhs.
 
-Instance Default__UnfoldingGuidance : GHC.Err.Default UnfoldingGuidance :=
-  GHC.Err.Build_Default _ (UnfWhen GHC.Err.default GHC.Err.default
-                         GHC.Err.default).
+Instance Default__UnfoldingGuidance : HsToCoq.Err.Default UnfoldingGuidance :=
+  HsToCoq.Err.Build_Default _ (UnfWhen HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
-Instance Default__Unfolding : GHC.Err.Default Unfolding :=
-  GHC.Err.Build_Default _ NoUnfolding.
+Instance Default__Unfolding : HsToCoq.Err.Default Unfolding :=
+  HsToCoq.Err.Build_Default _ NoUnfolding.
 
-Instance Default__TypeShape : GHC.Err.Default TypeShape :=
-  GHC.Err.Build_Default _ TsUnk.
+Instance Default__TypeShape : HsToCoq.Err.Default TypeShape :=
+  HsToCoq.Err.Build_Default _ TsUnk.
 
-Instance Default__TypeOrdering : GHC.Err.Default TypeOrdering :=
-  GHC.Err.Build_Default _ TLT.
+Instance Default__TypeOrdering : HsToCoq.Err.Default TypeOrdering :=
+  HsToCoq.Err.Build_Default _ TLT.
 
-Instance Default__TyConFlavour : GHC.Err.Default TyConFlavour :=
-  GHC.Err.Build_Default _ ClassFlavour.
+Instance Default__TyConFlavour : HsToCoq.Err.Default TyConFlavour :=
+  HsToCoq.Err.Build_Default _ ClassFlavour.
 
-Instance Default__TickishScoping : GHC.Err.Default TickishScoping :=
-  GHC.Err.Build_Default _ NoScope.
+Instance Default__TickishScoping : HsToCoq.Err.Default TickishScoping :=
+  HsToCoq.Err.Build_Default _ NoScope.
 
-Instance Default__TickishPlacement : GHC.Err.Default TickishPlacement :=
-  GHC.Err.Build_Default _ PlaceRuntime.
+Instance Default__TickishPlacement : HsToCoq.Err.Default TickishPlacement :=
+  HsToCoq.Err.Build_Default _ PlaceRuntime.
 
-Instance Default__StrictnessMark : GHC.Err.Default StrictnessMark :=
-  GHC.Err.Build_Default _ MarkedStrict.
+Instance Default__StrictnessMark : HsToCoq.Err.Default StrictnessMark :=
+  HsToCoq.Err.Build_Default _ MarkedStrict.
 
-Instance Default__SrcUnpackedness : GHC.Err.Default SrcUnpackedness :=
-  GHC.Err.Build_Default _ SrcUnpack.
+Instance Default__SrcUnpackedness : HsToCoq.Err.Default SrcUnpackedness :=
+  HsToCoq.Err.Build_Default _ SrcUnpack.
 
-Instance Default__SrcStrictness : GHC.Err.Default SrcStrictness :=
-  GHC.Err.Build_Default _ SrcLazy.
+Instance Default__SrcStrictness : HsToCoq.Err.Default SrcStrictness :=
+  HsToCoq.Err.Build_Default _ SrcLazy.
 
-Instance Default__PrimElemRep : GHC.Err.Default PrimElemRep :=
-  GHC.Err.Build_Default _ Int8ElemRep.
+Instance Default__PrimElemRep : HsToCoq.Err.Default PrimElemRep :=
+  HsToCoq.Err.Build_Default _ Int8ElemRep.
 
-Instance Default__PrimRep : GHC.Err.Default PrimRep :=
-  GHC.Err.Build_Default _ VoidRep.
+Instance Default__PrimRep : HsToCoq.Err.Default PrimRep :=
+  HsToCoq.Err.Build_Default _ VoidRep.
 
-Instance Default__RuntimeRepInfo : GHC.Err.Default RuntimeRepInfo :=
-  GHC.Err.Build_Default _ NoRRI.
+Instance Default__RuntimeRepInfo : HsToCoq.Err.Default RuntimeRepInfo :=
+  HsToCoq.Err.Build_Default _ NoRRI.
 
-Instance Default__LevityInfo : GHC.Err.Default LevityInfo :=
-  GHC.Err.Build_Default _ NoLevityInfo.
+Instance Default__LevityInfo : HsToCoq.Err.Default LevityInfo :=
+  HsToCoq.Err.Build_Default _ NoLevityInfo.
 
-Instance Default__KillFlags : GHC.Err.Default KillFlags :=
-  GHC.Err.Build_Default _ (Mk_KillFlags GHC.Err.default GHC.Err.default
-                         GHC.Err.default).
+Instance Default__KillFlags : HsToCoq.Err.Default KillFlags :=
+  HsToCoq.Err.Build_Default _ (Mk_KillFlags HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__IsOrphan : GHC.Err.Default IsOrphan :=
-  GHC.Err.Build_Default _ Mk_IsOrphan.
+Instance Default__IsOrphan : HsToCoq.Err.Default IsOrphan :=
+  HsToCoq.Err.Build_Default _ Mk_IsOrphan.
 
-Instance Default__Injectivity : GHC.Err.Default Injectivity :=
-  GHC.Err.Build_Default _ NotInjective.
+Instance Default__Injectivity : HsToCoq.Err.Default Injectivity :=
+  HsToCoq.Err.Build_Default _ NotInjective.
 
-Instance Default__HsImplBang : GHC.Err.Default HsImplBang :=
-  GHC.Err.Build_Default _ HsLazy.
+Instance Default__HsImplBang : HsToCoq.Err.Default HsImplBang :=
+  HsToCoq.Err.Build_Default _ HsLazy.
 
-Instance Default__FamTyConFlav : GHC.Err.Default FamTyConFlav :=
-  GHC.Err.Build_Default _ OpenSynFamilyTyCon.
+Instance Default__FamTyConFlav : HsToCoq.Err.Default FamTyConFlav :=
+  HsToCoq.Err.Build_Default _ OpenSynFamilyTyCon.
 
-Instance Default__ExportFlag : GHC.Err.Default ExportFlag :=
-  GHC.Err.Build_Default _ NotExported.
+Instance Default__ExportFlag : HsToCoq.Err.Default ExportFlag :=
+  HsToCoq.Err.Build_Default _ NotExported.
 
-Instance Default__IdScope : GHC.Err.Default IdScope :=
-  GHC.Err.Build_Default _ GlobalId.
+Instance Default__IdScope : HsToCoq.Err.Default IdScope :=
+  HsToCoq.Err.Build_Default _ GlobalId.
 
-Instance Default__ExnStr : GHC.Err.Default ExnStr :=
-  GHC.Err.Build_Default _ VanStr.
+Instance Default__ExnStr : HsToCoq.Err.Default ExnStr :=
+  HsToCoq.Err.Build_Default _ VanStr.
 
-Instance Default__EqRel : GHC.Err.Default EqRel :=
-  GHC.Err.Build_Default _ NomEq.
+Instance Default__EqRel : HsToCoq.Err.Default EqRel :=
+  HsToCoq.Err.Build_Default _ NomEq.
 
-Instance Default__Count : GHC.Err.Default Count := GHC.Err.Build_Default _ One.
+Instance Default__Count : HsToCoq.Err.Default Count :=
+  HsToCoq.Err.Build_Default _ One.
 
-Instance Default__UnivCoProvenance : GHC.Err.Default UnivCoProvenance :=
-  GHC.Err.Build_Default _ UnsafeCoerceProv.
+Instance Default__UnivCoProvenance : HsToCoq.Err.Default UnivCoProvenance :=
+  HsToCoq.Err.Build_Default _ UnsafeCoerceProv.
 
-Instance Default__CafInfo : GHC.Err.Default CafInfo :=
-  GHC.Err.Build_Default _ MayHaveCafRefs.
+Instance Default__CafInfo : HsToCoq.Err.Default CafInfo :=
+  HsToCoq.Err.Build_Default _ MayHaveCafRefs.
 
-Instance Default__CPRResult : GHC.Err.Default CPRResult :=
-  GHC.Err.Build_Default _ NoCPR.
+Instance Default__CPRResult : HsToCoq.Err.Default CPRResult :=
+  HsToCoq.Err.Build_Default _ NoCPR.
 
-Instance Default__UseDmd : GHC.Err.Default UseDmd :=
-  GHC.Err.Build_Default _ UHead.
+Instance Default__UseDmd : HsToCoq.Err.Default UseDmd :=
+  HsToCoq.Err.Build_Default _ UHead.
 
-Instance Default__StrDmd : GHC.Err.Default StrDmd :=
-  GHC.Err.Build_Default _ HyperStr.
+Instance Default__StrDmd : HsToCoq.Err.Default StrDmd :=
+  HsToCoq.Err.Build_Default _ HyperStr.
 
-Instance Default__ArgFlag : GHC.Err.Default ArgFlag :=
-  GHC.Err.Build_Default _ Required.
+Instance Default__ArgFlag : HsToCoq.Err.Default ArgFlag :=
+  HsToCoq.Err.Build_Default _ Required.
 
-Instance Default__TyConBndrVis : GHC.Err.Default TyConBndrVis :=
-  GHC.Err.Build_Default _ AnonTCB.
+Instance Default__TyConBndrVis : HsToCoq.Err.Default TyConBndrVis :=
+  HsToCoq.Err.Build_Default _ AnonTCB.
 
-Instance Default__ClassBody : GHC.Err.Default ClassBody :=
-  GHC.Err.Build_Default _ AbstractClass.
+Instance Default__ClassBody : HsToCoq.Err.Default ClassBody :=
+  HsToCoq.Err.Build_Default _ AbstractClass.
 
-Instance Default__TyCon : GHC.Err.Default TyCon :=
-  GHC.Err.Build_Default _ (FunTyCon GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default
-                         GHC.Err.default).
+Instance Default__TyCon : HsToCoq.Err.Default TyCon :=
+  HsToCoq.Err.Build_Default _ (FunTyCon HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
-Instance Default__AlgTyConRhs : GHC.Err.Default AlgTyConRhs :=
-  GHC.Err.Build_Default _ AbstractTyCon.
+Instance Default__AlgTyConRhs : HsToCoq.Err.Default AlgTyConRhs :=
+  HsToCoq.Err.Build_Default _ AbstractTyCon.
 
-Instance Default__DataConRep : GHC.Err.Default DataConRep :=
-  GHC.Err.Build_Default _ NoDataConRep.
+Instance Default__DataConRep : HsToCoq.Err.Default DataConRep :=
+  HsToCoq.Err.Build_Default _ NoDataConRep.
 
-Instance Default__IdDetails : GHC.Err.Default IdDetails :=
-  GHC.Err.Build_Default _ VanillaId.
+Instance Default__IdDetails : HsToCoq.Err.Default IdDetails :=
+  HsToCoq.Err.Build_Default _ VanillaId.
 
-Instance Default__AltCon : GHC.Err.Default AltCon :=
-  GHC.Err.Build_Default _ DEFAULT.
+Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
+  HsToCoq.Err.Build_Default _ DEFAULT.
 
 Definition ug_args (arg_0__ : UnfoldingGuidance) :=
   match arg_0__ with
@@ -2289,50 +2291,50 @@ Definition in_scope (arg_0__ : RnEnv2) :=
 
 (*  IdInfo: midamble *)
 
-Require GHC.Err.
+Require HsToCoq.Err.
 
 (* --------------------- *)
 
 
 (*****)
 
-Instance Default__RuleInfo : GHC.Err.Default RuleInfo :=
-  GHC.Err.Build_Default _ EmptyRuleInfo.
+Instance Default__RuleInfo : HsToCoq.Err.Default RuleInfo :=
+  HsToCoq.Err.Build_Default _ EmptyRuleInfo.
 
-Instance Default__TickBoxOp : GHC.Err.Default TickBoxOp :=
-  GHC.Err.Build_Default _ (TickBox GHC.Err.default GHC.Err.default).
+Instance Default__TickBoxOp : HsToCoq.Err.Default TickBoxOp :=
+  HsToCoq.Err.Build_Default _ (TickBox HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__Termination {r} : GHC.Err.Default (Termination r) :=
-  GHC.Err.Build_Default _ Diverges.
+Instance Default__Termination {r} : HsToCoq.Err.Default (Termination r) :=
+  HsToCoq.Err.Build_Default _ Diverges.
 
-Instance Default__DmdType : GHC.Err.Default DmdType :=
-  GHC.Err.Build_Default _ (Mk_DmdType GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__DmdType : HsToCoq.Err.Default DmdType :=
+  HsToCoq.Err.Build_Default _ (Mk_DmdType HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__StrictSig : GHC.Err.Default StrictSig :=
-  GHC.Err.Build_Default _ (Mk_StrictSig GHC.Err.default).
+Instance Default__StrictSig : HsToCoq.Err.Default StrictSig :=
+  HsToCoq.Err.Build_Default _ (Mk_StrictSig HsToCoq.Err.default).
 
-Instance Default__JointDmd `{GHC.Err.Default a} `{GHC.Err.Default b} : GHC.Err.Default (JointDmd a b) :=
-  GHC.Err.Build_Default _ (JD GHC.Err.default GHC.Err.default).
+Instance Default__JointDmd `{HsToCoq.Err.Default a} `{HsToCoq.Err.Default b} : HsToCoq.Err.Default (JointDmd a b) :=
+  HsToCoq.Err.Build_Default _ (JD HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__Str {s} : GHC.Err.Default (Str s) :=
-  GHC.Err.Build_Default _ Lazy.
-Instance Default__Use {s} : GHC.Err.Default (Use s) :=
-  GHC.Err.Build_Default _ Abs.
+Instance Default__Str {s} : HsToCoq.Err.Default (Str s) :=
+  HsToCoq.Err.Build_Default _ Lazy.
+Instance Default__Use {s} : HsToCoq.Err.Default (Use s) :=
+  HsToCoq.Err.Build_Default _ Abs.
 
-Instance Default__IdInfo : GHC.Err.Default IdInfo :=
-  GHC.Err.Build_Default _ (Mk_IdInfo GHC.Err.default GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__IdInfo : HsToCoq.Err.Default IdInfo :=
+  HsToCoq.Err.Build_Default _ (Mk_IdInfo HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
+                         HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
+                         HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__RecSelParent : GHC.Err.Default RecSelParent :=
-  GHC.Err.Build_Default _ (RecSelData GHC.Err.default).
-
-
-Instance Default__Var : GHC.Err.Default Var := GHC.Err.Build_Default _ (Mk_Id GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__RecSelParent : HsToCoq.Err.Default RecSelParent :=
+  HsToCoq.Err.Build_Default _ (RecSelData HsToCoq.Err.default).
 
 
-Instance Default__DataCon : GHC.Err.Default DataCon :=
- Err.Build_Default _ (MkData GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default nil nil nil nil GHC.Err.default GHC.Err.default nil GHC.Err.default nil nil GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__Var : HsToCoq.Err.Default Var := HsToCoq.Err.Build_Default _ (Mk_Id HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+
+
+Instance Default__DataCon : HsToCoq.Err.Default DataCon :=
+ Err.Build_Default _ (MkData HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default nil nil nil nil HsToCoq.Err.default HsToCoq.Err.default nil HsToCoq.Err.default nil nil HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 (* ---- TyCon midamble ----- *)
 Instance Default__AlgTyConFlav : Err.Default AlgTyConFlav :=
   Err.Build_Default _ (VanillaAlgTyCon Err.default).
@@ -2415,14 +2417,12 @@ Inductive LiftingContext : Type
   := | LC : TCvSubst -> LiftCoEnv -> LiftingContext.
 *)
 (* ------------- VarEnv midamble.v ------------ *)
-Require GHC.Err.
-
-Instance Default__InScopeSet : GHC.Err.Default InScopeSet :=
-  GHC.Err.Build_Default _ (InScope GHC.Err.default GHC.Err.default).
-Instance Default__RnEnv2 : GHC.Err.Default RnEnv2 :=
-  GHC.Err.Build_Default _ (RV2 GHC.Err.default GHC.Err.default GHC.Err.default).
-Instance Default__TidyEnv : GHC.Err.Default TidyEnv :=
-  GHC.Err.Build_Default _ (pair GHC.Err.default GHC.Err.default).
+Instance Default__InScopeSet : HsToCoq.Err.Default InScopeSet :=
+  HsToCoq.Err.Build_Default _ (InScope HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__RnEnv2 : HsToCoq.Err.Default RnEnv2 :=
+  HsToCoq.Err.Build_Default _ (RV2 HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__TidyEnv : HsToCoq.Err.Default TidyEnv :=
+  HsToCoq.Err.Build_Default _ (pair HsToCoq.Err.default HsToCoq.Err.default).
 
 
 (* ------------- CoreSyn midamble.v ------------ *)
@@ -2479,39 +2479,39 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
 
 (* ---------------------------------- *)
 
-Instance Default__Expr {b} : GHC.Err.Default (Expr b) :=
-  GHC.Err.Build_Default _ (Mk_Var GHC.Err.default).
+Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
+  HsToCoq.Err.Build_Default _ (Mk_Var HsToCoq.Err.default).
 
-Instance Default__Tickish {a} : GHC.Err.Default (Tickish a) :=
-  GHC.Err.Build_Default _ (Breakpoint GHC.Err.default GHC.Err.default).
+Instance Default__Tickish {a} : HsToCoq.Err.Default (Tickish a) :=
+  HsToCoq.Err.Build_Default _ (Breakpoint HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default_TaggedBndr {t}`{GHC.Err.Default t} : GHC.Err.Default (TaggedBndr t) :=
-  GHC.Err.Build_Default _ (TB GHC.Err.default GHC.Err.default).
+Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
+  HsToCoq.Err.Build_Default _ (TB HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__AnnExpr' {a}{b} : GHC.Err.Default (AnnExpr' a b) :=
-  GHC.Err.Build_Default _ (AnnVar GHC.Err.default). 
+Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
+  HsToCoq.Err.Build_Default _ (AnnVar HsToCoq.Err.default). 
 
-Instance Default__AnnBind {a}{b} : GHC.Err.Default (AnnBind a b) :=
-  GHC.Err.Build_Default _ (AnnRec GHC.Err.default). 
+Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
+  HsToCoq.Err.Build_Default _ (AnnRec HsToCoq.Err.default). 
 
-Instance Default__Bind {b} : GHC.Err.Default (Bind b) :=
-  GHC.Err.Build_Default _ (Rec GHC.Err.default). 
+Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
+  HsToCoq.Err.Build_Default _ (Rec HsToCoq.Err.default). 
 
-Instance Default__CoreVect : GHC.Err.Default CoreVect :=
-  GHC.Err.Build_Default _ (Vect GHC.Err.default GHC.Err.default). 
+Instance Default__CoreVect : HsToCoq.Err.Default CoreVect :=
+  HsToCoq.Err.Build_Default _ (Vect HsToCoq.Err.default HsToCoq.Err.default). 
 
-Instance Default__CoreRule : GHC.Err.Default CoreRule :=
-  GHC.Err.Build_Default _ (BuiltinRule GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__CoreRule : HsToCoq.Err.Default CoreRule :=
+  HsToCoq.Err.Build_Default _ (BuiltinRule HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__RuleEnv : GHC.Err.Default RuleEnv :=
-  GHC.Err.Build_Default _ (Mk_RuleEnv GHC.Err.default GHC.Err.default).
+Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv :=
+  HsToCoq.Err.Build_Default _ (Mk_RuleEnv HsToCoq.Err.default HsToCoq.Err.default).
 
 
 (* ---------------------------------- *)
 
 (* See comments in CoreSyn/edits file. We can't use termination edits for collect. *)
 
-Definition collectNAnnBndrs {bndr} {annot}`{GHC.Err.Default annot}
+Definition collectNAnnBndrs {bndr} {annot}`{HsToCoq.Err.Default annot}
     : nat -> AnnExpr bndr annot -> (list bndr * AnnExpr bndr annot)%type :=
           fun orig_n e =>
             let fix collect (arg_0__:nat) (arg_1__ : list bndr) (arg_2__:AnnExpr bndr annot) :=
@@ -2528,7 +2528,7 @@ Definition collectNAnnBndrs {bndr} {annot}`{GHC.Err.Default annot}
             collect orig_n nil e.
 (* DEMAND midamble file. Termination defs and tactics . *)
 
-Require Import GHC.Nat.
+Require Import HsToCoq.Nat.
 Require Import Omega.
 
 Ltac solve_not_zero_N := match goal with 
@@ -6366,11 +6366,11 @@ Definition lookupVarEnv_Directly {a : Type}
    : VarEnv a -> Unique.Unique -> option a :=
   UniqFM.lookupUFM_Directly.
 
-Definition lookupVarEnv_NF {a} `{_ : GHC.Err.Default a} (env : VarEnv a) id
+Definition lookupVarEnv_NF {a} `{_ : HsToCoq.Err.Default a} (env : VarEnv a) id
    : a :=
   match lookupVarEnv env id with
   | Some xx => xx
-  | None => GHC.Err.default
+  | None => HsToCoq.Err.default
   end.
 
 Definition lookupVarSet : VarSet -> Var -> option Var :=
@@ -6438,19 +6438,20 @@ Definition uniqAway' : InScopeSet -> Var -> Var :=
     | InScope set n, var =>
         let orig_unique := Unique.getUnique var in
         let try :=
-          GHC.DeferredFix.deferredFix1 (fun try k =>
-                                          let uniq := Unique.deriveUnique orig_unique (BinNat.N.of_nat n GHC.Num.* k) in
-                                          let msg :=
-                                            GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend Panic.someSDoc
-                                                                                                 (Datatypes.id
-                                                                                                  (GHC.Base.hs_string__
-                                                                                                   "tries")))
-                                                                               Panic.someSDoc) Panic.someSDoc in
-                                          if andb Util.debugIsOn (k GHC.Base.> #1000) : bool
-                                          then Panic.panicStr (GHC.Base.hs_string__ "uniqAway loop:") msg else
-                                          if elemVarSetByKey uniq set : bool then try (k GHC.Num.+ #1) else
-                                          if k GHC.Base.> #3 : bool then setVarUnique var uniq else
-                                          setVarUnique var uniq) in
+          HsToCoq.DeferredFix.deferredFix1 (fun try k =>
+                                              let uniq :=
+                                                Unique.deriveUnique orig_unique (BinNat.N.of_nat n GHC.Num.* k) in
+                                              let msg :=
+                                                GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend Panic.someSDoc
+                                                                                                     (Datatypes.id
+                                                                                                      (GHC.Base.hs_string__
+                                                                                                       "tries")))
+                                                                                   Panic.someSDoc) Panic.someSDoc in
+                                              if andb Util.debugIsOn (k GHC.Base.> #1000) : bool
+                                              then Panic.panicStr (GHC.Base.hs_string__ "uniqAway loop:") msg else
+                                              if elemVarSetByKey uniq set : bool then try (k GHC.Num.+ #1) else
+                                              if k GHC.Base.> #3 : bool then setVarUnique var uniq else
+                                              setVarUnique var uniq) in
         try #1
     end.
 
@@ -6800,20 +6801,20 @@ Definition allVarSet : (Var -> bool) -> VarSet -> bool :=
 (* Skipping definition `Core.mapVarSet' *)
 
 Definition fixVarSet : (VarSet -> VarSet) -> VarSet -> VarSet :=
-  GHC.DeferredFix.deferredFix2 (fun fixVarSet
-                                (fn : VarSet -> VarSet)
-                                (vars : VarSet) =>
-                                  let new_vars := fn vars in
-                                  if subVarSet new_vars vars : bool then vars else
-                                  fixVarSet fn new_vars).
+  HsToCoq.DeferredFix.deferredFix2 (fun fixVarSet
+                                    (fn : VarSet -> VarSet)
+                                    (vars : VarSet) =>
+                                      let new_vars := fn vars in
+                                      if subVarSet new_vars vars : bool then vars else
+                                      fixVarSet fn new_vars).
 
 Definition transCloVarSet : (VarSet -> VarSet) -> VarSet -> VarSet :=
   fun fn seeds =>
     let go : VarSet -> VarSet -> VarSet :=
-      GHC.DeferredFix.deferredFix1 (fun go (acc candidates : VarSet) =>
-                                      let new_vs := minusVarSet (fn candidates) acc in
-                                      if isEmptyVarSet new_vs : bool then acc else
-                                      go (unionVarSet acc new_vs) new_vs) in
+      HsToCoq.DeferredFix.deferredFix1 (fun go (acc candidates : VarSet) =>
+                                          let new_vs := minusVarSet (fn candidates) acc in
+                                          if isEmptyVarSet new_vs : bool then acc else
+                                          go (unionVarSet acc new_vs) new_vs) in
     go seeds seeds.
 
 Definition seqVarSet : VarSet -> unit :=
@@ -6888,10 +6889,10 @@ Definition dVarSetToVarSet : DVarSet -> VarSet :=
 Definition transCloDVarSet : (DVarSet -> DVarSet) -> DVarSet -> DVarSet :=
   fun fn seeds =>
     let go : DVarSet -> DVarSet -> DVarSet :=
-      GHC.DeferredFix.deferredFix1 (fun go (acc candidates : DVarSet) =>
-                                      let new_vs := minusDVarSet (fn candidates) acc in
-                                      if isEmptyDVarSet new_vs : bool then acc else
-                                      go (unionDVarSet acc new_vs) new_vs) in
+      HsToCoq.DeferredFix.deferredFix1 (fun go (acc candidates : DVarSet) =>
+                                          let new_vs := minusDVarSet (fn candidates) acc in
+                                          if isEmptyDVarSet new_vs : bool then acc else
+                                          go (unionDVarSet acc new_vs) new_vs) in
     go seeds seeds.
 
 Axiom tickishCounts : forall {id : Type}, Tickish id -> bool.
@@ -7404,12 +7405,12 @@ Program Definition collectAnnArgs {b : Type} {a : Type}
    : AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a))%type :=
   fun expr =>
     let go :=
-      GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                       size_AnnExpr' (snd arg_0__)) _ (fun arg_0__ arg_1__ go =>
-                       match arg_0__, arg_1__ with
-                       | pair _ (AnnApp f a), as_ => go f (cons a as_)
-                       | e, as_ => pair e as_
-                       end) in
+      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                           size_AnnExpr' (snd arg_0__)) _ (fun arg_0__ arg_1__ go =>
+                           match arg_0__, arg_1__ with
+                           | pair _ (AnnApp f a), as_ => go f (cons a as_)
+                           | e, as_ => pair e as_
+                           end) in
     go expr nil.
 Solve Obligations with (solve_collectAnnArgsTicks).
 
@@ -7418,12 +7419,12 @@ Program Definition collectAnnArgsTicks {b : Type} {a : Type}
      AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a) * list (Tickish Var))%type :=
   fun tickishOk expr =>
     let go :=
-      GHC.Wf.wfFix3 Coq.Init.Peano.lt (fun arg_0__ arg_1__ arg_2__ =>
-                       size_AnnExpr' (snd arg_0__)) _ (fun arg_0__ arg_1__ arg_2__ go =>
-                       match arg_0__, arg_1__, arg_2__ with
-                       | pair _ (AnnApp f a), as_, ts => go f (cons a as_) ts
-                       | e, as_, ts => pair (pair e as_) (GHC.List.reverse ts)
-                       end) in
+      HsToCoq.Wf.wfFix3 Coq.Init.Peano.lt (fun arg_0__ arg_1__ arg_2__ =>
+                           size_AnnExpr' (snd arg_0__)) _ (fun arg_0__ arg_1__ arg_2__ go =>
+                           match arg_0__, arg_1__, arg_2__ with
+                           | pair _ (AnnApp f a), as_, ts => go f (cons a as_) ts
+                           | e, as_, ts => pair (pair e as_) (GHC.List.reverse ts)
+                           end) in
     go expr nil nil.
 Solve Obligations with (solve_collectAnnArgsTicks).
 
@@ -7511,12 +7512,12 @@ Program Definition collectAnnBndrs {bndr : Type} {annot : Type}
    : AnnExpr bndr annot -> (list bndr * AnnExpr bndr annot)%type :=
   fun e =>
     let collect :=
-      GHC.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                       size_AnnExpr' (snd arg_1__)) _ (fun arg_0__ arg_1__ collect =>
-                       match arg_0__, arg_1__ with
-                       | bs, pair _ (AnnLam b body) => collect (cons b bs) body
-                       | bs, body => pair (GHC.List.reverse bs) body
-                       end) in
+      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                           size_AnnExpr' (snd arg_1__)) _ (fun arg_0__ arg_1__ collect =>
+                           match arg_0__, arg_1__ with
+                           | bs, pair _ (AnnLam b body) => collect (cons b bs) body
+                           | bs, body => pair (GHC.List.reverse bs) body
+                           end) in
     collect nil e.
 
 (* Skipping definition `Core.collectNAnnBndrs' *)
@@ -7547,37 +7548,37 @@ Program Definition collectAnnBndrs {bndr : Type} {annot : Type}
      GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____
      GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlze__
      GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.return_
-     GHC.Char.Char GHC.DeferredFix.deferredFix1 GHC.DeferredFix.deferredFix2
-     GHC.Err.Build_Default GHC.Err.Default GHC.Err.default GHC.Err.error
-     GHC.List.reverse GHC.Num.Integer GHC.Num.fromInteger GHC.Num.op_zm__
-     GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.coerce GHC.Prim.seq GHC.Real.Rational
-     GHC.Wf.wfFix2 GHC.Wf.wfFix3 Maybes.orElse Module.Module Module.ModuleSet
-     Module.emptyModuleSet Module.mkModuleSet Name.Name Name.NamedThing
-     Name.getName__ Name.getOccName__ Name.nameOccName Name.nameUnique
-     Name.setNameUnique NameEnv.NameEnv NameEnv.emptyNameEnv OccName.HasOccName
-     OccName.OccName OccName.TidyOccEnv OccName.emptyTidyOccEnv OccName.occName__
-     Pair.Pair Panic.assertPanic Panic.panicStr Panic.someSDoc Panic.warnPprTrace
-     SrcLoc.RealSrcSpan SrcLoc.SrcSpan UniqFM.UniqFM UniqFM.addListToUFM
-     UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C UniqFM.addToUFM_Directly
-     UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM UniqFM.delFromUFM_Directly
-     UniqFM.delListFromUFM UniqFM.disjointUFM UniqFM.elemUFM UniqFM.elemUFM_Directly
-     UniqFM.eltsUFM UniqFM.emptyUFM UniqFM.filterUFM UniqFM.filterUFM_Directly
-     UniqFM.intersectUFM UniqFM.isNullUFM UniqFM.listToUFM UniqFM.listToUFM_Directly
-     UniqFM.lookupUFM UniqFM.lookupUFM_Directly UniqFM.lookupWithDefaultUFM
-     UniqFM.mapUFM UniqFM.minusUFM UniqFM.nonDetFoldUFM UniqFM.nonDetUFMToList
-     UniqFM.partitionUFM UniqFM.plusMaybeUFM_C UniqFM.plusUFM UniqFM.plusUFMList
-     UniqFM.plusUFM_C UniqFM.plusUFM_CD UniqFM.unitUFM UniqSet.UniqSet
-     UniqSet.addListToUniqSet UniqSet.addOneToUniqSet UniqSet.delListFromUniqSet
-     UniqSet.delOneFromUniqSet UniqSet.delOneFromUniqSet_Directly
-     UniqSet.elemUniqSet_Directly UniqSet.elementOfUniqSet UniqSet.emptyUniqSet
-     UniqSet.filterUniqSet UniqSet.getUniqSet UniqSet.intersectUniqSets
-     UniqSet.isEmptyUniqSet UniqSet.lookupUniqSet UniqSet.lookupUniqSet_Directly
-     UniqSet.minusUniqSet UniqSet.mkUniqSet UniqSet.nonDetEltsUniqSet
-     UniqSet.nonDetFoldUniqSet UniqSet.partitionUniqSet UniqSet.sizeUniqSet
-     UniqSet.unionManyUniqSets UniqSet.unionUniqSets UniqSet.uniqSetAll
-     UniqSet.uniqSetAny UniqSet.unitUniqSet UniqSupply.UniqSupply Unique.Uniquable
-     Unique.Unique Unique.deriveUnique Unique.getKey Unique.getUnique
-     Unique.getUnique__ Unique.isLocalUnique Unique.mkUniqueGrimily
-     Unique.nonDetCmpUnique Util.HasDebugCallStack Util.count Util.debugIsOn
-     Util.foldl2 Util.zipEqual
+     GHC.Char.Char GHC.Err.error GHC.List.reverse GHC.Num.Integer GHC.Num.fromInteger
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.coerce GHC.Prim.seq
+     GHC.Real.Rational HsToCoq.DeferredFix.deferredFix1
+     HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default HsToCoq.Wf.wfFix2 HsToCoq.Wf.wfFix3 Maybes.orElse
+     Module.Module Module.ModuleSet Module.emptyModuleSet Module.mkModuleSet
+     Name.Name Name.NamedThing Name.getName__ Name.getOccName__ Name.nameOccName
+     Name.nameUnique Name.setNameUnique NameEnv.NameEnv NameEnv.emptyNameEnv
+     OccName.HasOccName OccName.OccName OccName.TidyOccEnv OccName.emptyTidyOccEnv
+     OccName.occName__ Pair.Pair Panic.assertPanic Panic.panicStr Panic.someSDoc
+     Panic.warnPprTrace SrcLoc.RealSrcSpan SrcLoc.SrcSpan UniqFM.UniqFM
+     UniqFM.addListToUFM UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C
+     UniqFM.addToUFM_Directly UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM
+     UniqFM.delFromUFM_Directly UniqFM.delListFromUFM UniqFM.disjointUFM
+     UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.eltsUFM UniqFM.emptyUFM
+     UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.intersectUFM UniqFM.isNullUFM
+     UniqFM.listToUFM UniqFM.listToUFM_Directly UniqFM.lookupUFM
+     UniqFM.lookupUFM_Directly UniqFM.lookupWithDefaultUFM UniqFM.mapUFM
+     UniqFM.minusUFM UniqFM.nonDetFoldUFM UniqFM.nonDetUFMToList UniqFM.partitionUFM
+     UniqFM.plusMaybeUFM_C UniqFM.plusUFM UniqFM.plusUFMList UniqFM.plusUFM_C
+     UniqFM.plusUFM_CD UniqFM.unitUFM UniqSet.UniqSet UniqSet.addListToUniqSet
+     UniqSet.addOneToUniqSet UniqSet.delListFromUniqSet UniqSet.delOneFromUniqSet
+     UniqSet.delOneFromUniqSet_Directly UniqSet.elemUniqSet_Directly
+     UniqSet.elementOfUniqSet UniqSet.emptyUniqSet UniqSet.filterUniqSet
+     UniqSet.getUniqSet UniqSet.intersectUniqSets UniqSet.isEmptyUniqSet
+     UniqSet.lookupUniqSet UniqSet.lookupUniqSet_Directly UniqSet.minusUniqSet
+     UniqSet.mkUniqSet UniqSet.nonDetEltsUniqSet UniqSet.nonDetFoldUniqSet
+     UniqSet.partitionUniqSet UniqSet.sizeUniqSet UniqSet.unionManyUniqSets
+     UniqSet.unionUniqSets UniqSet.uniqSetAll UniqSet.uniqSetAny UniqSet.unitUniqSet
+     UniqSupply.UniqSupply Unique.Uniquable Unique.Unique Unique.deriveUnique
+     Unique.getKey Unique.getUnique Unique.getUnique__ Unique.isLocalUnique
+     Unique.mkUniqueGrimily Unique.nonDetCmpUnique Util.HasDebugCallStack Util.count
+     Util.debugIsOn Util.foldl2 Util.zipEqual
 *)

@@ -8,11 +8,11 @@ Add LoadPath "../../transformers/lib".
 
 Require Import GHC.Base. Import GHC.Base.Notations.
 Require Import GHC.Num.  Import GHC.Num.Notations.
-Require Import GHC.Err.
 Require Import GHC.List.
 Require Import Util.
 Require Import Data.Traversable.
 Require Import Data.Functor.Utils.
+Require Import HsToCoq.Err.
 
 Require Import Core.
 Require Import Panic.

@@ -1,2 +1,2 @@
-Instance Default_Subst : GHC.Err.Default Subst :=
-  GHC.Err.Build_Default _ (Mk_Subst GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default_Subst : HsToCoq.Err.Default Subst :=
+  HsToCoq.Err.Build_Default _ (Mk_Subst HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).

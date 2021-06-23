@@ -20,6 +20,7 @@ Require GHC.Err.
 Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Real.
+Require HsToCoq.Err.
 Require Panic.
 Require SrcLoc.
 Import GHC.Base.Notations.
@@ -213,83 +214,86 @@ Arguments VanillaDM {_}.
 
 Arguments GenericDM {_} _.
 
-Instance Default__TyPrec : GHC.Err.Default TyPrec :=
-  GHC.Err.Build_Default _ TopPrec.
+Instance Default__TyPrec : HsToCoq.Err.Default TyPrec :=
+  HsToCoq.Err.Build_Default _ TopPrec.
 
-Instance Default__TupleSort : GHC.Err.Default TupleSort :=
-  GHC.Err.Build_Default _ BoxedTuple.
+Instance Default__TupleSort : HsToCoq.Err.Default TupleSort :=
+  HsToCoq.Err.Build_Default _ BoxedTuple.
 
-Instance Default__TopLevelFlag : GHC.Err.Default TopLevelFlag :=
-  GHC.Err.Build_Default _ TopLevel.
+Instance Default__TopLevelFlag : HsToCoq.Err.Default TopLevelFlag :=
+  HsToCoq.Err.Build_Default _ TopLevel.
 
-Instance Default__SwapFlag : GHC.Err.Default SwapFlag :=
-  GHC.Err.Build_Default _ NotSwapped.
+Instance Default__SwapFlag : HsToCoq.Err.Default SwapFlag :=
+  HsToCoq.Err.Build_Default _ NotSwapped.
 
-Instance Default__SuccessFlag : GHC.Err.Default SuccessFlag :=
-  GHC.Err.Build_Default _ Succeeded.
+Instance Default__SuccessFlag : HsToCoq.Err.Default SuccessFlag :=
+  HsToCoq.Err.Build_Default _ Succeeded.
 
-Instance Default__SpliceExplicitFlag : GHC.Err.Default SpliceExplicitFlag :=
-  GHC.Err.Build_Default _ ExplicitSplice.
+Instance Default__SpliceExplicitFlag : HsToCoq.Err.Default SpliceExplicitFlag :=
+  HsToCoq.Err.Build_Default _ ExplicitSplice.
 
-Instance Default__SourceText : GHC.Err.Default SourceText :=
-  GHC.Err.Build_Default _ NoSourceText.
+Instance Default__SourceText : HsToCoq.Err.Default SourceText :=
+  HsToCoq.Err.Build_Default _ NoSourceText.
 
-Instance Default__StringLiteral : GHC.Err.Default StringLiteral :=
-  GHC.Err.Build_Default _ (Mk_StringLiteral GHC.Err.default GHC.Err.default).
+Instance Default__StringLiteral : HsToCoq.Err.Default StringLiteral :=
+  HsToCoq.Err.Build_Default _ (Mk_StringLiteral HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
-Instance Default__RuleMatchInfo : GHC.Err.Default RuleMatchInfo :=
-  GHC.Err.Build_Default _ ConLike.
+Instance Default__RuleMatchInfo : HsToCoq.Err.Default RuleMatchInfo :=
+  HsToCoq.Err.Build_Default _ ConLike.
 
-Instance Default__RecFlag : GHC.Err.Default RecFlag :=
-  GHC.Err.Build_Default _ Recursive.
+Instance Default__RecFlag : HsToCoq.Err.Default RecFlag :=
+  HsToCoq.Err.Build_Default _ Recursive.
 
-Instance Default__Origin : GHC.Err.Default Origin :=
-  GHC.Err.Build_Default _ FromSource.
+Instance Default__Origin : HsToCoq.Err.Default Origin :=
+  HsToCoq.Err.Build_Default _ FromSource.
 
-Instance Default__OneShotInfo : GHC.Err.Default OneShotInfo :=
-  GHC.Err.Build_Default _ NoOneShotInfo.
+Instance Default__OneShotInfo : HsToCoq.Err.Default OneShotInfo :=
+  HsToCoq.Err.Build_Default _ NoOneShotInfo.
 
-Instance Default__LexicalFixity : GHC.Err.Default LexicalFixity :=
-  GHC.Err.Build_Default _ Prefix.
+Instance Default__LexicalFixity : HsToCoq.Err.Default LexicalFixity :=
+  HsToCoq.Err.Build_Default _ Prefix.
 
-Instance Default__LeftOrRight : GHC.Err.Default LeftOrRight :=
-  GHC.Err.Build_Default _ CLeft.
+Instance Default__LeftOrRight : HsToCoq.Err.Default LeftOrRight :=
+  HsToCoq.Err.Build_Default _ CLeft.
 
-Instance Default__TailCallInfo : GHC.Err.Default TailCallInfo :=
-  GHC.Err.Build_Default _ NoTailCallInfo.
+Instance Default__TailCallInfo : HsToCoq.Err.Default TailCallInfo :=
+  HsToCoq.Err.Build_Default _ NoTailCallInfo.
 
-Instance Default__IntegralLit : GHC.Err.Default IntegralLit :=
-  GHC.Err.Build_Default _ (IL GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__IntegralLit : HsToCoq.Err.Default IntegralLit :=
+  HsToCoq.Err.Build_Default _ (IL HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
-Instance Default__IntWithInf : GHC.Err.Default IntWithInf :=
-  GHC.Err.Build_Default _ Infinity.
+Instance Default__IntWithInf : HsToCoq.Err.Default IntWithInf :=
+  HsToCoq.Err.Build_Default _ Infinity.
 
-Instance Default__OccInfo : GHC.Err.Default OccInfo :=
-  GHC.Err.Build_Default _ (ManyOccs GHC.Err.default).
+Instance Default__OccInfo : HsToCoq.Err.Default OccInfo :=
+  HsToCoq.Err.Build_Default _ (ManyOccs HsToCoq.Err.default).
 
-Instance Default__InlineSpec : GHC.Err.Default InlineSpec :=
-  GHC.Err.Build_Default _ Inline.
+Instance Default__InlineSpec : HsToCoq.Err.Default InlineSpec :=
+  HsToCoq.Err.Build_Default _ Inline.
 
-Instance Default__FunctionOrData : GHC.Err.Default FunctionOrData :=
-  GHC.Err.Build_Default _ IsFunction.
+Instance Default__FunctionOrData : HsToCoq.Err.Default FunctionOrData :=
+  HsToCoq.Err.Build_Default _ IsFunction.
 
-Instance Default__FractionalLit : GHC.Err.Default FractionalLit :=
-  GHC.Err.Build_Default _ (FL GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__FractionalLit : HsToCoq.Err.Default FractionalLit :=
+  HsToCoq.Err.Build_Default _ (FL HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
-Instance Default__FixityDirection : GHC.Err.Default FixityDirection :=
-  GHC.Err.Build_Default _ InfixL.
+Instance Default__FixityDirection : HsToCoq.Err.Default FixityDirection :=
+  HsToCoq.Err.Build_Default _ InfixL.
 
-Instance Default__DerivStrategy : GHC.Err.Default DerivStrategy :=
-  GHC.Err.Build_Default _ StockStrategy.
+Instance Default__DerivStrategy : HsToCoq.Err.Default DerivStrategy :=
+  HsToCoq.Err.Build_Default _ StockStrategy.
 
-Instance Default__CompilerPhase : GHC.Err.Default CompilerPhase :=
-  GHC.Err.Build_Default _ InitialPhase.
+Instance Default__CompilerPhase : HsToCoq.Err.Default CompilerPhase :=
+  HsToCoq.Err.Build_Default _ InitialPhase.
 
-Instance Default__Boxity : GHC.Err.Default Boxity :=
-  GHC.Err.Build_Default _ Boxed.
+Instance Default__Boxity : HsToCoq.Err.Default Boxity :=
+  HsToCoq.Err.Build_Default _ Boxed.
 
-Instance Default__Activation : GHC.Err.Default Activation :=
-  GHC.Err.Build_Default _ NeverActive.
+Instance Default__Activation : HsToCoq.Err.Default Activation :=
+  HsToCoq.Err.Build_Default _ NeverActive.
 
 Definition sl_fs (arg_0__ : StringLiteral) :=
   let 'Mk_StringLiteral _ sl_fs := arg_0__ in
@@ -427,16 +431,16 @@ Definition inl_src (arg_0__ : InlinePragma) :=
 
 (* Midamble *)
 
-Require GHC.Err.
+Require HsToCoq.Err.
 
-Instance Default__OverlapMode : GHC.Err.Default OverlapMode :=
-  GHC.Err.Build_Default _ (NoOverlap GHC.Err.default).
-Instance Default__OverlapFlag : GHC.Err.Default OverlapFlag :=
-  GHC.Err.Build_Default _ (Mk_OverlapFlag GHC.Err.default GHC.Err.default).
-Instance Default__Fixity : GHC.Err.Default Fixity :=
-  GHC.Err.Build_Default _ (Mk_Fixity GHC.Err.default GHC.Err.default GHC.Err.default).
-Instance Default__InlinePragma : GHC.Err.Default InlinePragma :=
-  GHC.Err.Build_Default _ (Mk_InlinePragma GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__OverlapMode : HsToCoq.Err.Default OverlapMode :=
+  HsToCoq.Err.Build_Default _ (NoOverlap HsToCoq.Err.default).
+Instance Default__OverlapFlag : HsToCoq.Err.Default OverlapFlag :=
+  HsToCoq.Err.Build_Default _ (Mk_OverlapFlag HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__Fixity : HsToCoq.Err.Default Fixity :=
+  HsToCoq.Err.Build_Default _ (Mk_Fixity HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__InlinePragma : HsToCoq.Err.Default InlinePragma :=
+  HsToCoq.Err.Build_Default _ (Mk_InlinePragma HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
 (* Converted value declarations: *)
 
@@ -1723,8 +1727,8 @@ Definition mkIntWithInf : GHC.Num.Int -> IntWithInf :=
      GHC.Base.mappend GHC.Base.max__ GHC.Base.min__ GHC.Base.op_zeze__
      GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__
      GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlze__
-     GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
-     GHC.Err.Build_Default GHC.Err.Default GHC.Err.default GHC.Err.error GHC.Num.Int
-     GHC.Num.Integer GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.seq
-     GHC.Real.Rational Panic.someSDoc SrcLoc.Located
+     GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Err.error
+     GHC.Num.Int GHC.Num.Integer GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Num.op_zt__
+     GHC.Prim.seq GHC.Real.Rational HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default Panic.someSDoc SrcLoc.Located
 *)

@@ -57,7 +57,7 @@ Definition cs_subst (arg_0__ : CSEnv) :=
 Require NestedRecursionHelpers.
 
 (* default = emptyCSEnv *)
-Instance Default__CSEnv : GHC.Err.Default CSEnv := {| GHC.Err.default := CS CoreSubst.emptySubst TrieMap.emptyCoreMap TrieMap.emptyCoreMap |}.
+Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default := CS CoreSubst.emptySubst TrieMap.emptyCoreMap TrieMap.emptyCoreMap |}.
 
 (* Converted value declarations: *)
 

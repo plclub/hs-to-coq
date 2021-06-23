@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Preamble *)
 
-Require GHC.Nat.
+Require HsToCoq.Nat.
 
 (* Converted imports: *)
 
@@ -24,11 +24,12 @@ Require Data.Foldable.
 Require Data.OldList.
 Require GHC.Base.
 Require GHC.Char.
-Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
 Require GHC.Prim.
+Require HsToCoq.DeferredFix.
+Require HsToCoq.Err.
 Require Panic.
 Import Data.Bits.Notations.
 Import GHC.Base.Notations.
@@ -49,11 +50,11 @@ Definition HasDebugCallStack :=
 
 Inductive Direction : Type := | Forwards : Direction | Backwards : Direction.
 
-Instance Default__OverridingBool : GHC.Err.Default OverridingBool :=
-  GHC.Err.Build_Default _ Auto.
+Instance Default__OverridingBool : HsToCoq.Err.Default OverridingBool :=
+  HsToCoq.Err.Build_Default _ Auto.
 
-Instance Default__Direction : GHC.Err.Default Direction :=
-  GHC.Err.Build_Default _ Forwards.
+Instance Default__Direction : HsToCoq.Err.Default Direction :=
+  HsToCoq.Err.Build_Default _ Forwards.
 
 (* Midamble *)
 
@@ -411,7 +412,7 @@ Definition singleton {a : Type} : a -> list a :=
 Definition isSingleton {a : Type} : list a -> bool :=
   fun arg_0__ => match arg_0__ with | cons _ nil => true | _ => false end.
 
-Definition only {a} `{GHC.Err.Default a} : list a -> a :=
+Definition only {a} `{HsToCoq.Err.Default a} : list a -> a :=
   fun arg_0__ =>
     match arg_0__ with
     | cons a _ => a
@@ -448,16 +449,16 @@ Definition transitiveClosure {a : Type}
          | x, cons y ys => if eq x y : bool then true else is_in x ys
          end in
     let go :=
-      GHC.DeferredFix.deferredFix2 (fun go arg_5__ arg_6__ =>
-                                      match arg_5__, arg_6__ with
-                                      | done, nil => done
-                                      | done, cons x xs =>
-                                          if is_in x done : bool then go done xs else
-                                          go (cons x done) (Coq.Init.Datatypes.app (succ x) xs)
-                                      end) in
+      HsToCoq.DeferredFix.deferredFix2 (fun go arg_5__ arg_6__ =>
+                                          match arg_5__, arg_6__ with
+                                          | done, nil => done
+                                          | done, cons x xs =>
+                                              if is_in x done : bool then go done xs else
+                                              go (cons x done) (Coq.Init.Datatypes.app (succ x) xs)
+                                          end) in
     go nil xs.
 
-Fixpoint foldl2 {acc} {a} {b} `{GHC.Err.Default acc} (arg_0__
+Fixpoint foldl2 {acc} {a} {b} `{HsToCoq.Err.Default acc} (arg_0__
                   : acc -> a -> b -> acc) (arg_1__ : acc) (arg_2__ : list a) (arg_3__ : list b)
   : acc
   := match arg_0__, arg_1__, arg_2__, arg_3__ with
@@ -555,15 +556,15 @@ Definition snocView {a : Type} : list a -> option (list a * a)%type :=
     end.
 
 Definition split : GHC.Char.Char -> GHC.Base.String -> list GHC.Base.String :=
-  GHC.DeferredFix.deferredFix2 (fun split
-                                (c : GHC.Char.Char)
-                                (s : GHC.Base.String) =>
-                                  let 'pair chunk rest := GHC.List.break (fun arg_0__ => arg_0__ GHC.Base.== c)
-                                                            s in
-                                  match rest with
-                                  | nil => cons chunk nil
-                                  | cons _ rest => cons chunk (split c rest)
-                                  end).
+  HsToCoq.DeferredFix.deferredFix2 (fun split
+                                    (c : GHC.Char.Char)
+                                    (s : GHC.Base.String) =>
+                                      let 'pair chunk rest := GHC.List.break (fun arg_0__ => arg_0__ GHC.Base.== c)
+                                                                s in
+                                      match rest with
+                                      | nil => cons chunk nil
+                                      | cons _ rest => cons chunk (split c rest)
+                                      end).
 
 Definition capitalise : GHC.Base.String -> GHC.Base.String :=
   fun arg_0__ => match arg_0__ with | nil => nil | cons c cs => cons c cs end.
@@ -676,9 +677,9 @@ Axiom looksLikePackageName : GHC.Base.String -> bool.
 Definition exactLog2 : GHC.Num.Integer -> option GHC.Num.Integer :=
   fun x =>
     let pow2 :=
-      GHC.DeferredFix.deferredFix1 (fun pow2 x =>
-                                      if x GHC.Base.== #1 : bool then #0 else
-                                      #1 GHC.Num.+ pow2 (Data.Bits.shiftR x #1)) in
+      HsToCoq.DeferredFix.deferredFix1 (fun pow2 x =>
+                                          if x GHC.Base.== #1 : bool then #0 else
+                                          #1 GHC.Num.+ pow2 (Data.Bits.shiftR x #1)) in
     if (orb (x GHC.Base.<= #0) (x GHC.Base.>= #2147483648)) : bool
     then None
     else if (x Data.Bits..&.(**) (GHC.Num.negate x)) GHC.Base./= x : bool
@@ -751,9 +752,10 @@ End Notations.
      Data.Foldable.null Data.OldList.zipWith4 GHC.Base.Applicative GHC.Base.Eq_
      GHC.Base.Monad GHC.Base.String GHC.Base.const GHC.Base.liftA2 GHC.Base.liftM
      GHC.Base.map GHC.Base.op_zeze__ GHC.Base.op_zgze__ GHC.Base.op_zl__
-     GHC.Base.op_zlze__ GHC.Base.op_zsze__ GHC.Char.Char GHC.DeferredFix.deferredFix1
-     GHC.DeferredFix.deferredFix2 GHC.Err.Build_Default GHC.Err.Default
-     GHC.Err.patternFailure GHC.List.break GHC.List.reverse GHC.List.zip
-     GHC.List.zipWith GHC.List.zipWith3 GHC.Num.Integer GHC.Num.fromInteger
-     GHC.Num.negate GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq Panic.panic
+     GHC.Base.op_zlze__ GHC.Base.op_zsze__ GHC.Char.Char GHC.Err.patternFailure
+     GHC.List.break GHC.List.reverse GHC.List.zip GHC.List.zipWith GHC.List.zipWith3
+     GHC.Num.Integer GHC.Num.fromInteger GHC.Num.negate GHC.Num.op_zm__
+     GHC.Num.op_zp__ GHC.Prim.seq HsToCoq.DeferredFix.deferredFix1
+     HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     Panic.panic
 *)

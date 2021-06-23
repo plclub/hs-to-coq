@@ -29,9 +29,9 @@ Require Data.IntSet.Internal.
 Require Data.Maybe.
 Require Data.Traversable.
 Require GHC.Base.
-Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.Num.
+Require HsToCoq.DeferredFix.
 Require Utils.Containers.Internal.BitUtil.
 Import Data.Bits.Notations.
 Import Data.Functor.Notations.
@@ -182,54 +182,56 @@ Definition mergeWithKey' {c : Type} {a : Type} {b : Type}
         | p1, t1, p2, t2 => link p1 t1 p2 t2
         end in
     let go :=
-      GHC.DeferredFix.deferredFix2 (fun go arg_6__ arg_7__ =>
-                                      match arg_6__, arg_7__ with
-                                      | (Bin p1 m1 l1 r1 as t1), (Bin p2 m2 l2 r2 as t2) =>
-                                          let merge2 :=
-                                            if nomatch p1 p2 m2 : bool then maybe_link p1 (g1 t1) p2 (g2 t2) else
-                                            if Data.IntSet.Internal.zero p1 m2 : bool
-                                            then bin' p2 m2 (go t1 l2) (g2 r2) else
-                                            bin' p2 m2 (g2 l2) (go t1 r2) in
-                                          let merge1 :=
-                                            if nomatch p2 p1 m1 : bool then maybe_link p1 (g1 t1) p2 (g2 t2) else
-                                            if Data.IntSet.Internal.zero p2 m1 : bool
-                                            then bin' p1 m1 (go l1 t2) (g1 r1) else
-                                            bin' p1 m1 (g1 l1) (go r1 t2) in
-                                          if shorter m1 m2 : bool then merge1 else
-                                          if shorter m2 m1 : bool then merge2 else
-                                          if p1 GHC.Base.== p2 : bool then bin' p1 m1 (go l1 l2) (go r1 r2) else
-                                          maybe_link p1 (g1 t1) p2 (g2 t2)
-                                      | (Bin _ _ _ _ as t1'), (Tip k2' _ as t2') =>
-                                          let fix merge0 arg_18__ arg_19__ arg_20__
-                                            := match arg_18__, arg_19__, arg_20__ with
-                                               | t2, k2, (Bin p1 m1 l1 r1 as t1) =>
-                                                   if nomatch k2 p1 m1 : bool then maybe_link p1 (g1 t1) k2 (g2 t2) else
-                                                   if Data.IntSet.Internal.zero k2 m1 : bool
-                                                   then bin' p1 m1 (merge0 t2 k2 l1) (g1 r1) else
-                                                   bin' p1 m1 (g1 l1) (merge0 t2 k2 r1)
-                                               | t2, k2, (Tip k1 _ as t1) =>
-                                                   if k1 GHC.Base.== k2 : bool then f t1 t2 else
-                                                   maybe_link k1 (g1 t1) k2 (g2 t2)
-                                               | t2, _, Nil => g2 t2
-                                               end in
-                                          merge0 t2' k2' t1'
-                                      | (Bin _ _ _ _ as t1), Nil => g1 t1
-                                      | (Tip k1' _ as t1'), t2' =>
-                                          let fix merge0 arg_30__ arg_31__ arg_32__
-                                            := match arg_30__, arg_31__, arg_32__ with
-                                               | t1, k1, (Bin p2 m2 l2 r2 as t2) =>
-                                                   if nomatch k1 p2 m2 : bool then maybe_link k1 (g1 t1) p2 (g2 t2) else
-                                                   if Data.IntSet.Internal.zero k1 m2 : bool
-                                                   then bin' p2 m2 (merge0 t1 k1 l2) (g2 r2) else
-                                                   bin' p2 m2 (g2 l2) (merge0 t1 k1 r2)
-                                               | t1, k1, (Tip k2 _ as t2) =>
-                                                   if k1 GHC.Base.== k2 : bool then f t1 t2 else
-                                                   maybe_link k1 (g1 t1) k2 (g2 t2)
-                                               | t1, _, Nil => g1 t1
-                                               end in
-                                          merge0 t1' k1' t2'
-                                      | Nil, t2 => g2 t2
-                                      end) in
+      HsToCoq.DeferredFix.deferredFix2 (fun go arg_6__ arg_7__ =>
+                                          match arg_6__, arg_7__ with
+                                          | (Bin p1 m1 l1 r1 as t1), (Bin p2 m2 l2 r2 as t2) =>
+                                              let merge2 :=
+                                                if nomatch p1 p2 m2 : bool then maybe_link p1 (g1 t1) p2 (g2 t2) else
+                                                if Data.IntSet.Internal.zero p1 m2 : bool
+                                                then bin' p2 m2 (go t1 l2) (g2 r2) else
+                                                bin' p2 m2 (g2 l2) (go t1 r2) in
+                                              let merge1 :=
+                                                if nomatch p2 p1 m1 : bool then maybe_link p1 (g1 t1) p2 (g2 t2) else
+                                                if Data.IntSet.Internal.zero p2 m1 : bool
+                                                then bin' p1 m1 (go l1 t2) (g1 r1) else
+                                                bin' p1 m1 (g1 l1) (go r1 t2) in
+                                              if shorter m1 m2 : bool then merge1 else
+                                              if shorter m2 m1 : bool then merge2 else
+                                              if p1 GHC.Base.== p2 : bool then bin' p1 m1 (go l1 l2) (go r1 r2) else
+                                              maybe_link p1 (g1 t1) p2 (g2 t2)
+                                          | (Bin _ _ _ _ as t1'), (Tip k2' _ as t2') =>
+                                              let fix merge0 arg_18__ arg_19__ arg_20__
+                                                := match arg_18__, arg_19__, arg_20__ with
+                                                   | t2, k2, (Bin p1 m1 l1 r1 as t1) =>
+                                                       if nomatch k2 p1 m1 : bool
+                                                       then maybe_link p1 (g1 t1) k2 (g2 t2) else
+                                                       if Data.IntSet.Internal.zero k2 m1 : bool
+                                                       then bin' p1 m1 (merge0 t2 k2 l1) (g1 r1) else
+                                                       bin' p1 m1 (g1 l1) (merge0 t2 k2 r1)
+                                                   | t2, k2, (Tip k1 _ as t1) =>
+                                                       if k1 GHC.Base.== k2 : bool then f t1 t2 else
+                                                       maybe_link k1 (g1 t1) k2 (g2 t2)
+                                                   | t2, _, Nil => g2 t2
+                                                   end in
+                                              merge0 t2' k2' t1'
+                                          | (Bin _ _ _ _ as t1), Nil => g1 t1
+                                          | (Tip k1' _ as t1'), t2' =>
+                                              let fix merge0 arg_30__ arg_31__ arg_32__
+                                                := match arg_30__, arg_31__, arg_32__ with
+                                                   | t1, k1, (Bin p2 m2 l2 r2 as t2) =>
+                                                       if nomatch k1 p2 m2 : bool
+                                                       then maybe_link k1 (g1 t1) p2 (g2 t2) else
+                                                       if Data.IntSet.Internal.zero k1 m2 : bool
+                                                       then bin' p2 m2 (merge0 t1 k1 l2) (g2 r2) else
+                                                       bin' p2 m2 (g2 l2) (merge0 t1 k1 r2)
+                                                   | t1, k1, (Tip k2 _ as t2) =>
+                                                       if k1 GHC.Base.== k2 : bool then f t1 t2 else
+                                                       maybe_link k1 (g1 t1) k2 (g2 t2)
+                                                   | t1, _, Nil => g1 t1
+                                                   end in
+                                              merge0 t1' k1' t2'
+                                          | Nil, t2 => g2 t2
+                                          end) in
     go.
 
 Definition union {a : Type} : IntMap a -> IntMap a -> IntMap a :=
@@ -1137,64 +1139,65 @@ Fixpoint updatePrefix {a} (arg_0__ : IntSetPrefix) (arg_1__ : IntMap a) (arg_2__
      end.
 
 Definition withoutBM {a} : IntSetBitMap -> IntMap a -> IntMap a :=
-  GHC.DeferredFix.deferredFix2 (fun withoutBM
-                                (arg_0__ : IntSetBitMap)
-                                (arg_1__ : IntMap a) =>
-                                  match arg_0__, arg_1__ with
-                                  | num_2__, t =>
-                                      if num_2__ GHC.Base.== #0 : bool then t else
+  HsToCoq.DeferredFix.deferredFix2 (fun withoutBM
+                                    (arg_0__ : IntSetBitMap)
+                                    (arg_1__ : IntMap a) =>
                                       match arg_0__, arg_1__ with
-                                      | bm, Bin p m l r =>
-                                          let leftBits := bitmapOf (p Data.Bits..|.(**) m) GHC.Num.- #1 in
-                                          let bmL := bm Data.Bits..&.(**) leftBits in
-                                          let bmR := Data.Bits.xor bm bmL in bin p m (withoutBM bmL l) (withoutBM bmR r)
-                                      | bm, (Tip k _ as t) =>
-                                          if Data.IntSet.Internal.member k (Data.IntSet.Internal.Tip
-                                                                          (Coq.NArith.BinNat.N.ldiff k
-                                                                                                     Data.IntSet.Internal.suffixBitMask)
-                                                                          bm) : bool
-                                          then Nil else
-                                          t
-                                      | _, Nil => Nil
-                                      end
-                                  end).
+                                      | num_2__, t =>
+                                          if num_2__ GHC.Base.== #0 : bool then t else
+                                          match arg_0__, arg_1__ with
+                                          | bm, Bin p m l r =>
+                                              let leftBits := bitmapOf (p Data.Bits..|.(**) m) GHC.Num.- #1 in
+                                              let bmL := bm Data.Bits..&.(**) leftBits in
+                                              let bmR := Data.Bits.xor bm bmL in
+                                              bin p m (withoutBM bmL l) (withoutBM bmR r)
+                                          | bm, (Tip k _ as t) =>
+                                              if Data.IntSet.Internal.member k (Data.IntSet.Internal.Tip
+                                                                              (Coq.NArith.BinNat.N.ldiff k
+                                                                                                         Data.IntSet.Internal.suffixBitMask)
+                                                                              bm) : bool
+                                              then Nil else
+                                              t
+                                          | _, Nil => Nil
+                                          end
+                                      end).
 
 Definition withoutKeys {a : Type}
    : IntMap a -> Data.IntSet.Internal.IntSet -> IntMap a :=
-  GHC.DeferredFix.deferredFix2 (fun withoutKeys
-                                (arg_0__ : IntMap a)
-                                (arg_1__ : Data.IntSet.Internal.IntSet) =>
-                                  match arg_0__, arg_1__ with
-                                  | (Bin p1 m1 l1 r1 as t1), (Data.IntSet.Internal.Bin p2 m2 l2 r2 as t2) =>
-                                      let difference2 :=
-                                        if nomatch p1 p2 m2 : bool then t1 else
-                                        if Data.IntSet.Internal.zero p1 m2 : bool then withoutKeys t1 l2 else
-                                        withoutKeys t1 r2 in
-                                      let difference1 :=
-                                        if nomatch p2 p1 m1 : bool then t1 else
-                                        if Data.IntSet.Internal.zero p2 m1 : bool
-                                        then binCheckLeft p1 m1 (withoutKeys l1 t2) r1 else
-                                        binCheckRight p1 m1 l1 (withoutKeys r1 t2) in
-                                      if shorter m1 m2 : bool then difference1 else
-                                      if shorter m2 m1 : bool then difference2 else
-                                      if p1 GHC.Base.== p2 : bool
-                                      then bin p1 m1 (withoutKeys l1 l2) (withoutKeys r1 r2) else
-                                      t1
-                                  | (Bin p1 m1 _ _ as t1), Data.IntSet.Internal.Tip p2 bm2 =>
-                                      let maxbit :=
-                                        bitmapOf (p1 Data.Bits..|.(**) (m1 Data.Bits..|.(**) (m1 GHC.Num.- #1))) in
-                                      let gt_maxbit := Data.Bits.xor maxbit (complement' (maxbit GHC.Num.- #1)) in
-                                      let minbit := bitmapOf p1 in
-                                      let lt_minbit := minbit GHC.Num.- #1 in
-                                      updatePrefix p2 t1 (withoutBM ((bm2 Data.Bits..|.(**) lt_minbit)
-                                                                     Data.Bits..|.(**)
-                                                                     gt_maxbit))
-                                  | (Bin _ _ _ _ as t1), Data.IntSet.Internal.Nil => t1
-                                  | (Tip k1 _ as t1), t2 =>
-                                      if Data.IntSet.Internal.member k1 t2 : bool then Nil else
-                                      t1
-                                  | Nil, _ => Nil
-                                  end).
+  HsToCoq.DeferredFix.deferredFix2 (fun withoutKeys
+                                    (arg_0__ : IntMap a)
+                                    (arg_1__ : Data.IntSet.Internal.IntSet) =>
+                                      match arg_0__, arg_1__ with
+                                      | (Bin p1 m1 l1 r1 as t1), (Data.IntSet.Internal.Bin p2 m2 l2 r2 as t2) =>
+                                          let difference2 :=
+                                            if nomatch p1 p2 m2 : bool then t1 else
+                                            if Data.IntSet.Internal.zero p1 m2 : bool then withoutKeys t1 l2 else
+                                            withoutKeys t1 r2 in
+                                          let difference1 :=
+                                            if nomatch p2 p1 m1 : bool then t1 else
+                                            if Data.IntSet.Internal.zero p2 m1 : bool
+                                            then binCheckLeft p1 m1 (withoutKeys l1 t2) r1 else
+                                            binCheckRight p1 m1 l1 (withoutKeys r1 t2) in
+                                          if shorter m1 m2 : bool then difference1 else
+                                          if shorter m2 m1 : bool then difference2 else
+                                          if p1 GHC.Base.== p2 : bool
+                                          then bin p1 m1 (withoutKeys l1 l2) (withoutKeys r1 r2) else
+                                          t1
+                                      | (Bin p1 m1 _ _ as t1), Data.IntSet.Internal.Tip p2 bm2 =>
+                                          let maxbit :=
+                                            bitmapOf (p1 Data.Bits..|.(**) (m1 Data.Bits..|.(**) (m1 GHC.Num.- #1))) in
+                                          let gt_maxbit := Data.Bits.xor maxbit (complement' (maxbit GHC.Num.- #1)) in
+                                          let minbit := bitmapOf p1 in
+                                          let lt_minbit := minbit GHC.Num.- #1 in
+                                          updatePrefix p2 t1 (withoutBM ((bm2 Data.Bits..|.(**) lt_minbit)
+                                                                         Data.Bits..|.(**)
+                                                                         gt_maxbit))
+                                      | (Bin _ _ _ _ as t1), Data.IntSet.Internal.Nil => t1
+                                      | (Tip k1 _ as t1), t2 =>
+                                          if Data.IntSet.Internal.member k1 t2 : bool then Nil else
+                                          t1
+                                      | Nil, _ => Nil
+                                      end).
 
 Definition intersection {a : Type} {b : Type}
    : IntMap a -> IntMap b -> IntMap a :=
@@ -1225,63 +1228,63 @@ Fixpoint lookupPrefix {a} (arg_0__ : IntSetPrefix) (arg_1__ : IntMap a) : IntMap
      end.
 
 Definition restrictBM {a} : IntSetBitMap -> IntMap a -> IntMap a :=
-  GHC.DeferredFix.deferredFix2 (fun restrictBM
-                                (arg_0__ : IntSetBitMap)
-                                (arg_1__ : IntMap a) =>
-                                  match arg_0__, arg_1__ with
-                                  | num_2__, _ =>
-                                      if num_2__ GHC.Base.== #0 : bool then Nil else
+  HsToCoq.DeferredFix.deferredFix2 (fun restrictBM
+                                    (arg_0__ : IntSetBitMap)
+                                    (arg_1__ : IntMap a) =>
                                       match arg_0__, arg_1__ with
-                                      | bm, Bin p m l r =>
-                                          let leftBits := bitmapOf (p Data.Bits..|.(**) m) GHC.Num.- #1 in
-                                          let bmL := bm Data.Bits..&.(**) leftBits in
-                                          let bmR := Data.Bits.xor bm bmL in
-                                          bin p m (restrictBM bmL l) (restrictBM bmR r)
-                                      | bm, (Tip k _ as t) =>
-                                          if Data.IntSet.Internal.member k (Data.IntSet.Internal.Tip
-                                                                          (Coq.NArith.BinNat.N.ldiff k
-                                                                                                     Data.IntSet.Internal.suffixBitMask)
-                                                                          bm) : bool
-                                          then t else
-                                          Nil
-                                      | _, Nil => Nil
-                                      end
-                                  end).
+                                      | num_2__, _ =>
+                                          if num_2__ GHC.Base.== #0 : bool then Nil else
+                                          match arg_0__, arg_1__ with
+                                          | bm, Bin p m l r =>
+                                              let leftBits := bitmapOf (p Data.Bits..|.(**) m) GHC.Num.- #1 in
+                                              let bmL := bm Data.Bits..&.(**) leftBits in
+                                              let bmR := Data.Bits.xor bm bmL in
+                                              bin p m (restrictBM bmL l) (restrictBM bmR r)
+                                          | bm, (Tip k _ as t) =>
+                                              if Data.IntSet.Internal.member k (Data.IntSet.Internal.Tip
+                                                                              (Coq.NArith.BinNat.N.ldiff k
+                                                                                                         Data.IntSet.Internal.suffixBitMask)
+                                                                              bm) : bool
+                                              then t else
+                                              Nil
+                                          | _, Nil => Nil
+                                          end
+                                      end).
 
 Definition restrictKeys {a : Type}
    : IntMap a -> Data.IntSet.Internal.IntSet -> IntMap a :=
-  GHC.DeferredFix.deferredFix2 (fun restrictKeys
-                                (arg_0__ : IntMap a)
-                                (arg_1__ : Data.IntSet.Internal.IntSet) =>
-                                  match arg_0__, arg_1__ with
-                                  | (Bin p1 m1 l1 r1 as t1), (Data.IntSet.Internal.Bin p2 m2 l2 r2 as t2) =>
-                                      let intersection2 :=
-                                        if nomatch p1 p2 m2 : bool then Nil else
-                                        if Data.IntSet.Internal.zero p1 m2 : bool then restrictKeys t1 l2 else
-                                        restrictKeys t1 r2 in
-                                      let intersection1 :=
-                                        if nomatch p2 p1 m1 : bool then Nil else
-                                        if Data.IntSet.Internal.zero p2 m1 : bool then restrictKeys l1 t2 else
-                                        restrictKeys r1 t2 in
-                                      if shorter m1 m2 : bool then intersection1 else
-                                      if shorter m2 m1 : bool then intersection2 else
-                                      if p1 GHC.Base.== p2 : bool
-                                      then bin p1 m1 (restrictKeys l1 l2) (restrictKeys r1 r2) else
-                                      Nil
-                                  | (Bin p1 m1 _ _ as t1), Data.IntSet.Internal.Tip p2 bm2 =>
-                                      let maxbit :=
-                                        bitmapOf (p1 Data.Bits..|.(**) (m1 Data.Bits..|.(**) (m1 GHC.Num.- #1))) in
-                                      let le_maxbit := maxbit Data.Bits..|.(**) (maxbit GHC.Num.- #1) in
-                                      let minbit := bitmapOf p1 in
-                                      let ge_minbit := complement' (minbit GHC.Num.- #1) in
-                                      restrictBM ((bm2 Data.Bits..&.(**) ge_minbit) Data.Bits..&.(**) le_maxbit)
-                                      (lookupPrefix p2 t1)
-                                  | Bin _ _ _ _, Data.IntSet.Internal.Nil => Nil
-                                  | (Tip k1 _ as t1), t2 =>
-                                      if Data.IntSet.Internal.member k1 t2 : bool then t1 else
-                                      Nil
-                                  | Nil, _ => Nil
-                                  end).
+  HsToCoq.DeferredFix.deferredFix2 (fun restrictKeys
+                                    (arg_0__ : IntMap a)
+                                    (arg_1__ : Data.IntSet.Internal.IntSet) =>
+                                      match arg_0__, arg_1__ with
+                                      | (Bin p1 m1 l1 r1 as t1), (Data.IntSet.Internal.Bin p2 m2 l2 r2 as t2) =>
+                                          let intersection2 :=
+                                            if nomatch p1 p2 m2 : bool then Nil else
+                                            if Data.IntSet.Internal.zero p1 m2 : bool then restrictKeys t1 l2 else
+                                            restrictKeys t1 r2 in
+                                          let intersection1 :=
+                                            if nomatch p2 p1 m1 : bool then Nil else
+                                            if Data.IntSet.Internal.zero p2 m1 : bool then restrictKeys l1 t2 else
+                                            restrictKeys r1 t2 in
+                                          if shorter m1 m2 : bool then intersection1 else
+                                          if shorter m2 m1 : bool then intersection2 else
+                                          if p1 GHC.Base.== p2 : bool
+                                          then bin p1 m1 (restrictKeys l1 l2) (restrictKeys r1 r2) else
+                                          Nil
+                                      | (Bin p1 m1 _ _ as t1), Data.IntSet.Internal.Tip p2 bm2 =>
+                                          let maxbit :=
+                                            bitmapOf (p1 Data.Bits..|.(**) (m1 Data.Bits..|.(**) (m1 GHC.Num.- #1))) in
+                                          let le_maxbit := maxbit Data.Bits..|.(**) (maxbit GHC.Num.- #1) in
+                                          let minbit := bitmapOf p1 in
+                                          let ge_minbit := complement' (minbit GHC.Num.- #1) in
+                                          restrictBM ((bm2 Data.Bits..&.(**) ge_minbit) Data.Bits..&.(**) le_maxbit)
+                                          (lookupPrefix p2 t1)
+                                      | Bin _ _ _ _, Data.IntSet.Internal.Nil => Nil
+                                      | (Tip k1 _ as t1), t2 =>
+                                          if Data.IntSet.Internal.member k1 t2 : bool then t1 else
+                                          Nil
+                                      | Nil, _ => Nil
+                                      end).
 
 Definition intersectionWithKey {a : Type} {b : Type} {c : Type}
    : (Data.IntSet.Internal.Key -> a -> b -> c) ->
@@ -1958,26 +1961,28 @@ Fixpoint fromSet {a : Type} (arg_0__ : Data.IntSet.Internal.Key -> a) (arg_1__
      | f, Data.IntSet.Internal.Bin p m l r => Bin p m (fromSet f l) (fromSet f r)
      | f, Data.IntSet.Internal.Tip kx bm =>
          let buildTree :=
-           GHC.DeferredFix.deferredFix4 (fun buildTree g prefix bmask bits =>
-                                           let 'num_3__ := bits in
-                                           if num_3__ GHC.Base.== #0 : bool then Tip prefix (g prefix) else
-                                           let 'bits2 := Utils.Containers.Internal.BitUtil.shiftRL (bits) #1 in
-                                           if (bmask Data.Bits..&.(**)
-                                               ((Utils.Containers.Internal.BitUtil.shiftLL #1 bits2) GHC.Num.- #1))
-                                              GHC.Base.==
-                                              #0 : bool
-                                           then buildTree g (prefix GHC.Num.+ bits2)
-                                                (Utils.Containers.Internal.BitUtil.shiftRL bmask bits2) bits2 else
-                                           if ((Utils.Containers.Internal.BitUtil.shiftRL bmask bits2) Data.Bits..&.(**)
-                                               ((Utils.Containers.Internal.BitUtil.shiftLL #1 bits2) GHC.Num.- #1))
-                                              GHC.Base.==
-                                              #0 : bool
-                                           then buildTree g prefix bmask bits2 else
-                                           Bin prefix bits2 (buildTree g prefix bmask bits2) (buildTree g (prefix
-                                                                                                           GHC.Num.+
-                                                                                                           bits2)
-                                                                                              (Utils.Containers.Internal.BitUtil.shiftRL
-                                                                                               bmask bits2) bits2)) in
+           HsToCoq.DeferredFix.deferredFix4 (fun buildTree g prefix bmask bits =>
+                                               let 'num_3__ := bits in
+                                               if num_3__ GHC.Base.== #0 : bool then Tip prefix (g prefix) else
+                                               let 'bits2 := Utils.Containers.Internal.BitUtil.shiftRL (bits) #1 in
+                                               if (bmask Data.Bits..&.(**)
+                                                   ((Utils.Containers.Internal.BitUtil.shiftLL #1 bits2) GHC.Num.- #1))
+                                                  GHC.Base.==
+                                                  #0 : bool
+                                               then buildTree g (prefix GHC.Num.+ bits2)
+                                                    (Utils.Containers.Internal.BitUtil.shiftRL bmask bits2) bits2 else
+                                               if ((Utils.Containers.Internal.BitUtil.shiftRL bmask bits2)
+                                                   Data.Bits..&.(**)
+                                                   ((Utils.Containers.Internal.BitUtil.shiftLL #1 bits2) GHC.Num.- #1))
+                                                  GHC.Base.==
+                                                  #0 : bool
+                                               then buildTree g prefix bmask bits2 else
+                                               Bin prefix bits2 (buildTree g prefix bmask bits2) (buildTree g (prefix
+                                                                                                               GHC.Num.+
+                                                                                                               bits2)
+                                                                                                  (Utils.Containers.Internal.BitUtil.shiftRL
+                                                                                                   bmask bits2)
+                                                                                                  bits2)) in
          buildTree f kx bm (Data.IntSet.Internal.suffixBitMask GHC.Num.+ #1)
      end.
 
@@ -2068,10 +2073,10 @@ End Notations.
      GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zgzgze__
      GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd____ GHC.Base.op_zlze__
      GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
-     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.pure
-     GHC.DeferredFix.deferredFix2 GHC.DeferredFix.deferredFix4 GHC.Err.error
+     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.pure GHC.Err.error
      GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.Word GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ HsToCoq.DeferredFix.deferredFix2
+     HsToCoq.DeferredFix.deferredFix4
      Utils.Containers.Internal.BitUtil.highestBitMask
      Utils.Containers.Internal.BitUtil.shiftLL
      Utils.Containers.Internal.BitUtil.shiftRL

@@ -29,6 +29,7 @@ Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
 Require GHC.Prim.
+Require HsToCoq.Err.
 Require Id.
 Require Module.
 Require Name.
@@ -88,21 +89,21 @@ Definition LetrecNode :=
 Definition Binding :=
   (Core.Id * Core.CoreExpr)%type%type.
 
-Instance Default__UsageDetails : GHC.Err.Default UsageDetails :=
-  GHC.Err.Build_Default _ (UD GHC.Err.default GHC.Err.default GHC.Err.default
-                         GHC.Err.default).
+Instance Default__UsageDetails : HsToCoq.Err.Default UsageDetails :=
+  HsToCoq.Err.Build_Default _ (UD HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__OccEncl : GHC.Err.Default OccEncl :=
-  GHC.Err.Build_Default _ OccRhs.
+Instance Default__OccEncl : HsToCoq.Err.Default OccEncl :=
+  HsToCoq.Err.Build_Default _ OccRhs.
 
-Instance Default__OccEnv : GHC.Err.Default OccEnv :=
-  GHC.Err.Build_Default _ (Mk_OccEnv GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default__OccEnv : HsToCoq.Err.Default OccEnv :=
+  HsToCoq.Err.Build_Default _ (Mk_OccEnv HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__Details : GHC.Err.Default Details :=
-  GHC.Err.Build_Default _ (ND GHC.Err.default GHC.Err.default GHC.Err.default
-                         GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default
-                         GHC.Err.default).
+Instance Default__Details : HsToCoq.Err.Default Details :=
+  HsToCoq.Err.Build_Default _ (ND HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default).
 
 Definition ud_env (arg_0__ : UsageDetails) :=
   let 'UD ud_env _ _ _ := arg_0__ in
@@ -1092,12 +1093,12 @@ End Notations.
      Data.Maybe.maybe Data.Traversable.mapAccumR Data.Tuple.fst Data.Tuple.snd
      Datatypes.id Digraph.DigraphNode Digraph.Node Digraph.node_payload
      GHC.Base.const GHC.Base.id GHC.Base.map GHC.Base.mappend GHC.Base.op_z2218U__
-     GHC.Base.op_zeze__ GHC.Base.op_zg__ GHC.Base.op_zl__ GHC.Err.Build_Default
-     GHC.Err.Default GHC.Err.default GHC.Err.error GHC.Err.head
+     GHC.Base.op_zeze__ GHC.Base.op_zg__ GHC.Base.op_zl__ GHC.Err.error GHC.Err.head
      GHC.Err.patternFailure GHC.List.reverse GHC.List.takeWhile GHC.List.unzip3
      GHC.List.zipWith GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__
-     GHC.Prim.seq Id.idCoreRules Id.idDemandInfo Id.idInlineActivation Id.idName
-     Id.idOccInfo Id.idStrictness Id.idType Id.idUnfolding Id.isConLikeId Id.isJoinId
+     GHC.Prim.seq HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
+     Id.idCoreRules Id.idDemandInfo Id.idInlineActivation Id.idName Id.idOccInfo
+     Id.idStrictness Id.idType Id.idUnfolding Id.isConLikeId Id.isJoinId
      Id.isJoinId_maybe Id.isOneShotBndr Id.mkLocalIdOrCoVar Id.realIdUnfolding
      Id.setIdOccInfo Id.setOneShotLambda Id.updOneShotInfo Id.zapIdOccInfo
      Module.Module Name.localiseName Panic.assertPanic Panic.panicStr Panic.someSDoc

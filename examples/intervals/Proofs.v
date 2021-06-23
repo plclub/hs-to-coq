@@ -7,7 +7,7 @@ bisect-binary. <https://github.com/nomeata/bisect-binary/>
 Require Import Intervals.
 
 Require Import GHC.Base.
-Require Import GHC.DeferredFix.
+Require Import HsToCoq.DeferredFix.
 
 Require Import Coq.Sets.Ensembles.
 Require Import Coq.Sets.Powerset_facts.

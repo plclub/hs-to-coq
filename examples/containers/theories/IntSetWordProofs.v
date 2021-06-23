@@ -4468,7 +4468,7 @@ Definition foldrBits_go {a} (p : Int) (f : Int -> a -> a) (x : a) (bm : Nat)
   : (forall (bm : Nat), a -> (forall x', {_ : a | (wordTonat x' < wordTonat bm)%nat} -> a) -> a).
 Proof.
   let rhs := eval unfold foldrBits in (foldrBits p f x bm) in
-  match rhs with context[ GHC.Wf.wfFix2 _ _ _ ?f ] => exact f end.
+  match rhs with context[ HsToCoq.Wf.wfFix2 _ _ _ ?f ] => exact f end.
 Defined.
 
 Lemma foldrBits_eq:
@@ -4477,7 +4477,7 @@ Lemma foldrBits_eq:
 Proof.
   intros.
   unfold foldrBits.
-  rewrite GHC.Wf.wfFix2_eq at 1.
+  rewrite HsToCoq.Wf.wfFix2_eq at 1.
   unfold foldrBits_go.
   destruct (Sumbool.sumbool_of_bool _); try reflexivity.
   f_equal.
@@ -4883,7 +4883,7 @@ Definition foldlBits_go {a} (p : Int) (f : a -> Int -> a) (x : a) (bm : Nat)
   : ((forall x', {_ : a | (wordTonat x' < wordTonat bm)%nat} -> a) -> a).
 Proof.
   let rhs := eval unfold foldlBits in (foldlBits p f x bm) in
-  match rhs with context[ GHC.Wf.wfFix2 _ _ _ ?f ] => exact (f bm x) end.
+  match rhs with context[ HsToCoq.Wf.wfFix2 _ _ _ ?f ] => exact (f bm x) end.
 Defined.
 
 Lemma foldlBits_eq:
@@ -4894,7 +4894,7 @@ Admitted.
 (*
 Proof.
   intros.
-  apply GHC.Wf.wfFix2_eq.
+  apply HsToCoq.Wf.wfFix2_eq.
 Qed. *)
 
 

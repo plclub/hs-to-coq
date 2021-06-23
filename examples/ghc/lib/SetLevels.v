@@ -20,7 +20,7 @@ Require CoreFVs.
 Require CoreMonad.
 Require CoreSubst.
 Require GHC.Base.
-Require GHC.Err.
+Require HsToCoq.Err.
 Require UniqSupply.
 
 (* Converted type declarations: *)
@@ -52,8 +52,8 @@ Inductive LevelEnv : Type :=
     : CoreSubst.Subst) (le_env : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
    : LevelEnv.
 
-Instance Default__LevelType : GHC.Err.Default LevelType :=
-  GHC.Err.Build_Default _ BndrLvl.
+Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
+  HsToCoq.Err.Build_Default _ BndrLvl.
 
 Definition le_ctxt_lvl (arg_0__ : LevelEnv) :=
   let 'LE _ le_ctxt_lvl _ _ _ _ := arg_0__ in
@@ -246,9 +246,9 @@ Axiom cloneLetVars : BasicTypes.RecFlag ->
 Axiom add_id : Core.IdEnv (list Core.Var * LevelledExpr)%type ->
                (Core.Var * Core.Var)%type -> Core.IdEnv (list Core.Var * LevelledExpr)%type.
 
-Instance Default__Level : GHC.Err.Default Level :=
-  GHC.Err.Build_Default _ (Mk_Level GHC.Err.default GHC.Err.default
-                                    GHC.Err.default).
+Instance Default__Level : HsToCoq.Err.Default Level :=
+  HsToCoq.Err.Build_Default _ (Mk_Level HsToCoq.Err.default HsToCoq.Err.default
+                                        HsToCoq.Err.default).
 
 (* External variables:
      bool list nat op_zt__ option AxiomatizedTypes.Type_ BasicTypes.Arity
@@ -257,6 +257,7 @@ Instance Default__Level : GHC.Err.Default Level :=
      Core.InId Core.InVar Core.OutId Core.OutVar Core.StrictSig Core.TaggedBind
      Core.TaggedBndr Core.TaggedExpr Core.TyCoVarSet Core.Var Core.VarEnv
      CoreFVs.CoreAltWithFVs CoreFVs.CoreBindWithFVs CoreFVs.CoreExprWithFVs
-     CoreMonad.FloatOutSwitches CoreSubst.Subst GHC.Base.Eq_ GHC.Err.Build_Default
-     GHC.Err.Default GHC.Err.default UniqSupply.UniqSM UniqSupply.UniqSupply
+     CoreMonad.FloatOutSwitches CoreSubst.Subst GHC.Base.Eq_
+     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
+     UniqSupply.UniqSM UniqSupply.UniqSupply
 *)

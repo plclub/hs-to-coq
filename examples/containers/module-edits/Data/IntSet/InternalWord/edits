@@ -54,8 +54,8 @@ redefine Definition Data.IntSet.InternalWord.suffixBitMask : IntWord.Int := GHC.
 
 # This code is dead for well-formed input. Giving an explicit value
 # not only get rids of error, but also helps with type class resolution
-#rewrite forall, GHC.Err.error "minView Nil"  = pair GHC.Err.default Nil
-#rewrite forall, GHC.Err.error "maxView Nil"  = pair GHC.Err.default Nil
+#rewrite forall, GHC.Err.error "minView Nil"  = pair HsToCoq.Err.default Nil
+#rewrite forall, GHC.Err.error "maxView Nil"  = pair HsToCoq.Err.default Nil
 
 
 ### SKIPPED ###

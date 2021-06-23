@@ -1,6 +1,6 @@
 Require Import QuickSort.
 Require Import Prelude.
-Require Import GHC.DeferredFix.
+Require Import HsToCoq.DeferredFix.
 
 Require Import Coq.Lists.List.
 Import ListNotations.

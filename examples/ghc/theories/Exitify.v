@@ -1069,14 +1069,14 @@ Definition jpsp := updJPSs jps fs .
    *)
 
   Definition zap := ltac:(
-    let rhs := eval cbv beta delta [go_exit] in (go_exit [] GHC.Err.default  emptyVarSet) in
+    let rhs := eval cbv beta delta [go_exit] in (go_exit [] HsToCoq.Err.default  emptyVarSet) in
     lazymatch rhs with (let zap := ?rhs in ?body) =>
       exact rhs
     end
    ).
 
    Definition pick := ltac:(
-    let rhs := eval cbv beta delta [go_exit] in (go_exit [] GHC.Err.default  emptyVarSet) in
+    let rhs := eval cbv beta delta [go_exit] in (go_exit [] HsToCoq.Err.default  emptyVarSet) in
     lazymatch rhs with (let zap' := _ in let abs_vars := let pick := @?rhs zap' in _ in _) =>
       let e' := eval cbv beta in (rhs zap) in
       exact e'

@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Preamble *)
 
-Require GHC.Nat.
+Require HsToCoq.Nat.
 
 (* Converted imports: *)
 
@@ -22,9 +22,9 @@ Require DynFlags.
 Require FastString.
 Require GHC.Base.
 Require GHC.Char.
-Require GHC.Err.
 Require GHC.Num.
 Require GHC.Real.
+Require HsToCoq.Err.
 Require UniqFM.
 
 (* Converted type declarations: *)
@@ -43,8 +43,8 @@ Inductive Literal : Type :=
    : FastString.FastString -> (option nat) -> BasicTypes.FunctionOrData -> Literal
   | LitInteger : GHC.Num.Integer -> AxiomatizedTypes.Type_ -> Literal.
 
-Instance Default__Literal : GHC.Err.Default Literal :=
-  GHC.Err.Build_Default _ MachNullAddr.
+Instance Default__Literal : HsToCoq.Err.Default Literal :=
+  HsToCoq.Err.Build_Default _ MachNullAddr.
 
 (* Converted value declarations: *)
 
@@ -170,6 +170,6 @@ Axiom litTag : Literal -> nat.
 (* External variables:
      bool comparison nat option AxiomatizedTypes.Type_ BasicTypes.FunctionOrData
      DynFlags.DynFlags FastString.FastString GHC.Base.Eq_ GHC.Base.Ord
-     GHC.Base.String GHC.Char.Char GHC.Err.Build_Default GHC.Err.Default
-     GHC.Num.Integer GHC.Real.Rational UniqFM.UniqFM
+     GHC.Base.String GHC.Char.Char GHC.Num.Integer GHC.Real.Rational
+     HsToCoq.Err.Build_Default HsToCoq.Err.Default UniqFM.UniqFM
 *)

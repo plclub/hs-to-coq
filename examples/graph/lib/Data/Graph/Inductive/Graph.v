@@ -33,6 +33,7 @@ Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
 Require GHC.Tuple.
+Require HsToCoq.Err.
 Require String.
 Import Data.OldList.Notations.
 Import GHC.Base.Notations.
@@ -395,7 +396,8 @@ Definition insNode {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
    : LNode a -> gr a b -> gr a b :=
   fun '(pair v l) => (fun arg_1__ => pair (pair (pair nil v) l) nil & arg_1__).
 
-Definition insEdge {gr} {b} {a} `{DynGraph gr} `{GHC.Err.Default (Context a b)}
+Definition insEdge {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default (Context a
+                                                                              b)}
    : LEdge b -> gr a b -> gr a b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -470,7 +472,8 @@ Definition insNodes {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
    : list (LNode a) -> gr a b -> gr a b :=
   fun vs g => Data.Foldable.foldl' (GHC.Base.flip insNode) g vs.
 
-Definition insEdges {gr} {b} {a} `{DynGraph gr} `{GHC.Err.Default (Context a b)}
+Definition insEdges {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default (Context a
+                                                                               b)}
    : list (LEdge b) -> gr a b -> gr a b :=
   fun es g => Data.Foldable.foldl' (GHC.Base.flip insEdge) g es.
 
@@ -519,7 +522,7 @@ Definition subgraph {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
     let vs' := Data.IntSet.Internal.fromList vs in
     nfilter (fun arg_1__ => Data.IntSet.Internal.member arg_1__ vs').
 
-Definition context {gr} {a} {b} `{Graph gr} `{GHC.Err.Default (Context a b)}
+Definition context {gr} {a} {b} `{Graph gr} `{HsToCoq.Err.Default (Context a b)}
    : gr a b -> Node -> Context a b :=
   fun g v =>
     Data.Maybe.fromMaybe (GHC.Err.error (Coq.Init.Datatypes.app
@@ -608,7 +611,7 @@ Definition deg' {a : Type} {b : Type} : Context a b -> GHC.Num.Int :=
   fun '(pair (pair (pair p _) _) s) =>
     GHC.List.length p GHC.Num.+ GHC.List.length s.
 
-Definition deg {gr} {a} {b} `{Graph gr} `{GHC.Err.Default (Context a b)}
+Definition deg {gr} {a} {b} `{Graph gr} `{HsToCoq.Err.Default (Context a b)}
    : gr a b -> Node -> GHC.Num.Int :=
   deg' .: context.
 
@@ -710,6 +713,7 @@ End Notations.
      Data.OldList.op_zrzr__ Data.OldList.sortBy Data.Tuple.fst Data.Tuple.snd
      GHC.Base.Eq_ GHC.Base.compare GHC.Base.flip GHC.Base.fmap GHC.Base.hs_string__
      GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
-     GHC.Base.op_zsze__ GHC.Err.Default GHC.Err.error GHC.List.elem GHC.List.filter
-     GHC.List.length GHC.Num.Int GHC.Num.op_zp__ GHC.Tuple.pair2 String.EmptyString
+     GHC.Base.op_zsze__ GHC.Err.error GHC.List.elem GHC.List.filter GHC.List.length
+     GHC.Num.Int GHC.Num.op_zp__ GHC.Tuple.pair2 HsToCoq.Err.Default
+     String.EmptyString
 *)

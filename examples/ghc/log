@@ -1,0 +1,9 @@
+cat module-edits/CoreSyn/preamble.v > CoreSyn_preamble.v
+cat module-edits/IdInfo/midamble.v module-edits/TyCon/midamble.v module-edits/Var/midamble.v module-edits/VarEnv/midamble.v module-edits/CoreSyn/midamble.v module-edits/Demand/midamble.v > CoreSyn_midamble.v
+stack exec hs-to-coq -- --ghc-tree ghc -i gen-files -I gen-files -I ghc/includes -I ghc/compiler --ghc -DSTAGE=2 --ghc -package=ghc-boot-th --ghc -XNoImplicitPrelude -e ../../base/edits -e ../containers/edits -e ../transformers/edits --iface-dir ../../base --iface-dir ../containers/lib --iface-dir ../transformers/lib --iface-dir lib --dependency-dir deps -e edits -N  \
+                -p CoreSyn_preamble.v \
+                --midamble CoreSyn_midamble.v \
+	             -e module-edits/IdInfo/edits -e module-edits/Class/edits -e module-edits/TyCon/edits -e module-edits/DataCon/edits -e module-edits/PatSyn/edits -e module-edits/Var/edits -e module-edits/VarSet/edits -e module-edits/VarEnv/edits -e module-edits/CoreSyn/edits -e module-edits/Demand/edits -e module-edits/Type/edits -e module-edits/TyCoRep/edits -e module-edits/Coercion/edits \
+                -e axiomatize-types.edits \
+                -o lib \
+		     ghc/compiler/*/IdInfo.hs ghc/compiler/*/Class.hs ghc/compiler/*/TyCon.hs ghc/compiler/*/DataCon.hs ghc/compiler/*/PatSyn.hs ghc/compiler/*/Var.hs ghc/compiler/*/VarSet.hs ghc/compiler/*/VarEnv.hs ghc/compiler/*/CoreSyn.hs ghc/compiler/*/Demand.hs ghc/compiler/*/Type.hs ghc/compiler/*/TyCoRep.hs ghc/compiler/*/Coercion.hs

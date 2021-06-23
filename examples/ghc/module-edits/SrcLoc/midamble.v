@@ -1,10 +1,10 @@
 (* Default values *)
-Require Import GHC.Err.
+Require Import HsToCoq.Err.
 Instance Default__SrcSpan : Default SrcSpan := Build_Default _ (UnhelpfulSpan default).
 
 Instance Default__RealSrcSpan : Default RealSrcSpan := 
-  Build_Default _ (RealSrcSpan' GHC.Err.default GHC.Err.default  GHC.Err.default  
-                   GHC.Err.default GHC.Err.default).
+  Build_Default _ (RealSrcSpan' HsToCoq.Err.default HsToCoq.Err.default  HsToCoq.Err.default  
+                   HsToCoq.Err.default HsToCoq.Err.default).
 
 
 Import GHC.Base.ManualNotations.

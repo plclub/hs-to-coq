@@ -1,7 +1,7 @@
-Instance Default_UnVarSet : GHC.Err.Default UnVarSet :=
-  GHC.Err.Build_Default _ (Mk_UnVarSet GHC.Err.default).
-Instance Default_UnVarGraph : GHC.Err.Default UnVarGraph :=
-  GHC.Err.Build_Default _ (Mk_UnVarGraph GHC.Err.default).
+Instance Default_UnVarSet : HsToCoq.Err.Default UnVarSet :=
+  HsToCoq.Err.Build_Default _ (Mk_UnVarSet HsToCoq.Err.default).
+Instance Default_UnVarGraph : HsToCoq.Err.Default UnVarGraph :=
+  HsToCoq.Err.Build_Default _ (Mk_UnVarGraph HsToCoq.Err.default).
 
 
 Instance Unpeel_UnVarSet : Prim.Unpeel UnVarSet Data.IntSet.Internal.IntSet :=

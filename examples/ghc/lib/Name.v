@@ -16,7 +16,7 @@ Require AxiomatizedTypes.
 Require Coq.Init.Datatypes.
 Require FastString.
 Require GHC.Base.
-Require GHC.Err.
+Require HsToCoq.Err.
 Require Maybes.
 Require Module.
 Require OccName.
@@ -58,11 +58,11 @@ Definition getName `{g__0__ : NamedThing a} : a -> Name :=
 Definition getOccName `{g__0__ : NamedThing a} : a -> OccName.OccName :=
   g__0__ _ (getOccName__ a).
 
-Instance Default__BuiltInSyntax : GHC.Err.Default BuiltInSyntax :=
-  GHC.Err.Build_Default _ Mk_BuiltInSyntax.
+Instance Default__BuiltInSyntax : HsToCoq.Err.Default BuiltInSyntax :=
+  HsToCoq.Err.Build_Default _ Mk_BuiltInSyntax.
 
-Instance Default__NameSort : GHC.Err.Default NameSort :=
-  GHC.Err.Build_Default _ Internal.
+Instance Default__NameSort : HsToCoq.Err.Default NameSort :=
+  HsToCoq.Err.Build_Default _ Internal.
 
 Definition n_loc (arg_0__ : Name) :=
   let 'Mk_Name _ _ _ n_loc := arg_0__ in
@@ -83,7 +83,7 @@ Definition n_uniq (arg_0__ : Name) :=
 (* Midamble *)
 
 (* ------------- Name midamble.v ------------ *)
-Require Import GHC.Err.
+Require Import HsToCoq.Err.
 Instance Default__Name : Default Name := Build_Default _ (Mk_Name default default default default).
 
 
@@ -487,13 +487,14 @@ Definition getOccFS {a : Type} `{NamedThing a} : a -> FastString.FastString :=
      GHC.Base.max__ GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zeze____ GHC.Base.op_zg____ GHC.Base.op_zgze____ GHC.Base.op_zl____
      GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
-     GHC.Err.Build_Default GHC.Err.Default Maybes.orElse Module.Module Module.UnitId
-     Module.isInteractiveModule Module.moduleName Module.moduleNameColons
-     Module.moduleStableString Module.moduleUnitId Module.stableModuleCmp
-     OccName.HasOccName OccName.OccName OccName.isDataOcc OccName.isTcOcc
-     OccName.isTvOcc OccName.isValOcc OccName.isVarOcc OccName.mkTyVarOccFS
-     OccName.mkVarOcc OccName.mkVarOccFS OccName.occNameFS OccName.occNameString
-     OccName.occName__ Panic.panic SrcLoc.GenLocated SrcLoc.SrcLoc SrcLoc.SrcSpan
-     SrcLoc.noSrcSpan SrcLoc.srcSpanStart SrcLoc.unLoc Unique.Uniquable Unique.Unique
-     Unique.getUnique__ Unique.nonDetCmpUnique Util.thenCmp
+     HsToCoq.Err.Build_Default HsToCoq.Err.Default Maybes.orElse Module.Module
+     Module.UnitId Module.isInteractiveModule Module.moduleName
+     Module.moduleNameColons Module.moduleStableString Module.moduleUnitId
+     Module.stableModuleCmp OccName.HasOccName OccName.OccName OccName.isDataOcc
+     OccName.isTcOcc OccName.isTvOcc OccName.isValOcc OccName.isVarOcc
+     OccName.mkTyVarOccFS OccName.mkVarOcc OccName.mkVarOccFS OccName.occNameFS
+     OccName.occNameString OccName.occName__ Panic.panic SrcLoc.GenLocated
+     SrcLoc.SrcLoc SrcLoc.SrcSpan SrcLoc.noSrcSpan SrcLoc.srcSpanStart SrcLoc.unLoc
+     Unique.Uniquable Unique.Unique Unique.getUnique__ Unique.nonDetCmpUnique
+     Util.thenCmp
 *)

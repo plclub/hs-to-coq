@@ -1,6 +1,6 @@
 (* DEMAND midamble file. Termination defs and tactics . *)
 
-Require Import GHC.Nat.
+Require Import HsToCoq.Nat.
 Require Import Omega.
 
 Ltac solve_not_zero_N := match goal with 

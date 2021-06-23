@@ -1,11 +1,10 @@
-
 (* Disable notation conflict warnings *)
 Set Warnings "-notation-overridden".
 
 From Coq Require Import ssreflect ssrbool ssrfun.
 
 Require Import GHC.Base.
-Require Import GHC.Nat.
+Require Import HsToCoq.Nat.
 Require Import Proofs.GHC.Base.
 Require Import Proofs.GHC.List.
 Require Import Proofs.Data.Foldable.

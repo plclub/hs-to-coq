@@ -18,8 +18,8 @@ Require Data.Set.Internal.
 Require EnumSet.
 Require GHC.Base.
 Require GHC.Char.
-Require GHC.Err.
 Require GHC.Num.
+Require HsToCoq.Err.
 Require Module.
 Require SrcLoc.
 
@@ -508,75 +508,77 @@ Arguments On {_} _.
 
 Arguments Off {_} _.
 
-Instance Default__Way : GHC.Err.Default Way :=
-  GHC.Err.Build_Default _ WayThreaded.
+Instance Default__Way : HsToCoq.Err.Default Way :=
+  HsToCoq.Err.Build_Default _ WayThreaded.
 
-Instance Default__WarningFlag : GHC.Err.Default WarningFlag :=
-  GHC.Err.Build_Default _ Opt_WarnDuplicateExports.
+Instance Default__WarningFlag : HsToCoq.Err.Default WarningFlag :=
+  HsToCoq.Err.Build_Default _ Opt_WarnDuplicateExports.
 
-Instance Default__WarnReason : GHC.Err.Default WarnReason :=
-  GHC.Err.Build_Default _ NoReason.
+Instance Default__WarnReason : HsToCoq.Err.Default WarnReason :=
+  HsToCoq.Err.Build_Default _ NoReason.
 
-Instance Default__SseVersion : GHC.Err.Default SseVersion :=
-  GHC.Err.Build_Default _ SSE1.
+Instance Default__SseVersion : HsToCoq.Err.Default SseVersion :=
+  HsToCoq.Err.Build_Default _ SSE1.
 
-Instance Default__SafeHaskellMode : GHC.Err.Default SafeHaskellMode :=
-  GHC.Err.Build_Default _ Sf_None.
+Instance Default__SafeHaskellMode : HsToCoq.Err.Default SafeHaskellMode :=
+  HsToCoq.Err.Build_Default _ Sf_None.
 
-Instance Default__RtsOptsEnabled : GHC.Err.Default RtsOptsEnabled :=
-  GHC.Err.Build_Default _ RtsOptsNone.
+Instance Default__RtsOptsEnabled : HsToCoq.Err.Default RtsOptsEnabled :=
+  HsToCoq.Err.Build_Default _ RtsOptsNone.
 
-Instance Default__ProfAuto : GHC.Err.Default ProfAuto :=
-  GHC.Err.Build_Default _ NoProfAuto.
+Instance Default__ProfAuto : HsToCoq.Err.Default ProfAuto :=
+  HsToCoq.Err.Build_Default _ NoProfAuto.
 
-Instance Default__PkgConfRef : GHC.Err.Default PkgConfRef :=
-  GHC.Err.Build_Default _ GlobalPkgConf.
+Instance Default__PkgConfRef : HsToCoq.Err.Default PkgConfRef :=
+  HsToCoq.Err.Build_Default _ GlobalPkgConf.
 
-Instance Default__PackageDBFlag : GHC.Err.Default PackageDBFlag :=
-  GHC.Err.Build_Default _ NoUserPackageDB.
+Instance Default__PackageDBFlag : HsToCoq.Err.Default PackageDBFlag :=
+  HsToCoq.Err.Build_Default _ NoUserPackageDB.
 
-Instance Default__ModRenaming : GHC.Err.Default ModRenaming :=
-  GHC.Err.Build_Default _ (Mk_ModRenaming GHC.Err.default GHC.Err.default).
+Instance Default__ModRenaming : HsToCoq.Err.Default ModRenaming :=
+  HsToCoq.Err.Build_Default _ (Mk_ModRenaming HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
-Instance Default__LlvmTarget : GHC.Err.Default LlvmTarget :=
-  GHC.Err.Build_Default _ (Mk_LlvmTarget GHC.Err.default GHC.Err.default
-                         GHC.Err.default).
+Instance Default__LlvmTarget : HsToCoq.Err.Default LlvmTarget :=
+  HsToCoq.Err.Build_Default _ (Mk_LlvmTarget HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__LinkerInfo : GHC.Err.Default LinkerInfo :=
-  GHC.Err.Build_Default _ UnknownLD.
+Instance Default__LinkerInfo : HsToCoq.Err.Default LinkerInfo :=
+  HsToCoq.Err.Build_Default _ UnknownLD.
 
-Instance Default__Language : GHC.Err.Default Language :=
-  GHC.Err.Build_Default _ Haskell98.
+Instance Default__Language : HsToCoq.Err.Default Language :=
+  HsToCoq.Err.Build_Default _ Haskell98.
 
-Instance Default__HscTarget : GHC.Err.Default HscTarget :=
-  GHC.Err.Build_Default _ HscC.
+Instance Default__HscTarget : HsToCoq.Err.Default HscTarget :=
+  HsToCoq.Err.Build_Default _ HscC.
 
-Instance Default__GhcMode : GHC.Err.Default GhcMode :=
-  GHC.Err.Build_Default _ CompManager.
+Instance Default__GhcMode : HsToCoq.Err.Default GhcMode :=
+  HsToCoq.Err.Build_Default _ CompManager.
 
-Instance Default__GhcLink : GHC.Err.Default GhcLink :=
-  GHC.Err.Build_Default _ NoLink.
+Instance Default__GhcLink : HsToCoq.Err.Default GhcLink :=
+  HsToCoq.Err.Build_Default _ NoLink.
 
-Instance Default__GeneralFlag : GHC.Err.Default GeneralFlag :=
-  GHC.Err.Build_Default _ Opt_DumpToFile.
+Instance Default__GeneralFlag : HsToCoq.Err.Default GeneralFlag :=
+  HsToCoq.Err.Build_Default _ Opt_DumpToFile.
 
-Instance Default__FilesToClean : GHC.Err.Default FilesToClean :=
-  GHC.Err.Build_Default _ (Mk_FilesToClean GHC.Err.default GHC.Err.default).
+Instance Default__FilesToClean : HsToCoq.Err.Default FilesToClean :=
+  HsToCoq.Err.Build_Default _ (Mk_FilesToClean HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
-Instance Default__DynLibLoader : GHC.Err.Default DynLibLoader :=
-  GHC.Err.Build_Default _ Deployable.
+Instance Default__DynLibLoader : HsToCoq.Err.Default DynLibLoader :=
+  HsToCoq.Err.Build_Default _ Deployable.
 
-Instance Default__DumpFlag : GHC.Err.Default DumpFlag :=
-  GHC.Err.Build_Default _ Opt_D_dump_cmm.
+Instance Default__DumpFlag : HsToCoq.Err.Default DumpFlag :=
+  HsToCoq.Err.Build_Default _ Opt_D_dump_cmm.
 
-Instance Default__Deprecation : GHC.Err.Default Deprecation :=
-  GHC.Err.Build_Default _ NotDeprecated.
+Instance Default__Deprecation : HsToCoq.Err.Default Deprecation :=
+  HsToCoq.Err.Build_Default _ NotDeprecated.
 
-Instance Default__CompilerInfo : GHC.Err.Default CompilerInfo :=
-  GHC.Err.Build_Default _ GCC.
+Instance Default__CompilerInfo : HsToCoq.Err.Default CompilerInfo :=
+  HsToCoq.Err.Build_Default _ GCC.
 
-Instance Default__BmiVersion : GHC.Err.Default BmiVersion :=
-  GHC.Err.Build_Default _ BMI1.
+Instance Default__BmiVersion : HsToCoq.Err.Default BmiVersion :=
+  HsToCoq.Err.Build_Default _ BMI1.
 
 (* Midamble *)
 
@@ -585,7 +587,7 @@ Instance Unpeel_IgnorePackageFlag : Prim.Unpeel IgnorePackageFlag GHC.Base.Strin
 
 
 Instance Default__DynFlags
-   : GHC.Err.Default DynFlags.
+   : HsToCoq.Err.Default DynFlags.
 Admitted.
 
 (* Converted value declarations: *)
@@ -1749,7 +1751,7 @@ Axiom emptyFilesToClean : FilesToClean.
 (* External variables:
      Type bool list op_zt__ option BinNums.N Data.Either.Either
      Data.Set.Internal.Set_ EnumSet.EnumSet GHC.Base.Eq_ GHC.Base.Ord GHC.Base.String
-     GHC.Char.Char GHC.Err.Build_Default GHC.Err.Default GHC.Err.default
-     GHC.Num.Integer Module.ComponentId Module.Module Module.ModuleName Module.UnitId
-     SrcLoc.Located SrcLoc.SrcSpan
+     GHC.Char.Char GHC.Num.Integer HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default Module.ComponentId Module.Module Module.ModuleName
+     Module.UnitId SrcLoc.Located SrcLoc.SrcSpan
 *)

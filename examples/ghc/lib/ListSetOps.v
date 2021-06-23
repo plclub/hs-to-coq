@@ -18,9 +18,9 @@ Require Data.Foldable.
 Require Data.Set.Internal.
 Require Data.Traversable.
 Require GHC.Base.
-Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
+Require HsToCoq.Err.
 Require Panic.
 Require Util.
 Import GHC.Base.Notations.
@@ -72,7 +72,7 @@ Fixpoint assocDefaultUsing {a : Type} {b : Type} (arg_0__ : a -> a -> bool)
          assocDefaultUsing eq deflt rest key
      end.
 
-Definition assoc {a} {b} `{GHC.Base.Eq_ a} `{GHC.Err.Default b}
+Definition assoc {a} {b} `{GHC.Base.Eq_ a} `{HsToCoq.Err.Default b}
    : GHC.Base.String -> Assoc a b -> a -> b :=
   fun crash_msg list key =>
     assocDefaultUsing _GHC.Base.==_ (Panic.panic (Coq.Init.Datatypes.app
@@ -82,7 +82,7 @@ Definition assocDefault {a : Type} {b : Type} `{GHC.Base.Eq_ a}
    : b -> Assoc a b -> a -> b :=
   fun deflt list key => assocDefaultUsing _GHC.Base.==_ deflt list key.
 
-Definition assocUsing {a} {b} `{GHC.Err.Default b}
+Definition assocUsing {a} {b} `{HsToCoq.Err.Default b}
    : (a -> a -> bool) -> GHC.Base.String -> Assoc a b -> a -> b :=
   fun eq crash_msg list key =>
     assocDefaultUsing eq (Panic.panic (Coq.Init.Datatypes.app (GHC.Base.hs_string__
@@ -146,6 +146,6 @@ Definition removeDups {a : Type}
      Data.Set.Internal.fromList Data.Set.Internal.notMember
      Data.Traversable.mapAccumR GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty
      GHC.Base.Ord GHC.Base.String GHC.Base.op_zeze__ GHC.Base.op_zsze__
-     GHC.Err.Default GHC.List.filter GHC.Num.fromInteger Panic.panic Panic.someSDoc
-     Panic.warnPprTrace Util.isIn Util.isn'tIn Util.lengthExceeds
+     GHC.List.filter GHC.Num.fromInteger HsToCoq.Err.Default Panic.panic
+     Panic.someSDoc Panic.warnPprTrace Util.isIn Util.isn'tIn Util.lengthExceeds
 *)

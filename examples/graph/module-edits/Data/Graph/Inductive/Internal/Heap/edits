@@ -2,8 +2,8 @@ skip Data.Graph.Inductive.Internal.Heap.prettyHeap
 skip Data.Graph.Inductive.Internal.Heap.printPrettyHeap
 
 #needs default as well for some reason
-set type Data.Graph.Inductive.Internal.Heap.splitMin: forall {a} {b} `{GHC.Base.Ord a} `{GHC.Err.Default ((a * b) * (Heap a b))}, (Heap a b) -> ((a * b) * (Heap a b))
-set type Data.Graph.Inductive.Internal.Heap.findMin: forall {a} {b} `{GHC.Err.Default (a * b)}, (Heap a b) -> (a * b)
+set type Data.Graph.Inductive.Internal.Heap.splitMin: forall {a} {b} `{GHC.Base.Ord a} `{HsToCoq.Err.Default ((a * b) * (Heap a b))}, (Heap a b) -> ((a * b) * (Heap a b))
+set type Data.Graph.Inductive.Internal.Heap.findMin: forall {a} {b} `{HsToCoq.Err.Default (a * b)}, (Heap a b) -> (a * b)
 
 #need to prove that toList terminates - we need a function for the size of a heap
 add Data.Graph.Inductive.Internal.Heap Fixpoint Data.Graph.Inductive.Internal.Heap.size {a} {b} (h: Heap a b) :=
@@ -56,8 +56,8 @@ termination Data.Graph.Inductive.Internal.Heap.toList        {measure (Data.Grap
 obligations Data.Graph.Inductive.Internal.Heap.toList       (Tactics.program_simpl; apply toList_termination; auto)
 
 #more defaut constrants 
-set type Data.Graph.Inductive.Internal.Heap.toList: forall {a} {b} `{GHC.Base.Ord a} `{GHC.Err.Default (a * b)}, (Heap a b) -> list (a * b)
-set type Data.Graph.Inductive.Internal.Heap.heapsort: forall {a} `{GHC.Base.Ord a} `{GHC.Err.Default (a * a)}, list a -> list a
+set type Data.Graph.Inductive.Internal.Heap.toList: forall {a} {b} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a * b)}, (Heap a b) -> list (a * b)
+set type Data.Graph.Inductive.Internal.Heap.heapsort: forall {a} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a * a)}, list a -> list a
 
 #recursive definition that is difficult to translate
 skip class GHC.Base.Ord

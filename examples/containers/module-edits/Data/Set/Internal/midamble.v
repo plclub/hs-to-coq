@@ -10,7 +10,7 @@ Fixpoint set_size {a} (s : Set_ a) : nat :=
   | Bin _ _ s1 s2 => 1 + set_size s1 + set_size s2
   end.
 
-Require Import GHC.Err.
+Require Import HsToCoq.Err.
 
 Instance Set_Default {a} : Default (Set_ a) :=
   Build_Default _ Tip.

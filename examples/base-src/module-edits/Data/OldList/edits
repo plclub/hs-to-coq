@@ -4,9 +4,9 @@ import module GHC.Base
 skip Data.OldList.genericIndex
 skip Data.OldList.unfoldr
 
-set type Data.OldList.maximumBy : forall {a}{_ : GHC.Err.Default a}{_:GHC.Base.Eq_ a}{_:GHC.Base.Ord a}, (a -> (a -> comparison)) -> ((list a) -> a)
-set type Data.OldList.minimumBy : forall {a}{_ : GHC.Err.Default a}{_:GHC.Base.Eq_ a}{_:GHC.Base.Ord a}, (a -> (a -> comparison)) -> ((list a) -> a)
-# set type Data.OldList.genericIndex : forall {a}{i}{_: GHC.Err.Default a}{_:GHC.Num.Integral i}, (list a) -> (i -> a)
+set type Data.OldList.maximumBy : forall {a}{_ : HsToCoq.Err.Default a}{_:GHC.Base.Eq_ a}{_:GHC.Base.Ord a}, (a -> (a -> comparison)) -> ((list a) -> a)
+set type Data.OldList.minimumBy : forall {a}{_ : HsToCoq.Err.Default a}{_:GHC.Base.Eq_ a}{_:GHC.Base.Ord a}, (a -> (a -> comparison)) -> ((list a) -> a)
+# set type Data.OldList.genericIndex : forall {a}{i}{_: HsToCoq.Err.Default a}{_:GHC.Num.Integral i}, (list a) -> (i -> a)
 
 
 # character constant

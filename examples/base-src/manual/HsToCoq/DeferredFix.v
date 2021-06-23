@@ -5,7 +5,7 @@ Definitions for deferred recursion
 (** The fixpoint axiom *)
 
 
-Require Export GHC.Err.
+Require Export HsToCoq.Err.
 
 Axiom deferredFix: forall {a r} `{Default r}, ((a -> r) -> (a -> r)) -> a -> r.
 

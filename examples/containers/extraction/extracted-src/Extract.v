@@ -36,7 +36,7 @@ Extract Constant PtrEquality.ptrEq => "\ x y -> Prelude.False".
 Extract Constant PtrEquality.hetPtrEq => "\ x y -> Prelude.False".
 Extract Constant GHC.Err.errorWithoutStackTrace => "errorWithoutStackTrace".
 Extract Constant GHC.Err.patternFailure => "(\d -> Prelude.error ""patternFailure"")".
-Extract Constant GHC.DeferredFix.deferredFix => "(\d f -> let r = f r in r)".
+Extract Constant HsToCoq.DeferredFix.deferredFix => "(\d f -> let r = f r in r)".
 
 (*
 -- I'm trying to convert Z to Int, but this does not work. 

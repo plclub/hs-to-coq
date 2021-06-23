@@ -7,7 +7,7 @@ Require Import Equations.Equations.
 Require Import Coq.Bool.Bool.
 Require Import Data.Graph.Inductive.Graph.
 Require Import Coq.Lists.List.
-Require Import GHC.DeferredFix.
+Require Import HsToCoq.DeferredFix.
 Require Import GHC.Num.
 Import GHC.Num.Notations.
 Require Import HeapProofs.
@@ -399,7 +399,7 @@ let (p, l) := s in
            sp_tail (g', mergeAll (h' :: expand_dist d v c), l0 ++ (d, v) :: nil)
        | None => fun _ : match_ v g = (None, g') => sp_tail (g', h', l0)
        end) eq_refl
-  | None => fun _ : splitMinT h = None => patternFailure
+  | None => fun _ : splitMinT h = None => Err.patternFailure
   end eq_refl) l.
 
 Lemma unfold_sp_tail: forall s,
@@ -1574,7 +1574,7 @@ else
           fun _ : match_ v g = (Some c, g') => (d, v) :: sp_distance (mergeAll (h' :: expand_dist d v c), g')
       | None => fun _ : match_ v g = (None, g') => sp_distance (h', g')
       end) eq_refl
- | None => fun _ : splitMinT h = None => patternFailure
+ | None => fun _ : splitMinT h = None => Err.patternFailure
  end eq_refl.
 
 Lemma unfold_sp_distance : forall x,
@@ -1625,7 +1625,7 @@ else
      match p as p' return (p = p' -> list (LPath b)) with
      | LP unLPath =>
          match unLPath as unLPath0 return (p = LP unLPath0 -> list (LPath b)) with
-         | nil => fun _ : p = LP nil => patternFailure
+         | nil => fun _ : p = LP nil => Err.patternFailure
          | l :: t =>
              let (v, d) as l0 return (p = LP (l0 :: t) -> list (LPath b)) := l in
              fun _ : p = LP ((v, d) :: t) =>
@@ -1636,7 +1636,7 @@ else
               end) eq_refl
          end
      end eq_refl
- | None => fun _ : splitMinT h = None => patternFailure
+ | None => fun _ : splitMinT h = None => Err.patternFailure
  end eq_refl.
 
 Lemma unfold_dijkstra' : forall x,
@@ -1907,7 +1907,7 @@ let (p, l) := s in
       match p2 as p'' return (p2 = p'' -> gr a b * Heap b (LPath b) * list (LPath b)) with
       | LP unLPath =>
           match unLPath as unLPath0 return (p2 = LP unLPath0 -> gr a b * Heap b (LPath b) * list (LPath b)) with
-          | nil => fun _ : p2 = LP nil => patternFailure
+          | nil => fun _ : p2 = LP nil => Err.patternFailure
           | l1 :: t =>
               let (v, d) as l2 return (p2 = LP (l2 :: t) -> gr a b * Heap b (LPath b) * list (LPath b)) := l1 in
               fun _ : p2 = LP ((v, d) :: t) =>
@@ -1921,7 +1921,7 @@ let (p, l) := s in
                end) eq_refl
           end
       end eq_refl
-  | None => fun _ : splitMinT h = None => patternFailure
+  | None => fun _ : splitMinT h = None => Err.patternFailure
   end eq_refl) l.
 
 Lemma unfold_d_tail: forall s,

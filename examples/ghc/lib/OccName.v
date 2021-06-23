@@ -16,8 +16,8 @@ Require Coq.Init.Datatypes.
 Require Data.Foldable.
 Require FastString.
 Require GHC.Base.
-Require GHC.Err.
 Require GHC.Num.
+Require HsToCoq.Err.
 Require UniqFM.
 Require UniqSet.
 Require Unique.
@@ -57,8 +57,8 @@ Definition occName `{g__0__ : HasOccName name} : name -> OccName :=
 
 Arguments A {_} _.
 
-Instance Default__NameSpace : GHC.Err.Default NameSpace :=
-  GHC.Err.Build_Default _ VarName.
+Instance Default__NameSpace : HsToCoq.Err.Default NameSpace :=
+  HsToCoq.Err.Build_Default _ VarName.
 
 Definition occNameFS (arg_0__ : OccName) :=
   let 'Mk_OccName _ occNameFS := arg_0__ in
@@ -70,7 +70,7 @@ Definition occNameSpace (arg_0__ : OccName) :=
 
 (* Midamble *)
 
-Require Import GHC.Err.
+Require Import HsToCoq.Err.
 
 Instance Default__OccName : Default OccName := 
     Build_Default _ (Mk_OccName default default).
@@ -762,7 +762,7 @@ Axiom tidyOccName : TidyOccEnv -> OccName -> (TidyOccEnv * OccName)%type.
      GHC.Base.min__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg____
      GHC.Base.op_zgze____ GHC.Base.op_zgzgze__ GHC.Base.op_zl____
      GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.return_
-     GHC.Err.Build_Default GHC.Err.Default GHC.Num.Int GHC.Num.fromInteger
+     GHC.Num.Int GHC.Num.fromInteger HsToCoq.Err.Build_Default HsToCoq.Err.Default
      UniqFM.UniqFM UniqFM.addListToUFM UniqFM.addListToUFM_C UniqFM.addToUFM
      UniqFM.addToUFM_Acc UniqFM.addToUFM_C UniqFM.alterUFM UniqFM.delFromUFM
      UniqFM.delListFromUFM UniqFM.elemUFM UniqFM.eltsUFM UniqFM.emptyUFM

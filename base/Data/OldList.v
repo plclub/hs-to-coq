@@ -24,6 +24,7 @@ Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Real.
 Require GHC.Tuple.
+Require HsToCoq.Err.
 Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
@@ -416,7 +417,7 @@ Fixpoint insertBy {a : Type} (arg_0__ : a -> a -> comparison) (arg_1__ : a)
 Definition insert {a : Type} `{Ord a} : a -> list a -> list a :=
   fun e ls => insertBy (compare) e ls.
 
-Definition maximumBy {a} {_ : GHC.Err.Default a} {_ : Eq_ a} {_ : Ord a}
+Definition maximumBy {a} {_ : HsToCoq.Err.Default a} {_ : Eq_ a} {_ : Ord a}
    : (a -> a -> comparison) -> list a -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -428,7 +429,7 @@ Definition maximumBy {a} {_ : GHC.Err.Default a} {_ : Eq_ a} {_ : Ord a}
         GHC.List.foldl1 maxBy xs
     end.
 
-Definition minimumBy {a} {_ : GHC.Err.Default a} {_ : Eq_ a} {_ : Ord a}
+Definition minimumBy {a} {_ : HsToCoq.Err.Default a} {_ : Eq_ a} {_ : Ord a}
    : (a -> a -> comparison) -> list a -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -705,9 +706,9 @@ End Notations.
      flip foldl foldr id list map nil op_z2218U__ op_zeze__ op_zgzgze__ op_zlze__
      op_zt__ option orb pair return_ sortBy true Coq.Init.Datatypes.app
      Coq.Lists.List.flat_map Data.Maybe.listToMaybe Data.Maybe.maybe
-     Data.Ord.comparing Data.Tuple.fst Data.Tuple.snd GHC.Err.Default
-     GHC.Err.errorWithoutStackTrace GHC.List.any GHC.List.filter GHC.List.foldl1
-     GHC.List.null GHC.List.reverse GHC.Num.Num GHC.Num.Word GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq GHC.Real.Integral GHC.Tuple.pair4
-     GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7
+     Data.Ord.comparing Data.Tuple.fst Data.Tuple.snd GHC.Err.errorWithoutStackTrace
+     GHC.List.any GHC.List.filter GHC.List.foldl1 GHC.List.null GHC.List.reverse
+     GHC.Num.Num GHC.Num.Word GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__
+     GHC.Prim.seq GHC.Real.Integral GHC.Tuple.pair4 GHC.Tuple.pair5 GHC.Tuple.pair6
+     GHC.Tuple.pair7 HsToCoq.Err.Default
 *)

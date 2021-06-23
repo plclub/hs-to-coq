@@ -10,10 +10,10 @@ OUT=../../base
 
 # Handwritten modules (usually by modification of generated version)
 HANDMOD = \
-  GHC/Wf \
-  GHC/Skip \
-  GHC/DeferredFix \
-  GHC/DeferredFixImpl \
+  HsToCoq/Wf \
+  HsToCoq/Skip \
+  HsToCoq/DeferredFix \
+  HsToCoq/DeferredFixImpl \
   GHC/Num \
   GHC/Char \
   GHC/Real \
@@ -23,8 +23,9 @@ HANDMOD = \
   GHC/Types \
   GHC/Tuple \
   Data/Type/Equality \
+  HsToCoq/Err \
   GHC/Err \
-  GHC/Nat \
+  HsToCoq/Nat \
   GHC/Unicode \
   Prelude\
 

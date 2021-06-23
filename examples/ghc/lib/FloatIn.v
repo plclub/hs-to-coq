@@ -52,11 +52,11 @@ Definition DropBox :=
 
 (* Midamble *)
 
-Instance Default_FloatBind : GHC.Err.Default MkCore.FloatBind.
+Instance Default_FloatBind : HsToCoq.Err.Default MkCore.FloatBind.
 Admitted.
 
-Instance Default_FloatInBind : GHC.Err.Default FloatInBind :=
-  GHC.Err.Build_Default _ (FB GHC.Err.default GHC.Err.default GHC.Err.default).
+Instance Default_FloatInBind : HsToCoq.Err.Default FloatInBind :=
+  HsToCoq.Err.Build_Default _ (FB HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
 (* Converted value declarations: *)
 

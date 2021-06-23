@@ -1,3 +1,3 @@
 Instance Default__UniqSupply
-   : GHC.Err.Default UniqSupply.
+   : HsToCoq.Err.Default UniqSupply.
 Admitted.

@@ -13,8 +13,8 @@ Require Coq.Program.Wf.
 (* Converted imports: *)
 
 Require GHC.Base.
-Require GHC.Err.
 Require GHC.Num.
+Require HsToCoq.Err.
 
 (* Converted type declarations: *)
 
@@ -48,28 +48,29 @@ Axiom short_usage : GHC.Base.String.
 
 (* Skipping definition `Panic.showGhcException' *)
 
-Axiom throwGhcException : forall {a} `{GHC.Err.Default a}, GhcException -> a.
+Axiom throwGhcException : forall {a} `{HsToCoq.Err.Default a},
+                          GhcException -> a.
 
 (* Skipping definition `Panic.throwGhcExceptionIO' *)
 
 (* Skipping definition `Panic.handleGhcException' *)
 
-Axiom panic : forall {a} `{GHC.Err.Default a}, GHC.Base.String -> a.
+Axiom panic : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> a.
 
-Axiom sorry : forall {a} `{GHC.Err.Default a}, GHC.Base.String -> a.
+Axiom sorry : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> a.
 
-Axiom pgmError : forall {a} `{GHC.Err.Default a}, GHC.Base.String -> a.
+Axiom pgmError : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> a.
 
-Axiom panicDoc : forall {a} `{GHC.Err.Default a},
+Axiom panicDoc : forall {a} `{HsToCoq.Err.Default a},
                  GHC.Base.String -> GHC.Base.String -> a.
 
-Axiom sorryDoc : forall {a} `{GHC.Err.Default a},
+Axiom sorryDoc : forall {a} `{HsToCoq.Err.Default a},
                  GHC.Base.String -> GHC.Base.String -> a.
 
-Axiom pgmErrorDoc : forall {a} `{GHC.Err.Default a},
+Axiom pgmErrorDoc : forall {a} `{HsToCoq.Err.Default a},
                     GHC.Base.String -> GHC.Base.String -> a.
 
-Axiom assertPanic : forall {a} `{GHC.Err.Default a},
+Axiom assertPanic : forall {a} `{HsToCoq.Err.Default a},
                     GHC.Base.String -> GHC.Num.Int -> a.
 
 (* Skipping definition `Panic.tryMost' *)
@@ -78,19 +79,19 @@ Axiom assertPanic : forall {a} `{GHC.Err.Default a},
 
 (* Skipping definition `Panic.withSignalHandlers' *)
 
-Axiom panicStr : forall {a} `{GHC.Err.Default a},
+Axiom panicStr : forall {a} `{HsToCoq.Err.Default a},
                  GHC.Base.String -> GHC.Base.String -> a.
 
 Inductive panicked {a} : a -> Prop :=
-  | PlainPanic `{GHC.Err.Default a} {s} : panicked (panic s)
-  | StrPanic `{GHC.Err.Default a} {s} {d} : panicked (panicStr s d).
+  | PlainPanic `{HsToCoq.Err.Default a} {s} : panicked (panic s)
+  | StrPanic `{HsToCoq.Err.Default a} {s} {d} : panicked (panicStr s d).
 
 Definition warnPprTrace
-   : forall {a} `{GHC.Err.Default a},
+   : forall {a} `{HsToCoq.Err.Default a},
      bool -> GHC.Base.String -> GHC.Num.Integer -> GHC.Base.String -> a -> a :=
   fun {a} {_} b msg i msg2 x => if b then (pgmError msg : a) else x.
 
-Axiom assertPprPanic : forall {a} `{GHC.Err.Default a},
+Axiom assertPprPanic : forall {a} `{HsToCoq.Err.Default a},
                        GHC.Base.String -> GHC.Num.Integer -> GHC.Base.String -> GHC.Base.String -> a.
 
 Axiom noString : forall {a}, a -> GHC.Base.String.
@@ -98,6 +99,6 @@ Axiom noString : forall {a}, a -> GHC.Base.String.
 Axiom someSDoc : GHC.Base.String.
 
 (* External variables:
-     Prop bool else if then GHC.Base.String GHC.Err.Default GHC.Num.Int
-     GHC.Num.Integer
+     Prop bool else if then GHC.Base.String GHC.Num.Int GHC.Num.Integer
+     HsToCoq.Err.Default
 *)

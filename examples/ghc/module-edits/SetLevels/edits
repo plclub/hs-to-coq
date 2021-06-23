@@ -6,8 +6,8 @@ axiomatize definition SetLevels.countFreeIds
 
 rename value SetLevels.Level = SetLevels.Mk_Level
 
-add SetLevels Instance SetLevels.Default__Level : GHC.Err.Default SetLevels.Level :=
-  GHC.Err.Build_Default _ (SetLevels.Mk_Level GHC.Err.default GHC.Err.default GHC.Err.default).
+add SetLevels Instance SetLevels.Default__Level : HsToCoq.Err.Default SetLevels.Level :=
+  HsToCoq.Err.Build_Default _ (SetLevels.Mk_Level HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
 order SetLevels.Default__LevelType SetLevels.Default__Level SetLevels.Default__LevelEnv
 

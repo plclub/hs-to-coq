@@ -25,10 +25,10 @@ Require Datatypes.
 Require DynFlags.
 Require FastString.
 Require GHC.Base.
-Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
+Require HsToCoq.DeferredFix.
 Require Id.
 Require Literal.
 Require NestedRecursionHelpers.
@@ -318,18 +318,18 @@ Definition findAlt {a : Type} {b : Type}
 Definition mergeAlts {a : Type} {b : Type}
    : list (Core.AltCon * a * b)%type ->
      list (Core.AltCon * a * b)%type -> list (Core.AltCon * a * b)%type :=
-  GHC.DeferredFix.deferredFix1 (fun mergeAlts
-                                (arg_0__ arg_1__ : list (Core.AltCon * a * b)%type) =>
-                                  match arg_0__, arg_1__ with
-                                  | nil, as2 => as2
-                                  | as1, nil => as1
-                                  | cons a1 as1, cons a2 as2 =>
-                                      match Core.cmpAlt a1 a2 with
-                                      | Lt => cons a1 (mergeAlts as1 (cons a2 as2))
-                                      | Eq => cons a1 (mergeAlts as1 as2)
-                                      | Gt => cons a2 (mergeAlts (cons a1 as1) as2)
-                                      end
-                                  end).
+  HsToCoq.DeferredFix.deferredFix1 (fun mergeAlts
+                                    (arg_0__ arg_1__ : list (Core.AltCon * a * b)%type) =>
+                                      match arg_0__, arg_1__ with
+                                      | nil, as2 => as2
+                                      | as1, nil => as1
+                                      | cons a1 as1, cons a2 as2 =>
+                                          match Core.cmpAlt a1 a2 with
+                                          | Lt => cons a1 (mergeAlts as1 (cons a2 as2))
+                                          | Eq => cons a1 (mergeAlts as1 as2)
+                                          | Gt => cons a2 (mergeAlts (cons a1 as1) as2)
+                                          end
+                                      end).
 
 Definition trimConArgs
    : Core.AltCon -> list Core.CoreArg -> list Core.CoreArg :=
@@ -760,13 +760,14 @@ Definition isJoinBind : Core.CoreBind -> bool :=
      Data.Maybe.isJust Data.OldList.nub Data.Tuple.snd Datatypes.id DynFlags.DynFlags
      FastString.FastString GHC.Base.String GHC.Base.const GHC.Base.map
      GHC.Base.mappend GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zg__
-     GHC.Base.op_zgze__ GHC.Base.op_zl__ GHC.DeferredFix.deferredFix1 GHC.Err.error
-     GHC.List.unzip GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ Id.idArity
-     Id.idName Id.idUnfolding Id.isBottomingId Id.isConLikeId Id.isDataConWorkId
-     Id.isJoinId Literal.MachStr Literal.litIsDupable Literal.litIsTrivial
-     NestedRecursionHelpers.all2Map OrdList.OrdList OrdList.appOL OrdList.concatOL
-     OrdList.fromOL OrdList.nilOL Pair.Mk_Pair Pair.pSnd Panic.assertPanic
-     Panic.panic Panic.panicStr Panic.someSDoc Panic.warnPprTrace
-     PrelNames.absentErrorIdKey PrelNames.makeStaticName Unique.Unique Unique.hasKey
-     Util.debugIsOn Util.dropList Util.equalLength Util.filterOut Util.lengthIs
+     GHC.Base.op_zgze__ GHC.Base.op_zl__ GHC.Err.error GHC.List.unzip
+     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__
+     HsToCoq.DeferredFix.deferredFix1 Id.idArity Id.idName Id.idUnfolding
+     Id.isBottomingId Id.isConLikeId Id.isDataConWorkId Id.isJoinId Literal.MachStr
+     Literal.litIsDupable Literal.litIsTrivial NestedRecursionHelpers.all2Map
+     OrdList.OrdList OrdList.appOL OrdList.concatOL OrdList.fromOL OrdList.nilOL
+     Pair.Mk_Pair Pair.pSnd Panic.assertPanic Panic.panic Panic.panicStr
+     Panic.someSDoc Panic.warnPprTrace PrelNames.absentErrorIdKey
+     PrelNames.makeStaticName Unique.Unique Unique.hasKey Util.debugIsOn
+     Util.dropList Util.equalLength Util.filterOut Util.lengthIs
 *)
