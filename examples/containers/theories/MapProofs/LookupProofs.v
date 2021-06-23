@@ -62,7 +62,8 @@ Qed.
 (** ** Verification of [notMember] *)
 
 Lemma notMember_spec:
- forall (s: Map e a) lb ub i, Bounded s lb ub -> notMember i s = true <-> sem s i = None.
+  forall (s: Map e a) lb ub i, Bounded s lb ub -> notMember i s = true <-> sem s i = None.
+                                                   
 Proof.
   intros ???? HB.
   unfold notMember, op_zd__. split; intros.

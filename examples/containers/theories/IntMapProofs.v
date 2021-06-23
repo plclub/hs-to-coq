@@ -37,7 +37,6 @@ Qed.
 
 
 (** ** Well-formed IntMap.
-
 This section introduces the predicate to describe the well-formedness of
 an IntMap. It has parameters that describe the range that this map covers,
 and a function that carries it denotation. This way, invariant preservation
@@ -729,9 +728,89 @@ Proof.
   * erewrite lookup_Desc; eauto.
 Qed.
 
+Print findWithDefault.
+
+(* For the sake of simplicity, we are writing a new findWithdefault that returns an option *)
+
+Definition findWithDefaultOption {a} (def : a) (k : Key) (s : IntMap a) :=
+  Some (findWithDefault def k s).
+
+Lemma equalequals:
+  forall x y, (x =? y) = (x == y).
+Proof.
+  intros. simpl. unfold "==". unfold "=?". auto. Qed.
+
+
+
+Lemma findWithDefault_Desc:
+  forall {a}{s: IntMap a} {r f} x i, Desc s r f ->
+                                     match (f i) with
+                                     | Some v => findWithDefaultOption x i s = Some v
+                                     | None => findWithDefaultOption x i s = Some x
+                                     end.
+Proof.
+  intros. induction H.
+  * destruct (f i) eqn: E.
+  + admit.
+  + admit.
+  * destruct (f i) eqn: E.
+  + unfold findWithDefaultOption. simpl. destruct (nomatch i p msk) eqn: EE.
+  - Search oro. Check oro_Some. specialize (H6 i). rewrite E in H6. symmetry in H6. apply oro_Some in H6. destruct H6.
+    ** 
+  + 
+  * induction H.
+    + simpl. unfold findWithDefaultOption. unfold findWithDefault. specialize (H i).
+      destruct (i == k) eqn: ik; rewrite ik; rewrite E in H;
+      destruct (i =? k) eqn: ik2; try discriminate.
+      - congruence.
+      - apply Neqb_ok in ik2. rewrite Base.Eq_reflI in ik. discriminate. apply ik2.
+    + unfold findWithDefaultOption. simpl. destruct (nomatch i p msk) eqn: EE.
+      - subst. rewrite nomatch_spec in EE.
+        Print nomatch. Print mask. (* find contradiction between E and EE *)
+        Check nomatch_spec.  (* nomatch_spec *)
+        SearchAbout 
+
+  * induction H.
+    + unfold findWithDefaultOption. simpl. specialize (H i). rewrite E in H. destruct (i =? k) eqn: ik.
+      - discriminate.
+      - rewrite equalequals in ik. rewrite ik. reflexivity.
+    + unfold findWithDefaultOption. simpl.
+      specialize (H6 i). specialize (IHDesc1 x). specialize (IHDesc2 x).
+      destruct (nomatch i p msk) eqn: NM.
+      - reflexivity.
+      - destruct (zero i msk) eqn: Z; rewrite E in H6; unfold oro in H6.
+        ** destruct (f1 i) eqn:EF.
+           ++ discriminate.
+           ++ unfold findWithDefaultOption in IHDesc1. apply IHDesc1. reflexivity.
+
+              ** destruct (f1 i) eqn:EF.
+           ++ discriminate.
+           ++ unfold findWithDefaultOption in IHDesc2. apply IHDesc2. auto.
+Admitted.
+
+Lemma findWithDefault_Sem:
+  forall {a} {s: IntMap a} {f x i}, Sem s f ->
+                      match (f i) with
+                      | Some v => findWithDefaultOption x i s = Some v
+                      | None => findWithDefaultOption x i s = Some x
+                      end.
+Proof.
+  intros. destruct H.
+  * destruct (f i) eqn:E; specialize (H i).
+    + rewrite E in H. discriminate.
+    + unfold findWithDefaultOption. simpl. reflexivity.
+  * destruct (f i) eqn:E; move: (findWithDefault_Desc x i HD) => H;
+       rewrite E in H; apply H.
+Qed.
+
+
+
+
+
+
+(** Verification of [lookupLT] **)
 
 (** *** Verification of [isSubmapOf] *)
-
 Lemma isSubmapOfBy_disjoint {a} (f : a -> a -> bool) :
   forall (s1 :IntMap a) r1 f1 s2 r2 f2,
   rangeDisjoint r1 r2 = true ->
@@ -763,6 +842,7 @@ Proof.
   apply not_true_is_false.
   unfold not.
   eapply rangeDisjoint_inRange_false_false with (i := i).
+
   ** eassumption.
   ** eapply Desc_inside; eassumption.
 Qed.
@@ -910,6 +990,39 @@ Proof.
     congruence.
 Qed.
 
+(** Verification of [union] **) 
+Lemma union_Desc:
+  forall {a} {s1 s2: IntMap a} {f f1 f2} {r1 r2},
+    Desc s1 r1 f1 ->
+    Desc s2 r2 f2 ->
+    (forall i, f i = oro (f1 i) (f2 i)) ->
+    Desc (union s1 s2) (commonRange r1 r2) f.
+Proof.
+  intros ???????? H1 H2 H.
+
+Lemma union_Sem:
+  forall {a} (s1 s2: IntMap a) f1 f2 f,
+    Sem s1 f1 -> Sem s2 f2 -> forall i, f i = oro (f1 i) (f2 i) -> Sem (union s1 s2) f.
+Proof.
+  intros. destruct H.
+  * destruct H0.
+    + eapply Sem_change_f.
+
+
+(** Verification of [size] **)
+
+
+Definition sizeGo :  Nat -> IntMap ->  Nat.
+Proof.
+  let size_rhs := eval unfold size in size in
+  match size_rhs with ?f #0 => exact f end.
+Defined.
+Lemma size_spec:
+  forall {a} (s: IntMap a), WF s ->
+            size s = N.of_nat (length (toList s)).
+Proof.
+  intros. induction (size s) eqn: IH.
+ 
 (** *** Verification of [empty] *)
 
 Lemma empty_Sem {a} (f : N -> option a) : Sem empty f <-> forall i, f i = None.

@@ -62,7 +62,7 @@ Proof.
       rewrite in_app_iff in Hz.
       destruct Hz.
       - rewrite Forall_forall in H.
-        apply H; auto.
+        apply H. auto.
       - apply N.lt_le_trans with (m := x).
         apply Hlt. left. reflexivity.
         apply Hge. assumption.
@@ -79,7 +79,7 @@ Proof.
   induction H.
   * simpl. constructor.
   * simpl. constructor.
-    + apply IHStronglySorted; intuition.
+  + apply IHStronglySorted. intuition.
     + clear IHStronglySorted.
       rewrite Forall_forall.
       intros.
@@ -863,6 +863,8 @@ Hint Resolve isBitMask_ctz_lt_WIDTH : isBitMask.
 (** *** Verification of [revNat] *)
 
 Require RevNatSlowProofs.
+
+
 
 Lemma revNat_spec:
   forall n i, (i < WIDTH)%N ->
@@ -2023,6 +2025,7 @@ Proof.
   induction s1; intro s2; destruct s2;
     try solve [simpl; intuition congruence].
   * simpl. unfoldMethods.
+    Print andb_true_iff.
     rewrite !andb_true_iff.
     rewrite !N.eqb_eq.
     rewrite IHs1_1.
@@ -2060,7 +2063,7 @@ Lemma isSubsetOf_disjoint:
   (forall i : N, f1 i = true -> f2 i = true) <-> False.
 Proof.
   intros ??? ??? Hdis HD1 HD2.
-  intuition.
+  intuition. (* gets rid of one side of the iff *)
   destruct (Desc_some_f HD1) as [i Hi].
   eapply rangeDisjoint_inRange_false_false with (i := i).
   ** eassumption.
@@ -2335,11 +2338,12 @@ Proof.
  induction HD; subst.
  * simpl.
    change (((prefixOf i == rPrefix r) && ((bitmapOf i .&.bm) /= #0)) = f i).
+   Print bitmapOf.
    unfoldMethods.
    rewrite -> prefixOf_eqb_spec by assumption.
    rewrite H1.
 
-   unfold bitmapOf, suffixOf, suffixBitMask, bitmapInRange.
+   unfold bitmapOf,suffixOf, suffixBitMask, bitmapInRange.
    unfoldMethods.
    rewrite bitmapOfSuffix_pow.
    rewrite N_land_pow2_testbit.
@@ -2432,8 +2436,8 @@ Hint Resolve empty_WF.
 Lemma singleton_Desc:
   forall e,
    Desc (singleton e) (N.shiftr e 6, N.log2 WIDTH) (fun x => x =? e).
-Proof.
-  intros.
+Proof. 
+  intros. 
   apply DescTip; try nonneg; try isBitMask.
   symmetry; apply rPrefix_shiftr.
   intro i.
@@ -2509,6 +2513,8 @@ Proof.
         try (eapply Desc_rNonneg; eassumption); auto.
 Qed.
 
+Print insertBM.
+
 Lemma insertBM_Desc:
   forall p' bm r1 f1,
   forall s2 r2 f2,
@@ -2568,6 +2574,7 @@ Lemma insert_Desc:
   (forall i, f i = (i =? e) || f2 i) ->
   Desc (insert e s2) r f.
 Proof.
+
   intros.
   eapply insertBM_Desc.
   eapply DescTip; try nonneg.
