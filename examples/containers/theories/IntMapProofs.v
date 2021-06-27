@@ -775,13 +775,27 @@ Proof.
         eapply DescBin with (r1:= r1) (f1:= f1) (r2:= r2) (f2:=f2); auto.
          move: (Desc_not_inRange_None a (Bin (rPrefix r) (rMask r) m1 m2) r f) => H7.
         intuition. specialize (H5 i). intuition. rewrite H7. congruence.
-      - specialize (IHDesc1 x). specialize (H6 i). destruct (f1 i) eqn: Hf. simpl in H6. rewrite H6 in E. inversion E. subst. unfold findWithDefaultOption in IHDesc1. intros. apply IHDesc1.
+      - specialize (IHDesc1 x). specialize (H6 i). destruct (f1 i) eqn: Hf. simpl in H6.
+        rewrite H6 in E. inversion E. subst. unfold findWithDefaultOption in IHDesc1. intros. apply IHDesc1.
         intros. unfold findWithDefaultOption in IHDesc1. simpl in H6. specialize (IHDesc2 x).
-        rewrite <- H6 in IHDesc2. rewrite E in IHDesc2. move: (Desc_not_inRange_None _ _ _ _ H0) => H7. specialize (H7 i).  SearchAbout inRange isSubrange. move: (inRange_isSubrange_false i _ _ H3 H5) => H8. rewrite H8 in H7. intuition. rewrite H9 in H6. rewrite E in H6. discriminate.
-      - 
-        + unfold findWithDefaultOption.  simpl. subst. apply nomatch_zero;
-          specialize (H6 i); unfold oro in H6; specialize (IHDesc1 x); specialize (IHDesc2 x).
-      - apply H1.
+        rewrite <- H6 in IHDesc2. rewrite E in IHDesc2. move: (Desc_not_inRange_None _ _ _ _ H0) => H7.
+        specialize (H7 i).  SearchAbout inRange isSubrange.
+        move: (inRange_isSubrange_false i _ _ H3 H5) => H8. rewrite H8 in H7. intuition.
+        rewrite H9 in H6. rewrite E in H6. discriminate.
+      - specialize (IHDesc2 x). specialize (IHDesc1 x). intros.
+        unfold findWithDefaultOption in IHDesc2. destruct (f2 i) eqn: Hf.
+        ** rewrite IHDesc2. move: (Desc_not_inRange_None a m2 r2 f2 H0 i) => H8.
+           move: (Desc_not_inRange_None a m1 r1 f1 H i) => H9.
+           move: (inRange_isSubrange_false i _ _  H2 H4) => H10.
+           rewrite H10 in H9. intuition. specialize (H6 i). unfold oro in H6. rewrite H7 in H6.
+           rewrite Hf in H6. rewrite E in H6. symmetry. apply H6.
+        ** rewrite IHDesc2. rewrite <- E. move: (Desc_not_inRange_None a m1 r1 f1 H i) => H7.
+           move: (inRange_isSubrange_false i _ _ H2 H4) => H8. rewrite H8 in H7. intuition.
+           specialize (H6 i). unfold oro in H6. rewrite H9 in H6. rewrite Hf in H6. rewrite E in H6.
+           discriminate.                                    
+    + unfold findWithDefaultOption.  simpl. subst. apply nomatch_zero.
+                                                     specialize (H6 i); unfold oro in H6; specialize (IHDesc1 x); specialize (I
+                                                                                                                       - apply H1.
       - reflexivity.
       - destruct (f1 i) eqn: Hf1 in H6.
         ** rewrite H6 in E. discriminate.
@@ -793,7 +807,7 @@ Proof.
         ** destruct (f2 i).
           ++ rewrite H6 in E. discriminate.
           ++ rewrite Hf1 in IHDesc1. unfold findWithDefaultOption in IHDesc2. congruence.
-Admitted.
+Qed.
 
 Lemma findWithDefault_Sem:
   forall {a} {s: IntMap a} {f x i}, Sem s f ->
