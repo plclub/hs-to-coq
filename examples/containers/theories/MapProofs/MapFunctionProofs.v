@@ -2,6 +2,7 @@ Require Import String.
 Import StringSyntax.
 
 Require Import MapProofs.Common.
+Print sem_for_lists.
 Set Bullet Behavior "Strict Subproofs".
 Require Import MapProofs.Bounds.
 Require Import MapProofs.Tactics.
@@ -11,6 +12,8 @@ Require Import MapProofs.ToListProofs.
 Require Import MapProofs.FilterPartitionProofs.
 Require Import MapProofs.FromListProofs.
 Require Import Coq.Classes.Morphisms.
+
+
 (** ** Verification of [mapWithKey] *)
 
 Lemma mapWithKey_Desc: forall {e} {a} {b} `{OrdLaws e} (m: Map e a) (f: e -> a -> b) lb ub,

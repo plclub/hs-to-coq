@@ -90,6 +90,13 @@ Inductive Sem : forall {a}, IntMap a -> (N -> option a) -> Prop :=
 (** The highest level: Just well-formedness.
  *)
 
+Fixpoint sem {a} (s: IntMap a) (i: Key) :=
+  match s with
+  | Nil => None
+  | Tip k x => if (i == k) then Some x else None
+  | Bin p msk m1 m2 => oro (sem m1 i) (sem m2 i)
+  end.
+
 Definition WF {a} (s : IntMap a) : Prop := exists f, Sem s f.
 
 Ltac inversion_Desc HD1 :=
@@ -728,7 +735,6 @@ Proof.
   * erewrite lookup_Desc; eauto.
 Qed.
 
-Print findWithDefault.
 
 (* For the sake of simplicity, we are writing a new findWithdefault that returns an option *)
 
@@ -779,7 +785,7 @@ Proof.
         rewrite H6 in E. inversion E. subst. unfold findWithDefaultOption in IHDesc1. intros. apply IHDesc1.
         intros. unfold findWithDefaultOption in IHDesc1. simpl in H6. specialize (IHDesc2 x).
         rewrite <- H6 in IHDesc2. rewrite E in IHDesc2. move: (Desc_not_inRange_None _ _ _ _ H0) => H7.
-        specialize (H7 i).  SearchAbout inRange isSubrange.
+        specialize (H7 i). 
         move: (inRange_isSubrange_false i _ _ H3 H5) => H8. rewrite H8 in H7. intuition.
         rewrite H9 in H6. rewrite E in H6. discriminate.
       - specialize (IHDesc2 x). specialize (IHDesc1 x). intros.
@@ -793,9 +799,9 @@ Proof.
            move: (inRange_isSubrange_false i _ _ H2 H4) => H8. rewrite H8 in H7. intuition.
            specialize (H6 i). unfold oro in H6. rewrite H9 in H6. rewrite Hf in H6. rewrite E in H6.
            discriminate.                                    
-    + unfold findWithDefaultOption.  simpl. subst. apply nomatch_zero.
-                                                     specialize (H6 i); unfold oro in H6; specialize (IHDesc1 x); specialize (I
-                                                                                                                       - apply H1.
+    + unfold findWithDefaultOption.  simpl. subst. apply nomatch_zero;
+       specialize (H6 i); unfold oro in H6; specialize (IHDesc1 x).
+      - apply H1.
       - reflexivity.
       - destruct (f1 i) eqn: Hf1 in H6.
         ** rewrite H6 in E. discriminate.
@@ -918,6 +924,7 @@ Next Obligation.
 
     destruct (f0 k) eqn:F0; simpl;
       [| destruct (f3 k) eqn:F3; simpl].
+    
 
 Admitted.
 
@@ -1421,7 +1428,6 @@ Qed.
 
 (** Verification of [map] **)
 
-Print Data.IntMap.Internal.map.
 
 Definition IMMap {a b} (f : a -> b) (s : IntMap a):=
   Data.IntMap.Internal.map f s.
@@ -1437,8 +1443,9 @@ Proof.
   * simpl. eapply DescTip.
     - intro i. specialize (H i). rewrite H. destruct (i =? k); reflexivity.
     - apply H0.
-  * simpl. eapply DescBin; trivial. intro i. specialize (H6 i). rewrite H6. 
-Admitted.      
+  * simpl. eapply DescBin; auto. intro i. simpl. specialize (H6 i).
+    rewrite H6. unfold oro. destruct (f1 i) eqn: Hf; reflexivity.
+Qed.
 
 Lemma map_Sem: forall a b (s: IntMap a) f1 (f2: a -> b),
     Sem s f1 -> Sem (IMMap f2 s) (fun i => match (f1 i) with
@@ -1448,5 +1455,114 @@ Lemma map_Sem: forall a b (s: IntMap a) f1 (f2: a -> b),
 Proof.
   intros. induction H.
   - apply SemNil. intros i0. specialize (H i0). rewrite H. reflexivity.
-  - eapply DescSem. eapply map_Desc. apply HD.
+  - eapply DescSem. eapply map_Desc. apply HD. 
 Qed.
+
+(** Verification of [mapWithKey] **)
+
+Definition IMMapWithKey {a b} (f: Key -> a -> b) (s: IntMap a) :=
+  Data.IntMap.Internal.mapWithKey f s.
+
+Lemma mapWithKey_Desc: forall a b (s: IntMap a) r f (fmap : Key -> a -> b),
+    Desc s r f -> Desc (IMMapWithKey fmap s) r (fun i => match (f i) with
+                                                  | Some x => Some (fmap i x)
+                                                  | None => None
+                                                  end).
+Proof.
+  intros. induction H.
+  * simpl. eapply DescTip; auto.
+    - intro i. specialize (H i). rewrite H. destruct (i =? k) eqn: Hik.
+      + apply Neqb_ok in Hik. rewrite Hik. reflexivity.
+      + reflexivity.
+  * simpl. eapply DescBin; auto. intro i. simpl. specialize (H6 i).
+    rewrite H6. unfold oro. destruct (f1 i) eqn: Hf; reflexivity.
+Qed.
+
+Lemma mapWithKey_Sem: forall a b (s: IntMap a) f (fmap: Key -> a -> b),
+    Sem s f -> Sem (IMMapWithKey fmap s) (fun i => match (f i) with
+                                             | Some x => Some (fmap i x)
+                                             | None => None
+                                             end). 
+Proof.
+  intros. induction H.
+  - apply SemNil. intros i. specialize (H i). rewrite H. reflexivity.
+  - eapply DescSem. eapply mapWithKey_Desc. apply HD.
+Qed.
+
+Fixpoint sem_for_lists {a: Type} (l : list (Key * a)) (i : Key) :=
+  match l with
+  | nil => None
+  | (x,y) :: t => if i == x then Some y else sem_for_lists t i
+  end.
+
+
+Lemma mapKeys_Desc: forall a (fmap : Key -> Key) (s: IntMap a) r f,
+    Desc s r f ->
+    Desc (mapKeys fmap s) r (fun i => (sem_for_lists (rev (foldrWithKey (fun k v t => ((fmap k), v) :: t) nil s)) i)).
+Proof.
+  intros.
+  unfold mapKeys.
+Admitted.
+
+(* Verification of [lookupMin] *)
+
+Lemma empty_no_elts : forall {a}  (m: IntMap a),
+      (forall i, sem m i = None) <-> empty = m.
+Proof.
+  intros. split; intros.
+  * induction m; auto.
+    + simpl in H. unfold oro in H.
+      assert (forall i, sem m2 i = None). {admit.}
+      assert (forall i, sem m3 i = None). {admit.}
+     intuition. symmetry in H2. rewrite H2. symmetry in H3. rewrite H3. unfold empty.                                                     admit.
+    + simpl in H. specialize (H k). unfold "==" in H. unfoldMethods. rewrite N.eqb_refl in H. discriminate. 
+  * unfold empty in H. rewrite <-  H. simpl. reflexivity.
+Admitted.
+
+Definition go {a} := fix go (arg_2__ : IntMap a) : option (Key * a) :=
+        match arg_2__ with
+        | Bin _ _ l' _ => go l'
+        | Tip k v => Some (k, v)
+        | Nil => None
+        end.
+
+Lemma goL_Desc:
+  forall {a} (s : IntMap a) r f,
+    Desc s r f -> match go s with
+                 | None => (forall i, sem s i = None)
+                 | Some (k, v) => sem s k = Some v /\ (forall i v1, sem s i = Some v1 -> (k <= i))
+                 end.
+Proof.
+  intros. unfold go. Search mask. Admitted.
+  
+Print lookupMin.
+
+Lemma lookupMin_Desc:
+  forall {a} (s : IntMap a) r f,
+    Desc s r f ->
+    match lookupMin s with
+    | None => (forall i, sem s i = None)
+    | Some (k, v) => sem s k = Some v /\ (forall i v1, sem s i = Some v1 -> (k <= i))
+    end.
+Proof.
+  intros. induction H.
+  * simpl. unfoldMethods. rewrite N.eqb_refl. split.
+    + reflexivity.
+    + intros. destruct (i =? k) eqn: Hik.
+      - apply Neqb_ok in Hik. subst. move: (N.le_refl k) => H2. intuition.
+      - discriminate.
+  * simpl. unfoldMethods. destruct (msk <? 0) eqn: Hm.
+    + admit.
+    + fold (@go a). move: (goL_Desc m1 r1 f1 H) => H7. destruct (go m1) eqn: Hg.
+      - destruct p0. destruct H7. split.
+        ** unfold oro. rewrite H7. reflexivity.
+        ** unfold oro. intros. destruct (sem m1 i) eqn: Hs.
+          ++ eapply H8. eauto.
+          ++ admit.
+  
+Admitted.
+
+
+
+
+
