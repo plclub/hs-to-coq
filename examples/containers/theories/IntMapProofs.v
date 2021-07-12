@@ -14,6 +14,7 @@ Require Import GHC.DeferredFix.
 Require Import IntSetProofs.
 Require Import Data.IntSet.Internal.
 Require Import Data.IntMap.Internal.
+Require Import MapProofs.Bounds.
 
 Import GHC.Base.
 
@@ -578,7 +579,6 @@ Proof.
   rewrite negb_involutive.
   reflexivity.
 Qed.
-
 
 (**
 The IntMap code has a repeating pattern consisting of calls to [nomatch] and [zero].
@@ -1231,10 +1231,111 @@ Proof.
   intro i; reflexivity.
 Qed.
 
+(* Verification of [filter] *)
 
+Definition IMFilter {a} p (s: IntMap a) :=
+  Data.IntMap.Internal.filter p s.
 
+Print Data.IntMap.Internal.filter.
 
-
+Lemma filter_Desc:
+  forall {a} p (s: IntMap a) r f f',
+    Desc s r f ->
+    (forall (i: N), f' i = match f i with
+                 | None => None
+                 | Some v => if p v then Some v else None
+                 end) ->                                    
+    Desc0 (IMFilter p s) r f'.
+Proof.
+  intros.
+  revert f' H0.
+  induction H.
+  * intros.
+    simpl. subst. destruct (p v) eqn: Hpv.
+     + eapply  Desc0NotNil; eauto. apply DescTip; eauto.
+       intro. specialize (H1 i). specialize (H i). rewrite H in H1.
+       destruct (i =? k) eqn: Hik; auto. rewrite Hpv in H1. auto.
+       eapply isSubrange_refl.
+     + eapply Desc0Nil. intro. specialize (H i). specialize (H1 i). destruct (f i).
+       - destruct (i =? k).
+         ** inversion H. subst. rewrite Hpv in H1. auto.
+         ** discriminate.
+       - auto.
+  * intros. subst. simpl.
+    rewrite foldl'Bits_foldlBits.
+    fold (filterBits p (rPrefix r) bm).
+    eapply tip_Desc0; try assumption; try reflexivity.
+    + intro i.
+      rewrite H3.
+      rewrite H1.
+      unfold bitmapInRange.
+      destruct (inRange i r) eqn:Hir.
+      - rewrite testbit_filterBits by isBitMask.
+        f_equal. f_equal.
+        clear p H3.
+        rewrite N.div_mod with (a := i) (b := id WIDTH) at 1
+          by (intro Htmp; inversion Htmp).
+        f_equal.
+        ** destruct r as [p b]. unfold inRange, rPrefix, rBits, snd in *.
+           rewrite N.eqb_eq in Hir.
+           subst.
+           rewrite N.shiftl_mul_pow2 by nonneg.
+           rewrite N.shiftr_div_pow2 by nonneg.
+           rewrite N.mul_comm.
+           reflexivity.
+        ** rewrite N.land_ones by nonneg.
+           rewrite H0.
+           reflexivity.
+      - rewrite andb_false_l. reflexivity.
+    + isBitMask.
+  * intros. subst. simpl.
+    eapply bin_Desc0.
+    + apply IHDesc1; intro; reflexivity.
+    + apply IHDesc2; intro; reflexivity.
+    + assumption.
+    + assumption.
+    + assumption.
+    + reflexivity.
+    + reflexivity.
+    + solve_f_eq.
+  
+  intros. revert f' H0. induction H.
+  * intros. simpl. subst. 
+  induction H.
+  * simpl. destruct (p v) eqn: Hpv.
+  + eapply Desc0NotNil; auto. apply DescTip. intro. specialize (H i). specialize (H0 i).
+    rewrite H in H0. destruct (i =? k) eqn: Hk.
+      - rewrite Hpv in H0. auto.
+      - auto.
+      - auto.
+      - rewrite <- H1. apply isSubrange_refl.
+    + eapply Desc0Nil. intro. specialize (H0 i). specialize (H i). rewrite H in H0. destruct (i =? k).
+      - rewrite Hpv in H0. apply H0.
+      - apply H0.
+   * simpl. unfold bin.
+     specialize (IHDesc1 p (fun i => match f1 i with
+                                  | None => None
+                                  | Some v => if p v then Some v else None
+                                  end) ltac:(intros; auto)).
+     specialize (IHDesc2 p (fun i => match f2 i with
+                                  | None => None
+                                  | Some v => if p v then Some v else None
+                                  end) ltac:(intros; auto)).
+     simpl. destruct (IMFilter p m1) eqn: Hf1.
+     + destruct (IMFilter p m2) eqn: Hf2.
+       - eapply Desc0NotNil; eauto. eapply DescBin'; eauto.
+          **  
+          ** admit.
+          ** intro. specialize (H7 i). specialize (H0 i). rewrite H7 in H0. admit.
+          ** apply isSubrange_refl.
+       - eapply Desc0NotNil; eauto. eapply DescBin; eauto.
+          ** admit.   
+          ** admit.
+          ** intro. specialize (H7 i). specialize (H0 i). 
+          ** apply isSubrange_refl.
+      - admit.
+    
+        
 (** * Specifying [restrictKeys] *)
 
 (* We can extract the argument to [deferredFix] from the definition of [restrictKeys]. *)
@@ -1268,6 +1369,7 @@ Lemma bin_Desc0:
     Desc0 m1 r1 f1 ->
     Desc0 m2 r2 f2 ->
     (0 < rBits r)%N ->
+
     isSubrange r1 (halfRange r false) = true ->
     isSubrange r2 (halfRange r true) = true ->
     p = rPrefix r ->
@@ -1501,7 +1603,7 @@ Lemma mapKeys_Desc: forall a (fmap : Key -> Key) (s: IntMap a) r f,
     Desc (mapKeys fmap s) r (fun i => (sem_for_lists (rev (foldrWithKey (fun k v t => ((fmap k), v) :: t) nil s)) i)).
 Proof.
   intros.
-  unfold mapKeys.
+  unfold mapKeys. simpl. 
 Admitted.
 
 (* Verification of [lookupMin] *)
@@ -1533,7 +1635,9 @@ Lemma goL_Desc:
                  | Some (k, v) => sem s k = Some v /\ (forall i v1, sem s i = Some v1 -> (k <= i))
                  end.
 Proof.
-  intros. unfold go. Search mask. Admitted.
+  intros. destruct (go s) eqn: Hg.
+  * 
+  Search mask. Admitted.
   
 Print lookupMin.
 
@@ -1552,15 +1656,19 @@ Proof.
       - apply Neqb_ok in Hik. subst. move: (N.le_refl k) => H2. intuition.
       - discriminate.
   * simpl. unfoldMethods. destruct (msk <? 0) eqn: Hm.
-    + admit.
+    + destruct msk; discriminate.
     + fold (@go a). move: (goL_Desc m1 r1 f1 H) => H7. destruct (go m1) eqn: Hg.
       - destruct p0. destruct H7. split.
         ** unfold oro. rewrite H7. reflexivity.
-        ** unfold oro. intros. destruct (sem m1 i) eqn: Hs.
-          ++ eapply H8. eauto.
-          ++ admit.
-  
+        ** unfold oro. intros i v1. destruct (sem m1 i) eqn: Hs.
+          ++ specialize (H8 i v1). rewrite Hs in H8. auto. 
+          ++  admit.
+      - destruct (lookupMin m2) in IHDesc2.
+        ** destruct p0. subst.
+        ** intro. specialize (H7 i). unfold oro. rewrite H7. rewrite IHDesc2. reflexivity.
 Admitted.
+
+
 
 
 
