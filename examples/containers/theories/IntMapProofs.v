@@ -2,6 +2,7 @@ Require Import Omega.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.NArith.NArith.
 Require Import Coq.Bool.Bool.
+Require Import Coq.Program.Equality.
 
 
 Require Import DyadicIntervals.
@@ -14,6 +15,7 @@ Require Import GHC.DeferredFix.
 Require Import IntSetProofs.
 Require Import Data.IntSet.Internal.
 Require Import Data.IntMap.Internal.
+Require Import Lia.
 
 Import GHC.Base.
 
@@ -1167,7 +1169,21 @@ Proof.
        intro i. rewrite Hf.
        destruct (i =? e); simpl; auto.
     ++ intros R1 R2.
-       admit.
+    eapply DescBin.
+     - apply HD1.
+     - specialize (IHHD2 v f).
+     apply IHHD2. 
+     intros.
+     specialize (H4 i).
+     specialize (Hf i).
+     destruct (i=?e). admit. admit.
+     - admit.
+     - admit.
+     - admit.
+     - admit.
+     - admit.
+     - intros.
+     admit.
 Admitted.
 
 
@@ -1227,265 +1243,26 @@ Qed.
     -apply H.
   Qed.
 
-   
-Lemma insertWith_Desc :
- forall a (f: a -> a -> a) e v r1,
- forall (s2: IntMap a) r2 f2,
- forall r f1,
- Desc s2 r2 f2 ->
- r1 = singletonRange e ->
- r = commonRange r1 r2 ->
- (forall i, f1 i = if (i =? e) then
-  match f2 i with 
- | None => Some v
- | Some x => Some (f v x)
-  end
- else f2 i) ->
- Desc (insertWith f e v s2) r f1.
- Proof.
-   intros ?????????? HD ?? Sf ; subst.
-   generalize dependent f1.
-   induction HD as [p2' bm2 r2 f2|s2 r2 f2 s3 r3 f3 p2' r]; subst; intros f' Hf.
-    +
-    unfoldMethods.
-    pose (h0 := H e). clearbody h0.
-    destruct (e =? bm2) eqn:EE. 
-    rewrite <- reflect_iff in EE; try eapply N.eqb_spec. subst.
-    unfold insertWith.
-    unfold insertWithKey.
-    rewrite OrdTactic.Lemmas.Eq_eq_refl.
-    -
-    eapply DescTip.
-    intros.
-    specialize (Hf i).
-    specialize (H i).
-     * destruct (i =? bm2).
-      ++  rewrite H in Hf.
-      apply Hf.
-      ++ congruence.
-    * apply isSubrange_commonRange_r.
-    apply isSubrange_refl.
-    -
-    unfold insertWith.
-    unfold insertWithKey.
-    assert (H1:e == bm2 = false). {
-      apply EE.
-          }
-    rewrite H1.
-    eapply link_Desc.
-    -- apply DescTip.
-     ** intros.
-     reflexivity.
-     ** reflexivity.
-    -- apply DescTip;
-        intros; reflexivity.
-    -- unfold singletonRange, rPrefix.
-    rewrite  N.shiftl_0_r.
-    reflexivity.
-    -- unfold singletonRange, rPrefix.
-    rewrite  N.shiftl_0_r.
-    reflexivity.
-    -- apply rangeDisjNotEqual.
-    auto.
-    --
-    unfold commonRange.
-    rewrite isSubrangeSingeltons.
-    rewrite isSubrangeSingeltons.
-    auto.
-    apply OrdTactic.Lemmas.Eq_neq_sym in H1.
-    apply H1.
-    apply H1.
-    -- intros. 
-    specialize (Hf i).
-    specialize (H i).
-    unfold oro.
-    destruct (i =? e) eqn:H2.
-     ** apply Ndec.Neqb_complete in H2.
-     subst. 
-     rewrite h0 in Hf.
-     apply Hf.
-     **
-     rewrite <- Hf in H.
-     apply H.
-     +
-     unfold insertWith.
-     unfold insertWithKey.
-     rewrite nomatch_spec.
-     destruct (inRange e r0) eqn:EE.
-     - simpl.
-     rewrite zero_spec.
-     assert (H5: commonRange (singletonRange e) r0 = r0 ). {
-         apply isSubrange_commonRange_r.
-         unfold isSubrange.
-         rewrite rPrefix_singletonRange.
-         rewrite EE.
-         simpl.
-         apply less_impl_leb.
-         apply H. 
-      }
-     destruct (N.testbit e (rBits r0 -1)) eqn:EE1.
-      * simpl.
-      eapply DescBin.
-      
-       ++ apply HD1.
-       ++
-       admit.
-       ++ rewrite H5.
-         apply H.
-       ++ rewrite H5.
-       apply H0.
-       ++ rewrite H5.
-       apply H1.
-       ++ rewrite H5.
-       reflexivity.
-       ++ rewrite H5.
-       reflexivity.
-       ++
-       intros.
-       specialize (Hf i).
-       unfold oro.
-       specialize (H4 i).
-       destruct ( i=?e) eqn: EE2.
-        --    
-        unfold oro in H4.
-        rewrite H4 in Hf.
-        simpl in Hf.
-        unfold oro in H4.
-        destruct (s3 i).
-         ** 
-         admit.
-         ** admit. (** If I do reflexivity, the bullet point 
-         under doesn't work? **)
-         --
-         rewrite <- Hf in H4.
-         unfold oro in H4.
-         apply H4. 
-      * simpl.
-      eapply DescBin.
-       ++
-
-       ++ apply HD2.
-       ++ rewrite H5.
-       apply H. 
-       ++ rewrite H5.
-       apply H0.
-       ++ rewrite H5.
-       apply H1.
-       ++ rewrite H5.
-       reflexivity.
-       ++ rewrite H5.
-       reflexivity.
-       ++
-       intros i.
-       specialize (H4 i).
-       specialize (Hf i).
-       destruct (i=?e) eqn: EE2.
-        --  
-        rewrite Hf.
-        rewrite <- H4.
-        (** 
-        This looks like an impossible goal? the LHS function
-        is by defintion different from f0 i
-        **)
-        admit.
-        -- rewrite Hf.
-        apply H4.
-      * apply H.
-     - simpl.
-     assert (H5 : rangeDisjoint (singletonRange e) r0 = true). {
-       unfold rangeDisjoint.
-       unfold isSubrange.
-       rewrite rPrefix_singletonRange.
-       rewrite EE.
-       rewrite andb_false_l.
-       rewrite orb_false_l.
-       simpl.
-       assert (H6: (rBits r0 <=? 0) = false ). {
-         apply N.gt_lt_iff in H.
-        apply N.leb_gt.
-        apply N.gt_lt.
-        auto.
-        }
-        rewrite H6.
-        rewrite andb_false_r.
-       auto.
-     }
-     eapply link_Desc.
-      * eapply DescTip.
-       ++ intros.
-       reflexivity.
-       ++ reflexivity.
-      * eapply DescBin.
-       ++ apply HD1.
-       ++ apply HD2.
-       ++ apply H.
-       ++ apply H0.
-       ++ apply H1.
-       ++ reflexivity.
-       ++ reflexivity.
-       ++ apply H4. 
-      * rewrite rPrefix_singletonRange.
-      auto.
-      * auto.
-      * auto.
-      * apply disjoint_commonRange.
-      apply H5.
-      *
-      intros.
-      unfold oro.
-      specialize (H4 i).
-      specialize (Hf i).
-      specialize (IHHD1 f v f').
-      unfold oro in H4.
-      auto.
-      destruct (i =? e) eqn:EE1.
-       ++ rewrite H4 in Hf.
-       admit.
-       ++ apply Hf.
-     - apply H.
- Admitted.
 
 
 
-(** 
-Desc
-  ((fix
-    insertWithKey (a : Type) (arg_0__ : Key -> a -> a -> a) 
-                  (arg_1__ : Key) (arg_2__ : a) (arg_3__ : IntMap a) {struct
-                  arg_3__} : IntMap a :=
-      match arg_3__ with
-      | Bin p m l r =>
-          if nomatch arg_1__ p m
-          then link arg_1__ (Tip arg_1__ arg_2__) p arg_3__
-          else
-           if zero arg_1__ m
-           then Bin p m (insertWithKey a arg_0__ arg_1__ arg_2__ l) r
-           else Bin p m l (insertWithKey a arg_0__ arg_1__ arg_2__ r)
-      | Tip ky y =>
-          if arg_1__ == ky
-          then Tip arg_1__ (arg_0__ arg_1__ arg_2__ y)
-          else link arg_1__ (Tip arg_1__ arg_2__) ky arg_3__
-      | Nil => Tip arg_1__ arg_2__
-      end) s2 (fun (_ : Key) (arg_1__ arg_2__ : s2) => f arg_1__ arg_2__) e v
-     r3) ?r2 ?f2
-
-**)
-
-
- Lemma insertWith_Sem:
-  insertWithKey a b c d 
+ Lemma BothInRangeCommonInRange:
+ forall r1 r2 r3,
+ isSubrange r1 r3 = true ->
+ isSubrange r2 r3 = true ->
+ isSubrange (commonRange r1 r2) r3 = true.
  Proof.
    intros.
- Admitted.
-
+   rewrite isSubrange_commonRange. 
+   rewrite andb_true_iff.
+   split; assumption.
+ Qed.
 
  Definition getMap (a:Type)(f: N->a->a->a) (e: N) (v:a) (o:IntMap a) : IntMap a := 
    match insertLookupWithKey f e v o with
    | (a,b) => b 
    end.
  
-
-
  Lemma insertLookupWithKey_Desc a:
   forall (f: N -> a -> a -> a) e v o r1,
   forall (s2: IntMap a) r2 f2,
@@ -1502,6 +1279,7 @@ Desc
  Desc  (getMap a f e v o) r f1.
 Proof.
 Admitted.
+
 
 
 
@@ -1526,25 +1304,29 @@ Admitted.
   destruct (e =? bm2) eqn:EE. 
   +pose (h0 := H e). clearbody h0.
     rewrite <- reflect_iff in EE; try eapply N.eqb_spec. subst.
-    unfold insertWith.
     unfold insertWithKey.
     rewrite OrdTactic.Lemmas.Eq_eq_refl.
      - apply DescTip.
-      * admit.
+      *
+      intros.
+      specialize (H i).
+      specialize (Hf i).
+      destruct (i=?bm2) eqn: EE.
+       -- rewrite H in Hf.
+       auto.
+       -- congruence.
       * apply commonRange_idem.
      +
      unfold insertWithKey.
      replace (e == bm2) with false. 
      eapply link_Desc.
-      * apply DescTip.
-       ++ reflexivity.
-       ++ reflexivity.
-      * apply DescTip.
-      ++ reflexivity.
-      ++reflexivity.
-      * rewrite rPrefix_singletonRange.
+      * apply DescTip;
+       reflexivity.
+      * apply DescTip;
       reflexivity.
       * rewrite rPrefix_singletonRange.
+      reflexivity.
+      * rewrite rPrefix_singletonRange. 
       reflexivity.
       * unfold rangeDisjoint.
       rewrite isSubrangeSingeltons.
@@ -1560,16 +1342,31 @@ Admitted.
       apply OrdTactic.Lemmas.Eq_neq_sym.
       apply EE.
       apply EE.
-      * admit.
+      * 
+      intros.
+      simpl.
+      unfold oro.
+      specialize (Hf i).
+      specialize (H i).
+      destruct (i=?e) eqn:EE2.
+       -- replace i with e in *. 2:{
+         symmetry.
+         apply Neqb_ok.
+         apply EE2.
+       }
+       rewrite EE in H.
+       rewrite H in Hf.
+       apply Hf. 
+       --
+       rewrite  Hf.
+       apply H.
       +
       unfold insertWithKey.
       rewrite zero_spec.
       destruct  (N.testbit e (rBits r0 - 1)) eqn:EE.
       - rewrite nomatch_spec.
       simpl.
-      
-       ++ destruct (inRange e r0) eqn:EE1.
-       
+       ++ destruct (inRange e r0) eqn:EE1. 
         **
         assert (H5: commonRange (singletonRange e) r0 = r0 ). {
          apply isSubrange_commonRange_r.
@@ -1582,20 +1379,81 @@ Admitted.
       }
         simpl.
         eapply DescBin.
-         -- apply H. 
          --
-         admit.
+         apply H.
+         --       
+         fold (@insertWithKey).
+         specialize (IHDesc2 f v ).
+         apply IHDesc2.
+         intros.
+         reflexivity.
          -- rewrite H5.
          apply H1.
          -- rewrite H5.
          apply H2.
          -- rewrite H5.
-         apply H3.
+         
+         assert (inRange e (halfRange r0 true) = true ). {
+           rewrite halfRange_inRange_testbit.
+            - rewrite EE. auto.
+            - assumption.
+            - assumption.
+         }
+         
+         assert (isSubrange (singletonRange e) (halfRange r0 true) = true). {
+          rewrite <- smaller_inRange_iff_subRange.
+          rewrite rPrefix_singletonRange. assumption.
+          unfold singletonRange.
+          rewrite rBits_halfRange.
+          simpl.
+          lia.
+         }
+          rewrite BothInRangeCommonInRange; auto.
          -- rewrite H5.
          reflexivity.
          -- rewrite H5.
          reflexivity.
-         -- admit.
+         --
+         intros.
+         simpl.
+         destruct (i=?e ) eqn:EE2.
+          +++         
+          assert( Hs3: i=e -> (s3 i) = None ). {
+           intros.
+           eapply Desc_outside.
+           apply H.
+           replace e with i in *.
+           clear EE2 H4.
+           SearchAbout N.testbit halfRange.
+           assert (inRange i (halfRange r0 false) = false ). {
+             SearchAbout halfRange inRange.
+            rewrite halfRange_inRange_testbit.
+             - simpl. rewrite EE. auto.
+             - assumption.
+             - assumption.
+           }
+           eapply inRange_isSubrange_false.
+            *** apply H2.
+            ***  apply H4.
+          }
+          unfold oro.
+          rewrite Hs3. 2: { apply Neqb_ok. assumption. }
+          specialize (Hf i).
+          specialize (H6 i).
+          rewrite EE2 in Hf.
+          rewrite H6 in Hf.
+          unfold oro in *.
+          rewrite Hs3 in Hf.
+          assumption.
+          apply Neqb_ok.
+          assumption.
+          +++
+          unfold oro in *.
+          specialize (Hf i).
+          rewrite EE2 in Hf.
+          rewrite Hf.
+          specialize (H6 i).
+          assumption.
         ** simpl.
         assert (H8 : rangeDisjoint (singletonRange e) r0 = true). {
        unfold rangeDisjoint.
@@ -1616,9 +1474,8 @@ Admitted.
        auto.
      }
         eapply link_Desc.
-         -- apply DescTip.
-          +++ reflexivity.
-          +++ reflexivity.
+         -- apply DescTip;
+         reflexivity.
          -- eapply DescBin.
           +++ apply H.
           +++ apply H0.
@@ -1630,22 +1487,266 @@ Admitted.
           +++apply H6.
          -- rewrite rPrefix_singletonRange. reflexivity.
          -- reflexivity.
-         -- admit.
+         -- apply H8.
          -- 
          apply disjoint_commonRange.
          apply H8.
-         --intros.
-         specialize (Hf i). 
+         --
+         intros.
+         simpl.
+         unfold oro.
+         destruct (i=?e ) eqn:EE2.
+         +++
+         specialize (H6 i).
+         specialize (Hf i).
+         assert((p2' i) = None ). {
+          intros.
+          eapply Desc_outside.
+          apply H0.
+          
+          replace e with i in *. 2 : { apply Neqb_ok. assumption. }
+          eapply inRange_isSubrange_false.
+          - apply H3.
+          - SearchAbout halfRange inRange.
+          eapply inRange_isSubrange_false.
+          + eapply isSubrange_halfRange.
+          assumption.
+          + assumption.
+         }
+         assert((s3 i) = None ). {
+          intros.
+          eapply Desc_outside.
+          apply H.
+          
+          replace e with i in *. 2 : { apply Neqb_ok. assumption. }
+          eapply inRange_isSubrange_false.
+          - apply H2.
+          - SearchAbout halfRange inRange.
+          eapply inRange_isSubrange_false.
+          + eapply isSubrange_halfRange.
+          assumption.
+          + assumption.
+         }
+         
+         unfold oro in *.
+         rewrite EE2 in Hf.
+         rewrite H6 in Hf.
+         rewrite H5 in Hf.
+         rewrite H4 in Hf.
+         assumption.
+          +++         
+          unfold oro in *.
+          specialize (Hf i).
+          rewrite EE2 in Hf.
+          rewrite Hf.
+          reflexivity.
        ++ apply H1.
-
       -
-      -
+      fold (@insertWithKey).
+      rewrite nomatch_spec.
+      destruct (inRange e r0) eqn:EE1.
+       * simpl.
+       assert (H5: commonRange (singletonRange e) r0 = r0 ). {
+         apply isSubrange_commonRange_r.
+         unfold isSubrange.
+         rewrite rPrefix_singletonRange.
+         rewrite EE1.
+         simpl.
+         apply less_impl_leb.
+         apply H1. 
+      }
+       eapply DescBin.
+        -- 
+        specialize (IHDesc1 f v).
+        apply IHDesc1.
+        reflexivity.
+        --  apply H0.
+        -- rewrite H5. assumption. 
+        -- rewrite H5.
+        eapply BothInRangeCommonInRange.
+        SearchAbout isSubrange singletonRange.
+        +++ unfold isSubrange.
+        rewrite rPrefix_singletonRange.
+        erewrite halfRange_inRange_testbit.
+        simpl. rewrite EE. simpl.
+        rewrite rBits_halfRange.
+        apply N.leb_le.
+        lia.
+        assumption.
+        assumption.
+        +++
+        assumption.
+        -- rewrite H5.
+        assumption.
+        -- rewrite H5. reflexivity.
+        -- rewrite H5. reflexivity.
+        -- intros.
+        simpl.
+        specialize (H6 i).
+        specialize (Hf i).
+        destruct (i=?e) eqn: EE2.
+        +++     
+       assert( Hp2: i=e -> (p2' i) = None ). {
+         intros.
+         eapply Desc_outside.
+         apply H0.
+         replace e with i in *.
+         clear EE2 H4.
+         assert (inRange i (halfRange r0 true) = false ). {
+          rewrite halfRange_inRange_testbit.
+           - simpl. rewrite EE. auto. 
+           - assumption.
+           - assumption.
+         }
+         eapply inRange_isSubrange_false.
+          *** apply H3.
+          ***  apply H4.
+        }
+        unfold oro in *.
+        rewrite Hp2.
+        rewrite Hp2 in H6.
+        rewrite H6 in Hf.
+        destruct (s3 i).
+        assumption.
+        assumption.
+        apply Neqb_ok.
+        assumption.
+        apply Neqb_ok.
+        assumption.
+        +++
+        unfold oro in *.
+        rewrite <- Hf in H6.
+        assumption.
+       * simpl.
+       assert (H8 : rangeDisjoint (singletonRange e) r0 = true). {
+       unfold rangeDisjoint.
+       unfold isSubrange.
+       rewrite rPrefix_singletonRange.
+       rewrite EE1.
+       rewrite andb_false_l.
+       rewrite orb_false_l.
+       simpl.
+       assert (H7: (rBits r0 <=? 0) = false ). {
+         apply N.gt_lt_iff in H1.
+        apply N.leb_gt.
+        apply N.gt_lt.
+        auto.
+        }
+        rewrite H7.
+        rewrite andb_false_r.
+       auto.
+     }
+       eapply link_Desc.    
+        -- eapply DescTip. intros; reflexivity. reflexivity.
+        -- eapply DescBin.
+         ++ apply H.
+         ++ apply H0.
+         ++ apply H1.
+         ++ apply H2.
+         ++ apply H3.
+         ++ reflexivity.
+         ++ reflexivity.
+         ++ intros. reflexivity.
+        -- rewrite rPrefix_singletonRange. reflexivity.
+        -- reflexivity.
+        --       
+        apply H8.
+        -- apply disjoint_commonRange.
+        apply H8.
+        -- intros. simpl.
+        specialize (Hf i).
+        specialize (H6 i).
+        destruct (i=?e) eqn:EE2.
+         ++
+         unfold oro in *.
+         assert (Hp2: p2' i = None). {
+           eapply Desc_outside.
+           apply H0.
+           replace e with i in *. 
+           2:{ apply Neqb_ok. assumption. }
+         clear EE2.
+         assert (inRange i (halfRange r0 true) = false ). {
+           SearchAbout inRange.
+           eapply inRange_isSubrange_false.
+           apply isSubrange_halfRange.
+           assumption.
+           assumption.
+         }
+         eapply inRange_isSubrange_false.
+          *** apply H3.
+          ***  apply H4.
+         }
+         assert (Hs3: s3 i = None). {
+          eapply Desc_outside.
+          apply H.
+          replace e with i in *. 
+          2:{ apply Neqb_ok. assumption. }
+        clear EE2.
+        assert (inRange i (halfRange r0 false) = false ). {
+          eapply inRange_isSubrange_false.
+          apply isSubrange_halfRange.
+          assumption.
+          assumption.
+        }
+        eapply inRange_isSubrange_false.
+         *** apply H2.
+         ***  apply H4.
+        }
+         rewrite Hp2 in H6.
+         rewrite Hs3 in H6.
+         rewrite H6 in Hf.
+         assumption.
+         ++ 
+         unfold oro in *.
+         congruence.
+       * apply H1.
+      - apply H1.
+ Qed.
 
-      
-    
 
-
-
+ Lemma insertWith_Desc:
+ forall a (f: a -> a -> a) e v r1,
+ forall (s2: IntMap a) r2 f2,
+ forall r f1,
+ Desc s2 r2 f2 ->
+ r1 = singletonRange e ->
+ r = commonRange r1 r2 ->
+ (forall i, f1 i = if (i =? e) then
+  match f2 i with 
+ | None => Some v
+ | Some x => Some (f v x)
+  end
+ else f2 i) ->
+ Desc (insertWith f e v s2) r f1.
+ Proof.
+   intros ?????????? HD ?? Sf ; subst.
+   generalize dependent f1.
+   induction HD as [p2' bm2 r2 f2|s2 r2 f2 s3 r3 f3 p2' r]; subst; intros f' Hf.
+    + unfold insertWith.
+    eapply insertWithKey_Desc.
+     -eapply DescTip; reflexivity.
+     - reflexivity.
+     - reflexivity.
+     - intros. specialize (Hf i).
+     simpl.
+     destruct (i=?e).
+      * specialize (H i).
+      rewrite H in Hf. eassumption.
+      * specialize (H i). rewrite <- Hf in H. eassumption. 
+    + eapply insertWithKey_Desc.
+     - eapply DescBin.
+      * eassumption.
+      * eassumption.
+      * eassumption.
+      * eassumption.
+      * eassumption.
+      * reflexivity.
+      * reflexivity.
+      * eapply H4.
+     - reflexivity.
+     - reflexivity.
+     - eassumption. 
+ Qed.
 
 (** * Specifying [restrictKeys] *)
 
@@ -1842,12 +1943,158 @@ Qed.
 Mohamed Proofs
 ***)
 
+
 (**  Definitions and Operations *)
 
 (***)
 
 
+Definition isSome {a} (x : option a) : bool := 
+  match x with 
+  | None => false
+  | _ => true
+  end. 
 
+
+Lemma delete_Sem:
+forall a (f: a -> a -> a) x ,
+forall (s: IntMap a) r f ,
+  Desc0 s r f ->
+  Desc0 (delete x s) r (fun i => if isSome (Sem2 s i) then None else Sem2 s i).
+  Proof.
+  intros.
+  induction s.
+   - admit.
+   - simpl.
+   destruct (x==k) eqn:EE.
+    + apply Desc0Nil.
+    intros. destruct (k==i) eqn:EE1.
+    auto. auto.
+    + eapply Desc0NotNil.
+     * apply DescTip.
+      -- intros. reflexivity.
+      -- reflexivity.
+     * admit.
+     * intros. destruct (k==i) eqn:EE2.
+      -- simpl.
+   -
+
+  induction H.
+  - eapply Desc0Nil.
+  intros.
+  unfold isSome.
+  destruct (Sem2 Nil i) eqn:EE.
+  auto.
+  auto.
+  - simpl.
+  eapply Desc0NotNil.
+   + apply 
+    admit.
+   + apply Hsubrange.
+   + intros.
+   destruct (Sem2 m i) eqn:EE.
+    * simpl. reflexivity.
+    * simpl. reflexivity.
+  Admitted. 
+
+
+
+
+Lemma delete_Desc :
+forall a (f: a -> a -> a) x f1 r1,
+ forall (s: IntMap a) r f ,
+ Desc s r f ->
+ (forall i, f1 i = if (i =? x) then None
+ else f i) ->
+ (isSubrange r r1) = true ->
+ Desc0 (delete x s) r1 f1.
+ Proof.
+   intros.
+    induction H.
+    - 
+    unfold delete.
+
+    destruct (x==k) eqn:EE.
+     + rewrite EE.
+     apply Desc0Nil.
+     intros.
+     specialize (H i).
+      specialize (H0 i).
+     destruct (i=?k) eqn:EE2.
+      * replace k with x in *. 
+      2:{
+        auto.
+      }
+      rewrite EE2 in H0.
+      assumption.
+      *replace k with x in *. 
+      2:{
+        auto.
+      }
+      rewrite EE2 in H0.
+      congruence.
+     +
+     rewrite EE.
+     eapply Desc0NotNil.
+      * apply DescTip.
+       ++
+       intros.
+       reflexivity.
+       ++ reflexivity.
+      * subst.
+      assumption.
+      * simpl.
+      intros.
+      destruct (i=?k) eqn:EE2.
+       ++ specialize (H0 i).
+       assert (i=?x = false). {
+         admit.
+       }
+       rewrite H3 in H0.
+       specialize (H i).
+       rewrite EE2 in H.
+       congruence.
+       ++ 
+       specialize (H i).
+       specialize (H0 i).
+       rewrite EE2 in H.
+       destruct (i=?x).
+        -- assumption.
+        -- congruence.
+      -
+      unfold delete.
+      *
+      simpl.
+      rewrite H6.
+      rewrite H7.
+      apply nomatch_zero.
+       + apply H3.
+       + intros.
+       eapply Desc0NotNil; try reflexivity; simpl.
+        -- eapply DescBin.
+         ** apply H.
+         ** apply H2.
+         ** apply H3.
+         ** apply H4.
+         ** apply H5.
+         ** reflexivity.
+         ** reflexivity.
+         **
+         intros. admit.
+        -- assumption.      
+       +intros.
+       fold (@delete).
+       unfold binCheckLeft.
+       destruct (delete x m1) eqn: EE.
+        -- admit.
+        -- admit.
+        -- apply H2. 
+       
+
+
+     +
+
+    -
 
 Lemma link_Desc_mine:
     forall {a} p1' (s1: IntMap a) r1 f1 p2' s2 r2 f2 r f,
