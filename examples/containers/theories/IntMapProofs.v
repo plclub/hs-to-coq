@@ -922,18 +922,153 @@ Next Obligation.
     { rewrite H2. rewrite N.eqb_refl. auto. }
     rewrite H11.
     destruct (f0 k) eqn:F0; simpl; [| destruct (f3 k) eqn:F3; simpl].
-    + admit.
-    + admit.
-    + split.
-      - discriminate.
-      - intro. specialize (H11 k). specialize (H k v). intuition. unfold "|||" in H11.
-        rewrite F0 in H11. rewrite F3 in H11. destruct (H0). destruct H. rewrite H in H11. discriminate.
-  * unfold isSubmapOfBy. split.
-    + discriminate.
-    + intro. specialize (H10 k). specialize (H7 k). specialize (H k).       
+    + split; intro.
+      - intros. specialize (H11 k). rewrite F0 in H11. unfold oro in H11.
+        specialize (H2 i). destruct (i =? k) eqn: Hik in H2.
+        ** apply Neqb_ok in Hik. subst. exists a0. split; auto.
+           rewrite H0 in K. inversion K. subst. auto.
+        ** rewrite H2 in H0. discriminate.
+      - specialize (H k v). intuition. destruct H0. destruct H.
+        specialize (H11 k). rewrite F0 in H11. unfold oro in H11.
+        rewrite H11 in H. inversion H. subst. auto.
+   + split; intro.
+     - intros. specialize (H11 k). rewrite F0 in H11. rewrite F3 in H11.
+       unfold oro in H11. destruct (i =? k) eqn: Hik in H2.
+       ** apply Neqb_ok in Hik. subst. exists a0. split; auto. rewrite H0 in K.
+          inversion K. subst. auto.
+       ** rewrite H2 in H0. rewrite Hik in H0. discriminate.
+     - specialize (H k v). intuition. destruct H0. destruct H.
+       specialize (H11 k). rewrite F0 in H11. rewrite F3 in H11.
+       unfold oro in H11. rewrite H11 in H. inversion H. subst. auto.
+   + split.
+     - discriminate.
+     - intro. specialize (H11 k). specialize (H k v). intuition. unfold oro in H11.
+       rewrite F0 in H11. rewrite F3 in H11. destruct (H0). destruct H.
+       rewrite H in H11. discriminate.
+ * unfold isSubmapOfBy. split.
+   + discriminate.
+   + intros. admit.
+ * simpl. destruct (shorter (rMask r1) (rMask r2)) eqn: Hsm.
+   + split.
+     - discriminate.
+     - intros. admit.
+   + split.
+     - destruct (shorter (rMask r2) (rMask r1)) eqn: Hsm2.
+       ** intros. eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= Bin (rPrefix r2) (rMask r2) m0 m3).
+          ++ simpl. admit.
+          ++ eapply HD1.
+          ++ eapply HD2.
+          ++ simpl. rewrite Hsm. rewrite Hsm2. auto.
+          ++ auto.
+      ** intros. destruct (rPrefix r1 == rPrefix r2) eqn: Hr in H.
+         ++ eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= Bin (rPrefix r2) (rMask r2) m0 m3).
+            -- simpl. admit.
+            -- eapply HD1.
+            -- eapply HD2.
+            -- simpl. rewrite Hsm. rewrite Hsm2. rewrite Hr. simpl. rewrite Hr in H.
+               simpl in H. auto.
+            -- auto.
+         ++ eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= (Bin (rPrefix r2) (rMask r2) m0 m3)). 
+            -- simpl. admit.
+            -- eapply HD1.
+            -- eapply HD2.
+            -- simpl. rewrite Hr in H. simpl in H. discriminate.
+            -- auto.
+   - intros. destruct (shorter (rMask r2) (rMask r1)) eqn: Hsm2.
+      ** destruct (match_ (rPrefix r1) (rPrefix r2) (rMask r2)) eqn: Hm.
+        ++ simpl. destruct (zero (rPrefix r1) (rMask r2)) eqn: Hz.
+          -- eapply IH.
+             *** simpl. omega. 
+             *** eapply HD1.
+             *** eapply H6.
+             *** intros. specialize (H i v1). auto. rewrite H0 in H. intuition. admit.
+          -- eapply IH.
+             *** simpl. omega.
+             *** eapply HD1.
+             *** eapply H7.
+             *** intros. admit.
+        ++ (** simpl. unfold match_ in Hm. unfold mask in Hm. unfold IntSet.Internal.maskW in Hm.
+           unfold N.ldiff in Hm.**)
+
+           destruct (zero (rPrefix r1) (rMask r2)) eqn: Hz.
+          -- unfold zero in Hz. unfoldMethods. unfold Z.to_N in Hz. unfold N.land in Hz.        
+                                                                                   
+        
 
 Admitted.
 
+Lemma isSubmapOfBy_Desc1 : forall {a} (f : a -> a -> bool)
+  (s1 :IntMap a) r1 f1 s2 r2 f2,
+  Desc s1 r1 f1 ->
+  Desc s2 r2 f2 ->
+  isSubmapOfBy f s1 s2 = true <->
+  (forall i v1, f1 i = Some v1 -> exists v2, f2 i = Some v2 /\ f v1 v2 = true).
+Proof.
+  intros. split.
+  * induction H.
+    + induction H0.
+      - simpl. intros. specialize (H0 i). destruct (i =? k0) eqn: Hik.
+        ** exists v0. split; auto. destruct (k == k0) eqn: Hkk; rewrite Hkk in H3.
+          ++ specialize (H i). assert (i =? k = true). {admit.} rewrite H5 in H. rewrite H in H4. inversion H4. subst. auto. 
+          ++ discriminate.
+        ** destruct (k == k0) eqn: Hkk; rewrite Hkk in H3.
+          ++ specialize (H i). assert (i =? k = true). {admit.} admit. (** mix of H5 Hkk Hik discriminate **)
+          ++ discriminate.
+      - simpl. intros. destruct (nomatch k p msk) eqn: Hnm in H7; try discriminate.
+        destruct (zero k msk) eqn: Hz in H7.
+        ** admit.
+        ** admit.
+    + induction H0; try (simpl; discriminate). admit.
+  * intros. induction H.
+    + induction H0.
+      - simpl. destruct (k == k0) eqn: Hkk.
+        ** rewrite Hkk. admit.
+        ** rewrite Hkk. specialize (H1 k v). specialize (H k).
+           rewrite N.eqb_refl in H. rewrite H in H1. intuition.
+           specialize (H0 k). SearchAbout "==" "=". assert (k =? k0 = false). {admit.} rewrite H1 in H0.
+           inversion H4. destruct H5. rewrite H5 in H0. discriminate.
+      - simpl. admit.
+    + induction H0.
+      - simpl. admit.
+      - simpl. destruct (shorter msk msk0) eqn: Hsm.
+        ** 
+  admit.
+(**  * intros. induction H.
+  + admit.
+  + induction H0.
+
+    + induction . try simpl in H1; try discriminate.
+      inversion_Desc H. inversion_Desc H0.
+      - Print shorter. Check Desc_inside. Print Desc.  admit.
+      - simpl in H1. discriminate.
+      - simpl in H1. discriminate.
+    + induction s2.
+      - unfold isSubmapOfBy in H1. simpl in H1. inversion_Desc H. inversion_Desc H0.
+         admit.
+      - simpl in H1. destruct (k == k0) eqn: Hkk.
+        ** inversion_Desc H0. inversion_Desc H. specialize (H8 i).
+           specialize (H9 i). exists a1. inversion_Desc H.  inversion_Desc H0. clear H11 H13. 
+           specialize (H10 i). specialize (H12 i). assert (k = k0). {admit.} subst.
+           destruct (i =? k0) eqn: Hik.
+           ++ split; auto. 
+              assert (Ha0v1 : a0 = v1).
+              {rewrite H2 in H9. inversion H9. symmetry. reflexivity.}
+              subst. auto.
+           ++ rewrite H2 in H9. discriminate.                  
+        ** discriminate.
+      - simpl in H1. discriminate.
+    + inversion H.
+  * intros. induction s1.
+    + induction s2.
+      - simpl. admit.
+      - simpl. admit.
+      - inversion H0.
+    + induction s2.
+      - simpl. admit.
+      - simpl. admit.
+      - inversion H0.
+    + inversion H. **)
+Admitted.   
 
 
 (** *** Verification of [member] *)
@@ -1257,7 +1392,7 @@ Proof.
   * destruct s2.
     + apply Desc_Desc0. inversion_Desc H. inversion_Desc HD.  eapply DescBin; eauto.
       - inversion_Desc H. eapply DescBin.
-        ** inversion_Desc H0. inversion_Desc HD1. admit.
+        ** inversion_Desc H0. inversion_Desc HD1.   admit.
         ** inversion_Desc H0. inversion_Desc HD1. admit.
         ** apply subRange_smaller in H3.  SearchAbout isSubrange halfRange. unfold isSubrange in H3. admit.
         ** eapply subRange_smaller in Hsubrange. admit.
@@ -1349,10 +1484,15 @@ Proof.
     + apply H3.
     + auto.
     + auto.
-    + intro. simpl. specialize (H7 i). specialize (H6 i). rewrite H7. rewrite H6. unfold oro. 
+    + intro. simpl. specialize (H7 i). specialize (H6 i). rewrite H7. rewrite H6. unfold oro.      assert (Hr: rangeDisjoint r1 r2 = true). SearchAbout isSubrange rangeDisjoint.  {admit.}
+
       destruct (f1 i) eqn: Hf1.
-       - destruct (p a0) eqn: Hpa; auto. destruct (f2 i) eqn: Hf2; auto.
-         destruct (p a1); auto. admit.
+       - destruct (p a0) eqn: Hpa; auto. Check isSubmapOfBy_disjoint1. assert (f2 i = None).
+         {
+           Check isSubmapOfBy_disjoint1.
+           eapply isSubmapOfBy_disjoint1; eassumption.
+         }
+         rewrite H4. reflexivity.
        - reflexivity. 
 Admitted.
 
