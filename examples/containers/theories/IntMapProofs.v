@@ -20,10 +20,12 @@ Import GHC.Base.
 
 Set Bullet Behavior "Strict Subproofs".
 
+
 Axiom deferredFix2_eq : forall a b r `{Default r} (f : (a -> b -> r) -> (a -> b -> r)),
   deferredFix2 f = f (deferredFix2 f).
 
 From Coq Require Import ssreflect.
+From Coq Require Import Unicode.Utf8.
 
 Lemma oro_None_r {a} (x:option a) : oro x None = x.
 Proof. destruct x; simpl; reflexivity. Qed.
@@ -1015,10 +1017,10 @@ Proof.
     + induction H0.
       - simpl. intros. specialize (H0 i). destruct (i =? k0) eqn: Hik.
         ** exists v0. split; auto. destruct (k == k0) eqn: Hkk; rewrite Hkk in H3.
-          ++ specialize (H i). assert (i =? k = true). {admit.} rewrite H5 in H. rewrite H in H4. inversion H4. subst. auto. 
+          ++ specialize (H i). assert (i =? k = true). admit. rewrite H5 in H. rewrite H in H4. inversion H4. subst. auto. 
           ++ discriminate.
         ** destruct (k == k0) eqn: Hkk; rewrite Hkk in H3.
-          ++ specialize (H i). assert (i =? k = true). {admit.} admit. (** mix of H5 Hkk Hik discriminate **)
+          ++ specialize (H i). assert (i =? k = true). admit. admit. (** mix of H5 Hkk Hik discriminate **)
           ++ discriminate.
       - simpl. intros. destruct (nomatch k p msk) eqn: Hnm in H7; try discriminate.
         destruct (zero k msk) eqn: Hz in H7.
@@ -1031,7 +1033,7 @@ Proof.
         ** rewrite Hkk. admit.
         ** rewrite Hkk. specialize (H1 k v). specialize (H k).
            rewrite N.eqb_refl in H. rewrite H in H1. intuition.
-           specialize (H0 k). SearchAbout "==" "=". assert (k =? k0 = false). {admit.} rewrite H1 in H0.
+           specialize (H0 k). assert (k =? k0 = false). admit. rewrite H1 in H0.
            inversion H4. destruct H5. rewrite H5 in H0. discriminate.
       - simpl. admit.
     + induction H0.
@@ -1039,41 +1041,6 @@ Proof.
       - simpl. destruct (shorter msk msk0) eqn: Hsm.
         ** 
   admit.
-(**  * intros. induction H.
-  + admit.
-  + induction H0.
-
-    + induction . try simpl in H1; try discriminate.
-      inversion_Desc H. inversion_Desc H0.
-      - Print shorter. Check Desc_inside. Print Desc.  admit.
-      - simpl in H1. discriminate.
-      - simpl in H1. discriminate.
-    + induction s2.
-      - unfold isSubmapOfBy in H1. simpl in H1. inversion_Desc H. inversion_Desc H0.
-         admit.
-      - simpl in H1. destruct (k == k0) eqn: Hkk.
-        ** inversion_Desc H0. inversion_Desc H. specialize (H8 i).
-           specialize (H9 i). exists a1. inversion_Desc H.  inversion_Desc H0. clear H11 H13. 
-           specialize (H10 i). specialize (H12 i). assert (k = k0). {admit.} subst.
-           destruct (i =? k0) eqn: Hik.
-           ++ split; auto. 
-              assert (Ha0v1 : a0 = v1).
-              {rewrite H2 in H9. inversion H9. symmetry. reflexivity.}
-              subst. auto.
-           ++ rewrite H2 in H9. discriminate.                  
-        ** discriminate.
-      - simpl in H1. discriminate.
-    + inversion H.
-  * intros. induction s1.
-    + induction s2.
-      - simpl. admit.
-      - simpl. admit.
-      - inversion H0.
-    + induction s2.
-      - simpl. admit.
-      - simpl. admit.
-      - inversion H0.
-    + inversion H. **)
 Admitted.   
 
 
@@ -1400,7 +1367,7 @@ Proof.
       - inversion_Desc H. eapply DescBin.
         ** inversion_Desc H0. inversion_Desc HD1.   admit.
         ** inversion_Desc H0. inversion_Desc HD1. admit.
-        ** apply subRange_smaller in H3.  SearchAbout isSubrange halfRange. unfold isSubrange in H3. admit.
+        ** apply subRange_smaller in H3.  unfold isSubrange in H3. admit.
         ** eapply subRange_smaller in Hsubrange. admit.
         ** admit.
         ** admit.
@@ -1448,8 +1415,6 @@ Admitted.
 Definition IMFilter {a} p (s: IntMap a) :=
   Data.IntMap.Internal.filter p s.
 
-Print Data.IntMap.Internal.filter.
-
 Lemma filter_Desc:
   forall {a} p (s: IntMap a) r f f',
     Desc s r f ->
@@ -1491,7 +1456,7 @@ Proof.
     + auto.
     + auto.
     + intro. simpl. specialize (H7 i). specialize (H6 i). rewrite H7. rewrite H6. unfold oro.
-      assert (Hr: rangeDisjoint r1 r2 = true). {admit.}
+      assert (Hr: rangeDisjoint r1 r2 = true). admit.
       destruct (f1 i) eqn: Hf1.
        - destruct (p a0) eqn: Hpa; auto. assert (f2 i = None).
          {
@@ -1800,8 +1765,8 @@ Proof.
   intros. split; intros.
   * induction m; auto.
     + simpl in H. unfold oro in H.
-      assert (forall i, sem m2 i = None). {admit.}
-      assert (forall i, sem m3 i = None). {admit.}
+      assert (forall i, sem m2 i = None). admit.
+      assert (forall i, sem m3 i = None). admit.
      intuition. symmetry in H2. rewrite H2. symmetry in H3. rewrite H3. unfold empty.                                                     admit.
     + simpl in H. specialize (H k). unfold "==" in H. unfoldMethods. rewrite N.eqb_refl in H. discriminate. 
   * unfold empty in H. rewrite <-  H. simpl. reflexivity.
@@ -1821,11 +1786,7 @@ Lemma goL_Desc:
                  | Some (k, v) => sem s k = Some v /\ (forall i v1, sem s i = Some v1 -> (k <= i))
                  end.
 Proof.
-  intros. destruct (go s) eqn: Hg.
-  * 
-  Search mask. Admitted.
-  
-Print lookupMin.
+  Admitted.
 
 Lemma lookupMin_Desc:
   forall {a} (s : IntMap a) r f,
@@ -1850,10 +1811,8 @@ Proof.
           ++ specialize (H8 i v1). rewrite Hs in H8. auto. 
           ++  admit.
       - destruct (lookupMin m2) in IHDesc2.
-        ** destruct p0. subst.
+        ** destruct p0. subst. admit.
         ** intro. specialize (H7 i). unfold oro. rewrite H7.
            rewrite IHDesc2. reflexivity.
 Admitted.
 
-
-Check isSubmapOf.
