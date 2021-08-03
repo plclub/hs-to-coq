@@ -11,8 +11,6 @@ Require Import MapProofs.ToListProofs.
 Require Import MapProofs.FilterPartitionProofs.
 Require Import MapProofs.FromListProofs.
 Require Import Coq.Classes.Morphisms.
-
-
 (** ** Verification of [mapWithKey] *)
 
 Lemma mapWithKey_Desc: forall {e} {a} {b} `{OrdLaws e} (m: Map e a) (f: e -> a -> b) lb ub,

@@ -869,6 +869,10 @@ Proof.
   ** eapply Desc_inside; eassumption.
 Qed.
 
+Lemma isSubmapOfBy_Bin {a} :
+  forall (s1 s2 s3: IntMap a) p msk f',
+    isSubmapOfBy f' s1 s2 = true -> isSubmapOfBy f' s1 (Bin p msk s2 s3) = true.
+Proof. Admitted.
 
 
 Program Fixpoint isSubmapOfBy_Desc {a} (f : a -> a -> bool)
@@ -959,16 +963,16 @@ Next Obligation.
           ++ eapply HD1.
           ++ eapply HD2.
           ++ simpl. rewrite Hsm. rewrite Hsm2. auto.
-          ++ auto.
-      ** intros. destruct (rPrefix r1 == rPrefix r2) eqn: Hr in H.
-         ++ eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= Bin (rPrefix r2) (rMask r2) m0 m3).
-            -- simpl. admit.
-            -- eapply HD1.
+          ++ assumption.
+       ** intros. destruct (rPrefix r1 == rPrefix r2) eqn: Hr in H.
+         (** first destruct on where f1 i comes from and then do IH **)         
+         ++ eapply IH with (s1:= m1) (s2:= (Bin (rPrefix r2) (rMask r2) m0 m3)). try assumption.
+            -- simpl. omega.
+            -- eapply H1.
             -- eapply HD2.
-            -- simpl. rewrite Hsm. rewrite Hsm2. rewrite Hr. simpl. rewrite Hr in H.
-               simpl in H. auto.
-            -- auto.
-         ++ eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= (Bin (rPrefix r2) (rMask r2) m0 m3)). 
+            -- rewrite Hr in H. simpl in H. eapply andb_prop in H. destruct H. apply isSubmapOfBy_Bin. auto. 
+            -- admit.
+         ++ eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= (Bin (rPrefix r2) (rMask r2) m0 m3)).
             -- simpl. admit.
             -- eapply HD1.
             -- eapply HD2.
@@ -976,7 +980,7 @@ Next Obligation.
             -- auto.
    - intros. destruct (shorter (rMask r2) (rMask r1)) eqn: Hsm2.
       ** destruct (match_ (rPrefix r1) (rPrefix r2) (rMask r2)) eqn: Hm.
-        ++ simpl. destruct (zero (rPrefix r1) (rMask r2)) eqn: Hz.
+        ++ simpl.  destruct (zero (rPrefix r1) (rMask r2)) eqn: Hz.
           -- eapply IH.
              *** simpl. omega. 
              *** eapply HD1.
@@ -987,12 +991,14 @@ Next Obligation.
              *** eapply HD1.
              *** eapply H7.
              *** intros. admit.
-        ++ (** simpl. unfold match_ in Hm. unfold mask in Hm. unfold IntSet.Internal.maskW in Hm.
-           unfold N.ldiff in Hm.**)
-
+        ++      
+          (** simpl. unfold match_ in Hm. unfold mask in Hm. 
+              unfold IntSet.Internal.maskW in Hm. unfold N.ldiff in Hm.**)
+          
            destruct (zero (rPrefix r1) (rMask r2)) eqn: Hz.
           -- unfold zero in Hz. unfoldMethods. unfold Z.to_N in Hz. unfold N.land in Hz.        
-                                                                                   
+
+         
         
 
 Admitted.
@@ -1475,7 +1481,7 @@ Proof.
     specialize (IHDesc2 p (fun i => match f2 i with
                                   | None => None
                                   | Some v => if p v then Some v else None
-                                  end) ltac:(intros; auto)).
+                                 end) ltac:(intros; auto)).
     eapply bin_Desc0.
     + apply IHDesc1.
     + apply IHDesc2.
@@ -1484,12 +1490,11 @@ Proof.
     + apply H3.
     + auto.
     + auto.
-    + intro. simpl. specialize (H7 i). specialize (H6 i). rewrite H7. rewrite H6. unfold oro.      assert (Hr: rangeDisjoint r1 r2 = true). SearchAbout isSubrange rangeDisjoint.  {admit.}
-
+    + intro. simpl. specialize (H7 i). specialize (H6 i). rewrite H7. rewrite H6. unfold oro.
+      assert (Hr: rangeDisjoint r1 r2 = true). {admit.}
       destruct (f1 i) eqn: Hf1.
-       - destruct (p a0) eqn: Hpa; auto. Check isSubmapOfBy_disjoint1. assert (f2 i = None).
+       - destruct (p a0) eqn: Hpa; auto. assert (f2 i = None).
          {
-           Check isSubmapOfBy_disjoint1.
            eapply isSubmapOfBy_disjoint1; eassumption.
          }
          rewrite H4. reflexivity.
@@ -1846,7 +1851,8 @@ Proof.
           ++  admit.
       - destruct (lookupMin m2) in IHDesc2.
         ** destruct p0. subst.
-        ** intro. specialize (H7 i). unfold oro. rewrite H7. rewrite IHDesc2. reflexivity.
+        ** intro. specialize (H7 i). unfold oro. rewrite H7.
+           rewrite IHDesc2. reflexivity.
 Admitted.
 
 
