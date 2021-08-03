@@ -15,16 +15,19 @@ Require Import GHC.DeferredFix.
 Require Import IntSetProofs.
 Require Import Data.IntSet.Internal.
 Require Import Data.IntMap.Internal.
+Require Import MapProofs.Bounds.
 Require Import Lia.
 
 Import GHC.Base.
 
 Set Bullet Behavior "Strict Subproofs".
 
+
 Axiom deferredFix2_eq : forall a b r `{Default r} (f : (a -> b -> r) -> (a -> b -> r)),
   deferredFix2 f = f (deferredFix2 f).
 
 From Coq Require Import ssreflect.
+From Coq Require Import Unicode.Utf8.
 
 Lemma oro_None_r {a} (x:option a) : oro x None = x.
 Proof. destruct x; simpl; reflexivity. Qed.
@@ -39,7 +42,6 @@ Qed.
 
 
 (** ** Well-formed IntMap.
-
 This section introduces the predicate to describe the well-formedness of
 an IntMap. It has parameters that describe the range that this map covers,
 and a function that carries it denotation. This way, invariant preservation
@@ -93,8 +95,12 @@ Inductive Sem : forall {a}, IntMap a -> (N -> option a) -> Prop :=
 (** The highest level: Just well-formedness.
  *)
 
-
-
+Fixpoint sem {a} (s: IntMap a) (i: Key) :=
+  match s with
+  | Nil => None
+  | Tip k x => if (i == k) then Some x else None
+  | Bin p msk m1 m2 => oro (sem m1 i) (sem m2 i)
+  end.
 
 Fixpoint Sem2 {a} (s: IntMap a) (i : N) : option a :=                                 
  match s with                                                     
@@ -102,7 +108,6 @@ Fixpoint Sem2 {a} (s: IntMap a) (i : N) : option a :=
  | Tip x v => if (x == i) then Some v else None                                   
  | Bin p m s1 s2 => oro (Sem2 s1 i) (Sem2 s2 i)                                    
  end.
-
 
 
 Definition WF {a} (s : IntMap a) : Prop := exists f, Sem s f.
@@ -153,6 +158,13 @@ Proof. intros.
   * apply isSubrange_refl.
   * intro. reflexivity.
 Qed.
+
+Lemma Desc0_Desc:
+  forall {a} (s: IntMap a) r f, Desc0 s r f -> Desc s r f.
+Proof.
+  intros. destruct s.
+  * eapply DescBin. inversion H. subst. Admitted.
+ 
 
 Lemma Desc0_Sem:
   forall {a} (s:IntMap a) r f, Desc0 s r f -> Sem s f.
@@ -587,7 +599,6 @@ Proof.
   reflexivity.
 Qed.
 
-
 (**
 The IntMap code has a repeating pattern consisting of calls to [nomatch] and [zero].
 The following two lemmas capture that pattern concisely.
@@ -744,8 +755,96 @@ Proof.
 Qed.
 
 
-(** *** Verification of [isSubmapOf] *)
+(* For the sake of simplicity, we are writing a new findWithdefault that returns an option *)
 
+Definition findWithDefaultOption {a} (def : a) (k : Key) (s : IntMap a) :=
+  Some (findWithDefault def k s).
+
+Lemma Desc_not_inRange_None : forall a (s : IntMap a) r f,
+    Desc s r f ->
+    forall i, inRange i r = false -> f i = None. 
+Proof.
+  intros. induction H.
+  * rewrite H1 in H0. unfold inRange in H0. simpl in H0. specialize (H i).
+    rewrite H0 in H. apply H.
+  * assert (Desc (Bin p msk m1 m2) r f).
+    eapply DescBin with (r1:= r1) (f1:= f1) (r2:=r2) (f2:=f2); auto.
+    move: (Desc_outside H8 H0 ) => H9. apply H9.
+Qed.
+
+
+Lemma findWithDefault_Desc:
+  forall {a}{s: IntMap a} {r f} x i, Desc s r f ->
+                                     match (f i) with
+                                     | Some v => findWithDefaultOption x i s = Some v
+                                     | None => findWithDefaultOption x i s = Some x
+                                     end.
+Proof.
+  intros. induction H.
+  * destruct (f i) eqn: E; unfold findWithDefaultOption; unfold findWithDefault; specialize (H i);
+      destruct (i == k) eqn: ik; rewrite ik; rewrite E in H; destruct (i =? k) eqn: ik2; try discriminate.
+      - congruence.
+      - apply Neqb_ok in ik2. rewrite Base.Eq_reflI in ik. discriminate. apply ik2.
+      - unfold "==" in ik. unfoldMethods. rewrite ik in ik2. discriminate.
+      - reflexivity.  
+  * destruct (f i) eqn: E; unfold findWithDefaultOption; simpl; subst; apply nomatch_zero.
+      - apply H1.
+      - rewrite <- E. 
+        specialize (IHDesc1 x). specialize (IHDesc2 x).
+        intros IRH. assert (Desc (Bin (rPrefix r) (rMask r) m1 m2) r f).
+        eapply DescBin with (r1:= r1) (f1:= f1) (r2:= r2) (f2:=f2); auto.
+         move: (Desc_not_inRange_None a (Bin (rPrefix r) (rMask r) m1 m2) r f) => H7.
+        intuition. specialize (H5 i). intuition. rewrite H7. congruence.
+      - specialize (IHDesc1 x). specialize (H6 i). destruct (f1 i) eqn: Hf. simpl in H6.
+        rewrite H6 in E. inversion E. subst. unfold findWithDefaultOption in IHDesc1. intros. apply IHDesc1.
+        intros. unfold findWithDefaultOption in IHDesc1. simpl in H6. specialize (IHDesc2 x).
+        rewrite <- H6 in IHDesc2. rewrite E in IHDesc2. move: (Desc_not_inRange_None _ _ _ _ H0) => H7.
+        specialize (H7 i). 
+        move: (inRange_isSubrange_false i _ _ H3 H5) => H8. rewrite H8 in H7. intuition.
+        rewrite H9 in H6. rewrite E in H6. discriminate.
+      - specialize (IHDesc2 x). specialize (IHDesc1 x). intros.
+        unfold findWithDefaultOption in IHDesc2. destruct (f2 i) eqn: Hf.
+        ** rewrite IHDesc2. move: (Desc_not_inRange_None a m2 r2 f2 H0 i) => H8.
+           move: (Desc_not_inRange_None a m1 r1 f1 H i) => H9.
+           move: (inRange_isSubrange_false i _ _  H2 H4) => H10.
+           rewrite H10 in H9. intuition. specialize (H6 i). unfold oro in H6. rewrite H7 in H6.
+           rewrite Hf in H6. rewrite E in H6. congruence.
+        ** rewrite IHDesc2. rewrite <- E. move: (Desc_not_inRange_None a m1 r1 f1 H i) => H7.
+           move: (inRange_isSubrange_false i _ _ H2 H4) => H8. rewrite H8 in H7. intuition.
+           specialize (H6 i). unfold oro in H6. rewrite H9 in H6. rewrite Hf in H6. rewrite E in H6.
+           discriminate.                                    
+      - specialize (H6 i); unfold oro in H6; specialize (IHDesc1 x). apply H1.
+      - specialize (H6 i); unfold oro in H6; specialize (IHDesc1 x).  reflexivity.
+      -  specialize (H6 i); unfold oro in H6; specialize (IHDesc1 x).  destruct (f1 i) eqn: Hf1 in H6.
+        ** rewrite H6 in E. discriminate.
+        ** destruct (f2 i).
+          ++ rewrite H6 in E. discriminate.
+          ++ rewrite Hf1 in IHDesc1. rewrite <- IHDesc1. unfold findWithDefaultOption. congruence.
+      - specialize (H6 i); unfold oro in H6; specialize (IHDesc1 x). destruct (f1 i) eqn: Hf1 in H6.
+        ** rewrite H6 in E. discriminate.
+        ** destruct (f2 i).
+          ++ rewrite H6 in E. discriminate.
+          ++ rewrite Hf1 in IHDesc1. unfold findWithDefaultOption in IHDesc2. congruence.
+Qed.
+
+Lemma findWithDefault_Sem:
+  forall {a} {s: IntMap a} {f x i}, Sem s f ->
+                      match (f i) with
+                      | Some v => findWithDefaultOption x i s = Some v
+                      | None => findWithDefaultOption x i s = Some x
+                      end.
+Proof.
+  intros. destruct H.
+  * destruct (f i) eqn:E; specialize (H i).
+    + rewrite E in H. discriminate.
+    + unfold findWithDefaultOption. simpl. reflexivity.
+  * destruct (f i) eqn:E; move: (findWithDefault_Desc x i HD) => H;
+       rewrite E in H; apply H.
+Qed.
+
+(** Verification of [lookupLT] **)
+
+(** *** Verification of [isSubmapOf] *)
 Lemma isSubmapOfBy_disjoint {a} (f : a -> a -> bool) :
   forall (s1 :IntMap a) r1 f1 s2 r2 f2,
   rangeDisjoint r1 r2 = true ->
@@ -777,10 +876,15 @@ Proof.
   apply not_true_is_false.
   unfold not.
   eapply rangeDisjoint_inRange_false_false with (i := i).
+
   ** eassumption.
   ** eapply Desc_inside; eassumption.
 Qed.
 
+Lemma isSubmapOfBy_Bin {a} :
+  forall (s1 s2 s3: IntMap a) p msk f',
+    isSubmapOfBy f' s1 s2 = true -> isSubmapOfBy f' s1 (Bin p msk s2 s3) = true.
+Proof. Admitted.
 
 
 Program Fixpoint isSubmapOfBy_Desc {a} (f : a -> a -> bool)
@@ -828,17 +932,126 @@ Next Obligation.
       rewrite N.eqb_refl in h.
       discriminate.
   * (* Tip left, Bin right *)
-    unfold isSubmapOfBy.
+    unfold isSubmapOfBy. 
     erewrite lookup_Desc; eauto.
     assert (K: f1 k = Some v).
     { rewrite H2. rewrite N.eqb_refl. auto. }
     rewrite H11.
+    destruct (f0 k) eqn:F0; simpl; [| destruct (f3 k) eqn:F3; simpl].
+    + split; intro.
+      - intros. specialize (H11 k). rewrite F0 in H11. unfold oro in H11.
+        specialize (H2 i). destruct (i =? k) eqn: Hik in H2.
+        ** apply Neqb_ok in Hik. subst. exists a0. split; auto.
+           rewrite H0 in K. inversion K. subst. auto.
+        ** rewrite H2 in H0. discriminate.
+      - specialize (H k v). intuition. destruct H0. destruct H.
+        specialize (H11 k). rewrite F0 in H11. unfold oro in H11.
+        rewrite H11 in H. inversion H. subst. auto.
+   + split; intro.
+     - intros. specialize (H11 k). rewrite F0 in H11. rewrite F3 in H11.
+       unfold oro in H11. destruct (i =? k) eqn: Hik in H2.
+       ** apply Neqb_ok in Hik. subst. exists a0. split; auto. rewrite H0 in K.
+          inversion K. subst. auto.
+       ** rewrite H2 in H0. rewrite Hik in H0. discriminate.
+     - specialize (H k v). intuition. destruct H0. destruct H.
+       specialize (H11 k). rewrite F0 in H11. rewrite F3 in H11.
+       unfold oro in H11. rewrite H11 in H. inversion H. subst. auto.
+   + split.
+     - discriminate.
+     - intro. specialize (H11 k). specialize (H k v). intuition. unfold oro in H11.
+       rewrite F0 in H11. rewrite F3 in H11. destruct (H0). destruct H.
+       rewrite H in H11. discriminate.
+ * unfold isSubmapOfBy. split.
+   + discriminate.
+   + intros. admit.
+ * simpl. destruct (shorter (rMask r1) (rMask r2)) eqn: Hsm.
+   + split.
+     - discriminate.
+     - intros. admit.
+   + split.
+     - destruct (shorter (rMask r2) (rMask r1)) eqn: Hsm2.
+       ** intros. eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= Bin (rPrefix r2) (rMask r2) m0 m3).
+          ++ simpl. admit.
+          ++ eapply HD1.
+          ++ eapply HD2.
+          ++ simpl. rewrite Hsm. rewrite Hsm2. auto.
+          ++ assumption.
+       ** intros. destruct (rPrefix r1 == rPrefix r2) eqn: Hr in H.
+         (** first destruct on where f1 i comes from and then do IH **)         
+         ++ eapply IH with (s1:= m1) (s2:= (Bin (rPrefix r2) (rMask r2) m0 m3)). try assumption.
+            -- simpl. omega.
+            -- eapply H1.
+            -- eapply HD2.
+            -- rewrite Hr in H. simpl in H. eapply andb_prop in H. destruct H. apply isSubmapOfBy_Bin. auto. 
+            -- admit.
+         ++ eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= (Bin (rPrefix r2) (rMask r2) m0 m3)).
+            -- simpl. admit.
+            -- eapply HD1.
+            -- eapply HD2.
+            -- simpl. rewrite Hr in H. simpl in H. discriminate.
+            -- auto.
+   - intros. destruct (shorter (rMask r2) (rMask r1)) eqn: Hsm2.
+      ** destruct (match_ (rPrefix r1) (rPrefix r2) (rMask r2)) eqn: Hm.
+        ++ simpl.  destruct (zero (rPrefix r1) (rMask r2)) eqn: Hz.
+          -- eapply IH.
+             *** simpl. omega. 
+             *** eapply HD1.
+             *** eapply H6.
+             *** intros. specialize (H i v1). auto. rewrite H0 in H. intuition. admit.
+          -- eapply IH.
+             *** simpl. omega.
+             *** eapply HD1.
+             *** eapply H7.
+             *** intros. admit.
+        ++      
+          (** simpl. unfold match_ in Hm. unfold mask in Hm. 
+              unfold IntSet.Internal.maskW in Hm. unfold N.ldiff in Hm.**)
+          
+           destruct (zero (rPrefix r1) (rMask r2)) eqn: Hz.
+          -- unfold zero in Hz. unfoldMethods. unfold Z.to_N in Hz. unfold N.land in Hz.        
 
-    destruct (f0 k) eqn:F0; simpl;
-      [| destruct (f3 k) eqn:F3; simpl].
+         
+        
 
 Admitted.
 
+Lemma isSubmapOfBy_Desc1 : forall {a} (f : a -> a -> bool)
+  (s1 :IntMap a) r1 f1 s2 r2 f2,
+  Desc s1 r1 f1 ->
+  Desc s2 r2 f2 ->
+  isSubmapOfBy f s1 s2 = true <->
+  (forall i v1, f1 i = Some v1 -> exists v2, f2 i = Some v2 /\ f v1 v2 = true).
+Proof.
+  intros. split.
+  * induction H.
+    + induction H0.
+      - simpl. intros. specialize (H0 i). destruct (i =? k0) eqn: Hik.
+        ** exists v0. split; auto. destruct (k == k0) eqn: Hkk; rewrite Hkk in H3.
+          ++ specialize (H i). assert (i =? k = true). admit. rewrite H5 in H. rewrite H in H4. inversion H4. subst. auto. 
+          ++ discriminate.
+        ** destruct (k == k0) eqn: Hkk; rewrite Hkk in H3.
+          ++ specialize (H i). assert (i =? k = true). admit. admit. (** mix of H5 Hkk Hik discriminate **)
+          ++ discriminate.
+      - simpl. intros. destruct (nomatch k p msk) eqn: Hnm in H7; try discriminate.
+        destruct (zero k msk) eqn: Hz in H7.
+        ** admit.
+        ** admit.
+    + induction H0; try (simpl; discriminate). admit.
+  * intros. induction H.
+    + induction H0.
+      - simpl. destruct (k == k0) eqn: Hkk.
+        ** rewrite Hkk. admit.
+        ** rewrite Hkk. specialize (H1 k v). specialize (H k).
+           rewrite N.eqb_refl in H. rewrite H in H1. intuition.
+           specialize (H0 k). assert (k =? k0 = false). admit. rewrite H1 in H0.
+           inversion H4. destruct H5. rewrite H5 in H0. discriminate.
+      - simpl. admit.
+    + induction H0.
+      - simpl. admit.
+      - simpl. destruct (shorter msk msk0) eqn: Hsm.
+        ** 
+  admit.
+Admitted.   
 
 
 (** *** Verification of [member] *)
@@ -924,6 +1137,10 @@ Proof.
     congruence.
 Qed.
 
+
+
+
+ 
 (** *** Verification of [empty] *)
 
 Lemma empty_Sem {a} (f : N -> option a) : Sem empty f <-> forall i, f i = None.
@@ -1633,6 +1850,148 @@ Proof.
   intro i; reflexivity.
 Qed.
 
+(* Verification of [filter] *)
+
+  
+Lemma bin_Desc0:
+  forall {a} (s1: IntMap a) r1 f1 (s2: IntMap a) r2 f2 p msk r f,
+    Desc0 s1 r1 f1 ->
+    Desc0 s2 r2 f2 ->
+    (0 < rBits r)%N ->
+    isSubrange r1 (halfRange r false) = true ->
+    isSubrange r2 (halfRange r true) = true ->
+    p = rPrefix r ->
+    msk = rMask r ->
+    (forall i, f i = oro (f1 i) (f2 i)) ->
+    Desc0 (bin p msk s1 s2) r f.
+Proof.
+  intros. unfold bin. 
+  destruct s1.
+  * destruct s2.
+    + apply Desc_Desc0. inversion_Desc H. inversion_Desc HD.  eapply DescBin; eauto.
+      - inversion_Desc H. eapply DescBin.
+        ** inversion_Desc H0. inversion_Desc HD1.   admit.
+        ** inversion_Desc H0. inversion_Desc HD1. admit.
+        ** apply subRange_smaller in H3.  unfold isSubrange in H3. admit.
+        ** eapply subRange_smaller in Hsubrange. admit.
+        ** admit.
+        ** admit.
+        ** admit.
+        ** unfold rMask. unfold isSubrange in Hsubrange.
+           unfold inRange in Hsubrange. unfold rPrefix in Hsubrange. unfold rBits in Hsubrange. admit.
+      - eapply isSubrange_trans; eauto.
+      - intro. specialize (H19 i). specialize (Hf i). specialize (H6 i). rewrite Hf in H6. eauto.
+    + eapply Desc0NotNil.
+      - eapply DescBin; eauto.
+        ** inversion_Desc H. admit.
+        ** inversion_Desc H0. admit.
+      - apply isSubrange_refl.
+      - intro. reflexivity.
+    + admit.       
+  * destruct s2.
+    + apply Desc_Desc0. inversion_Desc H. inversion_Desc HD. eapply DescBin; try reflexivity.
+      - inversion_Desc H. eauto.
+      - inversion_Desc H0. admit. 
+      - auto.
+      - eapply isSubrange_trans; eauto.
+      - eauto.
+      - intro. specialize (Hf i). specialize (H6 i). rewrite Hf in H6. eauto.
+    + apply Desc_Desc0. inversion_Desc H. inversion_Desc H0. eapply DescBin; try reflexivity.
+      - eauto.
+      - eauto.
+      - auto.
+      - eapply isSubrange_trans; eauto.
+      - eapply isSubrange_trans; eauto.
+      - intro. specialize (Hf0 i). specialize (Hf i). specialize (H6 i).
+        rewrite Hf in H6. rewrite Hf0 in H6. auto.
+    + apply Desc_Desc0. inversion_Desc H. admit.
+  * destruct s2.
+    + inversion_Desc H0; inversion_Desc H.
+      - apply Desc_Desc0. admit.
+      - admit.
+    + admit.
+    + apply Desc0Nil. inversion_Desc H.
+      - inversion_Desc H0.  intro. specialize (H6 i). specialize (H7 i). specialize (H9 i).
+        rewrite H9 in H6. rewrite H7 in H6. simpl in H6. apply H6.
+        inversion HD.
+      - inversion HD.
+Admitted.     
+
+Definition IMFilter {a} p (s: IntMap a) :=
+  Data.IntMap.Internal.filter p s.
+
+Lemma filter_Desc:
+  forall {a} p (s: IntMap a) r f f',
+    Desc s r f ->
+    (forall (i: N), f' i = match f i with
+                 | None => None
+                 | Some v => if p v then Some v else None
+                 end) ->                                    
+    Desc0 (IMFilter p s) r f'.
+Proof.
+  intros.
+  revert f' H0.
+  induction H.
+  * intros.
+    simpl. subst. destruct (p v) eqn: Hpv.
+     + eapply  Desc0NotNil; eauto. apply DescTip; eauto.
+       intro. specialize (H1 i). specialize (H i). rewrite H in H1.
+       destruct (i =? k) eqn: Hik; auto. rewrite Hpv in H1. auto.
+       eapply isSubrange_refl.
+     + eapply Desc0Nil. intro. specialize (H i). specialize (H1 i). destruct (f i).
+       - destruct (i =? k).
+         ** inversion H. subst. rewrite Hpv in H1. auto.
+         ** discriminate.
+       - auto.
+  * intros. subst. simpl.
+    specialize (IHDesc1 p (fun i => match f1 i with
+                                  | None => None
+                                  | Some v => if p v then Some v else None
+                                  end) ltac:(intros; auto)).
+    specialize (IHDesc2 p (fun i => match f2 i with
+                                  | None => None
+                                  | Some v => if p v then Some v else None
+                                 end) ltac:(intros; auto)).
+    eapply bin_Desc0.
+    + apply IHDesc1.
+    + apply IHDesc2.
+    + auto.
+    + apply H2.
+    + apply H3.
+    + auto.
+    + auto.
+    + intro. simpl. specialize (H7 i). specialize (H6 i). rewrite H7. rewrite H6. unfold oro.
+      assert (Hr: rangeDisjoint r1 r2 = true). admit.
+      destruct (f1 i) eqn: Hf1.
+       - destruct (p a0) eqn: Hpa; auto. assert (f2 i = None).
+         {
+           eapply isSubmapOfBy_disjoint1; eassumption.
+         }
+         rewrite H4. reflexivity.
+       - reflexivity. 
+Admitted.
+
+Lemma filter_Sem:
+  forall {a} p (s: IntMap a) f f',
+  Sem s f ->
+  (forall i, f' i = match f i with
+               | None => None
+               | Some v => if p v then Some v else None
+               end) ->
+  Sem (IMFilter p s) f'.
+Proof.
+  intros. destruct H.
+  * apply SemNil. auto. solve_f_eq.
+  * eapply Desc0_Sem. eapply filter_Desc; eassumption.
+Qed.
+
+Lemma filter_WF:
+  forall {a} p (s: IntMap a),
+    WF s -> WF (IMFilter p s).
+Proof.
+  intros. destruct H. eexists. eapply filter_Sem. eassumption. intro. reflexivity.
+Qed.
+
 Lemma insertWithKey_Nil_Desc a:
   forall e (v:a) r f f1,
   r = (singletonRange e) ->
@@ -1790,7 +2149,8 @@ Proof.
      * intros. admit.
 Admitted.
 
-
+Definition IMFilterWithKey {a} p (s: IntMap a) :=
+  Data.IntMap.Internal.filterWithKey p s.
 
 
 
@@ -1822,18 +2182,8 @@ Definition restrictBitMapToRange r bm :=
            (N.lor (bitmapOf (N.lor p (N.lor msk (msk - 1))))
            (bitmapOf (N.lor p (N.lor msk (msk - 1))) - 1)%N).
 
-Lemma bin_Desc0:
-  forall a (m1 : IntMap a) r1 f1 m2 r2 f2 p msk r f,
-    Desc0 m1 r1 f1 ->
-    Desc0 m2 r2 f2 ->
-    (0 < rBits r)%N ->
-    isSubrange r1 (halfRange r false) = true ->
-    isSubrange r2 (halfRange r true) = true ->
-    p = rPrefix r ->
-    msk = rMask r ->
-    (forall i, f i = oro (f1 i) (f2 i)) ->
-    Desc0 (bin p msk m1 m2) r f.
-Admitted.
+
+
 
 Ltac point_to_inRange_Map :=
   lazymatch goal with
@@ -1901,18 +2251,18 @@ Next Obligation.
         - (* s2 is disjoint of s1 *)
           apply Desc0Nil.
           solve_f_eq_disjoint_Map.
-
+          admit. admit.
         - (* s2 is part of the left half of m1 *)
           eapply Desc0_subRange.
           eapply restrictKeys_Desc; clear restrictKeys_Desc; try eassumption.
           ** subst m s. simpl. omega.
-          ** solve_f_eq_disjoint_Map.
+          ** solve_f_eq_disjoint_Map. admit. admit. admit. admit. admit. admit.
           ** isSubrange_true; eapply Desc_rNonneg; eassumption.
         - (* s2 is part of the right half of m1 *)
           eapply Desc0_subRange.
           eapply restrictKeys_Desc; clear restrictKeys_Desc; try eassumption.
           ** subst m s. simpl. omega.
-          ** solve_f_eq_disjoint_Map.
+          ** solve_f_eq_disjoint_Map. admit. admit. admit. admit. admit. admit.
           ** isSubrange_true; eapply Desc_rNonneg; eassumption.
 
       ++ (* s2 is not smaller than m1 *)
@@ -1921,13 +2271,13 @@ Next Obligation.
           apply nomatch_zero_smaller; try assumption; intros.
           - (* m1 is disjoint of s2 *)
             apply Desc0Nil.
-            solve_f_eq_disjoint_Map.
+            solve_f_eq_disjoint_Map. admit. admit. 
           - (* s1 is part of the left half of s2 *)
             eapply Desc0_subRange.
             eapply restrictKeys_Desc; clear restrictKeys_Desc; try eassumption.
             ** subst m s. simpl. omega.
             ** eapply DescBin; try beassumption; reflexivity.
-            ** solve_f_eq_disjoint_Map.
+            ** solve_f_eq_disjoint_Map. admit. 
             ** isSubrange_true; eapply Desc_rNonneg; eassumption.
 
           - (* s1 is part of the right half of s2 *)
@@ -1936,7 +2286,7 @@ Next Obligation.
             eapply restrictKeys_Desc; clear restrictKeys_Desc; try eassumption.
             ** subst s m. simpl. omega.
             ** eapply DescBin; try beassumption; reflexivity.
-            ** solve_f_eq_disjoint_Map.
+            ** solve_f_eq_disjoint_Map. admit.
             ** isSubrange_true; eapply Desc_rNonneg; eassumption.
 
         -- (* s1 and s2 are the same size *)
@@ -1955,9 +2305,10 @@ Next Obligation.
                --- intro i. reflexivity.
             ** isSubrange_true; eapply Desc_rNonneg; eassumption.
             ** isSubrange_true; eapply Desc_rNonneg; eassumption.
-            ** solve_f_eq_disjoint_Map.
-          - apply Desc0Nil.
-            solve_f_eq_disjoint_Map.
+            ** solve_f_eq_disjoint_Map. unfold oro in Heqo0. destruct (f1 i); try discriminate.
+               unfold oro in Heqo. rewrite <- Heqo. apply Heqo0. admit. admit. admit. admit. admit. admit.
+          - apply Desc0Nil. 
+            solve_f_eq_disjoint_Map; admit.
 Admitted.
 
 Lemma restrictKeys_Sem:
@@ -1983,4 +2334,147 @@ Proof.
   eexists. apply restrictKeys_Sem; eassumption.
 Qed.
 
+(** Verification of [partition] **)
+
+
+
+
+
+(** Verification of [map] **)
+
+
+Definition IMMap {a b} (f : a -> b) (s : IntMap a):=
+  Data.IntMap.Internal.map f s.
+
+
+Lemma map_Desc: forall a b (s: IntMap a) f1 (f2: a -> b) r,
+    Desc s r f1 -> Desc (IMMap f2 s) r (fun i => match (f1 i) with
+                                             | Some x => Some (f2 x)
+                                             | None => None
+                                             end).
+Proof.
+  intros. induction H.
+  * simpl. eapply DescTip.
+    - intro i. specialize (H i). rewrite H. destruct (i =? k); reflexivity.
+    - apply H0.
+  * simpl. eapply DescBin; auto. intro i. simpl. specialize (H6 i).
+    rewrite H6. unfold oro. destruct (f1 i) eqn: Hf; reflexivity.
+Qed.
+
+Lemma map_Sem: forall a b (s: IntMap a) f1 (f2: a -> b),
+    Sem s f1 -> Sem (IMMap f2 s) (fun i => match (f1 i) with
+                                             | Some x => Some (f2 x)
+                                             | None => None
+                                             end). 
+Proof.
+  intros. induction H.
+  - apply SemNil. intros i0. specialize (H i0). rewrite H. reflexivity.
+  - eapply DescSem. eapply map_Desc. apply HD. 
+Qed.
+
+(** Verification of [mapWithKey] **)
+
+Definition IMMapWithKey {a b} (f: Key -> a -> b) (s: IntMap a) :=
+  Data.IntMap.Internal.mapWithKey f s.
+
+Lemma mapWithKey_Desc: forall a b (s: IntMap a) r f (fmap : Key -> a -> b),
+    Desc s r f -> Desc (IMMapWithKey fmap s) r (fun i => match (f i) with
+                                                  | Some x => Some (fmap i x)
+                                                  | None => None
+                                                  end).
+Proof.
+  intros. induction H.
+  * simpl. eapply DescTip; auto.
+    - intro i. specialize (H i). rewrite H. destruct (i =? k) eqn: Hik.
+      + apply Neqb_ok in Hik. rewrite Hik. reflexivity.
+      + reflexivity.
+  * simpl. eapply DescBin; auto. intro i. simpl. specialize (H6 i).
+    rewrite H6. unfold oro. destruct (f1 i) eqn: Hf; reflexivity.
+Qed.
+
+Lemma mapWithKey_Sem: forall a b (s: IntMap a) f (fmap: Key -> a -> b),
+    Sem s f -> Sem (IMMapWithKey fmap s) (fun i => match (f i) with
+                                             | Some x => Some (fmap i x)
+                                             | None => None
+                                             end). 
+Proof.
+  intros. induction H.
+  - apply SemNil. intros i. specialize (H i). rewrite H. reflexivity.
+  - eapply DescSem. eapply mapWithKey_Desc. apply HD.
+Qed.
+
+Fixpoint sem_for_lists {a: Type} (l : list (Key * a)) (i : Key) :=
+  match l with
+  | nil => None
+  | (x,y) :: t => if i == x then Some y else sem_for_lists t i
+  end.
+
+
+Lemma mapKeys_Desc: forall a (fmap : Key -> Key) (s: IntMap a) r f,
+    Desc s r f ->
+    Desc (mapKeys fmap s) r (fun i => (sem_for_lists (rev (foldrWithKey (fun k v t => ((fmap k), v) :: t) nil s)) i)).
+Proof.
+  intros.
+  unfold mapKeys. simpl. 
+Admitted.
+
+
+(* Verification of [lookupMin] *)
+
+Lemma empty_no_elts : forall {a}  (m: IntMap a),
+      (forall i, sem m i = None) <-> empty = m.
+Proof.
+  intros. split; intros.
+  * induction m; auto.
+    + simpl in H. unfold oro in H.
+      assert (forall i, sem m2 i = None). admit.
+      assert (forall i, sem m3 i = None). admit.
+     intuition. symmetry in H2. rewrite H2. symmetry in H3. rewrite H3. unfold empty.                                                     admit.
+    + simpl in H. specialize (H k). unfold "==" in H. unfoldMethods. rewrite N.eqb_refl in H. discriminate. 
+  * unfold empty in H. rewrite <-  H. simpl. reflexivity.
+Admitted.
+
+Definition go {a} := fix go (arg_2__ : IntMap a) : option (Key * a) :=
+        match arg_2__ with
+        | Bin _ _ l' _ => go l'
+        | Tip k v => Some (k, v)
+        | Nil => None
+        end.
+
+Lemma goL_Desc:
+  forall {a} (s : IntMap a) r f,
+    Desc s r f -> match go s with
+                 | None => (forall i, sem s i = None)
+                 | Some (k, v) => sem s k = Some v /\ (forall i v1, sem s i = Some v1 -> (k <= i))
+                 end.
+Proof.
+  Admitted.
+
+Lemma lookupMin_Desc:
+  forall {a} (s : IntMap a) r f,
+    Desc s r f ->
+    match lookupMin s with
+    | None => (forall i, sem s i = None)
+    | Some (k, v) => sem s k = Some v /\ (forall i v1, sem s i = Some v1 -> (k <= i))
+    end.
+Proof.
+  intros. induction H.
+  * simpl. unfoldMethods. rewrite N.eqb_refl. split.
+    + reflexivity.
+    + intros. destruct (i =? k) eqn: Hik.
+      - apply Neqb_ok in Hik. subst. move: (N.le_refl k) => H2. intuition.
+      - discriminate.
+  * simpl. unfoldMethods. destruct (msk <? 0) eqn: Hm.
+    + destruct msk; discriminate.
+    + fold (@go a). move: (goL_Desc m1 r1 f1 H) => H7. destruct (go m1) eqn: Hg.
+      - destruct p0. destruct H7. split.
+        ** unfold oro. rewrite H7. reflexivity.
+        ** unfold oro. intros i v1. destruct (sem m1 i) eqn: Hs.
+          ++ specialize (H8 i v1). rewrite Hs in H8. auto. 
+          ++  admit.
+      - destruct (lookupMin m2) in IHDesc2.
+        ** destruct p0. subst. admit.
+        ** intro. specialize (H7 i). unfold oro. rewrite H7.
+           rewrite IHDesc2. reflexivity.
+Admitted.
 
