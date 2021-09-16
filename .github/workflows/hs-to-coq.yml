@@ -74,7 +74,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         ghc: [8.4.3]
-        resolver: [lts-12.14, lts-14.27, lts-16.26]
+        resolver: [lts-12.26, lts-14.27, lts-16.31, lts-18.10]
     steps:
       - uses: actions/checkout@v2
       - name: Caching Stack
