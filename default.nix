@@ -7,11 +7,11 @@
 #   nix-build -A haskellPackages.hs-to-coq
 # After building, you can run result/bin/hs-to-coq
 
-{ coqPackages ? "coqPackages_8_8"
+{ coqPackages ? "coqPackages_8_10"
 , ghcVersion  ? "ghc882"
 
-, rev    ? "1fe82110febdf005d97b2927610ee854a38a8f26"
-, sha256 ? "08x6saa7iljyq2m0j6p9phy0v17r3p8l7vklv7y7gvhdc7a85ppi"
+, rev    ? "4c2e7becf1c942553dadd6527996d25dbf5a7136"
+, sha256 ? "10dzi5xizgm9b3p5k963h5mmp0045nkcsabqyarpr7mj151f6jpm"
 
 , pkgs   ? import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
@@ -46,7 +46,7 @@ let
 
       env = pkgs.buildEnv { name = name; paths = buildInputs; };
       passthru = {
-        compatibleCoqVersions = v: builtins.elem v [ "8.6" "8.7" "8.8" ];
+        compatibleCoqVersions = v: builtins.elem v [ "8.6" "8.7" "8.8" "8.10" ];
      };
     };
   };
