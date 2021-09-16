@@ -128,8 +128,8 @@ redefine Local Definition Module.Ord__ModuleName_compare :
 redefine Local Definition Module.Ord__UnitId_compare :
    UnitId -> (UnitId -> comparison) := fun nm1 nm2 => Eq.
 
-add Module Instance Unpeel_ComponentId : GHC.Prim.Unpeel Module.ComponentId FastString.FastString :=
-  GHC.Prim.Build_Unpeel _ _ (fun cid => match cid with | Mk_ComponentId fs => fs end) Mk_ComponentId.
+add Module Instance Unpeel_ComponentId : HsToCoq.Unpeel.Unpeel Module.ComponentId FastString.FastString :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ (fun cid => match cid with | Mk_ComponentId fs => fs end) Mk_ComponentId.
 
 order Unpeel_ComponentId Module.Eq___ComponentId_op_zeze__
 order Unpeel_ComponentId Module.Eq___ComponentId_op_zsze__
