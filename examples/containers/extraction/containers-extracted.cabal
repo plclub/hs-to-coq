@@ -70,6 +70,7 @@ library
   exposed-modules: Sumbool
   exposed-modules: Tuple
   exposed-modules: Tuple0
+  exposed-modules: Unpeel
   exposed-modules: Vector
   exposed-modules: VectorDef
   exposed-modules: Wf
