@@ -14,6 +14,7 @@ Require Coq.Program.Wf.
 
 Require GHC.Base.
 Require GHC.Prim.
+Require HsToCoq.Unpeel.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
@@ -24,8 +25,8 @@ Arguments Mk_Down {_} _.
 
 (* Converted value declarations: *)
 
-Instance Unpeel_Down a : GHC.Prim.Unpeel (Down a) a :=
-  GHC.Prim.Build_Unpeel _ _ (fun '(Mk_Down x) => x) Mk_Down.
+Instance Unpeel_Down a : HsToCoq.Unpeel.Unpeel (Down a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(Mk_Down x) => x) Mk_Down.
 
 Local Definition Eq___Down_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Down inst_a -> Down inst_a -> bool :=
@@ -199,5 +200,6 @@ Definition comparing {a : Type} {b : Type} `{GHC.Base.Ord a}
      GHC.Base.op_zlzd____ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
      GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____ GHC.Base.op_zsze__
      GHC.Base.op_zsze____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return___ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel GHC.Prim.coerce
+     GHC.Base.return___ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel
 *)

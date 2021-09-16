@@ -1,6 +1,7 @@
 Require Import GHC.Base.
 Require Import Proofs.GHC.Base.
 Require Import Data.Ord.
+Require Import HsToCoq.Unpeel.
 
 From Coq Require Import ssreflect ssrbool ssrfun.
 Set Bullet Behavior "Strict Subproofs".

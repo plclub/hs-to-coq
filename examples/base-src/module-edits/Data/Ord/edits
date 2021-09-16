@@ -1,5 +1,5 @@
-add Data.Ord Instance Unpeel_Down a : GHC.Prim.Unpeel (Down a) a :=
-      GHC.Prim.Build_Unpeel _ _ (fun d => match d with | Mk_Down x => x end) Mk_Down.
+add Data.Ord Instance Unpeel_Down a : HsToCoq.Unpeel.Unpeel (Down a) a :=
+      HsToCoq.Unpeel.Build_Unpeel _ _ (fun d => match d with | Mk_Down x => x end) Mk_Down.
 
 order Unpeel_Down Data.Ord.Eq___Down_op_zeze__
 order Unpeel_Down Data.Ord.Eq___Down_op_zsze__

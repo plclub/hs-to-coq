@@ -8,18 +8,18 @@ skip Data.SemigroupInternal.stimesMaybe
 skip Data.SemigroupInternal.stimesMonoid
 skip Data.SemigroupInternal.stimesIdempotent
 
-add Data.SemigroupInternal Instance Unpeel_Dual a : GHC.Prim.Unpeel (Dual a) a :=
-	 GHC.Prim.Build_Unpeel _ _ getDual Mk_Dual.
-add Data.SemigroupInternal Instance Unpeel_Endo a : GHC.Prim.Unpeel (Endo a) (a -> a) :=
-	 GHC.Prim.Build_Unpeel _ _ appEndo Mk_Endo.
-add Data.SemigroupInternal Instance Unpeel_Any : GHC.Prim.Unpeel Any bool :=
-	 GHC.Prim.Build_Unpeel _ _ getAny Mk_Any.
-add Data.SemigroupInternal Instance Unpeel_All : GHC.Prim.Unpeel All bool :=
-	 GHC.Prim.Build_Unpeel _ _ getAll Mk_All.
-add Data.SemigroupInternal Instance Unpeel_Product a : GHC.Prim.Unpeel (Product a) a :=
-	 GHC.Prim.Build_Unpeel _ _ getProduct Mk_Product.
-add Data.SemigroupInternal Instance Unpeel_Sum a : GHC.Prim.Unpeel (Sum a) a :=
-	 GHC.Prim.Build_Unpeel _ _ getSum Mk_Sum.
+add Data.SemigroupInternal Instance Unpeel_Dual a : HsToCoq.Unpeel.Unpeel (Dual a) a :=
+	 HsToCoq.Unpeel.Build_Unpeel _ _ getDual Mk_Dual.
+add Data.SemigroupInternal Instance Unpeel_Endo a : HsToCoq.Unpeel.Unpeel (Endo a) (a -> a) :=
+	 HsToCoq.Unpeel.Build_Unpeel _ _ appEndo Mk_Endo.
+add Data.SemigroupInternal Instance Unpeel_Any : HsToCoq.Unpeel.Unpeel Any bool :=
+	 HsToCoq.Unpeel.Build_Unpeel _ _ getAny Mk_Any.
+add Data.SemigroupInternal Instance Unpeel_All : HsToCoq.Unpeel.Unpeel All bool :=
+	 HsToCoq.Unpeel.Build_Unpeel _ _ getAll Mk_All.
+add Data.SemigroupInternal Instance Unpeel_Product a : HsToCoq.Unpeel.Unpeel (Product a) a :=
+	 HsToCoq.Unpeel.Build_Unpeel _ _ getProduct Mk_Product.
+add Data.SemigroupInternal Instance Unpeel_Sum a : HsToCoq.Unpeel.Unpeel (Sum a) a :=
+	 HsToCoq.Unpeel.Build_Unpeel _ _ getSum Mk_Sum.
 
 order Unpeel_Any     Data.SemigroupInternal.Eq___Any_op_zeze__
 order Unpeel_All     Data.SemigroupInternal.Eq___All_op_zeze__
