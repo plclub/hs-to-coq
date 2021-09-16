@@ -100,10 +100,28 @@ jobs:
           stack --no-terminal --install-ghc install QuickCheck HUnit test-framework test-framework-hunit test-framework-quickcheck2
           stack --no-terminal --install-ghc build
 
+  pre_check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip_coq: ${{ steps.skip_coq_check.outputs.should_skip }}
+      should_skip_hs: ${{ steps.skip_hs_check.outputs.should_skip }}
+    steps:
+      - id: skip_hs_check
+        name: Check if the changes are about Haskell src files
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          paths: '["src/**", "stack.yaml"]'
+      - id: skip_coq_check
+        name: Check if the changes are about Coq files
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          paths: '["examples/**", "base/**", "base-thy/**"]'
+
   test-coq-files:
     name: Testing base, containers, transformers, GHC, etc.
     runs-on: ${{ matrix.os }}
-    needs: installing-coq
+    needs: [installing-coq, pre_check]
+    if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -242,7 +260,8 @@ jobs:
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)
     runs-on: ${{ matrix.os }}
-    needs: installing-haskell
+    needs: [installing-haskell, pre_check]
+    if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -335,7 +354,7 @@ jobs:
   test-container-extraction:
     name: Testing containers extraction
     runs-on: ${{ matrix.os }}
-    needs: [installing-haskell, installing-coq]
+    needs: [installing-haskell, installing-coq, pre_check]
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -343,6 +362,7 @@ jobs:
         resolver: [lts-12.0]
         ocaml: [4.07.1]
         coq: [8.10.2]
+    if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
     steps:
       - uses: actions/checkout@v2
         with:
