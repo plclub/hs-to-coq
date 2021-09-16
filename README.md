@@ -66,12 +66,12 @@ install these tools:
 
 Once installed, you can build the base library with
 
-    make -C base
+    cd base && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
 Th directory `base-thy/` contains auxillary definitions and lemmas, such as
 lawful type-class instances. You can build these with
 
-    make -C base-thy
+    cd base-thy && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
 # Using the tool
 
