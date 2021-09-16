@@ -14,6 +14,7 @@ Require Coq.Program.Wf.
 
 Require GHC.Base.
 Require GHC.Prim.
+Require HsToCoq.Unpeel.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
@@ -36,8 +37,8 @@ Definition getFirst {a} (arg_0__ : First a) :=
 
 (* Converted value declarations: *)
 
-Instance Unpeel_First a : GHC.Prim.Unpeel (First a) (option a) :=
-  GHC.Prim.Build_Unpeel _ _ getFirst Mk_First.
+Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) (option a) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
 
 Local Definition Eq___First_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : First inst_a -> First inst_a -> bool :=
@@ -164,8 +165,8 @@ Program Instance Monad__First : GHC.Base.Monad First :=
              Monad__First_op_zgzgze__ ;
            GHC.Base.return___ := fun {a : Type} => Monad__First_return_ |}.
 
-Instance Unpeel_Last a : GHC.Prim.Unpeel (Last a) (option a) :=
-  GHC.Prim.Build_Unpeel _ _ getLast Mk_Last.
+Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) (option a) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
 
 Local Definition Eq___Last_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Last inst_a -> Last inst_a -> bool :=
@@ -361,6 +362,6 @@ Program Instance Monoid__Last {a : Type} : GHC.Base.Monoid (Last a) :=
      GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__
      GHC.Base.op_zlztzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
      GHC.Base.op_ztzg__ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return_ GHC.Base.return___ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel
-     GHC.Prim.coerce
+     GHC.Base.return_ GHC.Base.return___ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel
 *)

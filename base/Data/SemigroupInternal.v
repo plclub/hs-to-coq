@@ -25,6 +25,7 @@ Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Real.
 Require HsToCoq.Err.
+Require HsToCoq.Unpeel.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
@@ -91,13 +92,13 @@ Definition getAll (arg_0__ : All) :=
 
 (* Midamble *)
 
-Instance Unpeel_Alt (k : Type) (f : k -> Type) (a : k) : GHC.Prim.Unpeel (Alt f a) (f a) :=
-    GHC.Prim.Build_Unpeel _ _ getAlt Mk_Alt.
+Instance Unpeel_Alt (k : Type) (f : k -> Type) (a : k) : HsToCoq.Unpeel.Unpeel (Alt f a) (f a) :=
+    HsToCoq.Unpeel.Build_Unpeel _ _ getAlt Mk_Alt.
 
 (* Converted value declarations: *)
 
-Instance Unpeel_Dual a : GHC.Prim.Unpeel (Dual a) a :=
-  GHC.Prim.Build_Unpeel _ _ getDual Mk_Dual.
+Instance Unpeel_Dual a : HsToCoq.Unpeel.Unpeel (Dual a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getDual Mk_Dual.
 
 Local Definition Eq___Dual_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Dual inst_a -> Dual inst_a -> bool :=
@@ -170,8 +171,8 @@ Program Instance Ord__Dual {a : Type} `{GHC.Base.Ord a}
 (* Skipping all instances of class `GHC.Generics.Generic', including
    `Data.SemigroupInternal.Generic__Endo' *)
 
-Instance Unpeel_All : GHC.Prim.Unpeel All bool :=
-  GHC.Prim.Build_Unpeel _ _ getAll Mk_All.
+Instance Unpeel_All : HsToCoq.Unpeel.Unpeel All bool :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getAll Mk_All.
 
 Local Definition Eq___All_op_zeze__ : All -> All -> bool :=
   GHC.Prim.coerce _GHC.Base.==_.
@@ -227,8 +228,8 @@ Program Instance Ord__All : GHC.Base.Ord All :=
 (* Skipping all instances of class `GHC.Generics.Generic', including
    `Data.SemigroupInternal.Generic__All' *)
 
-Instance Unpeel_Any : GHC.Prim.Unpeel Any bool :=
-  GHC.Prim.Build_Unpeel _ _ getAny Mk_Any.
+Instance Unpeel_Any : HsToCoq.Unpeel.Unpeel Any bool :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getAny Mk_Any.
 
 Local Definition Eq___Any_op_zeze__ : Any -> Any -> bool :=
   GHC.Prim.coerce _GHC.Base.==_.
@@ -284,8 +285,8 @@ Program Instance Ord__Any : GHC.Base.Ord Any :=
 (* Skipping all instances of class `GHC.Generics.Generic', including
    `Data.SemigroupInternal.Generic__Any' *)
 
-Instance Unpeel_Sum a : GHC.Prim.Unpeel (Sum a) a :=
-  GHC.Prim.Build_Unpeel _ _ getSum Mk_Sum.
+Instance Unpeel_Sum a : HsToCoq.Unpeel.Unpeel (Sum a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getSum Mk_Sum.
 
 Local Definition Eq___Sum_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Sum inst_a -> Sum inst_a -> bool :=
@@ -356,8 +357,8 @@ Program Instance Ord__Sum {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Sum a) :=
 (* Skipping all instances of class `GHC.Num.Num', including
    `Data.SemigroupInternal.Num__Sum' *)
 
-Instance Unpeel_Product a : GHC.Prim.Unpeel (Product a) a :=
-  GHC.Prim.Build_Unpeel _ _ getProduct Mk_Product.
+Instance Unpeel_Product a : HsToCoq.Unpeel.Unpeel (Product a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getProduct Mk_Product.
 
 Local Definition Eq___Product_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Product inst_a -> Product inst_a -> bool :=
@@ -689,8 +690,8 @@ Program Instance Monad__Dual : GHC.Base.Monad Dual :=
            GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Dual_op_zgzgze__ ;
            GHC.Base.return___ := fun {a : Type} => Monad__Dual_return_ |}.
 
-Instance Unpeel_Endo a : GHC.Prim.Unpeel (Endo a) (a -> a) :=
-  GHC.Prim.Build_Unpeel _ _ appEndo Mk_Endo.
+Instance Unpeel_Endo a : HsToCoq.Unpeel.Unpeel (Endo a) (a -> a) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ appEndo Mk_Endo.
 
 Local Definition Semigroup__Endo_op_zlzlzgzg__ {inst_a : Type}
    : Endo inst_a -> Endo inst_a -> Endo inst_a :=
@@ -988,7 +989,7 @@ Definition stimesIdempotentMonoid {b : Type} {a : Type} `{GHC.Real.Integral b}
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg__ GHC.Base.op_ztzg____
      GHC.Base.pure GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___
      GHC.Err.errorWithoutStackTrace GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
-     GHC.Num.op_zt__ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel GHC.Prim.coerce
-     GHC.Real.Integral HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     HsToCoq.Err.default
+     GHC.Num.op_zt__ GHC.Prim.coerce GHC.Real.Integral HsToCoq.Err.Build_Default
+     HsToCoq.Err.Default HsToCoq.Err.default HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel
 *)
