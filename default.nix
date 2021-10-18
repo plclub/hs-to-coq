@@ -8,7 +8,7 @@
 # After building, you can run result/bin/hs-to-coq
 
 { coqPackages ? "coqPackages_8_10"
-, ghcVersion  ? "ghc882"
+, ghcVersion  ? "ghc884"
 
 , rev    ? "4c2e7becf1c942553dadd6527996d25dbf5a7136"
 , sha256 ? "10dzi5xizgm9b3p5k963h5mmp0045nkcsabqyarpr7mj151f6jpm"
