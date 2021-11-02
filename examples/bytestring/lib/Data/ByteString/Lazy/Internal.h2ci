@@ -1,0 +1,9 @@
+constructors:
+  Data.ByteString.Lazy.Internal.ByteString: ! '[Qualified "Data.ByteString.Lazy.Internal"
+    "Empty",Qualified "Data.ByteString.Lazy.Internal" "Chunk"]'
+constructorFields:
+  Data.ByteString.Lazy.Internal.Chunk: NonRecordFields 2
+  Data.ByteString.Lazy.Internal.Empty: NonRecordFields 0
+constructorTypes:
+  Data.ByteString.Lazy.Internal.Chunk: Qualified "Data.ByteString.Lazy.Internal" "ByteString"
+  Data.ByteString.Lazy.Internal.Empty: Qualified "Data.ByteString.Lazy.Internal" "ByteString"

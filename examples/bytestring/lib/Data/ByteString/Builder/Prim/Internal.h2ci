@@ -1,0 +1,38 @@
+superclassCount:
+  Data.ByteString.Builder.Prim.Internal.Monoidal: '0'
+  Data.ByteString.Builder.Prim.Internal.Contravariant: '0'
+classTypes:
+  Data.ByteString.Builder.Prim.Internal.Monoidal: fromList []
+  Data.ByteString.Builder.Prim.Internal.Contravariant: fromList []
+constructors:
+  Data.ByteString.Builder.Prim.Internal.BoundedPrim: ! '[Qualified "Data.ByteString.Builder.Prim.Internal"
+    "BP"]'
+  Data.ByteString.Builder.Prim.Internal.FixedPrim: ! '[Qualified "Data.ByteString.Builder.Prim.Internal"
+    "FP"]'
+constructorFields:
+  Data.ByteString.Builder.Prim.Internal.BP: NonRecordFields 2
+  Data.ByteString.Builder.Prim.Internal.FP: NonRecordFields 2
+classDefns:
+  Data.ByteString.Builder.Prim.Internal.Monoidal: ClassDefinition (Qualified "Data.ByteString.Builder.Prim.Internal"
+    "Monoidal") [Typed Ungeneralizable Explicit (Ident (Bare "f") :| []) (Arrow (Qualid
+    (Bare "Type")) (Qualid (Bare "Type")))] Nothing [(Qualified "Data.ByteString.Builder.Prim.Internal"
+    "pair_",Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid
+    (Bare "Type")) :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "b")
+    :| []) (Qualid (Bare "Type")) :| []) (Arrow (App (Qualid (Bare "f")) (PosArg (Qualid
+    (Bare "a")) :| [])) (Arrow (App (Qualid (Bare "f")) (PosArg (Qualid (Bare "b"))
+    :| [])) (App (Qualid (Bare "f")) (PosArg (InScope (App (Qualid (Bare "op_zt__"))
+    (PosArg (Qualid (Bare "a")) :| [PosArg (Qualid (Bare "b"))])) "type") :| []))))))]
+  Data.ByteString.Builder.Prim.Internal.Contravariant: ClassDefinition (Qualified
+    "Data.ByteString.Builder.Prim.Internal" "Contravariant") [Typed Ungeneralizable
+    Explicit (Ident (Bare "f") :| []) (Arrow (Qualid (Bare "Type")) (Qualid (Bare
+    "Type")))] Nothing [(Qualified "Data.ByteString.Builder.Prim.Internal" "contramap",Forall
+    (Typed Ungeneralizable Implicit (Ident (Bare "b") :| []) (Qualid (Bare "Type"))
+    :| []) (Forall (Typed Ungeneralizable Implicit (Ident (Bare "a") :| []) (Qualid
+    (Bare "Type")) :| []) (Arrow (Arrow (Qualid (Bare "b")) (Qualid (Bare "a"))) (Arrow
+    (App (Qualid (Bare "f")) (PosArg (Qualid (Bare "a")) :| [])) (App (Qualid (Bare
+    "f")) (PosArg (Qualid (Bare "b")) :| []))))))]
+constructorTypes:
+  Data.ByteString.Builder.Prim.Internal.BP: Qualified "Data.ByteString.Builder.Prim.Internal"
+    "BoundedPrim"
+  Data.ByteString.Builder.Prim.Internal.FP: Qualified "Data.ByteString.Builder.Prim.Internal"
+    "FixedPrim"

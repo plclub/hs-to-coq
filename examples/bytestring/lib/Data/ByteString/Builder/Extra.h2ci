@@ -1,0 +1,12 @@
+constructors:
+  Data.ByteString.Builder.Extra.Next: ! '[Qualified "Data.ByteString.Builder.Extra"
+    "Done",Qualified "Data.ByteString.Builder.Extra" "More",Qualified "Data.ByteString.Builder.Extra"
+    "Chunk"]'
+constructorFields:
+  Data.ByteString.Builder.Extra.Done: NonRecordFields 0
+  Data.ByteString.Builder.Extra.Chunk: NonRecordFields 2
+  Data.ByteString.Builder.Extra.More: NonRecordFields 2
+constructorTypes:
+  Data.ByteString.Builder.Extra.Done: Qualified "Data.ByteString.Builder.Extra" "Next"
+  Data.ByteString.Builder.Extra.Chunk: Qualified "Data.ByteString.Builder.Extra" "Next"
+  Data.ByteString.Builder.Extra.More: Qualified "Data.ByteString.Builder.Extra" "Next"

@@ -1,0 +1,52 @@
+constructors:
+  Data.ByteString.Builder.Internal.AllocationStrategy: ! '[Qualified "Data.ByteString.Builder.Internal"
+    "AllocationStrategy"]'
+  Data.ByteString.Builder.Internal.Builder: ! '[Qualified "Data.ByteString.Builder.Internal"
+    "Builder"]'
+  Data.ByteString.Builder.Internal.Buffer: ! '[Qualified "Data.ByteString.Builder.Internal"
+    "Buffer"]'
+  Data.ByteString.Builder.Internal.ChunkIOStream: ! '[Qualified "Data.ByteString.Builder.Internal"
+    "Finished",Qualified "Data.ByteString.Builder.Internal" "Yield1"]'
+  Data.ByteString.Builder.Internal.Put: ! '[Qualified "Data.ByteString.Builder.Internal"
+    "Put"]'
+  Data.ByteString.Builder.Internal.BufferRange: ! '[Qualified "Data.ByteString.Builder.Internal"
+    "BufferRange"]'
+  Data.ByteString.Builder.Internal.BuildSignal: ! '[Qualified "Data.ByteString.Builder.Internal"
+    "Done",Qualified "Data.ByteString.Builder.Internal" "BufferFull",Qualified "Data.ByteString.Builder.Internal"
+    "InsertChunk"]'
+constructorFields:
+  Data.ByteString.Builder.Internal.AllocationStrategy: NonRecordFields 3
+  Data.ByteString.Builder.Internal.Builder: NonRecordFields 1
+  Data.ByteString.Builder.Internal.Finished: NonRecordFields 2
+  Data.ByteString.Builder.Internal.Buffer: NonRecordFields 2
+  Data.ByteString.Builder.Internal.BufferFull: NonRecordFields 3
+  Data.ByteString.Builder.Internal.InsertChunk: NonRecordFields 3
+  Data.ByteString.Builder.Internal.Yield1: NonRecordFields 2
+  Data.ByteString.Builder.Internal.Put: RecordFields [Qualified "Data.ByteString.Builder.Internal"
+    "unPut"]
+  Data.ByteString.Builder.Internal.BufferRange: NonRecordFields 2
+  Data.ByteString.Builder.Internal.Done: NonRecordFields 2
+recordFieldTypes:
+  Data.ByteString.Builder.Internal.unPut: Qualified "Data.ByteString.Builder.Internal"
+    "Put"
+constructorTypes:
+  Data.ByteString.Builder.Internal.AllocationStrategy: Qualified "Data.ByteString.Builder.Internal"
+    "AllocationStrategy"
+  Data.ByteString.Builder.Internal.Builder: Qualified "Data.ByteString.Builder.Internal"
+    "Builder"
+  Data.ByteString.Builder.Internal.Finished: Qualified "Data.ByteString.Builder.Internal"
+    "ChunkIOStream"
+  Data.ByteString.Builder.Internal.Buffer: Qualified "Data.ByteString.Builder.Internal"
+    "Buffer"
+  Data.ByteString.Builder.Internal.BufferFull: Qualified "Data.ByteString.Builder.Internal"
+    "BuildSignal"
+  Data.ByteString.Builder.Internal.InsertChunk: Qualified "Data.ByteString.Builder.Internal"
+    "BuildSignal"
+  Data.ByteString.Builder.Internal.Yield1: Qualified "Data.ByteString.Builder.Internal"
+    "ChunkIOStream"
+  Data.ByteString.Builder.Internal.Put: Qualified "Data.ByteString.Builder.Internal"
+    "Put"
+  Data.ByteString.Builder.Internal.BufferRange: Qualified "Data.ByteString.Builder.Internal"
+    "BufferRange"
+  Data.ByteString.Builder.Internal.Done: Qualified "Data.ByteString.Builder.Internal"
+    "BuildSignal"

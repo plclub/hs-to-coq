@@ -1,0 +1,17 @@
+constructors:
+  Data.ByteString.Short.Internal.MBA: ! '[Qualified "Data.ByteString.Short.Internal"
+    "op_MBAzh__"]'
+  Data.ByteString.Short.Internal.ShortByteString: ! '[Qualified "Data.ByteString.Short.Internal"
+    "SBS"]'
+  Data.ByteString.Short.Internal.BA: ! '[Qualified "Data.ByteString.Short.Internal"
+    "op_BAzh__"]'
+constructorFields:
+  Data.ByteString.Short.Internal.op_MBAzh__: NonRecordFields 1
+  Data.ByteString.Short.Internal.SBS: NonRecordFields 1
+  Data.ByteString.Short.Internal.op_BAzh__: NonRecordFields 1
+constructorTypes:
+  Data.ByteString.Short.Internal.op_MBAzh__: Qualified "Data.ByteString.Short.Internal"
+    "MBA"
+  Data.ByteString.Short.Internal.SBS: Qualified "Data.ByteString.Short.Internal" "ShortByteString"
+  Data.ByteString.Short.Internal.op_BAzh__: Qualified "Data.ByteString.Short.Internal"
+    "BA"

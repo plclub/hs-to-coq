@@ -1,0 +1,8 @@
+constructors:
+  Data.ByteString.Builder.Prim.Internal.Base16.EncodingTable: ! '[Qualified "Data.ByteString.Builder.Prim.Internal.Base16"
+    "EncodingTable"]'
+constructorFields:
+  Data.ByteString.Builder.Prim.Internal.Base16.EncodingTable: NonRecordFields 1
+constructorTypes:
+  Data.ByteString.Builder.Prim.Internal.Base16.EncodingTable: Qualified "Data.ByteString.Builder.Prim.Internal.Base16"
+    "EncodingTable"
