@@ -1,5 +1,5 @@
 constructors:
-  Data.ByteString.Builder.Extra.Next: ! '[Qualified "Data.ByteString.Builder.Extra"
+  Data.ByteString.Builder.Extra.Next: '[Qualified "Data.ByteString.Builder.Extra"
     "Done",Qualified "Data.ByteString.Builder.Extra" "More",Qualified "Data.ByteString.Builder.Extra"
     "Chunk"]'
 constructorFields:

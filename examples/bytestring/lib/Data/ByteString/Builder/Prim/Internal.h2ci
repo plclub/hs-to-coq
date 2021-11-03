@@ -5,9 +5,9 @@ classTypes:
   Data.ByteString.Builder.Prim.Internal.Monoidal: fromList []
   Data.ByteString.Builder.Prim.Internal.Contravariant: fromList []
 constructors:
-  Data.ByteString.Builder.Prim.Internal.BoundedPrim: ! '[Qualified "Data.ByteString.Builder.Prim.Internal"
+  Data.ByteString.Builder.Prim.Internal.BoundedPrim: '[Qualified "Data.ByteString.Builder.Prim.Internal"
     "BP"]'
-  Data.ByteString.Builder.Prim.Internal.FixedPrim: ! '[Qualified "Data.ByteString.Builder.Prim.Internal"
+  Data.ByteString.Builder.Prim.Internal.FixedPrim: '[Qualified "Data.ByteString.Builder.Prim.Internal"
     "FP"]'
 constructorFields:
   Data.ByteString.Builder.Prim.Internal.BP: NonRecordFields 2

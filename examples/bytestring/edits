@@ -34,6 +34,11 @@ skip module GHC.IO.Encoding
 skip module GHC.IO.Handle.Text
 skip module GHC.IO.Handle
 
+rename type  GHC.Maybe.Maybe   = option
+rename value GHC.Maybe.Just    = Some
+rename value GHC.Maybe.Nothing = None
+
+
 # xiomatize module GHC.Ptr
 # xiomatize module GHC.ForeignPtr
 # xiomatize module GHC.IO.Handle.Types

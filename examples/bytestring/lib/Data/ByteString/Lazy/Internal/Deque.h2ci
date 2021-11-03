@@ -1,5 +1,5 @@
 constructors:
-  Data.ByteString.Lazy.Internal.Deque.Deque: ! '[Qualified "Data.ByteString.Lazy.Internal.Deque"
+  Data.ByteString.Lazy.Internal.Deque.Deque: '[Qualified "Data.ByteString.Lazy.Internal.Deque"
     "Deque"]'
 constructorFields:
   Data.ByteString.Lazy.Internal.Deque.Deque: RecordFields [Qualified "Data.ByteString.Lazy.Internal.Deque"

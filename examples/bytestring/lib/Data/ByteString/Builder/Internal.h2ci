@@ -1,17 +1,17 @@
 constructors:
-  Data.ByteString.Builder.Internal.AllocationStrategy: ! '[Qualified "Data.ByteString.Builder.Internal"
+  Data.ByteString.Builder.Internal.AllocationStrategy: '[Qualified "Data.ByteString.Builder.Internal"
     "AllocationStrategy"]'
-  Data.ByteString.Builder.Internal.Builder: ! '[Qualified "Data.ByteString.Builder.Internal"
+  Data.ByteString.Builder.Internal.Builder: '[Qualified "Data.ByteString.Builder.Internal"
     "Builder"]'
-  Data.ByteString.Builder.Internal.Buffer: ! '[Qualified "Data.ByteString.Builder.Internal"
+  Data.ByteString.Builder.Internal.Buffer: '[Qualified "Data.ByteString.Builder.Internal"
     "Buffer"]'
-  Data.ByteString.Builder.Internal.ChunkIOStream: ! '[Qualified "Data.ByteString.Builder.Internal"
+  Data.ByteString.Builder.Internal.ChunkIOStream: '[Qualified "Data.ByteString.Builder.Internal"
     "Finished",Qualified "Data.ByteString.Builder.Internal" "Yield1"]'
-  Data.ByteString.Builder.Internal.Put: ! '[Qualified "Data.ByteString.Builder.Internal"
+  Data.ByteString.Builder.Internal.Put: '[Qualified "Data.ByteString.Builder.Internal"
     "Put"]'
-  Data.ByteString.Builder.Internal.BufferRange: ! '[Qualified "Data.ByteString.Builder.Internal"
+  Data.ByteString.Builder.Internal.BufferRange: '[Qualified "Data.ByteString.Builder.Internal"
     "BufferRange"]'
-  Data.ByteString.Builder.Internal.BuildSignal: ! '[Qualified "Data.ByteString.Builder.Internal"
+  Data.ByteString.Builder.Internal.BuildSignal: '[Qualified "Data.ByteString.Builder.Internal"
     "Done",Qualified "Data.ByteString.Builder.Internal" "BufferFull",Qualified "Data.ByteString.Builder.Internal"
     "InsertChunk"]'
 constructorFields:
