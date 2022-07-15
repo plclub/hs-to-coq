@@ -17,6 +17,7 @@ Require Coq.Init.Datatypes.
 Require Data.Maybe.
 Require GHC.Base.
 Require GHC.Err.
+Require HsToCoq.Err.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
@@ -131,7 +132,7 @@ Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
 
 (* Skipping definition `Maybes.firstJusts' *)
 
-Definition expectJust {a} `{GHC.Err.Default a}
+Definition expectJust {a} `{HsToCoq.Err.Default a}
    : GHC.Base.String -> option a -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -171,5 +172,5 @@ Definition failME {err : Type} {val : Type} : err -> MaybeErr err val :=
      GHC.Base.liftA2__ GHC.Base.liftM GHC.Base.op_z2218U__ GHC.Base.op_zgzg____
      GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
      GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return_ GHC.Base.return___ GHC.Err.Default GHC.Err.error
+     GHC.Base.return_ GHC.Base.return___ GHC.Err.error HsToCoq.Err.Default
 *)

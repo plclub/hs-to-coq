@@ -12,7 +12,7 @@ Some notes about interface file:
 
  * You need to pass `--iface-dir foo/` to make `hs-to-coq` search for interface
    files in `foo/`. This flag can be used multiple times. Usually, you will
-   at least passt `--iface-dir path/to/base --iface-dir output/` where `output/`
+   at least pass `--iface-dir path/to/base --iface-dir output/` where `output/`
    is the argument to `-o`.
 
  * When it cannot find an interface file, `hs-to-coq` complains loudly (but still
@@ -26,8 +26,8 @@ Some notes about interface file:
    as dependencies of `Foo.v`, ensuring that from now on all files are built in
    the right order.
 
- * Skipping instances prevents hs-to-coq from trying to load the interface
-   files of the class’es module.
+ * Skipping instances prevents `hs-to-coq` from trying to load the interface
+   files of the class’s module.
 
  * Coq types as well as information about the type classes `Eq` and `Ord` are hard-coded
    in `src/lib/HsToCoq/ConvertHaskell/BuiltIn.hs`.

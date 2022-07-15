@@ -1,17 +1,18 @@
 (* DEMAND midamble file. Termination defs and tactics . *)
 
-Require Import GHC.Nat.
+Require Import HsToCoq.Nat.
+Require Import HsToCoq.Unpeel.
 Require Import Omega.
 
-Ltac solve_not_zero_N := match goal with 
-  | [ H : GHC.Base.op_zeze__ ?x ?y = false |- _ ] => 
+Ltac solve_not_zero_N := match goal with
+  | [ H : GHC.Base.op_zeze__ ?x ?y = false |- _ ] =>
     unfold GHC.Base.op_zeze__ in H;
     unfold GHC.Base.Eq_Char___ in H;
     simpl in H;
     apply N.eqb_neq in H end;
     zify;
     omega.
-Ltac simpl_not_zero := match goal with 
+Ltac simpl_not_zero := match goal with
   | [ H : GHC.Base.op_zeze__ ?x ?y = false |- _ ] =>
   unfold GHC.Base.op_zeze__ in H;
     unfold Eq_nat in H;
@@ -21,9 +22,9 @@ Ltac solve_error_sub :=
   unfold error_sub;
   let Hltb := fresh in
   let HeqHltb := fresh in
-  match goal with 
+  match goal with
     [ |- context[ Nat.ltb ?x (Pos.to_nat 1) ] ] =>
-    remember (Nat.ltb x (Pos.to_nat 1)) as Hltb eqn:HeqHltb; 
+    remember (Nat.ltb x (Pos.to_nat 1)) as Hltb eqn:HeqHltb;
       destruct Hltb;
       symmetry in HeqHltb;
       try (rewrite Nat.ltb_lt in HeqHltb);
@@ -37,8 +38,8 @@ Ltac solve_mkWorkerDemand := Tactics.program_simpl; simpl_not_zero; solve_error_
 Ltac solve_dmdTransform := Tactics.program_simpl; try solve_mkWorkerDemand; try distinguish.
 
 
-Instance Unpeel_StrictSig : Prim.Unpeel StrictSig DmdType :=
-  Prim.Build_Unpeel _ _ (fun x => match x with | Mk_StrictSig y => y end) Mk_StrictSig.
+Instance Unpeel_StrictSig : Unpeel StrictSig DmdType :=
+  Build_Unpeel _ _ (fun x => match x with | Mk_StrictSig y => y end) Mk_StrictSig.
 
 
 (* size metric, incase it is useful *)

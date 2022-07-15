@@ -24,6 +24,7 @@ Require Data.Traversable.
 Require GHC.Base.
 Require GHC.Num.
 Require GHC.Prim.
+Require HsToCoq.Unpeel.
 Import Data.Functor.Notations.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -151,8 +152,8 @@ Program Instance Semigroup__SLast {a} : GHC.Base.Semigroup (Last a) := fun _ k =
 (* Skipping all instances of class `GHC.Enum.Bounded', including
    `Data.Semigroup.Bounded__Min' *)
 
-Instance Unpeel_Min a : GHC.Prim.Unpeel (Min a) a :=
-  GHC.Prim.Build_Unpeel _ _ getMin Mk_Min.
+Instance Unpeel_Min a : HsToCoq.Unpeel.Unpeel (Min a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getMin Mk_Min.
 
 Local Definition Eq___Min_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Min inst_a -> Min inst_a -> bool :=
@@ -223,8 +224,8 @@ Program Instance Ord__Min {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Min a) :=
 (* Skipping all instances of class `GHC.Enum.Bounded', including
    `Data.Semigroup.Bounded__Max' *)
 
-Instance Unpeel_Max a : GHC.Prim.Unpeel (Max a) a :=
-  GHC.Prim.Build_Unpeel _ _ getMax Mk_Max.
+Instance Unpeel_Max a : HsToCoq.Unpeel.Unpeel (Max a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getMax Mk_Max.
 
 Local Definition Eq___Max_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Max inst_a -> Max inst_a -> bool :=
@@ -310,8 +311,8 @@ Program Instance Ord__Max {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Max a) :=
 (* Skipping all instances of class `GHC.Enum.Bounded', including
    `Data.Semigroup.Bounded__First' *)
 
-Instance Unpeel_First a : GHC.Prim.Unpeel (First a) a :=
-  GHC.Prim.Build_Unpeel _ _ getFirst Mk_First.
+Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
 
 Local Definition Eq___First_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : First inst_a -> First inst_a -> bool :=
@@ -384,8 +385,8 @@ Program Instance Ord__First {a : Type} `{GHC.Base.Ord a}
 (* Skipping all instances of class `GHC.Enum.Bounded', including
    `Data.Semigroup.Bounded__Last' *)
 
-Instance Unpeel_Last a : GHC.Prim.Unpeel (Last a) a :=
-  GHC.Prim.Build_Unpeel _ _ getLast Mk_Last.
+Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
 
 Local Definition Eq___Last_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Last inst_a -> Last inst_a -> bool :=
@@ -458,8 +459,8 @@ Program Instance Ord__Last {a : Type} `{GHC.Base.Ord a}
 (* Skipping all instances of class `GHC.Enum.Bounded', including
    `Data.Semigroup.Bounded__WrappedMonoid' *)
 
-Instance Unpeel_WrappedMonoid a : GHC.Prim.Unpeel (WrappedMonoid a) a :=
-  GHC.Prim.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
+Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
 
 Local Definition Eq___WrappedMonoid_op_zeze__ {inst_m : Type} `{GHC.Base.Eq_
   inst_m}
@@ -536,8 +537,8 @@ Program Instance Ord__WrappedMonoid {m : Type} `{GHC.Base.Ord m}
 (* Skipping all instances of class `GHC.Generics.Generic1', including
    `Data.Semigroup.Generic1__TYPE__WrappedMonoid__LiftedRep' *)
 
-Instance Unpeel_Option a : GHC.Prim.Unpeel (Option a) (option a) :=
-  GHC.Prim.Build_Unpeel _ _ getOption Mk_Option.
+Instance Unpeel_Option a : HsToCoq.Unpeel.Unpeel (Option a) (option a) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getOption Mk_Option.
 
 Local Definition Eq___Option_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Option inst_a -> Option inst_a -> bool :=
@@ -2120,6 +2121,6 @@ Definition destruct_option {b : Type} {a : Type}
      GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg__ GHC.Base.op_ztzg____
      GHC.Base.pure GHC.Base.pure__ GHC.Base.return___ GHC.Num.Int GHC.Num.Num
-     GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel
-     GHC.Prim.coerce
+     GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel
 *)

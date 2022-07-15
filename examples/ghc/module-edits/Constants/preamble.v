@@ -1,1 +1,1 @@
-Require GHC.Nat.
+Require HsToCoq.Nat.

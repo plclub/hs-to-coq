@@ -3,7 +3,7 @@ Quickstart
 ==========
 
 The easiest way to see how to use ``hs-to-coq`` is to look at the Makefiles in
-each of the subdirectories in the `examples <https://github.com/antalsz/hs-to-coq/tree/master/examples/>`_ subdirectory of the repository.
+each of the subdirectories in the `examples <https://github.com/plclub/hs-to-coq/tree/master/examples/>`_ subdirectory of the repository.
 
 Translating a single Haskell file
 ---------------------------------
@@ -40,7 +40,7 @@ In this case, it is the current directory.
 
 An example translated in this way
 is `simple
-<https://github.com/antalsz/hs-to-coq/blob/master/examples/simple>`_. Check
+<https://github.com/plclub/hs-to-coq/tree/master/examples/simple>`_. Check
 out the ``Makefile`` in the ``examples/simple`` subdirectory to see how
 ``hs-to-coq`` is invoked with these arguments.
 
@@ -50,7 +50,7 @@ Local Edit files
 Often, a particular file will require its own set of edits. These edits can be
 provided with additional uses of the ``-e <editfile>`` command line argument.
 
-An example that uses a local edit file is `intervals <https://github.com/antalsz/hs-to-coq/tree/master/examples/intervals>`_,
+An example that uses a local edit file is `intervals <https://github.com/plclub/hs-to-coq/tree/master/examples/intervals>`_,
 as described in Joachim Breitner's
 `blog post <https://www.joachim-breitner.de/blog/734-Finding_bugs_in_Haskell_code_by_proving_it>`_.
 
@@ -69,7 +69,7 @@ Inserts the Coq definitions from the specified file at
 the beginning of the output.
 
 For example, the `rle
-<https://github.com/antalsz/hs-to-coq/blob/master/examples/rle>`_ example uses
+<https://github.com/plclub/hs-to-coq/tree/master/examples/rle>`_ example uses
 a preamble to add additional imports to the output.
 
 .. option:: -m <midamble-file>
@@ -117,8 +117,8 @@ Translating a multi-file project
 
 Larger examples include
 `containers
-<https://github.com/antalsz/hs-to-coq/tree/master/examples/containers>`_  and
-`transformers <https://github.com/antalsz/hs-to-coq/tree/master/examples/transformers>`_.
+<https://github.com/plclub/hs-to-coq/tree/master/examples/containers>`_  and
+`transformers <https://github.com/plclub/hs-to-coq/tree/master/examples/transformers>`_.
 
 These examples use a ``Makefile`` to translate each module in the library
 individually, using edit files, preambles and midambles specific to each

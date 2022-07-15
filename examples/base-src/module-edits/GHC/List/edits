@@ -14,9 +14,9 @@ skip GHC.List.scanr
 skip GHC.List.splitAt
 
 # partial functions
-set type GHC.List.head : forall {a} `{_: GHC.Err.Default a}, list a -> a 
+set type GHC.List.head : forall {a} `{_: HsToCoq.Err.Default a}, list a -> a 
 #skip GHC.List.head
-set type GHC.List.badHead : forall {a} `{_: GHC.Err.Default a}, a 
+set type GHC.List.badHead : forall {a} `{_: HsToCoq.Err.Default a}, a 
 #skip GHC.List.badHead
 
 skip GHC.List.unsafeTake
@@ -31,32 +31,32 @@ skip GHC.List.iterate'FB
 skip GHC.List.repeatFB  # doesn't terminate
 skip GHC.List.iterateFB # doesn't terminate
 
-set type GHC.List.!! : forall {a}`{_:GHC.Err.Default a}, (list a) -> (GHC.Num.Int -> a)
+set type GHC.List.!! : forall {a}`{_:HsToCoq.Err.Default a}, (list a) -> (GHC.Num.Int -> a)
 # skip GHC.List.!!
-set type GHC.List.tooLarge : forall {a} `{_: GHC.Err.Default a}, GHC.Num.Int -> a 
+set type GHC.List.tooLarge : forall {a} `{_: HsToCoq.Err.Default a}, GHC.Num.Int -> a 
 #skip GHC.List.tooLarge
-set type GHC.List.errorEmptyList : forall {a} `{_: GHC.Err.Default a}, GHC.Base.String -> a 
+set type GHC.List.errorEmptyList : forall {a} `{_: HsToCoq.Err.Default a}, GHC.Base.String -> a 
 # skip GHC.List.errorEmptyList
 
-set type GHC.List.foldl1 : forall {a}`{_:GHC.Err.Default a}, (a -> (a -> a)) -> ((list a) -> a)
+set type GHC.List.foldl1 : forall {a}`{_:HsToCoq.Err.Default a}, (a -> (a -> a)) -> ((list a) -> a)
 # skip GHC.List.foldl1
-set type GHC.List.foldl1' : forall {a}`{_:GHC.Err.Default a}, (a -> (a -> a)) -> ((list a) -> a)
+set type GHC.List.foldl1' : forall {a}`{_:HsToCoq.Err.Default a}, (a -> (a -> a)) -> ((list a) -> a)
 # skip GHC.List.foldl1'
-set type GHC.List.foldr1 : forall {a}`{_:GHC.Err.Default a}, (a -> (a -> a)) -> ((list a) -> a)
+set type GHC.List.foldr1 : forall {a}`{_:HsToCoq.Err.Default a}, (a -> (a -> a)) -> ((list a) -> a)
 #skip GHC.List.foldr1
-set type GHC.List.init : forall {a}`{_:GHC.Err.Default a}, (list a) -> (list a)
+set type GHC.List.init : forall {a}`{_:HsToCoq.Err.Default a}, (list a) -> (list a)
 # skip GHC.List.init
-set type GHC.List.lastError : forall {a} `{_: GHC.Err.Default a}, a 
+set type GHC.List.lastError : forall {a} `{_: HsToCoq.Err.Default a}, a 
 # skip GHC.List.lastError
-set type GHC.List.last : forall {a} `{_: GHC.Err.Default a}, (list a) -> a 
+set type GHC.List.last : forall {a} `{_: HsToCoq.Err.Default a}, (list a) -> a 
 # skip GHC.List.last
-set type GHC.List.maximum : forall {a}`{_:GHC.Err.Default a}{_:Eq_ a}{_:Ord a}, (list a) -> a
+set type GHC.List.maximum : forall {a}`{_:HsToCoq.Err.Default a}{_:Eq_ a}{_:Ord a}, (list a) -> a
 # skip GHC.List.maximum
-set type GHC.List.minimum : forall {a}`{_:GHC.Err.Default a}{_:Eq_ a}{_:Ord a}, (list a) -> a
+set type GHC.List.minimum : forall {a}`{_:HsToCoq.Err.Default a}{_:Eq_ a}{_:Ord a}, (list a) -> a
 # skip GHC.List.minimum
-set type GHC.List.tail : forall {a}`{_:GHC.Err.Default a}, (list a) -> (list a)
+set type GHC.List.tail : forall {a}`{_:HsToCoq.Err.Default a}, (list a) -> (list a)
 # skip GHC.List.tail
-set type GHC.List.scanr1 : forall {a}`{_:GHC.Err.Default a}, (a -> (a -> a)) -> ((list a) -> (list a))
+set type GHC.List.scanr1 : forall {a}`{_:HsToCoq.Err.Default a}, (a -> (a -> a)) -> ((list a) -> (list a))
 # skip GHC.List.scanr1
-set type GHC.List.negIndex : forall {a} `{_: GHC.Err.Default a}, a 
+set type GHC.List.negIndex : forall {a} `{_: HsToCoq.Err.Default a}, a 
 # skip GHC.List.negIndex

@@ -11,7 +11,7 @@ Require Import BitUtils.
 
 (** * The IntMap formalization *)
 
-Require Import GHC.DeferredFix.
+Require Import HsToCoq.DeferredFix.
 Require Import IntSetProofs.
 Require Import Data.IntSet.Internal.
 Require Import Data.IntMap.Internal.

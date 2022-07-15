@@ -21,8 +21,8 @@ order UniqFM.Functor__UniqFM UniqFM.Foldable__UniqFM UniqFM.Traversable__UniqFM
 order UniqFM.Semigroup__UniqFM UniqFM.Monoid__UniqFM_mappend
 order UniqFM.Semigroup__UniqFM UniqFM.Monoid__UniqFM_mconcat
 
-add UniqFM Instance Unpeel_UniqFM ele : GHC.Prim.Unpeel (UniqFM ele) (IntMap.IntMap ele) :=
-  GHC.Prim.Build_Unpeel _ _ (fun x => match x with | UFM y => y end) UFM.
+add UniqFM Instance Unpeel_UniqFM ele : HsToCoq.Unpeel.Unpeel (UniqFM ele) (IntMap.IntMap ele) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | UFM y => y end) UFM.
 
 rename value Unique.getKey = Unique.getWordKey
 

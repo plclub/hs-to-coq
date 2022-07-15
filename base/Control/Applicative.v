@@ -17,6 +17,7 @@ Require Control.Category.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Prim.
+Require HsToCoq.Unpeel.
 Import Control.Arrow.Notations.
 Import Control.Category.Notations.
 Import GHC.Base.Notations.
@@ -51,8 +52,8 @@ Definition unwrapArrow {a : Type -> Type -> Type} {b} {c} (arg_0__
    `Control.Applicative.Generic1__TYPE__WrappedMonad__LiftedRep' *)
 
 Instance Unpeel_WrappedMonad {m} {a}
-   : GHC.Prim.Unpeel (WrappedMonad m a) (m a) :=
-  GHC.Prim.Build_Unpeel _ _ unwrapMonad WrapMonad.
+   : HsToCoq.Unpeel.Unpeel (WrappedMonad m a) (m a) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonad WrapMonad.
 
 Local Definition Monad__WrappedMonad_op_zgzg__ {inst_m : Type -> Type}
   `{GHC.Base.Monad inst_m}
@@ -283,8 +284,8 @@ Program Instance Applicative__WrappedArrow {a : Type -> Type -> Type} {b : Type}
 (* Skipping definition `Control.Applicative.optional' *)
 
 Instance Unpeel_WrappedArrow {a} {b} {c}
-   : GHC.Prim.Unpeel (WrappedArrow a b c) (a b c) :=
-  GHC.Prim.Build_Unpeel _ _ unwrapArrow WrapArrow.
+   : HsToCoq.Unpeel.Unpeel (WrappedArrow a b c) (a b c) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ unwrapArrow WrapArrow.
 
 (* External variables:
      Type Control.Arrow.Arrow Control.Arrow.arr Control.Arrow.op_zazaza__
@@ -294,6 +295,6 @@ Instance Unpeel_WrappedArrow {a} {b} {c}
      GHC.Base.op_z2218U__ GHC.Base.op_zgzg__ GHC.Base.op_zgzg____
      GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__
      GHC.Base.op_zlzd____ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
-     GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ GHC.Prim.Build_Unpeel
-     GHC.Prim.Unpeel GHC.Prim.coerce
+     GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ GHC.Prim.coerce
+     HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
 *)

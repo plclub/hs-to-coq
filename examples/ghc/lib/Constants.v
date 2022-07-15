@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Preamble *)
 
-Require GHC.Nat.
+Require HsToCoq.Nat.
 
 (* No imports to convert. *)
 

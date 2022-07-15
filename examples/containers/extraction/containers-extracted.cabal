@@ -43,6 +43,7 @@ library
   exposed-modules: Either
   exposed-modules: Enum
   exposed-modules: Err
+  exposed-modules: Err0
   exposed-modules: Fin
   exposed-modules: Foldable
   exposed-modules: Identity
@@ -69,6 +70,7 @@ library
   exposed-modules: Sumbool
   exposed-modules: Tuple
   exposed-modules: Tuple0
+  exposed-modules: Unpeel
   exposed-modules: Vector
   exposed-modules: VectorDef
   exposed-modules: Wf

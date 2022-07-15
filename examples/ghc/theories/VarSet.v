@@ -1639,11 +1639,11 @@ Proof.
   unfold Equal, In, elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in Eq2.
   apply null_intersection_eq; eauto.
   move=> k1.  
-  specialize (Eq1 (Mk_Id GHC.Err.default k1 GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default)).
+  specialize (Eq1 (Mk_Id HsToCoq.Err.default k1 HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default)).
   simpl in Eq1.
   auto.
   move=> k1.
-  specialize (Eq2 (Mk_Id GHC.Err.default k1 GHC.Err.default GHC.Err.default GHC.Err.default GHC.Err.default)).
+  specialize (Eq2 (Mk_Id HsToCoq.Err.default k1 HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default)).
   simpl in Eq2.
   auto.
 Qed.

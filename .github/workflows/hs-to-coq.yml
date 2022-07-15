@@ -3,6 +3,24 @@ name: hs-to-coq
 on: [push, pull_request]
 
 jobs:
+
+  pre_check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip_coq: ${{ steps.skip_coq_check.outputs.should_skip }}
+      should_skip_hs: ${{ steps.skip_hs_check.outputs.should_skip }}
+    steps:
+      - id: skip_hs_check
+        name: Check if the changes are about Haskell src files
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          paths: '["src/**", "stack.yaml", "hs-to-coq.cabal", "cabal.project"]'
+      - id: skip_coq_check
+        name: Check if the changes are about Coq files
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          paths: '["examples/**", "base/**", "base-thy/**"]'
+
   installing-haskell:
     name: Installing Haskell dependencies
     runs-on: ${{ matrix.os }}
@@ -11,6 +29,8 @@ jobs:
         os: [ubuntu-latest]
         ghc: [8.4.3]
         resolver: [lts-12.0]
+    needs: pre_check
+    if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
     steps:
       - uses: actions/checkout@v2
       - name: Caching Stack
@@ -46,6 +66,8 @@ jobs:
         os: [ubuntu-latest]
         ocaml: [4.07.1]
         coq: [8.10.2]
+    needs: pre_check
+    if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
     steps:
       - name: Caching OPAM
         id: caching-opam
@@ -74,7 +96,9 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         ghc: [8.4.3]
-        resolver: [lts-12.14, lts-14.27, lts-16.26]
+        resolver: [lts-12.26, lts-14.27, lts-16.31, lts-18.10]
+    needs: pre_check
+    if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
     steps:
       - uses: actions/checkout@v2
       - name: Caching Stack
@@ -103,12 +127,13 @@ jobs:
   test-coq-files:
     name: Testing base, containers, transformers, GHC, etc.
     runs-on: ${{ matrix.os }}
-    needs: installing-coq
+    needs: [installing-coq, pre_check]
     strategy:
       matrix:
         os: [ubuntu-latest]
         ocaml: [4.07.1]
         coq: [8.10.2]
+    if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
     steps:
       - uses: actions/checkout@v2
       - name: Caching OPAM
@@ -171,7 +196,8 @@ jobs:
   tests:
     name: Tests, base tests, and other examples
     runs-on: ${{ matrix.os }}
-    needs: [installing-haskell, installing-coq]
+    needs: [installing-haskell, installing-coq, pre_check]
+    if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' && needs.pre_check.outputs.should_skip_hs != 'true' }}
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -242,7 +268,7 @@ jobs:
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)
     runs-on: ${{ matrix.os }}
-    needs: installing-haskell
+    needs: [installing-haskell, pre_check]
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -250,6 +276,7 @@ jobs:
         resolver: [lts-12.0]
         ocaml: [4.07.1]
         coq: [8.10.2]
+    if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -335,7 +362,7 @@ jobs:
   test-container-extraction:
     name: Testing containers extraction
     runs-on: ${{ matrix.os }}
-    needs: [installing-haskell, installing-coq]
+    needs: [installing-haskell, installing-coq, pre_check]
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -343,6 +370,7 @@ jobs:
         resolver: [lts-12.0]
         ocaml: [4.07.1]
         coq: [8.10.2]
+    if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
     steps:
       - uses: actions/checkout@v2
         with:

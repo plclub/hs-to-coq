@@ -318,7 +318,7 @@ Section AnnCoreLT.
 
   (* Needs a precondition that there are enough lambdas *)
   Lemma AnnCoreLT_collectNAnnBndrs:
-    forall n e e' `{GHC.Err.Default v},
+    forall n e e' `{HsToCoq.Err.Default v},
     AnnHasNLams n e ->
     AnnCoreLT e e' ->
     AnnCoreLT (snd (collectNAnnBndrs n e)) e'.

@@ -16,6 +16,7 @@ Require Data.Foldable.
 Require Data.IntSet.Internal.
 Require GHC.Base.
 Require GHC.Prim.
+Require HsToCoq.Unpeel.
 Require IntMap.
 Require Unique.
 Import GHC.Base.Notations.
@@ -38,8 +39,9 @@ Instance Default__UniqFM {a} : Err.Default (UniqFM a) :=
 (* Skipping all instances of class `Data.Data.Data', including
    `UniqFM.Data__UniqFM' *)
 
-Instance Unpeel_UniqFM ele : GHC.Prim.Unpeel (UniqFM ele) (IntMap.IntMap ele) :=
-  GHC.Prim.Build_Unpeel _ _ (fun '(UFM y) => y) UFM.
+Instance Unpeel_UniqFM ele
+   : HsToCoq.Unpeel.Unpeel (UniqFM ele) (IntMap.IntMap ele) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(UFM y) => y) UFM.
 
 Local Definition Eq___UniqFM_op_zeze__ {inst_ele : Type} `{GHC.Base.Eq_
   inst_ele}
@@ -446,9 +448,9 @@ Definition pprUFMWithKeys {a : Type}
      GHC.Base.mappend__ GHC.Base.mconcat__ GHC.Base.mempty__ GHC.Base.op_z2218U__
      GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
      GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__
-     GHC.Base.op_zsze____ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel GHC.Prim.coerce
-     IntMap.IntMap IntMap.adjust IntMap.alter IntMap.delete IntMap.difference
-     IntMap.elems IntMap.empty IntMap.filter IntMap.filterWithKey
+     GHC.Base.op_zsze____ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel IntMap.IntMap IntMap.adjust IntMap.alter IntMap.delete
+     IntMap.difference IntMap.elems IntMap.empty IntMap.filter IntMap.filterWithKey
      IntMap.findWithDefault IntMap.foldr IntMap.foldrWithKey IntMap.insert
      IntMap.insertWith IntMap.intersection IntMap.intersectionWith IntMap.keys
      IntMap.keysSet IntMap.lookup IntMap.map IntMap.mapWithKey IntMap.member

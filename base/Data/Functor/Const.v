@@ -28,6 +28,7 @@ Require Data.SemigroupInternal.
 Require GHC.Base.
 Require GHC.Num.
 Require GHC.Prim.
+Require HsToCoq.Unpeel.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
@@ -53,8 +54,9 @@ Definition getConst {k : Type} {a : Type} {b : k} (arg_0__ : Const a b) :=
 (* Skipping all instances of class `GHC.Enum.Enum', including
    `Data.Functor.Const.Enum__Const' *)
 
-Instance Unpeel_Const (k a : Type) (b : k) : GHC.Prim.Unpeel (Const a b) a :=
-  GHC.Prim.Build_Unpeel _ _ getConst Mk_Const.
+Instance Unpeel_Const (k a : Type) (b : k)
+   : HsToCoq.Unpeel.Unpeel (Const a b) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getConst Mk_Const.
 
 Local Definition Eq___Const_op_zeze__ {inst_a : Type} {inst_k : Type} {inst_b
    : inst_k} `{GHC.Base.Eq_ inst_a}
@@ -367,5 +369,6 @@ Program Instance Applicative__Const {m : Type} `{GHC.Base.Monoid m}
      GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
      GHC.Base.op_zlztzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
      GHC.Base.op_ztzg____ GHC.Base.pure__ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zp__ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel GHC.Prim.coerce
+     GHC.Num.op_zp__ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel
 *)

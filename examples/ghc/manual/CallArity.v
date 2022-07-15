@@ -23,10 +23,10 @@ Require Data.Foldable.
 Require Data.Tuple.
 Require DynFlags.
 Require GHC.Base.
-Require GHC.DeferredFix.
 Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
+Require HsToCoq.DeferredFix.
 Require Id.
 Require UnVarGraph.
 Require Util.
@@ -40,9 +40,8 @@ Definition CallArityRes :=
 
 (* Midamble *)
 
-
-Instance Default_CallArityRes : GHC.Err.Default CallArityRes := 
-GHC.Err.Build_Default _ (GHC.Err.default, GHC.Err.default).
+Instance Default_CallArityRes : HsToCoq.Err.Default CallArityRes := 
+HsToCoq.Err.Build_Default _ (HsToCoq.Err.default, HsToCoq.Err.default).
 
 
 (* ------------------------- mutual recursion hack -------------------- *)
@@ -282,54 +281,55 @@ Definition callArityBind
          : list (Core.Id * option (bool * BasicTypes.Arity * CallArityRes)%type *
                  Core.CoreExpr)%type ->
            (CallArityRes * list (Core.Id * Core.CoreExpr)%type)%type :=
-          GHC.DeferredFix.deferredFix1 (fun fix_
-                                        (ann_binds
-                                          : list (Core.Id * option (bool * BasicTypes.Arity * CallArityRes)%type *
-                                                  Core.CoreExpr)%type) =>
-                                          let aes_old :=
-                                            let cont_29__ arg_30__ :=
-                                              match arg_30__ with
-                                              | pair (pair i (Some (pair (pair _ _) ae))) _ => cons (pair i ae) nil
-                                              | _ => nil
-                                              end in
-                                            Coq.Lists.List.flat_map cont_29__ ann_binds in
-                                          let ae := callArityRecEnv any_boring aes_old ae_body in
-                                          let rerun :=
-                                            fun '(pair (pair i mbLastRun) rhs) =>
-                                              let 'pair new_arity called_once := (if Core.elemVarSet i
-                                                                                                     boring_vars : bool
-                                                                                  then pair #0 false else
-                                                                                  lookupCallArityRes ae i) in
-                                              if andb (Core.elemVarSet i int_body) (negb (UnVarGraph.elemUnVarSet i
-                                                                                                                  (domRes
-                                                                                                                   ae))) : bool
-                                              then pair false (pair (pair i None) rhs) else
-                                              let j_44__ :=
-                                                let is_thunk := negb (CoreUtils.exprIsCheap rhs) in
-                                                let safe_arity := if is_thunk : bool then #0 else new_arity in
-                                                let trimmed_arity := trimArity i safe_arity in
-                                                let 'pair ae_rhs rhs' := callArityAnal trimmed_arity int_body rhs in
-                                                let i' := Id.setIdCallArity i trimmed_arity in
-                                                let ae_rhs' :=
-                                                  if called_once : bool then ae_rhs else
-                                                  if safe_arity GHC.Base.== #0 : bool then ae_rhs else
-                                                  calledMultipleTimes ae_rhs in
-                                                pair true (pair (pair i' (Some (pair (pair called_once new_arity)
-                                                                                     ae_rhs'))) rhs') in
-                                              match mbLastRun with
-                                              | Some (pair (pair old_called_once old_arity) _) =>
-                                                  if andb (called_once GHC.Base.== old_called_once) (new_arity
-                                                           GHC.Base.==
-                                                           old_arity) : bool
-                                                  then pair false (pair (pair i mbLastRun) rhs) else
-                                                  j_44__
-                                              | _ => j_44__
-                                              end in
-                                          let 'pair changes ann_binds' := GHC.List.unzip (GHC.Base.map rerun
-                                                                                                       ann_binds) in
-                                          let any_change := Data.Foldable.or changes in
-                                          if any_change : bool then fix_ ann_binds' else
-                                          pair ae (GHC.Base.map (fun '(pair (pair i _) e) => pair i e) ann_binds')) in
+          HsToCoq.DeferredFix.deferredFix1 (fun fix_
+                                            (ann_binds
+                                              : list (Core.Id * option (bool * BasicTypes.Arity * CallArityRes)%type *
+                                                      Core.CoreExpr)%type) =>
+                                              let aes_old :=
+                                                let cont_29__ arg_30__ :=
+                                                  match arg_30__ with
+                                                  | pair (pair i (Some (pair (pair _ _) ae))) _ => cons (pair i ae) nil
+                                                  | _ => nil
+                                                  end in
+                                                Coq.Lists.List.flat_map cont_29__ ann_binds in
+                                              let ae := callArityRecEnv any_boring aes_old ae_body in
+                                              let rerun :=
+                                                fun '(pair (pair i mbLastRun) rhs) =>
+                                                  let 'pair new_arity called_once := (if Core.elemVarSet i
+                                                                                                         boring_vars : bool
+                                                                                      then pair #0 false else
+                                                                                      lookupCallArityRes ae i) in
+                                                  if andb (Core.elemVarSet i int_body) (negb (UnVarGraph.elemUnVarSet i
+                                                                                                                      (domRes
+                                                                                                                       ae))) : bool
+                                                  then pair false (pair (pair i None) rhs) else
+                                                  let j_44__ :=
+                                                    let is_thunk := negb (CoreUtils.exprIsCheap rhs) in
+                                                    let safe_arity := if is_thunk : bool then #0 else new_arity in
+                                                    let trimmed_arity := trimArity i safe_arity in
+                                                    let 'pair ae_rhs rhs' := callArityAnal trimmed_arity int_body rhs in
+                                                    let i' := Id.setIdCallArity i trimmed_arity in
+                                                    let ae_rhs' :=
+                                                      if called_once : bool then ae_rhs else
+                                                      if safe_arity GHC.Base.== #0 : bool then ae_rhs else
+                                                      calledMultipleTimes ae_rhs in
+                                                    pair true (pair (pair i' (Some (pair (pair called_once new_arity)
+                                                                                         ae_rhs'))) rhs') in
+                                                  match mbLastRun with
+                                                  | Some (pair (pair old_called_once old_arity) _) =>
+                                                      if andb (called_once GHC.Base.== old_called_once) (new_arity
+                                                               GHC.Base.==
+                                                               old_arity) : bool
+                                                      then pair false (pair (pair i mbLastRun) rhs) else
+                                                      j_44__
+                                                  | _ => j_44__
+                                                  end in
+                                              let 'pair changes ann_binds' := GHC.List.unzip (GHC.Base.map rerun
+                                                                                                           ann_binds) in
+                                              let any_change := Data.Foldable.or changes in
+                                              if any_change : bool then fix_ ann_binds' else
+                                              pair ae (GHC.Base.map (fun '(pair (pair i _) e) => pair i e)
+                                                    ann_binds')) in
         let 'pair ae_rhs binds' := fix_ initial_binds in
         let final_ae := resDelList (Core.bindersOf b) ae_rhs in
         pair final_ae (Core.Rec binds')
@@ -375,9 +375,9 @@ Definition callArityRHS : Core.CoreExpr -> Core.CoreExpr :=
      Data.Foldable.foldr Data.Foldable.null Data.Foldable.or Data.Tuple.fst
      Data.Tuple.snd DynFlags.DynFlags GHC.Base.const GHC.Base.map GHC.Base.min
      GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zsze__
-     GHC.DeferredFix.deferredFix1 GHC.Err.patternFailure GHC.List.filter
-     GHC.List.unzip GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__
-     Id.idCallArity Id.idStrictness Id.idType Id.setIdCallArity UnVarGraph.UnVarGraph
+     GHC.Err.patternFailure GHC.List.filter GHC.List.unzip GHC.Num.fromInteger
+     GHC.Num.op_zm__ GHC.Num.op_zp__ HsToCoq.DeferredFix.deferredFix1 Id.idCallArity
+     Id.idStrictness Id.idType Id.setIdCallArity UnVarGraph.UnVarGraph
      UnVarGraph.UnVarSet UnVarGraph.completeBipartiteGraph UnVarGraph.completeGraph
      UnVarGraph.delNode UnVarGraph.delUnVarSet UnVarGraph.elemUnVarSet
      UnVarGraph.emptyUnVarGraph UnVarGraph.neighbors UnVarGraph.unionUnVarGraph

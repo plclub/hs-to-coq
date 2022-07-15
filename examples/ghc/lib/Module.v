@@ -24,6 +24,7 @@ Require FastString.
 Require FiniteMap.
 Require GHC.Base.
 Require GHC.Prim.
+Require HsToCoq.Unpeel.
 Require Panic.
 Require UniqFM.
 Require UniqSet.
@@ -176,13 +177,14 @@ Definition unNDModule (arg_0__ : NDModule) :=
 
 (* Midamble *)
 
-Require Import GHC.Err.
+Require Import HsToCoq.Err.
+Require Import HsToCoq.Unpeel.
 
-Instance Default__InstalledUnitId : Default InstalledUnitId := 
+Instance Default__InstalledUnitId : Default InstalledUnitId :=
   Build_Default _ (Mk_InstalledUnitId default ).
-Instance Default__DefUnitId : Default DefUnitId := 
+Instance Default__DefUnitId : Default DefUnitId :=
   Build_Default _ (Mk_DefUnitId default).
-Instance Default__UnitId : Default UnitId := 
+Instance Default__UnitId : Default UnitId :=
   Build_Default _ (DefiniteUnitId default).
 Instance Default__ModuleName : Default ModuleName :=
   Build_Default _ (Mk_ModuleName default).
@@ -193,11 +195,10 @@ Instance Default__NDModule : Default NDModule :=
 Instance Default__ModLocation : Default ModLocation :=
   Build_Default _ (Mk_ModLocation default default default).
 
-Instance Unpeel_DefUnitId : Prim.Unpeel DefUnitId InstalledUnitId :=
-  Prim.Build_Unpeel _ _ (fun arg_102__ => match arg_102__ with | Mk_DefUnitId fs => fs end) Mk_DefUnitId.
-Instance Unpeel_NDModule : Prim.Unpeel NDModule Module :=
-  Prim.Build_Unpeel _ _ (fun arg_142__ => match arg_142__ with | Mk_NDModule mod_ => mod_ end) Mk_NDModule.
-
+Instance Unpeel_DefUnitId : Unpeel DefUnitId InstalledUnitId :=
+  Build_Unpeel _ _ (fun arg_102__ => match arg_102__ with | Mk_DefUnitId fs => fs end) Mk_DefUnitId.
+Instance Unpeel_NDModule : Unpeel NDModule Module :=
+  Build_Unpeel _ _ (fun arg_142__ => match arg_142__ with | Mk_NDModule mod_ => mod_ end) Mk_NDModule.
 
 (* Converted value declarations: *)
 
@@ -205,8 +206,8 @@ Instance Unpeel_NDModule : Prim.Unpeel NDModule Module :=
    `Module.Show__ModLocation' *)
 
 Instance Unpeel_ComponentId
-   : GHC.Prim.Unpeel ComponentId FastString.FastString :=
-  GHC.Prim.Build_Unpeel _ _ (fun '(Mk_ComponentId fs) => fs) Mk_ComponentId.
+   : HsToCoq.Unpeel.Unpeel ComponentId FastString.FastString :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(Mk_ComponentId fs) => fs) Mk_ComponentId.
 
 Local Definition Eq___ComponentId_op_zeze__
    : ComponentId -> ComponentId -> bool :=
@@ -1315,9 +1316,9 @@ Definition unitModuleSet : Module -> ModuleSet :=
      GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____
      GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____
      GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
-     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Prim.Build_Unpeel GHC.Prim.Unpeel
-     GHC.Prim.coerce Panic.someSDoc UniqFM.UniqFM UniqSet.UniqSet
-     UniqSet.emptyUniqSet UniqSet.isEmptyUniqSet UniqSet.unitUniqSet Unique.Uniquable
-     Unique.Unique Unique.getUnique Unique.getUnique__ Unique.nonDetCmpUnique
-     Util.thenCmp
+     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Prim.coerce
+     HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel Panic.someSDoc UniqFM.UniqFM
+     UniqSet.UniqSet UniqSet.emptyUniqSet UniqSet.isEmptyUniqSet UniqSet.unitUniqSet
+     Unique.Uniquable Unique.Unique Unique.getUnique Unique.getUnique__
+     Unique.nonDetCmpUnique Util.thenCmp
 *)

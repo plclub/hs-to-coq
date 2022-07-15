@@ -1,7 +1,7 @@
-add Data.Monoid Instance Unpeel_First a : GHC.Prim.Unpeel (First a) (option a) :=
-	 GHC.Prim.Build_Unpeel _ _ getFirst Mk_First.
-add Data.Monoid Instance Unpeel_Last a : GHC.Prim.Unpeel (Last a) (option a) :=
-	 GHC.Prim.Build_Unpeel _ _ getLast Mk_Last.
+add Data.Monoid Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) (option a) :=
+	 HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
+add Data.Monoid Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) (option a) :=
+	 HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
 
 order Unpeel_Dual Data.Monoid.Eq___Dual_op_zeze__
 order Unpeel_Dual Data.Monoid.Eq___Dual_op_zsze__

@@ -1,5 +1,3 @@
-
-
 include ../../common.mk
 
 OUT=../../base
@@ -10,10 +8,11 @@ OUT=../../base
 
 # Handwritten modules (usually by modification of generated version)
 HANDMOD = \
-  GHC/Wf \
-  GHC/Skip \
-  GHC/DeferredFix \
-  GHC/DeferredFixImpl \
+  HsToCoq/Wf \
+  HsToCoq/Skip \
+  HsToCoq/DeferredFix \
+  HsToCoq/DeferredFixImpl \
+  HsToCoq/Unpeel \
   GHC/Num \
   GHC/Char \
   GHC/Real \
@@ -23,8 +22,9 @@ HANDMOD = \
   GHC/Types \
   GHC/Tuple \
   Data/Type/Equality \
+  HsToCoq/Err \
   GHC/Err \
-  GHC/Nat \
+  HsToCoq/Nat \
   GHC/Unicode \
   Prelude\
 
@@ -64,7 +64,7 @@ MODULES = \
   Data/Functor/Sum \
   Data/Bifoldable \
   Data/Bitraversable \
-  Control/Monad/Zip 
+  Control/Monad/Zip
 
 RENAMED = \
   Data/SemigroupInternal \
@@ -142,7 +142,7 @@ $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard
 		     base/$*.hs
 	test -e $@
 
-# This is renamed, which confuses Make, so hence the special rule 
+# This is renamed, which confuses Make, so hence the special rule
 $(OUT)/Data/SemigroupInternal.v : $(wildcard module-edits/Data/Semigroup/Internal/preamble.v) $(wildcard module-edits/Data/Semigroup/Internal/midamble.v)  $(wildcard module-edits/Data/Semigroup/Internal/edits) edits
 	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/Data/Semigroup/Internal/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/Data/Semigroup/Internal/preamble.v)) \
