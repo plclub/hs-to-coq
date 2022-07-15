@@ -74,3 +74,108 @@ Time Eval vm_compute in cachedFib 25. (* Finished transaction in 0. secs *)
 Time Eval vm_compute in cachedFib 26. (* Finished transaction in 3.579 secs *)
 Time Eval vm_compute in cachedFib 26. (* Finished transaction in 0. secs *)
 
+
+(* As a digression let us do some actual coinductive proof, and not just
+inductive proofs over coinductive datatypes and functions, and look at mapTrie. *)
+
+(* We cannot just prove
+
+CoFixpoint mapTrie_mk_Trie a b (f : a -> b) (g : N -> a):
+  mapTrie f (mkTrie g) = mkTrie (f ∘ g).
+
+because equality on coinductive values isn't itself a coinductive
+thing. So we have to define co-inductive equality first:
+*)
+
+CoInductive EqTrie {a} : NatTrie a -> NatTrie a -> Prop :=
+  eqTrie : forall x x' div2 div2' minus1div2 minus1div2',
+           x = x' ->
+           EqTrie div2 div2' ->
+           EqTrie minus1div2 minus1div2' ->
+           EqTrie (TrieNode x div2 minus1div2)
+                  (TrieNode x' div2' minus1div2').
+
+(* For the proofs it helps to be able to force evaluation
+when needed. See the frob function in
+http://adam.chlipala.net/cpdt/html/Coinductive.html *)
+
+Definition evalNatTrie {a} (n : NatTrie a) :=
+  match n with TrieNode x nt1 nt2 => TrieNode x nt1 nt2 end.
+
+Lemma evalNatTrie_eq {a} (nt : NatTrie a) : evalNatTrie nt = nt.
+Proof. intros. destruct nt; reflexivity. Qed.
+
+(* Now for the lemma we care about *)
+
+CoFixpoint mapTrie_mkTrie  a b (f : a -> b) (g : N -> a) (h : N -> b):
+  (forall n, f (g n) = h n) -> (* working around the lack of funext *)
+  EqTrie (mapTrie f (mkTrie g)) (mkTrie h).
+Proof.
+  intro H.
+  rewrite <- evalNatTrie_eq with (nt := mapTrie f (mkTrie g)).
+  rewrite <- evalNatTrie_eq with (nt := mkTrie h).
+  apply eqTrie; simpl.
+  * apply H.
+  * apply mapTrie_mkTrie.
+    intro n. apply H.
+  * apply mapTrie_mkTrie.
+    intro n. apply H.
+Qed.
+
+(* And just because we can, the functor laws: *)
+
+CoFixpoint mapTrie_id a (f : a -> a) t:
+  (forall x, f x = x) -> (* working around the lack of funext *)
+  EqTrie (mapTrie f t) t.
+Proof.
+  intro H.
+  destruct t.
+  rewrite <- evalNatTrie_eq with (nt := mapTrie f _).
+  apply eqTrie.
+  * apply H.
+  * apply mapTrie_id. intro n. apply H.
+  * apply mapTrie_id. intro n. apply H.
+Qed.
+
+
+CoFixpoint mapTrie_mapTrie  a b c (f : b -> c) (g : a -> b) (h : a -> c) t:
+  (forall x, f (g x) = h x) -> (* working around the lack of funext *)
+  EqTrie (mapTrie f (mapTrie g t)) (mapTrie h t).
+Proof.
+  intro H.
+  destruct t.
+  rewrite <- evalNatTrie_eq with (nt := mapTrie f (mapTrie g _)).
+  rewrite <- evalNatTrie_eq with (nt := mapTrie h _).
+  apply eqTrie; simpl.
+  * apply H.
+  * apply mapTrie_mapTrie. intro n. apply H.
+  * apply mapTrie_mapTrie. intro n. apply H.
+Qed.
+
+(* Finally, we shoud show that EqTrie implies equality *)
+Program Fixpoint
+  lookupTrie_EqTrie a (t1 t2 : NatTrie a) x {measure x (N.lt)}:
+  EqTrie t1 t2 -> lookupTrie t1 x = lookupTrie t2 x
+  := _.
+Next Obligation.
+  destruct H.
+  rewrite (lookupTrie_eq _ x).
+  rewrite (lookupTrie_eq _ x).
+  simpl.
+  repeat destruct (Sumbool.sumbool_of_bool).
+  * rewrite N.eqb_eq in *; subst.
+    reflexivity.
+  * rewrite N.eqb_neq in *.
+    apply lookupTrie_EqTrie.
+    - apply N.div_lt; lia.
+    - assumption.
+  * rewrite N.eqb_neq in *.
+    apply lookupTrie_EqTrie.
+    - apply N.div_lt; lia.
+    - assumption.
+Qed.
+Next Obligation.
+  apply Wf.measure_wf.
+  apply Coq.NArith.BinNat.N.lt_wf_0.
+Qed.
+
