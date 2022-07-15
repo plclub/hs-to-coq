@@ -15,6 +15,10 @@ mkTrie f = TrieNode
     , minus1div2 = mkTrie $ f . (+1) . (*2)
     }
 
+mapTrie :: (a -> b) -> NatTrie a -> NatTrie b
+mapTrie f (TrieNode here div2 minus1div2)
+  = TrieNode (f here) (mapTrie f div2) (mapTrie f minus1div2)
+
 lookupTrie :: NatTrie a -> Natural -> a
 lookupTrie (TrieNode here div2 minus1div2) n
     | n == 0    = here
