@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE CPP, LambdaCase, OverloadedStrings #-}
 
 module HsToCoq.ConvertHaskell.InfixNames (
   identIsVariable,
@@ -19,7 +19,11 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Text.Parsec hiding ((<|>), many)
 
+#if __GLASGOW_HASKELL__ <= 900
 import Encoding (zEncodeString, zDecodeString)
+#else
+import GHC.Utils.Encoding (zEncodeString, zDecodeString)
+#endif
 
 import GHC.Stack
 

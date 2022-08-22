@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 module HsToCoq.ConvertHaskell.Literals (
   convertInteger, convertFastString, convertFractional
@@ -10,7 +10,12 @@ import HsToCoq.Util.GHC.FastString
 import HsToCoq.Coq.Gallina
 import HsToCoq.Coq.Gallina.Util
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins ()
+import GHC.Types.SourceText (FractionalLit(..))
+#else
 import BasicTypes
+#endif
 import Data.Ratio (numerator, denominator)
 
 convertInteger :: String -> Integer -> Either String Num
@@ -20,8 +25,14 @@ convertInteger what int | int >= 0  = Right $ fromInteger int
 convertFastString :: FastString -> Term
 convertFastString = HsString . fsToText
 
-convertFractional :: MonadIO f =>  FractionalLit -> f Term
-convertFractional (FL _ _ fl_v) = do
+convertFractional :: MonadIO f => FractionalLit -> f Term
+convertFractional
+#if __GLASGOW_HASKELL__ >= 900
+  (FL _ _ fl_v _ _)
+#else
+  (FL _ _ fl_v)
+#endif
+  = do
    let fr = Var "fromRational"
    let qn = App2 (Var "Q.Qmake") (Num (fromInteger (numerator fl_v)))
                                  (Num (fromInteger (denominator fl_v)))

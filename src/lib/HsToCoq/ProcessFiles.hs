@@ -25,7 +25,7 @@ data ProcessingMode = Recursive | NonRecursive
 processFiles :: GlobalMonad r m => ProcessingMode -> [FilePath] -> m (Maybe [TypecheckedModule])
 processFiles mode files = do
   initForDeriving
-  traverse_ (addTarget <=< (guessTarget ?? Nothing)) files
+  traverse_ (addTarget <=< (guessTarget ?? Nothing ?? Nothing)) files
   load LoadAllTargets >>= \case
     Succeeded -> Just <$> do
       filterModules <- case mode of

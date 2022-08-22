@@ -11,6 +11,10 @@ module HsToCoq.ConvertHaskell.Type (
 import Data.List.NonEmpty (NonEmpty(..))
 import Control.Lens
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins hiding ((<>), App)
+import GHC.Core.TyCo.Rep
+#else
 #if __GLASGOW_HASKELL__ >= 808
 import Var
 #endif
@@ -18,6 +22,7 @@ import TyCoRep
 import TyCon
 import Type (isPredTy)
 import Name (getName)
+#endif
 
 import HsToCoq.Coq.Gallina as Coq
 import HsToCoq.Coq.Gallina.Util
@@ -37,11 +42,11 @@ convertTyConApp b tc ts ctc = do
     ct : cts' -> pure $ App (Qualid ctc) $ PosArg <$> (ct :| cts')
     _         -> pure $ Qualid ctc
 
-convertType' :: ConversionMonad r m => Bool -> Type -> m Term
-convertType' _ (TyVarTy tv) = Qualid <$> var TypeNS (getName tv)
-convertType' b (AppTy ty1 ty2) = App1 <$> convertType' b ty1 <*> convertType' b ty2
-convertType' _ (TyConApp tc []) = Qualid <$> convertTyCon tc
-convertType' b (TyConApp tc ts@(_:_)) = do
+convertType_ :: ConversionMonad r m => Bool -> Type -> m Term
+convertType_ _ (TyVarTy tv) = Qualid <$> var TypeNS (getName tv)
+convertType_ b (AppTy ty1 ty2) = App1 <$> convertType_ b ty1 <*> convertType_ b ty2
+convertType_ _ (TyConApp tc []) = Qualid <$> convertTyCon tc
+convertType_ b (TyConApp tc ts@(_:_)) = do
   convertedTc <- convertTyCon tc
   case convertedTc of
     (Qualified m t) | m == "GHC.Prim" && t == "TYPE"
@@ -50,38 +55,43 @@ convertType' b (TyConApp tc ts@(_:_)) = do
                       if (t == "pair_type" || t == "op_Z2T__") || (t == "triple_type" && length ts > 2) ||
                          (t == "quad_type" && length ts > 3) || (t == "quint_type" && length ts > 4) ||
                          (t == "sext_type" && length ts > 5) || (t == "sept_type" && length ts > 6)
-                      then (`InScope` "type") . foldl1 (mkInfix ?? "*") <$> traverse (convertType' b) ts
+                      then (`InScope` "type") . foldl1 (mkInfix ?? "*") <$> traverse (convertType_ b) ts
                       else convertTyConApp b tc ts convertedTc
     _ -> convertTyConApp b tc ts convertedTc
-convertType' b (ForAllTy tv ty) = do
+convertType_ b (ForAllTy tv ty) = do
   convertedTv <- convertTyVarBinder Coq.Implicit tv
-  convertedTy <- convertType' b ty
+  convertedTy <- convertType_ b ty
   pure $ Forall (convertedTv :| []) convertedTy
-#if __GLASGOW_HASKELL__ >= 810
-convertType' b (FunTy InvisArg ty1 ty2)  = do
-  cons <- convertPredType ty1
-  Forall (Generalized Coq.Implicit cons :| []) <$> convertType' b ty2
-convertType' b (FunTy VisArg ty1 ty2) = Arrow <$> convertType' b ty1 <*> convertType' b ty2
+#if __GLASGOW_HASKELL__ >= 900
+#define MULT _
 #else
-convertType' b (FunTy ty1 ty2) | isPredTy ty1 = do
+#define MULT
+#endif
+#if __GLASGOW_HASKELL__ >= 810
+convertType_ b (FunTy InvisArg MULT ty1 ty2)  = do
+  cons <- convertPredType ty1
+  Forall (Generalized Coq.Implicit cons :| []) <$> convertType_ b ty2
+convertType_ b (FunTy VisArg MULT ty1 ty2) = Arrow <$> convertType_ b ty1 <*> convertType_ b ty2
+#else
+convertType_ b (FunTy ty1 ty2) | isPredTy ty1 = do
                                    cons <- convertPredType ty1
-                                   Forall (Generalized Coq.Implicit cons :| []) <$> convertType' b ty2
-                               | otherwise    = Arrow <$> convertType' b ty1 <*> convertType' b ty2
+                                   Forall (Generalized Coq.Implicit cons :| []) <$> convertType_ b ty2
+                               | otherwise    = Arrow <$> convertType_ b ty1 <*> convertType_ b ty2
 #endif                                   
-convertType' _ (LitTy tl) = case tl of
+convertType_ _ (LitTy tl) = case tl of
   NumTyLit int -> either convUnsupported' (pure . Num) $ convertInteger "type-level integers" int
   StrTyLit str -> pure $ convertFastString str
-convertType' _ (CastTy _ty _coercion) = convUnsupported' "Kind cast"
-convertType' _ (CoercionTy _coercion) = convUnsupported' "Injection of a Coercion into a type"
+convertType_ _ (CastTy _ty _coercion) = convUnsupported' "Kind cast"
+convertType_ _ (CoercionTy _coercion) = convUnsupported' "Injection of a Coercion into a type"
   
 convertType :: ConversionMonad r m => Type -> m Term
-convertType = convertType' False
+convertType = convertType_ False
 
 convertKind :: ConversionMonad r m => Kind -> m Term
-convertKind = convertType' False
+convertKind = convertType_ False
 
 convertPredType :: ConversionMonad r m => Kind -> m Term
-convertPredType = convertType' True
+convertPredType = convertType_ True
 
 convertTyCon :: ConversionMonad r m => TyCon -> m Qualid
 convertTyCon tc = var TypeNS $ getName tc

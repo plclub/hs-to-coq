@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module HsToCoq.Util.GHC (
   defaultRunGhc,
   ghcPpr
@@ -10,8 +11,12 @@ import Control.Monad
 
 import GHC
 import GHC.Paths
-import DynFlags
-import Outputable
+#if __GLASGOW_HASKELL__ <= 900
+import DynFlags (showPpr, defaultFatalMessager, defaultFlushOut)
+import Outputable (Outputable)
+#else
+import GHC.Plugins (Outputable, showPpr, defaultFatalMessager, defaultFlushOut)
+#endif
 
 ghcPpr :: (GhcMonad m, Outputable a) => a -> m Text
 ghcPpr x = fmap T.pack $ showPpr <$> getSessionDynFlags <*> pure x

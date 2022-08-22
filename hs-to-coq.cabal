@@ -120,7 +120,7 @@ library
                      , TemplateHaskell
                      , CPP
 
-  build-depends:       base                 >=4.11 && < 4.15
+  build-depends:       base                 (>=4.11 && < 4.15) || == 4.17.*
                      , template-haskell     >=2.13
                      , ghc                  >=8.4
                      , ghc-boot
@@ -139,6 +139,10 @@ library
                      , indents
                      , optparse-applicative
                      , yaml
+
+  if impl(ghc >= 9)
+    build-depends:
+      exceptions
 
   -- These are actually not used directly by hs-to-coq, but work around a
   -- bug(?) in GHC-8.4 that no longer loads other packages if there is a GHC

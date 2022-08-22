@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -10,11 +11,21 @@ import Data.Text (pack)
 import Control.Monad.IO.Class
 import System.IO
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins hiding (vcat)
+import qualified GHC.Utils.Outputable as Outputable
+import GHC.Types.Tickish
+#define Tickish GenTickish
+import GHC.Tc.Utils.TcType as TcType
+import GHC.Utils.Ppr (Mode(PageMode))
+import GHC.Types.Unique (getKey)
+#else
 import GhcPlugins hiding (vcat)
 import Unique
 import TcType
 import qualified Pretty
 import qualified Outputable
+#endif
 
 import HsToCoq.Coq.Gallina hiding (Type, Let, App, Name)
 import HsToCoq.Coq.Gallina.Orphans ()
@@ -42,15 +53,34 @@ instance ToTerm Int where
 instance ToTerm Module where
     t (Module a b) = App2 "Mk_Module" (t a) (t b)
 
-instance ToTerm IndefUnitId where
-    t _ = "default"
+#if __GLASGOW_HASKELL__ >= 900
+instance ToTerm a => ToTerm (GenUnit a) where
+  t (RealUnit a) = "RealUnit" <: [t a]
+  t (VirtUnit a) = "VirtUnit" <: [t a]
+  t HoleUnit = "HoleUnit"
 
-instance ToTerm DefUnitId where
+instance ToTerm a => ToTerm (Definite a) where
+  t (Definite a) = "Definite" <: [t a]
+
+instance ToTerm (GenInstantiatedUnit a) where
+  t _ = "GenInstantiatedUnit(..)"
+
+instance ToTerm UnitId where
+  t (UnitId a) = "UnitId" <: [t a]
+
+instance ToTerm b => ToTerm (Alt b) where
+  t (Alt x y z) = "Alt" <: [t x, t y, t z]
+#else
+instance ToTerm IndefUnitId where
     t _ = "default"
 
 instance ToTerm UnitId where
     t (IndefiniteUnitId a) = "IndefiniteUnitId" <: [t a]
     t (DefiniteUnitId a)   = "DefiniteUnitId" <: [t a]
+#endif
+
+instance ToTerm DefUnitId where
+    t _ = "default"
 
 instance ToTerm ModuleName where
     t _ = "default"
@@ -172,7 +202,12 @@ proofPass :: PluginPass -- ModGuts -> CoreM ModGuts
 proofPass guts@ModGuts {..} = do
     dflags <- getDynFlags
     liftIO $ withFile coq WriteMode $ \h -> do
-      printSDocLn Pretty.PageMode dflags h (defaultDumpStyle dflags) $
+#if __GLASGOW_HASKELL__ >= 900
+      let ctx = initSDocContext dflags defaultDumpStyle
+      printSDocLn ctx (PageMode False) h $
+#else
+      printSDocLn PageMode dflags h (defaultDumpStyle dflags) $
+#endif
         Outputable.vcat ["(*", Outputable.ppr mg_binds, "*)"]
       hPrettyPrint h $ vcat (map renderGallina mod)
     return guts

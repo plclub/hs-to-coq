@@ -1,4 +1,4 @@
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE CPP, ViewPatterns #-}
 module HsToCoq.Util.GHC.Name (module Name, isOperator, freshInternalName) where
 
 import Control.Monad.IO.Class
@@ -7,13 +7,18 @@ import System.IO.Unsafe
 
 import HsToCoq.ConvertHaskell.InfixNames
 import qualified Data.Text as T
-import Module
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Types.Name as Name
+import GHC.Plugins
+#else
+import Module
 import OccName
 import Name
 import Unique
 import UniqSupply
 import SrcLoc
+#endif
 
 isOperator :: Name -> Bool
 isOperator = isSymOcc . nameOccName
@@ -34,9 +39,15 @@ freshInternalName_newUnique = liftIO $ do
 freshInternalName :: MonadIO m => String -> m Name
 freshInternalName var
     | Just (T.unpack -> mn, T.unpack -> base) <- splitModule (T.pack var) = do
-      let mod = mkModule (stringToUnitId "hs-to-coq") (mkModuleName mn)
+      let mod = mkModule
+#if __GLASGOW_HASKELL__ >= 900
+            (stringToUnit "hs-to-coq")
+#else
+            (stringToUnitId "hs-to-coq")
+#endif
+            (mkModuleName mn)
       u <- freshInternalName_newUnique
-      pure $ mkExternalName u (mod) (mkVarOcc base) noSrcSpan
+      pure $ mkExternalName u mod (mkVarOcc base) noSrcSpan
     | otherwise = do
       u <- freshInternalName_newUnique
       pure $ mkInternalName u (mkVarOcc var) noSrcSpan
