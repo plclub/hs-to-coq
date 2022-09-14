@@ -23,9 +23,15 @@ import qualified Data.Set as S
 import GHC hiding (Name)
 import HsToCoq.Util.GHC
 import qualified GHC
+
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Data.Bag (bagToList)
+import GHC.Utils.Outputable (Outputable())
+#else
 import Outputable (Outputable())
 import Bag
 import Class
+#endif
 
 import HsToCoq.Coq.Gallina as Coq
 import HsToCoq.Coq.Gallina.Util
@@ -76,7 +82,7 @@ getImplicits (Forall bs t) = if length bs == length imps then imps ++ getImplici
 getImplicits _ = []
 
 -- Module-local
-convUnsupportedIn_lname :: (ConversionMonad r m, Outputable nm) => String -> String -> Located nm -> m a
+convUnsupportedIn_lname :: (ConversionMonad r m, Outputable nm) => String -> String -> GenLocated l nm -> m a
 convUnsupportedIn_lname what whatFam lname = do
   name <- T.unpack <$> ghcPpr (unLoc lname)
   convUnsupportedIn what whatFam name
@@ -102,9 +108,9 @@ convertAssociatedType classArgs FamilyDecl{..} = do
   result <- case unLoc fdResultSig of
     NoSig NOEXTP                     -> pure $ Sort Type
     KindSig NOEXTP k                 -> withCurrentDefinition name $ convertLHsType k
-    TyVarSig NOEXTP (L _ (UserTyVar NOEXTP _))
+    TyVarSig NOEXTP (L _ (UserTyVar NOEXTP GHC_900(_) _))
       -> pure $ Sort Type -- Maybe not a thing inside type classes?
-    TyVarSig NOEXTP (L _ (KindedTyVar NOEXTP _ k))
+    TyVarSig NOEXTP (L _ (KindedTyVar NOEXTP GHC_900(_) _ k))
       -> withCurrentDefinition name $ convertLHsType k   -- Maybe not a thing inside type classes?
 #if __GLASGOW_HASKELL__ >= 806
     TyVarSig _ (L _ (XTyVarBndr v)) -> noExtCon v
@@ -128,7 +134,12 @@ convertAssociatedTypeDefault
   -> TyFamDefltDecl GhcRn
   -> m (Qualid, Term)
 convertAssociatedTypeDefault classArgs
-#if __GLASGOW_HASKELL__ >= 810
+#if __GLASGOW_HASKELL__ >= 900
+    (TyFamInstDecl { tfid_eqn = FamEqn{..} })
+      | let params = case feqn_bndrs of
+              HsOuterExplicit { hso_bndrs = b } -> b
+              _ -> [] = do
+#elif __GLASGOW_HASKELL__ >= 810
     (TyFamInstDecl { tfid_eqn = HsIB { hsib_body = FamEqn{..} } })
       | let params = fromMaybe [] feqn_bndrs = do
 #else
@@ -144,7 +155,9 @@ convertAssociatedTypeDefault classArgs
   pure (n, ty)
   -- Skipping feqn_fixity
 
-#if __GLASGOW_HASKELL__ >= 810
+#if __GLASGOW_HASKELL__ >= 900
+convertAssociatedTypeDefault _ (TyFamInstDecl _ (XFamEqn v)) = noExtCon v
+#elif __GLASGOW_HASKELL__ >= 810
 convertAssociatedTypeDefault _ (TyFamInstDecl (HsIB { hsib_body = XFamEqn v })) = noExtCon v
 convertAssociatedTypeDefault _ (TyFamInstDecl (XHsImplicitBndrs v)) = noExtCon v
 #elif __GLASGOW_HASKELL__ >= 806
@@ -154,9 +167,13 @@ convertAssociatedTypeDefault _ (XFamEqn v) = noExtCon v
 convertClassDecl :: ConversionMonad r m
                  => ConvertedTyClEnv
                  -> LHsContext GhcRn                      -- ^@tcdCtxt@    Context
-                 -> Located GHC.Name                      -- ^@tcdLName@   name of the class
-                 -> [LHsTyVarBndr GhcRn]                  -- ^@tcdTyVars@  class type variables
-                 -> [Located (FunDep (Located GHC.Name))] -- ^@tcdFDs@     functional dependencies
+                 -> GenLocated l GHC.Name                      -- ^@tcdLName@   name of the class
+                 -> [LHsTyVarBndr GHC_900(flag) GhcRn]                  -- ^@tcdTyVars@  class type variables
+#if __GLASGOW_HASKELL__ >= 900
+                 -> [GenLocated l' (FunDep GhcRn)] -- ^@tcdFDs@     functional dependencies
+#elif
+                 -> [GenLocated l (FunDep (GenLocated l GHC.Name))] -- ^@tcdFDs@     functional dependencies
+#endif
                  -> [LSig GhcRn]                          -- ^@tcdSigs@    method signatures
                  -> LHsBinds GhcRn                        -- ^@tcdMeths@   default methods
                  -> [LFamilyDecl GhcRn]                   -- ^@tcdATs@     associated types

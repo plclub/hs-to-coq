@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, RecordWildCards, FlexibleContexts #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, RecordWildCards, FlexibleContexts #-}
 
 module HsToCoq.ConvertHaskell.TypeEnv.TyCl(
   ConvertedTyClEnv,
@@ -19,10 +19,18 @@ module HsToCoq.ConvertHaskell.TypeEnv.TyCl(
 import qualified Data.Map as M
 import Data.Generics (Data)
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Unit.Module.ModDetails
+import GHC.Types.Var
+import GHC.Core.Class
+import GHC.Core.TyCon
+import GHC.Types.TypeEnv
+#else
 import Class
 import HscTypes
 import TyCon
 import Var
+#endif
 
 import HsToCoq.Coq.Gallina
 import HsToCoq.Coq.Gallina.Util

@@ -208,7 +208,7 @@ convertDataDefn _ _ (XHsDataDefn v) = noExtCon v
 #endif
 
 convertDataDecl :: ConversionMonad r m
-                => Located GHC.Name -> [LHsTyVarBndr flag GhcRn] -> HsDataDefn GhcRn
+                => GenLocated l GHC.Name -> [LHsTyVarBndr flag GhcRn] -> HsDataDefn GhcRn
                 -> m IndBody
 convertDataDecl name tvs defn = do
   coqName   <- var TypeNS $ unLoc name
