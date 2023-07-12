@@ -19,13 +19,33 @@ import GHC
 
 import Control.Monad
 
-import GHC.IO (throwIO)
-#if __GLASGOW_HASKELL__ < 900
-#if __GLASGOW_HASKELL__ >= 808
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins
+import GHC.Types.SourceText
+#elif __GLASGOW_HASKELL__ >= 808
 import GhcPlugins (SourceText(NoSourceText), PromotionFlag(NotPromoted))
 #else
 import GhcPlugins (SourceText(NoSourceText))
 #endif
+
+import Control.Monad
+
+import GHC.IO (throwIO)
+#if __GLASGOW_HASKELL__ >= 902
+import GHC.Utils.Outputable
+import GHC.Driver.Session
+import GHC.Tc.Utils.Monad
+import GHC.Tc.Utils.Env
+import GHC.Tc.Utils.TcType
+import GHC.Tc.TyCl.Instance (tcInstDeclsDeriv)
+import GHC.Types.SourceFile (HscSource(HsSrcFile))
+import GHC.Types.SourceText (SourceText(NoSourceText))
+import GHC.Types.Var
+import GHC.Types.Error
+import GHC.Core.Type
+import GHC.Core.TyCo.Rep
+import GHC.Core.InstEnv (instanceSig)
+#else
 import Outputable
 import TcRnMonad
 import TcEnv
@@ -41,17 +61,6 @@ import Module
 import SrcLoc
 import FastString
 import DynFlags
-#else
-import GHC.Plugins as Type
-import GHC.Tc.Utils.Monad
-import GHC.Tc.Utils.Env
-import GHC.Tc.Utils.TcType
-import GHC.Tc.TyCl.Instance (tcInstDeclsDeriv)
-import GHC.Types.SourceFile (HscSource(HsSrcFile))
-import GHC.Types.SourceText (SourceText(NoSourceText))
-import GHC.Core.TyCo.Rep
-import GHC.Core.InstEnv (instanceSig)
-import GHC.Driver.Errors.Types (GhcMessage(GhcTcRnMessage))
 #endif
 import qualified GHC.LanguageExtensions as LangExt
 
@@ -246,4 +255,3 @@ typeToLHsType' ty
         NOEXT
 #endif
         (noLoc (getName tv)) (go (tyVarKind tv))
-

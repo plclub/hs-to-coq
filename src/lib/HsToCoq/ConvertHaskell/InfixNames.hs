@@ -13,16 +13,16 @@ import Control.Lens
 
 import Control.Applicative
 import Control.Monad
-import Data.Semigroup (Semigroup(..))
+import Data.Semigroup ()
 import Data.Char
 import Data.Text (Text)
 import qualified Data.Text as T
 import Text.Parsec hiding ((<|>), many)
 
-#if __GLASGOW_HASKELL__ <= 900
-import Encoding (zEncodeString, zDecodeString)
-#else
+#if __GLASGOW_HASKELL__ >= 900
 import GHC.Utils.Encoding (zEncodeString, zDecodeString)
+#else
+import Encoding (zEncodeString, zDecodeString)
 #endif
 
 import GHC.Stack

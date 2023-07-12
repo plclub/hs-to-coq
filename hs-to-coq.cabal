@@ -120,7 +120,7 @@ library
                      , TemplateHaskell
                      , CPP
 
-  build-depends:       base                 (>=4.11 && < 4.15) || == 4.17.*
+  build-depends:       base                 >=4.11 && <= 4.17
                      , template-haskell     >=2.13
                      , ghc                  >=8.4
                      , ghc-boot
