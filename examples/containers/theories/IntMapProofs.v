@@ -646,6 +646,28 @@ Proof.
   Nomega.
 Qed.
 
+(* Sometimes the code does not check nomatch first. But we still
+   want a similar lemma.
+*)
+Lemma zero_without_nomatch:
+  forall {a} i r (P : a -> Prop) left right,
+  (0 < rBits r)%N ->
+  (inRange i (halfRange r false) = false -> inRange i (halfRange r true) = false -> P left) ->
+  (inRange i (halfRange r false) = false -> inRange i (halfRange r true) = false -> P right) ->
+  (inRange i (halfRange r false) = true -> inRange i (halfRange r true) = false -> P left) ->
+  (inRange i (halfRange r false) = false -> inRange i (halfRange r true) = true -> P right) ->
+  P (if zero i (rMask r) then left else right).
+Proof.
+  intros.
+  (* I’m lazy, so I’ll reduce it to the previous lemma. *)
+  erewrite <- ssrbool.if_same.
+  apply nomatch_zero; try assumption.
+  intro.
+  destruct (zero i (rMask r));
+    [apply H0|apply H1];
+    eapply inRange_isSubrange_false; try apply H4;
+    apply isSubrange_halfRange; assumption.
+Qed.
 
 (** *** Verification of [equal] *)
 
@@ -754,6 +776,34 @@ Proof.
   * erewrite lookup_Desc; eauto.
 Qed.
 
+
+(* Verification of the fast-lookup function propoesd in 
+    https://github.com/haskell/containers/pull/800 *)
+
+Require Import FastLookup.
+
+Lemma fastLookup_Desc:
+ forall {a}{s : IntMap a}{r f i}, Desc s r f -> fastLookup i s = f i.
+Proof.
+ intros ????? HD.
+ induction HD; subst.
+ * simpl.
+   unfoldMethods.
+   rewrite H.
+   destruct (i =? k) eqn:Ei; simpl; auto.
+ * rewrite H4. clear H4.
+   simpl fastLookup.
+   rewrite IHHD1 IHHD2. clear IHHD1 IHHD2.
+   apply zero_without_nomatch; [apply H|..]; intros.
+   + rewrite (Desc_outside HD2) ; last inRange_false.
+     rewrite oro_None_r. reflexivity.
+   + rewrite (Desc_outside HD1) ; last inRange_false.
+     rewrite oro_None_l. reflexivity.
+   + rewrite (Desc_outside HD2) ; last inRange_false.
+     rewrite oro_None_r. reflexivity.
+   + rewrite (Desc_outside HD1) ; last inRange_false.
+     rewrite oro_None_l. reflexivity.
+Qed.
 
 (* For the sake of simplicity, we are writing a new findWithdefault that returns an option *)
 

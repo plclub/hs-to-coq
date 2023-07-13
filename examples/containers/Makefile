@@ -47,7 +47,7 @@ SRC_FILE_Data/IntSet/InternalWord = containers/Data/IntSet/Internal.hs
 TEST_MODULES = \
 
 # generated from drop-in/
-DROPIN =
+DROPIN = FastLookup
 
 # also generated from drop-in/
 SPECIAL_MODULES =
@@ -142,16 +142,16 @@ $(VFILES_MAN): $(OUT)/%.v : manual/%.v
 	lndir ../manual $(OUT)/
 
 
-$(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preamble.v drop-in/%.hs $(OUT)/README.md
-	$(HS_TO_COQ) -e module-edits/$*/edits \
-	             -e edits \
-	       -o $(OUT) \
-	       -N \
-	       -p module-edits/$*/preamble.v \
-	       --ghc -icontainers \
-	       --ghc -icontainers/dist-install/build \
-	       -Icontainers/include \
-	       drop-in/$*.hs
+.SECONDEXPANSION:
+$(VFILES_DROPIN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) $$(wildcard module-edits/$$*/flags) edits drop-in/$$*.hs
+	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
+	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
+	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
+		     $(HS_TO_COQ_OPTS) \
+	             -o $(OUT) \
+	             drop-in/$*.hs
+	test -e $@
 
 clean:
 	rm -rf $(OUT) $(HS_SPEC)
