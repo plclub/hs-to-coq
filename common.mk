@@ -21,3 +21,4 @@ HS_TO_COQ = cabal new-run --project-file=$(TOP)/cabal.project  -v0 $(CABAL_OPTS)
 endif
 
 SHELL = bash
+HS_TO_COQ = //home/quinn/Dropbox/Projects/haskell/hstocoq-bytestring/hs-to-coq/result/bin/hs-to-coq

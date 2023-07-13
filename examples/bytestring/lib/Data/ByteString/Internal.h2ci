@@ -1,0 +1,6 @@
+constructors:
+  Data.ByteString.Internal.ByteString: '[Qualified "Data.ByteString.Internal" "BS"]'
+constructorFields:
+  Data.ByteString.Internal.BS: NonRecordFields 2
+constructorTypes:
+  Data.ByteString.Internal.BS: Qualified "Data.ByteString.Internal" "ByteString"
