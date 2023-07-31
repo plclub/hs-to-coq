@@ -1,11 +1,3 @@
-superclassCount:
-  Data.Bitraversable.Bitraversable: '2'
-defaultMethods:
-  Data.Bitraversable.Bitraversable: fromList [(Qualified "Data.Bitraversable" "bitraverse",Fun
-    (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "g"))]) (App
-    (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg (Qualid (Qualified "Data.Bitraversable"
-    "bisequenceA")) :| [PosArg (App (App (Qualid (Qualified "Data.Bifunctor" "bimap"))
-    (PosArg (Qualid (Bare "f")) :| [])) (PosArg (Qualid (Bare "g")) :| []))])))]
 classTypes:
   Data.Bitraversable.Bitraversable: fromList []
 classDefns:
@@ -29,3 +21,11 @@ classDefns:
     :| [])) (PosArg (Qualid (Bare "b")) :| [])) (App (Qualid (Bare "f")) (PosArg (App
     (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "c")) :| [])) (PosArg (Qualid (Bare
     "d")) :| [])) :| [])))))))))))]
+superclassCount:
+  Data.Bitraversable.Bitraversable: '2'
+defaultMethods:
+  Data.Bitraversable.Bitraversable: fromList [(Qualified "Data.Bitraversable" "bitraverse",Fun
+    (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "g"))]) (App
+    (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg (Qualid (Qualified "Data.Bitraversable"
+    "bisequenceA")) :| [PosArg (App (App (Qualid (Qualified "Data.Bifunctor" "bimap"))
+    (PosArg (Qualid (Bare "f")) :| [])) (PosArg (Qualid (Bare "g")) :| []))])))]

@@ -137,7 +137,7 @@ Local Definition Bitraversable__quad_type_bitraverse {inst_x : Type} {inst_y
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | f, g, pair (pair (pair x y) a) b =>
-          GHC.Base.liftA2 (GHC.Tuple.pair4 x y) (f a) (g b)
+          GHC.Base.liftA2 (GHC.Tuple.pair4m x y) (f a) (g b)
       end.
 
 Program Instance Bitraversable__quad_type {x : Type} {y : Type}
@@ -387,7 +387,7 @@ Definition bimapDefault {t : Type -> Type -> Type} {a : Type} {b : Type} {c
      Data.Functor.Utils.Mk_StateR Data.Functor.Utils.runStateL
      Data.Functor.Utils.runStateR GHC.Base.Applicative GHC.Base.flip GHC.Base.id
      GHC.Base.liftA2 GHC.Base.op_z2218U__ GHC.Prim.coerce GHC.Tuple.pair2
-     GHC.Tuple.pair3 GHC.Tuple.pair4 GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7
+     GHC.Tuple.pair3 GHC.Tuple.pair4m GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7
      GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type
      GHC.Tuple.sext_type GHC.Tuple.triple_type
 *)

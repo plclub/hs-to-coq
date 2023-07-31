@@ -39,15 +39,6 @@ Definition getCompose {k : Type} {k1 : Type} {f : k -> Type} {g : k1 -> k} {a
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `Data.Data.Data', including
-   `Data.Functor.Compose.Data__Compose' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic', including
-   `Data.Functor.Compose.Generic__Compose' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.Functor.Compose.Generic1__Compose__5' *)
-
 Local Definition Eq1__Compose_liftEq {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Functor.Classes.Eq1 inst_f} `{Data.Functor.Classes.Eq1
   inst_g}
@@ -192,7 +183,12 @@ Local Definition Functor__Compose_op_zlzd__ {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{GHC.Base.Functor inst_f} `{GHC.Base.Functor inst_g}
    : forall {a : Type},
      forall {b : Type}, a -> Compose inst_f inst_g b -> Compose inst_f inst_g a :=
-  fun {a : Type} {b : Type} => Functor__Compose_fmap GHC.Base.∘ GHC.Base.const.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | a, Mk_Compose x =>
+          Mk_Compose (Functor__Compose_fmap (fun arg_2__ => a GHC.Base.<$ arg_2__) x)
+      end.
 
 Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
   `{GHC.Base.Functor f} `{GHC.Base.Functor g}
@@ -221,18 +217,6 @@ Local Definition Foldable__Compose_fold {inst_f : Type -> Type} {inst_g
      forall `{GHC.Base.Monoid m}, Compose inst_f inst_g m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Compose_foldMap GHC.Base.id.
 
-Local Definition Foldable__Compose_foldl {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
-  inst_g}
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Compose inst_f inst_g a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Compose_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                  (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                   GHC.Base.flip f)) t)) z.
-
 Local Definition Foldable__Compose_foldr {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
@@ -252,6 +236,28 @@ Local Definition Foldable__Compose_foldl' {inst_f : Type -> Type} {inst_g
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in
       Foldable__Compose_foldr f' GHC.Base.id xs z0.
+
+Local Definition Foldable__Compose_foldMap' {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {m : Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monoid m}, (a -> m) -> Compose inst_f inst_g a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Compose_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
+Local Definition Foldable__Compose_foldl {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Compose inst_f inst_g a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
+                                      (Foldable__Compose_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
+                                                                  (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
+                                                                   GHC.Base.flip f)) t)) z.
 
 Local Definition Foldable__Compose_foldr' {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -310,6 +316,8 @@ Program Instance Foldable__Compose {f : Type -> Type} {g : Type -> Type}
              Foldable__Compose_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Compose_foldMap ;
+           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+             Foldable__Compose_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Compose_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} =>
              Foldable__Compose_foldl' ;
@@ -449,30 +457,33 @@ Program Instance Applicative__Compose {f : Type -> Type} {g : Type -> Type}
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Data.Functor.Compose.Alternative__Compose' *)
 
+(* Skipping all instances of class `Data.Type.Equality.TestEquality', including
+   `Data.Functor.Compose.TestEquality__Compose' *)
+
 (* External variables:
      Gt Lt Type bool comparison false list negb true Coq.Program.Basics.compose
-     Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
-     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
-     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
-     Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.Functor.Classes.Eq1
-     Data.Functor.Classes.Ord1 Data.Functor.Classes.compare1 Data.Functor.Classes.eq1
-     Data.Functor.Classes.liftCompare Data.Functor.Classes.liftCompare__
-     Data.Functor.Classes.liftEq Data.Functor.Classes.liftEq__
-     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
-     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
-     Data.SemigroupInternal.appEndo Data.SemigroupInternal.getDual
-     Data.SemigroupInternal.getProduct Data.SemigroupInternal.getSum
-     Data.Traversable.Traversable Data.Traversable.mapM__
-     Data.Traversable.sequenceA__ Data.Traversable.sequence__
+     Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
+     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
+     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
+     Data.Foldable.sum__ Data.Foldable.toList__ Data.Functor.op_zlzdzg__
+     Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1 Data.Functor.Classes.compare1
+     Data.Functor.Classes.eq1 Data.Functor.Classes.liftCompare
+     Data.Functor.Classes.liftCompare__ Data.Functor.Classes.liftEq
+     Data.Functor.Classes.liftEq__ Data.SemigroupInternal.Mk_Dual
+     Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
+     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
+     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
+     Data.SemigroupInternal.getSum Data.Traversable.Traversable
+     Data.Traversable.mapM__ Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse Data.Traversable.traverse__ GHC.Base.Applicative
      GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord
-     GHC.Base.build' GHC.Base.compare__ GHC.Base.const GHC.Base.flip GHC.Base.fmap
-     GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__ GHC.Base.max__
+     GHC.Base.build' GHC.Base.compare__ GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__
+     GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__ GHC.Base.max__ GHC.Base.mempty
      GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____
      GHC.Base.op_zg____ GHC.Base.op_zgze____ GHC.Base.op_zl____ GHC.Base.op_zlzd__
-     GHC.Base.op_zlzd____ GHC.Base.op_zlze____ GHC.Base.op_zlztzg__
-     GHC.Base.op_zlztzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
-     GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Num.Int GHC.Num.Num
-     GHC.Num.fromInteger GHC.Num.op_zp__
+     GHC.Base.op_zlzd____ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
+     GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_zsze__
+     GHC.Base.op_zsze____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
+     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
 *)

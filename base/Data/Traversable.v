@@ -18,6 +18,8 @@ Require Data.Functor.
 Require Data.Functor.Const.
 Require Data.Functor.Identity.
 Require Data.Functor.Utils.
+Require Data.Monoid.
+Require Data.Ord.
 Require Data.Proxy.
 Require Data.SemigroupInternal.
 Require GHC.Base.
@@ -71,23 +73,381 @@ Definition traverse `{g__0__ : Traversable t}
 
 (* Converted value declarations: *)
 
-(* Skipping instance `Data.Traversable.Traversable__URec__Word' of class
-   `Data.Traversable.Traversable' *)
+Local Definition Traversable__Down_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> Data.Ord.Down a -> f (Data.Ord.Down b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, Data.Ord.Mk_Down a1 => GHC.Base.fmap (fun b1 => Data.Ord.Mk_Down b1) (f a1)
+      end.
 
-(* Skipping instance `Data.Traversable.Traversable__URec__Int' of class
-   `Data.Traversable.Traversable' *)
+Local Definition Traversable__Down_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> Data.Ord.Down a -> m (Data.Ord.Down b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__Down_traverse.
 
-(* Skipping instance `Data.Traversable.Traversable__URec__Float' of class
-   `Data.Traversable.Traversable' *)
+Local Definition Traversable__Down_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f}, Data.Ord.Down (f a) -> f (Data.Ord.Down a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__Down_traverse GHC.Base.id.
 
-(* Skipping instance `Data.Traversable.Traversable__URec__Double' of class
-   `Data.Traversable.Traversable' *)
+Local Definition Traversable__Down_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m}, Data.Ord.Down (m a) -> m (Data.Ord.Down a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__Down_sequenceA.
 
-(* Skipping instance `Data.Traversable.Traversable__URec__Char' of class
-   `Data.Traversable.Traversable' *)
+Program Instance Traversable__Down : Traversable Data.Ord.Down :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__Down_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__Down_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__Down_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__Down_traverse |}.
 
-(* Skipping instance `Data.Traversable.Traversable__URec__Ptr__unit' of class
-   `Data.Traversable.Traversable' *)
+Local Definition Traversable__UWord_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> GHC.Generics.UWord a -> f (GHC.Generics.UWord b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, GHC.Generics.UWord a1 => GHC.Base.pure (GHC.Generics.UWord a1)
+      end.
+
+Local Definition Traversable__UWord_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> GHC.Generics.UWord a -> m (GHC.Generics.UWord b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__UWord_traverse.
+
+Local Definition Traversable__UWord_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     GHC.Generics.UWord (f a) -> f (GHC.Generics.UWord a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__UWord_traverse GHC.Base.id.
+
+Local Definition Traversable__UWord_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m},
+     GHC.Generics.UWord (m a) -> m (GHC.Generics.UWord a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__UWord_sequenceA.
+
+Program Instance Traversable__UWord : Traversable GHC.Generics.UWord :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__UWord_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__UWord_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__UWord_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__UWord_traverse |}.
+
+Local Definition Traversable__UInt_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> GHC.Generics.UInt a -> f (GHC.Generics.UInt b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, GHC.Generics.UInt a1 => GHC.Base.pure (GHC.Generics.UInt a1)
+      end.
+
+Local Definition Traversable__UInt_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> GHC.Generics.UInt a -> m (GHC.Generics.UInt b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__UInt_traverse.
+
+Local Definition Traversable__UInt_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     GHC.Generics.UInt (f a) -> f (GHC.Generics.UInt a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__UInt_traverse GHC.Base.id.
+
+Local Definition Traversable__UInt_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m},
+     GHC.Generics.UInt (m a) -> m (GHC.Generics.UInt a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__UInt_sequenceA.
+
+Program Instance Traversable__UInt : Traversable GHC.Generics.UInt :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__UInt_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__UInt_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__UInt_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__UInt_traverse |}.
+
+Local Definition Traversable__UFloat_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> GHC.Generics.UFloat a -> f (GHC.Generics.UFloat b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, GHC.Generics.UFloat a1 => GHC.Base.pure (GHC.Generics.UFloat a1)
+      end.
+
+Local Definition Traversable__UFloat_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> GHC.Generics.UFloat a -> m (GHC.Generics.UFloat b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__UFloat_traverse.
+
+Local Definition Traversable__UFloat_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     GHC.Generics.UFloat (f a) -> f (GHC.Generics.UFloat a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__UFloat_traverse GHC.Base.id.
+
+Local Definition Traversable__UFloat_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m},
+     GHC.Generics.UFloat (m a) -> m (GHC.Generics.UFloat a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__UFloat_sequenceA.
+
+Program Instance Traversable__UFloat : Traversable GHC.Generics.UFloat :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__UFloat_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__UFloat_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__UFloat_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__UFloat_traverse |}.
+
+Local Definition Traversable__UDouble_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> GHC.Generics.UDouble a -> f (GHC.Generics.UDouble b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, GHC.Generics.UDouble a1 => GHC.Base.pure (GHC.Generics.UDouble a1)
+      end.
+
+Local Definition Traversable__UDouble_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> GHC.Generics.UDouble a -> m (GHC.Generics.UDouble b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__UDouble_traverse.
+
+Local Definition Traversable__UDouble_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     GHC.Generics.UDouble (f a) -> f (GHC.Generics.UDouble a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__UDouble_traverse GHC.Base.id.
+
+Local Definition Traversable__UDouble_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m},
+     GHC.Generics.UDouble (m a) -> m (GHC.Generics.UDouble a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__UDouble_sequenceA.
+
+Program Instance Traversable__UDouble : Traversable GHC.Generics.UDouble :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__UDouble_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__UDouble_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__UDouble_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__UDouble_traverse |}.
+
+Local Definition Traversable__UChar_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> GHC.Generics.UChar a -> f (GHC.Generics.UChar b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, GHC.Generics.UChar a1 => GHC.Base.pure (GHC.Generics.UChar a1)
+      end.
+
+Local Definition Traversable__UChar_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> GHC.Generics.UChar a -> m (GHC.Generics.UChar b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__UChar_traverse.
+
+Local Definition Traversable__UChar_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     GHC.Generics.UChar (f a) -> f (GHC.Generics.UChar a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__UChar_traverse GHC.Base.id.
+
+Local Definition Traversable__UChar_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m},
+     GHC.Generics.UChar (m a) -> m (GHC.Generics.UChar a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__UChar_sequenceA.
+
+Program Instance Traversable__UChar : Traversable GHC.Generics.UChar :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__UChar_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__UChar_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__UChar_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__UChar_traverse |}.
+
+Local Definition Traversable__UAddr_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> GHC.Generics.UAddr a -> f (GHC.Generics.UAddr b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, GHC.Generics.UAddr a1 => GHC.Base.pure (GHC.Generics.UAddr a1)
+      end.
+
+Local Definition Traversable__UAddr_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> GHC.Generics.UAddr a -> m (GHC.Generics.UAddr b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__UAddr_traverse.
+
+Local Definition Traversable__UAddr_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     GHC.Generics.UAddr (f a) -> f (GHC.Generics.UAddr a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__UAddr_traverse GHC.Base.id.
+
+Local Definition Traversable__UAddr_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m},
+     GHC.Generics.UAddr (m a) -> m (GHC.Generics.UAddr a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__UAddr_sequenceA.
+
+Program Instance Traversable__UAddr : Traversable GHC.Generics.UAddr :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__UAddr_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__UAddr_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__UAddr_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__UAddr_traverse |}.
 
 (* Skipping instance `Data.Traversable.Traversable__op_ZCziZC__' of class
    `Data.Traversable.Traversable' *)
@@ -727,6 +1087,131 @@ Program Instance Traversable__Product
 (* Skipping instance `Data.Traversable.Traversable__Last' of class
    `Data.Traversable.Traversable' *)
 
+Local Definition Traversable__Alt_traverse {inst_f : Type -> Type}
+  `{(Traversable inst_f)}
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) ->
+     Data.SemigroupInternal.Alt inst_f a ->
+     f (Data.SemigroupInternal.Alt inst_f b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, Data.SemigroupInternal.Mk_Alt x =>
+          Data.SemigroupInternal.Mk_Alt Data.Functor.<$> traverse f x
+      end.
+
+Local Definition Traversable__Alt_mapM {inst_f : Type -> Type} `{(Traversable
+   inst_f)}
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) ->
+     Data.SemigroupInternal.Alt inst_f a ->
+     m (Data.SemigroupInternal.Alt inst_f b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__Alt_traverse.
+
+Local Definition Traversable__Alt_sequenceA {inst_f : Type -> Type}
+  `{(Traversable inst_f)}
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     Data.SemigroupInternal.Alt inst_f (f a) ->
+     f (Data.SemigroupInternal.Alt inst_f a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__Alt_traverse GHC.Base.id.
+
+Local Definition Traversable__Alt_sequence {inst_f : Type -> Type}
+  `{(Traversable inst_f)}
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m},
+     Data.SemigroupInternal.Alt inst_f (m a) ->
+     m (Data.SemigroupInternal.Alt inst_f a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__Alt_sequenceA.
+
+Program Instance Traversable__Alt {f : Type -> Type} `{(Traversable f)}
+   : Traversable (Data.SemigroupInternal.Alt f) :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__Alt_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__Alt_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__Alt_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__Alt_traverse |}.
+
+Local Definition Traversable__Ap_traverse {inst_f : Type -> Type} `{(Traversable
+   inst_f)}
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> Data.Monoid.Ap inst_f a -> f (Data.Monoid.Ap inst_f b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, Data.Monoid.Ap x => Data.Monoid.Ap Data.Functor.<$> traverse f x
+      end.
+
+Local Definition Traversable__Ap_mapM {inst_f : Type -> Type} `{(Traversable
+   inst_f)}
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> Data.Monoid.Ap inst_f a -> m (Data.Monoid.Ap inst_f b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__Ap_traverse.
+
+Local Definition Traversable__Ap_sequenceA {inst_f : Type -> Type}
+  `{(Traversable inst_f)}
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     Data.Monoid.Ap inst_f (f a) -> f (Data.Monoid.Ap inst_f a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__Ap_traverse GHC.Base.id.
+
+Local Definition Traversable__Ap_sequence {inst_f : Type -> Type} `{(Traversable
+   inst_f)}
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m},
+     Data.Monoid.Ap inst_f (m a) -> m (Data.Monoid.Ap inst_f a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__Ap_sequenceA.
+
+Program Instance Traversable__Ap {f : Type -> Type} `{(Traversable f)}
+   : Traversable (Data.Monoid.Ap f) :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun {m : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Monad m} =>
+             Traversable__Ap_mapM ;
+           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+             Traversable__Ap_sequence ;
+           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+             Traversable__Ap_sequenceA ;
+           traverse__ := fun {f : Type -> Type}
+           {a : Type}
+           {b : Type}
+           `{GHC.Base.Applicative f} =>
+             Traversable__Ap_traverse |}.
+
 (* Skipping instance `Data.Traversable.Traversable__ZipList' of class
    `Data.Traversable.Traversable' *)
 
@@ -770,11 +1255,15 @@ Definition fmapDefault {t : Type -> Type} {a : Type} {b : Type} `{Traversable t}
      Data.Functor.op_zlzdzg__ Data.Functor.Const.Const Data.Functor.Const.Mk_Const
      Data.Functor.Identity.Identity Data.Functor.Identity.Mk_Identity
      Data.Functor.Utils.Mk_StateL Data.Functor.Utils.Mk_StateR
-     Data.Functor.Utils.runStateL Data.Functor.Utils.runStateR Data.Proxy.Mk_Proxy
-     Data.Proxy.Proxy Data.SemigroupInternal.Dual Data.SemigroupInternal.Mk_Dual
+     Data.Functor.Utils.runStateL Data.Functor.Utils.runStateR Data.Monoid.Ap
+     Data.Ord.Down Data.Ord.Mk_Down Data.Proxy.Mk_Proxy Data.Proxy.Proxy
+     Data.SemigroupInternal.Alt Data.SemigroupInternal.Dual
+     Data.SemigroupInternal.Mk_Alt Data.SemigroupInternal.Mk_Dual
      Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
      Data.SemigroupInternal.Product Data.SemigroupInternal.Sum GHC.Base.Applicative
      GHC.Base.Functor GHC.Base.Monad GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.flip
      GHC.Base.fmap GHC.Base.foldr GHC.Base.id GHC.Base.liftA2 GHC.Base.op_z2218U__
-     GHC.Base.pure GHC.Prim.coerce GHC.Tuple.pair2 GHC.Tuple.pair_type
+     GHC.Base.pure GHC.Generics.UAddr GHC.Generics.UChar GHC.Generics.UDouble
+     GHC.Generics.UFloat GHC.Generics.UInt GHC.Generics.UWord GHC.Prim.coerce
+     GHC.Tuple.pair2 GHC.Tuple.pair_type
 *)

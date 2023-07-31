@@ -10,7 +10,7 @@ Generalizable All Variables.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-From Coq Require Import ssreflect.
+From Coq Require Import Psatz ssreflect.
 
 (* Note: we will only be able to make instances of this class for bounded
    types so that we can support enumFrom and still terminate.
@@ -301,7 +301,7 @@ Lemma eftInt_aux_pf (y x : Int) :
   (x <= y)%Z ->
   x <> y ->
   (x+1 <= y)%Z.
-Proof. unfold Int in *; omega. Qed.
+Proof. unfold Int in *; lia. Qed.
 
 (* Manually copying `GHC.Enum.eftInt`'s local function `go` *)
 Program Fixpoint eftInt_aux (y x : Int) (pf : (x <= y)%Z) {measure (Z.to_nat (y - x))} : list Int :=
@@ -309,7 +309,7 @@ Program Fixpoint eftInt_aux (y x : Int) (pf : (x <= y)%Z) {measure (Z.to_nat (y 
        | left  _   => nil
        | right neq => eftInt_aux (eftInt_aux_pf pf neq)
        end%Z.
-Next Obligation. apply Z2Nat.inj_lt; omega. Defined.
+Next Obligation. apply Z2Nat.inj_lt; lia. Defined.
 Arguments eftInt_aux _ _ _ : clear implicits.
 
 (* Manually copying `GHC.Enum.eftInt` *)

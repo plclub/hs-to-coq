@@ -1,16 +1,3 @@
-superclassCount:
-  Data.Bifunctor.Bifunctor: '0'
-defaultMethods:
-  Data.Bifunctor.Bifunctor: fromList [(Qualified "Data.Bifunctor" "bimap",Fun (ExplicitBinder
-    (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "g"))]) (App (Qualid (Qualified
-    "GHC.Base" "op_z2218U__")) (PosArg (App (Qualid (Qualified "Data.Bifunctor" "first"))
-    (PosArg (Qualid (Bare "f")) :| [])) :| [PosArg (App (Qualid (Qualified "Data.Bifunctor"
-    "second")) (PosArg (Qualid (Bare "g")) :| []))]))),(Qualified "Data.Bifunctor"
-    "first",Fun (ExplicitBinder (Ident (Bare "f")) :| []) (App (App (Qualid (Qualified
-    "Data.Bifunctor" "bimap")) (PosArg (Qualid (Bare "f")) :| [])) (PosArg (Qualid
-    (Qualified "GHC.Base" "id")) :| []))),(Qualified "Data.Bifunctor" "second",App
-    (Qualid (Qualified "Data.Bifunctor" "bimap")) (PosArg (Qualid (Qualified "GHC.Base"
-    "id")) :| []))]
 classTypes:
   Data.Bifunctor.Bifunctor: fromList []
 classDefns:
@@ -41,3 +28,16 @@ classDefns:
     (App (App (Qualid (Bare "p")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid
     (Bare "b")) :| [])) (App (App (Qualid (Bare "p")) (PosArg (Qualid (Bare "a"))
     :| [])) (PosArg (Qualid (Bare "c")) :| [])))))))]
+superclassCount:
+  Data.Bifunctor.Bifunctor: '0'
+defaultMethods:
+  Data.Bifunctor.Bifunctor: fromList [(Qualified "Data.Bifunctor" "bimap",Fun (ExplicitBinder
+    (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "g"))]) (App (Qualid (Qualified
+    "GHC.Base" "op_z2218U__")) (PosArg (App (Qualid (Qualified "Data.Bifunctor" "first"))
+    (PosArg (Qualid (Bare "f")) :| [])) :| [PosArg (App (Qualid (Qualified "Data.Bifunctor"
+    "second")) (PosArg (Qualid (Bare "g")) :| []))]))),(Qualified "Data.Bifunctor"
+    "first",Fun (ExplicitBinder (Ident (Bare "f")) :| []) (App (App (Qualid (Qualified
+    "Data.Bifunctor" "bimap")) (PosArg (Qualid (Bare "f")) :| [])) (PosArg (Qualid
+    (Qualified "GHC.Base" "id")) :| []))),(Qualified "Data.Bifunctor" "second",App
+    (Qualid (Qualified "Data.Bifunctor" "bimap")) (PosArg (Qualid (Qualified "GHC.Base"
+    "id")) :| []))]

@@ -19,66 +19,21 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Down a : Type := | Mk_Down : a -> Down a.
+Inductive Down a : Type := | Mk_Down (getDown : a) : Down a.
 
 Arguments Mk_Down {_} _.
 
+Definition getDown {a} (arg_0__ : Down a) :=
+  let 'Mk_Down getDown := arg_0__ in
+  getDown.
+
 (* Converted value declarations: *)
-
-Instance Unpeel_Down a : HsToCoq.Unpeel.Unpeel (Down a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(Mk_Down x) => x) Mk_Down.
-
-Local Definition Eq___Down_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
-   : Down inst_a -> Down inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
-
-Local Definition Eq___Down_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
-   : Down inst_a -> Down inst_a -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
-
-Program Instance Eq___Down {a : Type} `{GHC.Base.Eq_ a}
-   : GHC.Base.Eq_ (Down a) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Down_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Down_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Data.Ord.Show__Down' *)
 
 (* Skipping all instances of class `GHC.Read.Read', including
    `Data.Ord.Read__Down' *)
 
-(* Skipping all instances of class `GHC.Num.Num', including
-   `Data.Ord.Num__Down' *)
-
-Local Definition Semigroup__Down_op_zlzlzgzg__ {inst_a : Type}
-  `{GHC.Base.Semigroup inst_a}
-   : Down inst_a -> Down inst_a -> Down inst_a :=
-  GHC.Prim.coerce _GHC.Base.<<>>_.
-
-Program Instance Semigroup__Down {a : Type} `{GHC.Base.Semigroup a}
-   : GHC.Base.Semigroup (Down a) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Down_op_zlzlzgzg__ |}.
-
-Local Definition Monoid__Down_mappend {inst_a : Type} `{GHC.Base.Monoid inst_a}
-   : Down inst_a -> Down inst_a -> Down inst_a :=
-  GHC.Prim.coerce GHC.Base.mappend.
-
-Local Definition Monoid__Down_mconcat {inst_a : Type} `{GHC.Base.Monoid inst_a}
-   : list (Down inst_a) -> Down inst_a :=
-  GHC.Prim.coerce GHC.Base.mconcat.
-
-Local Definition Monoid__Down_mempty {inst_a : Type} `{GHC.Base.Monoid inst_a}
-   : Down inst_a :=
-  GHC.Prim.coerce GHC.Base.mempty.
-
-Program Instance Monoid__Down {a : Type} `{GHC.Base.Monoid a}
-   : GHC.Base.Monoid (Down a) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.mappend__ := Monoid__Down_mappend ;
-           GHC.Base.mconcat__ := Monoid__Down_mconcat ;
-           GHC.Base.mempty__ := Monoid__Down_mempty |}.
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Data.Ord.Show__Down' *)
 
 Local Definition Ord__Down_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Down inst_a -> Down inst_a -> comparison :=
@@ -188,18 +143,17 @@ Definition comparing {a : Type} {b : Type} `{GHC.Base.Ord a}
    : (b -> a) -> b -> b -> comparison :=
   fun p x y => GHC.Base.compare (p x) (p y).
 
+Instance Unpeel_Down a : HsToCoq.Unpeel.Unpeel (Down a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(Mk_Down x) => x) Mk_Down.
+
 (* External variables:
-     Gt Lt Type bool comparison list GHC.Base.Applicative GHC.Base.Eq_
-     GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup
-     GHC.Base.compare GHC.Base.compare__ GHC.Base.const GHC.Base.fmap GHC.Base.fmap__
-     GHC.Base.id GHC.Base.liftA2__ GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max__
-     GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__
-     GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____
-     GHC.Base.op_zg____ GHC.Base.op_zgze____ GHC.Base.op_zgzg____
-     GHC.Base.op_zgzgze____ GHC.Base.op_zl____ GHC.Base.op_zlzd__
-     GHC.Base.op_zlzd____ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
-     GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____ GHC.Base.op_zsze__
-     GHC.Base.op_zsze____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return___ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     Gt Lt Type bool comparison GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monad
+     GHC.Base.Ord GHC.Base.compare GHC.Base.compare__ GHC.Base.const GHC.Base.fmap
+     GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__ GHC.Base.max__ GHC.Base.min__
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zg____ GHC.Base.op_zgze____
+     GHC.Base.op_zgzg____ GHC.Base.op_zgzgze____ GHC.Base.op_zl____
+     GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze____
+     GHC.Base.op_zlztzg____ GHC.Base.op_zsze__ GHC.Base.op_ztzg____ GHC.Base.pure
+     GHC.Base.pure__ GHC.Base.return___ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
      HsToCoq.Unpeel.Unpeel
 *)

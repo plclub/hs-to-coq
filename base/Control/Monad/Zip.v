@@ -15,6 +15,7 @@ Require Coq.Program.Wf.
 Require Data.Functor.Identity.
 Require Data.List.NonEmpty.
 Require Data.Monoid.
+Require Data.Ord.
 Require Data.Proxy.
 Require Data.SemigroupInternal.
 Require Data.Tuple.
@@ -402,13 +403,42 @@ Program Instance MonadZip__Proxy : MonadZip Data.Proxy.Proxy :=
 (* Skipping instance `Control.Monad.Zip.MonadZip__op_ZCztZC__' of class
    `Control.Monad.Zip.MonadZip' *)
 
+Local Definition MonadZip__Down_munzip
+   : forall {a : Type},
+     forall {b : Type},
+     Data.Ord.Down (a * b)%type -> (Data.Ord.Down a * Data.Ord.Down b)%type :=
+  fun {a : Type} {b : Type} =>
+    fun mab =>
+      pair (GHC.Base.liftM Data.Tuple.fst mab) (GHC.Base.liftM Data.Tuple.snd mab).
+
+Local Definition MonadZip__Down_mzipWith
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     (a -> b -> c) -> Data.Ord.Down a -> Data.Ord.Down b -> Data.Ord.Down c :=
+  fun {a : Type} {b : Type} {c : Type} => GHC.Base.liftM2.
+
+Local Definition MonadZip__Down_mzip
+   : forall {a : Type},
+     forall {b : Type},
+     Data.Ord.Down a -> Data.Ord.Down b -> Data.Ord.Down (a * b)%type :=
+  fun {a : Type} {b : Type} => MonadZip__Down_mzipWith GHC.Tuple.pair2.
+
+Program Instance MonadZip__Down : MonadZip Data.Ord.Down :=
+  fun _ k__ =>
+    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Down_munzip ;
+           mzip__ := fun {a : Type} {b : Type} => MonadZip__Down_mzip ;
+           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+             MonadZip__Down_mzipWith |}.
+
 (* External variables:
      Type list op_zt__ option pair Data.Functor.Identity.Identity
      Data.Functor.Identity.Mk_Identity Data.List.NonEmpty.unzip
      Data.List.NonEmpty.zip Data.List.NonEmpty.zipWith Data.Monoid.First
-     Data.Monoid.Last Data.Proxy.Mk_Proxy Data.Proxy.Proxy Data.SemigroupInternal.Alt
-     Data.SemigroupInternal.Dual Data.SemigroupInternal.Mk_Alt
-     Data.SemigroupInternal.Product Data.SemigroupInternal.Sum Data.Tuple.fst
-     Data.Tuple.snd GHC.Base.Monad GHC.Base.NonEmpty GHC.Base.liftM GHC.Base.liftM2
-     GHC.List.unzip GHC.List.zip GHC.List.zipWith GHC.Tuple.pair2
+     Data.Monoid.Last Data.Ord.Down Data.Proxy.Mk_Proxy Data.Proxy.Proxy
+     Data.SemigroupInternal.Alt Data.SemigroupInternal.Dual
+     Data.SemigroupInternal.Mk_Alt Data.SemigroupInternal.Product
+     Data.SemigroupInternal.Sum Data.Tuple.fst Data.Tuple.snd GHC.Base.Monad
+     GHC.Base.NonEmpty GHC.Base.liftM GHC.Base.liftM2 GHC.List.unzip GHC.List.zip
+     GHC.List.zipWith GHC.Tuple.pair2
 *)

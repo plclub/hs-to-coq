@@ -18,6 +18,7 @@ Require Coq.Program.Wf.
 Require GHC.Base.
 Require GHC.Prim.
 Import GHC.Base.Notations.
+Import GHC.Prim.Notations.
 
 (* Converted type declarations: *)
 
@@ -45,21 +46,22 @@ Infix "∘" := (_∘_) (left associativity, at level 40).
 
 (* Converted value declarations: *)
 
-Local Definition Category__arrow_id : forall {a : Type}, GHC.Prim.arrow a a :=
+Local Definition Category__op_zmzg___id
+   : forall {a : Type}, _GHC.Prim.->_ a a :=
   fun {a : Type} => GHC.Base.id.
 
-Local Definition Category__arrow_op_z2218U__
+Local Definition Category__op_zmzg___op_z2218U__
    : forall {b : Type},
      forall {c : Type},
      forall {a : Type},
-     GHC.Prim.arrow b c -> GHC.Prim.arrow a b -> GHC.Prim.arrow a c :=
+     _GHC.Prim.->_ b c -> _GHC.Prim.->_ a b -> _GHC.Prim.->_ a c :=
   fun {b : Type} {c : Type} {a : Type} => _GHC.Base.∘_.
 
-Program Instance Category__arrow : Category GHC.Prim.arrow :=
+Program Instance Category__op_zmzg__ : Category _GHC.Prim.->_ :=
   fun _ k__ =>
-    k__ {| id__ := fun {a : Type} => Category__arrow_id ;
+    k__ {| id__ := fun {a : Type} => Category__op_zmzg___id ;
            op_z2218U____ := fun {b : Type} {c : Type} {a : Type} =>
-             Category__arrow_op_z2218U__ |}.
+             Category__op_zmzg___op_z2218U__ |}.
 
 (* Skipping instance `Control.Category.Category__op_ZCz7eUZC__' of class
    `Control.Category.Category' *)
@@ -98,5 +100,5 @@ Infix "Control.Category.>>>" := (_>>>_) (at level 99).
 End Notations.
 
 (* External variables:
-     Type GHC.Base.id GHC.Base.op_z2218U__ GHC.Prim.arrow
+     Type GHC.Base.id GHC.Base.op_z2218U__ GHC.Prim.op_zmzg__
 *)
