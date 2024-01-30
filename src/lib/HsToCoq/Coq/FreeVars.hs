@@ -303,8 +303,9 @@ instance HasFV Qualid AssumptionKeyword where
   fvOf Hypotheses = mempty
 
 instance HasFV Qualid Locality where
-  fvOf Global = mempty
-  fvOf Local  = mempty
+  fvOf Global  = mempty
+  fvOf Local   = mempty
+  fvOf ExportL = mempty
 
 instance HasFV Qualid AssertionKeyword where
   fvOf Theorem     = mempty

@@ -15,6 +15,7 @@ Require Coq.Program.Wf.
 Require Data.Either.
 Require Data.Functor.Const.
 Require Data.Functor.Identity.
+Require Data.Ord.
 Require Data.Proxy.
 Require GHC.Base.
 Require GHC.Tuple.
@@ -29,7 +30,7 @@ Record Eq2__Dict (f : Type -> Type -> Type) := Eq2__Dict_Build {
   forall {d : Type},
   (a -> b -> bool) -> (c -> d -> bool) -> f a c -> f b d -> bool }.
 
-Definition Eq2 (f : Type -> Type -> Type) :=
+#[global] Definition Eq2 (f : Type -> Type -> Type) :=
   forall r__, (Eq2__Dict f -> r__) -> r__.
 Existing Class Eq2.
 
@@ -37,7 +38,7 @@ Record Ord1__Dict (f : Type -> Type) := Ord1__Dict_Build {
   liftCompare__ : forall {a : Type},
   forall {b : Type}, (a -> b -> comparison) -> f a -> f b -> comparison }.
 
-Definition liftEq2 `{g__0__ : Eq2 f}
+#[global] Definition liftEq2 `{g__0__ : Eq2 f}
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -53,11 +54,11 @@ Record Ord2__Dict (f : Type -> Type -> Type) := Ord2__Dict_Build {
   (a -> b -> comparison) ->
   (c -> d -> comparison) -> f a c -> f b d -> comparison }.
 
-Definition Ord2 (f : Type -> Type -> Type) `{Eq2 f} :=
+#[global] Definition Ord2 (f : Type -> Type -> Type) `{Eq2 f} :=
   forall r__, (Ord2__Dict f -> r__) -> r__.
 Existing Class Ord2.
 
-Definition liftCompare2 `{g__0__ : Ord2 f}
+#[global] Definition liftCompare2 `{g__0__ : Ord2 f}
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -70,27 +71,27 @@ Record Eq1__Dict (f : Type -> Type) := Eq1__Dict_Build {
   liftEq__ : forall {a : Type},
   forall {b : Type}, (a -> b -> bool) -> f a -> f b -> bool }.
 
-Definition Eq1 (f : Type -> Type) :=
+#[global] Definition Eq1 (f : Type -> Type) :=
   forall r__, (Eq1__Dict f -> r__) -> r__.
 Existing Class Eq1.
 
-Definition liftEq `{g__0__ : Eq1 f}
+#[global] Definition liftEq `{g__0__ : Eq1 f}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> bool) -> f a -> f b -> bool :=
   g__0__ _ (liftEq__ f).
 
-Definition Ord1 (f : Type -> Type) `{Eq1 f} :=
+#[global] Definition Ord1 (f : Type -> Type) `{Eq1 f} :=
   forall r__, (Ord1__Dict f -> r__) -> r__.
 Existing Class Ord1.
 
-Definition liftCompare `{g__0__ : Ord1 f}
+#[global] Definition liftCompare `{g__0__ : Ord1 f}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> comparison) -> f a -> f b -> comparison :=
   g__0__ _ (liftCompare__ f).
 
 (* Converted value declarations: *)
 
-Local Definition Eq1__option_liftEq
+#[local] Definition Eq1__option_liftEq
    : forall {a : Type},
      forall {b : Type}, (a -> b -> bool) -> option a -> option b -> bool :=
   fun {a : Type} {b : Type} =>
@@ -102,11 +103,12 @@ Local Definition Eq1__option_liftEq
       | eq, Some x, Some y => eq x y
       end.
 
+#[global]
 Program Instance Eq1__option : Eq1 option :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__option_liftEq |}.
 
-Local Definition Ord1__option_liftCompare
+#[local] Definition Ord1__option_liftCompare
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> comparison) -> option a -> option b -> comparison :=
@@ -119,6 +121,7 @@ Local Definition Ord1__option_liftCompare
       | comp, Some x, Some y => comp x y
       end.
 
+#[global]
 Program Instance Ord1__option : Ord1 option :=
   fun _ k__ =>
     k__ {| liftCompare__ := fun {a : Type} {b : Type} =>
@@ -130,7 +133,7 @@ Program Instance Ord1__option : Ord1 option :=
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__option' *)
 
-Local Definition Eq1__list_liftEq
+#[local] Definition Eq1__list_liftEq
    : forall {a} {b}, (a -> b -> bool) -> list a -> list b -> bool :=
   fun {a} {b} =>
     fix liftEq arg_69__ arg_70__ arg_71__
@@ -141,11 +144,12 @@ Local Definition Eq1__list_liftEq
          | eq, cons x xs, cons y ys => andb (eq x y) (liftEq eq xs ys)
          end.
 
+#[global]
 Program Instance Eq1__list : Eq1 list :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__list_liftEq |}.
 
-Local Definition Ord1__list_liftCompare
+#[local] Definition Ord1__list_liftCompare
    : forall {a} {b}, (a -> b -> comparison) -> list a -> list b -> comparison :=
   fun {a} {b} =>
     fix liftCompare arg_69__ arg_70__ arg_71__
@@ -157,6 +161,7 @@ Local Definition Ord1__list_liftCompare
              GHC.Base.mappend (comp x y) (liftCompare comp xs ys)
          end.
 
+#[global]
 Program Instance Ord1__list : Ord1 list :=
   fun _ k__ =>
     k__ {| liftCompare__ := fun {a : Type} {b : Type} => Ord1__list_liftCompare |}.
@@ -167,7 +172,7 @@ Program Instance Ord1__list : Ord1 list :=
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__list' *)
 
-Local Definition Eq1__NonEmpty_liftEq
+#[local] Definition Eq1__NonEmpty_liftEq
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> bool) -> GHC.Base.NonEmpty a -> GHC.Base.NonEmpty b -> bool :=
@@ -178,11 +183,12 @@ Local Definition Eq1__NonEmpty_liftEq
           andb (eq a b) (liftEq eq as_ bs)
       end.
 
+#[global]
 Program Instance Eq1__NonEmpty : Eq1 GHC.Base.NonEmpty :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__NonEmpty_liftEq |}.
 
-Local Definition Ord1__NonEmpty_liftCompare
+#[local] Definition Ord1__NonEmpty_liftCompare
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> comparison) ->
@@ -194,6 +200,7 @@ Local Definition Ord1__NonEmpty_liftCompare
           GHC.Base.mappend (cmp a b) (liftCompare cmp as_ bs)
       end.
 
+#[global]
 Program Instance Ord1__NonEmpty : Ord1 GHC.Base.NonEmpty :=
   fun _ k__ =>
     k__ {| liftCompare__ := fun {a : Type} {b : Type} =>
@@ -205,7 +212,7 @@ Program Instance Ord1__NonEmpty : Ord1 GHC.Base.NonEmpty :=
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__NonEmpty' *)
 
-Local Definition Eq2__pair_type_liftEq2
+#[local] Definition Eq2__pair_type_liftEq2
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -219,12 +226,13 @@ Local Definition Eq2__pair_type_liftEq2
       | e1, e2, pair x1 y1, pair x2 y2 => andb (e1 x1 x2) (e2 y1 y2)
       end.
 
+#[global]
 Program Instance Eq2__pair_type : Eq2 GHC.Tuple.pair_type :=
   fun _ k__ =>
     k__ {| liftEq2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
              Eq2__pair_type_liftEq2 |}.
 
-Local Definition Ord2__pair_type_liftCompare2
+#[local] Definition Ord2__pair_type_liftCompare2
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -239,6 +247,7 @@ Local Definition Ord2__pair_type_liftCompare2
           GHC.Base.mappend (comp1 x1 x2) (comp2 y1 y2)
       end.
 
+#[global]
 Program Instance Ord2__pair_type : Ord2 GHC.Tuple.pair_type :=
   fun _ k__ =>
     k__ {| liftCompare2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
@@ -250,19 +259,21 @@ Program Instance Ord2__pair_type : Ord2 GHC.Tuple.pair_type :=
 (* Skipping all instances of class `Data.Functor.Classes.Show2', including
    `Data.Functor.Classes.Show2__pair_type' *)
 
-Local Definition Eq1__pair_type_liftEq {inst_a : Type} `{(GHC.Base.Eq_ inst_a)}
+#[local] Definition Eq1__pair_type_liftEq {inst_a : Type} `{(GHC.Base.Eq_
+   inst_a)}
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> bool) ->
      GHC.Tuple.pair_type inst_a a -> GHC.Tuple.pair_type inst_a b -> bool :=
   fun {a : Type} {b : Type} => liftEq2 _GHC.Base.==_.
 
+#[global]
 Program Instance Eq1__pair_type {a : Type} `{(GHC.Base.Eq_ a)}
    : Eq1 (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__pair_type_liftEq |}.
 
-Local Definition Ord1__pair_type_liftCompare {inst_a : Type} `{(GHC.Base.Ord
+#[local] Definition Ord1__pair_type_liftCompare {inst_a : Type} `{(GHC.Base.Ord
    inst_a)}
    : forall {a : Type},
      forall {b : Type},
@@ -270,6 +281,7 @@ Local Definition Ord1__pair_type_liftCompare {inst_a : Type} `{(GHC.Base.Ord
      GHC.Tuple.pair_type inst_a a -> GHC.Tuple.pair_type inst_a b -> comparison :=
   fun {a : Type} {b : Type} => liftCompare2 GHC.Base.compare.
 
+#[global]
 Program Instance Ord1__pair_type {a : Type} `{(GHC.Base.Ord a)}
    : Ord1 (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
@@ -282,7 +294,7 @@ Program Instance Ord1__pair_type {a : Type} `{(GHC.Base.Ord a)}
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__pair_type' *)
 
-Local Definition Eq2__Either_liftEq2
+#[local] Definition Eq2__Either_liftEq2
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -298,12 +310,13 @@ Local Definition Eq2__Either_liftEq2
       | _, e2, Data.Either.Right x, Data.Either.Right y => e2 x y
       end.
 
+#[global]
 Program Instance Eq2__Either : Eq2 Data.Either.Either :=
   fun _ k__ =>
     k__ {| liftEq2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
              Eq2__Either_liftEq2 |}.
 
-Local Definition Ord2__Either_liftCompare2
+#[local] Definition Ord2__Either_liftCompare2
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -320,6 +333,7 @@ Local Definition Ord2__Either_liftCompare2
       | _, comp2, Data.Either.Right x, Data.Either.Right y => comp2 x y
       end.
 
+#[global]
 Program Instance Ord2__Either : Ord2 Data.Either.Either :=
   fun _ k__ =>
     k__ {| liftCompare2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
@@ -331,19 +345,20 @@ Program Instance Ord2__Either : Ord2 Data.Either.Either :=
 (* Skipping all instances of class `Data.Functor.Classes.Show2', including
    `Data.Functor.Classes.Show2__Either' *)
 
-Local Definition Eq1__Either_liftEq {inst_a : Type} `{(GHC.Base.Eq_ inst_a)}
+#[local] Definition Eq1__Either_liftEq {inst_a : Type} `{(GHC.Base.Eq_ inst_a)}
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> bool) ->
      Data.Either.Either inst_a a -> Data.Either.Either inst_a b -> bool :=
   fun {a : Type} {b : Type} => liftEq2 _GHC.Base.==_.
 
+#[global]
 Program Instance Eq1__Either {a : Type} `{(GHC.Base.Eq_ a)}
    : Eq1 (Data.Either.Either a) :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__Either_liftEq |}.
 
-Local Definition Ord1__Either_liftCompare {inst_a : Type} `{(GHC.Base.Ord
+#[local] Definition Ord1__Either_liftCompare {inst_a : Type} `{(GHC.Base.Ord
    inst_a)}
    : forall {a : Type},
      forall {b : Type},
@@ -351,6 +366,7 @@ Local Definition Ord1__Either_liftCompare {inst_a : Type} `{(GHC.Base.Ord
      Data.Either.Either inst_a a -> Data.Either.Either inst_a b -> comparison :=
   fun {a : Type} {b : Type} => liftCompare2 GHC.Base.compare.
 
+#[global]
 Program Instance Ord1__Either {a : Type} `{(GHC.Base.Ord a)}
    : Ord1 (Data.Either.Either a) :=
   fun _ k__ =>
@@ -363,7 +379,7 @@ Program Instance Ord1__Either {a : Type} `{(GHC.Base.Ord a)}
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__Either' *)
 
-Local Definition Eq1__Identity_liftEq
+#[local] Definition Eq1__Identity_liftEq
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> bool) ->
@@ -377,11 +393,12 @@ Local Definition Eq1__Identity_liftEq
           eq x y
       end.
 
+#[global]
 Program Instance Eq1__Identity : Eq1 Data.Functor.Identity.Identity :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__Identity_liftEq |}.
 
-Local Definition Ord1__Identity_liftCompare
+#[local] Definition Ord1__Identity_liftCompare
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> comparison) ->
@@ -396,6 +413,7 @@ Local Definition Ord1__Identity_liftCompare
           comp x y
       end.
 
+#[global]
 Program Instance Ord1__Identity : Ord1 Data.Functor.Identity.Identity :=
   fun _ k__ =>
     k__ {| liftCompare__ := fun {a : Type} {b : Type} =>
@@ -407,7 +425,7 @@ Program Instance Ord1__Identity : Ord1 Data.Functor.Identity.Identity :=
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__Identity' *)
 
-Local Definition Eq2__Const_liftEq2
+#[local] Definition Eq2__Const_liftEq2
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -421,12 +439,13 @@ Local Definition Eq2__Const_liftEq2
       | eq, _, Data.Functor.Const.Mk_Const x, Data.Functor.Const.Mk_Const y => eq x y
       end.
 
+#[global]
 Program Instance Eq2__Const : Eq2 Data.Functor.Const.Const :=
   fun _ k__ =>
     k__ {| liftEq2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
              Eq2__Const_liftEq2 |}.
 
-Local Definition Ord2__Const_liftCompare2
+#[local] Definition Ord2__Const_liftCompare2
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -441,6 +460,7 @@ Local Definition Ord2__Const_liftCompare2
           comp x y
       end.
 
+#[global]
 Program Instance Ord2__Const : Ord2 Data.Functor.Const.Const :=
   fun _ k__ =>
     k__ {| liftCompare2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
@@ -452,7 +472,7 @@ Program Instance Ord2__Const : Ord2 Data.Functor.Const.Const :=
 (* Skipping all instances of class `Data.Functor.Classes.Show2', including
    `Data.Functor.Classes.Show2__Const' *)
 
-Local Definition Eq1__Const_liftEq {inst_a : Type} `{(GHC.Base.Eq_ inst_a)}
+#[local] Definition Eq1__Const_liftEq {inst_a : Type} `{(GHC.Base.Eq_ inst_a)}
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> bool) ->
@@ -460,12 +480,13 @@ Local Definition Eq1__Const_liftEq {inst_a : Type} `{(GHC.Base.Eq_ inst_a)}
      Data.Functor.Const.Const inst_a b -> bool :=
   fun {a : Type} {b : Type} => liftEq2 _GHC.Base.==_.
 
+#[global]
 Program Instance Eq1__Const {a : Type} `{(GHC.Base.Eq_ a)}
    : Eq1 (Data.Functor.Const.Const a) :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__Const_liftEq |}.
 
-Local Definition Ord1__Const_liftCompare {inst_a : Type} `{(GHC.Base.Ord
+#[local] Definition Ord1__Const_liftCompare {inst_a : Type} `{(GHC.Base.Ord
    inst_a)}
    : forall {a : Type},
      forall {b : Type},
@@ -474,6 +495,7 @@ Local Definition Ord1__Const_liftCompare {inst_a : Type} `{(GHC.Base.Ord
      Data.Functor.Const.Const inst_a b -> comparison :=
   fun {a : Type} {b : Type} => liftCompare2 GHC.Base.compare.
 
+#[global]
 Program Instance Ord1__Const {a : Type} `{(GHC.Base.Ord a)}
    : Ord1 (Data.Functor.Const.Const a) :=
   fun _ k__ =>
@@ -485,23 +507,25 @@ Program Instance Ord1__Const {a : Type} `{(GHC.Base.Ord a)}
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__Const' *)
 
-Local Definition Eq1__Proxy_liftEq
+#[local] Definition Eq1__Proxy_liftEq
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> bool) -> Data.Proxy.Proxy a -> Data.Proxy.Proxy b -> bool :=
   fun {a : Type} {b : Type} => fun arg_0__ arg_1__ arg_2__ => true.
 
+#[global]
 Program Instance Eq1__Proxy : Eq1 Data.Proxy.Proxy :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__Proxy_liftEq |}.
 
-Local Definition Ord1__Proxy_liftCompare
+#[local] Definition Ord1__Proxy_liftCompare
    : forall {a : Type},
      forall {b : Type},
      (a -> b -> comparison) ->
      Data.Proxy.Proxy a -> Data.Proxy.Proxy b -> comparison :=
   fun {a : Type} {b : Type} => fun arg_0__ arg_1__ arg_2__ => Eq.
 
+#[global]
 Program Instance Ord1__Proxy : Ord1 Data.Proxy.Proxy :=
   fun _ k__ =>
     k__ {| liftCompare__ := fun {a : Type} {b : Type} => Ord1__Proxy_liftCompare |}.
@@ -512,11 +536,49 @@ Program Instance Ord1__Proxy : Ord1 Data.Proxy.Proxy :=
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
    `Data.Functor.Classes.Read1__Proxy' *)
 
-Definition eq1 {f : Type -> Type} {a : Type} `{Eq1 f} `{GHC.Base.Eq_ a}
+#[local] Definition Eq1__Down_liftEq
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> bool) -> Data.Ord.Down a -> Data.Ord.Down b -> bool :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | eq, Data.Ord.Mk_Down x, Data.Ord.Mk_Down y => eq x y
+      end.
+
+#[global]
+Program Instance Eq1__Down : Eq1 Data.Ord.Down :=
+  fun _ k__ =>
+    k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__Down_liftEq |}.
+
+#[local] Definition Ord1__Down_liftCompare
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> comparison) -> Data.Ord.Down a -> Data.Ord.Down b -> comparison :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | comp, Data.Ord.Mk_Down x, Data.Ord.Mk_Down y => comp x y
+      end.
+
+#[global]
+Program Instance Ord1__Down : Ord1 Data.Ord.Down :=
+  fun _ k__ =>
+    k__ {| liftCompare__ := fun {a : Type} {b : Type} => Ord1__Down_liftCompare |}.
+
+(* Skipping all instances of class `Data.Functor.Classes.Read1', including
+   `Data.Functor.Classes.Read1__Down' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show1', including
+   `Data.Functor.Classes.Show1__Down' *)
+
+#[global] Definition eq1 {f : Type -> Type} {a : Type} `{Eq1 f} `{GHC.Base.Eq_
+  a}
    : f a -> f a -> bool :=
   liftEq _GHC.Base.==_.
 
-Definition compare1 {f : Type -> Type} {a : Type} `{Ord1 f} `{GHC.Base.Ord a}
+#[global] Definition compare1 {f : Type -> Type} {a : Type} `{Ord1 f}
+  `{GHC.Base.Ord a}
    : f a -> f a -> comparison :=
   liftCompare GHC.Base.compare.
 
@@ -530,13 +592,13 @@ Definition compare1 {f : Type -> Type} {a : Type} `{Ord1 f} `{GHC.Base.Ord a}
 
 (* Skipping definition `Data.Functor.Classes.showsPrec1' *)
 
-Definition eq2 {f : Type -> Type -> Type} {a : Type} {b : Type} `{Eq2 f}
-  `{GHC.Base.Eq_ a} `{GHC.Base.Eq_ b}
+#[global] Definition eq2 {f : Type -> Type -> Type} {a : Type} {b : Type} `{Eq2
+  f} `{GHC.Base.Eq_ a} `{GHC.Base.Eq_ b}
    : f a b -> f a b -> bool :=
   liftEq2 _GHC.Base.==_ _GHC.Base.==_.
 
-Definition compare2 {f : Type -> Type -> Type} {a : Type} {b : Type} `{Ord2 f}
-  `{GHC.Base.Ord a} `{GHC.Base.Ord b}
+#[global] Definition compare2 {f : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Ord2 f} `{GHC.Base.Ord a} `{GHC.Base.Ord b}
    : f a b -> f a b -> comparison :=
   liftCompare2 GHC.Base.compare GHC.Base.compare.
 
@@ -582,7 +644,7 @@ Definition compare2 {f : Type -> Type -> Type} {a : Type} {b : Type} `{Ord2 f}
      Eq Gt Lt None Some Type andb bool comparison cons false list option pair true
      Data.Either.Either Data.Either.Left Data.Either.Right Data.Functor.Const.Const
      Data.Functor.Const.Mk_Const Data.Functor.Identity.Identity
-     Data.Functor.Identity.Mk_Identity Data.Proxy.Proxy GHC.Base.Eq_ GHC.Base.NEcons
-     GHC.Base.NonEmpty GHC.Base.Ord GHC.Base.compare GHC.Base.mappend
-     GHC.Base.op_zeze__ GHC.Tuple.pair_type
+     Data.Functor.Identity.Mk_Identity Data.Ord.Down Data.Ord.Mk_Down
+     Data.Proxy.Proxy GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord
+     GHC.Base.compare GHC.Base.mappend GHC.Base.op_zeze__ GHC.Tuple.pair_type
 *)

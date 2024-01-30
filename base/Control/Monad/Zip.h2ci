@@ -1,20 +1,3 @@
-superclassCount:
-  Control.Monad.Zip.MonadZip: '3'
-defaultMethods:
-  Control.Monad.Zip.MonadZip: fromList [(Qualified "Control.Monad.Zip" "munzip",Fun
-    (ExplicitBinder (Ident (Bare "mab")) :| []) (App (Qualid (Bare "pair")) (PosArg
-    (App (App (Qualid (Qualified "GHC.Base" "liftM")) (PosArg (Qualid (Qualified "Data.Tuple"
-    "fst")) :| [])) (PosArg (Qualid (Bare "mab")) :| [])) :| [PosArg (App (App (Qualid
-    (Qualified "GHC.Base" "liftM")) (PosArg (Qualid (Qualified "Data.Tuple" "snd"))
-    :| [])) (PosArg (Qualid (Bare "mab")) :| []))]))),(Qualified "Control.Monad.Zip"
-    "mzip",App (Qualid (Qualified "Control.Monad.Zip" "mzipWith")) (PosArg (Qualid
-    (Qualified "GHC.Tuple" "pair2")) :| [])),(Qualified "Control.Monad.Zip" "mzipWith",Fun
-    (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "ma")),ExplicitBinder
-    (Ident (Bare "mb"))]) (App (App (Qualid (Qualified "GHC.Base" "liftM")) (PosArg
-    (Parens (App (Qualid (Qualified "Data.Tuple" "uncurry")) (PosArg (Qualid (Bare
-    "f")) :| []))) :| [])) (PosArg (Parens (App (App (Qualid (Qualified "Control.Monad.Zip"
-    "mzip")) (PosArg (Qualid (Bare "ma")) :| [])) (PosArg (Qualid (Bare "mb")) :|
-    []))) :| [])))]
 classTypes:
   Control.Monad.Zip.MonadZip: fromList []
 classDefns:
@@ -43,3 +26,20 @@ classDefns:
     (Bare "c")))) (Arrow (App (Qualid (Bare "m")) (PosArg (Qualid (Bare "a")) :| []))
     (Arrow (App (Qualid (Bare "m")) (PosArg (Qualid (Bare "b")) :| [])) (App (Qualid
     (Bare "m")) (PosArg (Qualid (Bare "c")) :| []))))))))]
+superclassCount:
+  Control.Monad.Zip.MonadZip: '3'
+defaultMethods:
+  Control.Monad.Zip.MonadZip: fromList [(Qualified "Control.Monad.Zip" "munzip",Fun
+    (ExplicitBinder (Ident (Bare "mab")) :| []) (App (Qualid (Bare "pair")) (PosArg
+    (App (App (Qualid (Qualified "GHC.Base" "liftM")) (PosArg (Qualid (Qualified "Data.Tuple"
+    "fst")) :| [])) (PosArg (Qualid (Bare "mab")) :| [])) :| [PosArg (App (App (Qualid
+    (Qualified "GHC.Base" "liftM")) (PosArg (Qualid (Qualified "Data.Tuple" "snd"))
+    :| [])) (PosArg (Qualid (Bare "mab")) :| []))]))),(Qualified "Control.Monad.Zip"
+    "mzip",App (Qualid (Qualified "Control.Monad.Zip" "mzipWith")) (PosArg (Qualid
+    (Qualified "GHC.Tuple" "pair2")) :| [])),(Qualified "Control.Monad.Zip" "mzipWith",Fun
+    (ExplicitBinder (Ident (Bare "f")) :| [ExplicitBinder (Ident (Bare "ma")),ExplicitBinder
+    (Ident (Bare "mb"))]) (App (App (Qualid (Qualified "GHC.Base" "liftM")) (PosArg
+    (Parens (App (Qualid (Qualified "Data.Tuple" "uncurry")) (PosArg (Qualid (Bare
+    "f")) :| []))) :| [])) (PosArg (Parens (App (App (Qualid (Qualified "Control.Monad.Zip"
+    "mzip")) (PosArg (Qualid (Bare "ma")) :| [])) (PosArg (Qualid (Bare "mb")) :|
+    []))) :| [])))]

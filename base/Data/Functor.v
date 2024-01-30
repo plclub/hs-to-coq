@@ -22,7 +22,7 @@ Import GHC.Base.Notations.
 
 (* Converted value declarations: *)
 
-Definition op_zlzdzg__ {f : Type -> Type} {a : Type} {b : Type}
+#[global] Definition op_zlzdzg__ {f : Type -> Type} {a : Type} {b : Type}
   `{GHC.Base.Functor f}
    : (a -> b) -> f a -> f b :=
   GHC.Base.fmap.
@@ -31,7 +31,7 @@ Notation "'_<$>_'" := (op_zlzdzg__).
 
 Infix "<$>" := (_<$>_) (at level 99).
 
-Definition op_zlzazg__ {f : Type -> Type} {a : Type} {b : Type}
+#[global] Definition op_zlzazg__ {f : Type -> Type} {a : Type} {b : Type}
   `{GHC.Base.Functor f}
    : f a -> (a -> b) -> f b :=
   fun as_ f => f <$> as_.
@@ -40,8 +40,8 @@ Notation "'_<&>_'" := (op_zlzazg__).
 
 Infix "<&>" := (_<&>_) (at level 99).
 
-Definition op_zdzg__ {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Functor
-  f}
+#[global] Definition op_zdzg__ {f : Type -> Type} {a : Type} {b : Type}
+  `{GHC.Base.Functor f}
    : f a -> b -> f b :=
   GHC.Base.flip _GHC.Base.<$_.
 
@@ -49,7 +49,7 @@ Notation "'_$>_'" := (op_zdzg__).
 
 Infix "$>" := (_$>_) (at level 99).
 
-Definition void {f : Type -> Type} {a : Type} `{GHC.Base.Functor f}
+#[global] Definition void {f : Type -> Type} {a : Type} `{GHC.Base.Functor f}
    : f a -> f unit :=
   fun x => tt GHC.Base.<$ x.
 

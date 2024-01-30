@@ -1,3 +1,5 @@
+data kinds Data.Monoid.Ap (Type -> Type), Type 
+
 add Data.Monoid Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) (option a) :=
 	 HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
 add Data.Monoid Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) (option a) :=

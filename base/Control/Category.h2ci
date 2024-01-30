@@ -1,5 +1,3 @@
-superclassCount:
-  Control.Category.Category: '0'
 classTypes:
   Control.Category.Category: fromList []
 classDefns:
@@ -18,3 +16,5 @@ classDefns:
     (Bare "cat")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid (Bare "b"))
     :| [])) (App (App (Qualid (Bare "cat")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg
     (Qualid (Bare "c")) :| [])))))))]
+superclassCount:
+  Control.Category.Category: '0'

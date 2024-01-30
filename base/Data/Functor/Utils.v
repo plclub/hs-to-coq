@@ -35,19 +35,19 @@ Arguments Mk_Min {_} _.
 
 Arguments Mk_Max {_} _.
 
-Definition runStateR {s} {a} (arg_0__ : StateR s a) :=
+#[global] Definition runStateR {s} {a} (arg_0__ : StateR s a) :=
   let 'Mk_StateR runStateR := arg_0__ in
   runStateR.
 
-Definition runStateL {s} {a} (arg_0__ : StateL s a) :=
+#[global] Definition runStateL {s} {a} (arg_0__ : StateL s a) :=
   let 'Mk_StateL runStateL := arg_0__ in
   runStateL.
 
-Definition getMin {a} (arg_0__ : Min a) :=
+#[global] Definition getMin {a} (arg_0__ : Min a) :=
   let 'Mk_Min getMin := arg_0__ in
   getMin.
 
-Definition getMax {a} (arg_0__ : Max a) :=
+#[global] Definition getMax {a} (arg_0__ : Max a) :=
   let 'Mk_Max getMax := arg_0__ in
   getMax.
 
@@ -66,7 +66,7 @@ Instance Unpeel_Max {a} : HsToCoq.Unpeel.Unpeel (Max a) (option a)
 
 (* Converted value declarations: *)
 
-Local Definition Semigroup__Max_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
+#[local] Definition Semigroup__Max_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
   inst_a}
    : Max inst_a -> Max inst_a -> Max inst_a :=
   fun arg_0__ arg_1__ =>
@@ -78,22 +78,24 @@ Local Definition Semigroup__Max_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
         Mk_Max n
     end.
 
+#[global]
 Program Instance Semigroup__Max {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Semigroup (Max a) :=
   fun _ k__ => k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Max_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__Max_mappend {inst_a : Type} `{GHC.Base.Ord inst_a}
+#[local] Definition Monoid__Max_mappend {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a -> Max inst_a -> Max inst_a :=
   _GHC.Base.<<>>_.
 
-Local Definition Monoid__Max_mempty {inst_a : Type} `{GHC.Base.Ord inst_a}
+#[local] Definition Monoid__Max_mempty {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Max inst_a :=
   Mk_Max None.
 
-Local Definition Monoid__Max_mconcat {inst_a : Type} `{GHC.Base.Ord inst_a}
+#[local] Definition Monoid__Max_mconcat {inst_a : Type} `{GHC.Base.Ord inst_a}
    : list (Max inst_a) -> Max inst_a :=
   GHC.Base.foldr Monoid__Max_mappend Monoid__Max_mempty.
 
+#[global]
 Program Instance Monoid__Max {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Monoid (Max a) :=
   fun _ k__ =>
@@ -101,7 +103,7 @@ Program Instance Monoid__Max {a : Type} `{GHC.Base.Ord a}
            GHC.Base.mconcat__ := Monoid__Max_mconcat ;
            GHC.Base.mempty__ := Monoid__Max_mempty |}.
 
-Local Definition Semigroup__Min_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
+#[local] Definition Semigroup__Min_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
   inst_a}
    : Min inst_a -> Min inst_a -> Min inst_a :=
   fun arg_0__ arg_1__ =>
@@ -113,22 +115,24 @@ Local Definition Semigroup__Min_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
         Mk_Min n
     end.
 
+#[global]
 Program Instance Semigroup__Min {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Semigroup (Min a) :=
   fun _ k__ => k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Min_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__Min_mappend {inst_a : Type} `{GHC.Base.Ord inst_a}
+#[local] Definition Monoid__Min_mappend {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a -> Min inst_a -> Min inst_a :=
   _GHC.Base.<<>>_.
 
-Local Definition Monoid__Min_mempty {inst_a : Type} `{GHC.Base.Ord inst_a}
+#[local] Definition Monoid__Min_mempty {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Min inst_a :=
   Mk_Min None.
 
-Local Definition Monoid__Min_mconcat {inst_a : Type} `{GHC.Base.Ord inst_a}
+#[local] Definition Monoid__Min_mconcat {inst_a : Type} `{GHC.Base.Ord inst_a}
    : list (Min inst_a) -> Min inst_a :=
   GHC.Base.foldr Monoid__Min_mappend Monoid__Min_mempty.
 
+#[global]
 Program Instance Monoid__Min {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Monoid (Min a) :=
   fun _ k__ =>
@@ -136,7 +140,7 @@ Program Instance Monoid__Min {a : Type} `{GHC.Base.Ord a}
            GHC.Base.mconcat__ := Monoid__Min_mconcat ;
            GHC.Base.mempty__ := Monoid__Min_mempty |}.
 
-Local Definition Functor__StateL_fmap {inst_s : Type}
+#[local] Definition Functor__StateL_fmap {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, (a -> b) -> StateL inst_s a -> StateL inst_s b :=
   fun {a : Type} {b : Type} =>
@@ -145,18 +149,19 @@ Local Definition Functor__StateL_fmap {inst_s : Type}
       | f, Mk_StateL k => Mk_StateL (fun s => let 'pair s' v := k s in pair s' (f v))
       end.
 
-Local Definition Functor__StateL_op_zlzd__ {inst_s : Type}
+#[local] Definition Functor__StateL_op_zlzd__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, a -> StateL inst_s b -> StateL inst_s a :=
   fun {a : Type} {b : Type} => Functor__StateL_fmap GHC.Base.∘ GHC.Base.const.
 
+#[global]
 Program Instance Functor__StateL {s : Type} : GHC.Base.Functor (StateL s) :=
   fun _ k__ =>
     k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__StateL_fmap ;
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
              Functor__StateL_op_zlzd__ |}.
 
-Local Definition Applicative__StateL_liftA2 {inst_s : Type}
+#[local] Definition Applicative__StateL_liftA2 {inst_s : Type}
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -171,7 +176,7 @@ Local Definition Applicative__StateL_liftA2 {inst_s : Type}
                        pair s'' (f x y))
       end.
 
-Local Definition Applicative__StateL_op_zlztzg__ {inst_s : Type}
+#[local] Definition Applicative__StateL_op_zlztzg__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type},
      StateL inst_s (a -> b) -> StateL inst_s a -> StateL inst_s b :=
@@ -185,16 +190,17 @@ Local Definition Applicative__StateL_op_zlztzg__ {inst_s : Type}
                        pair s'' (f v))
       end.
 
-Local Definition Applicative__StateL_op_ztzg__ {inst_s : Type}
+#[local] Definition Applicative__StateL_op_ztzg__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, StateL inst_s a -> StateL inst_s b -> StateL inst_s b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__StateL_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__StateL_pure {inst_s : Type}
+#[local] Definition Applicative__StateL_pure {inst_s : Type}
    : forall {a : Type}, a -> StateL inst_s a :=
   fun {a : Type} => fun x => Mk_StateL (fun s => pair s x).
 
+#[global]
 Program Instance Applicative__StateL {s : Type}
    : GHC.Base.Applicative (StateL s) :=
   fun _ k__ =>
@@ -206,7 +212,7 @@ Program Instance Applicative__StateL {s : Type}
              Applicative__StateL_op_ztzg__ ;
            GHC.Base.pure__ := fun {a : Type} => Applicative__StateL_pure |}.
 
-Local Definition Functor__StateR_fmap {inst_s : Type}
+#[local] Definition Functor__StateR_fmap {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, (a -> b) -> StateR inst_s a -> StateR inst_s b :=
   fun {a : Type} {b : Type} =>
@@ -215,18 +221,19 @@ Local Definition Functor__StateR_fmap {inst_s : Type}
       | f, Mk_StateR k => Mk_StateR (fun s => let 'pair s' v := k s in pair s' (f v))
       end.
 
-Local Definition Functor__StateR_op_zlzd__ {inst_s : Type}
+#[local] Definition Functor__StateR_op_zlzd__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, a -> StateR inst_s b -> StateR inst_s a :=
   fun {a : Type} {b : Type} => Functor__StateR_fmap GHC.Base.∘ GHC.Base.const.
 
+#[global]
 Program Instance Functor__StateR {s : Type} : GHC.Base.Functor (StateR s) :=
   fun _ k__ =>
     k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__StateR_fmap ;
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
              Functor__StateR_op_zlzd__ |}.
 
-Local Definition Applicative__StateR_liftA2 {inst_s : Type}
+#[local] Definition Applicative__StateR_liftA2 {inst_s : Type}
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -241,7 +248,7 @@ Local Definition Applicative__StateR_liftA2 {inst_s : Type}
                        pair s'' (f x y))
       end.
 
-Local Definition Applicative__StateR_op_zlztzg__ {inst_s : Type}
+#[local] Definition Applicative__StateR_op_zlztzg__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type},
      StateR inst_s (a -> b) -> StateR inst_s a -> StateR inst_s b :=
@@ -255,16 +262,17 @@ Local Definition Applicative__StateR_op_zlztzg__ {inst_s : Type}
                        pair s'' (f v))
       end.
 
-Local Definition Applicative__StateR_op_ztzg__ {inst_s : Type}
+#[local] Definition Applicative__StateR_op_ztzg__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, StateR inst_s a -> StateR inst_s b -> StateR inst_s b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__StateR_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__StateR_pure {inst_s : Type}
+#[local] Definition Applicative__StateR_pure {inst_s : Type}
    : forall {a : Type}, a -> StateR inst_s a :=
   fun {a : Type} => fun x => Mk_StateR (fun s => pair s x).
 
+#[global]
 Program Instance Applicative__StateR {s : Type}
    : GHC.Base.Applicative (StateR s) :=
   fun _ k__ =>

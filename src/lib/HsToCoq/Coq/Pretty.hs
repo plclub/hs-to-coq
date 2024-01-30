@@ -550,6 +550,8 @@ instance Gallina Sentence where
   renderGallina' p (DefinitionSentence      def)    = renderGallina' p def
   renderGallina' p (InductiveSentence       ind)    = renderGallina' p ind
   renderGallina' p (FixpointSentence        fix)    = renderGallina' p fix
+  renderGallina' p (ProgramSentence sen@(InstanceSentence _) pf) = "#[global]"
+                                                                   <!> "Program" <+> renderGallina' p sen <!> renderObligation pf
   renderGallina' p (ProgramSentence         sen pf) = "Program" <+> renderGallina' p sen <!> renderObligation pf
   renderGallina' p (AssertionSentence       ass pf) = renderGallina' p ass <!> renderGallina' p pf
   renderGallina' p (ModuleSentence          mod)    = renderGallina' p mod
@@ -581,17 +583,20 @@ instance Gallina Assums where
       renderAss ids ty = fillSep (renderGallina <$> ids) <> nest 2 (render_type ty)
 
 instance Gallina Locality where
-  renderGallina' _ Global = "(*Global*)"
-  renderGallina' _ Local  = "Local"
+  renderGallina' _ ExportL = "#[export]"
+  renderGallina' _ Global  = "#[global]"
+  renderGallina' _ Local   = "#[local]"
 
 renderLocality :: Locality -> Doc
-renderLocality Global = empty
-renderLocality Local  = "Local" <> space
+renderLocality ExportL = empty
+renderLocality Global  = "#[global]" <> space
+renderLocality Local   = "#[local]" <> space
 
 renderFullLocality :: Maybe Locality -> Doc
 renderFullLocality Nothing       = empty
-renderFullLocality (Just Global) = "Global" <> space
-renderFullLocality (Just Local)  = "Local"  <> space
+renderFullLocality (Just ExportL) = "#[export]" <> space
+renderFullLocality (Just Global)  = "#[global]" <> space
+renderFullLocality (Just Local)   = "#[local]"  <> space
 
 instance Gallina Definition where
   renderGallina' _ = \case

@@ -42,6 +42,7 @@ Notation "'_*_'" := op_zt__.
 
 Notation "'#' n" := (fromInteger n) (at level 1, format "'#' n").
 
+#[global]
 Instance Num_Int__ : Num Int := {
   op_zp__   := Z.add %Z;
   op_zm__   := Z.sub %Z;
@@ -51,6 +52,7 @@ Instance Num_Int__ : Num Int := {
   negate      := Z.opp %Z;
   signum      := Z.sgn %Z; }.
 
+#[global]
 Instance Num_Integer__ : Num Integer := {
   op_zp__   := Z.add %Z;
   op_zm__   := Z.sub %Z;
@@ -76,6 +78,7 @@ Proof.
   contradiction.
 Qed.
 
+#[global]
 Instance Num_Word__ : Num Word := {
   op_zp__   := N.add %N;
   op_zm__   := safeSubN;

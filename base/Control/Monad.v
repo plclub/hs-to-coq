@@ -31,7 +31,8 @@ Import GHC.Base.Notations.
 
 (* Skipping definition `Control.Monad.guard' *)
 
-Definition filterM {m : Type -> Type} {a : Type} `{GHC.Base.Applicative m}
+#[global] Definition filterM {m : Type -> Type} {a : Type}
+  `{GHC.Base.Applicative m}
    : (a -> m bool) -> list a -> m (list a) :=
   fun p =>
     GHC.Base.foldr (fun x =>
@@ -40,8 +41,8 @@ Definition filterM {m : Type -> Type} {a : Type} `{GHC.Base.Applicative m}
                                          then (fun arg_0__ => cons x arg_0__)
                                          else GHC.Base.id) (p x)) (GHC.Base.pure nil).
 
-Definition op_zgzezg__ {m : Type -> Type} {a : Type} {b : Type} {c : Type}
-  `{GHC.Base.Monad m}
+#[global] Definition op_zgzezg__ {m : Type -> Type} {a : Type} {b : Type} {c
+   : Type} `{GHC.Base.Monad m}
    : (a -> m b) -> (b -> m c) -> a -> m c :=
   fun f g => fun x => f x GHC.Base.>>= g.
 
@@ -49,8 +50,8 @@ Notation "'_>=>_'" := (op_zgzezg__).
 
 Infix ">=>" := (_>=>_) (at level 99).
 
-Definition op_zlzezl__ {m : Type -> Type} {b : Type} {c : Type} {a : Type}
-  `{GHC.Base.Monad m}
+#[global] Definition op_zlzezl__ {m : Type -> Type} {b : Type} {c : Type} {a
+   : Type} `{GHC.Base.Monad m}
    : (b -> m c) -> (a -> m b) -> a -> m c :=
   GHC.Base.flip _>=>_.
 
@@ -60,28 +61,28 @@ Infix "<=<" := (_<=<_) (at level 99).
 
 (* Skipping definition `Control.Monad.forever' *)
 
-Definition mapAndUnzipM {m : Type -> Type} {a : Type} {b : Type} {c : Type}
-  `{GHC.Base.Applicative m}
+#[global] Definition mapAndUnzipM {m : Type -> Type} {a : Type} {b : Type} {c
+   : Type} `{GHC.Base.Applicative m}
    : (a -> m (b * c)%type) -> list a -> m (list b * list c)%type :=
   fun f xs => GHC.List.unzip Data.Functor.<$> Data.Traversable.traverse f xs.
 
-Definition zipWithM {m} {a} {b} {c} `{_ : GHC.Base.Applicative m}
+#[global] Definition zipWithM {m} {a} {b} {c} `{_ : GHC.Base.Applicative m}
    : (a -> b -> m c) -> list a -> list b -> m (list c) :=
   fun f xs ys =>
     (@Data.Traversable.sequenceA _ _ _ _ m _ _ _ (GHC.List.zipWith f xs ys)).
 
-Definition zipWithM_ {m : Type -> Type} {a : Type} {b : Type} {c : Type}
-  `{GHC.Base.Applicative m}
+#[global] Definition zipWithM_ {m : Type -> Type} {a : Type} {b : Type} {c
+   : Type} `{GHC.Base.Applicative m}
    : (a -> b -> m c) -> list a -> list b -> m unit :=
   fun f xs ys => Data.Foldable.sequenceA_ (GHC.List.zipWith f xs ys).
 
-Definition foldM {t : Type -> Type} {m : Type -> Type} {b : Type} {a : Type}
-  `{Data.Foldable.Foldable t} `{GHC.Base.Monad m}
+#[global] Definition foldM {t : Type -> Type} {m : Type -> Type} {b : Type} {a
+   : Type} `{Data.Foldable.Foldable t} `{GHC.Base.Monad m}
    : (b -> a -> m b) -> b -> t a -> m b :=
   Data.Foldable.foldlM.
 
-Definition foldM_ {t : Type -> Type} {m : Type -> Type} {b : Type} {a : Type}
-  `{Data.Foldable.Foldable t} `{GHC.Base.Monad m}
+#[global] Definition foldM_ {t : Type -> Type} {m : Type -> Type} {b : Type} {a
+   : Type} `{Data.Foldable.Foldable t} `{GHC.Base.Monad m}
    : (b -> a -> m b) -> b -> t a -> m unit :=
   fun f a xs => Data.Foldable.foldlM f a xs GHC.Base.>> GHC.Base.return_ tt.
 
@@ -89,11 +90,11 @@ Definition foldM_ {t : Type -> Type} {m : Type -> Type} {b : Type} {a : Type}
 
 (* Skipping definition `Control.Monad.replicateM_' *)
 
-Definition unless {f : Type -> Type} `{GHC.Base.Applicative f}
+#[global] Definition unless {f : Type -> Type} `{GHC.Base.Applicative f}
    : bool -> f unit -> f unit :=
   fun p s => if p : bool then GHC.Base.pure tt else s.
 
-Definition op_zlzdznzg__ {m : Type -> Type} {a : Type} {b : Type}
+#[global] Definition op_zlzdznzg__ {m : Type -> Type} {a : Type} {b : Type}
   `{GHC.Base.Monad m}
    : (a -> b) -> m a -> m b :=
   fun f m =>

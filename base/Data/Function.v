@@ -18,11 +18,11 @@ Require Coq.Program.Wf.
 
 (* Skipping definition `Data.Function.fix_' *)
 
-Definition on {b : Type} {c : Type} {a : Type}
+#[global] Definition on {b : Type} {c : Type} {a : Type}
    : (b -> b -> c) -> (a -> b) -> a -> a -> c :=
   fun lop_ziztzi__ f => fun x y => lop_ziztzi__ (f x) (f y).
 
-Definition op_za__ {a : Type} {b : Type} : a -> (a -> b) -> b :=
+#[global] Definition op_za__ {a : Type} {b : Type} : a -> (a -> b) -> b :=
   fun x f => f x.
 
 Notation "'_&_'" := (op_za__).

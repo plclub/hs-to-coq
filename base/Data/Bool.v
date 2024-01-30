@@ -19,7 +19,7 @@ Require Coq.Program.Wf.
 
 (* Converted value declarations: *)
 
-Definition bool {a : Type} : a -> a -> bool -> a :=
+#[global] Definition bool {a : Type} : a -> a -> bool -> a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | f, _, false => f
