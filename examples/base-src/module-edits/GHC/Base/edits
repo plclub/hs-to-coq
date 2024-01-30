@@ -24,6 +24,7 @@ skip GHC.Base.unIO
 skip GHC.Base.thenIO
 skip GHC.Base.returnIO
 skip GHC.Base.bindIO
+skip GHC.Base.failIO
 skip GHC.Base.Functor__IO
 skip GHC.Base.Applicative__IO
 skip GHC.Base.Alternative__IO

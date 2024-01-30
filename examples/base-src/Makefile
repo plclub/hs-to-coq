@@ -83,7 +83,7 @@ VFILES_MAN     = $(addprefix $(OUT)/,$(addsuffix .v,$(HANDMOD)))
 VFILES_SPECIAL = $(addprefix $(OUT)/,$(addsuffix .v,$(SPECIAL_MODULES)))
 VFILES_DROPIN  = $(addprefix $(OUT)/,$(addsuffix .v,$(DROPIN)))
 
-VFILES   = $(VFILES_GEN) $(VFILES_MAN) $(VFILES_SPECIAL) $(VFILES_DROPIN) $(VFILES_RENAMED)
+VFILES   = $(VFILES_MAN) $(VFILES_GEN) $(VFILES_SPECIAL) $(VFILES_DROPIN) $(VFILES_RENAMED)
 
 all:  vfiles coq
 

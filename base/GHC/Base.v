@@ -22,7 +22,7 @@ Require GHC.Tuple.
 Record Semigroup__Dict (a : Type) := Semigroup__Dict_Build {
   op_zlzlzgzg____ : a -> a -> a }.
 
-Definition Semigroup (a : Type) :=
+#[global] Definition Semigroup (a : Type) :=
   forall r__, (Semigroup__Dict a -> r__) -> r__.
 Existing Class Semigroup.
 
@@ -31,7 +31,7 @@ Record Monoid__Dict (a : Type) := Monoid__Dict_Build {
   mconcat__ : list a -> a ;
   mempty__ : a }.
 
-Definition op_zlzlzgzg__ `{g__0__ : Semigroup a} : a -> a -> a :=
+#[global] Definition op_zlzlzgzg__ `{g__0__ : Semigroup a} : a -> a -> a :=
   g__0__ _ (op_zlzlzgzg____ a).
 
 Notation "'_<<>>_'" := (op_zlzlzgzg__).
@@ -40,24 +40,24 @@ Infix "<<>>" := (_<<>>_) (at level 99).
 
 Inductive NonEmpty a : Type := | NEcons : a -> list a -> NonEmpty a.
 
-Definition Monoid (a : Type) `{Semigroup a} :=
+#[global] Definition Monoid (a : Type) `{Semigroup a} :=
   forall r__, (Monoid__Dict a -> r__) -> r__.
 Existing Class Monoid.
 
-Definition mappend `{g__0__ : Monoid a} : a -> a -> a :=
+#[global] Definition mappend `{g__0__ : Monoid a} : a -> a -> a :=
   g__0__ _ (mappend__ a).
 
-Definition mconcat `{g__0__ : Monoid a} : list a -> a :=
+#[global] Definition mconcat `{g__0__ : Monoid a} : list a -> a :=
   g__0__ _ (mconcat__ a).
 
-Definition mempty `{g__0__ : Monoid a} : a :=
+#[global] Definition mempty `{g__0__ : Monoid a} : a :=
   g__0__ _ (mempty__ a).
 
 Record Functor__Dict (f : Type -> Type) := Functor__Dict_Build {
   fmap__ : forall {a : Type}, forall {b : Type}, (a -> b) -> f a -> f b ;
   op_zlzd____ : forall {a : Type}, forall {b : Type}, a -> f b -> f a }.
 
-Definition Functor (f : Type -> Type) :=
+#[global] Definition Functor (f : Type -> Type) :=
   forall r__, (Functor__Dict f -> r__) -> r__.
 Existing Class Functor.
 
@@ -68,11 +68,11 @@ Record Applicative__Dict (f : Type -> Type) := Applicative__Dict_Build {
   op_ztzg____ : forall {a : Type}, forall {b : Type}, f a -> f b -> f b ;
   pure__ : forall {a : Type}, a -> f a }.
 
-Definition fmap `{g__0__ : Functor f}
+#[global] Definition fmap `{g__0__ : Functor f}
    : forall {a : Type}, forall {b : Type}, (a -> b) -> f a -> f b :=
   g__0__ _ (fmap__ f).
 
-Definition op_zlzd__ `{g__0__ : Functor f}
+#[global] Definition op_zlzd__ `{g__0__ : Functor f}
    : forall {a : Type}, forall {b : Type}, a -> f b -> f a :=
   g__0__ _ (op_zlzd____ f).
 
@@ -80,24 +80,25 @@ Notation "'_<$_'" := (op_zlzd__).
 
 Infix "<$" := (_<$_) (at level 99).
 
-Definition Applicative (f : Type -> Type) `{Functor f} :=
+#[global] Definition Applicative (f : Type -> Type) `{Functor f} :=
   forall r__, (Applicative__Dict f -> r__) -> r__.
 Existing Class Applicative.
 
-Definition liftA2 `{g__0__ : Applicative f}
+#[global] Definition liftA2 `{g__0__ : Applicative f}
    : forall {a : Type},
      forall {b : Type}, forall {c : Type}, (a -> b -> c) -> f a -> f b -> f c :=
   g__0__ _ (liftA2__ f).
 
-Definition op_zlztzg__ `{g__0__ : Applicative f}
+#[global] Definition op_zlztzg__ `{g__0__ : Applicative f}
    : forall {a : Type}, forall {b : Type}, f (a -> b) -> f a -> f b :=
   g__0__ _ (op_zlztzg____ f).
 
-Definition op_ztzg__ `{g__0__ : Applicative f}
+#[global] Definition op_ztzg__ `{g__0__ : Applicative f}
    : forall {a : Type}, forall {b : Type}, f a -> f b -> f b :=
   g__0__ _ (op_ztzg____ f).
 
-Definition pure `{g__0__ : Applicative f} : forall {a : Type}, a -> f a :=
+#[global] Definition pure `{g__0__ : Applicative f}
+   : forall {a : Type}, a -> f a :=
   g__0__ _ (pure__ f).
 
 Notation "'_<*>_'" := (op_zlztzg__).
@@ -113,19 +114,20 @@ Record Monad__Dict (m : Type -> Type) := Monad__Dict_Build {
   op_zgzgze____ : forall {a : Type}, forall {b : Type}, m a -> (a -> m b) -> m b ;
   return___ : forall {a : Type}, a -> m a }.
 
-Definition Monad (m : Type -> Type) `{Applicative m} :=
+#[global] Definition Monad (m : Type -> Type) `{Applicative m} :=
   forall r__, (Monad__Dict m -> r__) -> r__.
 Existing Class Monad.
 
-Definition op_zgzg__ `{g__0__ : Monad m}
+#[global] Definition op_zgzg__ `{g__0__ : Monad m}
    : forall {a : Type}, forall {b : Type}, m a -> m b -> m b :=
   g__0__ _ (op_zgzg____ m).
 
-Definition op_zgzgze__ `{g__0__ : Monad m}
+#[global] Definition op_zgzgze__ `{g__0__ : Monad m}
    : forall {a : Type}, forall {b : Type}, m a -> (a -> m b) -> m b :=
   g__0__ _ (op_zgzgze____ m).
 
-Definition return_ `{g__0__ : Monad m} : forall {a : Type}, a -> m a :=
+#[global] Definition return_ `{g__0__ : Monad m}
+   : forall {a : Type}, a -> m a :=
   g__0__ _ (return___ m).
 
 Notation "'_>>_'" := (op_zgzg__).
@@ -295,11 +297,13 @@ Infix ">=" := (op_zgze__) (no associativity, at level 70).
 
 (*********** Eq/Ord for primitive types **************************)
 
+#[global]
 Instance Eq_Int___ : Eq_ Int := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%Z;
                                op_zsze____ := fun x y => negb (x =? y)%Z;
                                |}.
 
+#[global]
 Instance Ord_Int___ : Ord Int := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%Z;
   op_zlze____ := fun x y => (x <=? y)%Z;
@@ -310,11 +314,13 @@ Instance Ord_Int___ : Ord Int := fun _ k => k {|
   min__       := Z.min%Z;
 |}.
 
+#[global]
 Instance Eq_Integer___ : Eq_ Integer := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%Z;
                                op_zsze____ := fun x y => negb (x =? y)%Z;
                              |}.
 
+#[global]
 Instance Ord_Integer___ : Ord Integer := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%Z;
   op_zlze____ := fun x y => (x <=? y)%Z;
@@ -325,11 +331,13 @@ Instance Ord_Integer___ : Ord Integer := fun _ k => k {|
   min__       := Z.min%Z;
 |}.
 
+#[global]
 Instance Eq_Word___ : Eq_ Word := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%N;
                                op_zsze____ := fun x y => negb (x =? y)%N;
                              |}.
 
+#[global]
 Instance Ord_Word___ : Ord Word := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%N;
   op_zlze____ := fun x y => (x <=? y)%N;
@@ -340,11 +348,13 @@ Instance Ord_Word___ : Ord Word := fun _ k => k {|
   min__       := N.min%N;
 |}.
 
+#[global]
 Instance Eq_Char___ : Eq_ Char := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%N;
                                op_zsze____ := fun x y => negb (x =? y)%N;
                              |}.
 
+#[global]
 Instance Ord_Char___ : Ord Char := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%N;
   op_zlze____ := fun x y => (x <=? y)%N;
@@ -355,6 +365,7 @@ Instance Ord_Char___ : Ord Char := fun _ k => k {|
   min__       := N.min%N;
 |}.
 
+#[global]
 Instance Eq_bool___ : Eq_ bool := fun _ k => k {|
                                op_zeze____ := eqb;
                                op_zsze____ := fun x y => negb (eqb x y);
@@ -368,6 +379,7 @@ Definition compare_bool (b1:bool)(b2:bool) : comparison :=
   | false , true => Lt
   end.
 
+#[global]
 Instance Ord_bool___ : Ord bool := fun _ k => k {|
   op_zl____   := fun x y => andb (negb x) y;
   op_zlze____ := fun x y => orb (negb x) y;
@@ -378,11 +390,13 @@ Instance Ord_bool___ : Ord bool := fun _ k => k {|
   min__       := andb
 |}.
 
+#[global]
 Instance Eq_unit___ : Eq_ unit := fun _ k => k {|
                                op_zeze____ := fun x y => true;
                                op_zsze____ := fun x y => false;
                              |}.
 
+#[global]
 Instance Ord_unit___ : Ord unit := fun _ k => k {|
   op_zl____   := fun x y => false;
   op_zlze____ := fun x y => true;
@@ -401,6 +415,7 @@ Definition eq_comparison (x : comparison) (y: comparison) :=
   | _ , _  => false
 end.
 
+#[global]
 Instance Eq_comparison___ : Eq_ comparison := fun _ k => k
 {|
   op_zeze____ := eq_comparison;
@@ -435,6 +450,7 @@ Definition ord_default {a} (comp : a -> a -> comparison) `{Eq_ a} : Ord a :=
              | _  => x
              end)).
 
+#[global]
 Instance Ord_comparison___ : Ord comparison := ord_default compare_comparison.
 
 Definition eq_pair {t1} {t2} `{Eq_ t1} `{Eq_ t2} (a b : (t1 * t2)) :=
@@ -453,11 +469,13 @@ Definition compare_pair {t1} {t2} `{Ord t1} `{Ord t2} (a b : (t1 * t2)) :=
     end
   end.
 
+#[global]
 Instance Eq_pair___ {a} {b} `{Eq_ a} `{Eq_ b} : Eq_ (a * b) := fun _ k => k
   {| op_zeze____ := eq_pair;
      op_zsze____ := fun x y => negb (eq_pair x y)
   |}.
 
+#[global]
 Instance Ord_pair___ {a} {b} `{Ord a} `{Ord b} : Ord (a * b) :=
   ord_default compare_pair.
 
@@ -483,11 +501,13 @@ Fixpoint compare_list {a} `{Ord a} (xs :  list a) (ys : list a) : comparison :=
       end
     end.
 
+#[global]
 Instance Eq_list {a} `{Eq_ a} : Eq_ (list a) := fun _ k => k
   {| op_zeze____ := eqlist;
      op_zsze____ := fun x y => negb (eqlist x y)
   |}.
 
+#[global]
 Instance Ord_list {a} `{Ord a}: Ord (list a) :=
   ord_default compare_list.
 
@@ -557,144 +577,67 @@ End ManualNotations.
 
 (* Converted value declarations: *)
 
-Local Definition Eq___option_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | None, None => true
-    | Some a1, Some b1 => ((a1 == b1))
-    | _, _ => false
-    end.
-
-Local Definition Eq___option_op_zsze__ {inst_a : Type} `{Eq_ inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun x y => negb (Eq___option_op_zeze__ x y).
-
-Program Instance Eq___option {a : Type} `{Eq_ a} : Eq_ (option a) :=
-  fun _ k__ =>
-    k__ {| op_zeze____ := Eq___option_op_zeze__ ;
-           op_zsze____ := Eq___option_op_zsze__ |}.
-
-Local Definition Ord__option_op_zl__ {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b =>
-    match a with
-    | None => match b with | None => false | _ => true end
-    | Some a1 => match b with | Some b1 => (a1 < b1) | _ => false end
-    end.
-
-Local Definition Ord__option_op_zlze__ {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b => negb (Ord__option_op_zl__ b a).
-
-Local Definition Ord__option_op_zg__ {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b => Ord__option_op_zl__ b a.
-
-Local Definition Ord__option_op_zgze__ {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b => negb (Ord__option_op_zl__ a b).
-
-Local Definition Ord__option_compare {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> comparison :=
-  fun a b =>
-    match a with
-    | None => match b with | None => Eq | _ => Lt end
-    | Some a1 => match b with | Some b1 => (compare a1 b1) | _ => Gt end
-    end.
-
-Local Definition Ord__option_max {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> option inst_a :=
-  fun x y => if Ord__option_op_zlze__ x y : bool then y else x.
-
-Local Definition Ord__option_min {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> option inst_a :=
-  fun x y => if Ord__option_op_zlze__ x y : bool then x else y.
-
-Program Instance Ord__option {a : Type} `{Ord a} : Ord (option a) :=
-  fun _ k__ =>
-    k__ {| op_zl____ := Ord__option_op_zl__ ;
-           op_zlze____ := Ord__option_op_zlze__ ;
-           op_zg____ := Ord__option_op_zg__ ;
-           op_zgze____ := Ord__option_op_zgze__ ;
-           compare__ := Ord__option_compare ;
-           max__ := Ord__option_max ;
-           min__ := Ord__option_min |}.
-
-Local Definition Eq___NonEmpty_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
-   : NonEmpty inst_a -> NonEmpty inst_a -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | NEcons a1 a2, NEcons b1 b2 => (andb ((a1 == b1)) ((a2 == b2)))
-    end.
-
-Local Definition Eq___NonEmpty_op_zsze__ {inst_a : Type} `{Eq_ inst_a}
-   : NonEmpty inst_a -> NonEmpty inst_a -> bool :=
-  fun x y => negb (Eq___NonEmpty_op_zeze__ x y).
-
-Program Instance Eq___NonEmpty {a : Type} `{Eq_ a} : Eq_ (NonEmpty a) :=
-  fun _ k__ =>
-    k__ {| op_zeze____ := Eq___NonEmpty_op_zeze__ ;
-           op_zsze____ := Eq___NonEmpty_op_zsze__ |}.
-
-(* Skipping instance `GHC.Base.Ord__NonEmpty' of class `GHC.Base.Ord' *)
-
-Local Definition Semigroup__list_op_zlzlzgzg__ {inst_a : Type}
+#[local] Definition Semigroup__list_op_zlzlzgzg__ {inst_a : Type}
    : list inst_a -> list inst_a -> list inst_a :=
   Coq.Init.Datatypes.app.
 
+#[global]
 Program Instance Semigroup__list {a : Type} : Semigroup (list a) :=
   fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__list_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__list_mappend {inst_a : Type}
+#[local] Definition Monoid__list_mappend {inst_a : Type}
    : list inst_a -> list inst_a -> list inst_a :=
   _<<>>_.
 
-Local Definition Monoid__list_mconcat {inst_a : Type}
+#[local] Definition Monoid__list_mconcat {inst_a : Type}
    : list (list inst_a) -> list inst_a :=
   fun xss =>
     Coq.Lists.List.flat_map (fun xs =>
                                Coq.Lists.List.flat_map (fun x => cons x nil) xs) xss.
 
-Local Definition Monoid__list_mempty {inst_a : Type} : list inst_a :=
+#[local] Definition Monoid__list_mempty {inst_a : Type} : list inst_a :=
   nil.
 
+#[global]
 Program Instance Monoid__list {a : Type} : Monoid (list a) :=
   fun _ k__ =>
     k__ {| mappend__ := Monoid__list_mappend ;
            mconcat__ := Monoid__list_mconcat ;
            mempty__ := Monoid__list_mempty |}.
 
-Local Definition Semigroup__NonEmpty_op_zlzlzgzg__ {inst_a : Type}
+#[local] Definition Semigroup__NonEmpty_op_zlzlzgzg__ {inst_a : Type}
    : NonEmpty inst_a -> NonEmpty inst_a -> NonEmpty inst_a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | NEcons a as_, NEcons b bs => NEcons a (Coq.Init.Datatypes.app as_ (cons b bs))
     end.
 
+#[global]
 Program Instance Semigroup__NonEmpty {a : Type} : Semigroup (NonEmpty a) :=
   fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__NonEmpty_op_zlzlzgzg__ |}.
 
-Local Definition Semigroup__arrow_op_zlzlzgzg__ {inst_b : Type} {inst_a : Type}
-  `{Semigroup inst_b}
+#[local] Definition Semigroup__arrow_op_zlzlzgzg__ {inst_b : Type} {inst_a
+   : Type} `{Semigroup inst_b}
    : (inst_a -> inst_b) -> (inst_a -> inst_b) -> inst_a -> inst_b :=
   fun f g => fun x => f x <<>> g x.
 
+#[global]
 Program Instance Semigroup__arrow {b : Type} {a : Type} `{Semigroup b}
    : Semigroup (a -> b) :=
   fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__arrow_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__arrow_mappend {inst_b : Type} {inst_a : Type} `{Monoid
-  inst_b}
+#[local] Definition Monoid__arrow_mappend {inst_b : Type} {inst_a : Type}
+  `{Monoid inst_b}
    : (inst_a -> inst_b) -> (inst_a -> inst_b) -> inst_a -> inst_b :=
   _<<>>_.
 
-Local Definition Monoid__arrow_mempty {inst_b : Type} {inst_a : Type} `{Monoid
-  inst_b}
+#[local] Definition Monoid__arrow_mempty {inst_b : Type} {inst_a : Type}
+  `{Monoid inst_b}
    : inst_a -> inst_b :=
   fun arg_0__ => mempty.
 
-Definition foldr {a : Type} {b : Type} : (a -> b -> b) -> b -> list a -> b :=
+#[global] Definition foldr {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> list a -> b :=
   fun k z =>
     let fix go arg_0__
       := match arg_0__ with
@@ -703,11 +646,12 @@ Definition foldr {a : Type} {b : Type} : (a -> b -> b) -> b -> list a -> b :=
          end in
     go.
 
-Local Definition Monoid__arrow_mconcat {inst_b : Type} {inst_a : Type} `{Monoid
-  inst_b}
+#[local] Definition Monoid__arrow_mconcat {inst_b : Type} {inst_a : Type}
+  `{Monoid inst_b}
    : list (inst_a -> inst_b) -> inst_a -> inst_b :=
   foldr Monoid__arrow_mappend Monoid__arrow_mempty.
 
+#[global]
 Program Instance Monoid__arrow {b : Type} {a : Type} `{Monoid b}
    : Monoid (a -> b) :=
   fun _ k__ =>
@@ -715,21 +659,23 @@ Program Instance Monoid__arrow {b : Type} {a : Type} `{Monoid b}
            mconcat__ := Monoid__arrow_mconcat ;
            mempty__ := Monoid__arrow_mempty |}.
 
-Local Definition Semigroup__unit_op_zlzlzgzg__ : unit -> unit -> unit :=
+#[local] Definition Semigroup__unit_op_zlzlzgzg__ : unit -> unit -> unit :=
   fun arg_0__ arg_1__ => tt.
 
+#[global]
 Program Instance Semigroup__unit : Semigroup unit :=
   fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__unit_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__unit_mappend : unit -> unit -> unit :=
+#[local] Definition Monoid__unit_mappend : unit -> unit -> unit :=
   _<<>>_.
 
-Local Definition Monoid__unit_mconcat : list unit -> unit :=
+#[local] Definition Monoid__unit_mconcat : list unit -> unit :=
   fun arg_0__ => tt.
 
-Local Definition Monoid__unit_mempty : unit :=
+#[local] Definition Monoid__unit_mempty : unit :=
   tt.
 
+#[global]
 Program Instance Monoid__unit : Monoid unit :=
   fun _ k__ =>
     k__ {| mappend__ := Monoid__unit_mappend ;
@@ -760,7 +706,7 @@ Program Instance Monoid__unit : Monoid unit :=
 (* Skipping instance `GHC.Base.Monoid__op_zt____op_zt____op_zt____op_zt____87'
    of class `GHC.Base.Monoid' *)
 
-Local Definition Semigroup__comparison_op_zlzlzgzg__
+#[local] Definition Semigroup__comparison_op_zlzlzgzg__
    : comparison -> comparison -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -769,26 +715,29 @@ Local Definition Semigroup__comparison_op_zlzlzgzg__
     | Gt, _ => Gt
     end.
 
+#[global]
 Program Instance Semigroup__comparison : Semigroup comparison :=
   fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__comparison_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__comparison_mappend
+#[local] Definition Monoid__comparison_mappend
    : comparison -> comparison -> comparison :=
   _<<>>_.
 
-Local Definition Monoid__comparison_mempty : comparison :=
+#[local] Definition Monoid__comparison_mempty : comparison :=
   Eq.
 
-Local Definition Monoid__comparison_mconcat : list comparison -> comparison :=
+#[local] Definition Monoid__comparison_mconcat
+   : list comparison -> comparison :=
   foldr Monoid__comparison_mappend Monoid__comparison_mempty.
 
+#[global]
 Program Instance Monoid__comparison : Monoid comparison :=
   fun _ k__ =>
     k__ {| mappend__ := Monoid__comparison_mappend ;
            mconcat__ := Monoid__comparison_mconcat ;
            mempty__ := Monoid__comparison_mempty |}.
 
-Local Definition Semigroup__option_op_zlzlzgzg__ {inst_a : Type} `{Semigroup
+#[local] Definition Semigroup__option_op_zlzlzgzg__ {inst_a : Type} `{Semigroup
   inst_a}
    : option inst_a -> option inst_a -> option inst_a :=
   fun arg_0__ arg_1__ =>
@@ -798,29 +747,32 @@ Local Definition Semigroup__option_op_zlzlzgzg__ {inst_a : Type} `{Semigroup
     | Some a, Some b => Some (a <<>> b)
     end.
 
+#[global]
 Program Instance Semigroup__option {a : Type} `{Semigroup a}
    : Semigroup (option a) :=
   fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__option_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__option_mappend {inst_a : Type} `{Semigroup inst_a}
+#[local] Definition Monoid__option_mappend {inst_a : Type} `{Semigroup inst_a}
    : option inst_a -> option inst_a -> option inst_a :=
   _<<>>_.
 
-Local Definition Monoid__option_mempty {inst_a : Type} `{Semigroup inst_a}
+#[local] Definition Monoid__option_mempty {inst_a : Type} `{Semigroup inst_a}
    : option inst_a :=
   None.
 
-Local Definition Monoid__option_mconcat {inst_a : Type} `{Semigroup inst_a}
+#[local] Definition Monoid__option_mconcat {inst_a : Type} `{Semigroup inst_a}
    : list (option inst_a) -> option inst_a :=
   foldr Monoid__option_mappend Monoid__option_mempty.
 
+#[global]
 Program Instance Monoid__option {a : Type} `{Semigroup a} : Monoid (option a) :=
   fun _ k__ =>
     k__ {| mappend__ := Monoid__option_mappend ;
            mconcat__ := Monoid__option_mconcat ;
            mempty__ := Monoid__option_mempty |}.
 
-Local Definition Applicative__pair_type_liftA2 {inst_a : Type} `{Monoid inst_a}
+#[local] Definition Applicative__pair_type_liftA2 {inst_a : Type} `{Monoid
+  inst_a}
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -833,7 +785,7 @@ Local Definition Applicative__pair_type_liftA2 {inst_a : Type} `{Monoid inst_a}
       | f, pair u x, pair v y => pair (u <<>> v) (f x y)
       end.
 
-Local Definition Applicative__pair_type_op_zlztzg__ {inst_a : Type} `{Monoid
+#[local] Definition Applicative__pair_type_op_zlztzg__ {inst_a : Type} `{Monoid
   inst_a}
    : forall {a : Type},
      forall {b : Type},
@@ -845,10 +797,10 @@ Local Definition Applicative__pair_type_op_zlztzg__ {inst_a : Type} `{Monoid
       | pair u f, pair v x => pair (u <<>> v) (f x)
       end.
 
-Definition id {a : Type} : a -> a :=
+#[global] Definition id {a : Type} : a -> a :=
   fun x => x.
 
-Local Definition Functor__pair_type_fmap {inst_a : Type}
+#[local] Definition Functor__pair_type_fmap {inst_a : Type}
    : forall {a : Type},
      forall {b : Type},
      (a -> b) -> GHC.Tuple.pair_type inst_a a -> GHC.Tuple.pair_type inst_a b :=
@@ -858,7 +810,7 @@ Local Definition Functor__pair_type_fmap {inst_a : Type}
       | f, pair x y => pair x (f y)
       end.
 
-Definition op_z2218U__ {b : Type} {c : Type} {a : Type}
+#[global] Definition op_z2218U__ {b : Type} {c : Type} {a : Type}
    : (b -> c) -> (a -> b) -> a -> c :=
   fun f g => fun x => f (g x).
 
@@ -866,22 +818,23 @@ Notation "'_∘_'" := (op_z2218U__).
 
 Infix "∘" := (_∘_) (left associativity, at level 40).
 
-Definition const {a : Type} {b : Type} : a -> b -> a :=
+#[global] Definition const {a : Type} {b : Type} : a -> b -> a :=
   fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | x, _ => x end.
 
-Local Definition Functor__pair_type_op_zlzd__ {inst_a : Type}
+#[local] Definition Functor__pair_type_op_zlzd__ {inst_a : Type}
    : forall {a : Type},
      forall {b : Type},
      a -> GHC.Tuple.pair_type inst_a b -> GHC.Tuple.pair_type inst_a a :=
   fun {a : Type} {b : Type} => Functor__pair_type_fmap ∘ const.
 
+#[global]
 Program Instance Functor__pair_type {a : Type}
    : Functor (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
     k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__pair_type_fmap ;
            op_zlzd____ := fun {a : Type} {b : Type} => Functor__pair_type_op_zlzd__ |}.
 
-Local Definition Applicative__pair_type_op_ztzg__ {inst_a : Type} `{Monoid
+#[local] Definition Applicative__pair_type_op_ztzg__ {inst_a : Type} `{Monoid
   inst_a}
    : forall {a : Type},
      forall {b : Type},
@@ -890,10 +843,11 @@ Local Definition Applicative__pair_type_op_ztzg__ {inst_a : Type} `{Monoid
   fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__pair_type_op_zlztzg__ (id <$ a1) a2.
 
-Local Definition Applicative__pair_type_pure {inst_a : Type} `{Monoid inst_a}
+#[local] Definition Applicative__pair_type_pure {inst_a : Type} `{Monoid inst_a}
    : forall {a : Type}, a -> GHC.Tuple.pair_type inst_a a :=
   fun {a : Type} => fun x => pair mempty x.
 
+#[global]
 Program Instance Applicative__pair_type {a : Type} `{Monoid a}
    : Applicative (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
@@ -904,11 +858,12 @@ Program Instance Applicative__pair_type {a : Type} `{Monoid a}
            op_ztzg____ := fun {a : Type} {b : Type} => Applicative__pair_type_op_ztzg__ ;
            pure__ := fun {a : Type} => Applicative__pair_type_pure |}.
 
-Local Definition Monad__pair_type_return_ {inst_a : Type} `{Monoid inst_a}
+#[local] Definition Monad__pair_type_return_ {inst_a : Type} `{Monoid inst_a}
    : forall {a : Type}, a -> GHC.Tuple.pair_type inst_a a :=
   fun {a : Type} => pure.
 
-Local Definition Monad__pair_type_op_zgzgze__ {inst_a : Type} `{Monoid inst_a}
+#[local] Definition Monad__pair_type_op_zgzgze__ {inst_a : Type} `{Monoid
+  inst_a}
    : forall {a : Type},
      forall {b : Type},
      GHC.Tuple.pair_type inst_a a ->
@@ -919,7 +874,7 @@ Local Definition Monad__pair_type_op_zgzgze__ {inst_a : Type} `{Monoid inst_a}
       | pair u a, k => let 'pair v b := k a in pair (u <<>> v) b
       end.
 
-Local Definition Monad__pair_type_op_zgzg__ {inst_a : Type} `{Monoid inst_a}
+#[local] Definition Monad__pair_type_op_zgzg__ {inst_a : Type} `{Monoid inst_a}
    : forall {a : Type},
      forall {b : Type},
      GHC.Tuple.pair_type inst_a a ->
@@ -927,6 +882,7 @@ Local Definition Monad__pair_type_op_zgzg__ {inst_a : Type} `{Monoid inst_a}
   fun {a : Type} {b : Type} =>
     fun m k => Monad__pair_type_op_zgzgze__ m (fun arg_0__ => k).
 
+#[global]
 Program Instance Monad__pair_type {a : Type} `{Monoid a}
    : Monad (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
@@ -934,54 +890,298 @@ Program Instance Monad__pair_type {a : Type} `{Monoid a}
            op_zgzgze____ := fun {a : Type} {b : Type} => Monad__pair_type_op_zgzgze__ ;
            return___ := fun {a : Type} => Monad__pair_type_return_ |}.
 
+#[local] Definition Functor__triple_type_fmap {inst_a : Type} {inst_b : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b) ->
+     GHC.Tuple.triple_type inst_a inst_b a ->
+     GHC.Tuple.triple_type inst_a inst_b b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, pair (pair a b) c => pair (pair a b) (f c)
+      end.
+
+#[local] Definition Functor__triple_type_op_zlzd__ {inst_a : Type} {inst_b
+   : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     a ->
+     GHC.Tuple.triple_type inst_a inst_b b ->
+     GHC.Tuple.triple_type inst_a inst_b a :=
+  fun {a : Type} {b : Type} => Functor__triple_type_fmap ∘ const.
+
+#[global]
+Program Instance Functor__triple_type {a : Type} {b : Type}
+   : Functor (GHC.Tuple.triple_type a b) :=
+  fun _ k__ =>
+    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__triple_type_fmap ;
+           op_zlzd____ := fun {a : Type} {b : Type} => Functor__triple_type_op_zlzd__ |}.
+
+#[local] Definition Applicative__triple_type_op_zlztzg__ {inst_a : Type} {inst_b
+   : Type} `{Monoid inst_a} `{Monoid inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     GHC.Tuple.triple_type inst_a inst_b (a -> b) ->
+     GHC.Tuple.triple_type inst_a inst_b a ->
+     GHC.Tuple.triple_type inst_a inst_b b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | pair (pair a b) f, pair (pair a' b') x =>
+          pair (pair (a <<>> a') (b <<>> b')) (f x)
+      end.
+
+#[local] Definition Applicative__triple_type_liftA2 {inst_a : Type} {inst_b
+   : Type} `{Monoid inst_a} `{Monoid inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     (a -> b -> c) ->
+     GHC.Tuple.triple_type inst_a inst_b a ->
+     GHC.Tuple.triple_type inst_a inst_b b ->
+     GHC.Tuple.triple_type inst_a inst_b c :=
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun f x => Applicative__triple_type_op_zlztzg__ (fmap f x).
+
+#[local] Definition Applicative__triple_type_op_ztzg__ {inst_a : Type} {inst_b
+   : Type} `{Monoid inst_a} `{Monoid inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     GHC.Tuple.triple_type inst_a inst_b a ->
+     GHC.Tuple.triple_type inst_a inst_b b ->
+     GHC.Tuple.triple_type inst_a inst_b b :=
+  fun {a : Type} {b : Type} =>
+    fun a1 a2 => Applicative__triple_type_op_zlztzg__ (id <$ a1) a2.
+
+#[local] Definition Applicative__triple_type_pure {inst_a : Type} {inst_b
+   : Type} `{Monoid inst_a} `{Monoid inst_b}
+   : forall {a : Type}, a -> GHC.Tuple.triple_type inst_a inst_b a :=
+  fun {a : Type} => fun x => pair (pair mempty mempty) x.
+
+#[global]
+Program Instance Applicative__triple_type {a : Type} {b : Type} `{Monoid a}
+  `{Monoid b}
+   : Applicative (GHC.Tuple.triple_type a b) :=
+  fun _ k__ =>
+    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__triple_type_liftA2 ;
+           op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__triple_type_op_zlztzg__ ;
+           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__triple_type_op_ztzg__ ;
+           pure__ := fun {a : Type} => Applicative__triple_type_pure |}.
+
+#[local] Definition Monad__triple_type_op_zgzgze__ {inst_a : Type} {inst_b
+   : Type} `{Monoid inst_a} `{Monoid inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     GHC.Tuple.triple_type inst_a inst_b a ->
+     (a -> GHC.Tuple.triple_type inst_a inst_b b) ->
+     GHC.Tuple.triple_type inst_a inst_b b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | pair (pair u v) a, k =>
+          let 'pair (pair u' v') b := k a in
+          pair (pair (u <<>> u') (v <<>> v')) b
+      end.
+
+#[local] Definition Monad__triple_type_op_zgzg__ {inst_a : Type} {inst_b : Type}
+  `{Monoid inst_a} `{Monoid inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     GHC.Tuple.triple_type inst_a inst_b a ->
+     GHC.Tuple.triple_type inst_a inst_b b ->
+     GHC.Tuple.triple_type inst_a inst_b b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__triple_type_op_zgzgze__ m (fun arg_0__ => k).
+
+#[local] Definition Monad__triple_type_return_ {inst_a : Type} {inst_b : Type}
+  `{Monoid inst_a} `{Monoid inst_b}
+   : forall {a : Type}, a -> GHC.Tuple.triple_type inst_a inst_b a :=
+  fun {a : Type} => pure.
+
+#[global]
+Program Instance Monad__triple_type {a : Type} {b : Type} `{Monoid a} `{Monoid
+  b}
+   : Monad (GHC.Tuple.triple_type a b) :=
+  fun _ k__ =>
+    k__ {| op_zgzg____ := fun {a : Type} {b : Type} =>
+             Monad__triple_type_op_zgzg__ ;
+           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__triple_type_op_zgzgze__ ;
+           return___ := fun {a : Type} => Monad__triple_type_return_ |}.
+
+#[local] Definition Functor__quad_type_fmap {inst_a : Type} {inst_b : Type}
+  {inst_c : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b) ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c a ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, pair (pair (pair a b) c) d => pair (pair (pair a b) c) (f d)
+      end.
+
+#[local] Definition Functor__quad_type_op_zlzd__ {inst_a : Type} {inst_b : Type}
+  {inst_c : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     a ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c a :=
+  fun {a : Type} {b : Type} => Functor__quad_type_fmap ∘ const.
+
+#[global]
+Program Instance Functor__quad_type {a : Type} {b : Type} {c : Type}
+   : Functor (GHC.Tuple.quad_type a b c) :=
+  fun _ k__ =>
+    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__quad_type_fmap ;
+           op_zlzd____ := fun {a : Type} {b : Type} => Functor__quad_type_op_zlzd__ |}.
+
+#[local] Definition Applicative__quad_type_op_zlztzg__ {inst_a : Type} {inst_b
+   : Type} {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
+   : forall {a : Type},
+     forall {b : Type},
+     GHC.Tuple.quad_type inst_a inst_b inst_c (a -> b) ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c a ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | pair (pair (pair a b) c) f, pair (pair (pair a' b') c') x =>
+          pair (pair (pair (a <<>> a') (b <<>> b')) (c <<>> c')) (f x)
+      end.
+
+#[local] Definition Applicative__quad_type_liftA2 {inst_a : Type} {inst_b
+   : Type} {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     (a -> b -> c) ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c a ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c c :=
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun f x => Applicative__quad_type_op_zlztzg__ (fmap f x).
+
+#[local] Definition Applicative__quad_type_op_ztzg__ {inst_a : Type} {inst_b
+   : Type} {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
+   : forall {a : Type},
+     forall {b : Type},
+     GHC.Tuple.quad_type inst_a inst_b inst_c a ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b :=
+  fun {a : Type} {b : Type} =>
+    fun a1 a2 => Applicative__quad_type_op_zlztzg__ (id <$ a1) a2.
+
+#[local] Definition Applicative__quad_type_pure {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
+   : forall {a : Type}, a -> GHC.Tuple.quad_type inst_a inst_b inst_c a :=
+  fun {a : Type} => fun x => pair (pair (pair mempty mempty) mempty) x.
+
+#[global]
+Program Instance Applicative__quad_type {a : Type} {b : Type} {c : Type}
+  `{Monoid a} `{Monoid b} `{Monoid c}
+   : Applicative (GHC.Tuple.quad_type a b c) :=
+  fun _ k__ =>
+    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+             Applicative__quad_type_liftA2 ;
+           op_zlztzg____ := fun {a : Type} {b : Type} =>
+             Applicative__quad_type_op_zlztzg__ ;
+           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__quad_type_op_ztzg__ ;
+           pure__ := fun {a : Type} => Applicative__quad_type_pure |}.
+
+#[local] Definition Monad__quad_type_op_zgzgze__ {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
+   : forall {a : Type},
+     forall {b : Type},
+     GHC.Tuple.quad_type inst_a inst_b inst_c a ->
+     (a -> GHC.Tuple.quad_type inst_a inst_b inst_c b) ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | pair (pair (pair u v) w) a, k =>
+          let 'pair (pair (pair u' v') w') b := k a in
+          pair (pair (pair (u <<>> u') (v <<>> v')) (w <<>> w')) b
+      end.
+
+#[local] Definition Monad__quad_type_op_zgzg__ {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
+   : forall {a : Type},
+     forall {b : Type},
+     GHC.Tuple.quad_type inst_a inst_b inst_c a ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b :=
+  fun {a : Type} {b : Type} =>
+    fun m k => Monad__quad_type_op_zgzgze__ m (fun arg_0__ => k).
+
+#[local] Definition Monad__quad_type_return_ {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
+   : forall {a : Type}, a -> GHC.Tuple.quad_type inst_a inst_b inst_c a :=
+  fun {a : Type} => pure.
+
+#[global]
+Program Instance Monad__quad_type {a : Type} {b : Type} {c : Type} `{Monoid a}
+  `{Monoid b} `{Monoid c}
+   : Monad (GHC.Tuple.quad_type a b c) :=
+  fun _ k__ =>
+    k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__quad_type_op_zgzg__ ;
+           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__quad_type_op_zgzgze__ ;
+           return___ := fun {a : Type} => Monad__quad_type_return_ |}.
+
 (* Skipping instance `GHC.Base.Semigroup__IO' of class `GHC.Base.Semigroup' *)
 
 (* Skipping instance `GHC.Base.Monoid__IO' of class `GHC.Base.Monoid' *)
 
-Local Definition Functor__arrow_fmap {inst_r : Type}
+#[local] Definition Functor__arrow_fmap {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
      (a -> b) -> GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b :=
   fun {a : Type} {b : Type} => _∘_.
 
-Local Definition Functor__arrow_op_zlzd__ {inst_r : Type}
+#[local] Definition Functor__arrow_op_zlzd__ {inst_r : Type}
    : forall {a : Type},
      forall {b : Type}, a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r a :=
   fun {a : Type} {b : Type} => Functor__arrow_fmap ∘ const.
 
+#[global]
 Program Instance Functor__arrow {r : Type} : Functor (GHC.Prim.arrow r) :=
   fun _ k__ =>
     k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__arrow_fmap ;
            op_zlzd____ := fun {a : Type} {b : Type} => Functor__arrow_op_zlzd__ |}.
 
-Local Definition Applicative__arrow_liftA2 {inst_a : Type}
+#[local] Definition Applicative__arrow_liftA2 {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
      (a -> b -> c) ->
-     GHC.Prim.arrow inst_a a -> GHC.Prim.arrow inst_a b -> GHC.Prim.arrow inst_a c :=
+     GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r c :=
   fun {a : Type} {b : Type} {c : Type} => fun q f g x => q (f x) (g x).
 
-Local Definition Applicative__arrow_op_zlztzg__ {inst_a : Type}
+#[local] Definition Applicative__arrow_op_zlztzg__ {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
-     GHC.Prim.arrow inst_a (a -> b) ->
-     GHC.Prim.arrow inst_a a -> GHC.Prim.arrow inst_a b :=
+     GHC.Prim.arrow inst_r (a -> b) ->
+     GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b :=
   fun {a : Type} {b : Type} => fun f g x => f x (g x).
 
-Local Definition Applicative__arrow_op_ztzg__ {inst_a : Type}
+#[local] Definition Applicative__arrow_op_ztzg__ {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
-     GHC.Prim.arrow inst_a a -> GHC.Prim.arrow inst_a b -> GHC.Prim.arrow inst_a b :=
+     GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__arrow_op_zlztzg__ (id <$ a1) a2.
 
-Local Definition Applicative__arrow_pure {inst_a : Type}
-   : forall {a : Type}, a -> GHC.Prim.arrow inst_a a :=
+#[local] Definition Applicative__arrow_pure {inst_r : Type}
+   : forall {a : Type}, a -> GHC.Prim.arrow inst_r a :=
   fun {a : Type} => const.
 
-Program Instance Applicative__arrow {a : Type}
-   : Applicative (GHC.Prim.arrow a) :=
+#[global]
+Program Instance Applicative__arrow {r : Type}
+   : Applicative (GHC.Prim.arrow r) :=
   fun _ k__ =>
     k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
              Applicative__arrow_liftA2 ;
@@ -989,31 +1189,32 @@ Program Instance Applicative__arrow {a : Type}
            op_ztzg____ := fun {a : Type} {b : Type} => Applicative__arrow_op_ztzg__ ;
            pure__ := fun {a : Type} => Applicative__arrow_pure |}.
 
-Local Definition Monad__arrow_op_zgzgze__ {inst_r : Type}
+#[local] Definition Monad__arrow_op_zgzgze__ {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
      GHC.Prim.arrow inst_r a ->
      (a -> GHC.Prim.arrow inst_r b) -> GHC.Prim.arrow inst_r b :=
   fun {a : Type} {b : Type} => fun f k => fun r => k (f r) r.
 
-Local Definition Monad__arrow_op_zgzg__ {inst_r : Type}
+#[local] Definition Monad__arrow_op_zgzg__ {inst_r : Type}
    : forall {a : Type},
      forall {b : Type},
      GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r b :=
   fun {a : Type} {b : Type} =>
     fun m k => Monad__arrow_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__arrow_return_ {inst_r : Type}
+#[local] Definition Monad__arrow_return_ {inst_r : Type}
    : forall {a : Type}, a -> GHC.Prim.arrow inst_r a :=
   fun {a : Type} => pure.
 
+#[global]
 Program Instance Monad__arrow {r : Type} : Monad (GHC.Prim.arrow r) :=
   fun _ k__ =>
     k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__arrow_op_zgzg__ ;
            op_zgzgze____ := fun {a : Type} {b : Type} => Monad__arrow_op_zgzgze__ ;
            return___ := fun {a : Type} => Monad__arrow_return_ |}.
 
-Local Definition Functor__option_fmap
+#[local] Definition Functor__option_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> option a -> option b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
@@ -1022,16 +1223,17 @@ Local Definition Functor__option_fmap
       | f, Some a => Some (f a)
       end.
 
-Local Definition Functor__option_op_zlzd__
+#[local] Definition Functor__option_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> option b -> option a :=
   fun {a : Type} {b : Type} => Functor__option_fmap ∘ const.
 
+#[global]
 Program Instance Functor__option : Functor option :=
   fun _ k__ =>
     k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__option_fmap ;
            op_zlzd____ := fun {a : Type} {b : Type} => Functor__option_op_zlzd__ |}.
 
-Local Definition Applicative__option_liftA2
+#[local] Definition Applicative__option_liftA2
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type}, (a -> b -> c) -> option a -> option b -> option c :=
@@ -1042,7 +1244,7 @@ Local Definition Applicative__option_liftA2
       | _, _, _ => None
       end.
 
-Local Definition Applicative__option_op_zlztzg__
+#[local] Definition Applicative__option_op_zlztzg__
    : forall {a : Type},
      forall {b : Type}, option (a -> b) -> option a -> option b :=
   fun {a : Type} {b : Type} =>
@@ -1052,7 +1254,7 @@ Local Definition Applicative__option_op_zlztzg__
       | None, _m => None
       end.
 
-Local Definition Applicative__option_op_ztzg__
+#[local] Definition Applicative__option_op_ztzg__
    : forall {a : Type}, forall {b : Type}, option a -> option b -> option b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
@@ -1061,9 +1263,11 @@ Local Definition Applicative__option_op_ztzg__
       | None, _m2 => None
       end.
 
-Local Definition Applicative__option_pure : forall {a : Type}, a -> option a :=
+#[local] Definition Applicative__option_pure
+   : forall {a : Type}, a -> option a :=
   fun {a : Type} => Some.
 
+#[global]
 Program Instance Applicative__option : Applicative option :=
   fun _ k__ =>
     k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
@@ -1072,11 +1276,11 @@ Program Instance Applicative__option : Applicative option :=
            op_ztzg____ := fun {a : Type} {b : Type} => Applicative__option_op_ztzg__ ;
            pure__ := fun {a : Type} => Applicative__option_pure |}.
 
-Local Definition Monad__option_op_zgzg__
+#[local] Definition Monad__option_op_zgzg__
    : forall {a : Type}, forall {b : Type}, option a -> option b -> option b :=
   fun {a : Type} {b : Type} => _*>_.
 
-Local Definition Monad__option_op_zgzgze__
+#[local] Definition Monad__option_op_zgzgze__
    : forall {a : Type},
      forall {b : Type}, option a -> (a -> option b) -> option b :=
   fun {a : Type} {b : Type} =>
@@ -1086,9 +1290,10 @@ Local Definition Monad__option_op_zgzgze__
       | None, _ => None
       end.
 
-Local Definition Monad__option_return_ : forall {a : Type}, a -> option a :=
+#[local] Definition Monad__option_return_ : forall {a : Type}, a -> option a :=
   fun {a : Type} => pure.
 
+#[global]
 Program Instance Monad__option : Monad option :=
   fun _ k__ =>
     k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__option_op_zgzg__ ;
@@ -1101,23 +1306,24 @@ Program Instance Monad__option : Monad option :=
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `GHC.Base.MonadPlus__option' *)
 
-Definition map {A B : Type} (f : A -> B) xs :=
+#[global] Definition map {A B : Type} (f : A -> B) xs :=
   Coq.Lists.List.map f xs.
 
-Local Definition Functor__list_fmap
+#[local] Definition Functor__list_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> list a -> list b :=
   fun {a : Type} {b : Type} => map.
 
-Local Definition Functor__list_op_zlzd__
+#[local] Definition Functor__list_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> list b -> list a :=
   fun {a : Type} {b : Type} => Functor__list_fmap ∘ const.
 
+#[global]
 Program Instance Functor__list : Functor list :=
   fun _ k__ =>
     k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__list_fmap ;
            op_zlzd____ := fun {a : Type} {b : Type} => Functor__list_op_zlzd__ |}.
 
-Local Definition Functor__NonEmpty_fmap
+#[local] Definition Functor__NonEmpty_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> NonEmpty a -> NonEmpty b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
@@ -1125,7 +1331,7 @@ Local Definition Functor__NonEmpty_fmap
       | f, NEcons a as_ => NEcons (f a) (fmap f as_)
       end.
 
-Local Definition Functor__NonEmpty_op_zlzd__
+#[local] Definition Functor__NonEmpty_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> NonEmpty b -> NonEmpty a :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
@@ -1133,16 +1339,17 @@ Local Definition Functor__NonEmpty_op_zlzd__
       | b, NEcons _ as_ => NEcons b (b <$ as_)
       end.
 
+#[global]
 Program Instance Functor__NonEmpty : Functor NonEmpty :=
   fun _ k__ =>
     k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__NonEmpty_fmap ;
            op_zlzd____ := fun {a : Type} {b : Type} => Functor__NonEmpty_op_zlzd__ |}.
 
-Local Definition Applicative__NonEmpty_pure
+#[local] Definition Applicative__NonEmpty_pure
    : forall {a : Type}, a -> NonEmpty a :=
   fun {a : Type} => fun a => NEcons a nil.
 
-Local Definition Applicative__list_liftA2
+#[local] Definition Applicative__list_liftA2
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type}, (a -> b -> c) -> list a -> list b -> list c :=
@@ -1151,23 +1358,24 @@ Local Definition Applicative__list_liftA2
       Coq.Lists.List.flat_map (fun x =>
                                  Coq.Lists.List.flat_map (fun y => cons (f x y) nil) ys) xs.
 
-Local Definition Applicative__list_op_zlztzg__
+#[local] Definition Applicative__list_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, list (a -> b) -> list a -> list b :=
   fun {a : Type} {b : Type} =>
     fun fs xs =>
       Coq.Lists.List.flat_map (fun f =>
                                  Coq.Lists.List.flat_map (fun x => cons (f x) nil) xs) fs.
 
-Local Definition Applicative__list_op_ztzg__
+#[local] Definition Applicative__list_op_ztzg__
    : forall {a : Type}, forall {b : Type}, list a -> list b -> list b :=
   fun {a : Type} {b : Type} =>
     fun xs ys =>
       Coq.Lists.List.flat_map (fun _ =>
                                  Coq.Lists.List.flat_map (fun y => cons y nil) ys) xs.
 
-Local Definition Applicative__list_pure : forall {a : Type}, a -> list a :=
+#[local] Definition Applicative__list_pure : forall {a : Type}, a -> list a :=
   fun {a : Type} => fun x => cons x nil.
 
+#[global]
 Program Instance Applicative__list : Applicative list :=
   fun _ k__ =>
     k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
@@ -1176,27 +1384,28 @@ Program Instance Applicative__list : Applicative list :=
            op_ztzg____ := fun {a : Type} {b : Type} => Applicative__list_op_ztzg__ ;
            pure__ := fun {a : Type} => Applicative__list_pure |}.
 
-Local Definition Monad__list_return_ : forall {a : Type}, a -> list a :=
+#[local] Definition Monad__list_return_ : forall {a : Type}, a -> list a :=
   fun {a : Type} => pure.
 
-Local Definition Monad__list_op_zgzg__
+#[local] Definition Monad__list_op_zgzg__
    : forall {a : Type}, forall {b : Type}, list a -> list b -> list b :=
   fun {a : Type} {b : Type} => _*>_.
 
-Local Definition Monad__list_op_zgzgze__
+#[local] Definition Monad__list_op_zgzgze__
    : forall {a : Type}, forall {b : Type}, list a -> (a -> list b) -> list b :=
   fun {a : Type} {b : Type} =>
     fun xs f =>
       Coq.Lists.List.flat_map (fun x =>
                                  Coq.Lists.List.flat_map (fun y => cons y nil) (f x)) xs.
 
+#[global]
 Program Instance Monad__list : Monad list :=
   fun _ k__ =>
     k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__list_op_zgzg__ ;
            op_zgzgze____ := fun {a : Type} {b : Type} => Monad__list_op_zgzgze__ ;
            return___ := fun {a : Type} => Monad__list_return_ |}.
 
-Local Definition Monad__NonEmpty_op_zgzgze__
+#[local] Definition Monad__NonEmpty_op_zgzgze__
    : forall {a : Type},
      forall {b : Type}, NonEmpty a -> (a -> NonEmpty b) -> NonEmpty b :=
   fun {a : Type} {b : Type} =>
@@ -1209,25 +1418,26 @@ Local Definition Monad__NonEmpty_op_zgzgze__
           NEcons b (Coq.Init.Datatypes.app bs bs')
       end.
 
-Local Definition Applicative__NonEmpty_liftA2 {a} {b} {c}
+#[local] Definition Applicative__NonEmpty_liftA2 {a} {b} {c}
    : (a -> b -> c) -> NonEmpty a -> NonEmpty b -> NonEmpty c :=
   fun f m1 m2 =>
     Monad__NonEmpty_op_zgzgze__ m1 (fun x1 =>
                                    Monad__NonEmpty_op_zgzgze__ m2 (fun x2 =>
                                                                   Applicative__NonEmpty_pure (f x1 x2))).
 
-Local Definition Applicative__NonEmpty_op_zlztzg__ {a} {b}
+#[local] Definition Applicative__NonEmpty_op_zlztzg__ {a} {b}
    : NonEmpty (a -> b) -> NonEmpty a -> NonEmpty b :=
   fun m1 m2 =>
     Monad__NonEmpty_op_zgzgze__ m1 (fun x1 =>
                                    Monad__NonEmpty_op_zgzgze__ m2 (fun x2 => Applicative__NonEmpty_pure (x1 x2))).
 
-Local Definition Applicative__NonEmpty_op_ztzg__
+#[local] Definition Applicative__NonEmpty_op_ztzg__
    : forall {a : Type},
      forall {b : Type}, NonEmpty a -> NonEmpty b -> NonEmpty b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__NonEmpty_op_zlztzg__ (id <$ a1) a2.
 
+#[global]
 Program Instance Applicative__NonEmpty : Applicative NonEmpty :=
   fun _ k__ =>
     k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
@@ -1237,15 +1447,17 @@ Program Instance Applicative__NonEmpty : Applicative NonEmpty :=
            op_ztzg____ := fun {a : Type} {b : Type} => Applicative__NonEmpty_op_ztzg__ ;
            pure__ := fun {a : Type} => Applicative__NonEmpty_pure |}.
 
-Local Definition Monad__NonEmpty_return_ : forall {a : Type}, a -> NonEmpty a :=
+#[local] Definition Monad__NonEmpty_return_
+   : forall {a : Type}, a -> NonEmpty a :=
   fun {a : Type} => pure.
 
-Local Definition Monad__NonEmpty_op_zgzg__
+#[local] Definition Monad__NonEmpty_op_zgzg__
    : forall {a : Type},
      forall {b : Type}, NonEmpty a -> NonEmpty b -> NonEmpty b :=
   fun {a : Type} {b : Type} =>
     fun m k => Monad__NonEmpty_op_zgzgze__ m (fun arg_0__ => k).
 
+#[global]
 Program Instance Monad__NonEmpty : Monad NonEmpty :=
   fun _ k__ =>
     k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__NonEmpty_op_zgzg__ ;
@@ -1271,8 +1483,8 @@ Program Instance Monad__NonEmpty : Monad NonEmpty :=
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `GHC.Base.MonadPlus__IO' *)
 
-Definition op_zlztztzg__ {f : Type -> Type} {a : Type} {b : Type} `{Applicative
-  f}
+#[global] Definition op_zlztztzg__ {f : Type -> Type} {a : Type} {b : Type}
+  `{Applicative f}
    : f a -> f (a -> b) -> f b :=
   liftA2 (fun a f => f a).
 
@@ -1280,19 +1492,22 @@ Notation "'_<**>_'" := (op_zlztztzg__).
 
 Infix "<**>" := (_<**>_) (at level 99).
 
-Definition liftA {f : Type -> Type} {a : Type} {b : Type} `{Applicative f}
+#[global] Definition liftA {f : Type -> Type} {a : Type} {b : Type}
+  `{Applicative f}
    : (a -> b) -> f a -> f b :=
   fun f a => pure f <*> a.
 
-Definition liftA3 {f : Type -> Type} {a : Type} {b : Type} {c : Type} {d : Type}
-  `{Applicative f}
+#[global] Definition liftA3 {f : Type -> Type} {a : Type} {b : Type} {c : Type}
+  {d : Type} `{Applicative f}
    : (a -> b -> c -> d) -> f a -> f b -> f c -> f d :=
   fun f a b c => liftA2 f a b <*> c.
 
-Definition join {m : Type -> Type} {a : Type} `{Monad m} : m (m a) -> m a :=
+#[global] Definition join {m : Type -> Type} {a : Type} `{Monad m}
+   : m (m a) -> m a :=
   fun x => x >>= id.
 
-Definition op_zezlzl__ {m : Type -> Type} {a : Type} {b : Type} `{Monad m}
+#[global] Definition op_zezlzl__ {m : Type -> Type} {a : Type} {b : Type}
+  `{Monad m}
    : (a -> m b) -> m a -> m b :=
   fun f x => x >>= f.
 
@@ -1300,37 +1515,37 @@ Notation "'_=<<_'" := (op_zezlzl__).
 
 Infix "=<<" := (_=<<_) (at level 99).
 
-Definition when {f : Type -> Type} `{Applicative f}
+#[global] Definition when {f : Type -> Type} `{Applicative f}
    : bool -> f unit -> f unit :=
   fun p s => if p : bool then s else pure tt.
 
-Definition mapM {m : Type -> Type} {a : Type} {b : Type} `{Monad m}
+#[global] Definition mapM {m : Type -> Type} {a : Type} {b : Type} `{Monad m}
    : (a -> m b) -> list a -> m (list b) :=
   fun f as_ =>
     let k := fun a r => f a >>= (fun x => r >>= (fun xs => return_ (cons x xs))) in
     foldr k (return_ nil) as_.
 
-Definition sequence {m : Type -> Type} {a : Type} `{Monad m}
+#[global] Definition sequence {m : Type -> Type} {a : Type} `{Monad m}
    : list (m a) -> m (list a) :=
   mapM id.
 
-Definition liftM {m : Type -> Type} {a1 : Type} {r : Type} `{Monad m}
+#[global] Definition liftM {m : Type -> Type} {a1 : Type} {r : Type} `{Monad m}
    : (a1 -> r) -> m a1 -> m r :=
   fun f m1 => m1 >>= (fun x1 => return_ (f x1)).
 
-Definition liftM2 {m : Type -> Type} {a1 : Type} {a2 : Type} {r : Type} `{Monad
-  m}
+#[global] Definition liftM2 {m : Type -> Type} {a1 : Type} {a2 : Type} {r
+   : Type} `{Monad m}
    : (a1 -> a2 -> r) -> m a1 -> m a2 -> m r :=
   fun f m1 m2 => m1 >>= (fun x1 => m2 >>= (fun x2 => return_ (f x1 x2))).
 
-Definition liftM3 {m : Type -> Type} {a1 : Type} {a2 : Type} {a3 : Type} {r
-   : Type} `{Monad m}
+#[global] Definition liftM3 {m : Type -> Type} {a1 : Type} {a2 : Type} {a3
+   : Type} {r : Type} `{Monad m}
    : (a1 -> a2 -> a3 -> r) -> m a1 -> m a2 -> m a3 -> m r :=
   fun f m1 m2 m3 =>
     m1 >>= (fun x1 => m2 >>= (fun x2 => m3 >>= (fun x3 => return_ (f x1 x2 x3)))).
 
-Definition liftM4 {m : Type -> Type} {a1 : Type} {a2 : Type} {a3 : Type} {a4
-   : Type} {r : Type} `{Monad m}
+#[global] Definition liftM4 {m : Type -> Type} {a1 : Type} {a2 : Type} {a3
+   : Type} {a4 : Type} {r : Type} `{Monad m}
    : (a1 -> a2 -> a3 -> a4 -> r) -> m a1 -> m a2 -> m a3 -> m a4 -> m r :=
   fun f m1 m2 m3 m4 =>
     m1 >>=
@@ -1338,8 +1553,8 @@ Definition liftM4 {m : Type -> Type} {a1 : Type} {a2 : Type} {a3 : Type} {a4
        m2 >>=
        (fun x2 => m3 >>= (fun x3 => m4 >>= (fun x4 => return_ (f x1 x2 x3 x4))))).
 
-Definition liftM5 {m : Type -> Type} {a1 : Type} {a2 : Type} {a3 : Type} {a4
-   : Type} {a5 : Type} {r : Type} `{Monad m}
+#[global] Definition liftM5 {m : Type -> Type} {a1 : Type} {a2 : Type} {a3
+   : Type} {a4 : Type} {a5 : Type} {r : Type} `{Monad m}
    : (a1 -> a2 -> a3 -> a4 -> a5 -> r) ->
      m a1 -> m a2 -> m a3 -> m a4 -> m a5 -> m r :=
   fun f m1 m2 m3 m4 m5 =>
@@ -1350,7 +1565,7 @@ Definition liftM5 {m : Type -> Type} {a1 : Type} {a2 : Type} {a3 : Type} {a4
           m3 >>=
           (fun x3 => m4 >>= (fun x4 => m5 >>= (fun x5 => return_ (f x1 x2 x3 x4 x5)))))).
 
-Definition ap {m : Type -> Type} {a : Type} {b : Type} `{Monad m}
+#[global] Definition ap {m : Type -> Type} {a : Type} {b : Type} `{Monad m}
    : m (a -> b) -> m a -> m b :=
   fun m1 m2 => m1 >>= (fun x1 => m2 >>= (fun x2 => return_ (x1 x2))).
 
@@ -1358,13 +1573,13 @@ Definition ap {m : Type -> Type} {a : Type} {b : Type} `{Monad m}
 
 (* Skipping definition `GHC.Base.augment' *)
 
-Definition mapFB {elt : Type} {lst : Type} {a : Type}
+#[global] Definition mapFB {elt : Type} {lst : Type} {a : Type}
    : (elt -> lst -> lst) -> (a -> elt) -> a -> lst -> lst :=
   fun c f => fun x ys => c (f x) ys.
 
 (* Skipping definition `Coq.Init.Datatypes.app' *)
 
-Definition otherwise : bool :=
+#[global] Definition otherwise : bool :=
   true.
 
 (* Skipping definition `GHC.Base.unsafeChr' *)
@@ -1382,27 +1597,29 @@ Fixpoint eqString (arg_0__ arg_1__ : String) : bool
 
 (* Skipping definition `GHC.Base.maxInt' *)
 
-Definition assert {a : Type} : bool -> a -> a :=
+#[global] Definition assert {a : Type} : bool -> a -> a :=
   fun _pred r => r.
 
-Definition breakpoint {a : Type} : a -> a :=
+#[global] Definition breakpoint {a : Type} : a -> a :=
   fun r => r.
 
-Definition breakpointCond {a : Type} : bool -> a -> a :=
+#[global] Definition breakpointCond {a : Type} : bool -> a -> a :=
   fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | _, r => r end.
 
-Definition flip {a : Type} {b : Type} {c : Type}
+#[global] Definition flip {a : Type} {b : Type} {c : Type}
    : (a -> b -> c) -> b -> a -> c :=
   fun f x y => f y x.
 
-Definition op_zd__ {a} {b} : (a -> b) -> a -> b :=
+#[global] Definition op_zd__ {r : GHC.Types.RuntimeRep} {a : Type} {b : Type}
+   : (a -> b) -> a -> b :=
   fun f x => f x.
 
 Notation "'_$_'" := (op_zd__).
 
 Infix "$" := (_$_) (at level 99).
 
-Definition op_zdzn__ {a : Type} {b : Type} : (a -> b) -> a -> b :=
+#[global] Definition op_zdzn__ {r : GHC.Types.RuntimeRep} {a : Type} {b : Type}
+   : (a -> b) -> a -> b :=
   fun f x => let vx := x in f vx.
 
 Notation "'_$!_'" := (op_zdzn__).
@@ -1411,7 +1628,7 @@ Infix "$!" := (_$!_) (at level 99).
 
 (* Skipping definition `GHC.Base.until' *)
 
-Definition asTypeOf {a : Type} : a -> a -> a :=
+#[global] Definition asTypeOf {a : Type} : a -> a -> a :=
   const.
 
 (* Skipping definition `GHC.Base.returnIO' *)
@@ -1419,6 +1636,8 @@ Definition asTypeOf {a : Type} : a -> a -> a :=
 (* Skipping definition `GHC.Base.bindIO' *)
 
 (* Skipping definition `GHC.Base.thenIO' *)
+
+(* Skipping definition `GHC.Base.failIO' *)
 
 (* Skipping definition `GHC.Base.unIO' *)
 
@@ -1475,9 +1694,8 @@ Infix "GHC.Base.$!" := (_$!_) (at level 99).
 End Notations.
 
 (* External variables:
-     Eq Eq_ Gt Lt None Ord Some String Type andb bool compare compare__ comparison
-     cons false list max__ min__ negb nil op_zeze__ op_zeze____ op_zg____ op_zgze____
-     op_zl__ op_zl____ op_zlze____ op_zsze____ option pair true tt unit
-     Coq.Init.Datatypes.app Coq.Lists.List.flat_map Coq.Lists.List.map GHC.Prim.arrow
-     GHC.Tuple.pair_type
+     Eq Gt Lt None Some String Type andb bool comparison cons false list nil
+     op_zeze__ option pair true tt unit Coq.Init.Datatypes.app
+     Coq.Lists.List.flat_map Coq.Lists.List.map GHC.Prim.arrow GHC.Tuple.pair_type
+     GHC.Tuple.quad_type GHC.Tuple.triple_type GHC.Types.RuntimeRep
 *)

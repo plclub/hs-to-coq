@@ -1,2 +1,2 @@
 constructors:
-  Data.Void.Void: ! '[]'
+  Data.Void.Void: '[]'

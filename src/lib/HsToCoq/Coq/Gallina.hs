@@ -311,7 +311,8 @@ data Assums = Assums (NonEmpty Qualid) Term                                     
             deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@[Local] ::=@ – not a part of the grammar /per se/, but a common fragment
-data Locality = Global                                                                         -- ^@@ – (nothing – but sometimes @Global@)
+data Locality = ExportL                                                                        -- ^@@ – (nothing – but sometimes @Export@)
+              | Global                                                                         -- ^@Global@
               | Local                                                                          -- ^@Local@
               deriving (Eq, Ord, Show, Read, Enum, Bounded, Typeable, Data)
 

@@ -10,6 +10,7 @@ Definition TYPE (_ : RuntimeRep) := Type.
 
 Class Coercible a b := { coerce : a -> b }.
 
+#[global]
 Instance Coercible_Unpeel
   a b c
   {U1 : Unpeel a c}

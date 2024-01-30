@@ -37,12 +37,12 @@ Record Bitraversable__Dict (t : Type -> Type -> Type) :=
   forall `{GHC.Base.Applicative f},
   (a -> f c) -> (b -> f d) -> t a b -> f (t c d) }.
 
-Definition Bitraversable (t : Type -> Type -> Type) `{Data.Bifunctor.Bifunctor
-  t} `{Data.Bifoldable.Bifoldable t} :=
+#[global] Definition Bitraversable (t : Type -> Type -> Type)
+  `{Data.Bifunctor.Bifunctor t} `{Data.Bifoldable.Bifoldable t} :=
   forall r__, (Bitraversable__Dict t -> r__) -> r__.
 Existing Class Bitraversable.
 
-Definition bitraverse `{g__0__ : Bitraversable t}
+#[global] Definition bitraverse `{g__0__ : Bitraversable t}
    : forall {f : Type -> Type},
      forall {a : Type},
      forall {c : Type},
@@ -54,7 +54,7 @@ Definition bitraverse `{g__0__ : Bitraversable t}
 
 (* Converted value declarations: *)
 
-Local Definition Bitraversable__pair_type_bitraverse
+#[local] Definition Bitraversable__pair_type_bitraverse
    : forall {f : Type -> Type},
      forall {a : Type},
      forall {c : Type},
@@ -74,6 +74,7 @@ Local Definition Bitraversable__pair_type_bitraverse
       | f, g, pair a b => GHC.Base.liftA2 GHC.Tuple.pair2 (f a) (g b)
       end.
 
+#[global]
 Program Instance Bitraversable__pair_type : Bitraversable GHC.Tuple.pair_type :=
   fun _ k__ =>
     k__ {| bitraverse__ := fun {f : Type -> Type}
@@ -84,7 +85,7 @@ Program Instance Bitraversable__pair_type : Bitraversable GHC.Tuple.pair_type :=
            `{GHC.Base.Applicative f} =>
              Bitraversable__pair_type_bitraverse |}.
 
-Local Definition Bitraversable__triple_type_bitraverse {inst_x : Type}
+#[local] Definition Bitraversable__triple_type_bitraverse {inst_x : Type}
    : forall {f : Type -> Type},
      forall {a : Type},
      forall {c : Type},
@@ -105,6 +106,7 @@ Local Definition Bitraversable__triple_type_bitraverse {inst_x : Type}
       | f, g, pair (pair x a) b => GHC.Base.liftA2 (GHC.Tuple.pair3 x) (f a) (g b)
       end.
 
+#[global]
 Program Instance Bitraversable__triple_type {x : Type}
    : Bitraversable (GHC.Tuple.triple_type x) :=
   fun _ k__ =>
@@ -116,7 +118,7 @@ Program Instance Bitraversable__triple_type {x : Type}
            `{GHC.Base.Applicative f} =>
              Bitraversable__triple_type_bitraverse |}.
 
-Local Definition Bitraversable__quad_type_bitraverse {inst_x : Type} {inst_y
+#[local] Definition Bitraversable__quad_type_bitraverse {inst_x : Type} {inst_y
    : Type}
    : forall {f : Type -> Type},
      forall {a : Type},
@@ -140,6 +142,7 @@ Local Definition Bitraversable__quad_type_bitraverse {inst_x : Type} {inst_y
           GHC.Base.liftA2 (GHC.Tuple.pair4 x y) (f a) (g b)
       end.
 
+#[global]
 Program Instance Bitraversable__quad_type {x : Type} {y : Type}
    : Bitraversable (GHC.Tuple.quad_type x y) :=
   fun _ k__ =>
@@ -151,7 +154,7 @@ Program Instance Bitraversable__quad_type {x : Type} {y : Type}
            `{GHC.Base.Applicative f} =>
              Bitraversable__quad_type_bitraverse |}.
 
-Local Definition Bitraversable__quint_type_bitraverse {inst_x : Type} {inst_y
+#[local] Definition Bitraversable__quint_type_bitraverse {inst_x : Type} {inst_y
    : Type} {inst_z : Type}
    : forall {f : Type -> Type},
      forall {a : Type},
@@ -175,6 +178,7 @@ Local Definition Bitraversable__quint_type_bitraverse {inst_x : Type} {inst_y
           GHC.Base.liftA2 (GHC.Tuple.pair5 x y z) (f a) (g b)
       end.
 
+#[global]
 Program Instance Bitraversable__quint_type {x : Type} {y : Type} {z : Type}
    : Bitraversable (GHC.Tuple.quint_type x y z) :=
   fun _ k__ =>
@@ -186,7 +190,7 @@ Program Instance Bitraversable__quint_type {x : Type} {y : Type} {z : Type}
            `{GHC.Base.Applicative f} =>
              Bitraversable__quint_type_bitraverse |}.
 
-Local Definition Bitraversable__sext_type_bitraverse {inst_x : Type} {inst_y
+#[local] Definition Bitraversable__sext_type_bitraverse {inst_x : Type} {inst_y
    : Type} {inst_z : Type} {inst_w : Type}
    : forall {f : Type -> Type},
      forall {a : Type},
@@ -210,6 +214,7 @@ Local Definition Bitraversable__sext_type_bitraverse {inst_x : Type} {inst_y
           GHC.Base.liftA2 (GHC.Tuple.pair6 x y z w) (f a) (g b)
       end.
 
+#[global]
 Program Instance Bitraversable__sext_type {x : Type} {y : Type} {z : Type} {w
    : Type}
    : Bitraversable (GHC.Tuple.sext_type x y z w) :=
@@ -222,7 +227,7 @@ Program Instance Bitraversable__sext_type {x : Type} {y : Type} {z : Type} {w
            `{GHC.Base.Applicative f} =>
              Bitraversable__sext_type_bitraverse |}.
 
-Local Definition Bitraversable__sept_type_bitraverse {inst_x : Type} {inst_y
+#[local] Definition Bitraversable__sept_type_bitraverse {inst_x : Type} {inst_y
    : Type} {inst_z : Type} {inst_w : Type} {inst_v : Type}
    : forall {f : Type -> Type},
      forall {a : Type},
@@ -246,6 +251,7 @@ Local Definition Bitraversable__sept_type_bitraverse {inst_x : Type} {inst_y
           GHC.Base.liftA2 (GHC.Tuple.pair7 x y z w v) (f a) (g b)
       end.
 
+#[global]
 Program Instance Bitraversable__sept_type {x : Type} {y : Type} {z : Type} {w
    : Type} {v : Type}
    : Bitraversable (GHC.Tuple.sept_type x y z w v) :=
@@ -258,7 +264,7 @@ Program Instance Bitraversable__sept_type {x : Type} {y : Type} {z : Type} {w
            `{GHC.Base.Applicative f} =>
              Bitraversable__sept_type_bitraverse |}.
 
-Local Definition Bitraversable__Either_bitraverse
+#[local] Definition Bitraversable__Either_bitraverse
    : forall {f : Type -> Type},
      forall {a : Type},
      forall {c : Type},
@@ -279,6 +285,7 @@ Local Definition Bitraversable__Either_bitraverse
       | _, g, Data.Either.Right b => Data.Either.Right Data.Functor.<$> g b
       end.
 
+#[global]
 Program Instance Bitraversable__Either : Bitraversable Data.Either.Either :=
   fun _ k__ =>
     k__ {| bitraverse__ := fun {f : Type -> Type}
@@ -289,7 +296,7 @@ Program Instance Bitraversable__Either : Bitraversable Data.Either.Either :=
            `{GHC.Base.Applicative f} =>
              Bitraversable__Either_bitraverse |}.
 
-Local Definition Bitraversable__Const_bitraverse
+#[local] Definition Bitraversable__Const_bitraverse
    : forall {f : Type -> Type},
      forall {a : Type},
      forall {c : Type},
@@ -311,6 +318,7 @@ Local Definition Bitraversable__Const_bitraverse
           Data.Functor.Const.Mk_Const Data.Functor.<$> f a
       end.
 
+#[global]
 Program Instance Bitraversable__Const
    : Bitraversable Data.Functor.Const.Const :=
   fun _ k__ =>
@@ -325,33 +333,36 @@ Program Instance Bitraversable__Const
 (* Skipping instance `Data.Bitraversable.Bitraversable__K1' of class
    `Data.Bitraversable.Bitraversable' *)
 
-Definition bisequence {t : Type -> Type -> Type} {f : Type -> Type} {a : Type}
-  {b : Type} `{Bitraversable t} `{GHC.Base.Applicative f}
+#[global] Definition bisequence {t : Type -> Type -> Type} {f : Type -> Type} {a
+   : Type} {b : Type} `{Bitraversable t} `{GHC.Base.Applicative f}
    : t (f a) (f b) -> f (t a b) :=
   bitraverse GHC.Base.id GHC.Base.id.
 
-Definition bisequenceA {t : Type -> Type -> Type} {f : Type -> Type} {a : Type}
-  {b : Type} `{Bitraversable t} `{GHC.Base.Applicative f}
+#[global] Definition bisequenceA {t : Type -> Type -> Type} {f : Type -> Type}
+  {a : Type} {b : Type} `{Bitraversable t} `{GHC.Base.Applicative f}
    : t (f a) (f b) -> f (t a b) :=
   bisequence.
 
-Definition bimapM {t : Type -> Type -> Type} {f : Type -> Type} {a : Type} {c
-   : Type} {b : Type} {d : Type} `{Bitraversable t} `{GHC.Base.Applicative f}
+#[global] Definition bimapM {t : Type -> Type -> Type} {f : Type -> Type} {a
+   : Type} {c : Type} {b : Type} {d : Type} `{Bitraversable t}
+  `{GHC.Base.Applicative f}
    : (a -> f c) -> (b -> f d) -> t a b -> f (t c d) :=
   bitraverse.
 
-Definition bifor {t : Type -> Type -> Type} {f : Type -> Type} {a : Type} {b
-   : Type} {c : Type} {d : Type} `{Bitraversable t} `{GHC.Base.Applicative f}
+#[global] Definition bifor {t : Type -> Type -> Type} {f : Type -> Type} {a
+   : Type} {b : Type} {c : Type} {d : Type} `{Bitraversable t}
+  `{GHC.Base.Applicative f}
    : t a b -> (a -> f c) -> (b -> f d) -> f (t c d) :=
   fun t f g => bitraverse f g t.
 
-Definition biforM {t : Type -> Type -> Type} {f : Type -> Type} {a : Type} {b
-   : Type} {c : Type} {d : Type} `{Bitraversable t} `{GHC.Base.Applicative f}
+#[global] Definition biforM {t : Type -> Type -> Type} {f : Type -> Type} {a
+   : Type} {b : Type} {c : Type} {d : Type} `{Bitraversable t}
+  `{GHC.Base.Applicative f}
    : t a b -> (a -> f c) -> (b -> f d) -> f (t c d) :=
   bifor.
 
-Definition bimapAccumL {t : Type -> Type -> Type} {a : Type} {b : Type} {c
-   : Type} {d : Type} {e : Type} `{Bitraversable t}
+#[global] Definition bimapAccumL {t : Type -> Type -> Type} {a : Type} {b
+   : Type} {c : Type} {d : Type} {e : Type} `{Bitraversable t}
    : (a -> b -> (a * c)%type) ->
      (a -> d -> (a * e)%type) -> a -> t b d -> (a * t c e)%type :=
   fun f g s t =>
@@ -360,8 +371,8 @@ Definition bimapAccumL {t : Type -> Type -> Type} {a : Type} {b : Type} {c
                                               GHC.Base.flip f) (Data.Functor.Utils.Mk_StateL GHC.Base.∘ GHC.Base.flip g)
                                   t) s.
 
-Definition bimapAccumR {t : Type -> Type -> Type} {a : Type} {b : Type} {c
-   : Type} {d : Type} {e : Type} `{Bitraversable t}
+#[global] Definition bimapAccumR {t : Type -> Type -> Type} {a : Type} {b
+   : Type} {c : Type} {d : Type} {e : Type} `{Bitraversable t}
    : (a -> b -> (a * c)%type) ->
      (a -> d -> (a * e)%type) -> a -> t b d -> (a * t c e)%type :=
   fun f g s t =>
@@ -370,8 +381,8 @@ Definition bimapAccumR {t : Type -> Type -> Type} {a : Type} {b : Type} {c
                                               GHC.Base.flip f) (Data.Functor.Utils.Mk_StateR GHC.Base.∘ GHC.Base.flip g)
                                   t) s.
 
-Definition bimapDefault {t : Type -> Type -> Type} {a : Type} {b : Type} {c
-   : Type} {d : Type} `{Bitraversable t}
+#[global] Definition bimapDefault {t : Type -> Type -> Type} {a : Type} {b
+   : Type} {c : Type} {d : Type} `{Bitraversable t}
    : (a -> b) -> (c -> d) -> t a c -> t b d :=
   GHC.Prim.coerce (bitraverse : (a -> Data.Functor.Identity.Identity b) ->
                    (c -> Data.Functor.Identity.Identity d) ->

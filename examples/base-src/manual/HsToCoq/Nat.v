@@ -8,6 +8,7 @@ Require GHC.Num.
 Require GHC.Real.
 Require GHC.Enum.
 
+#[global]
 Instance Default_nat : HsToCoq.Err.Default nat := 
   HsToCoq.Err.Build_Default _ 0.
 
@@ -16,6 +17,7 @@ Instance Default_nat : HsToCoq.Err.Default nat :=
 Definition error_sub := 
   fun x y => if Nat.ltb x y then HsToCoq.Err.default else Nat.sub x y.
 
+#[global]
 Instance Num_nat : GHC.Num.Num nat := {
      op_zp__ := Nat.add;
      op_zm__ := error_sub;
@@ -25,15 +27,18 @@ Instance Num_nat : GHC.Num.Num nat := {
      negate  := fun x => x;
      signum  :=  fun x => x; }.
 
+#[global]
 Instance Eq_nat : GHC.Base.Eq_ nat :=
   fun _ k => k {| GHC.Base.op_zeze____ := fun x y => (Nat.eqb x y);
                GHC.Base.op_zsze____ := fun x y => negb (Nat.eqb x y);
             |}.
 
+#[global]
 Instance Ord_nat : GHC.Base.Ord nat :=
   GHC.Base.ord_default Nat.compare.
 
 
+#[global]
 Instance Real_nat : GHC.Real.Real nat :=
   {| Real.toRational := fun x : nat => QArith_base.inject_Z (BinInt.Z.of_nat x) |}.
 
@@ -42,6 +47,7 @@ Definition enumFromTo_nat : nat -> nat -> list nat :=
   fun start stop => List.seq start (error_sub stop start).
 
 
+#[global]
 Instance Enum_nat : GHC.Enum.Enum nat :=
   {| Enum.enumFrom   := enumFrom_nat;
      Enum.enumFromTo := enumFromTo_nat;

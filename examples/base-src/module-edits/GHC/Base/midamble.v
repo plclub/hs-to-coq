@@ -153,11 +153,13 @@ Infix ">=" := (op_zgze__) (no associativity, at level 70).
 
 (*********** Eq/Ord for primitive types **************************)
 
+#[global]
 Instance Eq_Int___ : Eq_ Int := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%Z;
                                op_zsze____ := fun x y => negb (x =? y)%Z;
                                |}.
 
+#[global]
 Instance Ord_Int___ : Ord Int := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%Z;
   op_zlze____ := fun x y => (x <=? y)%Z;
@@ -168,11 +170,13 @@ Instance Ord_Int___ : Ord Int := fun _ k => k {|
   min__       := Z.min%Z;
 |}.
 
+#[global]
 Instance Eq_Integer___ : Eq_ Integer := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%Z;
                                op_zsze____ := fun x y => negb (x =? y)%Z;
                              |}.
 
+#[global]
 Instance Ord_Integer___ : Ord Integer := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%Z;
   op_zlze____ := fun x y => (x <=? y)%Z;
@@ -183,11 +187,13 @@ Instance Ord_Integer___ : Ord Integer := fun _ k => k {|
   min__       := Z.min%Z;
 |}.
 
+#[global]
 Instance Eq_Word___ : Eq_ Word := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%N;
                                op_zsze____ := fun x y => negb (x =? y)%N;
                              |}.
 
+#[global]
 Instance Ord_Word___ : Ord Word := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%N;
   op_zlze____ := fun x y => (x <=? y)%N;
@@ -198,11 +204,13 @@ Instance Ord_Word___ : Ord Word := fun _ k => k {|
   min__       := N.min%N;
 |}.
 
+#[global]
 Instance Eq_Char___ : Eq_ Char := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%N;
                                op_zsze____ := fun x y => negb (x =? y)%N;
                              |}.
 
+#[global]
 Instance Ord_Char___ : Ord Char := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%N;
   op_zlze____ := fun x y => (x <=? y)%N;
@@ -213,6 +221,7 @@ Instance Ord_Char___ : Ord Char := fun _ k => k {|
   min__       := N.min%N;
 |}.
 
+#[global]
 Instance Eq_bool___ : Eq_ bool := fun _ k => k {|
                                op_zeze____ := eqb;
                                op_zsze____ := fun x y => negb (eqb x y);
@@ -226,6 +235,7 @@ Definition compare_bool (b1:bool)(b2:bool) : comparison :=
   | false , true => Lt
   end.
 
+#[global]
 Instance Ord_bool___ : Ord bool := fun _ k => k {|
   op_zl____   := fun x y => andb (negb x) y;
   op_zlze____ := fun x y => orb (negb x) y;
@@ -236,11 +246,13 @@ Instance Ord_bool___ : Ord bool := fun _ k => k {|
   min__       := andb
 |}.
 
+#[global]
 Instance Eq_unit___ : Eq_ unit := fun _ k => k {|
                                op_zeze____ := fun x y => true;
                                op_zsze____ := fun x y => false;
                              |}.
 
+#[global]
 Instance Ord_unit___ : Ord unit := fun _ k => k {|
   op_zl____   := fun x y => false;
   op_zlze____ := fun x y => true;
@@ -259,6 +271,7 @@ Definition eq_comparison (x : comparison) (y: comparison) :=
   | _ , _  => false
 end.
 
+#[global]
 Instance Eq_comparison___ : Eq_ comparison := fun _ k => k
 {|
   op_zeze____ := eq_comparison;
@@ -293,6 +306,7 @@ Definition ord_default {a} (comp : a -> a -> comparison) `{Eq_ a} : Ord a :=
              | _  => x
              end)).
 
+#[global]
 Instance Ord_comparison___ : Ord comparison := ord_default compare_comparison.
 
 Definition eq_pair {t1} {t2} `{Eq_ t1} `{Eq_ t2} (a b : (t1 * t2)) :=
@@ -311,11 +325,13 @@ Definition compare_pair {t1} {t2} `{Ord t1} `{Ord t2} (a b : (t1 * t2)) :=
     end
   end.
 
+#[global]
 Instance Eq_pair___ {a} {b} `{Eq_ a} `{Eq_ b} : Eq_ (a * b) := fun _ k => k
   {| op_zeze____ := eq_pair;
      op_zsze____ := fun x y => negb (eq_pair x y)
   |}.
 
+#[global]
 Instance Ord_pair___ {a} {b} `{Ord a} `{Ord b} : Ord (a * b) :=
   ord_default compare_pair.
 
@@ -341,11 +357,13 @@ Fixpoint compare_list {a} `{Ord a} (xs :  list a) (ys : list a) : comparison :=
       end
     end.
 
+#[global]
 Instance Eq_list {a} `{Eq_ a} : Eq_ (list a) := fun _ k => k
   {| op_zeze____ := eqlist;
      op_zsze____ := fun x y => negb (eqlist x y)
   |}.
 
+#[global]
 Instance Ord_list {a} `{Ord a}: Ord (list a) :=
   ord_default compare_list.
 

@@ -1,5 +1,3 @@
-superclassCount:
-  Control.Monad.Fail.MonadFail: '3'
 classTypes:
   Control.Monad.Fail.MonadFail: fromList []
 classDefns:
@@ -10,3 +8,5 @@ classDefns:
     "Control.Monad.Fail" "fail",Forall (Typed Ungeneralizable Implicit (Ident (Bare
     "a") :| []) (Qualid (Bare "Type")) :| []) (Arrow (Qualid (Qualified "GHC.Base"
     "String")) (App (Qualid (Bare "m")) (PosArg (Qualid (Bare "a")) :| []))))]
+superclassCount:
+  Control.Monad.Fail.MonadFail: '3'
