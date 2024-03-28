@@ -1,4 +1,4 @@
-#!/bin/bash
+#!bash
 
 set -e
 

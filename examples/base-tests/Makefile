@@ -51,7 +51,7 @@ todo_pass: $(foreach f,$(TODO_PASS),$(f).fail)
 	@echo "Any names printed without errors should be moved from TODO_PASS to PASS"
 
 %.pass : %.v
-	@/bin/echo -n "$<: "
+	@echo -n "$<: "
 	@if ! test -e $<; \
 	 then echo -e "\033[1;31mmissing\033[0m (should pass)"; exit 1;\
 	 elif ! $(TYPECHECK) $<; \
@@ -60,7 +60,7 @@ todo_pass: $(foreach f,$(TODO_PASS),$(f).fail)
 	 fi
 
 %.fail : %.v
-	@/bin/echo -n "$<: "
+	@echo -n "$<: "
 	@if ! test -e $<; \
 	 then echo -e "\033[1;31mmissing\033[0m"; \
 	 elif ! $(TYPECHECK) $< >&/dev/null; \

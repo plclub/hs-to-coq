@@ -93,7 +93,7 @@ todo_translate: $(foreach f, $(TODO_TRANSLATE), $(f).fail_translate)
 	@echo -------- END UNTRANSLATABLE ------------
 
 %.pass : %.v
-	@/bin/echo -n "$<: "
+	@echo -n "$<: "
 	@if ! test -e $<; \
 	 then echo -e "\033[1;31mmissing\033[0m (should pass)"; exit 1;\
 	 elif ! $(TYPECHECK) $< >&/dev/null;\
@@ -102,7 +102,7 @@ todo_translate: $(foreach f, $(TODO_TRANSLATE), $(f).fail_translate)
 	 fi
 
 %.fail : %.v
-	@/bin/echo -n "$<: "
+	@echo -n "$<: "
 	@if ! test -e $<; \
 	 then echo -e "\033[1;31mmissing\033[0m"; \
 	 elif ! $(TYPECHECK) $< >&/dev/null; \
@@ -111,7 +111,7 @@ todo_translate: $(foreach f, $(TODO_TRANSLATE), $(f).fail_translate)
 	 fi
 
 %.fail_translate : %.v
-	@/bin/echo -n "$<: "
+	@echo -n "$<: "
 	@if ! test -e $<; \
 	 then echo -e "\033[1;31mmissing\033[0m"; \
 	 elif ! $(TYPECHECK) $< >&/dev/null; \
