@@ -30,4 +30,4 @@
 	url = https://github.com/haskell/fgl.git
 [submodule "examples/build-systems-ala-carte/build-systems-ala-carte"]
 	path = examples/build-systems-ala-carte/build-systems-ala-carte
-	url = https://github.com/snowleopard/build
+	url = https://github.com/hypnoticOxbow/build
