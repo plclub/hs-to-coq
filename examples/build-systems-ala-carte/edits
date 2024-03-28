@@ -1,0 +1,8 @@
+skip Build.Task.compose
+
+
+# TODO: Handwrite these
+skip Build.Task.liftTask
+skip Build.Task.liftTasks
+
+rename type GHC.Integer.Type.Integer = GHC.Num.Integer

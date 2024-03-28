@@ -1,0 +1,3 @@
+skip module Control.Monad.Writer.Class
+
+rename type GHC.Base.Monad = GHC.Base.Monad__Dict

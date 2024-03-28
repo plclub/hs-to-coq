@@ -1,0 +1,2 @@
+rename value Build.SelfTracking.Value = Build.SelfTracking.Mk_Value
+rename value Build.SelfTracking.Key = Build.SelfTracking.Mk_Key

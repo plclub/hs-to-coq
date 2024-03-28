@@ -1,0 +1,14 @@
+rename value Build.Trace.TraceST = Build.Trace.Mk_TraceST
+rename value Build.Trace.Trace = Build.Trace.Mk_Trace
+rename value Build.Trace.VT = Build.Trace.Mk_VT
+rename value Build.Trace.Step = Build.Trace.Mk_Step
+
+rename value Build.Trace.CT = Build.Trace.Mk_CT
+rename value Build.Trace.ST = Build.Trace.Mk_ST
+rename value Build.Trace.DCT = Build.Trace.Mk_DCT
+
+
+order Build.Trace.Semigroup__VT Build.Trace.Monoid__VT_mappend Build.Trace.Monoid__VT_mconcat Build.Trace.Monoid__VT_mempty Build.Trace.Monoid__VT
+order Build.Trace.Semigroup__CT Build.Trace.Monoid__CT_mappend Build.Trace.Monoid__CT_mconcat Build.Trace.Monoid__CT_mempty Build.Trace.Monoid__CT
+order Build.Trace.Semigroup__DCT Build.Trace.Monoid__DCT_mappend Build.Trace.Monoid__DCT_mconcat Build.Trace.Monoid__DCT_mempty Build.Trace.Monoid__DCT
+order Build.Trace.Semigroup__ST Build.Trace.Monoid__ST_mappend Build.Trace.Monoid__ST_mconcat Build.Trace.Monoid__ST_mempty Build.Trace.Monoid__ST

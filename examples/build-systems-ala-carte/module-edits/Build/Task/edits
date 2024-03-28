@@ -1,0 +1,2 @@
+data kinds Build.Task.Task (Type -> Type) -> Type, Type, Type
+rename value Build.Task.Task = Build.Task.Mk_Task
