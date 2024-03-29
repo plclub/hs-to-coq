@@ -80,3 +80,27 @@ Infix ">>" := (_>>_) (at level 99, right associativity).
 Notation "'_>>=_'" := (op_zgzgze__).
 
 Infix ">>=" := (_>>=_) (at level 99, right associativity).
+
+
+
+(* current best attempt at tracePure*)
+(* Definition trackPure {k : Type} {v : Type} *)
+(*    : Build.Task.Task Monad__Dict k v -> (k -> v) -> (v * list k)%type := *)
+(*   ( fun (task : Build.Task.Task Monad__Dict k v) (fetch: k->v) => *)
+(*     Control.Monad.Trans.Writer.Lazy.runWriter (Build.Task.run task (fun (i:k) => *)
+(*                                                                  Control.Monad.Trans.Writer.Lazy.writer (pair (fetch i) (cons *)
+(*                                                                                                           i nil))))). *)
+
+(* Current best attempt at trace *)
+(* Definition track {m : Type -> Type} {k : Type} {v : Type} `{Monad__Dict m} *)
+(*    : Build.Task.Task Monad__Dict k v -> *)
+(*      (k -> m v) -> m (v * list (k * v)%type)%type := *)
+(*   fun task fetch => *)
+(*     let trackingFetch *)
+(*      : k -> Control.Monad.Trans.Writer.Lazy.WriterT (list (k * v)%type) m v := *)
+(*       fun k => *)
+(*         Control.Monad.Trans.Class.lift (fetch k) GHC.Base.>>= *)
+(*         (fun v => *)
+(*            Control.Monad.Trans.Writer.Lazy.tell (cons (pair k v) nil) GHC.Base.>> *)
+(*            GHC.Base.return_ v) in *)
+(*     Control.Monad.Trans.Writer.Lazy.runWriterT (Build.Task.run task trackingFetch). *)

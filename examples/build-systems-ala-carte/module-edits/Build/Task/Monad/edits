@@ -3,10 +3,10 @@ skip module Control.Monad.Writer.Class
 rename type GHC.Base.Monad = Monad__Dict
 
 ## TODO: Writer Monad
-axiomatize definition Build.Task.Monad.trackPure
-axiomatize definition Build.Task.Monad.track
+axiomatize definition Build.Task.Monad.trackPure ## Type error with trying to use `fetch`
+axiomatize definition Build.Task.Monad.track ## Sad Type error with trackingFetch
 
-## TODO Type error, uncomment to see it.
+## TODO Type error, comment to see it.
 axiomatize definition Build.Task.Monad.computePure
 axiomatize definition Build.Task.Monad.compute
 axiomatize definition Build.Task.Monad.liftMaybe
