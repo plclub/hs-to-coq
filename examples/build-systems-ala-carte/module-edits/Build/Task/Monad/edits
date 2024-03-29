@@ -1,3 +1,13 @@
 skip module Control.Monad.Writer.Class
 
-rename type GHC.Base.Monad = GHC.Base.Monad__Dict
+rename type GHC.Base.Monad = Monad__Dict
+
+## TODO: Writer Monad
+axiomatize definition Build.Task.Monad.trackPure
+axiomatize definition Build.Task.Monad.track
+
+## TODO Type error, uncomment to see it.
+axiomatize definition Build.Task.Monad.computePure
+axiomatize definition Build.Task.Monad.compute
+axiomatize definition Build.Task.Monad.liftMaybe
+axiomatize definition Build.Task.Monad.liftEither
