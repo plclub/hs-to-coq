@@ -10,6 +10,11 @@ Unset Printing Implicit Defensive.
 Require Coq.Program.Tactics.
 Require Coq.Program.Wf.
 
+(* Preamble *)
+
+Require Import HsToCoq.Unpeel.
+Require Import Coq.ZArith.ZArith.
+
 (* Converted imports: *)
 
 Require GHC.Base.
@@ -45,6 +50,12 @@ Definition info {i} {k} {v} (arg_0__ : Store i k v) :=
 Definition values {i} {k} {v} (arg_0__ : Store i k v) :=
   let 'Mk_Store _ values := arg_0__ in
   values.
+
+(* Midamble *)
+
+Instance Unpeel__Hash {A : Type}  : Unpeel (Hash A) A :=
+  {| unpeel := fun hashA : Hash A => match hashA with | Mk_Hash a => a end;
+     repeel := Mk_Hash |}.
 
 (* Converted value declarations: *)
 
@@ -161,10 +172,10 @@ Program Instance Hashable__Int : Hashable GHC.Num.Int :=
   fun _ k__ => k__ {| hash__ := Hashable__Int_hash |}.
 
 Local Definition Hashable__Integer_hash
-   : GHC.Integer.Type.Integer -> Hash GHC.Integer.Type.Integer :=
+   : GHC.Num.Integer -> Hash GHC.Num.Integer :=
   Mk_Hash.
 
-Program Instance Hashable__Integer : Hashable GHC.Integer.Type.Integer :=
+Program Instance Hashable__Integer : Hashable GHC.Num.Integer :=
   fun _ k__ => k__ {| hash__ := Hashable__Integer_hash |}.
 
 Local Definition Hashable__list_hash {inst_a : Type} `{Hashable inst_a}
@@ -234,6 +245,5 @@ Definition initialise {i : Type} {k : Type} {v : Type}
      GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____
      GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
      GHC.Base.op_zlztzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
-     GHC.Base.op_ztzg____ GHC.Base.pure__ GHC.Integer.Type.Integer GHC.Num.Int
-     GHC.Prim.coerce
+     GHC.Base.op_ztzg____ GHC.Base.pure__ GHC.Num.Int GHC.Num.Integer GHC.Prim.coerce
 *)

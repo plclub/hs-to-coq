@@ -1,2 +1,13 @@
 data kinds Build.Task.Task (Type -> Type) -> Type, Type, Type
 rename value Build.Task.Task = Build.Task.Mk_Task
+
+skip Build.Task.compose
+
+## TODO: add polymorphic flag setting instead.
+skip Build.Task.Task
+skip Build.Task.Tasks
+
+
+# TODO: Handwrite these
+skip Build.Task.liftTask
+skip Build.Task.liftTasks

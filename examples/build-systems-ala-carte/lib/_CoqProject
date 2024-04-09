@@ -1,6 +1,7 @@
 -Q . ""
 -Q ../../../base ""
-
-Build/Task.v Build/Store.v
+-Q ../../transformers/lib ""
+Build/Task.v
+Build/Store.v Build/Trace.v Build/Task/Monad.v
 
 

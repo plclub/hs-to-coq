@@ -20,6 +20,7 @@ HS_SPEC=hs-spec
 
 # Handwritten modules (usually by modification of generated version)
 HANDMOD = \
+   Build/Task \
 
 
 
@@ -67,7 +68,6 @@ HANDMOD = \
 #   | Script : k -> Key k v s s
 #   | Value : k -> Key k v s v.
 MODULES = \
-   Build/Task \
    Build/Store \
    Build/Trace \
    Build/Task/Monad \

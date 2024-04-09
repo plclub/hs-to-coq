@@ -1,6 +1,6 @@
 skip module Control.Monad.Writer.Class
 
-rename type GHC.Base.Monad = Monad__Dict
+rename type GHC.Base.Monad = GHC.Base.Monad__Dict
 
 ## TODO: Writer Monad
 axiomatize definition Build.Task.Monad.trackPure ## Type error with trying to use `fetch`
