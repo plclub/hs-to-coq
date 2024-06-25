@@ -6,4 +6,4 @@ rename value NonStructuralRec.S = S
 rename value NonStructuralRec.add = Nat.add
 
 termination NonStructuralRec.mapTree2 { measure (NonStructuralRec.size arg_1__) }
-obligations NonStructuralRec.mapTree2 prog_omega
+obligations NonStructuralRec.mapTree2 prog_lia
