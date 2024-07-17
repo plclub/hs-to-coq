@@ -35,6 +35,9 @@ import Type
 import TcType
 import HscTypes
 import TcInstDcls
+#if __GLASGOW_HASKELL__ >= 810
+import TcTyClsDecls
+#endif
 import Module
 import SrcLoc
 import FastString
@@ -58,7 +61,8 @@ addDerivedInstances tcm = do
                 -- so that GHC will allow us to re-typecheck existing instances
         setGblEnv tcg_env_hack $
 #if __GLASGOW_HASKELL__ >= 810
-            tcInstDeclsDeriv [] (hs_derivds hsgroup)
+            do (_, _, deriv_info) <- tcTyAndClassDecls (hs_tyclds hsgroup)
+               tcInstDeclsDeriv deriv_info (hs_derivds hsgroup)
 #else
             tcInstDeclsDeriv [] (hs_tyclds hsgroup >>= group_tyclds) (hs_derivds hsgroup)
 #endif
