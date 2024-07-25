@@ -6,7 +6,6 @@ skip module GHC.Types
 
 # replaced with Coq types
 skip GHC.Base.String
-skip option
 skip Coq.Init.Datatypes.app
 
 skip GHC.Base.Opaque   # can't handle existential

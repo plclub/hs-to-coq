@@ -129,6 +129,8 @@ rename value GHC.Classes.not   = negb
 rename value GHC.Classes.||    = orb
 rename value GHC.Classes.&&    = andb
 
+rename module GHC.Maybe GHC.Base
+
 rename type  GHC.Maybe.Maybe   = option
 rename value GHC.Maybe.Just    = Some
 rename value GHC.Maybe.Nothing = None

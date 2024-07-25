@@ -31,7 +31,6 @@ HANDMOD = \
 # Generated modules
 # generated directly from GHC/libraries/base
 MODULES = \
-  GHC/Base \
   Data/Maybe \
   GHC/List \
   Data/List \
@@ -74,8 +73,8 @@ RENAMED = \
 DROPIN =
 
 # also generated from drop-in/
-SPECIAL_MODULES =
-
+SPECIAL_MODULES = \
+  GHC/Base
 
 VFILES_GEN     = $(addprefix $(OUT)/,$(addsuffix .v,$(MODULES)))
 VFILES_RENAMED = $(addprefix $(OUT)/,$(addsuffix .v,$(RENAMED)))
@@ -150,6 +149,23 @@ $(OUT)/Data/SemigroupInternal.v : $(wildcard module-edits/Data/Semigroup/Interna
 		     $(HS_TO_COQ_OPTS) \
 		     base/Data/Semigroup/Internal.hs
 	test -e $(OUT)/Data/SemigroupInternal.v
+
+# We merge GHC.Maybe into GHC.Base, which requires a special rule.
+
+GHC_BASE_PRE = $(wildcard module-edits/GHC/Base/preamble.v module-edits/GHC/Maybe/preamble.v)
+GHC_BASE_MID = $(wildcard module-edits/GHC/Base/midamble.v module-edits/GHC/Maybe/midamble.v)
+GHC_BASE_EDITS = $(wildcard module-edits/GHC/Base/edits module-edits/GHC/Maybe/edits)
+
+$(OUT)/GHC/Base.v: $(GHC_BASE_PRE) $(GHC_BASE_MID) $(GHC_BASE_EDITS) edits
+	if [ -n "$(GHC_BASE_PRE)" ]; then cat $(GHC_BASE_PRE) > Base_preamble.v; fi
+	if [ -n "$(GHC_BASE_MID)" ]; then cat $(GHC_BASE_MID) > Base_midamble.v; fi
+	$(HS_TO_COQ) -p Base_preamble.v \
+	             --midamble Base_midamble.v \
+	             $(addprefix -e , $(GHC_BASE_EDITS)) \
+	             $(HS_TO_COQ_OPTS) \
+	             base/GHC/Base.hs base/GHC/Maybe.hs
+	test -e $(OUT)/GHC/Base.v
+	rm -f Base_preamble.v Base_midamble.v
 
 $(VFILES_MAN): $(OUT)/% : manual/%
 	rm -f $@
