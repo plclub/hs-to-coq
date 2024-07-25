@@ -157,8 +157,8 @@ GHC_BASE_MID = $(wildcard module-edits/GHC/Base/midamble.v module-edits/GHC/Mayb
 GHC_BASE_EDITS = $(wildcard module-edits/GHC/Base/edits module-edits/GHC/Maybe/edits)
 
 $(OUT)/GHC/Base.v: $(GHC_BASE_PRE) $(GHC_BASE_MID) $(GHC_BASE_EDITS) edits
-	if [ -n "$(GHC_BASE_PRE)" ]; then cat $(GHC_BASE_PRE) > Base_preamble.v; fi
-	if [ -n "$(GHC_BASE_MID)" ]; then cat $(GHC_BASE_MID) > Base_midamble.v; fi
+	cat /dev/null $(GHC_BASE_PRE) > Base_preamble.v
+	cat /dev/null $(GHC_BASE_MID) > Base_midamble.v
 	$(HS_TO_COQ) -p Base_preamble.v \
 	             --midamble Base_midamble.v \
 	             $(addprefix -e , $(GHC_BASE_EDITS)) \
