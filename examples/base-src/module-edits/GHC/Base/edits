@@ -62,6 +62,12 @@ redefine Local Definition GHC.Base.Applicative__NonEmpty_liftA2 {a} {b} {c} :
 skip GHC.Base.unsafeChr
 skip GHC.Base.ord
 
+# Avoid representation polymorphism.
+redefine Definition GHC.Base.op_zd__ {a} {b} : (a -> b) -> a -> b :=
+  fun f x => f x.
+redefine Definition GHC.Base.op_zdzn__ {a : Type} {b : Type} : (a -> b) -> a -> b :=
+  fun f x => let vx := x in f vx.
+
 skip GHC.Base.shiftRL#
 skip GHC.Base.shiftL#
 skip GHC.Base.iShiftL#
