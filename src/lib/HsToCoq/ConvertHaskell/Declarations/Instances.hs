@@ -415,7 +415,7 @@ makeInstanceMethodSubst params =
   -- When desugared naïvely into Coq, this will result in a term with type
   -- @
   --     forall {a₁}, forall {a₂ b},
-  --       (a₂ -> b) -> f (Either a₁ a₂) -> f (Either a₁ b)
+  --       (a₂ -> b) -> Either a₁ a₂ -> Either a₁ b
   -- @
   -- Except without the subscripts!  So we have to rename either
   -- the per-instance variables (here, @a₁@) or the type class
