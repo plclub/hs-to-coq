@@ -134,6 +134,7 @@ rename module GHC.Maybe GHC.Base
 rename type  GHC.Maybe.Maybe   = option
 rename value GHC.Maybe.Just    = Some
 rename value GHC.Maybe.Nothing = None
+skip option
 
 skip method GHC.Base.Monad fail
 skip method GHC.Enum.Enum enumFromThen
