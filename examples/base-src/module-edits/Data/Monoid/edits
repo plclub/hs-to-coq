@@ -1,9 +1,12 @@
-data kinds Data.Monoid.Ap (Type -> Type), Type 
+polykinds Data.Monoid.Ap k
+data kinds Data.Monoid.Ap (k -> Type), k
 
 add Data.Monoid Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) (option a) :=
 	 HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
 add Data.Monoid Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) (option a) :=
 	 HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
+add Data.Monoid Instance Unpeel_Ap (k : Type) (f : k -> Type) (a : k) : HsToCoq.Unpeel.Unpeel (Ap f a) (f a) :=
+	HsToCoq.Unpeel.Build_Unpeel _ _ getAp Mk_Ap.
 
 order Unpeel_Dual Data.Monoid.Eq___Dual_op_zeze__
 order Unpeel_Dual Data.Monoid.Eq___Dual_op_zsze__
@@ -21,6 +24,9 @@ order Unpeel_First Data.Monoid.Eq___First_op_zsze__
 order Data.Monoid.Eq___First Data.Monoid.Ord__First
 order Unpeel_First Data.Monoid.Functor__First Data.Monoid.Applicative__First Data.Monoid.Monad__First
 order Data.Monoid.Semigroup__First Data.Monoid.Monoid__First_mappend
+
+order Unpeel_Ap Data.Monoid.Applicative__Ap_liftA2
+order Data.Monoid.Functor__Ap Data.Monoid.Applicative__Ap
 
 # Read and Show instances
 skip Data.Monoid.Read__Last
