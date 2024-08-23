@@ -1,3 +1,6 @@
+# For typeclass instances
+import module Data.Functor.Identity
+
 order Data.Traversable.Functor__Id Data.Traversable.Applicative__Id
 
 # instance method requires another instance of the same class
@@ -33,3 +36,9 @@ skip Data.Traversable.Traversable__K1
 skip Data.Traversable.Traversable__Rec1
 skip Data.Traversable.Traversable__Par1
 skip Data.Traversable.Traversable__V1
+skip Data.Traversable.Traversable__UWord
+skip Data.Traversable.Traversable__UInt
+skip Data.Traversable.Traversable__UFloat
+skip Data.Traversable.Traversable__UDouble
+skip Data.Traversable.Traversable__UChar
+skip Data.Traversable.Traversable__UAddr
