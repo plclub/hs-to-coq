@@ -1,3 +1,6 @@
+# For typeclass instances
+import module Data.Functor.Identity
+
 skip Data.Bitraversable.Bitraversable__K1
 
 skip Data.Bitraversable.bifoldMapDefault
