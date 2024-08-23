@@ -23,6 +23,8 @@ Definition default_foldable {f:Type -> Type}
     (fun m (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) => foldMap _ _ _ _ GHC.Base.id)
     (* foldMap *)
     (@foldMap)
+    (* foldMap' *)
+    (fun m a (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) f => foldl' (fun acc a => GHC.Base.op_zlzlzgzg__ acc (f a)) GHC.Base.mempty)
     (* foldl *)
     (@foldl)
     (* foldl' *)
