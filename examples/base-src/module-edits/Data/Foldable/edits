@@ -1,5 +1,8 @@
 skip module GHC.Types
 
+# For typeclass instances
+import module Data.SemigroupInternal
+
 # partial
 
 skip Data.Foldable.minimumBy
@@ -48,3 +51,9 @@ skip Data.Foldable.Foldable__Par1
 skip Data.Foldable.Foldable__op_ZCziZC__
 skip Data.Foldable.Foldable__op_ZCztZC__
 skip Data.Foldable.Foldable__op_ZCzpZC__
+skip Data.Foldable.Foldable__UWord
+skip Data.Foldable.Foldable__UInt
+skip Data.Foldable.Foldable__UFloat
+skip Data.Foldable.Foldable__UDouble
+skip Data.Foldable.Foldable__UChar
+skip Data.Foldable.Foldable__UAddr
