@@ -149,6 +149,479 @@ Program Instance Semigroup__SLast {a} : GHC.Base.Semigroup (Last a) := fun _ k =
 
 (* Converted value declarations: *)
 
+Instance Unpeel_Option a : HsToCoq.Unpeel.Unpeel (Option a) (option a) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getOption Mk_Option.
+
+#[local] Definition Eq___Option_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : Option inst_a -> Option inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.==_).
+
+#[local] Definition Eq___Option_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : Option inst_a -> Option inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base./=_).
+
+#[global]
+Program Instance Eq___Option {a : Type} `{GHC.Base.Eq_ a}
+   : GHC.Base.Eq_ (Option a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___Option_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___Option_op_zsze__ |}.
+
+#[local] Definition Ord__Option_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Option inst_a -> Option inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<_).
+
+#[local] Definition Ord__Option_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Option inst_a -> Option inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<=_).
+
+#[local] Definition Ord__Option_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Option inst_a -> Option inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>_).
+
+#[local] Definition Ord__Option_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Option inst_a -> Option inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>=_).
+
+#[local] Definition Ord__Option_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Option inst_a -> Option inst_a -> comparison :=
+  GHC.Prim.coerce (GHC.Base.compare).
+
+#[local] Definition Ord__Option_max {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Option inst_a -> Option inst_a -> Option inst_a :=
+  GHC.Prim.coerce (GHC.Base.max).
+
+#[local] Definition Ord__Option_min {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Option inst_a -> Option inst_a -> Option inst_a :=
+  GHC.Prim.coerce (GHC.Base.min).
+
+#[global]
+Program Instance Ord__Option {a : Type} `{GHC.Base.Ord a}
+   : GHC.Base.Ord (Option a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zl____ := Ord__Option_op_zl__ ;
+           GHC.Base.op_zlze____ := Ord__Option_op_zlze__ ;
+           GHC.Base.op_zg____ := Ord__Option_op_zg__ ;
+           GHC.Base.op_zgze____ := Ord__Option_op_zgze__ ;
+           GHC.Base.compare__ := Ord__Option_compare ;
+           GHC.Base.max__ := Ord__Option_max ;
+           GHC.Base.min__ := Ord__Option_min |}.
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Data.Semigroup.Show__Option' *)
+
+(* Skipping all instances of class `GHC.Read.Read', including
+   `Data.Semigroup.Read__Option' *)
+
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Semigroup.Data__Option' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Semigroup.Generic__Option' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Semigroup.Generic1__TYPE__Option__LiftedRep' *)
+
+(* Skipping all instances of class `GHC.Enum.Bounded', including
+   `Data.Semigroup.Bounded__WrappedMonoid' *)
+
+Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
+
+#[local] Definition Eq___WrappedMonoid_op_zeze__ {inst_m : Type} `{GHC.Base.Eq_
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
+  GHC.Prim.coerce (_GHC.Base.==_).
+
+#[local] Definition Eq___WrappedMonoid_op_zsze__ {inst_m : Type} `{GHC.Base.Eq_
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
+  GHC.Prim.coerce (_GHC.Base./=_).
+
+#[global]
+Program Instance Eq___WrappedMonoid {m : Type} `{GHC.Base.Eq_ m}
+   : GHC.Base.Eq_ (WrappedMonoid m) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___WrappedMonoid_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___WrappedMonoid_op_zsze__ |}.
+
+#[local] Definition Ord__WrappedMonoid_op_zl__ {inst_m : Type} `{GHC.Base.Ord
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<_).
+
+#[local] Definition Ord__WrappedMonoid_op_zlze__ {inst_m : Type} `{GHC.Base.Ord
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<=_).
+
+#[local] Definition Ord__WrappedMonoid_op_zg__ {inst_m : Type} `{GHC.Base.Ord
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>_).
+
+#[local] Definition Ord__WrappedMonoid_op_zgze__ {inst_m : Type} `{GHC.Base.Ord
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>=_).
+
+#[local] Definition Ord__WrappedMonoid_compare {inst_m : Type} `{GHC.Base.Ord
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> comparison :=
+  GHC.Prim.coerce (GHC.Base.compare).
+
+#[local] Definition Ord__WrappedMonoid_max {inst_m : Type} `{GHC.Base.Ord
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> WrappedMonoid inst_m :=
+  GHC.Prim.coerce (GHC.Base.max).
+
+#[local] Definition Ord__WrappedMonoid_min {inst_m : Type} `{GHC.Base.Ord
+  inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> WrappedMonoid inst_m :=
+  GHC.Prim.coerce (GHC.Base.min).
+
+#[global]
+Program Instance Ord__WrappedMonoid {m : Type} `{GHC.Base.Ord m}
+   : GHC.Base.Ord (WrappedMonoid m) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zl____ := Ord__WrappedMonoid_op_zl__ ;
+           GHC.Base.op_zlze____ := Ord__WrappedMonoid_op_zlze__ ;
+           GHC.Base.op_zg____ := Ord__WrappedMonoid_op_zg__ ;
+           GHC.Base.op_zgze____ := Ord__WrappedMonoid_op_zgze__ ;
+           GHC.Base.compare__ := Ord__WrappedMonoid_compare ;
+           GHC.Base.max__ := Ord__WrappedMonoid_max ;
+           GHC.Base.min__ := Ord__WrappedMonoid_min |}.
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Data.Semigroup.Show__WrappedMonoid' *)
+
+(* Skipping all instances of class `GHC.Read.Read', including
+   `Data.Semigroup.Read__WrappedMonoid' *)
+
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Semigroup.Data__WrappedMonoid' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Semigroup.Generic__WrappedMonoid' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Semigroup.Generic1__TYPE__WrappedMonoid__LiftedRep' *)
+
+(* Skipping all instances of class `GHC.Enum.Bounded', including
+   `Data.Semigroup.Bounded__Last' *)
+
+Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
+
+#[local] Definition Eq___Last_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : Last inst_a -> Last inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.==_).
+
+#[local] Definition Eq___Last_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : Last inst_a -> Last inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base./=_).
+
+#[global]
+Program Instance Eq___Last {a : Type} `{GHC.Base.Eq_ a}
+   : GHC.Base.Eq_ (Last a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___Last_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___Last_op_zsze__ |}.
+
+#[local] Definition Ord__Last_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Last inst_a -> Last inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<_).
+
+#[local] Definition Ord__Last_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Last inst_a -> Last inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<=_).
+
+#[local] Definition Ord__Last_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Last inst_a -> Last inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>_).
+
+#[local] Definition Ord__Last_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Last inst_a -> Last inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>=_).
+
+#[local] Definition Ord__Last_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Last inst_a -> Last inst_a -> comparison :=
+  GHC.Prim.coerce (GHC.Base.compare).
+
+#[local] Definition Ord__Last_max {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Last inst_a -> Last inst_a -> Last inst_a :=
+  GHC.Prim.coerce (GHC.Base.max).
+
+#[local] Definition Ord__Last_min {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Last inst_a -> Last inst_a -> Last inst_a :=
+  GHC.Prim.coerce (GHC.Base.min).
+
+#[global]
+Program Instance Ord__Last {a : Type} `{GHC.Base.Ord a}
+   : GHC.Base.Ord (Last a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zl____ := Ord__Last_op_zl__ ;
+           GHC.Base.op_zlze____ := Ord__Last_op_zlze__ ;
+           GHC.Base.op_zg____ := Ord__Last_op_zg__ ;
+           GHC.Base.op_zgze____ := Ord__Last_op_zgze__ ;
+           GHC.Base.compare__ := Ord__Last_compare ;
+           GHC.Base.max__ := Ord__Last_max ;
+           GHC.Base.min__ := Ord__Last_min |}.
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Data.Semigroup.Show__Last' *)
+
+(* Skipping all instances of class `GHC.Read.Read', including
+   `Data.Semigroup.Read__Last' *)
+
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Semigroup.Data__Last' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Semigroup.Generic__Last' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Semigroup.Generic1__TYPE__Last__LiftedRep' *)
+
+(* Skipping all instances of class `GHC.Enum.Bounded', including
+   `Data.Semigroup.Bounded__First' *)
+
+Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
+
+#[local] Definition Eq___First_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : First inst_a -> First inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.==_).
+
+#[local] Definition Eq___First_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : First inst_a -> First inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base./=_).
+
+#[global]
+Program Instance Eq___First {a : Type} `{GHC.Base.Eq_ a}
+   : GHC.Base.Eq_ (First a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___First_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___First_op_zsze__ |}.
+
+#[local] Definition Ord__First_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : First inst_a -> First inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<_).
+
+#[local] Definition Ord__First_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : First inst_a -> First inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<=_).
+
+#[local] Definition Ord__First_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : First inst_a -> First inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>_).
+
+#[local] Definition Ord__First_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : First inst_a -> First inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>=_).
+
+#[local] Definition Ord__First_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : First inst_a -> First inst_a -> comparison :=
+  GHC.Prim.coerce (GHC.Base.compare).
+
+#[local] Definition Ord__First_max {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : First inst_a -> First inst_a -> First inst_a :=
+  GHC.Prim.coerce (GHC.Base.max).
+
+#[local] Definition Ord__First_min {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : First inst_a -> First inst_a -> First inst_a :=
+  GHC.Prim.coerce (GHC.Base.min).
+
+#[global]
+Program Instance Ord__First {a : Type} `{GHC.Base.Ord a}
+   : GHC.Base.Ord (First a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zl____ := Ord__First_op_zl__ ;
+           GHC.Base.op_zlze____ := Ord__First_op_zlze__ ;
+           GHC.Base.op_zg____ := Ord__First_op_zg__ ;
+           GHC.Base.op_zgze____ := Ord__First_op_zgze__ ;
+           GHC.Base.compare__ := Ord__First_compare ;
+           GHC.Base.max__ := Ord__First_max ;
+           GHC.Base.min__ := Ord__First_min |}.
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Data.Semigroup.Show__First' *)
+
+(* Skipping all instances of class `GHC.Read.Read', including
+   `Data.Semigroup.Read__First' *)
+
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Semigroup.Data__First' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Semigroup.Generic__First' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Semigroup.Generic1__TYPE__First__LiftedRep' *)
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Data.Semigroup.Show__Arg' *)
+
+(* Skipping all instances of class `GHC.Read.Read', including
+   `Data.Semigroup.Read__Arg' *)
+
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Semigroup.Data__Arg' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Semigroup.Generic__Arg' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Semigroup.Generic1__TYPE__Arg__LiftedRep' *)
+
+(* Skipping all instances of class `GHC.Enum.Bounded', including
+   `Data.Semigroup.Bounded__Max' *)
+
+Instance Unpeel_Max a : HsToCoq.Unpeel.Unpeel (Max a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getMax Mk_Max.
+
+#[local] Definition Eq___Max_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : Max inst_a -> Max inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.==_).
+
+#[local] Definition Eq___Max_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : Max inst_a -> Max inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base./=_).
+
+#[global]
+Program Instance Eq___Max {a : Type} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Max a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___Max_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___Max_op_zsze__ |}.
+
+#[local] Definition Ord__Max_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Max inst_a -> Max inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<_).
+
+#[local] Definition Ord__Max_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Max inst_a -> Max inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<=_).
+
+#[local] Definition Ord__Max_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Max inst_a -> Max inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>_).
+
+#[local] Definition Ord__Max_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Max inst_a -> Max inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>=_).
+
+#[local] Definition Ord__Max_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Max inst_a -> Max inst_a -> comparison :=
+  GHC.Prim.coerce (GHC.Base.compare).
+
+#[local] Definition Ord__Max_max {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Max inst_a -> Max inst_a -> Max inst_a :=
+  GHC.Prim.coerce (GHC.Base.max).
+
+#[local] Definition Ord__Max_min {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Max inst_a -> Max inst_a -> Max inst_a :=
+  GHC.Prim.coerce (GHC.Base.min).
+
+#[global]
+Program Instance Ord__Max {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Max a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zl____ := Ord__Max_op_zl__ ;
+           GHC.Base.op_zlze____ := Ord__Max_op_zlze__ ;
+           GHC.Base.op_zg____ := Ord__Max_op_zg__ ;
+           GHC.Base.op_zgze____ := Ord__Max_op_zgze__ ;
+           GHC.Base.compare__ := Ord__Max_compare ;
+           GHC.Base.max__ := Ord__Max_max ;
+           GHC.Base.min__ := Ord__Max_min |}.
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Data.Semigroup.Show__Max' *)
+
+(* Skipping all instances of class `GHC.Read.Read', including
+   `Data.Semigroup.Read__Max' *)
+
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Semigroup.Data__Max' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Semigroup.Generic__Max' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Semigroup.Generic1__TYPE__Max__LiftedRep' *)
+
+(* Skipping all instances of class `GHC.Enum.Bounded', including
+   `Data.Semigroup.Bounded__Min' *)
+
+Instance Unpeel_Min a : HsToCoq.Unpeel.Unpeel (Min a) a :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ getMin Mk_Min.
+
+#[local] Definition Eq___Min_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : Min inst_a -> Min inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.==_).
+
+#[local] Definition Eq___Min_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
+   : Min inst_a -> Min inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base./=_).
+
+#[global]
+Program Instance Eq___Min {a : Type} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (Min a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___Min_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___Min_op_zsze__ |}.
+
+#[local] Definition Ord__Min_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Min inst_a -> Min inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<_).
+
+#[local] Definition Ord__Min_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Min inst_a -> Min inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<=_).
+
+#[local] Definition Ord__Min_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Min inst_a -> Min inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>_).
+
+#[local] Definition Ord__Min_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Min inst_a -> Min inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>=_).
+
+#[local] Definition Ord__Min_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Min inst_a -> Min inst_a -> comparison :=
+  GHC.Prim.coerce (GHC.Base.compare).
+
+#[local] Definition Ord__Min_max {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Min inst_a -> Min inst_a -> Min inst_a :=
+  GHC.Prim.coerce (GHC.Base.max).
+
+#[local] Definition Ord__Min_min {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Min inst_a -> Min inst_a -> Min inst_a :=
+  GHC.Prim.coerce (GHC.Base.min).
+
+#[global]
+Program Instance Ord__Min {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Min a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zl____ := Ord__Min_op_zl__ ;
+           GHC.Base.op_zlze____ := Ord__Min_op_zlze__ ;
+           GHC.Base.op_zg____ := Ord__Min_op_zg__ ;
+           GHC.Base.op_zgze____ := Ord__Min_op_zgze__ ;
+           GHC.Base.compare__ := Ord__Min_compare ;
+           GHC.Base.max__ := Ord__Min_max ;
+           GHC.Base.min__ := Ord__Min_min |}.
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Data.Semigroup.Show__Min' *)
+
+(* Skipping all instances of class `GHC.Read.Read', including
+   `Data.Semigroup.Read__Min' *)
+
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Semigroup.Data__Min' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Semigroup.Generic__Min' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Semigroup.Generic1__TYPE__Min__LiftedRep' *)
+
 (* Skipping all instances of class `GHC.Enum.Enum', including
    `Data.Semigroup.Enum__Min' *)
 
@@ -1729,36 +2202,18 @@ Program Instance Monoid__Option {a : Type} `{GHC.Base.Semigroup a}
     | n, j, Mk_Option m => Data.Maybe.maybe n j m
     end.
 
-Instance Unpeel_Min a : HsToCoq.Unpeel.Unpeel (Min a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getMin Mk_Min.
-
-Instance Unpeel_Max a : HsToCoq.Unpeel.Unpeel (Max a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getMax Mk_Max.
-
-Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
-
-Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
-
-Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
-
-Instance Unpeel_Option a : HsToCoq.Unpeel.Unpeel (Option a) (option a) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getOption Mk_Option.
-
 (* External variables:
-     None Some Type bool false list negb option true Coq.Program.Basics.compose
-     Data.Bifoldable.Bifoldable Data.Bifoldable.bifoldMap__ Data.Bifoldable.bifold__
-     Data.Bifoldable.bifoldl__ Data.Bifoldable.bifoldr__ Data.Bifunctor.Bifunctor
-     Data.Bifunctor.bimap__ Data.Bifunctor.first__ Data.Bifunctor.second__
-     Data.Bitraversable.Bitraversable Data.Bitraversable.bitraverse__
-     Data.Foldable.Foldable Data.Foldable.foldMap'__ Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
-     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
-     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
-     Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.Maybe.maybe
-     Data.SemigroupInternal.Endo Data.SemigroupInternal.Mk_Dual
+     None Some Type bool comparison false list negb option true
+     Coq.Program.Basics.compose Data.Bifoldable.Bifoldable
+     Data.Bifoldable.bifoldMap__ Data.Bifoldable.bifold__ Data.Bifoldable.bifoldl__
+     Data.Bifoldable.bifoldr__ Data.Bifunctor.Bifunctor Data.Bifunctor.bimap__
+     Data.Bifunctor.first__ Data.Bifunctor.second__ Data.Bitraversable.Bitraversable
+     Data.Bitraversable.bitraverse__ Data.Foldable.Foldable Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
+     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
+     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
+     Data.Foldable.sum__ Data.Foldable.toList__ Data.Functor.op_zlzdzg__
+     Data.Maybe.maybe Data.SemigroupInternal.Endo Data.SemigroupInternal.Mk_Dual
      Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
      Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
      Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
@@ -1766,14 +2221,17 @@ Instance Unpeel_Option a : HsToCoq.Unpeel.Unpeel (Option a) (option a) :=
      Data.Traversable.mapM__ Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse__ GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor
      GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.build'
-     GHC.Base.const GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr
-     GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__ GHC.Base.mappend
-     GHC.Base.mappend__ GHC.Base.max GHC.Base.mconcat__ GHC.Base.mempty
-     GHC.Base.mempty__ GHC.Base.min GHC.Base.op_z2218U__ GHC.Base.op_zeze__
-     GHC.Base.op_zeze____ GHC.Base.op_zgzg____ GHC.Base.op_zgzgze____
-     GHC.Base.op_zlzd____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
-     GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_zsze____
-     GHC.Base.op_ztzg__ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return___ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
-     GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
+     GHC.Base.compare GHC.Base.compare__ GHC.Base.const GHC.Base.flip GHC.Base.fmap
+     GHC.Base.fmap__ GHC.Base.foldr GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__
+     GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max GHC.Base.max__
+     GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.min GHC.Base.min__
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__
+     GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zgzg____
+     GHC.Base.op_zgzgze____ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd____
+     GHC.Base.op_zlze__ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
+     GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____
+     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg__ GHC.Base.op_ztzg____
+     GHC.Base.pure GHC.Base.pure__ GHC.Base.return___ GHC.Num.Int GHC.Num.Num
+     GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel
 *)

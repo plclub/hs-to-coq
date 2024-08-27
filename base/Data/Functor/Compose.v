@@ -39,6 +39,15 @@ Arguments Mk_Compose {_} {_} {_} {_} {_} _.
 
 (* Converted value declarations: *)
 
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Functor.Compose.Data__Compose' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Functor.Compose.Generic__Compose' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Functor.Compose.Generic1__Compose__5' *)
+
 #[local] Definition Eq1__Compose_liftEq {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Functor.Classes.Eq1 inst_f} `{Data.Functor.Classes.Eq1
   inst_g}
@@ -191,7 +200,7 @@ Program Instance Ord__Compose {f : Type -> Type} {g : Type -> Type} {a : Type}
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | a, Mk_Compose x =>
-          Mk_Compose (Functor__Compose_fmap (fun arg_2__ => a GHC.Base.<$ arg_2__) x)
+          Mk_Compose (GHC.Base.fmap (fun arg_2__ => a GHC.Base.<$ arg_2__) x)
       end.
 
 #[global]

@@ -34,6 +34,15 @@ Arguments Pair {_} {_} {_} {_} _ _.
 
 (* Converted value declarations: *)
 
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Functor.Product.Data__Product' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Functor.Product.Generic__Product' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Functor.Product.Generic1__Product__5' *)
+
 #[local] Definition Eq1__Product_liftEq {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Functor.Classes.Eq1 inst_f} `{Data.Functor.Classes.Eq1
   inst_g}

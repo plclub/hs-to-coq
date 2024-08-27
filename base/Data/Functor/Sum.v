@@ -36,6 +36,15 @@ Arguments InR {_} {_} {_} {_} _.
 
 (* Converted value declarations: *)
 
+(* Skipping all instances of class `Data.Data.Data', including
+   `Data.Functor.Sum.Data__Sum' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Functor.Sum.Generic__Sum' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Functor.Sum.Generic1__Sum__5' *)
+
 #[local] Definition Eq1__Sum_liftEq {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Functor.Classes.Eq1 inst_f} `{Data.Functor.Classes.Eq1
   inst_g}

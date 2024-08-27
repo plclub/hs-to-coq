@@ -10,6 +10,9 @@ Unset Printing Implicit Defensive.
 Require Coq.Program.Tactics.
 Require Coq.Program.Wf.
 
+(* Preamble *)
+
+
 (* Converted imports: *)
 
 Require Coq.Init.Datatypes.
@@ -576,6 +579,91 @@ Export String.StringSyntax Ascii.AsciiSyntax.
 End ManualNotations.
 
 (* Converted value declarations: *)
+
+#[local] Definition Eq___option_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
+   : option inst_a -> option inst_a -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | None, None => true
+    | Some a1, Some b1 => ((a1 == b1))
+    | _, _ => false
+    end.
+
+#[local] Definition Eq___option_op_zsze__ {inst_a : Type} `{Eq_ inst_a}
+   : option inst_a -> option inst_a -> bool :=
+  fun x y => negb (Eq___option_op_zeze__ x y).
+
+#[global]
+Program Instance Eq___option {a : Type} `{Eq_ a} : Eq_ (option a) :=
+  fun _ k__ =>
+    k__ {| op_zeze____ := Eq___option_op_zeze__ ;
+           op_zsze____ := Eq___option_op_zsze__ |}.
+
+#[local] Definition Ord__option_op_zl__ {inst_a : Type} `{Ord inst_a}
+   : option inst_a -> option inst_a -> bool :=
+  fun a b =>
+    match a with
+    | None => match b with | None => false | _ => true end
+    | Some a1 => match b with | Some b1 => (a1 < b1) | _ => false end
+    end.
+
+#[local] Definition Ord__option_op_zlze__ {inst_a : Type} `{Ord inst_a}
+   : option inst_a -> option inst_a -> bool :=
+  fun a b => negb (Ord__option_op_zl__ b a).
+
+#[local] Definition Ord__option_op_zg__ {inst_a : Type} `{Ord inst_a}
+   : option inst_a -> option inst_a -> bool :=
+  fun a b => Ord__option_op_zl__ b a.
+
+#[local] Definition Ord__option_op_zgze__ {inst_a : Type} `{Ord inst_a}
+   : option inst_a -> option inst_a -> bool :=
+  fun a b => negb (Ord__option_op_zl__ a b).
+
+#[local] Definition Ord__option_compare {inst_a : Type} `{Ord inst_a}
+   : option inst_a -> option inst_a -> comparison :=
+  fun a b =>
+    match a with
+    | None => match b with | None => Eq | _ => Lt end
+    | Some a1 => match b with | Some b1 => (compare a1 b1) | _ => Gt end
+    end.
+
+#[local] Definition Ord__option_max {inst_a : Type} `{Ord inst_a}
+   : option inst_a -> option inst_a -> option inst_a :=
+  fun x y => if Ord__option_op_zlze__ x y : bool then y else x.
+
+#[local] Definition Ord__option_min {inst_a : Type} `{Ord inst_a}
+   : option inst_a -> option inst_a -> option inst_a :=
+  fun x y => if Ord__option_op_zlze__ x y : bool then x else y.
+
+#[global]
+Program Instance Ord__option {a : Type} `{Ord a} : Ord (option a) :=
+  fun _ k__ =>
+    k__ {| op_zl____ := Ord__option_op_zl__ ;
+           op_zlze____ := Ord__option_op_zlze__ ;
+           op_zg____ := Ord__option_op_zg__ ;
+           op_zgze____ := Ord__option_op_zgze__ ;
+           compare__ := Ord__option_compare ;
+           max__ := Ord__option_max ;
+           min__ := Ord__option_min |}.
+
+#[local] Definition Eq___NonEmpty_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
+   : NonEmpty inst_a -> NonEmpty inst_a -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | NEcons a1 a2, NEcons b1 b2 => (andb ((a1 == b1)) ((a2 == b2)))
+    end.
+
+#[local] Definition Eq___NonEmpty_op_zsze__ {inst_a : Type} `{Eq_ inst_a}
+   : NonEmpty inst_a -> NonEmpty inst_a -> bool :=
+  fun x y => negb (Eq___NonEmpty_op_zeze__ x y).
+
+#[global]
+Program Instance Eq___NonEmpty {a : Type} `{Eq_ a} : Eq_ (NonEmpty a) :=
+  fun _ k__ =>
+    k__ {| op_zeze____ := Eq___NonEmpty_op_zeze__ ;
+           op_zsze____ := Eq___NonEmpty_op_zsze__ |}.
+
+(* Skipping instance `GHC.Base.Ord__NonEmpty' of class `GHC.Base.Ord' *)
 
 #[local] Definition Semigroup__list_op_zlzlzgzg__ {inst_a : Type}
    : list inst_a -> list inst_a -> list inst_a :=
@@ -1610,21 +1698,11 @@ Fixpoint eqString (arg_0__ arg_1__ : String) : bool
    : (a -> b -> c) -> b -> a -> c :=
   fun f x y => f y x.
 
-#[global] Definition op_zd__ {r : GHC.Types.RuntimeRep} {a : Type} {b : Type}
-   : (a -> b) -> a -> b :=
+#[global] Definition op_zd__ {a} {b} : (a -> b) -> a -> b :=
   fun f x => f x.
 
-Notation "'_$_'" := (op_zd__).
-
-Infix "$" := (_$_) (at level 99).
-
-#[global] Definition op_zdzn__ {r : GHC.Types.RuntimeRep} {a : Type} {b : Type}
-   : (a -> b) -> a -> b :=
+#[global] Definition op_zdzn__ {a : Type} {b : Type} : (a -> b) -> a -> b :=
   fun f x => let vx := x in f vx.
-
-Notation "'_$!_'" := (op_zdzn__).
-
-Infix "$!" := (_$!_) (at level 99).
 
 (* Skipping definition `GHC.Base.until' *)
 
@@ -1687,15 +1765,12 @@ Notation "'_GHC.Base.<**>_'" := (op_zlztztzg__).
 Infix "GHC.Base.<**>" := (_<**>_) (at level 99).
 Notation "'_GHC.Base.=<<_'" := (op_zezlzl__).
 Infix "GHC.Base.=<<" := (_=<<_) (at level 99).
-Notation "'_GHC.Base.$_'" := (op_zd__).
-Infix "GHC.Base.$" := (_$_) (at level 99).
-Notation "'_GHC.Base.$!_'" := (op_zdzn__).
-Infix "GHC.Base.$!" := (_$!_) (at level 99).
 End Notations.
 
 (* External variables:
-     Eq Gt Lt None Some String Type andb bool comparison cons false list nil
-     op_zeze__ option pair true tt unit Coq.Init.Datatypes.app
-     Coq.Lists.List.flat_map Coq.Lists.List.map GHC.Prim.arrow GHC.Tuple.pair_type
-     GHC.Tuple.quad_type GHC.Tuple.triple_type GHC.Types.RuntimeRep
+     Eq Eq_ Gt Lt None Ord Some String Type andb bool compare compare__ comparison
+     cons false list max__ min__ negb nil op_zeze__ op_zeze____ op_zg____ op_zgze____
+     op_zl__ op_zl____ op_zlze____ op_zsze____ option pair true tt unit
+     Coq.Init.Datatypes.app Coq.Lists.List.flat_map Coq.Lists.List.map GHC.Prim.arrow
+     GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.triple_type
 *)

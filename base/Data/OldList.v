@@ -39,7 +39,7 @@ Arguments Mk_SnocBuilder {_} _ _ _.
 Require Import GHC.Char.
 Require GHC.Unicode.
 Require Coq.Lists.List.
-Require Import Omega.
+Require Import Lia.
 Import Ascii.AsciiSyntax.
 Import String.StringSyntax.
 
@@ -118,13 +118,13 @@ Lemma mergePairs_length : forall n, forall a cmp (xs : list (list a)) x y,
 induction n. intros; simpl. destruct xs; inversion H. simpl. auto.
 intros.
 destruct xs.
-simpl in *. omega.
+simpl in *. lia.
 destruct xs.
-simpl in *. omega.
+simpl in *. lia.
 assert (L : le (length xs) n).
-simpl in H. omega.
+simpl in H. lia.
 specialize (IHn a cmp xs l l0 L).
-simpl in *. omega.
+simpl in *. lia.
 Qed.
 
 Program Fixpoint mergeAll {a0} (cmp: a0 -> a0 -> comparison)
@@ -138,10 +138,10 @@ Next Obligation.
 simpl.
 destruct xs. simpl. auto.
 destruct xs. simpl. auto.
-apply lt_n_S.
+apply Nat.succ_lt_mono.
 pose (MP := mergePairs_length (length xs) a0 cmp xs l l0 ltac:(auto)). clearbody MP.
 simpl in *.
-omega.
+lia.
 Defined.
 
 Definition sortBy {a} (cmp : a -> a -> comparison) (xs : list a): list a :=
@@ -170,7 +170,7 @@ Proof.
   + intros p s' H. simpl in *.
     destruct (p a) eqn:Hp.
     pose (K := IHs p s' H). clearbody K.
-    omega.
+    lia.
     inversion H. subst.
     auto.
 Qed.
@@ -209,7 +209,7 @@ Next Obligation.
   inversion Heq_anonymous. subst.
   symmetry in B.
   pose (h2 := break_length B).
-  omega.
+  lia.
 Defined.
 
 Program Fixpoint lines (s : GHC.Base.String) { measure (length s) }
@@ -222,7 +222,7 @@ Program Fixpoint lines (s : GHC.Base.String) { measure (length s) }
          pair l (match s' with | nil => nil | cons _ s'' => lines s'' end)).
 Next Obligation.
   pose (h0 := break_length Heq_anonymous). clearbody h0. simpl in h0.
-  omega.
+  lia.
 Defined.
 
 (* Converted value declarations: *)

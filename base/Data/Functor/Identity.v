@@ -36,6 +36,144 @@ Instance Unpeel_Identity a : HsToCoq.Unpeel.Unpeel (Identity a) a :=
 
 (* Converted value declarations: *)
 
+(* Skipping all instances of class `Data.Bits.Bits', including
+   `Data.Functor.Identity.Bits__Identity' *)
+
+(* Skipping all instances of class `GHC.Enum.Bounded', including
+   `Data.Functor.Identity.Bounded__Identity' *)
+
+(* Skipping all instances of class `GHC.Enum.Enum', including
+   `Data.Functor.Identity.Enum__Identity' *)
+
+#[local] Definition Eq___Identity_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_
+  inst_a}
+   : Identity inst_a -> Identity inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.==_).
+
+#[local] Definition Eq___Identity_op_zsze__ {inst_a : Type} `{GHC.Base.Eq_
+  inst_a}
+   : Identity inst_a -> Identity inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base./=_).
+
+#[global]
+Program Instance Eq___Identity {a : Type} `{GHC.Base.Eq_ a}
+   : GHC.Base.Eq_ (Identity a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___Identity_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___Identity_op_zsze__ |}.
+
+(* Skipping all instances of class `Data.Bits.FiniteBits', including
+   `Data.Functor.Identity.FiniteBits__Identity' *)
+
+(* Skipping all instances of class `GHC.Float.Floating', including
+   `Data.Functor.Identity.Floating__Identity' *)
+
+(* Skipping all instances of class `GHC.Real.Fractional', including
+   `Data.Functor.Identity.Fractional__Identity' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Functor.Identity.Generic__Identity' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Functor.Identity.Generic1__TYPE__Identity__LiftedRep' *)
+
+(* Skipping all instances of class `GHC.Real.Integral', including
+   `Data.Functor.Identity.Integral__Identity' *)
+
+(* Skipping all instances of class `GHC.Ix.Ix', including
+   `Data.Functor.Identity.Ix__Identity' *)
+
+#[local] Definition Semigroup__Identity_op_zlzlzgzg__ {inst_a : Type}
+  `{GHC.Base.Semigroup inst_a}
+   : Identity inst_a -> Identity inst_a -> Identity inst_a :=
+  GHC.Prim.coerce (_GHC.Base.<<>>_).
+
+#[global]
+Program Instance Semigroup__Identity {a : Type} `{GHC.Base.Semigroup a}
+   : GHC.Base.Semigroup (Identity a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Identity_op_zlzlzgzg__ |}.
+
+#[local] Definition Monoid__Identity_mappend {inst_a : Type} `{GHC.Base.Monoid
+  inst_a}
+   : Identity inst_a -> Identity inst_a -> Identity inst_a :=
+  GHC.Prim.coerce (GHC.Base.mappend).
+
+#[local] Definition Monoid__Identity_mconcat {inst_a : Type} `{GHC.Base.Monoid
+  inst_a}
+   : list (Identity inst_a) -> Identity inst_a :=
+  GHC.Prim.coerce (GHC.Base.mconcat).
+
+#[local] Definition Monoid__Identity_mempty {inst_a : Type} `{GHC.Base.Monoid
+  inst_a}
+   : Identity inst_a :=
+  GHC.Prim.coerce (GHC.Base.mempty).
+
+#[global]
+Program Instance Monoid__Identity {a : Type} `{GHC.Base.Monoid a}
+   : GHC.Base.Monoid (Identity a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.mappend__ := Monoid__Identity_mappend ;
+           GHC.Base.mconcat__ := Monoid__Identity_mconcat ;
+           GHC.Base.mempty__ := Monoid__Identity_mempty |}.
+
+(* Skipping all instances of class `GHC.Num.Num', including
+   `Data.Functor.Identity.Num__Identity' *)
+
+#[local] Definition Ord__Identity_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Identity inst_a -> Identity inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<_).
+
+#[local] Definition Ord__Identity_op_zlze__ {inst_a : Type} `{GHC.Base.Ord
+  inst_a}
+   : Identity inst_a -> Identity inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.<=_).
+
+#[local] Definition Ord__Identity_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Identity inst_a -> Identity inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>_).
+
+#[local] Definition Ord__Identity_op_zgze__ {inst_a : Type} `{GHC.Base.Ord
+  inst_a}
+   : Identity inst_a -> Identity inst_a -> bool :=
+  GHC.Prim.coerce (_GHC.Base.>=_).
+
+#[local] Definition Ord__Identity_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Identity inst_a -> Identity inst_a -> comparison :=
+  GHC.Prim.coerce (GHC.Base.compare).
+
+#[local] Definition Ord__Identity_max {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Identity inst_a -> Identity inst_a -> Identity inst_a :=
+  GHC.Prim.coerce (GHC.Base.max).
+
+#[local] Definition Ord__Identity_min {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Identity inst_a -> Identity inst_a -> Identity inst_a :=
+  GHC.Prim.coerce (GHC.Base.min).
+
+#[global]
+Program Instance Ord__Identity {a : Type} `{GHC.Base.Ord a}
+   : GHC.Base.Ord (Identity a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zl____ := Ord__Identity_op_zl__ ;
+           GHC.Base.op_zlze____ := Ord__Identity_op_zlze__ ;
+           GHC.Base.op_zg____ := Ord__Identity_op_zg__ ;
+           GHC.Base.op_zgze____ := Ord__Identity_op_zgze__ ;
+           GHC.Base.compare__ := Ord__Identity_compare ;
+           GHC.Base.max__ := Ord__Identity_max ;
+           GHC.Base.min__ := Ord__Identity_min |}.
+
+(* Skipping all instances of class `GHC.Real.Real', including
+   `Data.Functor.Identity.Real__Identity' *)
+
+(* Skipping all instances of class `GHC.Real.RealFrac', including
+   `Data.Functor.Identity.RealFrac__Identity' *)
+
+(* Skipping all instances of class `GHC.Float.RealFloat', including
+   `Data.Functor.Identity.RealFloat__Identity' *)
+
+(* Skipping all instances of class `Foreign.Storable.Storable', including
+   `Data.Functor.Identity.Storable__Identity' *)
+
 (* Skipping all instances of class `GHC.Read.Read', including
    `Data.Functor.Identity.Read__Identity' *)
 
@@ -200,15 +338,22 @@ Program Instance Monad__Identity : GHC.Base.Monad Identity :=
    `Data.Functor.Identity.MonadFix__Identity' *)
 
 (* External variables:
-     Type bool cons false list nil Data.Foldable.Foldable Data.Foldable.foldMap'__
-     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
-     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
-     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
-     Data.Foldable.sum__ Data.Foldable.toList__ GHC.Base.Applicative GHC.Base.Functor
-     GHC.Base.Monad GHC.Base.Monoid GHC.Base.const GHC.Base.fmap__ GHC.Base.id
-     GHC.Base.liftA2__ GHC.Base.mempty GHC.Base.op_z2218U__ GHC.Base.op_zgzg____
-     GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
-     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
+     Type bool comparison cons false list nil Data.Foldable.Foldable
+     Data.Foldable.foldMap'__ Data.Foldable.foldMap__ Data.Foldable.fold__
+     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
+     Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
+     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
+     GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad
+     GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.compare
+     GHC.Base.compare__ GHC.Base.const GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__
+     GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max GHC.Base.max__ GHC.Base.mconcat
+     GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.min GHC.Base.min__
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__
+     GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zgzg____
+     GHC.Base.op_zgzgze____ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd__
+     GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
+     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____
+     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg____ GHC.Base.pure
      GHC.Base.pure__ GHC.Base.return___ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
      GHC.Prim.coerce
 *)

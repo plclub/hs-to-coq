@@ -17,7 +17,7 @@ Require Data.Bifunctor.
 Require Data.Either.
 Require Data.Functor.
 Require Data.Functor.Const.
-Require Data.Functor.Identity.
+Require Import Data.Functor.Identity.
 Require Data.Functor.Utils.
 Require GHC.Base.
 Require GHC.Prim.
@@ -384,21 +384,19 @@ Program Instance Bitraversable__Const
 #[global] Definition bimapDefault {t : Type -> Type -> Type} {a : Type} {b
    : Type} {c : Type} {d : Type} `{Bitraversable t}
    : (a -> b) -> (c -> d) -> t a c -> t b d :=
-  GHC.Prim.coerce (bitraverse : (a -> Data.Functor.Identity.Identity b) ->
-                   (c -> Data.Functor.Identity.Identity d) ->
-                   t a c -> Data.Functor.Identity.Identity (t b d)).
+  GHC.Prim.coerce (bitraverse : (a -> Identity b) ->
+                   (c -> Identity d) -> t a c -> Identity (t b d)).
 
 (* Skipping definition `Data.Bitraversable.bifoldMapDefault' *)
 
 (* External variables:
-     Type op_zt__ pair Data.Bifoldable.Bifoldable Data.Bifunctor.Bifunctor
+     Identity Type op_zt__ pair Data.Bifoldable.Bifoldable Data.Bifunctor.Bifunctor
      Data.Either.Either Data.Either.Left Data.Either.Right Data.Functor.op_zlzdzg__
      Data.Functor.Const.Const Data.Functor.Const.Mk_Const
-     Data.Functor.Identity.Identity Data.Functor.Utils.Mk_StateL
-     Data.Functor.Utils.Mk_StateR Data.Functor.Utils.runStateL
-     Data.Functor.Utils.runStateR GHC.Base.Applicative GHC.Base.flip GHC.Base.id
-     GHC.Base.liftA2 GHC.Base.op_z2218U__ GHC.Prim.coerce GHC.Tuple.pair2
-     GHC.Tuple.pair3 GHC.Tuple.pair4 GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7
-     GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type
-     GHC.Tuple.sext_type GHC.Tuple.triple_type
+     Data.Functor.Utils.Mk_StateL Data.Functor.Utils.Mk_StateR
+     Data.Functor.Utils.runStateL Data.Functor.Utils.runStateR GHC.Base.Applicative
+     GHC.Base.flip GHC.Base.id GHC.Base.liftA2 GHC.Base.op_z2218U__ GHC.Prim.coerce
+     GHC.Tuple.pair2 GHC.Tuple.pair3 GHC.Tuple.pair4 GHC.Tuple.pair5 GHC.Tuple.pair6
+     GHC.Tuple.pair7 GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type
+     GHC.Tuple.sept_type GHC.Tuple.sext_type GHC.Tuple.triple_type
 *)

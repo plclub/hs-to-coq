@@ -21,7 +21,7 @@ Require Data.Maybe.
 Require Data.Monoid.
 Require Data.Ord.
 Require Data.Proxy.
-Require Data.SemigroupInternal.
+Require Import Data.SemigroupInternal.
 Require GHC.Base.
 Require GHC.List.
 Require GHC.Num.
@@ -132,8 +132,7 @@ Definition default_foldable {f:Type -> Type}
     (* foldMap *)
     (@foldMap)
     (* foldMap' *)
-    (fun m a (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) f =>
-       foldl' (fun acc a => GHC.Base.op_zlzlzgzg__ acc (f a)) GHC.Base.mempty)
+    (fun m a (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) f => foldl' (fun acc a => GHC.Base.op_zlzlzgzg__ acc (f a)) GHC.Base.mempty)
     (* foldl *)
     (@foldl)
     (* foldl' *)
@@ -227,10 +226,8 @@ Definition default_foldable_foldr (f : Type -> Type)
      forall {a : Type}, (b -> a -> b) -> b -> Data.Ord.Down a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Down_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                               (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                GHC.Base.flip f)) t)) z.
+      appEndo (getDual (Foldable__Down_foldMap (Mk_Dual GHC.Base.∘
+                                                (Mk_Endo GHC.Base.∘ GHC.Base.flip f)) t)) z.
 
 #[local] Definition Foldable__Down_foldr'
    : forall {a : Type},
@@ -254,14 +251,12 @@ Definition default_foldable_foldr (f : Type -> Type)
 #[local] Definition Foldable__Down_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Ord.Down a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Down_foldMap Data.SemigroupInternal.Mk_Product).
+    Coq.Program.Basics.compose getProduct (Foldable__Down_foldMap Mk_Product).
 
 #[local] Definition Foldable__Down_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Ord.Down a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Down_foldMap
-                                Data.SemigroupInternal.Mk_Sum).
+    Coq.Program.Basics.compose getSum (Foldable__Down_foldMap Mk_Sum).
 
 #[local] Definition Foldable__Down_toList
    : forall {a : Type}, Data.Ord.Down a -> list a :=
@@ -286,620 +281,23 @@ Program Instance Foldable__Down : Foldable Data.Ord.Down :=
            sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Down_sum ;
            toList__ := fun {a : Type} => Foldable__Down_toList |}.
 
-#[local] Definition Foldable__UWord_foldMap
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UWord a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | f, GHC.Generics.UWord a1 => GHC.Base.mempty
-      end.
+(* Skipping instance `Data.Foldable.Foldable__UWord' of class
+   `Data.Foldable.Foldable' *)
 
-#[local] Definition Foldable__UWord_fold
-   : forall {m : Type}, forall `{GHC.Base.Monoid m}, GHC.Generics.UWord m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UWord_foldMap GHC.Base.id.
+(* Skipping instance `Data.Foldable.Foldable__UInt' of class
+   `Data.Foldable.Foldable' *)
 
-#[local] Definition Foldable__UWord_foldr
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UWord a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ arg_2__ =>
-      match arg_0__, arg_1__, arg_2__ with
-      | f, z, GHC.Generics.UWord a1 => z
-      end.
+(* Skipping instance `Data.Foldable.Foldable__UFloat' of class
+   `Data.Foldable.Foldable' *)
 
-#[local] Definition Foldable__UWord_foldl'
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UWord a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in Foldable__UWord_foldr f' GHC.Base.id xs z0.
+(* Skipping instance `Data.Foldable.Foldable__UDouble' of class
+   `Data.Foldable.Foldable' *)
 
-#[local] Definition Foldable__UWord_foldMap'
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UWord a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__UWord_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+(* Skipping instance `Data.Foldable.Foldable__UChar' of class
+   `Data.Foldable.Foldable' *)
 
-#[local] Definition Foldable__UWord_foldl
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UWord a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__UWord_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                 GHC.Base.flip f)) t)) z.
-
-#[local] Definition Foldable__UWord_foldr'
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UWord a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in Foldable__UWord_foldl f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UWord_length
-   : forall {a : Type}, GHC.Generics.UWord a -> GHC.Num.Int :=
-  fun {a : Type} =>
-    Foldable__UWord_foldl' (fun arg_0__ arg_1__ =>
-                              match arg_0__, arg_1__ with
-                              | c, _ => c GHC.Num.+ #1
-                              end) #0.
-
-#[local] Definition Foldable__UWord_null
-   : forall {a : Type}, GHC.Generics.UWord a -> bool :=
-  fun {a : Type} => fun '(GHC.Generics.UWord a1) => true.
-
-#[local] Definition Foldable__UWord_product
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UWord a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__UWord_foldMap Data.SemigroupInternal.Mk_Product).
-
-#[local] Definition Foldable__UWord_sum
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UWord a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__UWord_foldMap Data.SemigroupInternal.Mk_Sum).
-
-#[local] Definition Foldable__UWord_toList
-   : forall {a : Type}, GHC.Generics.UWord a -> list a :=
-  fun {a : Type} =>
-    fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__UWord_foldr c n t)).
-
-#[global]
-Program Instance Foldable__UWord : Foldable GHC.Generics.UWord :=
-  fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UWord_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UWord_foldMap ;
-           foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UWord_foldMap' ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__UWord_foldl ;
-           foldl'__ := fun {b : Type} {a : Type} => Foldable__UWord_foldl' ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__UWord_foldr ;
-           foldr'__ := fun {a : Type} {b : Type} => Foldable__UWord_foldr' ;
-           length__ := fun {a : Type} => Foldable__UWord_length ;
-           null__ := fun {a : Type} => Foldable__UWord_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UWord_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UWord_sum ;
-           toList__ := fun {a : Type} => Foldable__UWord_toList |}.
-
-#[local] Definition Foldable__UInt_foldMap
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UInt a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | f, GHC.Generics.UInt a1 => GHC.Base.mempty
-      end.
-
-#[local] Definition Foldable__UInt_fold
-   : forall {m : Type}, forall `{GHC.Base.Monoid m}, GHC.Generics.UInt m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UInt_foldMap GHC.Base.id.
-
-#[local] Definition Foldable__UInt_foldr
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UInt a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ arg_2__ =>
-      match arg_0__, arg_1__, arg_2__ with
-      | f, z, GHC.Generics.UInt a1 => z
-      end.
-
-#[local] Definition Foldable__UInt_foldl'
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UInt a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in Foldable__UInt_foldr f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UInt_foldMap'
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UInt a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__UInt_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
-#[local] Definition Foldable__UInt_foldl
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UInt a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__UInt_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                               (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                GHC.Base.flip f)) t)) z.
-
-#[local] Definition Foldable__UInt_foldr'
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UInt a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in Foldable__UInt_foldl f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UInt_length
-   : forall {a : Type}, GHC.Generics.UInt a -> GHC.Num.Int :=
-  fun {a : Type} =>
-    Foldable__UInt_foldl' (fun arg_0__ arg_1__ =>
-                             match arg_0__, arg_1__ with
-                             | c, _ => c GHC.Num.+ #1
-                             end) #0.
-
-#[local] Definition Foldable__UInt_null
-   : forall {a : Type}, GHC.Generics.UInt a -> bool :=
-  fun {a : Type} => fun '(GHC.Generics.UInt a1) => true.
-
-#[local] Definition Foldable__UInt_product
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UInt a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__UInt_foldMap Data.SemigroupInternal.Mk_Product).
-
-#[local] Definition Foldable__UInt_sum
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UInt a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__UInt_foldMap
-                                Data.SemigroupInternal.Mk_Sum).
-
-#[local] Definition Foldable__UInt_toList
-   : forall {a : Type}, GHC.Generics.UInt a -> list a :=
-  fun {a : Type} =>
-    fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__UInt_foldr c n t)).
-
-#[global]
-Program Instance Foldable__UInt : Foldable GHC.Generics.UInt :=
-  fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UInt_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UInt_foldMap ;
-           foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UInt_foldMap' ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__UInt_foldl ;
-           foldl'__ := fun {b : Type} {a : Type} => Foldable__UInt_foldl' ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__UInt_foldr ;
-           foldr'__ := fun {a : Type} {b : Type} => Foldable__UInt_foldr' ;
-           length__ := fun {a : Type} => Foldable__UInt_length ;
-           null__ := fun {a : Type} => Foldable__UInt_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UInt_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UInt_sum ;
-           toList__ := fun {a : Type} => Foldable__UInt_toList |}.
-
-#[local] Definition Foldable__UFloat_foldMap
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UFloat a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | f, GHC.Generics.UFloat a1 => GHC.Base.mempty
-      end.
-
-#[local] Definition Foldable__UFloat_fold
-   : forall {m : Type}, forall `{GHC.Base.Monoid m}, GHC.Generics.UFloat m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UFloat_foldMap GHC.Base.id.
-
-#[local] Definition Foldable__UFloat_foldr
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UFloat a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ arg_2__ =>
-      match arg_0__, arg_1__, arg_2__ with
-      | f, z, GHC.Generics.UFloat a1 => z
-      end.
-
-#[local] Definition Foldable__UFloat_foldl'
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UFloat a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in Foldable__UFloat_foldr f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UFloat_foldMap'
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UFloat a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__UFloat_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
-#[local] Definition Foldable__UFloat_foldl
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UFloat a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__UFloat_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                 (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                  GHC.Base.flip f)) t)) z.
-
-#[local] Definition Foldable__UFloat_foldr'
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UFloat a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in Foldable__UFloat_foldl f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UFloat_length
-   : forall {a : Type}, GHC.Generics.UFloat a -> GHC.Num.Int :=
-  fun {a : Type} =>
-    Foldable__UFloat_foldl' (fun arg_0__ arg_1__ =>
-                               match arg_0__, arg_1__ with
-                               | c, _ => c GHC.Num.+ #1
-                               end) #0.
-
-#[local] Definition Foldable__UFloat_null
-   : forall {a : Type}, GHC.Generics.UFloat a -> bool :=
-  fun {a : Type} => fun '(GHC.Generics.UFloat a1) => true.
-
-#[local] Definition Foldable__UFloat_product
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UFloat a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__UFloat_foldMap Data.SemigroupInternal.Mk_Product).
-
-#[local] Definition Foldable__UFloat_sum
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UFloat a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__UFloat_foldMap Data.SemigroupInternal.Mk_Sum).
-
-#[local] Definition Foldable__UFloat_toList
-   : forall {a : Type}, GHC.Generics.UFloat a -> list a :=
-  fun {a : Type} =>
-    fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__UFloat_foldr c n t)).
-
-#[global]
-Program Instance Foldable__UFloat : Foldable GHC.Generics.UFloat :=
-  fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UFloat_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UFloat_foldMap ;
-           foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UFloat_foldMap' ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__UFloat_foldl ;
-           foldl'__ := fun {b : Type} {a : Type} => Foldable__UFloat_foldl' ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__UFloat_foldr ;
-           foldr'__ := fun {a : Type} {b : Type} => Foldable__UFloat_foldr' ;
-           length__ := fun {a : Type} => Foldable__UFloat_length ;
-           null__ := fun {a : Type} => Foldable__UFloat_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UFloat_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UFloat_sum ;
-           toList__ := fun {a : Type} => Foldable__UFloat_toList |}.
-
-#[local] Definition Foldable__UDouble_foldMap
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UDouble a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | f, GHC.Generics.UDouble a1 => GHC.Base.mempty
-      end.
-
-#[local] Definition Foldable__UDouble_fold
-   : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, GHC.Generics.UDouble m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UDouble_foldMap GHC.Base.id.
-
-#[local] Definition Foldable__UDouble_foldr
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UDouble a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ arg_2__ =>
-      match arg_0__, arg_1__, arg_2__ with
-      | f, z, GHC.Generics.UDouble a1 => z
-      end.
-
-#[local] Definition Foldable__UDouble_foldl'
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UDouble a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in
-      Foldable__UDouble_foldr f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UDouble_foldMap'
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UDouble a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__UDouble_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
-#[local] Definition Foldable__UDouble_foldl
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UDouble a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__UDouble_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                  (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                   GHC.Base.flip f)) t)) z.
-
-#[local] Definition Foldable__UDouble_foldr'
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UDouble a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in
-      Foldable__UDouble_foldl f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UDouble_length
-   : forall {a : Type}, GHC.Generics.UDouble a -> GHC.Num.Int :=
-  fun {a : Type} =>
-    Foldable__UDouble_foldl' (fun arg_0__ arg_1__ =>
-                                match arg_0__, arg_1__ with
-                                | c, _ => c GHC.Num.+ #1
-                                end) #0.
-
-#[local] Definition Foldable__UDouble_null
-   : forall {a : Type}, GHC.Generics.UDouble a -> bool :=
-  fun {a : Type} => fun '(GHC.Generics.UDouble a1) => true.
-
-#[local] Definition Foldable__UDouble_product
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UDouble a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__UDouble_foldMap Data.SemigroupInternal.Mk_Product).
-
-#[local] Definition Foldable__UDouble_sum
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UDouble a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__UDouble_foldMap Data.SemigroupInternal.Mk_Sum).
-
-#[local] Definition Foldable__UDouble_toList
-   : forall {a : Type}, GHC.Generics.UDouble a -> list a :=
-  fun {a : Type} =>
-    fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__UDouble_foldr c n t)).
-
-#[global]
-Program Instance Foldable__UDouble : Foldable GHC.Generics.UDouble :=
-  fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UDouble_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UDouble_foldMap ;
-           foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UDouble_foldMap' ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__UDouble_foldl ;
-           foldl'__ := fun {b : Type} {a : Type} => Foldable__UDouble_foldl' ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__UDouble_foldr ;
-           foldr'__ := fun {a : Type} {b : Type} => Foldable__UDouble_foldr' ;
-           length__ := fun {a : Type} => Foldable__UDouble_length ;
-           null__ := fun {a : Type} => Foldable__UDouble_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UDouble_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UDouble_sum ;
-           toList__ := fun {a : Type} => Foldable__UDouble_toList |}.
-
-#[local] Definition Foldable__UChar_foldMap
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UChar a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | f, GHC.Generics.UChar a1 => GHC.Base.mempty
-      end.
-
-#[local] Definition Foldable__UChar_fold
-   : forall {m : Type}, forall `{GHC.Base.Monoid m}, GHC.Generics.UChar m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UChar_foldMap GHC.Base.id.
-
-#[local] Definition Foldable__UChar_foldr
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UChar a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ arg_2__ =>
-      match arg_0__, arg_1__, arg_2__ with
-      | f, z, GHC.Generics.UChar a1 => z
-      end.
-
-#[local] Definition Foldable__UChar_foldl'
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UChar a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in Foldable__UChar_foldr f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UChar_foldMap'
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UChar a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__UChar_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
-#[local] Definition Foldable__UChar_foldl
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UChar a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__UChar_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                 GHC.Base.flip f)) t)) z.
-
-#[local] Definition Foldable__UChar_foldr'
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UChar a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in Foldable__UChar_foldl f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UChar_length
-   : forall {a : Type}, GHC.Generics.UChar a -> GHC.Num.Int :=
-  fun {a : Type} =>
-    Foldable__UChar_foldl' (fun arg_0__ arg_1__ =>
-                              match arg_0__, arg_1__ with
-                              | c, _ => c GHC.Num.+ #1
-                              end) #0.
-
-#[local] Definition Foldable__UChar_null
-   : forall {a : Type}, GHC.Generics.UChar a -> bool :=
-  fun {a : Type} => fun '(GHC.Generics.UChar a1) => true.
-
-#[local] Definition Foldable__UChar_product
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UChar a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__UChar_foldMap Data.SemigroupInternal.Mk_Product).
-
-#[local] Definition Foldable__UChar_sum
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UChar a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__UChar_foldMap Data.SemigroupInternal.Mk_Sum).
-
-#[local] Definition Foldable__UChar_toList
-   : forall {a : Type}, GHC.Generics.UChar a -> list a :=
-  fun {a : Type} =>
-    fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__UChar_foldr c n t)).
-
-#[global]
-Program Instance Foldable__UChar : Foldable GHC.Generics.UChar :=
-  fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UChar_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UChar_foldMap ;
-           foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UChar_foldMap' ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__UChar_foldl ;
-           foldl'__ := fun {b : Type} {a : Type} => Foldable__UChar_foldl' ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__UChar_foldr ;
-           foldr'__ := fun {a : Type} {b : Type} => Foldable__UChar_foldr' ;
-           length__ := fun {a : Type} => Foldable__UChar_length ;
-           null__ := fun {a : Type} => Foldable__UChar_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UChar_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UChar_sum ;
-           toList__ := fun {a : Type} => Foldable__UChar_toList |}.
-
-#[local] Definition Foldable__UAddr_foldMap
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UAddr a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | f, GHC.Generics.UAddr a1 => GHC.Base.mempty
-      end.
-
-#[local] Definition Foldable__UAddr_fold
-   : forall {m : Type}, forall `{GHC.Base.Monoid m}, GHC.Generics.UAddr m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UAddr_foldMap GHC.Base.id.
-
-#[local] Definition Foldable__UAddr_foldr
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UAddr a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ arg_2__ =>
-      match arg_0__, arg_1__, arg_2__ with
-      | f, z, GHC.Generics.UAddr a1 => z
-      end.
-
-#[local] Definition Foldable__UAddr_foldl'
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UAddr a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in Foldable__UAddr_foldr f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UAddr_foldMap'
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GHC.Generics.UAddr a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__UAddr_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
-#[local] Definition Foldable__UAddr_foldl
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GHC.Generics.UAddr a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__UAddr_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                 GHC.Base.flip f)) t)) z.
-
-#[local] Definition Foldable__UAddr_foldr'
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GHC.Generics.UAddr a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in Foldable__UAddr_foldl f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__UAddr_length
-   : forall {a : Type}, GHC.Generics.UAddr a -> GHC.Num.Int :=
-  fun {a : Type} =>
-    Foldable__UAddr_foldl' (fun arg_0__ arg_1__ =>
-                              match arg_0__, arg_1__ with
-                              | c, _ => c GHC.Num.+ #1
-                              end) #0.
-
-#[local] Definition Foldable__UAddr_null
-   : forall {a : Type}, GHC.Generics.UAddr a -> bool :=
-  fun {a : Type} => fun '(GHC.Generics.UAddr a1) => true.
-
-#[local] Definition Foldable__UAddr_product
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UAddr a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__UAddr_foldMap Data.SemigroupInternal.Mk_Product).
-
-#[local] Definition Foldable__UAddr_sum
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Generics.UAddr a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__UAddr_foldMap Data.SemigroupInternal.Mk_Sum).
-
-#[local] Definition Foldable__UAddr_toList
-   : forall {a : Type}, GHC.Generics.UAddr a -> list a :=
-  fun {a : Type} =>
-    fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__UAddr_foldr c n t)).
-
-#[global]
-Program Instance Foldable__UAddr : Foldable GHC.Generics.UAddr :=
-  fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__UAddr_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UAddr_foldMap ;
-           foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__UAddr_foldMap' ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__UAddr_foldl ;
-           foldl'__ := fun {b : Type} {a : Type} => Foldable__UAddr_foldl' ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__UAddr_foldr ;
-           foldr'__ := fun {a : Type} {b : Type} => Foldable__UAddr_foldr' ;
-           length__ := fun {a : Type} => Foldable__UAddr_length ;
-           null__ := fun {a : Type} => Foldable__UAddr_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UAddr_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__UAddr_sum ;
-           toList__ := fun {a : Type} => Foldable__UAddr_toList |}.
+(* Skipping instance `Data.Foldable.Foldable__UAddr' of class
+   `Data.Foldable.Foldable' *)
 
 (* Skipping instance `Data.Foldable.Foldable__op_ZCziZC__' of class
    `Data.Foldable.Foldable' *)
@@ -987,14 +385,12 @@ Program Instance Foldable__UAddr : Foldable GHC.Generics.UAddr :=
 #[local] Definition Foldable__option_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, option a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__option_foldMap Data.SemigroupInternal.Mk_Product).
+    Coq.Program.Basics.compose getProduct (Foldable__option_foldMap Mk_Product).
 
 #[local] Definition Foldable__option_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, option a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__option_foldMap Data.SemigroupInternal.Mk_Sum).
+    Coq.Program.Basics.compose getSum (Foldable__option_foldMap Mk_Sum).
 
 #[local] Definition Foldable__option_toList
    : forall {a : Type}, option a -> list a :=
@@ -1163,14 +559,12 @@ Program Instance Foldable__list : Foldable list :=
 #[local] Definition Foldable__NonEmpty_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Base.NonEmpty a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__NonEmpty_foldMap Data.SemigroupInternal.Mk_Product).
+    Coq.Program.Basics.compose getProduct (Foldable__NonEmpty_foldMap Mk_Product).
 
 #[local] Definition Foldable__NonEmpty_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Base.NonEmpty a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__NonEmpty_foldMap Data.SemigroupInternal.Mk_Sum).
+    Coq.Program.Basics.compose getSum (Foldable__NonEmpty_foldMap Mk_Sum).
 
 #[local] Definition Foldable__NonEmpty_toList
    : forall {a : Type}, GHC.Base.NonEmpty a -> list a :=
@@ -1241,10 +635,8 @@ Program Instance Foldable__NonEmpty : Foldable GHC.Base.NonEmpty :=
      forall {a : Type}, (b -> a -> b) -> b -> Data.Either.Either inst_a a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Either_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                 (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                  GHC.Base.flip f)) t)) z.
+      appEndo (getDual (Foldable__Either_foldMap (Mk_Dual GHC.Base.∘
+                                                  (Mk_Endo GHC.Base.∘ GHC.Base.flip f)) t)) z.
 
 #[local] Definition Foldable__Either_foldr' {inst_a : Type}
    : forall {a : Type},
@@ -1270,15 +662,13 @@ Program Instance Foldable__NonEmpty : Foldable GHC.Base.NonEmpty :=
    : forall {a : Type},
      forall `{GHC.Num.Num a}, Data.Either.Either inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Either_foldMap Data.SemigroupInternal.Mk_Product).
+    Coq.Program.Basics.compose getProduct (Foldable__Either_foldMap Mk_Product).
 
 #[local] Definition Foldable__Either_sum {inst_a : Type}
    : forall {a : Type},
      forall `{GHC.Num.Num a}, Data.Either.Either inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__Either_foldMap Data.SemigroupInternal.Mk_Sum).
+    Coq.Program.Basics.compose getSum (Foldable__Either_foldMap Mk_Sum).
 
 #[local] Definition Foldable__Either_toList {inst_a : Type}
    : forall {a : Type}, Data.Either.Either inst_a a -> list a :=
@@ -1346,10 +736,8 @@ Program Instance Foldable__Either {a : Type}
      forall {a : Type}, (b -> a -> b) -> b -> GHC.Tuple.pair_type inst_a a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__pair_type_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                    (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                     GHC.Base.flip f)) t)) z.
+      appEndo (getDual (Foldable__pair_type_foldMap (Mk_Dual GHC.Base.∘
+                                                     (Mk_Endo GHC.Base.∘ GHC.Base.flip f)) t)) z.
 
 #[local] Definition Foldable__pair_type_foldr' {inst_a : Type}
    : forall {a : Type},
@@ -1371,15 +759,13 @@ Program Instance Foldable__Either {a : Type}
    : forall {a : Type},
      forall `{GHC.Num.Num a}, GHC.Tuple.pair_type inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__pair_type_foldMap Data.SemigroupInternal.Mk_Product).
+    Coq.Program.Basics.compose getProduct (Foldable__pair_type_foldMap Mk_Product).
 
 #[local] Definition Foldable__pair_type_sum {inst_a : Type}
    : forall {a : Type},
      forall `{GHC.Num.Num a}, GHC.Tuple.pair_type inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__pair_type_foldMap Data.SemigroupInternal.Mk_Sum).
+    Coq.Program.Basics.compose getSum (Foldable__pair_type_foldMap Mk_Sum).
 
 #[local] Definition Foldable__pair_type_toList {inst_a : Type}
    : forall {a : Type}, GHC.Tuple.pair_type inst_a a -> list a :=
@@ -1502,71 +888,61 @@ Program Instance Foldable__Proxy : Foldable Data.Proxy.Proxy :=
 
 #[local] Definition Foldable__Dual_foldMap
    : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> Data.SemigroupInternal.Dual a -> m :=
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Dual a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Dual_fold
-   : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, Data.SemigroupInternal.Dual m -> m :=
+   : forall {m : Type}, forall `{GHC.Base.Monoid m}, Dual m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Dual_foldMap GHC.Base.id.
 
 #[local] Definition Foldable__Dual_foldl'
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Data.SemigroupInternal.Dual a -> b :=
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Dual a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Dual_foldMap'
    : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> Data.SemigroupInternal.Dual a -> m :=
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Dual a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun f =>
       Foldable__Dual_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
 
 #[local] Definition Foldable__Dual_foldl
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Data.SemigroupInternal.Dual a -> b :=
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Dual a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Dual_foldr
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Data.SemigroupInternal.Dual a -> b :=
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Dual a -> b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
-      | f, z, Data.SemigroupInternal.Mk_Dual x => f x z
+      | f, z, Mk_Dual x => f x z
       end.
 
 #[local] Definition Foldable__Dual_foldr'
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Data.SemigroupInternal.Dual a -> b :=
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Dual a -> b :=
   fun {a : Type} {b : Type} => Foldable__Dual_foldr.
 
 #[local] Definition Foldable__Dual_length
-   : forall {a : Type}, Data.SemigroupInternal.Dual a -> GHC.Num.Int :=
+   : forall {a : Type}, Dual a -> GHC.Num.Int :=
   fun {a : Type} => fun arg_0__ => #1.
 
-#[local] Definition Foldable__Dual_null
-   : forall {a : Type}, Data.SemigroupInternal.Dual a -> bool :=
+#[local] Definition Foldable__Dual_null : forall {a : Type}, Dual a -> bool :=
   fun {a : Type} => fun arg_0__ => false.
 
 #[local] Definition Foldable__Dual_product
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Data.SemigroupInternal.Dual a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} => Data.SemigroupInternal.getDual.
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Dual a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} => getDual.
 
 #[local] Definition Foldable__Dual_sum
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Data.SemigroupInternal.Dual a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} => Data.SemigroupInternal.getDual.
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Dual a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} => getDual.
 
 #[local] Definition Foldable__Dual_toList
-   : forall {a : Type}, Data.SemigroupInternal.Dual a -> list a :=
-  fun {a : Type} => fun '(Data.SemigroupInternal.Mk_Dual x) => cons x nil.
+   : forall {a : Type}, Dual a -> list a :=
+  fun {a : Type} => fun '(Mk_Dual x) => cons x nil.
 
 #[global]
-Program Instance Foldable__Dual : Foldable Data.SemigroupInternal.Dual :=
+Program Instance Foldable__Dual : Foldable Dual :=
   fun _ k__ =>
     k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Dual_fold ;
            foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
@@ -1585,71 +961,60 @@ Program Instance Foldable__Dual : Foldable Data.SemigroupInternal.Dual :=
 
 #[local] Definition Foldable__Sum_foldMap
    : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> Data.SemigroupInternal.Sum a -> m :=
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Sum a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Sum_fold
-   : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, Data.SemigroupInternal.Sum m -> m :=
+   : forall {m : Type}, forall `{GHC.Base.Monoid m}, Sum m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Sum_foldMap GHC.Base.id.
 
 #[local] Definition Foldable__Sum_foldl'
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Data.SemigroupInternal.Sum a -> b :=
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Sum a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Sum_foldMap'
    : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> Data.SemigroupInternal.Sum a -> m :=
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Sum a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun f =>
       Foldable__Sum_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
 
 #[local] Definition Foldable__Sum_foldl
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Data.SemigroupInternal.Sum a -> b :=
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Sum a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Sum_foldr
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Data.SemigroupInternal.Sum a -> b :=
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Sum a -> b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
-      | f, z, Data.SemigroupInternal.Mk_Sum x => f x z
+      | f, z, Mk_Sum x => f x z
       end.
 
 #[local] Definition Foldable__Sum_foldr'
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Data.SemigroupInternal.Sum a -> b :=
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Sum a -> b :=
   fun {a : Type} {b : Type} => Foldable__Sum_foldr.
 
 #[local] Definition Foldable__Sum_length
-   : forall {a : Type}, Data.SemigroupInternal.Sum a -> GHC.Num.Int :=
+   : forall {a : Type}, Sum a -> GHC.Num.Int :=
   fun {a : Type} => fun arg_0__ => #1.
 
-#[local] Definition Foldable__Sum_null
-   : forall {a : Type}, Data.SemigroupInternal.Sum a -> bool :=
+#[local] Definition Foldable__Sum_null : forall {a : Type}, Sum a -> bool :=
   fun {a : Type} => fun arg_0__ => false.
 
 #[local] Definition Foldable__Sum_product
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Data.SemigroupInternal.Sum a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} => Data.SemigroupInternal.getSum.
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Sum a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} => getSum.
 
 #[local] Definition Foldable__Sum_sum
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Data.SemigroupInternal.Sum a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} => Data.SemigroupInternal.getSum.
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Sum a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} => getSum.
 
-#[local] Definition Foldable__Sum_toList
-   : forall {a : Type}, Data.SemigroupInternal.Sum a -> list a :=
-  fun {a : Type} => fun '(Data.SemigroupInternal.Mk_Sum x) => cons x nil.
+#[local] Definition Foldable__Sum_toList : forall {a : Type}, Sum a -> list a :=
+  fun {a : Type} => fun '(Mk_Sum x) => cons x nil.
 
 #[global]
-Program Instance Foldable__Sum : Foldable Data.SemigroupInternal.Sum :=
+Program Instance Foldable__Sum : Foldable Sum :=
   fun _ k__ =>
     k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Sum_fold ;
            foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
@@ -1668,77 +1033,62 @@ Program Instance Foldable__Sum : Foldable Data.SemigroupInternal.Sum :=
 
 #[local] Definition Foldable__Product_foldMap
    : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m},
-     (a -> m) -> Data.SemigroupInternal.Product a -> m :=
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Product a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Product_fold
-   : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, Data.SemigroupInternal.Product m -> m :=
+   : forall {m : Type}, forall `{GHC.Base.Monoid m}, Product m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Product_foldMap GHC.Base.id.
 
 #[local] Definition Foldable__Product_foldl'
-   : forall {b : Type},
-     forall {a : Type},
-     (b -> a -> b) -> b -> Data.SemigroupInternal.Product a -> b :=
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Product a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Product_foldMap'
    : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m},
-     (a -> m) -> Data.SemigroupInternal.Product a -> m :=
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Product a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun f =>
       Foldable__Product_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
 
 #[local] Definition Foldable__Product_foldl
-   : forall {b : Type},
-     forall {a : Type},
-     (b -> a -> b) -> b -> Data.SemigroupInternal.Product a -> b :=
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Product a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
 #[local] Definition Foldable__Product_foldr
-   : forall {a : Type},
-     forall {b : Type},
-     (a -> b -> b) -> b -> Data.SemigroupInternal.Product a -> b :=
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Product a -> b :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
-      | f, z, Data.SemigroupInternal.Mk_Product x => f x z
+      | f, z, Mk_Product x => f x z
       end.
 
 #[local] Definition Foldable__Product_foldr'
-   : forall {a : Type},
-     forall {b : Type},
-     (a -> b -> b) -> b -> Data.SemigroupInternal.Product a -> b :=
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Product a -> b :=
   fun {a : Type} {b : Type} => Foldable__Product_foldr.
 
 #[local] Definition Foldable__Product_length
-   : forall {a : Type}, Data.SemigroupInternal.Product a -> GHC.Num.Int :=
+   : forall {a : Type}, Product a -> GHC.Num.Int :=
   fun {a : Type} => fun arg_0__ => #1.
 
 #[local] Definition Foldable__Product_null
-   : forall {a : Type}, Data.SemigroupInternal.Product a -> bool :=
+   : forall {a : Type}, Product a -> bool :=
   fun {a : Type} => fun arg_0__ => false.
 
 #[local] Definition Foldable__Product_product
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Data.SemigroupInternal.Product a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} => Data.SemigroupInternal.getProduct.
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Product a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} => getProduct.
 
 #[local] Definition Foldable__Product_sum
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Data.SemigroupInternal.Product a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} => Data.SemigroupInternal.getProduct.
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Product a -> a :=
+  fun {a : Type} `{GHC.Num.Num a} => getProduct.
 
 #[local] Definition Foldable__Product_toList
-   : forall {a : Type}, Data.SemigroupInternal.Product a -> list a :=
-  fun {a : Type} => fun '(Data.SemigroupInternal.Mk_Product x) => cons x nil.
+   : forall {a : Type}, Product a -> list a :=
+  fun {a : Type} => fun '(Mk_Product x) => cons x nil.
 
 #[global]
-Program Instance Foldable__Product : Foldable Data.SemigroupInternal.Product :=
+Program Instance Foldable__Product : Foldable Product :=
   fun _ k__ =>
     k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Product_fold ;
            foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
@@ -1764,33 +1114,27 @@ Program Instance Foldable__Product : Foldable Data.SemigroupInternal.Product :=
 #[local] Definition Foldable__Alt_foldMap {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m},
-     (a -> m) -> Data.SemigroupInternal.Alt inst_f a -> m :=
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Alt inst_f a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f => foldMap f GHC.Base.∘ Data.SemigroupInternal.getAlt.
+    fun f => foldMap f GHC.Base.∘ getAlt.
 
 #[local] Definition Foldable__Alt_fold {inst_f : Type -> Type} `{(Foldable
    inst_f)}
-   : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, Data.SemigroupInternal.Alt inst_f m -> m :=
+   : forall {m : Type}, forall `{GHC.Base.Monoid m}, Alt inst_f m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Alt_foldMap GHC.Base.id.
 
 #[local] Definition Foldable__Alt_foldr {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {a : Type},
-     forall {b : Type},
-     (a -> b -> b) -> b -> Data.SemigroupInternal.Alt inst_f a -> b :=
+     forall {b : Type}, (a -> b -> b) -> b -> Alt inst_f a -> b :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Alt_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+      appEndo (Foldable__Alt_foldMap (Coq.Program.Basics.compose Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Alt_foldl' {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {b : Type},
-     forall {a : Type},
-     (b -> a -> b) -> b -> Data.SemigroupInternal.Alt inst_f a -> b :=
+     forall {a : Type}, (b -> a -> b) -> b -> Alt inst_f a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Alt_foldr f' GHC.Base.id xs z0.
@@ -1798,9 +1142,7 @@ Program Instance Foldable__Product : Foldable Data.SemigroupInternal.Product :=
 #[local] Definition Foldable__Alt_foldMap' {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m},
-     (a -> m) -> Data.SemigroupInternal.Alt inst_f a -> m :=
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Alt inst_f a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
     fun f =>
       Foldable__Alt_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
@@ -1808,27 +1150,23 @@ Program Instance Foldable__Product : Foldable Data.SemigroupInternal.Product :=
 #[local] Definition Foldable__Alt_foldl {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {b : Type},
-     forall {a : Type},
-     (b -> a -> b) -> b -> Data.SemigroupInternal.Alt inst_f a -> b :=
+     forall {a : Type}, (b -> a -> b) -> b -> Alt inst_f a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Alt_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                              (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                               GHC.Base.flip f)) t)) z.
+      appEndo (getDual (Foldable__Alt_foldMap (Mk_Dual GHC.Base.∘
+                                               (Mk_Endo GHC.Base.∘ GHC.Base.flip f)) t)) z.
 
 #[local] Definition Foldable__Alt_foldr' {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {a : Type},
-     forall {b : Type},
-     (a -> b -> b) -> b -> Data.SemigroupInternal.Alt inst_f a -> b :=
+     forall {b : Type}, (a -> b -> b) -> b -> Alt inst_f a -> b :=
   fun {a : Type} {b : Type} =>
     fun f z0 xs =>
       let f' := fun k x z => k (f x z) in Foldable__Alt_foldl f' GHC.Base.id xs z0.
 
 #[local] Definition Foldable__Alt_length {inst_f : Type -> Type} `{(Foldable
    inst_f)}
-   : forall {a : Type}, Data.SemigroupInternal.Alt inst_f a -> GHC.Num.Int :=
+   : forall {a : Type}, Alt inst_f a -> GHC.Num.Int :=
   fun {a : Type} =>
     Foldable__Alt_foldl' (fun arg_0__ arg_1__ =>
                             match arg_0__, arg_1__ with
@@ -1837,34 +1175,30 @@ Program Instance Foldable__Product : Foldable Data.SemigroupInternal.Product :=
 
 #[local] Definition Foldable__Alt_null {inst_f : Type -> Type} `{(Foldable
    inst_f)}
-   : forall {a : Type}, Data.SemigroupInternal.Alt inst_f a -> bool :=
+   : forall {a : Type}, Alt inst_f a -> bool :=
   fun {a : Type} => Foldable__Alt_foldr (fun arg_0__ arg_1__ => false) true.
 
 #[local] Definition Foldable__Alt_product {inst_f : Type -> Type} `{(Foldable
    inst_f)}
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Data.SemigroupInternal.Alt inst_f a -> a :=
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Alt inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Alt_foldMap Data.SemigroupInternal.Mk_Product).
+    Coq.Program.Basics.compose getProduct (Foldable__Alt_foldMap Mk_Product).
 
 #[local] Definition Foldable__Alt_sum {inst_f : Type -> Type} `{(Foldable
    inst_f)}
-   : forall {a : Type},
-     forall `{GHC.Num.Num a}, Data.SemigroupInternal.Alt inst_f a -> a :=
+   : forall {a : Type}, forall `{GHC.Num.Num a}, Alt inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Alt_foldMap
-                                Data.SemigroupInternal.Mk_Sum).
+    Coq.Program.Basics.compose getSum (Foldable__Alt_foldMap Mk_Sum).
 
 #[local] Definition Foldable__Alt_toList {inst_f : Type -> Type} `{(Foldable
    inst_f)}
-   : forall {a : Type}, Data.SemigroupInternal.Alt inst_f a -> list a :=
+   : forall {a : Type}, Alt inst_f a -> list a :=
   fun {a : Type} =>
     fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__Alt_foldr c n t)).
 
 #[global]
 Program Instance Foldable__Alt {f : Type -> Type} `{(Foldable f)}
-   : Foldable (Data.SemigroupInternal.Alt f) :=
+   : Foldable (Alt f) :=
   fun _ k__ =>
     k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Alt_fold ;
            foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
@@ -1901,8 +1235,7 @@ Program Instance Foldable__Alt {f : Type -> Type} `{(Foldable f)}
      forall {b : Type}, (a -> b -> b) -> b -> Data.Monoid.Ap inst_f a -> b :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Ap_foldMap (Coq.Program.Basics.compose
-                                                            Data.SemigroupInternal.Mk_Endo f) t) z.
+      appEndo (Foldable__Ap_foldMap (Coq.Program.Basics.compose Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Ap_foldl' {inst_f : Type -> Type} `{(Foldable
    inst_f)}
@@ -1927,10 +1260,8 @@ Program Instance Foldable__Alt {f : Type -> Type} `{(Foldable f)}
      forall {a : Type}, (b -> a -> b) -> b -> Data.Monoid.Ap inst_f a -> b :=
   fun {b : Type} {a : Type} =>
     fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Ap_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                             (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                              GHC.Base.flip f)) t)) z.
+      appEndo (getDual (Foldable__Ap_foldMap (Mk_Dual GHC.Base.∘
+                                              (Mk_Endo GHC.Base.∘ GHC.Base.flip f)) t)) z.
 
 #[local] Definition Foldable__Ap_foldr' {inst_f : Type -> Type} `{(Foldable
    inst_f)}
@@ -1958,15 +1289,13 @@ Program Instance Foldable__Alt {f : Type -> Type} `{(Foldable f)}
    inst_f)}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Monoid.Ap inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Ap_foldMap Data.SemigroupInternal.Mk_Product).
+    Coq.Program.Basics.compose getProduct (Foldable__Ap_foldMap Mk_Product).
 
 #[local] Definition Foldable__Ap_sum {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Monoid.Ap inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Ap_foldMap
-                                Data.SemigroupInternal.Mk_Sum).
+    Coq.Program.Basics.compose getSum (Foldable__Ap_foldMap Mk_Sum).
 
 #[local] Definition Foldable__Ap_toList {inst_f : Type -> Type} `{(Foldable
    inst_f)}
@@ -2055,24 +1384,22 @@ Program Instance Foldable__Ap {f : Type -> Type} `{(Foldable f)}
                        fun c n => foldr (fun x y => (@foldr _ Foldable__list _ _ c y x)) n xs).
 
 #[global] Definition and {t : Type -> Type} `{Foldable t} : t bool -> bool :=
-  Coq.Program.Basics.compose Data.SemigroupInternal.getAll (foldMap
-                              Data.SemigroupInternal.Mk_All).
+  Coq.Program.Basics.compose getAll (foldMap Mk_All).
 
 #[global] Definition or {t : Type -> Type} `{Foldable t} : t bool -> bool :=
-  Coq.Program.Basics.compose Data.SemigroupInternal.getAny (foldMap
-                              Data.SemigroupInternal.Mk_Any).
+  Coq.Program.Basics.compose getAny (foldMap Mk_Any).
 
 #[global] Definition any {t : Type -> Type} {a : Type} `{Foldable t}
    : (a -> bool) -> t a -> bool :=
   fun p =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getAny (foldMap
-                                (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Any p)).
+    Coq.Program.Basics.compose getAny (foldMap (Coq.Program.Basics.compose Mk_Any
+                                                                           p)).
 
 #[global] Definition all {t : Type -> Type} {a : Type} `{Foldable t}
    : (a -> bool) -> t a -> bool :=
   fun p =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getAll (foldMap
-                                (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_All p)).
+    Coq.Program.Basics.compose getAll (foldMap (Coq.Program.Basics.compose Mk_All
+                                                                           p)).
 
 (* Skipping definition `Data.Foldable.maximumBy' *)
 
@@ -2094,25 +1421,18 @@ Program Instance Foldable__Ap {f : Type -> Type} `{(Foldable f)}
     foldMap (fun x => Data.Monoid.Mk_First (if p x : bool then Some x else None)).
 
 (* External variables:
-     None Some Type bool cons false list negb nil option pair true tt unit
-     Coq.Program.Basics.compose Data.Either.Either Data.Either.Left Data.Either.Right
-     Data.Either.isLeft Data.Maybe.maybe Data.Monoid.Ap Data.Monoid.Mk_First
-     Data.Monoid.getAp Data.Monoid.getFirst Data.Ord.Down Data.Ord.Mk_Down
-     Data.Proxy.Proxy Data.SemigroupInternal.Alt Data.SemigroupInternal.Dual
-     Data.SemigroupInternal.Mk_All Data.SemigroupInternal.Mk_Any
-     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
-     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
-     Data.SemigroupInternal.Product Data.SemigroupInternal.Sum
-     Data.SemigroupInternal.appEndo Data.SemigroupInternal.getAll
-     Data.SemigroupInternal.getAlt Data.SemigroupInternal.getAny
-     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
-     Data.SemigroupInternal.getSum GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Monad
-     GHC.Base.Monoid GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.build' GHC.Base.flip
-     GHC.Base.foldl GHC.Base.foldl' GHC.Base.foldr GHC.Base.id GHC.Base.mappend
-     GHC.Base.mempty GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zgzg__
-     GHC.Base.op_zgzgze__ GHC.Base.op_zlzlzgzg__ GHC.Base.op_ztzg__ GHC.Base.pure
-     GHC.Base.return_ GHC.Generics.UAddr GHC.Generics.UChar GHC.Generics.UDouble
-     GHC.Generics.UFloat GHC.Generics.UInt GHC.Generics.UWord GHC.List.length
-     GHC.List.null GHC.List.product GHC.List.sum GHC.Num.Int GHC.Num.Num
-     GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.coerce GHC.Tuple.pair_type
+     Alt Dual Mk_All Mk_Any Mk_Dual Mk_Endo Mk_Product Mk_Sum None Product Some Sum
+     Type appEndo bool cons false getAll getAlt getAny getDual getProduct getSum list
+     negb nil option pair true tt unit Coq.Program.Basics.compose Data.Either.Either
+     Data.Either.Left Data.Either.Right Data.Either.isLeft Data.Maybe.maybe
+     Data.Monoid.Ap Data.Monoid.Mk_First Data.Monoid.getAp Data.Monoid.getFirst
+     Data.Ord.Down Data.Ord.Mk_Down Data.Proxy.Proxy GHC.Base.Applicative
+     GHC.Base.Eq_ GHC.Base.Monad GHC.Base.Monoid GHC.Base.NEcons GHC.Base.NonEmpty
+     GHC.Base.build' GHC.Base.flip GHC.Base.foldl GHC.Base.foldl' GHC.Base.foldr
+     GHC.Base.id GHC.Base.mappend GHC.Base.mempty GHC.Base.op_z2218U__
+     GHC.Base.op_zeze__ GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__
+     GHC.Base.op_zlzlzgzg__ GHC.Base.op_ztzg__ GHC.Base.pure GHC.Base.return_
+     GHC.List.length GHC.List.null GHC.List.product GHC.List.sum GHC.Num.Int
+     GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.coerce
+     GHC.Tuple.pair_type
 *)
