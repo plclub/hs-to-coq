@@ -139,6 +139,7 @@ coq make -C transformers coq
 #coq make -C transformers/theories no theories yet
 
 make -C ghc vfiles
+(cd ghc/lib; coq coq_makefile -f _CoqProject -o Makefile)
 coq make -C ghc/lib
 (cd ghc/theories; coq coq_makefile -f _CoqProject -o Makefile)
 coq make -C ghc/theories
