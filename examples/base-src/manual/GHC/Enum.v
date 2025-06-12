@@ -438,9 +438,9 @@ Instance instance__Bounded_Char__181__ : (Bounded Char) := {
 }.
 
 Definition toEnumChar (i : Integer) : Char :=
-  if (Nless maxBound (Z.to_N i)) then maxBound
-  else if Nless (Z.to_N i) minBound then minBound
-       else Z.to_N i.
+  if N.ltb maxBound (Z.to_N i) then maxBound
+  else if N.ltb (Z.to_N i) minBound then minBound
+  else Z.to_N i.
 
 Definition fromEnumChar (c : Char) : Integer :=
   Z.of_N c.
