@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Caching Stack
         id: caching-stack
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.stack
@@ -71,7 +71,7 @@ jobs:
     steps:
       - name: Caching OPAM
         id: caching-opam
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.opam
           key: opam-${{ runner.os }}-coq${{ matrix.coq }}
@@ -103,7 +103,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Caching Stack
         id: caching-stack
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.stack
@@ -137,7 +137,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Caching OPAM
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.opam
           key: opam-${{ runner.os }}-coq${{ matrix.coq }}
@@ -213,7 +213,7 @@ jobs:
           enable-stack: true
           stack-version: 'latest'
       - name: Caching Stack
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.stack
@@ -229,7 +229,7 @@ jobs:
       - name: Build hs-to-coq
         run: stack --no-terminal --install-ghc build
       - name: Caching OPAM
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.opam
           key: opam-${{ runner.os }}-coq${{ matrix.coq }}
@@ -295,7 +295,7 @@ jobs:
           enable-stack: true
           stack-version: 'latest'
       - name: Caching Stack
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.stack
@@ -381,7 +381,7 @@ jobs:
           enable-stack: true
           stack-version: 'latest'
       - name: Caching Stack
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.stack
@@ -397,7 +397,7 @@ jobs:
       - name: Build hs-to-coq
         run: stack --no-terminal --install-ghc build
       - name: Caching OPAM
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.opam
           key: opam-${{ runner.os }}-coq${{ matrix.coq }}
