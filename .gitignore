@@ -25,6 +25,9 @@ Makefile.conf
 .Makefile.d
 .lia.cache
 Makefile
+.CoqMakefile.d
+CoqMakefile.conf
+build.log
 
 # Haskell
 *.o
