@@ -139,10 +139,16 @@ Lemma monad_bind_fmap_ap {M A B C} `{MonadLaws M} (f : A -> B -> C) (mx : M A) (
   (mx >>= fun x : A => fmap (f x) my) = (f <$> mx <*> my).
 Proof.
   unfold "<$>";
-    setoid_rewrite ->applicative_fmap;
-    repeat setoid_rewrite ->monad_applicative_ap;
-    setoid_rewrite ->monad_applicative_pure;
-    unfold ap.
+    rewrite !applicative_fmap.
+  replace (fun x : A => fmap (f x) my) with (fun x : A => pure (f x) <*> my).
+  2: { by setoid_rewrite <- applicative_fmap. }
+  repeat rewrite ->monad_applicative_ap.
+  replace (fun x : A => pure (f x) <*> my) with (fun x : A => ap (pure (f x)) my).
+  2: { by setoid_rewrite monad_applicative_ap. }
+  rewrite ->monad_applicative_pure.
+  replace (fun x : A => ap (pure (f x)) my) with (fun x : A => ap (return_ (f x)) my).
+  2: { by setoid_rewrite monad_applicative_pure. }
+  unfold ap.
   by rewrite -!monad_composition monad_left_id -!monad_composition.
 Qed.
 
