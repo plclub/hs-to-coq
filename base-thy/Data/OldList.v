@@ -2,7 +2,6 @@ Require Import Data.OldList.
 Require Import GHC.Base.
 Require Import GHC.Char.
 Require GHC.Unicode.
-Require Import Omega.
 
 
 (* -------------------------------------------------------------------- *)
