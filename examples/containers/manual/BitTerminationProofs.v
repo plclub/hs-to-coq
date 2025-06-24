@@ -10,7 +10,7 @@ of course imports [IntSet].
 Require Import Coq.NArith.NArith.
 Require Import Coq.Bool.Bool.
 Require Import CTZ.
-Require Import Omega.
+Require Import Lia.
 
 
 Lemma lxor_pow2_clearbit:
@@ -35,7 +35,7 @@ Proof.
   intros.
   apply lxor_pow2_clearbit.
   apply N_bit_ctz.
-  zify. omega.
+  lia.
 Qed.
 
 
@@ -102,7 +102,7 @@ Proof.
           specialize (H (N.succ i)).
           rewrite Pos_0_testbit_succ, Pos_1_testbit_succ in H.
           assumption.
-        ** zify. omega.
+        ** lia.
       + change (p <= p1)%positive.
         apply IHp. intro i.
         specialize (H (N.succ i)).
@@ -151,7 +151,7 @@ Lemma N2nat_inj_lt:
   (N.to_nat a < N.to_nat b) <-> (a < b)%N.
 Proof.
   intros.
-  zify. omega.
+  lia.
 Qed.
 
 (* This lemma is tailored to what we actually have to prove -- up to unfolding. *)
@@ -166,7 +166,7 @@ Proof.
   rewrite lxor_lowestBitMask by assumption.
   apply clearbit_lt.
   apply CTZ.N_bit_ctz.
-  zify; omega.
+  lia.
 Qed.
 
 Require Coq.Program.Tactics.

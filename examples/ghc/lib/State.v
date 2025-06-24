@@ -13,7 +13,9 @@ Require Coq.Program.Wf.
 (* Converted imports: *)
 
 Require GHC.Base.
+Require GHC.Prim.
 Import GHC.Base.Notations.
+Import GHC.Prim.Notations.
 
 (* Converted type declarations: *)
 
@@ -22,30 +24,45 @@ Inductive State s a : Type :=
 
 Arguments Mk_State {_} {_} _.
 
-Definition runState' {s} {a} (arg_0__ : State s a) :=
+#[global] Definition runState' {s} {a} (arg_0__ : State s a) :=
   let 'Mk_State runState' := arg_0__ in
   runState'.
 
 (* Converted value declarations: *)
 
-Local Definition Functor__State_fmap {inst_s : Type}
+#[local] Definition Functor__State_fmap {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, (a -> b) -> State inst_s a -> State inst_s b :=
   fun {a : Type} {b : Type} =>
-    fun f m => Mk_State (fun s => let 'pair r s' := runState' m s in pair (f r) s').
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, Mk_State a1 =>
+          Mk_State ((fun b4 b5 =>
+                       (fun '(GHC.Prim.op_Z2H__ a1 a2) => _GHC.Prim.(#,#)_ (f a1) ((fun b2 => b2) a2))
+                       (b4 ((fun b1 => b1) b5))) a1)
+      end.
 
-Local Definition Functor__State_op_zlzd__ {inst_s : Type}
+#[local] Definition Functor__State_op_zlzd__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, a -> State inst_s b -> State inst_s a :=
-  fun {a : Type} {b : Type} => Functor__State_fmap GHC.Base.∘ GHC.Base.const.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | z, Mk_State a1 =>
+          Mk_State ((fun b5 b6 =>
+                       (fun '(GHC.Prim.op_Z2H__ a1 a2) =>
+                          _GHC.Prim.(#,#)_ ((fun b2 => z) a1) ((fun b3 => b3) a2)) (b5 ((fun b1 => b1)
+                                                                                        b6))) a1)
+      end.
 
+#[global]
 Program Instance Functor__State {s : Type} : GHC.Base.Functor (State s) :=
   fun _ k__ =>
     k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__State_fmap ;
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
              Functor__State_op_zlzd__ |}.
 
-Local Definition Applicative__State_op_zlztzg__ {inst_s : Type}
+#[local] Definition Applicative__State_op_zlztzg__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, State inst_s (a -> b) -> State inst_s a -> State inst_s b :=
   fun {a : Type} {b : Type} =>
@@ -55,7 +72,7 @@ Local Definition Applicative__State_op_zlztzg__ {inst_s : Type}
                   let 'pair x s'' := runState' n s' in
                   pair (f x) s'').
 
-Local Definition Applicative__State_liftA2 {inst_s : Type}
+#[local] Definition Applicative__State_liftA2 {inst_s : Type}
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type},
@@ -63,16 +80,17 @@ Local Definition Applicative__State_liftA2 {inst_s : Type}
   fun {a : Type} {b : Type} {c : Type} =>
     fun f x => Applicative__State_op_zlztzg__ (GHC.Base.fmap f x).
 
-Local Definition Applicative__State_op_ztzg__ {inst_s : Type}
+#[local] Definition Applicative__State_op_ztzg__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, State inst_s a -> State inst_s b -> State inst_s b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 => Applicative__State_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
 
-Local Definition Applicative__State_pure {inst_s : Type}
+#[local] Definition Applicative__State_pure {inst_s : Type}
    : forall {a : Type}, a -> State inst_s a :=
   fun {a : Type} => fun x => Mk_State (fun s => pair x s).
 
+#[global]
 Program Instance Applicative__State {s : Type}
    : GHC.Base.Applicative (State s) :=
   fun _ k__ =>
@@ -84,23 +102,24 @@ Program Instance Applicative__State {s : Type}
              Applicative__State_op_ztzg__ ;
            GHC.Base.pure__ := fun {a : Type} => Applicative__State_pure |}.
 
-Local Definition Monad__State_op_zgzgze__ {inst_s : Type}
+#[local] Definition Monad__State_op_zgzgze__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, State inst_s a -> (a -> State inst_s b) -> State inst_s b :=
   fun {a : Type} {b : Type} =>
     fun m n =>
       Mk_State (fun s => let 'pair r s' := runState' m s in runState' (n r) s').
 
-Local Definition Monad__State_op_zgzg__ {inst_s : Type}
+#[local] Definition Monad__State_op_zgzg__ {inst_s : Type}
    : forall {a : Type},
      forall {b : Type}, State inst_s a -> State inst_s b -> State inst_s b :=
   fun {a : Type} {b : Type} =>
     fun m k => Monad__State_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__State_return_ {inst_s : Type}
+#[local] Definition Monad__State_return_ {inst_s : Type}
    : forall {a : Type}, a -> State inst_s a :=
   fun {a : Type} => GHC.Base.pure.
 
+#[global]
 Program Instance Monad__State {s : Type} : GHC.Base.Monad (State s) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
@@ -109,31 +128,32 @@ Program Instance Monad__State {s : Type} : GHC.Base.Monad (State s) :=
              Monad__State_op_zgzgze__ ;
            GHC.Base.return___ := fun {a : Type} => Monad__State_return_ |}.
 
-Definition get {s : Type} : State s s :=
+#[global] Definition get {s : Type} : State s s :=
   Mk_State (fun s => pair s s).
 
-Definition gets {s : Type} {a : Type} : (s -> a) -> State s a :=
+#[global] Definition gets {s : Type} {a : Type} : (s -> a) -> State s a :=
   fun f => Mk_State (fun s => pair (f s) s).
 
-Definition put {s : Type} : s -> State s unit :=
+#[global] Definition put {s : Type} : s -> State s unit :=
   fun s' => Mk_State (fun arg_0__ => pair tt s').
 
-Definition modify {s : Type} : (s -> s) -> State s unit :=
+#[global] Definition modify {s : Type} : (s -> s) -> State s unit :=
   fun f => Mk_State (fun s => pair tt (f s)).
 
-Definition evalState {s : Type} {a : Type} : State s a -> s -> a :=
+#[global] Definition evalState {s : Type} {a : Type} : State s a -> s -> a :=
   fun s i => let 'pair a _ := runState' s i in a.
 
-Definition execState {s : Type} {a : Type} : State s a -> s -> s :=
+#[global] Definition execState {s : Type} {a : Type} : State s a -> s -> s :=
   fun s i => let 'pair _ s' := runState' s i in s'.
 
-Definition runState {s : Type} {a : Type} : State s a -> s -> (a * s)%type :=
+#[global] Definition runState {s : Type} {a : Type}
+   : State s a -> s -> (a * s)%type :=
   fun s i => let 'pair a s' := runState' s i in pair a s'.
 
 (* External variables:
      Type op_zt__ pair tt unit GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monad
-     GHC.Base.const GHC.Base.fmap GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__
-     GHC.Base.op_z2218U__ GHC.Base.op_zgzg____ GHC.Base.op_zgzgze____
-     GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlztzg____
-     GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return___
+     GHC.Base.fmap GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__ GHC.Base.op_zgzg____
+     GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
+     GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
+     GHC.Base.return___ GHC.Prim.op_Z2H__
 *)

@@ -64,8 +64,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        ocaml: [4.07.1]
-        coq: [8.10.2]
+        ocaml: [4.14.2]
+        coq: [8.20.1]
     needs: pre_check
     if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
     steps:
@@ -85,7 +85,7 @@ jobs:
         run: |
           if ! [ -e $HOME/.opam/config ]; then opam init -j 2 -n -y; fi
           opam repo add coq-released http://coq.inria.fr/opam/released || true
-          opam list -i coq.8.10.2 --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
+          opam list -i coq.${{ matrix.coq }} --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
           opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
           opam install -y coq-equations.1.2+8.10
 

@@ -3,6 +3,7 @@ Require Import Prelude.
 Require Import HsToCoq.DeferredFix.
 
 Require Import Coq.Lists.List.
+Require Import Lia.
 Import ListNotations.
 
 Inductive AlreadySorted {a} `{Ord a} : list a -> Prop :=
@@ -136,7 +137,7 @@ Proof.
       inversion H2.
       simpl.
       rewrite (IHxs ys zs).
-      omega.
+      lia.
       congruence.
 Qed.
 
@@ -156,7 +157,7 @@ Proof.
       inversion H2.
       simpl.
       rewrite (IHxs ys zs).
-      omega.
+      lia.
       congruence.
     - destruct (OldList.partition p xs) eqn:?.
       inversion H.
@@ -189,12 +190,12 @@ Proof.
     - apply (H1 (length l)).
       + pose (partition_length_l _ _ _ _ _  Heqp).
         subst n. simpl.
-        omega.
+        lia.
       + reflexivity.
     - apply (H1 (length l0)).
       + pose (partition_length_r _ _ _ _ _  Heqp).
         subst n. simpl.
-        omega.
+        lia.
       + reflexivity.
 Qed.
 
@@ -283,12 +284,12 @@ Proof.
     - apply (H (length l)).
       + pose (partition_length_l _ _ _ _ _  Heqp).
         subst n. simpl.
-        omega.
+        lia.
       + reflexivity.
     - apply (H (length l0)).
       + pose (partition_length_r _ _ _ _ _  Heqp).
         subst n. simpl.
-        omega.
+        lia.
       + reflexivity.
     - refine (Forall_Permutation _ _ _ _ _ (quicksort_permutation _ _ _)).
       apply (Forall_partition_l _ _ _ _ _  Heqp).

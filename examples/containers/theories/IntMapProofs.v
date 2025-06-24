@@ -1,4 +1,4 @@
-Require Import Omega.
+Require Import Lia.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.NArith.NArith.
 Require Import Coq.Bool.Bool.
@@ -333,7 +333,7 @@ Lemma larger_f_imp:
 Proof.
   intros ???? ??? Hsmaller HD1 HD2 Hf.
   destruct HD1.
-  * subst. simpl in Hsmaller. Nomega.
+  * subst. simpl in Hsmaller. nia.
   * subst.
     assert (isSubrange r2 (halfRange r false) = true).
       { destruct (Desc_some_f HD1_1) as [i [v Hi]].
@@ -348,7 +348,7 @@ Proof.
         apply inRange_both_smaller_subRange with (i := i).
         * inRange_true.
         * inRange_true.
-        * rewrite rBits_halfRange. Nomega.
+        * rewrite rBits_halfRange. nia.
       }
     assert (isSubrange r2 (halfRange r true) = true).
       { destruct (Desc_some_f HD1_2) as [i [v Hi]].
@@ -362,7 +362,7 @@ Proof.
         apply inRange_both_smaller_subRange with (i := i).
         * inRange_true.
         * inRange_true.
-        * rewrite rBits_halfRange. Nomega.
+        * rewrite rBits_halfRange. nia.
       }
       inRange_disjoint.
 Qed.
@@ -582,8 +582,8 @@ Proof.
   f_equal.
   rewrite eq_iff_eq_true.
   rewrite !N.eqb_eq.
-  rewrite <- N.pow_succ_r  by Nomega.
-  replace (N.succ (b - 1)) with b by Nomega.
+  rewrite <- N.pow_succ_r  by nia.
+  replace (N.succ (b - 1)) with b by nia.
   rewrite N.sub_1_r.
   rewrite <- N.ones_equiv.
   rewrite -> N.ldiff_ones_r by nonneg.
@@ -637,13 +637,13 @@ Lemma nomatch_zero_smaller:
      if zero (rPrefix r1) (rMask r) then left else right).
 Proof.
   intros ????????.
-  assert (rBits r1 <= rBits r)%N by Nomega.
+  assert (rBits r1 <= rBits r)%N by nia.
   assert (forall h, rBits r1 <= rBits (halfRange r h))%N
-    by (intros; rewrite rBits_halfRange; Nomega).
+    by (intros; rewrite rBits_halfRange; nia).
   rewrite <- smaller_not_subrange_disjoint_iff; auto.
   repeat rewrite <- smaller_inRange_iff_subRange by auto.
   apply nomatch_zero.
-  Nomega.
+  nia.
 Qed.
 
 
@@ -979,7 +979,7 @@ Next Obligation.
        ** intros. destruct (rPrefix r1 == rPrefix r2) eqn: Hr in H.
          (** first destruct on where f1 i comes from and then do IH **)         
          ++ eapply IH with (s1:= m1) (s2:= (Bin (rPrefix r2) (rMask r2) m0 m3)). try assumption.
-            -- simpl. omega.
+            -- simpl. lia.
             -- eapply H1.
             -- eapply HD2.
             -- rewrite Hr in H. simpl in H. eapply andb_prop in H. destruct H. apply isSubmapOfBy_Bin. auto. 
@@ -994,12 +994,12 @@ Next Obligation.
       ** destruct (match_ (rPrefix r1) (rPrefix r2) (rMask r2)) eqn: Hm.
         ++ simpl.  destruct (zero (rPrefix r1) (rMask r2)) eqn: Hz.
           -- eapply IH.
-             *** simpl. omega. 
+             *** simpl. lia. 
              *** eapply HD1.
              *** eapply H6.
              *** intros. specialize (H i v1). auto. rewrite H0 in H. intuition. admit.
           -- eapply IH.
-             *** simpl. omega.
+             *** simpl. lia.
              *** eapply HD1.
              *** eapply H7.
              *** intros. admit.
@@ -2255,13 +2255,13 @@ Next Obligation.
         - (* s2 is part of the left half of m1 *)
           eapply Desc0_subRange.
           eapply restrictKeys_Desc; clear restrictKeys_Desc; try eassumption.
-          ** subst m s. simpl. omega.
+          ** subst m s. simpl. lia.
           ** solve_f_eq_disjoint_Map. admit. admit. admit. admit. admit. admit.
           ** isSubrange_true; eapply Desc_rNonneg; eassumption.
         - (* s2 is part of the right half of m1 *)
           eapply Desc0_subRange.
           eapply restrictKeys_Desc; clear restrictKeys_Desc; try eassumption.
-          ** subst m s. simpl. omega.
+          ** subst m s. simpl. lia.
           ** solve_f_eq_disjoint_Map. admit. admit. admit. admit. admit. admit.
           ** isSubrange_true; eapply Desc_rNonneg; eassumption.
 
@@ -2275,7 +2275,7 @@ Next Obligation.
           - (* s1 is part of the left half of s2 *)
             eapply Desc0_subRange.
             eapply restrictKeys_Desc; clear restrictKeys_Desc; try eassumption.
-            ** subst m s. simpl. omega.
+            ** subst m s. simpl. lia.
             ** eapply DescBin; try beassumption; reflexivity.
             ** solve_f_eq_disjoint_Map. admit. 
             ** isSubrange_true; eapply Desc_rNonneg; eassumption.
@@ -2284,22 +2284,22 @@ Next Obligation.
 
             eapply Desc0_subRange.
             eapply restrictKeys_Desc; clear restrictKeys_Desc; try eassumption.
-            ** subst s m. simpl. omega.
+            ** subst s m. simpl. lia.
             ** eapply DescBin; try beassumption; reflexivity.
             ** solve_f_eq_disjoint_Map. admit.
             ** isSubrange_true; eapply Desc_rNonneg; eassumption.
 
         -- (* s1 and s2 are the same size *)
-          apply same_size_compare; try Nomega; intros.
+          apply same_size_compare; try nia; intros.
           - subst.
             eapply bin_Desc0; try assumption; try reflexivity.
             ** eapply restrictKeys_Desc.
-               --- subst s m. simpl. omega.
+               --- subst s m. simpl. lia.
                --- eassumption.
                --- eassumption.
                --- intro i. reflexivity.
             ** eapply restrictKeys_Desc.
-               --- subst s m. simpl. omega.
+               --- subst s m. simpl. lia.
                --- eassumption.
                --- eassumption.
                --- intro i. reflexivity.

@@ -35,19 +35,19 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Definition Prefix :=
+#[global] Definition Prefix :=
   Coq.Numbers.BinNums.N.
 
-Definition Nat :=
+#[global] Definition Nat :=
   Coq.Numbers.BinNums.N.
 
-Definition Mask :=
+#[global] Definition Mask :=
   Coq.Numbers.BinNums.N.
 
-Definition Key :=
+#[global] Definition Key :=
   Coq.Numbers.BinNums.N%type.
 
-Definition BitMap :=
+#[global] Definition BitMap :=
   Coq.Numbers.BinNums.N.
 
 Inductive IntSet : Type :=
@@ -88,26 +88,27 @@ Require Import Coq.NArith.NArith.
 
 (* Converted value declarations: *)
 
-Definition branchMask : Prefix -> Prefix -> Mask :=
+#[global] Definition branchMask : Prefix -> Prefix -> Mask :=
   fun p1 p2 =>
     Coq.NArith.BinNat.N.pow 2 (Coq.NArith.BinNat.N.log2 (Coq.NArith.BinNat.N.lxor p1
                                                                                   p2)).
 
-Definition maskW : Nat -> Nat -> Prefix :=
+#[global] Definition maskW : Nat -> Nat -> Prefix :=
   fun i m => Coq.NArith.BinNat.N.ldiff i (2 * m - 1 % N).
 
-Definition mask : Coq.Numbers.BinNums.N -> Mask -> Prefix :=
+#[global] Definition mask : Coq.Numbers.BinNums.N -> Mask -> Prefix :=
   fun i m => maskW (i) (m).
 
-Definition zero : Coq.Numbers.BinNums.N -> Mask -> bool :=
+#[global] Definition zero : Coq.Numbers.BinNums.N -> Mask -> bool :=
   fun i m => ((i) Data.Bits..&.(**) (m)) GHC.Base.== #0.
 
-Definition link : Prefix -> IntSet -> Prefix -> IntSet -> IntSet :=
+#[global] Definition link : Prefix -> IntSet -> Prefix -> IntSet -> IntSet :=
   fun p1 t1 p2 t2 =>
     let m := branchMask p1 p2 in
     let p := mask p1 m in if zero p1 m : bool then Bin p m t1 t2 else Bin p m t2 t1.
 
-Definition nomatch : Coq.Numbers.BinNums.N -> Prefix -> Mask -> bool :=
+#[global] Definition nomatch
+   : Coq.Numbers.BinNums.N -> Prefix -> Mask -> bool :=
   fun i p m => (mask i m) GHC.Base./= p.
 
 Fixpoint insertBM (arg_0__ : Prefix) (arg_1__ : BitMap) (arg_2__ : IntSet)
@@ -123,7 +124,7 @@ Fixpoint insertBM (arg_0__ : Prefix) (arg_1__ : BitMap) (arg_2__ : IntSet)
      | kx, bm, Nil => Tip kx bm
      end.
 
-Definition shorter : Mask -> Mask -> bool :=
+#[global] Definition shorter : Mask -> Mask -> bool :=
   fun m1 m2 => (m1) GHC.Base.> (m2).
 
 Program Fixpoint union (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__ +
@@ -152,29 +153,32 @@ Program Fixpoint union (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__ +
      end.
 Solve Obligations with (termination_by_omega).
 
-Local Definition Semigroup__IntSet_op_zlzlzgzg__ : IntSet -> IntSet -> IntSet :=
+#[local] Definition Semigroup__IntSet_op_zlzlzgzg__
+   : IntSet -> IntSet -> IntSet :=
   union.
 
+#[global]
 Program Instance Semigroup__IntSet : GHC.Base.Semigroup IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__IntSet_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__IntSet_mappend : IntSet -> IntSet -> IntSet :=
+#[local] Definition Monoid__IntSet_mappend : IntSet -> IntSet -> IntSet :=
   _GHC.Base.<<>>_.
 
-Definition empty : IntSet :=
+#[global] Definition empty : IntSet :=
   Nil.
 
-Definition unions {f : Type -> Type} `{Data.Foldable.Foldable f}
+#[global] Definition unions {f : Type -> Type} `{Data.Foldable.Foldable f}
    : f IntSet -> IntSet :=
   fun xs => Data.Foldable.foldl' union empty xs.
 
-Local Definition Monoid__IntSet_mconcat : list IntSet -> IntSet :=
+#[local] Definition Monoid__IntSet_mconcat : list IntSet -> IntSet :=
   unions.
 
-Local Definition Monoid__IntSet_mempty : IntSet :=
+#[local] Definition Monoid__IntSet_mempty : IntSet :=
   empty.
 
+#[global]
 Program Instance Monoid__IntSet : GHC.Base.Monoid IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__IntSet_mappend ;
@@ -197,7 +201,7 @@ Fixpoint equal (arg_0__ arg_1__ : IntSet) : bool
      | _, _ => false
      end.
 
-Local Definition Eq___IntSet_op_zeze__ : IntSet -> IntSet -> bool :=
+#[local] Definition Eq___IntSet_op_zeze__ : IntSet -> IntSet -> bool :=
   fun t1 t2 => equal t1 t2.
 
 Fixpoint nequal (arg_0__ arg_1__ : IntSet) : bool
@@ -210,18 +214,19 @@ Fixpoint nequal (arg_0__ arg_1__ : IntSet) : bool
      | _, _ => true
      end.
 
-Local Definition Eq___IntSet_op_zsze__ : IntSet -> IntSet -> bool :=
+#[local] Definition Eq___IntSet_op_zsze__ : IntSet -> IntSet -> bool :=
   fun t1 t2 => nequal t1 t2.
 
+#[global]
 Program Instance Eq___IntSet : GHC.Base.Eq_ IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___IntSet_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___IntSet_op_zsze__ |}.
 
-Definition indexOfTheOnlyBit :=
+#[global] Definition indexOfTheOnlyBit :=
   fun x => Coq.NArith.BinNat.N.log2 x.
 
-Definition revNat : Nat -> Nat :=
+#[global] Definition revNat : Nat -> Nat :=
   fun x1 =>
     let 'x2 := ((Utils.Containers.Internal.BitUtil.shiftRL x1 #1) Data.Bits..&.(**)
                   #6148914691236517205) Data.Bits..|.(**)
@@ -246,10 +251,10 @@ Definition revNat : Nat -> Nat :=
     (Utils.Containers.Internal.BitUtil.shiftRL x6 #32) Data.Bits..|.(**)
     (Utils.Containers.Internal.BitUtil.shiftLL x6 #32).
 
-Definition revNatSafe n :=
+#[global] Definition revNatSafe n :=
   Coq.NArith.BinNat.N.modulo (revNat n) (Coq.NArith.BinNat.N.pow 2 64).
 
-Program Definition foldrBits {a}
+Program #[global] Definition foldrBits {a}
    : Coq.Numbers.BinNums.N ->
      (Coq.Numbers.BinNums.N -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
@@ -271,7 +276,7 @@ Program Definition foldrBits {a}
     go (revNatSafe bitmap) z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
-Definition foldr {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
+#[global] Definition foldr {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -285,30 +290,31 @@ Definition foldr {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
       | _ => go z t
       end.
 
-Definition toAscList : IntSet -> list Key :=
+#[global] Definition toAscList : IntSet -> list Key :=
   foldr cons nil.
 
-Local Definition Ord__IntSet_compare : IntSet -> IntSet -> comparison :=
+#[local] Definition Ord__IntSet_compare : IntSet -> IntSet -> comparison :=
   fun s1 s2 => GHC.Base.compare (toAscList s1) (toAscList s2).
 
-Local Definition Ord__IntSet_op_zl__ : IntSet -> IntSet -> bool :=
+#[local] Definition Ord__IntSet_op_zl__ : IntSet -> IntSet -> bool :=
   fun x y => Ord__IntSet_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__IntSet_op_zlze__ : IntSet -> IntSet -> bool :=
+#[local] Definition Ord__IntSet_op_zlze__ : IntSet -> IntSet -> bool :=
   fun x y => Ord__IntSet_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__IntSet_op_zg__ : IntSet -> IntSet -> bool :=
+#[local] Definition Ord__IntSet_op_zg__ : IntSet -> IntSet -> bool :=
   fun x y => Ord__IntSet_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__IntSet_op_zgze__ : IntSet -> IntSet -> bool :=
+#[local] Definition Ord__IntSet_op_zgze__ : IntSet -> IntSet -> bool :=
   fun x y => Ord__IntSet_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__IntSet_max : IntSet -> IntSet -> IntSet :=
+#[local] Definition Ord__IntSet_max : IntSet -> IntSet -> IntSet :=
   fun x y => if Ord__IntSet_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__IntSet_min : IntSet -> IntSet -> IntSet :=
+#[local] Definition Ord__IntSet_min : IntSet -> IntSet -> IntSet :=
   fun x y => if Ord__IntSet_op_zlze__ x y : bool then x else y.
 
+#[global]
 Program Instance Ord__IntSet : GHC.Base.Ord IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__IntSet_op_zl__ ;
@@ -332,7 +338,7 @@ Program Instance Ord__IntSet : GHC.Base.Ord IntSet :=
 
 (* Skipping definition `Data.IntSet.Internal.intFromNat' *)
 
-Definition bin : Prefix -> Mask -> IntSet -> IntSet -> IntSet :=
+#[global] Definition bin : Prefix -> Mask -> IntSet -> IntSet -> IntSet :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
     | _, _, l, Nil => l
@@ -340,7 +346,7 @@ Definition bin : Prefix -> Mask -> IntSet -> IntSet -> IntSet :=
     | p, m, l, r => Bin p m l r
     end.
 
-Definition tip : Prefix -> BitMap -> IntSet :=
+#[global] Definition tip : Prefix -> BitMap -> IntSet :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | _, num_2__ =>
@@ -403,7 +409,7 @@ Program Fixpoint difference (arg_0__ arg_1__ : IntSet) {measure (size_nat
      end.
 Solve Obligations with (termination_by_omega).
 
-Definition op_zrzr__ : IntSet -> IntSet -> IntSet :=
+#[global] Definition op_zrzr__ : IntSet -> IntSet -> IntSet :=
   fun m1 m2 => difference m1 m2.
 
 Notation "'_\\_'" := (op_zrzr__).
@@ -414,10 +420,10 @@ Infix "\\" := (_\\_) (at level 99).
 
 (* Skipping definition `Data.IntSet.Internal.intSetDataType' *)
 
-Definition null : IntSet -> bool :=
+#[global] Definition null : IntSet -> bool :=
   fun arg_0__ => match arg_0__ with | Nil => true | _ => false end.
 
-Definition size : IntSet -> Coq.Numbers.BinNums.N :=
+#[global] Definition size : IntSet -> Coq.Numbers.BinNums.N :=
   let fix go arg_0__ arg_1__
     := match arg_0__, arg_1__ with
        | acc, Bin _ _ l r => go (go acc l) r
@@ -427,22 +433,23 @@ Definition size : IntSet -> Coq.Numbers.BinNums.N :=
        end in
   go #0.
 
-Definition bitmapOfSuffix : Coq.Numbers.BinNums.N -> BitMap :=
+#[global] Definition bitmapOfSuffix : Coq.Numbers.BinNums.N -> BitMap :=
   fun s => Utils.Containers.Internal.BitUtil.shiftLL #1 s.
 
-Definition suffixBitMask :=
+#[global] Definition suffixBitMask :=
   Coq.NArith.BinNat.N.ones 6.
 
-Definition suffixOf : Coq.Numbers.BinNums.N -> Coq.Numbers.BinNums.N :=
+#[global] Definition suffixOf
+   : Coq.Numbers.BinNums.N -> Coq.Numbers.BinNums.N :=
   fun x => x Data.Bits..&.(**) suffixBitMask.
 
-Definition bitmapOf : Coq.Numbers.BinNums.N -> BitMap :=
+#[global] Definition bitmapOf : Coq.Numbers.BinNums.N -> BitMap :=
   fun x => bitmapOfSuffix (suffixOf x).
 
-Definition prefixOf : Coq.Numbers.BinNums.N -> Prefix :=
+#[global] Definition prefixOf : Coq.Numbers.BinNums.N -> Prefix :=
   fun x => Coq.NArith.BinNat.N.ldiff x suffixBitMask.
 
-Definition member : Key -> IntSet -> bool :=
+#[global] Definition member : Key -> IntSet -> bool :=
   fun x =>
     let fix go arg_0__
       := match arg_0__ with
@@ -457,10 +464,10 @@ Definition member : Key -> IntSet -> bool :=
          end in
     go.
 
-Definition notMember : Key -> IntSet -> bool :=
+#[global] Definition notMember : Key -> IntSet -> bool :=
   fun k => negb GHC.Base.∘ member k.
 
-Definition highestBitSet : Nat -> Coq.Numbers.BinNums.N :=
+#[global] Definition highestBitSet : Nat -> Coq.Numbers.BinNums.N :=
   fun x => indexOfTheOnlyBit (Utils.Containers.Internal.BitUtil.highestBitMask x).
 
 Fixpoint unsafeFindMax (arg_0__ : IntSet) : option Key
@@ -470,7 +477,7 @@ Fixpoint unsafeFindMax (arg_0__ : IntSet) : option Key
      | Bin _ _ _ r => unsafeFindMax r
      end.
 
-Definition lookupLT : Key -> IntSet -> option Key :=
+#[global] Definition lookupLT : Key -> IntSet -> option Key :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -503,7 +510,7 @@ Definition lookupLT : Key -> IntSet -> option Key :=
 
 (* Skipping definition `Utils.Containers.Internal.BitUtil.lowestBitMask' *)
 
-Definition lowestBitSet : Nat -> Coq.Numbers.BinNums.N :=
+#[global] Definition lowestBitSet : Nat -> Coq.Numbers.BinNums.N :=
   fun x => indexOfTheOnlyBit (Utils.Containers.Internal.BitUtil.lowestBitMask x).
 
 Fixpoint unsafeFindMin (arg_0__ : IntSet) : option Key
@@ -513,7 +520,7 @@ Fixpoint unsafeFindMin (arg_0__ : IntSet) : option Key
      | Bin _ _ l _ => unsafeFindMin l
      end.
 
-Definition lookupGT : Key -> IntSet -> option Key :=
+#[global] Definition lookupGT : Key -> IntSet -> option Key :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -548,7 +555,7 @@ Definition lookupGT : Key -> IntSet -> option Key :=
     | _ => j_12__
     end.
 
-Definition lookupLE : Key -> IntSet -> option Key :=
+#[global] Definition lookupLE : Key -> IntSet -> option Key :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -582,7 +589,7 @@ Definition lookupLE : Key -> IntSet -> option Key :=
     | _ => j_12__
     end.
 
-Definition lookupGE : Key -> IntSet -> option Key :=
+#[global] Definition lookupGE : Key -> IntSet -> option Key :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -615,13 +622,13 @@ Definition lookupGE : Key -> IntSet -> option Key :=
     | _ => j_12__
     end.
 
-Definition singleton : Key -> IntSet :=
+#[global] Definition singleton : Key -> IntSet :=
   fun x => Tip (prefixOf x) (bitmapOf x).
 
-Definition insert : Key -> IntSet -> IntSet :=
+#[global] Definition insert : Key -> IntSet -> IntSet :=
   fun x => insertBM (prefixOf x) (bitmapOf x).
 
-Definition delete : Key -> IntSet -> IntSet :=
+#[global] Definition delete : Key -> IntSet -> IntSet :=
   fun x => deleteBM (prefixOf x) (bitmapOf x).
 
 Program Fixpoint intersection (arg_0__ arg_1__ : IntSet) {measure (size_nat
@@ -719,10 +726,10 @@ Fixpoint subsetCmp (arg_0__ arg_1__ : IntSet) : comparison
          end
      end.
 
-Definition isProperSubsetOf : IntSet -> IntSet -> bool :=
+#[global] Definition isProperSubsetOf : IntSet -> IntSet -> bool :=
   fun t1 t2 => match subsetCmp t1 t2 with | Lt => true | _ => false end.
 
-Definition match_ : Coq.Numbers.BinNums.N -> Prefix -> Mask -> bool :=
+#[global] Definition match_ : Coq.Numbers.BinNums.N -> Prefix -> Mask -> bool :=
   fun i p m => (mask i m) GHC.Base.== p.
 
 Fixpoint isSubsetOf (arg_0__ arg_1__ : IntSet) : bool
@@ -801,7 +808,7 @@ Program Fixpoint disjoint (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__
      end.
 Solve Obligations with (termination_by_omega).
 
-Program Definition foldl'Bits {a}
+Program #[global] Definition foldl'Bits {a}
    : Coq.Numbers.BinNums.N ->
      (a -> Coq.Numbers.BinNums.N -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
@@ -833,7 +840,8 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
      | Nil => Nil
      end.
 
-Definition partition : (Key -> bool) -> IntSet -> (IntSet * IntSet)%type :=
+#[global] Definition partition
+   : (Key -> bool) -> IntSet -> (IntSet * IntSet)%type :=
   fun predicate0 t0 =>
     let fix go predicate t
       := let bitPred :=
@@ -853,7 +861,7 @@ Definition partition : (Key -> bool) -> IntSet -> (IntSet * IntSet)%type :=
          end in
     id (go predicate0 t0).
 
-Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
+#[global] Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -892,7 +900,8 @@ Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
     | _ => j_21__
     end.
 
-Definition splitMember : Key -> IntSet -> (IntSet * bool * IntSet)%type :=
+#[global] Definition splitMember
+   : Key -> IntSet -> (IntSet * bool * IntSet)%type :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -933,7 +942,7 @@ Definition splitMember : Key -> IntSet -> (IntSet * bool * IntSet)%type :=
     | _ => j_22__
     end.
 
-Definition maxView : IntSet -> option (Key * IntSet)%type :=
+#[global] Definition maxView : IntSet -> option (Key * IntSet)%type :=
   fun t =>
     let fix go arg_0__
       := match arg_0__ with
@@ -955,7 +964,7 @@ Definition maxView : IntSet -> option (Key * IntSet)%type :=
     | _ => j_12__
     end.
 
-Definition minView : IntSet -> option (Key * IntSet)%type :=
+#[global] Definition minView : IntSet -> option (Key * IntSet)%type :=
   fun t =>
     let fix go arg_0__
       := match arg_0__ with
@@ -985,25 +994,25 @@ Definition minView : IntSet -> option (Key * IntSet)%type :=
 
 (* Skipping definition `Data.IntSet.Internal.findMax' *)
 
-Definition deleteMin : IntSet -> IntSet :=
+#[global] Definition deleteMin : IntSet -> IntSet :=
   Data.Maybe.maybe Nil Data.Tuple.snd GHC.Base.∘ minView.
 
-Definition deleteMax : IntSet -> IntSet :=
+#[global] Definition deleteMax : IntSet -> IntSet :=
   Data.Maybe.maybe Nil Data.Tuple.snd GHC.Base.∘ maxView.
 
-Definition fromList : list Key -> IntSet :=
+#[global] Definition fromList : list Key -> IntSet :=
   fun xs => let ins := fun t x => insert x t in Data.Foldable.foldl' ins empty xs.
 
-Definition toList : IntSet -> list Key :=
+#[global] Definition toList : IntSet -> list Key :=
   toAscList.
 
-Definition map : (Key -> Key) -> IntSet -> IntSet :=
+#[global] Definition map : (Key -> Key) -> IntSet -> IntSet :=
   fun f => fromList GHC.Base.∘ (GHC.Base.map f GHC.Base.∘ toList).
 
-Definition fold {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
+#[global] Definition fold {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   foldr.
 
-Program Definition foldr'Bits {a}
+Program #[global] Definition foldr'Bits {a}
    : Coq.Numbers.BinNums.N ->
      (Coq.Numbers.BinNums.N -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
@@ -1025,7 +1034,7 @@ Program Definition foldr'Bits {a}
     go (revNatSafe bitmap) z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
-Definition foldr' {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
+#[global] Definition foldr' {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1039,7 +1048,7 @@ Definition foldr' {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
       | _ => go z t
       end.
 
-Program Definition foldlBits {a}
+Program #[global] Definition foldlBits {a}
    : Coq.Numbers.BinNums.N ->
      (a -> Coq.Numbers.BinNums.N -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
@@ -1059,7 +1068,7 @@ Program Definition foldlBits {a}
     go bitmap z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
-Definition foldl {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
+#[global] Definition foldl {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1073,7 +1082,7 @@ Definition foldl {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
       | _ => go z t
       end.
 
-Definition foldl' {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
+#[global] Definition foldl' {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1087,16 +1096,16 @@ Definition foldl' {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
       | _ => go z t
       end.
 
-Definition elems : IntSet -> list Key :=
+#[global] Definition elems : IntSet -> list Key :=
   toAscList.
 
-Definition toDescList : IntSet -> list Key :=
+#[global] Definition toDescList : IntSet -> list Key :=
   foldl (GHC.Base.flip cons) nil.
 
-Definition foldrFB {b} : (Key -> b -> b) -> b -> IntSet -> b :=
+#[global] Definition foldrFB {b} : (Key -> b -> b) -> b -> IntSet -> b :=
   foldr.
 
-Definition foldlFB {a} : (a -> Key -> a) -> a -> IntSet -> a :=
+#[global] Definition foldlFB {a} : (a -> Key -> a) -> a -> IntSet -> a :=
   foldl.
 
 (* Skipping definition `Data.IntSet.Internal.fromAscList' *)
@@ -1129,7 +1138,7 @@ Definition foldlFB {a} : (a -> Key -> a) -> a -> IntSet -> a :=
 
 (* Skipping definition `Data.IntSet.Internal.prefixBitMask' *)
 
-Definition splitRoot : IntSet -> list IntSet :=
+#[global] Definition splitRoot : IntSet -> list IntSet :=
   fun arg_0__ =>
     match arg_0__ with
     | Nil => nil
