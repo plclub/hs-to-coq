@@ -11,3 +11,6 @@ order Data.Functor.Compose.Foldable__Compose Data.Functor.Compose.Traversable__C
 
 order Data.Functor.Compose.Eq1__Compose Data.Functor.Compose.Ord1__Compose Data.Functor.Compose.Ord__Compose_compare
 order Data.Functor.Compose.Eq___Compose Data.Functor.Compose.Ord__Compose
+
+skip Data.Functor.Compose.liftReadPrecCompose
+skip Data.Functor.Compose.liftShowsPrecCompose

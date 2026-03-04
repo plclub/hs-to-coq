@@ -15,6 +15,7 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
+Require Data.Tuple.
 Require GHC.Base.
 Import GHC.Base.Notations.
 
@@ -49,6 +50,11 @@ Notation "'_$>_'" := (op_zdzg__).
 
 Infix "$>" := (_$>_) (at level 99).
 
+#[global] Definition unzip {f : Type -> Type} {a : Type} {b : Type}
+  `{GHC.Base.Functor f}
+   : f (a * b)%type -> (f a * f b)%type :=
+  fun xs => pair (Data.Tuple.fst <$> xs) (Data.Tuple.snd <$> xs).
+
 #[global] Definition void {f : Type -> Type} {a : Type} `{GHC.Base.Functor f}
    : f a -> f unit :=
   fun x => tt GHC.Base.<$ x.
@@ -63,5 +69,6 @@ Infix "Data.Functor.$>" := (_$>_) (at level 99).
 End Notations.
 
 (* External variables:
-     Type tt unit GHC.Base.Functor GHC.Base.flip GHC.Base.fmap GHC.Base.op_zlzd__
+     Type op_zt__ pair tt unit Data.Tuple.fst Data.Tuple.snd GHC.Base.Functor
+     GHC.Base.flip GHC.Base.fmap GHC.Base.op_zlzd__
 *)

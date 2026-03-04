@@ -15,7 +15,6 @@ Require Coq.Program.Wf.
 Require Data.Foldable.
 Require Data.Functor.
 Require Data.OldList.
-Require Data.Ord.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.List.
@@ -127,6 +126,9 @@ Definition sort {a} `{GHC.Base.Ord a} : GHC.Base.NonEmpty a -> GHC.Base.NonEmpty
 
 (* Skipping definition `Data.List.NonEmpty.init' *)
 
+#[global] Definition singleton {a : Type} : a -> GHC.Base.NonEmpty a :=
+  fun a => GHC.Base.NEcons a nil.
+
 #[global] Definition op_zlzb__ {a : Type}
    : a -> GHC.Base.NonEmpty a -> GHC.Base.NonEmpty a :=
   fun arg_0__ arg_1__ =>
@@ -144,6 +146,8 @@ Infix "<|" := (_<|_) (at level 99).
 
 (* Skipping definition `Data.List.NonEmpty.sort' *)
 
+(* Skipping definition `Data.List.NonEmpty.sortOn' *)
+
 (* Skipping definition `Data.List.NonEmpty.fromList' *)
 
 (* Skipping definition `Data.List.NonEmpty.toList' *)
@@ -159,7 +163,11 @@ Infix "<|" := (_<|_) (at level 99).
 
 (* Skipping definition `Data.List.NonEmpty.inits' *)
 
+(* Skipping definition `Data.List.NonEmpty.inits1' *)
+
 (* Skipping definition `Data.List.NonEmpty.tails' *)
+
+(* Skipping definition `Data.List.NonEmpty.tails1' *)
 
 (* Skipping definition `Data.List.NonEmpty.insert' *)
 
@@ -235,6 +243,10 @@ Infix "<|" := (_<|_) (at level 99).
 
 (* Skipping definition `Data.List.NonEmpty.groupAllWith1' *)
 
+(* Skipping definition `Data.List.NonEmpty.permutations' *)
+
+(* Skipping definition `Data.List.NonEmpty.permutations1' *)
+
 #[global] Definition isPrefixOf {a : Type} `{GHC.Base.Eq_ a}
    : list a -> GHC.Base.NonEmpty a -> bool :=
   fun arg_0__ arg_1__ =>
@@ -287,9 +299,26 @@ Infix "<|" := (_<|_) (at level 99).
 
 (* Skipping definition `Data.List.NonEmpty.sortBy' *)
 
-#[global] Definition sortWith {o : Type} {a : Type} `{GHC.Base.Ord o}
-   : (a -> o) -> GHC.Base.NonEmpty a -> GHC.Base.NonEmpty a :=
-  sortBy GHC.Base.∘ Data.Ord.comparing.
+(* Skipping definition `Data.List.NonEmpty.sortWith' *)
+
+#[global] Definition append {a : Type}
+   : GHC.Base.NonEmpty a -> GHC.Base.NonEmpty a -> GHC.Base.NonEmpty a :=
+  _GHC.Base.<<>>_.
+
+#[global] Definition appendList {a : Type}
+   : GHC.Base.NonEmpty a -> list a -> GHC.Base.NonEmpty a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | GHC.Base.NEcons x xs, ys => GHC.Base.NEcons x (xs GHC.Base.<<>> ys)
+    end.
+
+#[global] Definition prependList {a : Type}
+   : list a -> GHC.Base.NonEmpty a -> GHC.Base.NonEmpty a :=
+  fun ls ne =>
+    match ls with
+    | nil => ne
+    | cons x xs => GHC.Base.NEcons x (xs GHC.Base.<<>> toList ne)
+    end.
 
 Module Notations.
 Notation "'_Data.List.NonEmpty.<|_'" := (op_zlzb__).
@@ -297,12 +326,12 @@ Infix "Data.List.NonEmpty.<|" := (_<|_) (at level 99).
 End Notations.
 
 (* External variables:
-     None Some Type andb bool cons false list negb nil op_zt__ option pair sortBy
-     toList true Data.Foldable.foldr Data.Foldable.length Data.Functor.op_zlzdzg__
-     Data.OldList.isPrefixOf Data.OldList.nubBy Data.OldList.partition
-     Data.Ord.comparing Data.Tuple.fst Data.Tuple.snd GHC.Base.Eq_ GHC.Base.Functor
-     GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord GHC.Base.fmap
-     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.List.drop GHC.List.dropWhile
-     GHC.List.filter GHC.List.span GHC.List.splitAt GHC.List.take GHC.List.takeWhile
-     GHC.List.zip GHC.List.zipWith GHC.Num.Int GHC.Num.fromInteger GHC.Num.op_zp__
+     None Some Type andb bool cons false list negb nil op_zt__ option pair toList
+     true Data.Foldable.foldr Data.Foldable.length Data.Functor.op_zlzdzg__
+     Data.OldList.isPrefixOf Data.OldList.nubBy Data.OldList.partition Data.Tuple.fst
+     Data.Tuple.snd GHC.Base.Eq_ GHC.Base.Functor GHC.Base.NEcons GHC.Base.NonEmpty
+     GHC.Base.fmap GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zlzlzgzg__
+     GHC.List.drop GHC.List.dropWhile GHC.List.filter GHC.List.span GHC.List.splitAt
+     GHC.List.take GHC.List.takeWhile GHC.List.zip GHC.List.zipWith GHC.Num.Int
+     GHC.Num.fromInteger GHC.Num.op_zp__
 *)

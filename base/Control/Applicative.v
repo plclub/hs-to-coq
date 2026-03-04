@@ -46,41 +46,23 @@ Arguments WrapArrow {_} {_} {_} _.
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Control.Applicative.Show__ZipList' *)
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
+   `Control.Applicative.Data__WrappedArrow' *)
 
-(* Skipping instance `Control.Applicative.Eq___ZipList' of class
-   `GHC.Base.Eq_' *)
-
-(* Skipping instance `Control.Applicative.Ord__ZipList' of class
-   `GHC.Base.Ord' *)
-
-(* Skipping all instances of class `GHC.Read.Read', including
-   `Control.Applicative.Read__ZipList' *)
-
-(* Skipping instance `Control.Applicative.Functor__ZipList' of class
-   `GHC.Base.Functor' *)
-
-(* Skipping instance `Control.Applicative.Foldable__ZipList' of class
-   `Data.Foldable.Foldable' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic', including
-   `Control.Applicative.Generic__ZipList' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Control.Applicative.Generic1__TYPE__ZipList__LiftedRep' *)
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
+   `Control.Applicative.Data__WrappedMonad' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic', including
    `Control.Applicative.Generic__WrappedArrow' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Control.Applicative.Generic1__TYPE__WrappedArrow__LiftedRep' *)
+   `Control.Applicative.Generic1__WrappedArrow__5' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic', including
    `Control.Applicative.Generic__WrappedMonad' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Control.Applicative.Generic1__TYPE__WrappedMonad__LiftedRep' *)
+   `Control.Applicative.Generic1__WrappedMonad__5' *)
 
 Instance Unpeel_WrappedMonad {m} {a}
    : HsToCoq.Unpeel.Unpeel (WrappedMonad m a) (m a) :=
@@ -280,12 +262,6 @@ Program Instance Applicative__WrappedArrow {a : Type -> Type -> Type} {b : Type}
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Applicative.Alternative__WrappedArrow' *)
-
-(* Skipping instance `Control.Applicative.Applicative__ZipList' of class
-   `GHC.Base.Applicative' *)
-
-(* Skipping all instances of class `GHC.Base.Alternative', including
-   `Control.Applicative.Alternative__ZipList' *)
 
 (* Skipping definition `Control.Applicative.optional' *)
 

@@ -830,6 +830,9 @@ Fixpoint nonEmptySubsequences {a} (arg_0__ : list a) : list (list a)
     (sortBy (Data.Ord.comparing Data.Tuple.fst) ∘
      map (fun x => let y := f x in GHC.Prim.seq y (pair y x))).
 
+#[global] Definition singleton {a : Type} : a -> list a :=
+  fun x => cons x nil.
+
 (* Skipping definition `Data.OldList.unfoldr' *)
 
 (* Skipping definition `Data.OldList.lines' *)

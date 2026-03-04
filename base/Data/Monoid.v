@@ -298,7 +298,7 @@ Program Instance Ord__Last {a : Type} `{GHC.Base.Ord a}
    `Data.Monoid.Generic__Last' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.Monoid.Generic1__TYPE__Last__LiftedRep' *)
+   `Data.Monoid.Generic1__Last__5' *)
 
 #[local] Definition Functor__Last_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Last a -> Last b :=
@@ -429,7 +429,7 @@ Program Instance Ord__First {a : Type} `{GHC.Base.Ord a}
    `Data.Monoid.Generic__First' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.Monoid.Generic1__TYPE__First__LiftedRep' *)
+   `Data.Monoid.Generic1__First__5' *)
 
 #[local] Definition Functor__First_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> First a -> First b :=

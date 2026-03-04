@@ -23,6 +23,27 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
+Record Eq1__Dict (f : Type -> Type) := Eq1__Dict_Build {
+  liftEq__ : forall {a : Type},
+  forall {b : Type}, (a -> b -> bool) -> f a -> f b -> bool }.
+
+#[global] Definition Eq1 (f : Type -> Type) :=
+  forall r__, (Eq1__Dict f -> r__) -> r__.
+Existing Class Eq1.
+
+Record Ord2__Dict (f : Type -> Type -> Type) := Ord2__Dict_Build {
+  liftCompare2__ : forall {a : Type},
+  forall {b : Type},
+  forall {c : Type},
+  forall {d : Type},
+  (a -> b -> comparison) ->
+  (c -> d -> comparison) -> f a c -> f b d -> comparison }.
+
+#[global] Definition liftEq `{g__0__ : Eq1 f}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> bool) -> f a -> f b -> bool :=
+  g__0__ _ (liftEq__ f).
+
 Record Eq2__Dict (f : Type -> Type -> Type) := Eq2__Dict_Build {
   liftEq2__ : forall {a : Type},
   forall {b : Type},
@@ -34,10 +55,6 @@ Record Eq2__Dict (f : Type -> Type -> Type) := Eq2__Dict_Build {
   forall r__, (Eq2__Dict f -> r__) -> r__.
 Existing Class Eq2.
 
-Record Ord1__Dict (f : Type -> Type) := Ord1__Dict_Build {
-  liftCompare__ : forall {a : Type},
-  forall {b : Type}, (a -> b -> comparison) -> f a -> f b -> comparison }.
-
 #[global] Definition liftEq2 `{g__0__ : Eq2 f}
    : forall {a : Type},
      forall {b : Type},
@@ -46,13 +63,18 @@ Record Ord1__Dict (f : Type -> Type) := Ord1__Dict_Build {
      (a -> b -> bool) -> (c -> d -> bool) -> f a c -> f b d -> bool :=
   g__0__ _ (liftEq2__ f).
 
-Record Ord2__Dict (f : Type -> Type -> Type) := Ord2__Dict_Build {
-  liftCompare2__ : forall {a : Type},
-  forall {b : Type},
-  forall {c : Type},
-  forall {d : Type},
-  (a -> b -> comparison) ->
-  (c -> d -> comparison) -> f a c -> f b d -> comparison }.
+Record Ord1__Dict (f : Type -> Type) := Ord1__Dict_Build {
+  liftCompare__ : forall {a : Type},
+  forall {b : Type}, (a -> b -> comparison) -> f a -> f b -> comparison }.
+
+#[global] Definition Ord1 (f : Type -> Type) `{Eq1 f} :=
+  forall r__, (Ord1__Dict f -> r__) -> r__.
+Existing Class Ord1.
+
+#[global] Definition liftCompare `{g__0__ : Ord1 f}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> comparison) -> f a -> f b -> comparison :=
+  g__0__ _ (liftCompare__ f).
 
 #[global] Definition Ord2 (f : Type -> Type -> Type) `{Eq2 f} :=
   forall r__, (Ord2__Dict f -> r__) -> r__.
@@ -66,28 +88,6 @@ Existing Class Ord2.
      (a -> b -> comparison) ->
      (c -> d -> comparison) -> f a c -> f b d -> comparison :=
   g__0__ _ (liftCompare2__ f).
-
-Record Eq1__Dict (f : Type -> Type) := Eq1__Dict_Build {
-  liftEq__ : forall {a : Type},
-  forall {b : Type}, (a -> b -> bool) -> f a -> f b -> bool }.
-
-#[global] Definition Eq1 (f : Type -> Type) :=
-  forall r__, (Eq1__Dict f -> r__) -> r__.
-Existing Class Eq1.
-
-#[global] Definition liftEq `{g__0__ : Eq1 f}
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> bool) -> f a -> f b -> bool :=
-  g__0__ _ (liftEq__ f).
-
-#[global] Definition Ord1 (f : Type -> Type) `{Eq1 f} :=
-  forall r__, (Ord1__Dict f -> r__) -> r__.
-Existing Class Ord1.
-
-#[global] Definition liftCompare `{g__0__ : Ord1 f}
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> comparison) -> f a -> f b -> comparison :=
-  g__0__ _ (liftCompare__ f).
 
 (* Converted value declarations: *)
 
@@ -259,6 +259,9 @@ Program Instance Ord2__pair_type : Ord2 GHC.Tuple.pair_type :=
 (* Skipping all instances of class `Data.Functor.Classes.Show2', including
    `Data.Functor.Classes.Show2__pair_type' *)
 
+(* Skipping instance `Data.Functor.Classes.Eq1__Solo' of class
+   `Data.Functor.Classes.Eq1' *)
+
 #[local] Definition Eq1__pair_type_liftEq {inst_a : Type} `{(GHC.Base.Eq_
    inst_a)}
    : forall {a : Type},
@@ -272,6 +275,9 @@ Program Instance Eq1__pair_type {a : Type} `{(GHC.Base.Eq_ a)}
    : Eq1 (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
     k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__pair_type_liftEq |}.
+
+(* Skipping instance `Data.Functor.Classes.Ord1__Solo' of class
+   `Data.Functor.Classes.Ord1' *)
 
 #[local] Definition Ord1__pair_type_liftCompare {inst_a : Type} `{(GHC.Base.Ord
    inst_a)}
@@ -289,10 +295,216 @@ Program Instance Ord1__pair_type {a : Type} `{(GHC.Base.Ord a)}
              Ord1__pair_type_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
+   `Data.Functor.Classes.Read1__Solo' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Read1', including
    `Data.Functor.Classes.Read1__pair_type' *)
 
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
+   `Data.Functor.Classes.Show1__Solo' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__pair_type' *)
+
+#[local] Definition Eq2__triple_type_liftEq2 {inst_a : Type} `{GHC.Base.Eq_
+  inst_a}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     forall {d : Type},
+     (a -> b -> bool) ->
+     (c -> d -> bool) ->
+     GHC.Tuple.triple_type inst_a a c -> GHC.Tuple.triple_type inst_a b d -> bool :=
+  fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    fun arg_0__ arg_1__ arg_2__ arg_3__ =>
+      match arg_0__, arg_1__, arg_2__, arg_3__ with
+      | e1, e2, pair (pair u1 x1) y1, pair (pair v1 x2) y2 =>
+          andb (u1 GHC.Base.== v1) (andb (e1 x1 x2) (e2 y1 y2))
+      end.
+
+#[global]
+Program Instance Eq2__triple_type {a : Type} `{GHC.Base.Eq_ a}
+   : Eq2 (GHC.Tuple.triple_type a) :=
+  fun _ k__ =>
+    k__ {| liftEq2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+             Eq2__triple_type_liftEq2 |}.
+
+#[local] Definition Ord2__triple_type_liftCompare2 {inst_a : Type}
+  `{GHC.Base.Ord inst_a}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     forall {d : Type},
+     (a -> b -> comparison) ->
+     (c -> d -> comparison) ->
+     GHC.Tuple.triple_type inst_a a c ->
+     GHC.Tuple.triple_type inst_a b d -> comparison :=
+  fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    fun arg_0__ arg_1__ arg_2__ arg_3__ =>
+      match arg_0__, arg_1__, arg_2__, arg_3__ with
+      | comp1, comp2, pair (pair u1 x1) y1, pair (pair v1 x2) y2 =>
+          GHC.Base.mappend (GHC.Base.mappend (GHC.Base.compare u1 v1) (comp1 x1 x2))
+                           (comp2 y1 y2)
+      end.
+
+#[global]
+Program Instance Ord2__triple_type {a : Type} `{GHC.Base.Ord a}
+   : Ord2 (GHC.Tuple.triple_type a) :=
+  fun _ k__ =>
+    k__ {| liftCompare2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+             Ord2__triple_type_liftCompare2 |}.
+
+(* Skipping all instances of class `Data.Functor.Classes.Read2', including
+   `Data.Functor.Classes.Read2__triple_type' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show2', including
+   `Data.Functor.Classes.Show2__triple_type' *)
+
+#[local] Definition Eq1__triple_type_liftEq {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Eq_ inst_a} `{GHC.Base.Eq_ inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> bool) ->
+     GHC.Tuple.triple_type inst_a inst_b a ->
+     GHC.Tuple.triple_type inst_a inst_b b -> bool :=
+  fun {a : Type} {b : Type} => liftEq2 _GHC.Base.==_.
+
+#[global]
+Program Instance Eq1__triple_type {a : Type} {b : Type} `{GHC.Base.Eq_ a}
+  `{GHC.Base.Eq_ b}
+   : Eq1 (GHC.Tuple.triple_type a b) :=
+  fun _ k__ =>
+    k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__triple_type_liftEq |}.
+
+#[local] Definition Ord1__triple_type_liftCompare {inst_a : Type} {inst_b
+   : Type} `{GHC.Base.Ord inst_a} `{GHC.Base.Ord inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> comparison) ->
+     GHC.Tuple.triple_type inst_a inst_b a ->
+     GHC.Tuple.triple_type inst_a inst_b b -> comparison :=
+  fun {a : Type} {b : Type} => liftCompare2 GHC.Base.compare.
+
+#[global]
+Program Instance Ord1__triple_type {a : Type} {b : Type} `{GHC.Base.Ord a}
+  `{GHC.Base.Ord b}
+   : Ord1 (GHC.Tuple.triple_type a b) :=
+  fun _ k__ =>
+    k__ {| liftCompare__ := fun {a : Type} {b : Type} =>
+             Ord1__triple_type_liftCompare |}.
+
+(* Skipping all instances of class `Data.Functor.Classes.Read1', including
+   `Data.Functor.Classes.Read1__triple_type' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show1', including
+   `Data.Functor.Classes.Show1__triple_type' *)
+
+#[local] Definition Eq2__quad_type_liftEq2 {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Eq_ inst_a} `{GHC.Base.Eq_ inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     forall {d : Type},
+     (a -> b -> bool) ->
+     (c -> d -> bool) ->
+     GHC.Tuple.quad_type inst_a inst_b a c ->
+     GHC.Tuple.quad_type inst_a inst_b b d -> bool :=
+  fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    fun arg_0__ arg_1__ arg_2__ arg_3__ =>
+      match arg_0__, arg_1__, arg_2__, arg_3__ with
+      | e1, e2, pair (pair (pair u1 u2) x1) y1, pair (pair (pair v1 v2) x2) y2 =>
+          andb (u1 GHC.Base.== v1) (andb (u2 GHC.Base.== v2) (andb (e1 x1 x2) (e2 y1 y2)))
+      end.
+
+#[global]
+Program Instance Eq2__quad_type {a : Type} {b : Type} `{GHC.Base.Eq_ a}
+  `{GHC.Base.Eq_ b}
+   : Eq2 (GHC.Tuple.quad_type a b) :=
+  fun _ k__ =>
+    k__ {| liftEq2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+             Eq2__quad_type_liftEq2 |}.
+
+#[local] Definition Ord2__quad_type_liftCompare2 {inst_a : Type} {inst_b : Type}
+  `{GHC.Base.Ord inst_a} `{GHC.Base.Ord inst_b}
+   : forall {a : Type},
+     forall {b : Type},
+     forall {c : Type},
+     forall {d : Type},
+     (a -> b -> comparison) ->
+     (c -> d -> comparison) ->
+     GHC.Tuple.quad_type inst_a inst_b a c ->
+     GHC.Tuple.quad_type inst_a inst_b b d -> comparison :=
+  fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    fun arg_0__ arg_1__ arg_2__ arg_3__ =>
+      match arg_0__, arg_1__, arg_2__, arg_3__ with
+      | comp1
+      , comp2
+      , pair (pair (pair u1 u2) x1) y1
+      , pair (pair (pair v1 v2) x2) y2 =>
+          GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend (GHC.Base.compare u1 v1)
+                                                               (GHC.Base.compare u2 v2)) (comp1 x1 x2)) (comp2 y1 y2)
+      end.
+
+#[global]
+Program Instance Ord2__quad_type {a : Type} {b : Type} `{GHC.Base.Ord a}
+  `{GHC.Base.Ord b}
+   : Ord2 (GHC.Tuple.quad_type a b) :=
+  fun _ k__ =>
+    k__ {| liftCompare2__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+             Ord2__quad_type_liftCompare2 |}.
+
+(* Skipping all instances of class `Data.Functor.Classes.Read2', including
+   `Data.Functor.Classes.Read2__quad_type' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show2', including
+   `Data.Functor.Classes.Show2__quad_type' *)
+
+#[local] Definition Eq1__quad_type_liftEq {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} `{GHC.Base.Eq_ inst_a} `{GHC.Base.Eq_ inst_b} `{GHC.Base.Eq_
+  inst_c}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> bool) ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c a ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b -> bool :=
+  fun {a : Type} {b : Type} => liftEq2 _GHC.Base.==_.
+
+#[global]
+Program Instance Eq1__quad_type {a : Type} {b : Type} {c : Type} `{GHC.Base.Eq_
+  a} `{GHC.Base.Eq_ b} `{GHC.Base.Eq_ c}
+   : Eq1 (GHC.Tuple.quad_type a b c) :=
+  fun _ k__ =>
+    k__ {| liftEq__ := fun {a : Type} {b : Type} => Eq1__quad_type_liftEq |}.
+
+#[local] Definition Ord1__quad_type_liftCompare {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} `{GHC.Base.Ord inst_a} `{GHC.Base.Ord inst_b} `{GHC.Base.Ord
+  inst_c}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> comparison) ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c a ->
+     GHC.Tuple.quad_type inst_a inst_b inst_c b -> comparison :=
+  fun {a : Type} {b : Type} => liftCompare2 GHC.Base.compare.
+
+#[global]
+Program Instance Ord1__quad_type {a : Type} {b : Type} {c : Type} `{GHC.Base.Ord
+  a} `{GHC.Base.Ord b} `{GHC.Base.Ord c}
+   : Ord1 (GHC.Tuple.quad_type a b c) :=
+  fun _ k__ =>
+    k__ {| liftCompare__ := fun {a : Type} {b : Type} =>
+             Ord1__quad_type_liftCompare |}.
+
+(* Skipping all instances of class `Data.Functor.Classes.Read1', including
+   `Data.Functor.Classes.Read1__quad_type' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show1', including
+   `Data.Functor.Classes.Show1__quad_type' *)
+
+(* Skipping instance `Data.Functor.Classes.Eq1__Generically1' of class
+   `Data.Functor.Classes.Eq1' *)
+
+(* Skipping instance `Data.Functor.Classes.Ord1__Generically1' of class
+   `Data.Functor.Classes.Ord1' *)
 
 #[local] Definition Eq2__Either_liftEq2
    : forall {a : Type},
@@ -558,7 +770,12 @@ Program Instance Eq1__Down : Eq1 Data.Ord.Down :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
-      | comp, Data.Ord.Mk_Down x, Data.Ord.Mk_Down y => comp x y
+      | comp, Data.Ord.Mk_Down x, Data.Ord.Mk_Down y =>
+          match comp x y with
+          | Lt => Gt
+          | Eq => Eq
+          | Gt => Lt
+          end
       end.
 
 #[global]
@@ -571,6 +788,15 @@ Program Instance Ord1__Down : Ord1 Data.Ord.Down :=
 
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Data.Functor.Classes.Show1__Down' *)
+
+(* Skipping instance `Data.Functor.Classes.Eq1__Complex' of class
+   `Data.Functor.Classes.Eq1' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Read1', including
+   `Data.Functor.Classes.Read1__Complex' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show1', including
+   `Data.Functor.Classes.Show1__Complex' *)
 
 #[global] Definition eq1 {f : Type -> Type} {a : Type} `{Eq1 f} `{GHC.Base.Eq_
   a}
@@ -647,4 +873,5 @@ Program Instance Ord1__Down : Ord1 Data.Ord.Down :=
      Data.Functor.Identity.Mk_Identity Data.Ord.Down Data.Ord.Mk_Down
      Data.Proxy.Proxy GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord
      GHC.Base.compare GHC.Base.mappend GHC.Base.op_zeze__ GHC.Tuple.pair_type
+     GHC.Tuple.quad_type GHC.Tuple.triple_type
 *)

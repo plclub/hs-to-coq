@@ -75,7 +75,7 @@ Program Instance Eq___Identity {a : Type} `{GHC.Base.Eq_ a}
    `Data.Functor.Identity.Generic__Identity' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.Functor.Identity.Generic1__TYPE__Identity__LiftedRep' *)
+   `Data.Functor.Identity.Generic1__Identity__5' *)
 
 (* Skipping all instances of class `GHC.Real.Integral', including
    `Data.Functor.Identity.Integral__Identity' *)
@@ -189,19 +189,12 @@ Program Instance Ord__Identity {a : Type} `{GHC.Base.Ord a}
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Identity m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Identity_foldMap GHC.Base.id.
 
-#[local] Definition Foldable__Identity_foldl'
+#[local] Definition Foldable__Identity_foldl
    : forall {b : Type},
      forall {a : Type}, (b -> a -> b) -> b -> Identity a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
 
-#[local] Definition Foldable__Identity_foldMap'
-   : forall {m : Type},
-     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Identity a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__Identity_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
-#[local] Definition Foldable__Identity_foldl
+#[local] Definition Foldable__Identity_foldl'
    : forall {b : Type},
      forall {a : Type}, (b -> a -> b) -> b -> Identity a -> b :=
   fun {b : Type} {a : Type} => GHC.Prim.coerce.
@@ -248,7 +241,7 @@ Program Instance Foldable__Identity : Data.Foldable.Foldable Identity :=
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Identity_foldMap ;
            Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__Identity_foldMap' ;
+             Foldable__Identity_foldMap ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Identity_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} =>
              Foldable__Identity_foldl' ;
@@ -334,13 +327,13 @@ Program Instance Monad__Identity : GHC.Base.Monad Identity :=
              Monad__Identity_op_zgzgze__ ;
            GHC.Base.return___ := fun {a : Type} => Monad__Identity_return_ |}.
 
-(* Skipping all instances of class `Control.Monad.Fix.MonadFix', including
-   `Data.Functor.Identity.MonadFix__Identity' *)
+(* Skipping all instances of class `GHC.Internal.Control.Monad.Fix.MonadFix',
+   including `Data.Functor.Identity.MonadFix__Identity' *)
 
 (* External variables:
      Type bool comparison cons false list nil Data.Foldable.Foldable
-     Data.Foldable.foldMap'__ Data.Foldable.foldMap__ Data.Foldable.fold__
-     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
+     Data.Foldable.foldl__ Data.Foldable.foldr Data.Foldable.foldr'__
      Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
      Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
      GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad

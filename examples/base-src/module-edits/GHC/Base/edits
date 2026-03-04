@@ -74,6 +74,7 @@ skip GHC.Base.iShiftL#
 skip GHC.Base.iShiftRA#
 skip GHC.Base.iShiftRL#
 skip GHC.Base.divModInt#
+skip GHC.Base.shift_mask
 
 skip GHC.Base.remInt
 skip GHC.Base.quotRemInt
@@ -89,11 +90,23 @@ skip GHC.Base.primIntToChar
 skip GHC.Base.primCharToInt
 skip GHC.Base.primUnicodeMaxChar
 
+# GHC 9.10 generates dataToTag#-based Eq for Maybe/option which
+# references patternFailure/GHC.Err, creating a circular import.
+# Redefine with simple pattern matching.
+redefine Local Definition GHC.Base.Eq___option_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
+   : option inst_a -> option inst_a -> bool :=
+  fun a b =>
+    match a, b with
+    | Some a1, Some b1 => ((a1 == b1))
+    | None, None => true
+    | _, _ => false
+    end.
+
 ## Type class instance ordering
 
 order GHC.Base.Eq___option GHC.Base.Ord__option
 
-order GHC.Base.Functor__arrow GHC.Base.Applicative__arrow_op_ztzg__ GHC.Base.Applicative__arrow GHC.Base.Monad__arrow_return_ GHC.Base.Monad__arrow GHC.Base.Alternative__arrow GHC.Base.MonadPlus__arrow
+# order for arrow instances (all skipped in GHC 9.10)
 
 order GHC.Base.Functor__list GHC.Base.Applicative__list GHC.Base.Monad__list_return_ GHC.Base.Monad__list_op_zgzg__ GHC.Base.Monad__list GHC.Base.Alternative__list
 
@@ -107,7 +120,7 @@ order GHC.Base.Functor__NonEmpty GHC.Base.Applicative__NonEmpty_op_ztzg__ GHC.Ba
 order GHC.Base.Monad__list GHC.Base.Monad__NonEmpty_op_zgzgze__
 
 order GHC.Base.Semigroup__list       GHC.Base.Monoid__list_mappend
-order GHC.Base.Semigroup__arrow      GHC.Base.Monoid__arrow_mappend
+# order GHC.Base.Semigroup__GHC_Prim_arrow (skipped in GHC 9.10)
 order GHC.Base.Semigroup__unit       GHC.Base.Monoid__unit_mappend
 order GHC.Base.Semigroup__comparison GHC.Base.Monoid__comparison_mappend
 order GHC.Base.Semigroup__option     GHC.Base.Monoid__option_mappend
@@ -120,6 +133,23 @@ skip GHC.Base.Alternative__list
 skip GHC.Base.MonadPlus__list
 skip GHC.Base.Alternative__option
 skip GHC.Base.MonadPlus__option
+
+# GHC 9.10: Solo type is in GHC.Tuple, not translated
+skip GHC.Base.Semigroup__Solo
+skip GHC.Base.Monoid__Solo
+skip GHC.Base.Functor__Solo
+skip GHC.Base.Applicative__Solo
+skip GHC.Base.Monad__Solo
+
+# GHC 9.10: skip all arrow-type instances
+# Instance names use just "arrow" (unTyCon extracts base from Qualified "GHC.Prim" "arrow")
+skip GHC.Base.Functor__arrow
+skip GHC.Base.Applicative__arrow
+skip GHC.Base.Monad__arrow
+skip GHC.Base.Semigroup__arrow
+skip GHC.Base.Monoid__arrow
+skip GHC.Base.Alternative__arrow
+skip GHC.Base.MonadPlus__arrow
 
 # For hs_coq_map theorem
 redefine Definition GHC.Base.map {A B :Type} (f : A -> B) xs := Coq.Lists.List.map f xs.

@@ -87,12 +87,6 @@ Program Instance Monoid__Down {a : Type} `{GHC.Base.Monoid a}
 (* Skipping all instances of class `Data.Bits.Bits', including
    `Data.Ord.Bits__Down' *)
 
-(* Skipping all instances of class `GHC.Enum.Bounded', including
-   `Data.Ord.Bounded__Down' *)
-
-(* Skipping all instances of class `GHC.Enum.Enum', including
-   `Data.Ord.Enum__Down' *)
-
 (* Skipping all instances of class `Data.Bits.FiniteBits', including
    `Data.Ord.FiniteBits__Down' *)
 
@@ -101,9 +95,6 @@ Program Instance Monoid__Down {a : Type} `{GHC.Base.Monoid a}
 
 (* Skipping all instances of class `GHC.Real.Fractional', including
    `Data.Ord.Fractional__Down' *)
-
-(* Skipping all instances of class `GHC.Real.Integral', including
-   `Data.Ord.Integral__Down' *)
 
 (* Skipping all instances of class `GHC.Ix.Ix', including `Data.Ord.Ix__Down' *)
 
@@ -125,6 +116,34 @@ Program Instance Monoid__Down {a : Type} `{GHC.Base.Monoid a}
 (* Skipping all instances of class `GHC.Show.Show', including
    `Data.Ord.Show__Down' *)
 
+#[local] Definition Ord__Down_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Down inst_a -> Down inst_a -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_Down x, Mk_Down y => y GHC.Base.< x
+    end.
+
+#[local] Definition Ord__Down_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Down inst_a -> Down inst_a -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_Down x, Mk_Down y => y GHC.Base.<= x
+    end.
+
+#[local] Definition Ord__Down_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Down inst_a -> Down inst_a -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_Down x, Mk_Down y => y GHC.Base.> x
+    end.
+
+#[local] Definition Ord__Down_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Down inst_a -> Down inst_a -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_Down x, Mk_Down y => y GHC.Base.>= x
+    end.
+
 #[local] Definition Ord__Down_compare {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Down inst_a -> Down inst_a -> comparison :=
   fun arg_0__ arg_1__ =>
@@ -132,29 +151,19 @@ Program Instance Monoid__Down {a : Type} `{GHC.Base.Monoid a}
     | Mk_Down x, Mk_Down y => GHC.Base.compare y x
     end.
 
-#[local] Definition Ord__Down_op_zl__ {inst_a : Type} `{GHC.Base.Ord inst_a}
-   : Down inst_a -> Down inst_a -> bool :=
-  fun x y => Ord__Down_compare x y GHC.Base.== Lt.
-
-#[local] Definition Ord__Down_op_zlze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
-   : Down inst_a -> Down inst_a -> bool :=
-  fun x y => Ord__Down_compare x y GHC.Base./= Gt.
-
-#[local] Definition Ord__Down_op_zg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
-   : Down inst_a -> Down inst_a -> bool :=
-  fun x y => Ord__Down_compare x y GHC.Base.== Gt.
-
-#[local] Definition Ord__Down_op_zgze__ {inst_a : Type} `{GHC.Base.Ord inst_a}
-   : Down inst_a -> Down inst_a -> bool :=
-  fun x y => Ord__Down_compare x y GHC.Base./= Lt.
-
 #[local] Definition Ord__Down_max {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Down inst_a -> Down inst_a -> Down inst_a :=
-  fun x y => if Ord__Down_op_zlze__ x y : bool then y else x.
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_Down x, Mk_Down y => Mk_Down (GHC.Base.min x y)
+    end.
 
 #[local] Definition Ord__Down_min {inst_a : Type} `{GHC.Base.Ord inst_a}
    : Down inst_a -> Down inst_a -> Down inst_a :=
-  fun x y => if Ord__Down_op_zlze__ x y : bool then x else y.
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_Down x, Mk_Down y => Mk_Down (GHC.Base.max x y)
+    end.
 
 #[global]
 Program Instance Ord__Down {a : Type} `{GHC.Base.Ord a}
@@ -167,6 +176,12 @@ Program Instance Ord__Down {a : Type} `{GHC.Base.Ord a}
            GHC.Base.compare__ := Ord__Down_compare ;
            GHC.Base.max__ := Ord__Down_max ;
            GHC.Base.min__ := Ord__Down_min |}.
+
+(* Skipping all instances of class `GHC.Enum.Bounded', including
+   `Data.Ord.Bounded__Down' *)
+
+(* Skipping all instances of class `GHC.Enum.Enum', including
+   `Data.Ord.Enum__Down' *)
 
 #[local] Definition Functor__Down_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Down a -> Down b :=
@@ -237,18 +252,26 @@ Program Instance Monad__Down : GHC.Base.Monad Down :=
    : (b -> a) -> b -> b -> comparison :=
   fun p x y => GHC.Base.compare (p x) (p y).
 
+#[global] Definition clamp {a : Type} `{GHC.Base.Ord a}
+   : (a * a)%type -> a -> a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | pair low high, a => GHC.Base.min high (GHC.Base.max a low)
+    end.
+
 (* External variables:
-     Gt Lt Type bool comparison list GHC.Base.Applicative GHC.Base.Eq_
+     Type bool comparison list op_zt__ pair GHC.Base.Applicative GHC.Base.Eq_
      GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup
      GHC.Base.compare GHC.Base.compare__ GHC.Base.const GHC.Base.fmap GHC.Base.fmap__
-     GHC.Base.id GHC.Base.liftA2__ GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max__
-     GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__
-     GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____
-     GHC.Base.op_zg____ GHC.Base.op_zgze____ GHC.Base.op_zgzg____
-     GHC.Base.op_zgzgze____ GHC.Base.op_zl____ GHC.Base.op_zlzd__
-     GHC.Base.op_zlzd____ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
-     GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____ GHC.Base.op_zsze__
-     GHC.Base.op_zsze____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return___ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     GHC.Base.id GHC.Base.liftA2__ GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max
+     GHC.Base.max__ GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty
+     GHC.Base.mempty__ GHC.Base.min GHC.Base.min__ GHC.Base.op_z2218U__
+     GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____
+     GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zgzg____
+     GHC.Base.op_zgzgze____ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd__
+     GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
+     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____
+     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg____ GHC.Base.pure
+     GHC.Base.pure__ GHC.Base.return___ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
      HsToCoq.Unpeel.Unpeel
 *)

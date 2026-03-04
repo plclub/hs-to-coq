@@ -3,7 +3,13 @@
 skip Data.List.NonEmpty.!!
 
 skip Data.List.NonEmpty.fromList
+skip Data.List.NonEmpty.inits1
+skip Data.List.NonEmpty.tails1
+skip Data.List.NonEmpty.permutations
+skip Data.List.NonEmpty.permutations1
 skip Data.List.NonEmpty.lift
+skip Data.List.NonEmpty.sortOn
+skip Data.List.NonEmpty.sortWith
 skip Data.List.NonEmpty.tails
 skip Data.List.NonEmpty.scanl
 skip Data.List.NonEmpty.scanr

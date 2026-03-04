@@ -7,6 +7,8 @@ skip Data.SemigroupInternal.stimesList
 skip Data.SemigroupInternal.stimesMaybe
 skip Data.SemigroupInternal.stimesMonoid
 skip Data.SemigroupInternal.stimesIdempotent
+skip Data.SemigroupInternal.stimesEndoError
+skip Data.SemigroupInternal.stimesIdempotentMonoid
 
 add Data.SemigroupInternal Instance Unpeel_Dual a : HsToCoq.Unpeel.Unpeel (Dual a) a :=
 	 HsToCoq.Unpeel.Build_Unpeel _ _ getDual Mk_Dual.
@@ -74,3 +76,17 @@ skip Data.SemigroupInternal.MonadPlus__Alt
 # Deals with the phantom type parameter {k}
 delete unused type variables Data.SemigroupInternal.Eq___Alt
 delete unused type variables Data.SemigroupInternal.Ord__Alt
+
+# GHC 9.10: mconcat for Sum/Product uses foldl' (<>) mempty which requires
+# the Monoid instance before it's defined. Redefine to use local definitions.
+redefine Local Definition Data.SemigroupInternal.Monoid__Sum_mconcat {inst_a : Type} `{GHC.Num.Num inst_a}
+   : list (Sum inst_a) -> Sum inst_a :=
+  GHC.Base.foldr Monoid__Sum_mappend Monoid__Sum_mempty.
+
+redefine Local Definition Data.SemigroupInternal.Monoid__Product_mconcat {inst_a : Type} `{GHC.Num.Num inst_a}
+   : list (Product inst_a) -> Product inst_a :=
+  GHC.Base.foldr Monoid__Product_mappend Monoid__Product_mempty.
+
+# mempty must be defined before mconcat (mconcat references mempty directly)
+order Data.SemigroupInternal.Monoid__Sum_mempty     Data.SemigroupInternal.Monoid__Sum_mconcat
+order Data.SemigroupInternal.Monoid__Product_mempty Data.SemigroupInternal.Monoid__Product_mconcat

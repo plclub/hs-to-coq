@@ -8,6 +8,10 @@ Definition seq {A} {B} (a : A) (b:B) := b.
 (* Coq has no levity polymorphism, so map everything to Type *)
 Definition TYPE (_ : RuntimeRep) := Type.
 
+(* GHC 9.10 desugars right operator sections `(op x)` to `rightSection op x` *)
+Definition rightSection {a b c : Type} (op : a -> b -> c) (x : b) : a -> c :=
+  fun y => op y x.
+
 Class Coercible a b := { coerce : a -> b }.
 
 #[global]

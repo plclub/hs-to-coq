@@ -585,6 +585,25 @@ convertExpr_ (ExplicitSum{}) =
 #if __GLASGOW_HASKELL__ >= 806
 convertExpr_ (HsOverLit _ (XOverLit v)) = noExtCon v
 #if __GLASGOW_HASKELL__ >= 910
+-- GHC 9.10 new expression constructors
+convertExpr_ (HsRecSel _ fld) =
+  Qualid <$> var ExprNS (foExt fld)
+convertExpr_ (HsPragE _ _ e) =
+  convertLExpr e
+convertExpr_ (HsGetField _ e _) =
+  convUnsupported "record dot syntax (HsGetField)"
+convertExpr_ (HsProjection _ _) =
+  convUnsupported "record projection syntax (HsProjection)"
+convertExpr_ HsTypedBracket{} =
+  convUnsupported "typed Template Haskell brackets"
+convertExpr_ HsUntypedBracket{} =
+  convUnsupported "untyped Template Haskell brackets"
+convertExpr_ HsTypedSplice{} =
+  convUnsupported "typed Template Haskell splices"
+convertExpr_ HsUntypedSplice{} =
+  convUnsupported "untyped Template Haskell splices"
+convertExpr_ HsEmbTy{} =
+  convUnsupported "embedded type expressions (RequiredTypeArguments)"
 convertExpr_ (XExpr (ExpandedThingRn _ e)) = convertExpr e
 convertExpr_ (XExpr (PopErrCtxt e)) = convertLExpr e
 #elif __GLASGOW_HASKELL__ >= 900

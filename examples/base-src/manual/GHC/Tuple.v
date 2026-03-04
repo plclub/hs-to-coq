@@ -1,5 +1,8 @@
 Open Scope type_scope.
 
+Inductive Solo (a : Type) : Type := MkSolo : a -> Solo a.
+Arguments MkSolo {a}.
+
 Definition pair_type   := (fun (x y :Type) => (x * y)).
 Definition triple_type := (fun (x y z :Type) => (x * y * z)).
 Definition quad_type   := (fun (x y z w:Type) => (x * y * z * w)).

@@ -31,10 +31,10 @@ Arguments Right {_} {_} _.
 #[local] Definition Eq___Either_op_zeze__ {inst_a : Type} {inst_b : Type}
   `{GHC.Base.Eq_ inst_a} `{GHC.Base.Eq_ inst_b}
    : Either inst_a inst_b -> Either inst_a inst_b -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Left a1, Left b1 => ((a1 GHC.Base.== b1))
-    | Right a1, Right b1 => ((a1 GHC.Base.== b1))
+  fun a b =>
+    match a, b with
+    | Left a1, Left b1 => a1 GHC.Base.== b1
+    | Right a1, Right b1 => a1 GHC.Base.== b1
     | _, _ => false
     end.
 

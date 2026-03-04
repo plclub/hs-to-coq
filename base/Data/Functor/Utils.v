@@ -284,6 +284,15 @@ Program Instance Applicative__StateR {s : Type}
              Applicative__StateR_op_ztzg__ ;
            GHC.Base.pure__ := fun {a : Type} => Applicative__StateR_pure |}.
 
+(* Skipping instance `Data.Functor.Utils.Functor__StateT' of class
+   `GHC.Base.Functor' *)
+
+(* Skipping instance `Data.Functor.Utils.Applicative__StateT' of class
+   `GHC.Base.Applicative' *)
+
+(* Skipping instance `Data.Functor.Utils.Monad__StateT' of class
+   `GHC.Base.Monad' *)
+
 (* Skipping definition `Data.Functor.Utils.hash_compose' *)
 
 (* External variables:

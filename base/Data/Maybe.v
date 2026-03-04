@@ -15,7 +15,6 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require Coq.Lists.List.
 Require GHC.Base.
 Import GHC.Base.Notations.
 
@@ -48,15 +47,6 @@ Import GHC.Base.Notations.
 #[global] Definition listToMaybe {a : Type} : list a -> option a :=
   GHC.Base.foldr (GHC.Base.const GHC.Base.∘ Some) None.
 
-#[global] Definition catMaybes {a : Type} : list (option a) -> list a :=
-  fun ls =>
-    let cont_0__ arg_1__ :=
-      match arg_1__ with
-      | Some x => cons x nil
-      | _ => nil
-      end in
-    Coq.Lists.List.flat_map cont_0__ ls.
-
 Fixpoint mapMaybe {a : Type} {b : Type} (arg_0__ : a -> option b) (arg_1__
                     : list a) : list b
   := match arg_0__, arg_1__ with
@@ -64,6 +54,9 @@ Fixpoint mapMaybe {a : Type} {b : Type} (arg_0__ : a -> option b) (arg_1__
      | f, cons x xs =>
          let rs := mapMaybe f xs in match f x with | None => rs | Some r => cons r rs end
      end.
+
+#[global] Definition catMaybes {a : Type} : list (option a) -> list a :=
+  mapMaybe GHC.Base.id.
 
 #[global] Definition mapMaybeFB {b} {r} {a}
    : (b -> r -> r) -> (a -> option b) -> a -> r -> r :=
@@ -74,6 +67,6 @@ Fixpoint mapMaybe {a : Type} {b : Type} (arg_0__ : a -> option b) (arg_1__
     end.
 
 (* External variables:
-     None Some Type bool cons false list nil option true Coq.Lists.List.flat_map
-     GHC.Base.const GHC.Base.foldr GHC.Base.op_z2218U__
+     None Some Type bool cons false list nil option true GHC.Base.const
+     GHC.Base.foldr GHC.Base.id GHC.Base.op_z2218U__
 *)

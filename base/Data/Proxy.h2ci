@@ -5,5 +5,5 @@ constructorTypes:
   Data.Proxy.Mk_KProxy: Qualified "Data.Proxy" "KProxy"
   Data.Proxy.Mk_Proxy: Qualified "Data.Proxy" "Proxy"
 constructors:
-  Data.Proxy.Proxy: '[Qualified "Data.Proxy" "Mk_Proxy"]'
   Data.Proxy.KProxy: '[Qualified "Data.Proxy" "Mk_KProxy"]'
+  Data.Proxy.Proxy: '[Qualified "Data.Proxy" "Mk_Proxy"]'

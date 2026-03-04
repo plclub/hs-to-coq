@@ -665,17 +665,25 @@ Qed.
 
 Instance instance_ApplicativeLaws_option : ApplicativeLaws option.
 Proof.
-  split;
-    repeat (unfold pure, Applicative__option,
-    Base.Applicative__option_pure,
-    Base.Applicative__option_op_zlztzg__,
-    Base.Functor__option_fmap; simpl).
-  - intros. destruct v; auto.
-  - intros. destruct u; destruct v; destruct w; auto.
-  - intros. auto.
-  - intros. destruct u; auto.
-  - intros. destruct x, y; reflexivity.
-  - reflexivity.
+  split.
+  - (* applicative_identity *)
+    intros a v.
+    destruct v; reflexivity.
+  - (* applicative_composition *)
+    intros a b c u v w.
+    destruct u as [u |]; destruct v as [v |]; destruct w as [w |]; reflexivity.
+  - (* applicative_homomorphism *)
+    intros a b f x.
+    reflexivity.
+  - (* applicative_interchange *)
+    intros a b u y.
+    destruct u as [u |]; reflexivity.
+  - (* applicative_liftA2 *)
+    intros a b c f x y.
+    destruct x as [x |]; destruct y as [y |]; reflexivity.
+  - (* applicative_fmap *)
+    intros a b f x.
+    destruct x as [x |]; reflexivity.
 Qed.
 
 Instance instance_ApplicativeLaws_list : ApplicativeLaws list.

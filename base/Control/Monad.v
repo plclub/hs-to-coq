@@ -36,10 +36,8 @@ Import GHC.Base.Notations.
    : (a -> m bool) -> list a -> m (list a) :=
   fun p =>
     GHC.Base.foldr (fun x =>
-                      GHC.Base.liftA2 (fun flg =>
-                                         if flg : bool
-                                         then (fun arg_0__ => cons x arg_0__)
-                                         else GHC.Base.id) (p x)) (GHC.Base.pure nil).
+                      GHC.Base.liftA2 (fun flg => if flg : bool then (cons x) else GHC.Base.id) (p x))
+    (GHC.Base.pure nil).
 
 #[global] Definition op_zgzezg__ {m : Type -> Type} {a : Type} {b : Type} {c
    : Type} `{GHC.Base.Monad m}

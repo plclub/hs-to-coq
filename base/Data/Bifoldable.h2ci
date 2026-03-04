@@ -1,5 +1,3 @@
-classTypes:
-  Data.Bifoldable.Bifoldable: fromList []
 classDefns:
   Data.Bifoldable.Bifoldable: ClassDefinition (Qualified "Data.Bifoldable" "Bifoldable")
     [Typed Ungeneralizable Explicit (Ident (Bare "p") :| []) (Arrow (Qualid (Bare
@@ -33,8 +31,8 @@ classDefns:
     (Qualid (Bare "b")) (Arrow (Qualid (Bare "c")) (Qualid (Bare "c")))) (Arrow (Qualid
     (Bare "c")) (Arrow (App (App (Qualid (Bare "p")) (PosArg (Qualid (Bare "a")) :|
     [])) (PosArg (Qualid (Bare "b")) :| [])) (Qualid (Bare "c")))))))))]
-superclassCount:
-  Data.Bifoldable.Bifoldable: '0'
+classTypes:
+  Data.Bifoldable.Bifoldable: fromList []
 defaultMethods:
   Data.Bifoldable.Bifoldable: fromList [(Qualified "Data.Bifoldable" "bifold",App
     (App (Qualid (Qualified "Data.Bifoldable" "bifoldMap")) (PosArg (Qualid (Qualified
@@ -70,3 +68,5 @@ defaultMethods:
     (PosArg (Qualid (Qualified "Data.SemigroupInternal" "Mk_Endo")) :| [PosArg (Qualid
     (Bare "g"))]))) :| [])) (PosArg (Qualid (Bare "t")) :| []))) :| [])) (PosArg (Qualid
     (Bare "z")) :| [])))]
+superclassCount:
+  Data.Bifoldable.Bifoldable: '0'

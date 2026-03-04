@@ -20,10 +20,8 @@ Implicit Type inst_k: unit_class.
 (* Converted imports: *)
 
 Require GHC.Base.
-Require GHC.Err.
 Require GHC.Num.
 Require GHC.Prim.
-Require GHC.Real.
 Require HsToCoq.Err.
 Require HsToCoq.Unpeel.
 Import GHC.Base.Notations.
@@ -344,7 +342,7 @@ Program Instance Ord__Product {a : Type} `{GHC.Base.Ord a}
    `Data.SemigroupInternal.Generic__Product' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.SemigroupInternal.Generic1__TYPE__Product__LiftedRep' *)
+   `Data.SemigroupInternal.Generic1__Product__5' *)
 
 (* Skipping all instances of class `GHC.Num.Num', including
    `Data.SemigroupInternal.Num__Product' *)
@@ -418,7 +416,7 @@ Program Instance Ord__Sum {a : Type} `{GHC.Base.Ord a} : GHC.Base.Ord (Sum a) :=
    `Data.SemigroupInternal.Generic__Sum' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.SemigroupInternal.Generic1__TYPE__Sum__LiftedRep' *)
+   `Data.SemigroupInternal.Generic1__Sum__5' *)
 
 (* Skipping all instances of class `GHC.Num.Num', including
    `Data.SemigroupInternal.Num__Sum' *)
@@ -615,7 +613,7 @@ Program Instance Ord__Dual {a : Type} `{GHC.Base.Ord a}
    `Data.SemigroupInternal.Generic__Dual' *)
 
 (* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.SemigroupInternal.Generic1__TYPE__Dual__LiftedRep' *)
+   `Data.SemigroupInternal.Generic1__Dual__5' *)
 
 #[local] Definition Semigroup__Dual_op_zlzlzgzg__ {inst_a : Type}
   `{GHC.Base.Semigroup inst_a}
@@ -1000,43 +998,28 @@ Program Instance Monad__Product : GHC.Base.Monad Product :=
 
 (* Skipping definition `Data.SemigroupInternal.stimesIdempotent' *)
 
-#[global] Definition stimesIdempotentMonoid {b : Type} {a : Type}
-  `{GHC.Real.Integral b} `{GHC.Base.Monoid a}
-   : b -> a -> a :=
-  fun n x =>
-    match GHC.Base.compare n #0 with
-    | Lt =>
-        GHC.Err.errorWithoutStackTrace (GHC.Base.hs_string__
-                                        "stimesIdempotentMonoid: negative multiplier")
-    | Eq => GHC.Base.mempty
-    | Gt => x
-    end.
+(* Skipping definition `Data.SemigroupInternal.stimesIdempotentMonoid' *)
 
 (* Skipping definition `Data.SemigroupInternal.stimesMonoid' *)
 
-(* Skipping definition `Data.SemigroupInternal.stimesDefault' *)
-
-(* Skipping definition `Data.SemigroupInternal.stimesMaybe' *)
-
-(* Skipping definition `Data.SemigroupInternal.stimesList' *)
+(* Skipping definition `Data.SemigroupInternal.stimesEndoError' *)
 
 (* External variables:
-     Eq Gt Lt Type andb bool comparison false list orb true GHC.Base.Applicative
-     GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord
-     GHC.Base.Semigroup GHC.Base.compare GHC.Base.compare__ GHC.Base.const
-     GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr GHC.Base.id GHC.Base.liftA2
-     GHC.Base.liftA2__ GHC.Base.mappend__ GHC.Base.max GHC.Base.max__
-     GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.min GHC.Base.min__
-     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__
-     GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zgzg__
-     GHC.Base.op_zgzg____ GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____
-     GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
-     GHC.Base.op_zlze__ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
-     GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____
-     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg__ GHC.Base.op_ztzg____
-     GHC.Base.pure GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___
-     GHC.Err.errorWithoutStackTrace GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
-     GHC.Num.op_zt__ GHC.Prim.coerce GHC.Real.Integral HsToCoq.Err.Build_Default
+     Type andb bool comparison false list orb true GHC.Base.Applicative GHC.Base.Eq_
+     GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup
+     GHC.Base.compare GHC.Base.compare__ GHC.Base.const GHC.Base.fmap GHC.Base.fmap__
+     GHC.Base.foldr GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__ GHC.Base.mappend__
+     GHC.Base.max GHC.Base.max__ GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__
+     GHC.Base.min GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__
+     GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__
+     GHC.Base.op_zgze____ GHC.Base.op_zgzg__ GHC.Base.op_zgzg____
+     GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____ GHC.Base.op_zl__ GHC.Base.op_zl____
+     GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
+     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__
+     GHC.Base.op_zlztzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
+     GHC.Base.op_ztzg__ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
+     GHC.Base.return_ GHC.Base.return___ GHC.Num.Num GHC.Num.fromInteger
+     GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.coerce HsToCoq.Err.Build_Default
      HsToCoq.Err.Default HsToCoq.Err.default HsToCoq.Unpeel.Build_Unpeel
      HsToCoq.Unpeel.Unpeel
 *)

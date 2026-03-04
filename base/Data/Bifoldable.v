@@ -19,6 +19,7 @@ Require Data.Monoid.
 Require Data.SemigroupInternal.
 Require GHC.Base.
 Require GHC.Num.
+Require GHC.Prim.
 Require GHC.Tuple.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -663,8 +664,8 @@ Program Instance Bifoldable__Either : Bifoldable Data.Either.Either :=
   t} `{GHC.Base.Eq_ a}
    : a -> t a a -> bool :=
   fun x =>
-    biany (fun arg_0__ => arg_0__ GHC.Base.== x) (fun arg_1__ =>
-                                                    arg_1__ GHC.Base.== x).
+    biany (GHC.Prim.rightSection _GHC.Base.==_ x) (GHC.Prim.rightSection
+                                                   _GHC.Base.==_ x).
 
 #[global] Definition biconcat {t : Type -> Type -> Type} {a : Type} `{Bifoldable
   t}
@@ -741,7 +742,8 @@ Program Instance Bifoldable__Either : Bifoldable Data.Either.Either :=
      GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Monad GHC.Base.Monoid GHC.Base.flip
      GHC.Base.id GHC.Base.mappend GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zgzgze__ GHC.Base.op_ztzg__ GHC.Base.pure GHC.Base.return_
-     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Tuple.pair_type
-     GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type GHC.Tuple.sext_type
+     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
+     GHC.Prim.rightSection GHC.Tuple.pair_type GHC.Tuple.quad_type
+     GHC.Tuple.quint_type GHC.Tuple.sept_type GHC.Tuple.sext_type
      GHC.Tuple.triple_type
 *)

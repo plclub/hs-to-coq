@@ -212,6 +212,16 @@ Program Instance Ord__Const {a : Type} {k : Type} {b : k} `{GHC.Base.Ord a}
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Const inst_m m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Const_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__Const_foldl {inst_m : Type}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Const inst_m a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
+                                      (Foldable__Const_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
+                                                                (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
+                                                                 GHC.Base.flip f)) t)) z.
+
 #[local] Definition Foldable__Const_foldr {inst_m : Type}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> Const inst_m a -> b :=
@@ -226,24 +236,6 @@ Program Instance Ord__Const {a : Type} {k : Type} {b : k} `{GHC.Base.Ord a}
   fun {b : Type} {a : Type} =>
     fun f z0 xs =>
       let f' := fun x k z => k (f z x) in Foldable__Const_foldr f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__Const_foldMap' {inst_m : Type}
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> Const inst_m a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__Const_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
-#[local] Definition Foldable__Const_foldl {inst_m : Type}
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Const inst_m a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Const_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                 GHC.Base.flip f)) t)) z.
 
 #[local] Definition Foldable__Const_foldr' {inst_m : Type}
    : forall {a : Type},
@@ -290,7 +282,7 @@ Program Instance Foldable__Const {m : Type}
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Const_foldMap ;
            Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__Const_foldMap' ;
+             Foldable__Const_foldMap ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Const_foldl ;
            Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Const_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Const_foldr ;
@@ -368,25 +360,25 @@ Program Instance Applicative__Const {m : Type} `{GHC.Base.Monoid m}
 
 (* External variables:
      Type bool comparison false list true Coq.Program.Basics.compose
-     Data.Foldable.Foldable Data.Foldable.foldMap'__ Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
-     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
-     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
-     Data.Foldable.toList__ Data.SemigroupInternal.Mk_Dual
-     Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
-     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
-     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
-     Data.SemigroupInternal.getSum GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor
-     GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.build' GHC.Base.compare
-     GHC.Base.compare__ GHC.Base.const GHC.Base.flip GHC.Base.fmap__ GHC.Base.id
-     GHC.Base.liftA2__ GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max
-     GHC.Base.max__ GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty
-     GHC.Base.mempty__ GHC.Base.min GHC.Base.min__ GHC.Base.op_z2218U__
-     GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__ GHC.Base.op_zg____
-     GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____
-     GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
-     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____
-     GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.op_ztzg____ GHC.Base.pure__
-     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.coerce
-     HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
+     Data.Foldable.Foldable Data.Foldable.foldMap__ Data.Foldable.fold__
+     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
+     Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
+     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
+     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
+     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
+     Data.SemigroupInternal.appEndo Data.SemigroupInternal.getDual
+     Data.SemigroupInternal.getProduct Data.SemigroupInternal.getSum
+     GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monoid GHC.Base.Ord
+     GHC.Base.Semigroup GHC.Base.build' GHC.Base.compare GHC.Base.compare__
+     GHC.Base.const GHC.Base.flip GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__
+     GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max GHC.Base.max__ GHC.Base.mconcat
+     GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.min GHC.Base.min__
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__
+     GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__
+     GHC.Base.op_zl____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze__
+     GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
+     GHC.Base.op_zlztzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
+     GHC.Base.op_ztzg____ GHC.Base.pure__ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
+     GHC.Num.op_zp__ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel
 *)

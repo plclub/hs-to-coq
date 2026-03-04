@@ -1,5 +1,3 @@
-classTypes:
-  Control.Monad.Zip.MonadZip: fromList []
 classDefns:
   Control.Monad.Zip.MonadZip: ClassDefinition (Qualified "Control.Monad.Zip" "MonadZip")
     [Typed Ungeneralizable Explicit (Ident (Bare "m") :| []) (Arrow (Qualid (Bare
@@ -26,8 +24,8 @@ classDefns:
     (Bare "c")))) (Arrow (App (Qualid (Bare "m")) (PosArg (Qualid (Bare "a")) :| []))
     (Arrow (App (Qualid (Bare "m")) (PosArg (Qualid (Bare "b")) :| [])) (App (Qualid
     (Bare "m")) (PosArg (Qualid (Bare "c")) :| []))))))))]
-superclassCount:
-  Control.Monad.Zip.MonadZip: '3'
+classTypes:
+  Control.Monad.Zip.MonadZip: fromList []
 defaultMethods:
   Control.Monad.Zip.MonadZip: fromList [(Qualified "Control.Monad.Zip" "munzip",Fun
     (ExplicitBinder (Ident (Bare "mab")) :| []) (App (Qualid (Bare "pair")) (PosArg
@@ -43,3 +41,5 @@ defaultMethods:
     "f")) :| []))) :| [])) (PosArg (Parens (App (App (Qualid (Qualified "Control.Monad.Zip"
     "mzip")) (PosArg (Qualid (Bare "ma")) :| [])) (PosArg (Qualid (Bare "mb")) :|
     []))) :| [])))]
+superclassCount:
+  Control.Monad.Zip.MonadZip: '3'

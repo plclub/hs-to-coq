@@ -17,10 +17,11 @@ Require Coq.Program.Wf.
 
 Require Coq.Init.Datatypes.
 Require Coq.Lists.List.
-Require GHC.Prim.
 Require GHC.Tuple.
 
 (* Converted type declarations: *)
+
+Inductive Void : Type :=.
 
 Record Semigroup__Dict (a : Type) := Semigroup__Dict_Build {
   op_zlzlzgzg____ : a -> a -> a }.
@@ -582,10 +583,10 @@ End ManualNotations.
 
 #[local] Definition Eq___option_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
    : option inst_a -> option inst_a -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
+  fun a b =>
+    match a, b with
+    | Some a1, Some b1 => a1 == b1
     | None, None => true
-    | Some a1, Some b1 => ((a1 == b1))
     | _, _ => false
     end.
 
@@ -665,6 +666,50 @@ Program Instance Eq___NonEmpty {a : Type} `{Eq_ a} : Eq_ (NonEmpty a) :=
 
 (* Skipping instance `GHC.Base.Ord__NonEmpty' of class `GHC.Base.Ord' *)
 
+#[local] Definition Eq___Void_op_zeze__ : Void -> Void -> bool :=
+  fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | _, z => true end.
+
+#[local] Definition Eq___Void_op_zsze__ : Void -> Void -> bool :=
+  fun x y => negb (Eq___Void_op_zeze__ x y).
+
+#[global]
+Program Instance Eq___Void : Eq_ Void :=
+  fun _ k__ =>
+    k__ {| op_zeze____ := Eq___Void_op_zeze__ ;
+           op_zsze____ := Eq___Void_op_zsze__ |}.
+
+#[local] Definition Ord__Void_compare : Void -> Void -> comparison :=
+  fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | _, z => Eq end.
+
+#[local] Definition Ord__Void_op_zl__ : Void -> Void -> bool :=
+  fun x y => Ord__Void_compare x y == Lt.
+
+#[local] Definition Ord__Void_op_zlze__ : Void -> Void -> bool :=
+  fun x y => Ord__Void_compare x y /= Gt.
+
+#[local] Definition Ord__Void_op_zg__ : Void -> Void -> bool :=
+  fun x y => Ord__Void_compare x y == Gt.
+
+#[local] Definition Ord__Void_op_zgze__ : Void -> Void -> bool :=
+  fun x y => Ord__Void_compare x y /= Lt.
+
+#[local] Definition Ord__Void_max : Void -> Void -> Void :=
+  fun x y => if Ord__Void_op_zlze__ x y : bool then y else x.
+
+#[local] Definition Ord__Void_min : Void -> Void -> Void :=
+  fun x y => if Ord__Void_op_zlze__ x y : bool then x else y.
+
+#[global]
+Program Instance Ord__Void : Ord Void :=
+  fun _ k__ =>
+    k__ {| op_zl____ := Ord__Void_op_zl__ ;
+           op_zlze____ := Ord__Void_op_zlze__ ;
+           op_zg____ := Ord__Void_op_zg__ ;
+           op_zgze____ := Ord__Void_op_zgze__ ;
+           compare__ := Ord__Void_compare ;
+           max__ := Ord__Void_max ;
+           min__ := Ord__Void_min |}.
+
 #[local] Definition Semigroup__list_op_zlzlzgzg__ {inst_a : Type}
    : list inst_a -> list inst_a -> list inst_a :=
   Coq.Init.Datatypes.app.
@@ -693,6 +738,13 @@ Program Instance Monoid__list {a : Type} : Monoid (list a) :=
            mconcat__ := Monoid__list_mconcat ;
            mempty__ := Monoid__list_mempty |}.
 
+#[local] Definition Semigroup__Void_op_zlzlzgzg__ : Void -> Void -> Void :=
+  fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | a, _ => a end.
+
+#[global]
+Program Instance Semigroup__Void : Semigroup Void :=
+  fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__Void_op_zlzlzgzg__ |}.
+
 #[local] Definition Semigroup__NonEmpty_op_zlzlzgzg__ {inst_a : Type}
    : NonEmpty inst_a -> NonEmpty inst_a -> NonEmpty inst_a :=
   fun arg_0__ arg_1__ =>
@@ -704,48 +756,10 @@ Program Instance Monoid__list {a : Type} : Monoid (list a) :=
 Program Instance Semigroup__NonEmpty {a : Type} : Semigroup (NonEmpty a) :=
   fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__NonEmpty_op_zlzlzgzg__ |}.
 
-#[local] Definition Semigroup__arrow_op_zlzlzgzg__ {inst_b : Type} {inst_a
-   : Type} `{Semigroup inst_b}
-   : (inst_a -> inst_b) -> (inst_a -> inst_b) -> inst_a -> inst_b :=
-  fun f g => fun x => f x <<>> g x.
+(* Skipping instance `GHC.Base.Semigroup__arrow' of class
+   `GHC.Base.Semigroup' *)
 
-#[global]
-Program Instance Semigroup__arrow {b : Type} {a : Type} `{Semigroup b}
-   : Semigroup (a -> b) :=
-  fun _ k__ => k__ {| op_zlzlzgzg____ := Semigroup__arrow_op_zlzlzgzg__ |}.
-
-#[local] Definition Monoid__arrow_mappend {inst_b : Type} {inst_a : Type}
-  `{Monoid inst_b}
-   : (inst_a -> inst_b) -> (inst_a -> inst_b) -> inst_a -> inst_b :=
-  _<<>>_.
-
-#[local] Definition Monoid__arrow_mempty {inst_b : Type} {inst_a : Type}
-  `{Monoid inst_b}
-   : inst_a -> inst_b :=
-  fun arg_0__ => mempty.
-
-#[global] Definition foldr {a : Type} {b : Type}
-   : (a -> b -> b) -> b -> list a -> b :=
-  fun k z =>
-    let fix go arg_0__
-      := match arg_0__ with
-         | nil => z
-         | cons y ys => k y (go ys)
-         end in
-    go.
-
-#[local] Definition Monoid__arrow_mconcat {inst_b : Type} {inst_a : Type}
-  `{Monoid inst_b}
-   : list (inst_a -> inst_b) -> inst_a -> inst_b :=
-  foldr Monoid__arrow_mappend Monoid__arrow_mempty.
-
-#[global]
-Program Instance Monoid__arrow {b : Type} {a : Type} `{Monoid b}
-   : Monoid (a -> b) :=
-  fun _ k__ =>
-    k__ {| mappend__ := Monoid__arrow_mappend ;
-           mconcat__ := Monoid__arrow_mconcat ;
-           mempty__ := Monoid__arrow_mempty |}.
+(* Skipping instance `GHC.Base.Monoid__arrow' of class `GHC.Base.Monoid' *)
 
 #[local] Definition Semigroup__unit_op_zlzlzgzg__ : unit -> unit -> unit :=
   fun arg_0__ arg_1__ => tt.
@@ -769,6 +783,10 @@ Program Instance Monoid__unit : Monoid unit :=
     k__ {| mappend__ := Monoid__unit_mappend ;
            mconcat__ := Monoid__unit_mconcat ;
            mempty__ := Monoid__unit_mempty |}.
+
+(* Skipping instance `GHC.Base.Semigroup__Solo' of class `GHC.Base.Semigroup' *)
+
+(* Skipping instance `GHC.Base.Monoid__Solo' of class `GHC.Base.Monoid' *)
 
 (* Skipping instance `GHC.Base.Semigroup__op_zt__' of class
    `GHC.Base.Semigroup' *)
@@ -814,6 +832,16 @@ Program Instance Semigroup__comparison : Semigroup comparison :=
 #[local] Definition Monoid__comparison_mempty : comparison :=
   Eq.
 
+#[global] Definition foldr {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> list a -> b :=
+  fun k z =>
+    let fix go arg_0__
+      := match arg_0__ with
+         | nil => z
+         | cons y ys => k y (go ys)
+         end in
+    go.
+
 #[local] Definition Monoid__comparison_mconcat
    : list comparison -> comparison :=
   foldr Monoid__comparison_mappend Monoid__comparison_mempty.
@@ -858,6 +886,9 @@ Program Instance Monoid__option {a : Type} `{Semigroup a} : Monoid (option a) :=
     k__ {| mappend__ := Monoid__option_mappend ;
            mconcat__ := Monoid__option_mconcat ;
            mempty__ := Monoid__option_mempty |}.
+
+(* Skipping instance `GHC.Base.Applicative__Solo' of class
+   `GHC.Base.Applicative' *)
 
 #[local] Definition Applicative__pair_type_liftA2 {inst_a : Type} `{Monoid
   inst_a}
@@ -945,6 +976,8 @@ Program Instance Applicative__pair_type {a : Type} `{Monoid a}
              Applicative__pair_type_op_zlztzg__ ;
            op_ztzg____ := fun {a : Type} {b : Type} => Applicative__pair_type_op_ztzg__ ;
            pure__ := fun {a : Type} => Applicative__pair_type_pure |}.
+
+(* Skipping instance `GHC.Base.Monad__Solo' of class `GHC.Base.Monad' *)
 
 #[local] Definition Monad__pair_type_return_ {inst_a : Type} `{Monoid inst_a}
    : forall {a : Type}, a -> GHC.Tuple.pair_type inst_a a :=
@@ -1220,87 +1253,110 @@ Program Instance Monad__quad_type {a : Type} {b : Type} {c : Type} `{Monoid a}
            op_zgzgze____ := fun {a : Type} {b : Type} => Monad__quad_type_op_zgzgze__ ;
            return___ := fun {a : Type} => Monad__quad_type_return_ |}.
 
+#[local] Definition Functor__quint_type_fmap {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} {inst_d : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b) ->
+     GHC.Tuple.quint_type inst_a inst_b inst_c inst_d a ->
+     GHC.Tuple.quint_type inst_a inst_b inst_c inst_d b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, pair (pair (pair (pair a b) c) d) e =>
+          pair (pair (pair (pair a b) c) d) (f e)
+      end.
+
+#[local] Definition Functor__quint_type_op_zlzd__ {inst_a : Type} {inst_b
+   : Type} {inst_c : Type} {inst_d : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     a ->
+     GHC.Tuple.quint_type inst_a inst_b inst_c inst_d b ->
+     GHC.Tuple.quint_type inst_a inst_b inst_c inst_d a :=
+  fun {a : Type} {b : Type} => Functor__quint_type_fmap ∘ const.
+
+#[global]
+Program Instance Functor__quint_type {a : Type} {b : Type} {c : Type} {d : Type}
+   : Functor (GHC.Tuple.quint_type a b c d) :=
+  fun _ k__ =>
+    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__quint_type_fmap ;
+           op_zlzd____ := fun {a : Type} {b : Type} => Functor__quint_type_op_zlzd__ |}.
+
+#[local] Definition Functor__sext_type_fmap {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} {inst_d : Type} {inst_e : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b) ->
+     GHC.Tuple.sext_type inst_a inst_b inst_c inst_d inst_e a ->
+     GHC.Tuple.sext_type inst_a inst_b inst_c inst_d inst_e b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | fun_, pair (pair (pair (pair (pair a b) c) d) e) f =>
+          pair (pair (pair (pair (pair a b) c) d) e) (fun_ f)
+      end.
+
+#[local] Definition Functor__sext_type_op_zlzd__ {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} {inst_d : Type} {inst_e : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     a ->
+     GHC.Tuple.sext_type inst_a inst_b inst_c inst_d inst_e b ->
+     GHC.Tuple.sext_type inst_a inst_b inst_c inst_d inst_e a :=
+  fun {a : Type} {b : Type} => Functor__sext_type_fmap ∘ const.
+
+#[global]
+Program Instance Functor__sext_type {a : Type} {b : Type} {c : Type} {d : Type}
+  {e : Type}
+   : Functor (GHC.Tuple.sext_type a b c d e) :=
+  fun _ k__ =>
+    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__sext_type_fmap ;
+           op_zlzd____ := fun {a : Type} {b : Type} => Functor__sext_type_op_zlzd__ |}.
+
+#[local] Definition Functor__sept_type_fmap {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} {inst_d : Type} {inst_e : Type} {inst_f : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b) ->
+     GHC.Tuple.sept_type inst_a inst_b inst_c inst_d inst_e inst_f a ->
+     GHC.Tuple.sept_type inst_a inst_b inst_c inst_d inst_e inst_f b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | fun_, pair (pair (pair (pair (pair (pair a b) c) d) e) f) g =>
+          pair (pair (pair (pair (pair (pair a b) c) d) e) f) (fun_ g)
+      end.
+
+#[local] Definition Functor__sept_type_op_zlzd__ {inst_a : Type} {inst_b : Type}
+  {inst_c : Type} {inst_d : Type} {inst_e : Type} {inst_f : Type}
+   : forall {a : Type},
+     forall {b : Type},
+     a ->
+     GHC.Tuple.sept_type inst_a inst_b inst_c inst_d inst_e inst_f b ->
+     GHC.Tuple.sept_type inst_a inst_b inst_c inst_d inst_e inst_f a :=
+  fun {a : Type} {b : Type} => Functor__sept_type_fmap ∘ const.
+
+#[global]
+Program Instance Functor__sept_type {a : Type} {b : Type} {c : Type} {d : Type}
+  {e : Type} {f : Type}
+   : Functor (GHC.Tuple.sept_type a b c d e f) :=
+  fun _ k__ =>
+    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__sept_type_fmap ;
+           op_zlzd____ := fun {a : Type} {b : Type} => Functor__sept_type_op_zlzd__ |}.
+
 (* Skipping instance `GHC.Base.Semigroup__IO' of class `GHC.Base.Semigroup' *)
 
 (* Skipping instance `GHC.Base.Monoid__IO' of class `GHC.Base.Monoid' *)
 
-#[local] Definition Functor__arrow_fmap {inst_r : Type}
-   : forall {a : Type},
-     forall {b : Type},
-     (a -> b) -> GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b :=
-  fun {a : Type} {b : Type} => _∘_.
+(* Skipping instance `GHC.Base.Functor__arrow' of class `GHC.Base.Functor' *)
 
-#[local] Definition Functor__arrow_op_zlzd__ {inst_r : Type}
-   : forall {a : Type},
-     forall {b : Type}, a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r a :=
-  fun {a : Type} {b : Type} => Functor__arrow_fmap ∘ const.
+(* Skipping instance `GHC.Base.Applicative__arrow' of class
+   `GHC.Base.Applicative' *)
 
-#[global]
-Program Instance Functor__arrow {r : Type} : Functor (GHC.Prim.arrow r) :=
-  fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__arrow_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__arrow_op_zlzd__ |}.
+(* Skipping instance `GHC.Base.Monad__arrow' of class `GHC.Base.Monad' *)
 
-#[local] Definition Applicative__arrow_liftA2 {inst_r : Type}
-   : forall {a : Type},
-     forall {b : Type},
-     forall {c : Type},
-     (a -> b -> c) ->
-     GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r c :=
-  fun {a : Type} {b : Type} {c : Type} => fun q f g x => q (f x) (g x).
-
-#[local] Definition Applicative__arrow_op_zlztzg__ {inst_r : Type}
-   : forall {a : Type},
-     forall {b : Type},
-     GHC.Prim.arrow inst_r (a -> b) ->
-     GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b :=
-  fun {a : Type} {b : Type} => fun f g x => f x (g x).
-
-#[local] Definition Applicative__arrow_op_ztzg__ {inst_r : Type}
-   : forall {a : Type},
-     forall {b : Type},
-     GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r b :=
-  fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__arrow_op_zlztzg__ (id <$ a1) a2.
-
-#[local] Definition Applicative__arrow_pure {inst_r : Type}
-   : forall {a : Type}, a -> GHC.Prim.arrow inst_r a :=
-  fun {a : Type} => const.
-
-#[global]
-Program Instance Applicative__arrow {r : Type}
-   : Applicative (GHC.Prim.arrow r) :=
-  fun _ k__ =>
-    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
-             Applicative__arrow_liftA2 ;
-           op_zlztzg____ := fun {a : Type} {b : Type} => Applicative__arrow_op_zlztzg__ ;
-           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__arrow_op_ztzg__ ;
-           pure__ := fun {a : Type} => Applicative__arrow_pure |}.
-
-#[local] Definition Monad__arrow_op_zgzgze__ {inst_r : Type}
-   : forall {a : Type},
-     forall {b : Type},
-     GHC.Prim.arrow inst_r a ->
-     (a -> GHC.Prim.arrow inst_r b) -> GHC.Prim.arrow inst_r b :=
-  fun {a : Type} {b : Type} => fun f k => fun r => k (f r) r.
-
-#[local] Definition Monad__arrow_op_zgzg__ {inst_r : Type}
-   : forall {a : Type},
-     forall {b : Type},
-     GHC.Prim.arrow inst_r a -> GHC.Prim.arrow inst_r b -> GHC.Prim.arrow inst_r b :=
-  fun {a : Type} {b : Type} =>
-    fun m k => Monad__arrow_op_zgzgze__ m (fun arg_0__ => k).
-
-#[local] Definition Monad__arrow_return_ {inst_r : Type}
-   : forall {a : Type}, a -> GHC.Prim.arrow inst_r a :=
-  fun {a : Type} => pure.
-
-#[global]
-Program Instance Monad__arrow {r : Type} : Monad (GHC.Prim.arrow r) :=
-  fun _ k__ =>
-    k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__arrow_op_zgzg__ ;
-           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__arrow_op_zgzgze__ ;
-           return___ := fun {a : Type} => Monad__arrow_return_ |}.
+(* Skipping instance `GHC.Base.Functor__Solo' of class `GHC.Base.Functor' *)
 
 #[local] Definition Functor__option_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> option a -> option b :=
@@ -1571,6 +1627,13 @@ Program Instance Monad__NonEmpty : Monad NonEmpty :=
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `GHC.Base.MonadPlus__IO' *)
 
+#[global] Definition absurd {a : Type} : Void -> a :=
+  fun a => match a with end.
+
+#[global] Definition vacuous {f : Type -> Type} {a : Type} `{Functor f}
+   : f Void -> f a :=
+  fmap absurd.
+
 #[global] Definition op_zlztztzg__ {f : Type -> Type} {a : Type} {b : Type}
   `{Applicative f}
    : f a -> f (a -> b) -> f b :=
@@ -1733,7 +1796,7 @@ Fixpoint eqString (arg_0__ arg_1__ : String) : bool
 
 (* Skipping definition `GHC.Base.divModInt' *)
 
-(* Skipping definition `GHC.Base.op_divModIntzh__' *)
+(* Skipping definition `GHC.Base.shift_mask' *)
 
 (* Skipping definition `GHC.Base.op_shiftLzh__' *)
 
@@ -1770,7 +1833,8 @@ End Notations.
 (* External variables:
      Eq Eq_ Gt Lt None Ord Some String Type andb bool compare compare__ comparison
      cons false list max__ min__ negb nil op_zeze__ op_zeze____ op_zg____ op_zgze____
-     op_zl__ op_zl____ op_zlze____ op_zsze____ option pair true tt unit
-     Coq.Init.Datatypes.app Coq.Lists.List.flat_map Coq.Lists.List.map GHC.Prim.arrow
-     GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.triple_type
+     op_zl__ op_zl____ op_zlze____ op_zsze__ op_zsze____ option pair true tt unit
+     Coq.Init.Datatypes.app Coq.Lists.List.flat_map Coq.Lists.List.map
+     GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type
+     GHC.Tuple.sext_type GHC.Tuple.triple_type
 *)

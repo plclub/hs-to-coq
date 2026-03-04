@@ -1,1 +1,5 @@
 skip Data.Function.fix_  # partial
+
+# Avoid representation polymorphism (RuntimeRep)
+redefine Definition Data.Function.op_za__ {a : Type} {b : Type} : a -> (a -> b) -> b :=
+  fun x f => f x.

@@ -1,8 +1,41 @@
+# GHC 9.10: skip instances for classes we don't translate
+skip Data.Ord.Bits__Down
+skip Data.Ord.FiniteBits__Down
+skip Data.Ord.Floating__Down
+skip Data.Ord.Fractional__Down
+skip Data.Ord.Num__Down
+skip Data.Ord.Real__Down
+skip Data.Ord.RealFrac__Down
+skip Data.Ord.RealFloat__Down
+skip Data.Ord.Storable__Down
+skip Data.Ord.Ix__Down
+skip Data.Ord.Read__Down
+skip Data.Ord.Show__Down
+skip Data.Ord.Bounded__Down
+skip Data.Ord.Enum__Down
+
 add Data.Ord Instance Unpeel_Down a : HsToCoq.Unpeel.Unpeel (Down a) a :=
       HsToCoq.Unpeel.Build_Unpeel _ _ (fun d => match d with | Mk_Down x => x end) Mk_Down.
 
 order Unpeel_Down Data.Ord.Eq___Down_op_zeze__
 order Unpeel_Down Data.Ord.Eq___Down_op_zsze__
+
+# GHC 9.10: Down reverses min/max but the generated code creates mutual
+# recursion between Ord__Down_min and Ord__Down_max. Redefine to use
+# underlying Ord operations directly.
+redefine Local Definition Data.Ord.Ord__Down_min {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Down inst_a -> Down inst_a -> Down inst_a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_Down x, Mk_Down y => Mk_Down (GHC.Base.max x y)
+    end.
+
+redefine Local Definition Data.Ord.Ord__Down_max {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Down inst_a -> Down inst_a -> Down inst_a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_Down x, Mk_Down y => Mk_Down (GHC.Base.min x y)
+    end.
 
 order Data.Ord.Eq___Down         Data.Ord.Ord__Down
 order Data.Ord.Semigroup__Down   Data.Ord.Monoid__Down

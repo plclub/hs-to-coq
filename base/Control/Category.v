@@ -27,14 +27,14 @@ Record Category__Dict {k : Type} (cat : k -> k -> Type) :=
   op_z2218U____ : forall {b : k},
   forall {c : k}, forall {a : k}, cat b c -> cat a b -> cat a c }.
 
-#[global] Definition Category {k : Type} (cat : k -> k -> Type) :=
+Definition Category {k : Type} (cat : k -> k -> Type) :=
   forall r__, (Category__Dict cat -> r__) -> r__.
 Existing Class Category.
 
-#[global] Definition id `{g__0__ : Category k cat} : forall {a : k}, cat a a :=
+Definition id `{g__0__ : Category k cat} : forall {a : k}, cat a a :=
   g__0__ _ (id__ cat).
 
-#[global] Definition op_z2218U__ `{g__0__ : Category k cat}
+Definition op_z2218U__ `{g__0__ : Category k cat}
    : forall {b : k},
      forall {c : k}, forall {a : k}, cat b c -> cat a b -> cat a c :=
   g__0__ _ (op_z2218U____ cat).
@@ -45,11 +45,10 @@ Infix "∘" := (_∘_) (left associativity, at level 40).
 
 (* Converted value declarations: *)
 
-#[local] Definition Category__arrow_id
-   : forall {a : Type}, GHC.Prim.arrow a a :=
+Local Definition Category__arrow_id : forall {a : Type}, GHC.Prim.arrow a a :=
   fun {a : Type} => GHC.Base.id.
 
-#[local] Definition Category__arrow_op_z2218U__
+Local Definition Category__arrow_op_z2218U__
    : forall {b : Type},
      forall {c : Type},
      forall {a : Type},
@@ -72,8 +71,8 @@ Program Instance Category__arrow : Category GHC.Prim.arrow :=
 (* Skipping instance `Control.Category.Category__Coercion' of class
    `Control.Category.Category' *)
 
-#[global] Definition op_zlzlzl__ {k : Type} {cat : k -> k -> Type} {b : k} {c
-   : k} {a : k} `{Category k cat}
+Definition op_zlzlzl__ {k : Type} {cat : k -> k -> Type} {b : k} {c : k} {a : k}
+  `{Category k cat}
    : cat b c -> cat a b -> cat a c :=
   _∘_.
 
@@ -81,8 +80,8 @@ Notation "'_<<<_'" := (op_zlzlzl__).
 
 Infix "<<<" := (_<<<_) (at level 99).
 
-#[global] Definition op_zgzgzg__ {k : Type} {cat : k -> k -> Type} {a : k} {b
-   : k} {c : k} `{Category k cat}
+Definition op_zgzgzg__ {k : Type} {cat : k -> k -> Type} {a : k} {b : k} {c : k}
+  `{Category k cat}
    : cat a b -> cat b c -> cat a c :=
   fun f g => g ∘ f.
 

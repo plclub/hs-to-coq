@@ -66,6 +66,7 @@ Defined.
 (* Converted imports: *)
 
 Require Coq.Init.Datatypes.
+Require Data.Maybe.
 Require Import GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
@@ -82,9 +83,8 @@ Import GHC.Num.Notations.
 #[global] Definition errorEmptyList {a} `{_ : HsToCoq.Err.Default a}
    : String -> a :=
   fun fun_ =>
-    GHC.Err.errorWithoutStackTrace (Coq.Init.Datatypes.app prel_list_str
-                                                           (Coq.Init.Datatypes.app fun_ (GHC.Base.hs_string__
-                                                                                    ": empty list"))).
+    GHC.Err.error (Coq.Init.Datatypes.app prel_list_str (Coq.Init.Datatypes.app fun_
+                                                                                (GHC.Base.hs_string__ ": empty list"))).
 
 #[global] Definition badHead {a} `{_ : HsToCoq.Err.Default a} : a :=
   errorEmptyList (GHC.Base.hs_string__ "head").
@@ -98,6 +98,11 @@ Import GHC.Num.Notations.
     | nil => None
     | cons x xs => Some (pair x xs)
     end.
+
+#[global] Definition unsnoc {a : Type} : list a -> option (list a * a)%type :=
+  foldr (fun x =>
+           Some ∘ Data.Maybe.maybe (pair nil x) (fun '(pair a b) => pair (cons x a) b))
+  None.
 
 #[global] Definition tail {a} `{_ : HsToCoq.Err.Default a} : list a -> list a :=
   fun arg_0__ =>
@@ -182,10 +187,10 @@ Fixpoint filter {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : list a
     end.
 
 #[global] Definition sum {a : Type} `{GHC.Num.Num a} : list a -> a :=
-  foldl _GHC.Num.+_ #0.
+  foldl' _GHC.Num.+_ #0.
 
 #[global] Definition product {a : Type} `{GHC.Num.Num a} : list a -> a :=
-  foldl _GHC.Num.*_ #1.
+  foldl' _GHC.Num.*_ #1.
 
 #[global] Definition scanl {b : Type} {a : Type}
    : (b -> a -> b) -> b -> list a -> list b :=
@@ -225,8 +230,9 @@ Fixpoint filter {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : list a
    : (b -> a -> b) -> (b -> c -> c) -> a -> (b -> c) -> b -> c :=
   fun f c => fun b g => (fun x => let b' := f x b in c b' (g b')).
 
-#[global] Definition flipSeqScanl' {a} {b} : a -> b -> a :=
-  fun a _b => a.
+#[global] Definition foldr' {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> list a -> b :=
+  fun f z0 xs => let f' := fun k x z => k (f x z) in foldl f' id xs z0.
 
 #[global] Definition foldr1 {a} `{_ : HsToCoq.Err.Default a}
    : (a -> a -> a) -> list a -> a :=
@@ -271,7 +277,7 @@ Fixpoint scanr1 {a} `{_ : HsToCoq.Err.Default a} (arg_0__ : a -> a -> a)
   fun arg_0__ =>
     match arg_0__ with
     | nil => errorEmptyList (GHC.Base.hs_string__ "maximum")
-    | xs => foldl1 max xs
+    | xs => foldl1' max xs
     end.
 
 #[global] Definition minimum {a} `{_ : HsToCoq.Err.Default a} {_ : Eq_ a} {_
@@ -280,7 +286,7 @@ Fixpoint scanr1 {a} `{_ : HsToCoq.Err.Default a} (arg_0__ : a -> a -> a)
   fun arg_0__ =>
     match arg_0__ with
     | nil => errorEmptyList (GHC.Base.hs_string__ "minimum")
-    | xs => foldl1 min xs
+    | xs => foldl1' min xs
     end.
 
 (* Skipping definition `GHC.List.iterate' *)
@@ -319,7 +325,7 @@ Fixpoint dropWhile {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : list a
 
 (* Skipping definition `GHC.List.unsafeTake' *)
 
-#[global] Definition flipSeqTake {a} : a -> GHC.Num.Int -> a :=
+#[global] Definition flipSeq {a} {b} : a -> b -> a :=
   fun x _n => x.
 
 #[global] Definition takeFB {a} {b}
@@ -413,12 +419,12 @@ Fixpoint lookup {a : Type} {b : Type} `{Eq_ a} (arg_0__ : a) (arg_1__
 #[global] Definition tooLarge {a} `{_ : HsToCoq.Err.Default a}
    : GHC.Num.Int -> a :=
   fun arg_0__ =>
-    GHC.Err.errorWithoutStackTrace (Coq.Init.Datatypes.app prel_list_str
-                                                           (GHC.Base.hs_string__ "!!: index too large")).
+    GHC.Err.error (Coq.Init.Datatypes.app prel_list_str (GHC.Base.hs_string__
+                                           "!!: index too large")).
 
 #[global] Definition negIndex {a} `{_ : HsToCoq.Err.Default a} : a :=
-  GHC.Err.errorWithoutStackTrace (Coq.Init.Datatypes.app prel_list_str
-                                                         (GHC.Base.hs_string__ "!!: negative index")).
+  GHC.Err.error (Coq.Init.Datatypes.app prel_list_str (GHC.Base.hs_string__
+                                         "!!: negative index")).
 
 #[global] Definition op_znzn__ {a} `{_ : HsToCoq.Err.Default a}
    : list a -> GHC.Num.Int -> a :=
@@ -432,6 +438,19 @@ Fixpoint lookup {a : Type} {b : Type} `{Eq_ a} (arg_0__ : a) (arg_1__
 Notation "'_!!_'" := (op_znzn__).
 
 Infix "!!" := (_!!_) (at level 99).
+
+#[global] Definition op_znz3fU__ {a : Type}
+   : list a -> GHC.Num.Int -> option a :=
+  fun xs n =>
+    if n < #0 : bool then None else
+    foldr (fun x r k =>
+             let 'num_0__ := k in
+             if num_0__ == #0 : bool then Some x else
+             r (k GHC.Num.- #1)) (const None) xs n.
+
+Notation "'_!?_'" := (op_znz3fU__).
+
+Infix "!?" := (_!?_) (at level 99).
 
 #[global] Definition foldr2 {a} {b} {c}
    : (a -> b -> c -> c) -> c -> list a -> list b -> c :=
@@ -543,12 +562,14 @@ Fixpoint zip3 {a : Type} {b : Type} {c : Type} (arg_0__ : list a) (arg_1__
 Module Notations.
 Notation "'_GHC.List.!!_'" := (op_znzn__).
 Infix "GHC.List.!!" := (_!!_) (at level 99).
+Notation "'_GHC.List.!?_'" := (op_znz3fU__).
+Infix "GHC.List.!?" := (_!?_) (at level 99).
 End Notations.
 
 (* External variables:
      Eq_ None Ord Some String Type andb bool cons const false foldl foldl' foldr id
-     list max min nil op_zeze__ op_zl__ op_zsze__ op_zt__ option orb pair true
-     Coq.Init.Datatypes.app GHC.Err.errorWithoutStackTrace GHC.Err.patternFailure
-     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__
-     GHC.Num.op_zt__ HsToCoq.Err.Default
+     list max min nil op_z2218U__ op_zeze__ op_zl__ op_zsze__ op_zt__ option orb pair
+     true Coq.Init.Datatypes.app Data.Maybe.maybe GHC.Err.error
+     GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ HsToCoq.Err.Default
 *)

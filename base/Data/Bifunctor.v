@@ -28,7 +28,8 @@ Record Bifunctor__Dict (p : Type -> Type -> Type) := Bifunctor__Dict_Build {
   second__ : forall {b : Type},
   forall {c : Type}, forall {a : Type}, (b -> c) -> p a b -> p a c }.
 
-#[global] Definition Bifunctor (p : Type -> Type -> Type) :=
+#[global] Definition Bifunctor (p : Type -> Type -> Type) `{forall {a : Type},
+  GHC.Base.Functor (p a)} :=
   forall r__, (Bifunctor__Dict p -> r__) -> r__.
 Existing Class Bifunctor.
 
@@ -397,7 +398,7 @@ Program Instance Bifunctor__Const : Bifunctor Data.Functor.Const.Const :=
 
 (* External variables:
      Type pair Data.Either.Either Data.Either.Left Data.Either.Right
-     Data.Functor.Const.Const Data.Functor.Const.Mk_Const GHC.Base.id
-     GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type
-     GHC.Tuple.sext_type GHC.Tuple.triple_type
+     Data.Functor.Const.Const Data.Functor.Const.Mk_Const GHC.Base.Functor
+     GHC.Base.id GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type
+     GHC.Tuple.sept_type GHC.Tuple.sext_type GHC.Tuple.triple_type
 *)

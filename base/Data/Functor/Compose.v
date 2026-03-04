@@ -12,7 +12,6 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require Coq.Program.Basics.
 Require Data.Foldable.
 Require Data.Functor.
 Require Data.Functor.Classes.
@@ -20,9 +19,9 @@ Require Data.SemigroupInternal.
 Require Data.Traversable.
 Require GHC.Base.
 Require GHC.Num.
+Require GHC.Prim.
 Import Data.Functor.Notations.
 Import GHC.Base.Notations.
-Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
@@ -39,14 +38,70 @@ Arguments Mk_Compose {_} {_} {_} {_} {_} _.
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `Data.Data.Data', including
-   `Data.Functor.Compose.Data__Compose' *)
+(* Skipping all instances of class `GHC.Float.RealFloat', including
+   `Data.Functor.Compose.RealFloat__Compose' *)
 
-(* Skipping all instances of class `GHC.Generics.Generic', including
-   `Data.Functor.Compose.Generic__Compose' *)
+(* Skipping all instances of class `GHC.Float.Floating', including
+   `Data.Functor.Compose.Floating__Compose' *)
 
-(* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.Functor.Compose.Generic1__Compose__5' *)
+(* Skipping all instances of class `GHC.Real.RealFrac', including
+   `Data.Functor.Compose.RealFrac__Compose' *)
+
+(* Skipping all instances of class `GHC.Real.Fractional', including
+   `Data.Functor.Compose.Fractional__Compose' *)
+
+(* Skipping all instances of class `GHC.Real.Integral', including
+   `Data.Functor.Compose.Integral__Compose' *)
+
+(* Skipping all instances of class `GHC.Real.Real', including
+   `Data.Functor.Compose.Real__Compose' *)
+
+(* Skipping all instances of class `GHC.Num.Num', including
+   `Data.Functor.Compose.Num__Compose' *)
+
+(* Skipping all instances of class `GHC.Enum.Bounded', including
+   `Data.Functor.Compose.Bounded__Compose' *)
+
+(* Skipping all instances of class `GHC.Enum.Enum', including
+   `Data.Functor.Compose.Enum__Compose' *)
+
+#[local] Definition Ord__Compose_op_zl__ {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k} `{GHC.Base.Ord
+  (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => x GHC.Base.< y.
+
+#[local] Definition Ord__Compose_op_zlze__ {inst_k : Type}
+  {inst_f : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k}
+  `{GHC.Base.Ord (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => x GHC.Base.<= y.
+
+#[local] Definition Ord__Compose_op_zg__ {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k} `{GHC.Base.Ord
+  (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => x GHC.Base.> y.
+
+#[local] Definition Ord__Compose_op_zgze__ {inst_k : Type}
+  {inst_f : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k}
+  `{GHC.Base.Ord (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => x GHC.Base.>= y.
+
+#[local] Definition Ord1__Compose_liftCompare {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Functor.Classes.Ord1 inst_f} `{Data.Functor.Classes.Ord1
+  inst_g}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> comparison) ->
+     Compose inst_f inst_g a -> Compose inst_f inst_g b -> comparison :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | comp, Mk_Compose x, Mk_Compose y =>
+          Data.Functor.Classes.liftCompare (Data.Functor.Classes.liftCompare comp) x y
+      end.
 
 #[local] Definition Eq1__Compose_liftEq {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Functor.Classes.Eq1 inst_f} `{Data.Functor.Classes.Eq1
@@ -70,20 +125,6 @@ Program Instance Eq1__Compose {f : Type -> Type} {g : Type -> Type}
     k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
              Eq1__Compose_liftEq |}.
 
-#[local] Definition Ord1__Compose_liftCompare {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Functor.Classes.Ord1 inst_f} `{Data.Functor.Classes.Ord1
-  inst_g}
-   : forall {a : Type},
-     forall {b : Type},
-     (a -> b -> comparison) ->
-     Compose inst_f inst_g a -> Compose inst_f inst_g b -> comparison :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ arg_2__ =>
-      match arg_0__, arg_1__, arg_2__ with
-      | comp, Mk_Compose x, Mk_Compose y =>
-          Data.Functor.Classes.liftCompare (Data.Functor.Classes.liftCompare comp) x y
-      end.
-
 #[global]
 Program Instance Ord1__Compose {f : Type -> Type} {g : Type -> Type}
   `{Data.Functor.Classes.Ord1 f} `{Data.Functor.Classes.Ord1 g}
@@ -92,79 +133,49 @@ Program Instance Ord1__Compose {f : Type -> Type} {g : Type -> Type}
     k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
              Ord1__Compose_liftCompare |}.
 
-(* Skipping all instances of class `Data.Functor.Classes.Read1', including
-   `Data.Functor.Compose.Read1__Compose' *)
+#[local] Definition Ord__Compose_compare {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k} `{GHC.Base.Ord
+  (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> comparison :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => GHC.Base.compare x y.
 
-(* Skipping all instances of class `Data.Functor.Classes.Show1', including
-   `Data.Functor.Compose.Show1__Compose' *)
+#[local] Definition Ord__Compose_max {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k} `{GHC.Base.Ord
+  (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a ->
+     Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => Mk_Compose (GHC.Base.max x y).
 
-#[local] Definition Eq___Compose_op_zeze__ {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Eq1 inst_f}
-  `{Data.Functor.Classes.Eq1 inst_g} `{GHC.Base.Eq_ inst_a}
+#[local] Definition Ord__Compose_min {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k} `{GHC.Base.Ord
+  (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a ->
+     Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => Mk_Compose (GHC.Base.min x y).
+
+#[local] Definition Eq___Compose_op_zeze__ {inst_k : Type}
+  {inst_f : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k}
+  `{GHC.Base.Eq_ (inst_f (inst_g inst_a))}
    : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
-  Data.Functor.Classes.eq1.
+  fun '(Mk_Compose x) '(Mk_Compose y) => x GHC.Base.== y.
 
-#[local] Definition Eq___Compose_op_zsze__ {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Eq1 inst_f}
-  `{Data.Functor.Classes.Eq1 inst_g} `{GHC.Base.Eq_ inst_a}
+#[local] Definition Eq___Compose_op_zsze__ {inst_k : Type}
+  {inst_f : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k}
+  `{GHC.Base.Eq_ (inst_f (inst_g inst_a))}
    : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
-  fun x y => negb (Eq___Compose_op_zeze__ x y).
+  fun '(Mk_Compose x) '(Mk_Compose y) => x GHC.Base./= y.
 
 #[global]
-Program Instance Eq___Compose {f : Type -> Type} {g : Type -> Type} {a : Type}
-  `{Data.Functor.Classes.Eq1 f} `{Data.Functor.Classes.Eq1 g} `{GHC.Base.Eq_ a}
+Program Instance Eq___Compose {k : Type} {f : k -> Type} {g : k -> k}
+  {a : k} `{GHC.Base.Eq_ (f (g a))}
    : GHC.Base.Eq_ (Compose f g a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Compose_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Compose_op_zsze__ |}.
 
-#[local] Definition Ord__Compose_compare {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
-  `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> comparison :=
-  Data.Functor.Classes.compare1.
-
-#[local] Definition Ord__Compose_op_zl__ {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
-  `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
-  fun x y => Ord__Compose_compare x y GHC.Base.== Lt.
-
-#[local] Definition Ord__Compose_op_zlze__ {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
-  `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
-  fun x y => Ord__Compose_compare x y GHC.Base./= Gt.
-
-#[local] Definition Ord__Compose_op_zg__ {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
-  `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
-  fun x y => Ord__Compose_compare x y GHC.Base.== Gt.
-
-#[local] Definition Ord__Compose_op_zgze__ {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
-  `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a -> bool :=
-  fun x y => Ord__Compose_compare x y GHC.Base./= Lt.
-
-#[local] Definition Ord__Compose_max {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
-  `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose inst_f inst_g inst_a ->
-     Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a :=
-  fun x y => if Ord__Compose_op_zlze__ x y : bool then y else x.
-
-#[local] Definition Ord__Compose_min {inst_f : Type -> Type} {inst_g
-   : Type -> Type} {inst_a : Type} `{Data.Functor.Classes.Ord1 inst_f}
-  `{Data.Functor.Classes.Ord1 inst_g} `{GHC.Base.Ord inst_a}
-   : Compose inst_f inst_g inst_a ->
-     Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a :=
-  fun x y => if Ord__Compose_op_zlze__ x y : bool then x else y.
-
 #[global]
-Program Instance Ord__Compose {f : Type -> Type} {g : Type -> Type} {a : Type}
-  `{Data.Functor.Classes.Ord1 f} `{Data.Functor.Classes.Ord1 g} `{GHC.Base.Ord a}
+Program Instance Ord__Compose {k : Type} {f : k -> Type} {g : k -> k}
+  {a : k} `{GHC.Base.Ord (f (g a))} `{GHC.Base.Eq_ (Compose f g a)}
    : GHC.Base.Ord (Compose f g a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Compose_op_zl__ ;
@@ -175,11 +186,68 @@ Program Instance Ord__Compose {f : Type -> Type} {g : Type -> Type} {a : Type}
            GHC.Base.max__ := Ord__Compose_max ;
            GHC.Base.min__ := Ord__Compose_min |}.
 
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
+   `Data.Functor.Compose.Data__Compose' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic', including
+   `Data.Functor.Compose.Generic__Compose' *)
+
+(* Skipping all instances of class `GHC.Generics.Generic1', including
+   `Data.Functor.Compose.Generic1__Compose__5' *)
+
+#[local] Definition Semigroup__Compose_op_zlzlzgzg__ {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k}
+  `{GHC.Base.Semigroup (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a ->
+     Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => Mk_Compose (x GHC.Base.<<>> y).
+
+#[global]
+Program Instance Semigroup__Compose {k : Type} {f : k -> Type} {g
+   : k -> k} {a : k} `{GHC.Base.Semigroup (f (g a))}
+   : GHC.Base.Semigroup (Compose f g a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Compose_op_zlzlzgzg__ |}.
+
+#[local] Definition Monoid__Compose_mappend {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k}
+  `{GHC.Base.Monoid (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a ->
+     Compose inst_f inst_g inst_a -> Compose inst_f inst_g inst_a :=
+  fun '(Mk_Compose x) '(Mk_Compose y) => Mk_Compose (GHC.Base.mappend x y).
+
+#[local] Definition Monoid__Compose_mconcat {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k}
+  `{GHC.Base.Monoid (inst_f (inst_g inst_a))}
+   : list (Compose inst_f inst_g inst_a) -> Compose inst_f inst_g inst_a :=
+  Mk_Compose GHC.Base.∘ GHC.Base.mconcat GHC.Base.∘ GHC.Base.map (fun '(Mk_Compose x) => x).
+
+#[local] Definition Monoid__Compose_mempty {inst_k : Type} {inst_f
+   : inst_k -> Type} {inst_g : inst_k -> inst_k} {inst_a : inst_k}
+  `{GHC.Base.Monoid (inst_f (inst_g inst_a))}
+   : Compose inst_f inst_g inst_a :=
+  Mk_Compose GHC.Base.mempty.
+
+#[global]
+Program Instance Monoid__Compose {k : Type} {f : k -> Type} {g
+   : k -> k} {a : k} `{GHC.Base.Monoid (f (g a))}
+   : GHC.Base.Monoid (Compose f g a) :=
+  fun _ k__ =>
+    k__ {| GHC.Base.mappend__ := Monoid__Compose_mappend ;
+           GHC.Base.mconcat__ := Monoid__Compose_mconcat ;
+           GHC.Base.mempty__ := Monoid__Compose_mempty |}.
+
 (* Skipping all instances of class `GHC.Read.Read', including
    `Data.Functor.Compose.Read__Compose' *)
 
 (* Skipping all instances of class `GHC.Show.Show', including
    `Data.Functor.Compose.Show__Compose' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Read1', including
+   `Data.Functor.Compose.Read1__Compose' *)
+
+(* Skipping all instances of class `Data.Functor.Classes.Show1', including
+   `Data.Functor.Compose.Show1__Compose' *)
 
 #[local] Definition Functor__Compose_fmap {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{GHC.Base.Functor inst_f} `{GHC.Base.Functor inst_g}
@@ -199,8 +267,7 @@ Program Instance Ord__Compose {f : Type -> Type} {g : Type -> Type} {a : Type}
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
-      | a, Mk_Compose x =>
-          Mk_Compose (GHC.Base.fmap (fun arg_2__ => a GHC.Base.<$ arg_2__) x)
+      | a, Mk_Compose x => Mk_Compose (GHC.Base.fmap (_GHC.Base.<$_ a) x)
       end.
 
 #[global]
@@ -211,6 +278,14 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
     k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Compose_fmap ;
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
              Functor__Compose_op_zlzd__ |}.
+
+#[local] Definition Foldable__Compose_fold {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {m : Type},
+     forall `{GHC.Base.Monoid m}, Compose inst_f inst_g m -> m :=
+  fun {m : Type} `{GHC.Base.Monoid m} =>
+    fun '(Mk_Compose t) => Data.Foldable.foldMap Data.Foldable.fold t.
 
 #[local] Definition Foldable__Compose_foldMap {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -224,33 +299,6 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
       | f, Mk_Compose t => Data.Foldable.foldMap (Data.Foldable.foldMap f) t
       end.
 
-#[local] Definition Foldable__Compose_fold {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
-  inst_g}
-   : forall {m : Type},
-     forall `{GHC.Base.Monoid m}, Compose inst_f inst_g m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Compose_foldMap GHC.Base.id.
-
-#[local] Definition Foldable__Compose_foldr {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
-  inst_g}
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Compose inst_f inst_g a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Compose_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
-
-#[local] Definition Foldable__Compose_foldl' {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
-  inst_g}
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Compose inst_f inst_g a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in
-      Foldable__Compose_foldr f' GHC.Base.id xs z0.
-
 #[local] Definition Foldable__Compose_foldMap' {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
@@ -258,8 +306,10 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
      forall {a : Type},
      forall `{GHC.Base.Monoid m}, (a -> m) -> Compose inst_f inst_g a -> m :=
   fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__Compose_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, Mk_Compose t => Data.Foldable.foldMap' (Data.Foldable.foldMap' f) t
+      end.
 
 #[local] Definition Foldable__Compose_foldl {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -267,11 +317,35 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
    : forall {b : Type},
      forall {a : Type}, (b -> a -> b) -> b -> Compose inst_f inst_g a -> b :=
   fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__Compose_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                  (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                   GHC.Base.flip f)) t)) z.
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | f, b, Mk_Compose fga =>
+          Data.Foldable.foldl (fun acc ga => Data.Foldable.foldl f acc ga) b fga
+      end.
+
+#[local] Definition Foldable__Compose_foldl' {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Compose inst_f inst_g a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | f, b, Mk_Compose fga =>
+          Data.Foldable.foldl' (fun acc ga => Data.Foldable.foldl' f acc ga) b fga
+      end.
+
+#[local] Definition Foldable__Compose_foldr {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> Compose inst_f inst_g a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | f, b, Mk_Compose fga =>
+          Data.Foldable.foldr (fun ga acc => Data.Foldable.foldr f acc ga) b fga
+      end.
 
 #[local] Definition Foldable__Compose_foldr' {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -279,41 +353,48 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> Compose inst_f inst_g a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in
-      Foldable__Compose_foldl f' GHC.Base.id xs z0.
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | f, b, Mk_Compose fga =>
+          Data.Foldable.foldr' (fun ga acc => Data.Foldable.foldr' f acc ga) b fga
+      end.
 
 #[local] Definition Foldable__Compose_length {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, Compose inst_f inst_g a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__Compose_foldl' (fun arg_0__ arg_1__ =>
-                                match arg_0__, arg_1__ with
-                                | c, _ => c GHC.Num.+ #1
-                                end) #0.
+    fun '(Mk_Compose t) =>
+      Data.SemigroupInternal.getSum (Data.Foldable.foldMap'
+                                     (Data.SemigroupInternal.Mk_Sum GHC.Base.∘ Data.Foldable.length) t).
 
 #[local] Definition Foldable__Compose_null {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, Compose inst_f inst_g a -> bool :=
-  fun {a : Type} => Foldable__Compose_foldr (fun arg_0__ arg_1__ => false) true.
+  fun {a : Type} =>
+    fun '(Mk_Compose t) =>
+      orb (Data.Foldable.null t) (Data.SemigroupInternal.getAll (Data.Foldable.foldMap
+                                                                 (Data.SemigroupInternal.Mk_All GHC.Base.∘
+                                                                  Data.Foldable.null) t)).
 
 #[local] Definition Foldable__Compose_product {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Compose_foldMap Data.SemigroupInternal.Mk_Product).
+    fun '(Mk_Compose t) =>
+      Data.SemigroupInternal.getProduct (Data.Foldable.foldMap'
+                                         (Data.SemigroupInternal.Mk_Product GHC.Base.∘ Data.Foldable.product) t).
 
 #[local] Definition Foldable__Compose_sum {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__Compose_foldMap Data.SemigroupInternal.Mk_Sum).
+    fun '(Mk_Compose t) =>
+      Data.SemigroupInternal.getSum (Data.Foldable.foldMap'
+                                     (Data.SemigroupInternal.Mk_Sum GHC.Base.∘ Data.Foldable.sum) t).
 
 #[local] Definition Foldable__Compose_toList {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -475,33 +556,45 @@ Program Instance Applicative__Compose {f : Type -> Type} {g : Type -> Type}
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Data.Functor.Compose.Alternative__Compose' *)
 
-(* Skipping all instances of class `Data.Type.Equality.TestEquality', including
+(* Skipping all instances of class
+   `GHC.Internal.Data.Type.Equality.TestEquality', including
    `Data.Functor.Compose.TestEquality__Compose' *)
 
+(* Skipping liftReadPrecCompose — depends on GHC.Text.ParserCombinators.ReadPrec *)
+
+(* Skipping liftShowsPrecCompose — depends on GHC.Show *)
+
 (* External variables:
-     Gt Lt Type bool comparison false list negb true Coq.Program.Basics.compose
-     Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap'__
-     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
-     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
-     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
-     Data.Foldable.sum__ Data.Foldable.toList__ Data.Functor.op_zlzdzg__
-     Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1 Data.Functor.Classes.compare1
-     Data.Functor.Classes.eq1 Data.Functor.Classes.liftCompare
+     Type bool comparison list orb Data.Foldable.Foldable Data.Foldable.fold
+     Data.Foldable.foldMap Data.Foldable.foldMap' Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl
+     Data.Foldable.foldl' Data.Foldable.foldl'__ Data.Foldable.foldl__
+     Data.Foldable.foldr Data.Foldable.foldr' Data.Foldable.foldr'__
+     Data.Foldable.foldr__ Data.Foldable.length Data.Foldable.length__
+     Data.Foldable.null Data.Foldable.null__ Data.Foldable.product
+     Data.Foldable.product__ Data.Foldable.sum Data.Foldable.sum__
+     Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.Functor.Classes.Eq1
+     Data.Functor.Classes.Ord1 Data.Functor.Classes.liftCompare
      Data.Functor.Classes.liftCompare__ Data.Functor.Classes.liftEq
-     Data.Functor.Classes.liftEq__ Data.SemigroupInternal.Mk_Dual
-     Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
-     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
-     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
-     Data.SemigroupInternal.getSum Data.Traversable.Traversable
-     Data.Traversable.mapM__ Data.Traversable.sequenceA__ Data.Traversable.sequence__
+     Data.Functor.Classes.liftEq__ Data.Functor.Classes.readData
+     Data.Functor.Classes.readUnaryWith Data.Functor.Classes.showsUnaryWith
+     Data.SemigroupInternal.Mk_All Data.SemigroupInternal.Mk_Product
+     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.getAll
+     Data.SemigroupInternal.getProduct Data.SemigroupInternal.getSum
+     Data.Traversable.Traversable Data.Traversable.mapM__
+     Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse Data.Traversable.traverse__ GHC.Base.Applicative
      GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord
-     GHC.Base.build' GHC.Base.compare__ GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__
-     GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__ GHC.Base.max__ GHC.Base.mempty
-     GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____
-     GHC.Base.op_zg____ GHC.Base.op_zgze____ GHC.Base.op_zl____ GHC.Base.op_zlzd__
-     GHC.Base.op_zlzd____ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
+     GHC.Base.Semigroup GHC.Base.build' GHC.Base.compare GHC.Base.compare__
+     GHC.Base.fmap GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__
+     GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max GHC.Base.max__ GHC.Base.mconcat
+     GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.min GHC.Base.min__
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg__
+     GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__
+     GHC.Base.op_zl____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze__
+     GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
      GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_zsze__
      GHC.Base.op_zsze____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
+     GHC.Num.Int GHC.Num.Num GHC.Prim.coerce GHC.Show.ShowS
+     GHC.Text.ParserCombinators.ReadPrec.ReadPrec
 *)
