@@ -12,7 +12,7 @@ import Data.List.NonEmpty (NonEmpty(..))
 import Control.Lens
 
 #if __GLASGOW_HASKELL__ >= 900
-import GHC.Plugins hiding ((<>), App)
+import GHC.Plugins hiding ((<>), App, InScope)
 import GHC.Core.TyCo.Rep
 #else
 #if __GLASGOW_HASKELL__ >= 808
@@ -67,7 +67,13 @@ convertType_ b (ForAllTy tv ty) = do
 #else
 #define MULT
 #endif
-#if __GLASGOW_HASKELL__ >= 810
+#if __GLASGOW_HASKELL__ >= 910
+convertType_ b (FunTy af MULT ty1 ty2)
+  | isInvisibleFunArg af = do
+    cons <- convertPredType ty1
+    Forall (Generalized Coq.Implicit cons :| []) <$> convertType_ b ty2
+  | otherwise = Arrow <$> convertType_ b ty1 <*> convertType_ b ty2
+#elif __GLASGOW_HASKELL__ >= 810
 convertType_ b (FunTy InvisArg MULT ty1 ty2)  = do
   cons <- convertPredType ty1
   Forall (Generalized Coq.Implicit cons :| []) <$> convertType_ b ty2

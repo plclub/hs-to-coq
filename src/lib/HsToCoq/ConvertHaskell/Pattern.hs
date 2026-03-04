@@ -22,6 +22,7 @@ import qualified Data.Text as T
 
 import HsToCoq.Util.Monad
 import Control.Monad.Trans.Maybe
+import Control.Monad (foldM)
 import Control.Monad.Writer
 import Control.Monad.Except
 
@@ -71,7 +72,7 @@ convertPat (LazyPat NOEXTP p) = do
 convertPat (GHC.AsPat NOEXTP x p) =
   Coq.AsPat <$> convertLPat p <*> var ExprNS (unLoc x)
 
-convertPat (ParPat NOEXTP GHC_900(_) p GHC_900(_)) =
+convertPat (ParPat NOEXTP NOT_GHC_910(GHC_900(_)) p NOT_GHC_910(GHC_900(_))) =
   convertLPat p
 
 convertPat (BangPat NOEXTP p) =

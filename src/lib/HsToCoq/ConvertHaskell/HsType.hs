@@ -207,6 +207,11 @@ convertLHsSigTypeWithExcls utvm (HsIB hs_itvs hs_lty _) excls = do
   coq_ty   <- convertLHsType hs_lty
   finishConvertHsSigTypeWithExcls utvm coq_itvs coq_ty excls
 #if __GLASGOW_HASKELL__ >= 900
+convertLHsSigTypeWithExcls utvm (L _ (HsSig _ (HsOuterExplicit _ hs_etvs) hs_lty)) excls = do
+  let hs_itvs = map (hsTyVarName . unLoc) hs_etvs
+  coq_itvs <- traverse (var TypeNS) hs_itvs
+  coq_ty   <- convertLHsType hs_lty
+  finishConvertHsSigTypeWithExcls utvm coq_itvs coq_ty excls
 convertLHsSigTypeWithExcls _ (L _ (XHsSigType v)) _ = noExtCon v
 #elif __GLASGOW_HASKELL__ >= 806
 convertLHsSigTypeWithExcls _ (XHsImplicitBndrs v) _ = noExtCon v
@@ -256,7 +261,10 @@ convertHsSigType_ _ (XLHsQTyVars v) _ _ _ _ = noExtCon v
 #endif
 
 convertArgs :: LocalConvMonad r m => HsConDeclDetails GhcRn -> Term -> m Term
-#if __GLASGOW_HASKELL__ >= 900
+#if __GLASGOW_HASKELL__ >= 910
+convertArgs (PrefixConGADT _ args_) ty = do
+  let args = map hsScaledThing args_
+#elif __GLASGOW_HASKELL__ >= 900
 convertArgs (PrefixConGADT args_) ty = do
   let args = map hsScaledThing args_
 #else
@@ -264,7 +272,9 @@ convertArgs (PrefixCon args) ty = do
 #endif
   coq_args <- traverse convertLHsType args
   pure (foldr Arrow ty coq_args)
-#if __GLASGOW_HASKELL__ >= 900
+#if __GLASGOW_HASKELL__ >= 910
+convertArgs (RecConGADT _ rec) ty = do
+#elif __GLASGOW_HASKELL__ >= 900
 convertArgs (RecConGADT rec _) ty = do
 #else
 convertArgs (RecCon rec) ty = do

@@ -127,12 +127,21 @@ convertConDecl curType extraArgs (ConDeclGADT
 #else
 convertConDecl curType extraArgs (ConDeclGADT lnames sigTy _doc) = do
 #endif
+#if __GLASGOW_HASKELL__ >= 910
+  fmap catMaybes . for (toList lnames) $ \(L _ hsName) -> runMaybeT $ do
+#else
   fmap catMaybes . for lnames $ \(L _ hsName) -> runMaybeT $ do
+#endif
     conName         <- conNameOrSkip hsName
     utvm            <- unusedTyVarModeFor conName
     (_, curTypArgs) <- failEither (collectArgs curType)
     conTy           <- withCurrentDefinition conName $
-#if __GLASGOW_HASKELL__ >= 900
+#if __GLASGOW_HASKELL__ >= 910
+      let fqvars (L _ (HsOuterImplicit qvs)) = HsQTvs qvs []
+          fqvars (L _ (HsOuterExplicit _ qvs)) = HsQTvs [] ((fmap . fmap) unanno qvs)
+          unanno (UserTyVar x _ i) = UserTyVar x (HsBndrRequired noExtField) i
+          unanno (KindedTyVar x _ i j) = KindedTyVar x (HsBndrRequired noExtField) i j in
+#elif __GLASGOW_HASKELL__ >= 900
       let fqvars (L _ (HsOuterImplicit qvs)) = HsQTvs qvs []
           fqvars (L _ (HsOuterExplicit _ qvs)) = HsQTvs [] ((fmap . fmap) unanno qvs)
           unanno (UserTyVar x _ i) = UserTyVar x () i
@@ -194,10 +203,14 @@ rewriteDataTypeArguments dta bs = do
 convertDataDefn :: LocalConvMonad r m
                 => Term -> [Binder] -> HsDataDefn GhcRn
                 -> m (Term, [Constructor])
+#if __GLASGOW_HASKELL__ >= 910
+convertDataDefn curType extraArgs (HsDataDefn NOEXTP lcxt _ctype ksig cons _derivs) = do
+  when (isJust lcxt) $ convUnsupported' "data type contexts"
+#elif __GLASGOW_HASKELL__ >= 900
 convertDataDefn curType extraArgs (HsDataDefn NOEXTP _nd lcxt _ctype ksig cons _derivs) = do
-#if __GLASGOW_HASKELL__ >= 900
-  unless (isJust lcxt) $ convUnsupported' "data type contexts"
+  when (isJust lcxt) $ convUnsupported' "data type contexts"
 #else
+convertDataDefn curType extraArgs (HsDataDefn NOEXTP _nd lcxt _ctype ksig cons _derivs) = do
   unless (null $ unLoc lcxt) $ convUnsupported' "data type contexts"
 #endif
   (,) <$> maybe (pure $ Sort Type) convertLHsType ksig

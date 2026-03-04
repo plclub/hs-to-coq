@@ -48,6 +48,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import HsToCoq.Util.Monad
 
+import Control.Monad (filterM)
 import Control.Monad.Trans.Counter
 import Control.Monad.State
 import Control.Monad.Reader
@@ -70,7 +71,7 @@ import GHC.Driver.Session (getDynFlags)
 import GHC.Driver.Monad (logDiagnostics)
 import GHC.Driver.Config.Diagnostic (initDiagOpts)
 import GHC.Driver.Errors.Types (GhcMessage(GhcUnknownMessage))
-import GHC.Types.Error (DiagnosticReason(WarningWithoutFlag), singleMessage, mkPlainDiagnostic, mkLocMessage, MessageClass(MCDiagnostic), Severity(SevWarning))
+import GHC.Types.Error (DiagnosticReason(WarningWithoutFlag), singleMessage, mkPlainDiagnostic, mkSimpleUnknownDiagnostic, mkLocMessage, MessageClass(MCDiagnostic), Severity(SevWarning))
 import GHC.Utils.Error (mkPlainMsgEnvelope)
 import GHC.Utils.Outputable (text)
 import GHC.Utils.Panic (throwGhcExceptionIO)
@@ -291,7 +292,7 @@ warnConvUnsupported' :: ConversionMonad r m => SrcSpan -> String -> m ()
 warnConvUnsupported' loc what = do
 #if __GLASGOW_HASKELL__ >= 900
   diag_opts <- initDiagOpts <$> getDynFlags
-  let mkMsg loc = singleMessage . mkPlainMsgEnvelope diag_opts loc . GhcUnknownMessage . mkPlainDiagnostic WarningWithoutFlag []
+  let mkMsg loc = singleMessage . mkPlainMsgEnvelope diag_opts loc . GhcUnknownMessage . mkSimpleUnknownDiagnostic . mkPlainDiagnostic WarningWithoutFlag []
 #else
   mkMsg <- mkPlainWarnMsg <$> getDynFlags
 #endif

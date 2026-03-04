@@ -8,11 +8,12 @@
 module HsToCoq.Plugin (plugin) where
 
 import Data.Text (pack)
+import Data.Word (Word64)
 import Control.Monad.IO.Class
 import System.IO
 
 #if __GLASGOW_HASKELL__ >= 900
-import GHC.Plugins hiding (vcat)
+import GHC.Plugins hiding (vcat, InScope)
 import qualified GHC.Utils.Outputable as Outputable
 import GHC.Types.Tickish
 #define Tickish GenTickish
@@ -49,6 +50,11 @@ instance ToTerm (Tickish b) where
 
 instance ToTerm Int where
     t n = InScope (Num (fromIntegral n)) "N"
+
+#if __GLASGOW_HASKELL__ >= 910
+instance ToTerm Word64 where
+    t n = InScope (Num (fromIntegral n)) "N"
+#endif
 
 instance ToTerm Module where
     t (Module a b) = App2 "Mk_Module" (t a) (t b)

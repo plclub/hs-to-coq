@@ -1,9 +1,12 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase, RecordWildCards,
              OverloadedStrings,
              FlexibleContexts,
              TemplateHaskell,
              ScopedTypeVariables,
              RankNTypes #-}
+
+#include "ghc-compat.h"
 
 module HsToCoq.CLI (
   -- * General main-action creator
@@ -42,10 +45,21 @@ import System.IO
 import System.Exit
 
 import GHC hiding (outputFile)
+#if __GLASGOW_HASKELL__ >= 910
+import GHC.Driver.Session hiding (outputFile)
+import GHC.Unit.Module
+import GHC.Data.Bag (bagToList)
+import GHC.Types.Error (getMessages)
+#elif __GLASGOW_HASKELL__ >= 900
+import GHC.Driver.Session hiding (outputFile)
+import GHC.Unit.Module
+import GHC.Driver.CmdLine (Warn(..))
+#else
 import DynFlags hiding (outputFile)
-import HsToCoq.Util.GHC.Exception
 import Module
 import CmdLineParser (Warn(..))
+#endif
+import HsToCoq.Util.GHC.Exception
 
 import HsToCoq.Edits.Parser (parseEditList, runParser, prettyParseError)
 import HsToCoq.Edits.Types
@@ -187,10 +201,7 @@ makeLenses ''Config
 
 ghcInputDirs :: FilePath -> [FilePath]
 ghcInputDirs base = map ((base </> "compiler") </>) $ words
-    "backpack basicTypes cmm codeGen coreSyn deSugar ghci \
-    \hsSyn iface llvmGen main nativeGen parser prelude \
-    \profiling rename simplCore simplStg specialise stgSyn \
-    \stranal typecheck types utils vectorise stage2/build"
+    "backpack basicTypes cmm codeGen coreSyn deSugar ghci hsSyn iface llvmGen main nativeGen parser prelude profiling rename simplCore simplStg specialise stgSyn stranal typecheck types utils vectorise stage2/build"
 
 processArgs :: GhcMonad m => m Config
 processArgs = do
@@ -205,8 +216,15 @@ processArgs = do
                    map (locate "--ghc-tree" . ("-i" ++)) (concatMap ghcInputDirs ghcTreeDirsArgs) ++
                    map (locate "--ghc")                  ghcOptionsArgs
 
+#if __GLASGOW_HASKELL__ >= 910
+  (dflags, ghcRest, warnings) <- (parseDynamicFlagsCmdLine ?? ghcArgs) =<< getSessionDynFlags
+  let numWarns = length (bagToList (getMessages warnings))
+  when (numWarns > 0) $
+    liftIO $ hPutStrLn stderr $ "Command-line argument warnings: " ++ show numWarns
+#else
   (dflags, ghcRest, warnings) <- (parseDynamicFlagsCmdLine ?? ghcArgs) =<< getSessionDynFlags
   printAllIfPresent unLoc "Command-line argument warning" (map warnMsg warnings)
+#endif
   printAllIfPresent unLoc "Ignored GHC arguments"         ghcRest
 
   void $ setSessionDynFlags dflags
@@ -363,7 +381,11 @@ convertAndPrintModules :: GlobalMonad r m => WithModulePrinter m -> [Typechecked
 convertAndPrintModules p = printConvertedModules p <=< convertModules <=< traverse toRenamedHsGroup
   where
     toRenamedHsGroup tcm
+#if __GLASGOW_HASKELL__ >= 910
+      | Just (hs_group, _, _, _, _) <- tm_renamed_source tcm =
+#else
       | Just (hs_group, _, _, _) <- tm_renamed_source tcm =
+#endif
           let (_, modDetails) = tm_internals_ tcm in
           let exports = modInfoExports (tm_checked_module_info tcm) 
               modData = ModuleData {_modName = mod, _modExports = exports, _modDetails = modDetails} in

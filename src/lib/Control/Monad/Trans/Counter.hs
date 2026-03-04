@@ -8,10 +8,13 @@ module Control.Monad.Trans.Counter (CounterT(), runCounterT, Counter, runCounter
 
 import Numeric.Natural
 import HsToCoq.Util.GHC.Exception ()
+import Control.Monad.IO.Class
 import Control.Monad.State.Strict
 
 import Data.Functor.Identity
 import Control.Applicative
+import Control.Monad (MonadPlus)
+import Control.Monad.Fix (MonadFix)
 import Control.Monad.Fail
 
 import qualified Control.Monad.Reader.Class    as R

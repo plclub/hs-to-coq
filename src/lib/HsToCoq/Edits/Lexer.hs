@@ -32,7 +32,7 @@ module HsToCoq.Edits.Lexer (
 import Prelude hiding (Num())
 
 import Data.Foldable
-import Data.Function ((&))
+import Data.Function ((&), fix)
 import Data.Bifunctor (first, second, bimap)
 import HsToCoq.Util.Foldable
 import HsToCoq.Util.Functor

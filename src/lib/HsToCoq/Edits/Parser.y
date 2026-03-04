@@ -2,10 +2,6 @@
 
 {-# LANGUAGE FlexibleContexts, TupleSections, OverloadedStrings, CPP #-}
 
---work around https://github.com/simonmar/happy/issues/109
-#undef __GLASGOW_HASKELL__
-#define __GLASGOW_HASKELL__ 709
-
 module HsToCoq.Edits.Parser (
   parseTerm, parseSentence, parseEditList,
   runParser, prettyParseError
@@ -19,6 +15,7 @@ import qualified Data.List.NonEmpty as NEL
 import qualified Data.Text as T
 import qualified Data.Set as S
 
+import Control.Monad (unless)
 import Control.Monad.Except
 import Control.Monad.State
 import Control.Monad.Parse

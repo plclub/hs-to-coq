@@ -99,7 +99,6 @@ newtype ErrOrVars e a = ErrOrVars { getErrOrVars :: Either e a }
                                  -- Functor, monad, etc.
                                , Functor, Applicative, Monad
                                , Bifunctor
-                               , Alternative, MonadPlus
                                , MonadFix
                                , MonadError e )
 

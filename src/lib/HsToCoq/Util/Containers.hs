@@ -28,6 +28,7 @@ import HsToCoq.Util.Monad
 import Control.Monad.State
 import Control.Monad.RWS
 import Data.Foldable
+import Data.Monoid (Endo(..))
 
 import Data.List.NonEmpty (NonEmpty(..))
 

@@ -17,6 +17,7 @@ import Data.Semigroup (Semigroup(..))
 import Data.Traversable (for)
 import qualified Data.Text as T
 
+import Control.Monad ((<=<), join)
 import Control.Monad.Reader
 import Control.Monad.Except
 
@@ -55,21 +56,32 @@ collectSigs sigs = do
     TypeSig NOEXTP lnames (HsWC wcs hsib)
       | null wcs  -> asTypes lnames hsib
       | otherwise -> throwError "type wildcards found"
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 910
+    XSig _ -> throwError "generated-code signatures"
+#elif __GLASGOW_HASKELL__ >= 806
     TypeSig NOEXTP _ (XHsWildCardBndrs v) -> noExtCon v
     XSig v -> noExtCon v
 #endif
     ClassOpSig NOEXTP False lnames sigTy -> asTypes lnames sigTy
     ClassOpSig NOEXTP True _ _ -> pure [] -- Ignore default methods signatures
     FixSig NOEXTP _            -> pure []
+#if __GLASGOW_HASKELL__ >= 910
+    InlineSig{}          -> pure []
+    SpecSig{}            -> pure []
+    SpecInstSig NOEXTP _ -> pure []
+    MinimalSig{}         -> pure []
+#else
     InlineSig NOEXTP _ _       -> pure []
     SpecSig   NOEXTP _ _ _     -> pure []
     SpecInstSig NOEXTP _ _     -> pure []
     MinimalSig  NOEXTP _ _     -> pure []
+#endif
     SCCFunSig{}          -> pure []
     CompleteMatchSig{}   -> pure []
     PatSynSig NOEXTP _ _ -> pure []
+#if __GLASGOW_HASKELL__ < 910
     IdSig     NOEXTP _   -> throwError "generated-code signatures"
+#endif
 
   pure $ flip M.mapWithKey multimap $ \_key info@(_,_) -> case info of
          ([ty],  [fixity])  -> Right $ HsSignature ty (Just fixity)

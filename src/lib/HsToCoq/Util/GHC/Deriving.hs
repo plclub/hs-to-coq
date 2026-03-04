@@ -21,6 +21,7 @@ import Control.Monad
 
 #if __GLASGOW_HASKELL__ >= 900
 import GHC.Plugins
+import GHC.Parser.Annotation (noAnn)
 import GHC.Types.SourceText
 #elif __GLASGOW_HASKELL__ >= 808
 import GhcPlugins (SourceText(NoSourceText), PromotionFlag(NotPromoted))
@@ -37,12 +38,14 @@ import GHC.Driver.Session
 import GHC.Tc.Utils.Monad
 import GHC.Tc.Utils.Env
 import GHC.Tc.Utils.TcType
+import GHC.Tc.TyCl (tcTyAndClassDecls)
 import GHC.Tc.TyCl.Instance (tcInstDeclsDeriv)
 import GHC.Types.SourceFile (HscSource(HsSrcFile))
 import GHC.Types.SourceText (SourceText(NoSourceText))
 import GHC.Types.Var
 import GHC.Types.Error
-import GHC.Core.Type
+import GHC.Driver.Errors.Types (GhcMessage(GhcTcRnMessage))
+import GHC.Core.Type as Type
 import GHC.Core.TyCo.Rep
 import GHC.Core.InstEnv (instanceSig)
 #else
@@ -74,7 +77,11 @@ initForDeriving =
 
 addDerivedInstances :: GhcMonad m => TypecheckedModule -> m TypecheckedModule
 addDerivedInstances tcm = do
+#if __GLASGOW_HASKELL__ >= 910
+    let Just (hsgroup, a, b, c, d) = tm_renamed_source tcm
+#else
     let Just (hsgroup, a, b, c) = tm_renamed_source tcm
+#endif
 
     (_gbl_env, inst_infos, _rn_binds) <- initTcHack tcm $ do
         let tcg_env = fst (tm_internals_ tcm)
@@ -82,7 +89,10 @@ addDerivedInstances tcm = do
                 -- Set the module to make it look like we are in GHCi
                 -- so that GHC will allow us to re-typecheck existing instances
         setGblEnv tcg_env_hack $
-#if __GLASGOW_HASKELL__ >= 810
+#if __GLASGOW_HASKELL__ >= 910
+            do (_, _, deriv_infos, _) <- tcTyAndClassDecls (hs_tyclds hsgroup)
+               tcInstDeclsDeriv deriv_infos (hs_derivds hsgroup)
+#elif __GLASGOW_HASKELL__ >= 810
             do (_, _, deriv_info) <- tcTyAndClassDecls (hs_tyclds hsgroup)
                tcInstDeclsDeriv deriv_info (hs_derivds hsgroup)
 #else
@@ -104,7 +114,11 @@ addDerivedInstances tcm = do
 #endif
     let hsgroup' = hsgroup { hs_tyclds = mkTyClGroup [] inst_decls : hs_tyclds hsgroup }
 
+#if __GLASGOW_HASKELL__ >= 910
+    return $ tcm { tm_renamed_source = Just (hsgroup', a, b, c, d) }
+#else
     return $ tcm { tm_renamed_source = Just (hsgroup', a, b, c) }
+#endif
 
 initTcHack :: GhcMonad m => TypecheckedModule -> TcM a -> m a
 initTcHack tcm action = do
@@ -156,7 +170,9 @@ instInfoToDecl inst_info =
 #else
     , cid_poly_ty = HsIB tvars_ (noLoc (HsQualTy (noLoc ctxt) inst_head)) True
 #endif
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 910
+    , cid_ext = Nothing
+#elif __GLASGOW_HASKELL__ >= 806
     , cid_ext = NOEXT
 #endif
     })
@@ -236,7 +252,11 @@ typeToLHsType' ty
        where
         lhs_ty = nlHsTyConApp
 #if __GLASGOW_HASKELL__ >= 900
+#if __GLASGOW_HASKELL__ >= 910
+          NotPromoted Prefix (getName tc) (map (HsValArg noExtField . go) args')
+#else
           NotPromoted Prefix (getName tc) (map (HsValArg . go) args')
+#endif
 #else
           (getName tc) (map go args')
 #endif
