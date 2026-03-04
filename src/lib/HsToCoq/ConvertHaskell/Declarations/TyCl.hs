@@ -174,7 +174,12 @@ convertTyClDecl env decl = do
            FamDecl{}     -> convUnsupported "type/data families"
            SynDecl{..}   -> ConvSyn              <$> convertSynDecl               tcdLName (hsq_explicit tcdTyVars) tcdRhs
            DataDecl{..}  -> ConvData <$> isCoind <*> convertDataDecl              tcdLName (hsq_explicit tcdTyVars) tcdDataDefn
-           ClassDecl{..} -> ConvClass            <$> convertClassDecl env tcdCtxt tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
+           ClassDecl{..} -> ConvClass            <$> convertClassDecl env tcdCtxt' tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
+#if __GLASGOW_HASKELL__ >= 900
+             where tcdCtxt' = fromMaybe (noLocA []) tcdCtxt
+#else
+             where tcdCtxt' = tcdCtxt
+#endif
 #if __GLASGOW_HASKELL__ >= 806
            XTyClDecl v -> noExtCon v
 #endif
@@ -488,4 +493,4 @@ convertModuleTyClDecls =  fork [ foldTraverse convertDeclarationGroup
                                , foldTraverse generateGroupDataInfixNotations
                                ]
                        <=< groupTyClDecls
-  where fork fns x = mconcat <$> mapM ($x) fns
+  where fork fns x = mconcat <$> mapM ($ x) fns

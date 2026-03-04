@@ -1,9 +1,13 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE CPP, TupleSections #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module HsToCoq.Util.GHC.DynFlags (module DynFlags) where
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Driver.Session as DynFlags
+#else
 import DynFlags
+#endif
 
 import Control.Monad.Trans
 import qualified Control.Monad.Trans.Identity           as I

@@ -43,7 +43,11 @@ import GHC hiding (Name)
 import HsToCoq.Util.GHC.HsTypes (noExtCon)
 #endif
 import HsToCoq.Util.GHC.Module
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Data.Bag (bagToList)
+#else
 import Bag
+#endif
 
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Monad
@@ -59,6 +63,14 @@ import HsToCoq.ConvertHaskell.Axiomatize
 import HsToCoq.ConvertHaskell.TypeEnv.Instances
 import HsToCoq.Coq.Preamble
 import HsToCoq.Coq.Pretty (textP)
+
+#if __GLASGOW_HASKELL__ >= 900
+import qualified Control.Monad.Catch as MC
+gcatch :: (MC.MonadCatch m, MC.Exception e) => m a -> (e -> m a) -> m a
+gcatch = MC.catch
+
+#define getLoc getLocA
+#endif
 
 --------------------------------------------------------------------------------
 
@@ -184,9 +196,9 @@ convertHsGroup HsGroup{..} = do
   -- Derived instances have an UnhelpfulSpan, we put those to the top because
   -- they tend to be self-contained and everything else depends on them.
   let compareSpan (UnhelpfulSpan _) (UnhelpfulSpan _) = EQ
-      compareSpan (UnhelpfulSpan _) (RealSrcSpan _) = LT
-      compareSpan (RealSrcSpan _) (UnhelpfulSpan _) = GT
-      compareSpan (RealSrcSpan p) (RealSrcSpan q) = compare p q
+      compareSpan (UnhelpfulSpan _) RealSrcSpan{} = LT
+      compareSpan RealSrcSpan{} (UnhelpfulSpan _) = GT
+      compareSpan (RealSrcSpan p GHC_900(_)) (RealSrcSpan q GHC_900(_)) = compare p q
 
   instEnv <- view (currentModule.modDetails) >>= instancesOfModDetails
   

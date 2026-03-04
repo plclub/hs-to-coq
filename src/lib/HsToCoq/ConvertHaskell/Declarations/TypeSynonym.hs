@@ -33,7 +33,7 @@ instance HasBV Qualid SynBody where
 
 -- might make sense to use ConversionMonad instead
 convertSynDecl :: LocalConvMonad r m
-               => Located GHC.Name -> [LHsTyVarBndr GhcRn] -> LHsType GhcRn
+               => GenLocated l GHC.Name -> [LHsTyVarBndr flag GhcRn] -> LHsType GhcRn
                -> m SynBody
 convertSynDecl name args def  = do
   coqName <- freeVar $ unLoc name

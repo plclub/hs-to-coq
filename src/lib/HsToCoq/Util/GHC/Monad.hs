@@ -1,9 +1,8 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE CPP, MultiParamTypeClasses, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module HsToCoq.Util.GHC.Monad (module GhcMonad, mapGhcT) where
 
-import GhcMonad
 import HsToCoq.Util.GHC.DynFlags ()
 import HsToCoq.Util.GHC.Exception ()
 import Control.Monad.Trans
@@ -26,6 +25,13 @@ import qualified Control.Monad.Trans.State.Lazy    as SL
 import qualified Control.Monad.Trans.RWS.Strict    as RWSS
 import qualified Control.Monad.Trans.RWS.Lazy      as RWSL
 import qualified Control.Monad.Trans.Counter       as C
+
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Driver.Monad as GhcMonad
+import GHC.Utils.Logger (HasLogger(..))
+#else
+import GhcMonad
+#endif
 
 instance MonadTrans GhcT where
   lift = liftGhcT
@@ -99,6 +105,9 @@ instance (GhcMonad m) => GhcMonad (C.CounterT m) where
 instance (GhcMonad m, Monoid w) => GhcMonad (RWSL.RWST r w s m) where
   getSession = lift   getSession
   setSession = lift . setSession
+
+instance {-# OVERLAPPABLE #-} (MonadTrans t, Monad m, HasLogger m) => HasLogger (t m) where
+  getLogger = lift getLogger
 
 mapGhcT :: (m a -> n b) -> GhcT m a -> GhcT n b
 mapGhcT f m = GhcT $ f . unGhcT m

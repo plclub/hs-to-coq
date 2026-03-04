@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -57,6 +58,7 @@ import HsToCoq.Coq.Gallina.Util (qualidModule, qualidToIdent, unsafeIdentToQuali
 import HsToCoq.Coq.Pretty
 import HsToCoq.ConvertHaskell.BuiltIn
 
+import Control.Monad.Catch
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.Reader        as R
 import qualified Control.Monad.Trans.Writer.Strict as WS
@@ -165,8 +167,13 @@ typeInfoFields =
 -- so that the state (which is mostly a cache) survives error handling
 -- in the rest of the application
 newtype TypeInfoT m a = TypeInfoT (ReaderT (IORef TypeInfo) m a)
-  deriving ( Functor, Applicative, Monad, MonadIO, ExceptionMonad, GhcMonad
-           , HasDynFlags, MonadTrans)
+  deriving ( Functor, Applicative, Monad, MonadIO
+#if __GLASGOW_HASKELL__ >= 900
+           , MonadThrow, MonadCatch, MonadMask
+#else
+           , ExceptionMonad
+#endif
+           , GhcMonad, HasDynFlags, MonadTrans)
 
 get :: (MonadReader (IORef r) m, MonadIO m) => m r
 get = do

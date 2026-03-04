@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections, LambdaCase, RecordWildCards,
+{-# LANGUAGE CPP, TupleSections, LambdaCase, RecordWildCards,
              OverloadedLists, OverloadedStrings, ScopedTypeVariables,
              RankNTypes, ConstraintKinds, FlexibleContexts,
              TemplateHaskell, MultiParamTypeClasses,
@@ -54,22 +54,37 @@ import Control.Monad.Reader
 
 import Data.Set (Set)
 
-import Bag (unitBag)
-import GHC
-import DynFlags (getDynFlags)
-import ErrUtils (mkPlainWarnMsg)
-import Exception
-import GhcMonad (logWarnings)
-import Outputable (text)
-
-import Panic
-
 import HsToCoq.Coq.Gallina (Qualid, Qualid(..), Ident)
 import HsToCoq.Coq.Pretty
 import HsToCoq.Util.GHC.Module (moduleNameText, ModuleData, modName)
 
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.TypeInfo
+
+#if __GLASGOW_HASKELL__ >= 900
+import Control.Monad.Catch
+#define ExceptionMonad MonadCatch
+#define ghandle handle
+import GHC
+import GHC.Driver.Session (getDynFlags)
+import GHC.Driver.Monad (logDiagnostics)
+import GHC.Driver.Config.Diagnostic (initDiagOpts)
+import GHC.Driver.Errors.Types (GhcMessage(GhcUnknownMessage))
+import GHC.Types.Error (DiagnosticReason(WarningWithoutFlag), singleMessage, mkPlainDiagnostic, mkLocMessage, MessageClass(MCDiagnostic), Severity(SevWarning))
+import GHC.Utils.Error (mkPlainMsgEnvelope)
+import GHC.Utils.Outputable (text)
+import GHC.Utils.Panic (throwGhcExceptionIO)
+#else
+import Bag (unitBag)
+import DynFlags (getDynFlags)
+import ErrUtils (mkPlainWarnMsg)
+import Exception
+import GhcMonad (logWarnings)
+import Outputable (text)
+import Panic
+
+logDiagnostics = logWarnings . unitBag
+#endif
 
 --------------------------------------------------------------------------------
 
@@ -274,9 +289,14 @@ convUnsupported what =
 
 warnConvUnsupported' :: ConversionMonad r m => SrcSpan -> String -> m ()
 warnConvUnsupported' loc what = do
-  dflags <- getDynFlags
-  let msg = mkPlainWarnMsg dflags loc (text (what ++ " unsupported, skipping translation"))
-  logWarnings (unitBag msg)
+#if __GLASGOW_HASKELL__ >= 900
+  diag_opts <- initDiagOpts <$> getDynFlags
+  let mkMsg loc = singleMessage . mkPlainMsgEnvelope diag_opts loc . GhcUnknownMessage . mkPlainDiagnostic WarningWithoutFlag []
+#else
+  mkMsg <- mkPlainWarnMsg <$> getDynFlags
+#endif
+  let msg = mkMsg loc (text (what ++ " unsupported, skipping translation"))
+  logDiagnostics msg
 
 editFailure :: MonadIO m => String -> m a
 editFailure what = throwProgramError $ "Could not apply edit: " ++ what

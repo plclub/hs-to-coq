@@ -20,6 +20,7 @@ import Control.Lens
 import Control.Arrow ((&&&))
 import Data.Bifunctor
 import Data.Foldable
+import Data.Function (on)
 import HsToCoq.Util.Foldable
 import Data.Functor (($>))
 import Data.Traversable
@@ -27,7 +28,7 @@ import Data.Bitraversable
 import HsToCoq.Util.Function
 import Data.Maybe
 import Data.Either
-import Data.List (sortOn)
+import Data.List (sortBy)
 import HsToCoq.Util.List hiding (unsnoc)
 import Data.List.NonEmpty (nonEmpty, NonEmpty(..))
 import qualified Data.List.NonEmpty as NEL
@@ -48,12 +49,23 @@ import qualified Data.Map.Strict as M
 
 import GHC hiding (Name, HsChar, HsString, AsPat)
 import qualified GHC
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Data.Bag (bagToList)
+import GHC.Types.Name.Reader (mkOrig)
+import GHC.Types.Basic (Origin(..))
+import GHC.Types.SourceText (IntegralLit(..), SourceText(..))
+import qualified GHC.Utils.Outputable as GHC
+import qualified Control.Monad.Catch as MC
+#define ghandle MC.handle
+#else
 import Bag
 import BasicTypes
-import HsToCoq.Util.GHC.FastString
 import RdrName
-import HsToCoq.Util.GHC.Exception
 import qualified Outputable as GHC
+#endif
+
+import HsToCoq.Util.GHC.FastString
+import HsToCoq.Util.GHC.Exception
 
 import HsToCoq.Util.GHC
 import HsToCoq.Util.GHC.Module
@@ -85,6 +97,25 @@ import HsToCoq.ConvertHaskell.Axiomatize
 
 import HsToCoq.ConvertHaskell.TypeEnv.Id
 
+#if __GLASGOW_HASKELL__ >= 900
+unboundVarOcc = id
+getLoc_ = getLocA
+noLoc_ = noLocA
+conPatIn = ConPat noExtField
+#else
+getLoc_ = getLoc
+noLoc_ = noLoc
+reLocA = id
+conPatIn = ConPatIn
+type LocatedAn x = Located
+#endif
+
+compareSrcLoc :: SrcLoc -> SrcLoc -> Ordering
+compareSrcLoc (UnhelpfulLoc _) (UnhelpfulLoc _) = EQ
+compareSrcLoc (UnhelpfulLoc _) (RealSrcLoc _ _) = LT
+compareSrcLoc (RealSrcLoc _ _) (UnhelpfulLoc _) = GT
+compareSrcLoc (RealSrcLoc x _) (RealSrcLoc y _) = compare x y
+
 --------------------------------------------------------------------------------
 
 rewriteExpr :: ConversionMonad r m => Term -> m Term
@@ -110,9 +141,6 @@ convertExpr_ (HsVar NOEXTP (L _ x)) =
 
 convertExpr_ (HsUnboundVar NOEXTP x) =
   Var <$> freeVar (unboundVarOcc x)
-
-convertExpr_ (HsRecFld NOEXTP fld) =
-  Qualid <$> recordField fld
 
 convertExpr_ HsOverLabel{} =
   convUnsupported "overloaded labels"
@@ -148,7 +176,7 @@ convertExpr_ (HsLit NOEXTP lit) =
 convertExpr_ (HsLam NOEXTP mg) =
   uncurry Fun <$> convertFunction [] mg -- We don't skip any equations in an ordinary lambda
 
-convertExpr_ (HsLamCase NOEXTP mg) = do
+convertExpr_ (HsLamCase NOEXTP GHC_900(_) mg) = do
   skipPats <- views (edits.skippedCasePatterns) (S.map pure)
   uncurry Fun <$> convertFunction skipPats mg
 
@@ -184,7 +212,7 @@ convertExpr_ (OpApp el eop _fixity er) =
 convertExpr_ (NegApp NOEXTP e1 _) =
   App1 <$> (pure "GHC.Num.negate" >>= rewriteExpr) <*> convertLExpr e1
 
-convertExpr_ (HsPar NOEXTP e) =
+convertExpr_ (HsPar NOEXTP GHC_900(_) e GHC_900(_)) =
   Parens <$> convertLExpr e
 
 convertExpr_ (SectionL NOEXTP l opE) =
@@ -198,7 +226,7 @@ convertExpr_ (ExplicitTuple NOEXTP exprs _boxity) = do
   -- TODO A tuple constructor in the Gallina grammar?
   (tuple, args) <- runWriterT
                 .  fmap (foldl1 . App2 $ "pair")
-                .  for exprs $ unLoc <&> \case
+                .  for exprs $ NOT_GHC_900(unLoc <&>) \case
                      Present NOEXTP e -> lift $ convertLExpr e
                      Missing PlaceHolder ->
                        do arg <- lift (genqid "arg")
@@ -213,15 +241,17 @@ convertExpr_ (HsCase NOEXTP e mg) = do
   skipPats <- views (edits.skippedCasePatterns) (S.map pure)
   bindIn "scrut" scrut $ \scrut -> convertMatchGroup skipPats [scrut] mg
 
-convertExpr_ (HsIf NOEXTP overloaded c t f) =
-  if maybe True isNoSyntaxExpr overloaded
-  then ifThenElse <*> pure SymmetricIf <*> convertLExpr c <*> convertLExpr t <*> convertLExpr f
-  else convUnsupported "overloaded if-then-else"
+#if __GLASGOW_HASKELL__ < 900
+convertExpr_ (HsIf NOEXTP (Just (isNoSyntaxExpr -> False)) c t f) =
+  convUnsupported "overloaded if-then-else"
+#endif
+convertExpr_ (HsIf NOEXTP NOT_GHC_900(_) c t f) =
+  ifThenElse <*> pure SymmetricIf <*> convertLExpr c <*> convertLExpr t <*> convertLExpr f
 
 convertExpr_ (HsMultiIf PlaceHolder lgrhsList) =
   convertLGRHSList [] lgrhsList patternFailure
 
-convertExpr_ (HsLet NOEXTP (L _ binds) body) =
+convertExpr_ (HsLet NOEXTP GHC_900(_) (NOT_GHC_900(L _) binds) GHC_900(_) body) =
   convertLocalBinds binds $ convertLExpr body
 
 #if __GLASGOW_HASKELL__ >= 806
@@ -231,23 +261,27 @@ convertExpr_ (HsDo sty (L _ stmts) PlaceHolder) =
 #endif
   case sty of
     ListComp        -> convertListComprehension stmts
-    DoExpr          -> convertDoBlock stmts
+    DoExpr GHC_900(_) -> convertDoBlock stmts
+    MDoExpr GHC_900(_) -> convUnsupported "`mdo' expressions"
 
-    MonadComp       -> convUnsupported "monad comprehensions"
-    MDoExpr         -> convUnsupported "`mdo' expressions"
-    ArrowExpr       -> convUnsupported "arrow expressions"
     GhciStmtCtxt    -> convUnsupported "GHCi statement expressions"
+    MonadComp       -> convUnsupported "monad comprehensions"
+#if __GLASGOW_HASKELL__ < 900
+    ArrowExpr       -> convUnsupported "arrow expressions"
     PatGuard _      -> convUnsupported "pattern guard expressions"
     ParStmtCtxt _   -> convUnsupported "parallel statement expressions"
     TransStmtCtxt _ -> convUnsupported "transform statement expressions"
+#endif
 #if __GLASGOW_HASKELL__ < 806
     PArrComp        -> convUnsupported "parallel array comprehensions"
 #endif
 
-convertExpr_ (ExplicitList PlaceHolder overloaded exprs) =
-  if maybe True isNoSyntaxExpr overloaded
-  then foldr (App2 "cons") "nil" <$> traverse convertLExpr exprs
-  else convUnsupported "overloaded lists"
+#if __GLASGOW_HASKELL__ < 900
+convertExpr_ (ExplicitList PlaceHolder (Just (isNoSyntaxExpr -> False)) exprs) =
+  convUnsupported "overloaded lists"
+#endif
+convertExpr_ (ExplicitList PlaceHolder NOT_GHC_900(_) exprs) =
+  foldr (App2 "cons") "nil" <$> traverse convertLExpr exprs
 
 -- TODO: Unify with the `RecCon` case in `ConPatIn` for `convertPat` (in
 -- `HsToCoq.ConvertHaskell.Pattern`)
@@ -272,7 +306,11 @@ convertExpr_ (RecordCon (L _ hsCon) PlaceHolder conExpr HsRecFields{..}) = do
                            | otherwise         = missingValue
 
       vals <- fmap M.fromList . for rec_flds $
+#if __GLASGOW_HASKELL__ >= 900
+        \(L _ (HsFieldBind _ (L _ occ) hsVal pun)) -> do
+#else
         \(L _ (HsRecField (L _ occ) hsVal pun)) -> do
+#endif
                 field <- var ExprNS (selectorFieldOcc_ occ)
                 val   <- if pun
                          then pure $ Qualid field
@@ -290,14 +328,22 @@ convertExpr_ (RecordCon (L _ hsCon) PlaceHolder conExpr HsRecFields{..}) = do
 
     Nothing -> recConUnsupported "unknown"
 
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 900
+convertExpr_ (RecordUpd _ recVal (Right fields)) = convUnsupported "record update (Right)"
+convertExpr_ (RecordUpd _ recVal (Left fields)) = do
+#elif __GLASGOW_HASKELL__ >= 806
 convertExpr_ (RecordUpd _ recVal fields) = do
 #else
 convertExpr_ (RecordUpd recVal fields PlaceHolder PlaceHolder PlaceHolder PlaceHolder) = do
 #endif
-  updates <- fmap M.fromList . for fields $ \(L _ HsRecField{..}) -> do
-               field <- recordField $ unLoc hsRecFieldLbl
-               pure (field, if hsRecPun then Nothing else Just hsRecFieldArg)
+  updates <- fmap M.fromList . for fields $
+#if __GLASGOW_HASKELL__ >= 900
+             \(L _ (HsFieldBind _ (L _ lbl) rhs pun)) -> do
+#else
+             \(L _ (HsRecField (L _ lbl) rhs pun)) -> do
+#endif
+               field <- recordField lbl
+               pure (field, if pun then Nothing else Just rhs)
 
   let updFields = M.keys updates
       prettyUpdFields what =
@@ -311,31 +357,34 @@ convertExpr_ (RecordUpd recVal fields PlaceHolder PlaceHolder PlaceHolder PlaceH
 
   ctors :: [Qualid]  <- maybe (convUnsupported "invalid unknown record type") pure =<< lookupConstructors recType
 
-  let loc :: e -> Located e
-      loc  = mkGeneralLocated "generated"
+  let loc  = reLocA . mkGeneralLocated "generated"
       toLPat_ :: Pat GhcRn -> LPat GhcRn
       toLPat_ = toLPat "generated"
       toHs = freshInternalName . T.unpack
 
-  let partialUpdateError :: Qualid -> m (Match GhcRn (Located (HsExpr GhcRn)))
+  let partialUpdateError :: Qualid -> m (Match GhcRn (LHsExpr GhcRn))
       partialUpdateError con = do
         hsCon   <- toHs (qualidToIdent con)
         hsError <- toHs "GHC.Err.error"
         pure $ GHC.Match
           { m_ctxt = LambdaExpr
-          , m_pats   = [ toLPat_ . ConPatIn (loc hsCon)
+          , m_pats   = [ toLPat_ . conPatIn (loc hsCon)
                              . RecCon $ HsRecFields { rec_flds = []
                                                     , rec_dotdot = Nothing } ]
-          , m_grhss  = GRHSs { grhssGRHSs = [ loc . GRHS NOEXT [] . loc $
-                                              HsApp NOEXT
+          , m_grhss  = GRHSs { grhssGRHSs = [ loc . GRHS GHC_900(noAnn)NOT_GHC_900(NOEXT) [] . loc $
+                                              HsApp GHC_900(noAnn)NOT_GHC_900(NOEXT)
                                                     (loc . HsVar NOEXT . loc $ hsError)
-                                                    (loc . HsLit NOEXT . GHC.HsString (SourceText "") $ fsLit "Partial record update") ]
-                             , grhssLocalBinds = loc (EmptyLocalBinds NOEXT)
-#if __GLASGOW_HASKELL__ >= 806
+                                                    (loc . HsLit GHC_900(noAnn)NOT_GHC_900(NOEXT) . GHC.HsString (SourceText "") $ fsLit "Partial record update") ]
+                             , grhssLocalBinds = NOT_GHC_900(loc) (EmptyLocalBinds NOEXT)
+#if __GLASGOW_HASKELL__ >= 900
+                             , grhssExt = emptyComments
+#elif __GLASGOW_HASKELL__ >= 806
                              , grhssExt = NOEXT
 #endif
                              }
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 900
+          , m_ext = noAnn
+#elif __GLASGOW_HASKELL__ >= 806
           , m_ext = NOEXT
 #endif
           }
@@ -343,20 +392,33 @@ convertExpr_ (RecordUpd recVal fields PlaceHolder PlaceHolder PlaceHolder PlaceH
   matches <- for ctors $ \con ->
     lookupConstructorFields con >>= \case
       Just (RecordFields fields) | all (`elem` fields) $ M.keysSet updates -> do
+#if __GLASGOW_HASKELL__ >= 900
+        let addFieldOcc field@HsFieldBind{hfbAnn = ann, hfbLHS = L s lbl} =
+              let rdrLbl = mkOrig <$> nameModule <*> nameOccName $ lbl
+                  l = noLocA (fieldOcc (L s rdrLbl) lbl) in
+              field{ hfbAnn = ann, hfbLHS = l }
+            useFields fields = HsRecFields { rec_flds   = map (fmap addFieldOcc) fields
+                                           , rec_dotdot = Nothing }
+#else
         let addFieldOcc :: HsRecField' GHC.Name arg -> HsRecField GhcRn arg
             addFieldOcc field@HsRecField{hsRecFieldLbl = L s lbl} =
               let rdrLbl = mkOrig <$> nameModule <*> nameOccName $ lbl
-                  l = L s (fieldOcc (L s rdrLbl) lbl)
-              in field{ hsRecFieldLbl = l }
+                  l = L s (fieldOcc (L s rdrLbl) lbl) in
+              field{ hsRecFieldLbl = l }
             useFields fields = HsRecFields { rec_flds   = map (fmap addFieldOcc) fields
                                            , rec_dotdot = Nothing }
+#endif
         (fieldPats, fieldVals) <- fmap (bimap useFields useFields . unzip) . for fields $ \field -> do
           fieldVar   <- gensym (qualidBase field)
           hsField    <- toHs (qualidToIdent field)
           hsFieldVar <- toHs fieldVar
+#if __GLASGOW_HASKELL__ >= 900
+          let mkField arg = loc $ HsFieldBind noAnn (loc hsField) arg False
+#else
           let mkField arg = loc $ HsRecField { hsRecFieldLbl = loc hsField
                                              , hsRecFieldArg = arg
                                              , hsRecPun      = False }
+#endif
           pure ( mkField . toLPat_ . GHC.VarPat NOEXT . loc $ hsFieldVar
                , mkField . fromMaybe (loc . HsVar NOEXT $ loc hsField) -- NOT `fieldVar` – this was punned
                          $ M.findWithDefault (Just . loc . HsVar NOEXT $ loc hsFieldVar) field updates )
@@ -368,14 +430,18 @@ convertExpr_ (RecordUpd recVal fields PlaceHolder PlaceHolder PlaceHolder PlaceH
         let r = RecordCon (loc hsCon) PlaceHolder noPostTcExpr fieldVals
 #endif
         pure GHC.Match { m_ctxt   = LambdaExpr
-                       , m_pats   = [ toLPat_ . ConPatIn (loc hsCon) $ RecCon fieldPats ]
-                       , m_grhss  = GRHSs { grhssGRHSs = [ loc . GRHS NOEXT [] . loc $ r ]
-                                          , grhssLocalBinds = loc (EmptyLocalBinds NOEXT)
-#if __GLASGOW_HASKELL__ >= 806
+                       , m_pats   = [ toLPat_ . conPatIn (loc hsCon) $ RecCon fieldPats ]
+                       , m_grhss  = GRHSs { grhssGRHSs = [ loc . GRHS GHC_900(noAnn)NOT_GHC_900(NOEXT) [] . loc $ r ]
+                                          , grhssLocalBinds = NOT_GHC_900(loc) (EmptyLocalBinds NOEXT)
+#if __GLASGOW_HASKELL__ >= 900
+                                          , grhssExt = emptyComments
+#elif __GLASGOW_HASKELL__ >= 806
                                           , grhssExt = NOEXT
 #endif
                                           }
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 900
+                       , m_ext = noAnn
+#elif __GLASGOW_HASKELL__ >= 806
                        , m_ext = NOEXT
 #endif
                        }
@@ -425,6 +491,11 @@ convertExpr_ (ArithSeq _postTc _overloadedLists info) =
     FromTo     low      high -> App2 "GHC.Enum.enumFromTo"     <$> convertLExpr low                       <*> convertLExpr high
     FromThenTo low next high -> App3 "GHC.Enum.enumFromThenTo" <$> convertLExpr low <*> convertLExpr next <*> convertLExpr high
 
+#if __GLASGOW_HASKELL__ >= 900
+#else
+convertExpr_ (HsRecFld NOEXTP fld) =
+  Qualid <$> recordField fld
+
 convertExpr_ (HsSCC NOEXTP _ _ e) =
   convertLExpr e
 
@@ -440,6 +511,22 @@ convertExpr_ (HsRnBracketOut{}) =
 convertExpr_ (HsTcBracketOut{}) =
   convUnsupported "`HsTcBracketOut' constructor"
 
+convertExpr_ (HsTickPragma NOEXTP _ _ _ e) =
+  convertLExpr e
+
+convertExpr_ (HsConLikeOut{}) =
+  convUnsupported "`HsConLikeOut' constructor"
+
+convertExpr_ (HsTick NOEXTP _ e) =
+  convertLExpr e
+
+convertExpr_ (HsBinTick NOEXTP _ _ e) =
+  convertLExpr e
+
+convertExpr_ (HsWrap{}) =
+  convUnsupported "`HsWrap' constructor"
+#endif
+
 convertExpr_ (HsSpliceE{}) =
   convUnsupported "Quasiquoters and Template Haskell splices"
 
@@ -449,27 +536,16 @@ convertExpr_ (HsProc{}) =
 convertExpr_ HsStatic{} =
   convUnsupported "static pointers"
 
-convertExpr_ (HsTick NOEXTP _ e) =
-  convertLExpr e
-
-convertExpr_ (HsBinTick NOEXTP _ _ e) =
-  convertLExpr e
-
-convertExpr_ (HsTickPragma NOEXTP _ _ _ e) =
-  convertLExpr e
-
-convertExpr_ (HsWrap{}) =
-  convUnsupported "`HsWrap' constructor"
-
-convertExpr_ (HsConLikeOut{}) =
-  convUnsupported "`HsConLikeOut' constructor"
-
 convertExpr_ (ExplicitSum{}) =
   convUnsupported "`ExplicitSum' constructor"
 
 #if __GLASGOW_HASKELL__ >= 806
 convertExpr_ (HsOverLit _ (XOverLit v)) = noExtCon v
+#if __GLASGOW_HASKELL__ >= 900
+convertExpr_ (XExpr (HsExpanded _ e)) = convertExpr e
+#else
 convertExpr_ (XExpr v) = noExtCon v
+#endif
 #else
 convertExpr_ (HsAppTypeOut _ _) =
   convUnsupported "`HsAppTypeOut' constructor"
@@ -512,11 +588,11 @@ convert_section  ml opE mr = do
   let -- We need this type signature, and I think it's because @let@ isn't being
       -- generalized.
       hs :: ConversionMonad r m => Qualid -> m (HsExpr GhcRn)
-      hs  = fmap (HsVar NOEXT . mkGeneralLocated "generated") . freshInternalName . T.unpack . qualidToIdent
+      hs  = fmap (HsVar NOEXT . reLocA . mkGeneralLocated "generated") . freshInternalName . T.unpack . qualidToIdent
       coq = mkBinder Coq.Explicit . Ident
 
   arg <- Bare <$> gensym "arg"
-  let orArg = maybe (fmap noLoc $ hs arg) pure
+  let orArg = maybe (fmap noLoc_ $ hs arg) pure
   l <- orArg ml
   r <- orArg mr
 #if __GLASGOW_HASKELL__ >= 806
@@ -558,7 +634,7 @@ isTrivialMatch (MG { mg_alts = L _ [L _ alt] }) = trivMatch alt where
   trivPat (GHC.VarPat NOEXTP _)  = True
   trivPat (GHC.BangPat NOEXTP p) = trivLPat p
   trivPat (GHC.LazyPat NOEXTP p) = trivLPat p
-  trivPat (GHC.ParPat  NOEXTP p) = trivLPat p
+  trivPat (GHC.ParPat  NOEXTP GHC_900(_) p GHC_900(_)) = trivLPat p
   trivPat _                     = False
 
   trivLPat = trivPat . unLPat
@@ -584,9 +660,11 @@ patToName _                = convUnsupported "patToArg: not a trivial pat"
 
 isTrueLExpr :: GhcMonad m => LHsExpr GhcRn -> m Bool
 isTrueLExpr (L _ (HsVar NOEXTP x))         = ((||) <$> (== "otherwise") <*> (== "True")) <$> ghcPpr x
+#if __GLASGOW_HASKELL__ < 900
 isTrueLExpr (L _ (HsTick NOEXTP _ e))      = isTrueLExpr e
 isTrueLExpr (L _ (HsBinTick NOEXTP _ _ e)) = isTrueLExpr e
-isTrueLExpr (L _ (HsPar NOEXTP e))         = isTrueLExpr e
+#endif
+isTrueLExpr (L _ (HsPar NOEXTP GHC_900(_) e GHC_900(_))) = isTrueLExpr e
 isTrueLExpr _                       = pure False
 
 --------------------------------------------------------------------------------
@@ -654,7 +732,7 @@ convertDoBlock allStmts = do
       monThen <$> convertLExpr e <*> rest
 
 #if __GLASGOW_HASKELL__ >= 806
-    toExpr_ (BindStmt _ pat exp _bind _fail) rest =
+    toExpr_ (BindStmt _ pat exp NOT_GHC_900(_bind _fail)) rest =
 #else
     toExpr_ (BindStmt pat exp _bind _fail PlaceHolder) rest =
 #endif
@@ -666,7 +744,7 @@ convertDoBlock allStmts = do
           "binding against the skipped constructor `" ++ showP skipped ++ "' in `do' notation")
         (missingValue `App1` HsString "Partial pattern match in `do' notation")
 
-    toExpr_ (LetStmt NOEXTP (L _ binds)) rest =
+    toExpr_ (LetStmt NOEXTP (NOT_GHC_900(L _) binds)) rest =
       convertLocalBinds binds rest
 
     toExpr_ (RecStmt{}) _ =
@@ -702,7 +780,7 @@ convertListComprehension allStmts = case fmap unLoc <$> unsnoc allStmts of
 
     -- TODO: `concatMap` is really…?
 #if __GLASGOW_HASKELL__ >= 806
-    toExpr (BindStmt _ pat exp _bind _fail) rest =
+    toExpr (BindStmt _ pat exp NOT_GHC_900(_bind _fail)) rest =
 #else
     toExpr (BindStmt pat exp _bind _fail PlaceHolder) rest =
 #endif
@@ -715,7 +793,7 @@ convertListComprehension allStmts = case fmap unLoc <$> unsnoc allStmts of
         -- `GHC.Skip.nil_skipped` always returns `[]`, but it has a note about
         -- what constructor was skipped.
 
-    toExpr (LetStmt NOEXTP (L _ binds)) rest =
+    toExpr (LetStmt NOEXTP (NOT_GHC_900(L _) binds)) rest =
       convertLocalBinds binds rest
 
     toExpr _ _ =
@@ -856,7 +934,7 @@ buildMatch scruts eqns failure = do
 
 --------------------------------------------------------------------------------
 
-hasGuards :: GRHSs b e -> HasGuard
+hasGuards :: GRHSs GhcRn e -> HasGuard
 hasGuards (GRHSs NOEXTP [ L _ (GRHS NOEXTP [] _) ] _) = HasNoGuard
 hasGuards _                             = HasGuard
 
@@ -888,7 +966,7 @@ convertGRHSs :: LocalConvMonad r m
              -> Term
              -> m Term
 convertGRHSs extraGuards GRHSs{..} failure =
-    convertLocalBinds (unLoc grhssLocalBinds) $
+    convertLocalBinds (NOT_GHC_900(unLoc) grhssLocalBinds) $
       convertLGRHSList extraGuards grhssGRHSs failure
 #if __GLASGOW_HASKELL__ >= 806
 convertGRHSs _ (XGRHSs v) _ = noExtCon v
@@ -912,9 +990,11 @@ convertGuard gs = collapseGuards <$> traverse (toCond . unLoc) gs where
     isTrueLExpr e >>= \case
       True  -> pure [OtherwiseGuard]
       False -> (:[]) . BoolGuard <$> convertLExpr e
-  toCond (LetStmt NOEXTP (L _ binds)) =
+  toCond (LetStmt NOEXTP (NOT_GHC_900(L _) binds)) =
     pure . (:[]) . LetGuard $ convertLocalBinds binds
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 900
+  toCond (BindStmt _ pat exp) = do
+#elif __GLASGOW_HASKELL__ >= 806
   toCond (BindStmt _ pat exp _bind _fail) = do
 #else
   toCond (BindStmt pat exp _bind _fail PlaceHolder) = do
@@ -976,7 +1056,10 @@ guardTerm gs rhs failure = go gs where
 -- Does not detect recursion/introduce `fix`
 convertTypedBinding :: LocalConvMonad r m => Maybe Term -> HsBind GhcRn -> m (Maybe ConvertedBinding)
 convertTypedBinding _convHsTy VarBind{}     = convUnsupported "[internal] `VarBind'"
+#if __GLASGOW_HASKELL__ >= 900
+#else
 convertTypedBinding _convHsTy AbsBinds{}    = convUnsupported "[internal?] `AbsBinds'"
+#endif
 convertTypedBinding _convHsTy PatSynBind{}  = convUnsupported "pattern synonym bindings"
 #if __GLASGOW_HASKELL__ >= 806
 convertTypedBinding _ (XHsBindsLR v) = noExtCon v
@@ -1088,7 +1171,7 @@ patBindName p = case p of
   GHC.VarPat NOEXTP (L _ hsName)  -> var ExprNS hsName
   LazyPat NOEXTP p -> lpatBindName p
   GHC.AsPat NOEXTP (L _ hsName) _ -> var ExprNS hsName
-  ParPat NOEXTP p -> lpatBindName p
+  ParPat NOEXTP GHC_900(_) p GHC_900(_) -> lpatBindName p
   BangPat NOEXTP p -> lpatBindName p
 #if __GLASGOW_HASKELL__ >= 806
   ListPat _ (p:_) -> lpatBindName p
@@ -1109,7 +1192,7 @@ unLPat = \case (XPat (L _ p)) -> p ; p -> p
 toLPat _ = id
 #else
 unLPat = unLoc
-toLPat = mkGeneralLocated
+toLPat = (fmap . fmap) reLocA mkGeneralLocated
 #endif
 
 hsBindName :: ConversionMonad r m => HsBind GhcRn -> m Qualid
@@ -1125,11 +1208,13 @@ withHsBindName
 withHsBindName b continue = case b of
     FunBind{fun_id = L _ hsName} -> var ExprNS hsName >>= continue
     PatBind{pat_lhs = p} ->
-      warnConvUnsupported' (getLoc p) "top-level pattern binding" $> Nothing
+      warnConvUnsupported' (getLoc_ p) "top-level pattern binding" $> Nothing
     PatSynBind NOEXTP PSB{psb_id = i} ->
-      warnConvUnsupported' (getLoc i) "pattern synonym" $> Nothing
+      warnConvUnsupported' (getLoc_ i) "pattern synonym" $> Nothing
     VarBind{} -> convUnsupported' "[internal] `VarBind' can't be a top-level binding"
+#if __GLASGOW_HASKELL__ < 900
     AbsBinds{} -> convUnsupported' "[internal] `AbsBinds' can't be a top-level binding"
+#endif
 #if __GLASGOW_HASKELL__ >= 806
     PatSynBind NOEXTP (XPatSynBind v) -> noExtCon v
     XHsBindsLR v -> noExtCon v
@@ -1159,7 +1244,10 @@ convertTypedModuleBindings = convertMultipleBindings convertTypedModuleBinding
 -- It does, however, support redefinition.
 convertMethodBinding :: ConversionMonad r m => Qualid -> HsBind GhcRn -> m ConvertedBinding
 convertMethodBinding name VarBind{}     = convUnsupportedIn "[internal] `VarBind'"     "method" (showP name)
+#if __GLASGOW_HASKELL__ >= 900
+#else
 convertMethodBinding name AbsBinds{}    = convUnsupportedIn "[internal?] `AbsBinds'"   "method" (showP name)
+#endif
 convertMethodBinding name PatSynBind{}  = convUnsupportedIn "pattern synonym bindings" "method" (showP name)
 convertMethodBinding name PatBind{}     = convUnsupportedIn "pattern bindings"         "method" (showP name)
 convertMethodBinding name FunBind{..}   = withCurrentDefinition name $ do
@@ -1199,7 +1287,7 @@ convertMultipleBindings :: ConversionMonad r m
                         -> Maybe (HsBind GhcRn -> GhcException -> m a)
                         -> m [a]
 convertMultipleBindings convertSingleBinding defns0 sigs build mhandler =
-  let defns = sortOn getLoc defns0
+  let defns = sortBy (compareSrcLoc `on` (srcSpanStart . getLoc_)) defns0
       (handler, wrap) = case mhandler of
         Just handler -> ( uncurry handler
                         , \defn -> ghandle $ pure . Left . (defn,))

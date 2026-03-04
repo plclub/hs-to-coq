@@ -1,4 +1,6 @@
-{-# LANGUAGE DeriveDataTypeable, RecordWildCards, FlexibleContexts, OverloadedStrings #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, RecordWildCards, FlexibleContexts, OverloadedStrings #-}
+#include "ghc-compat.h"
+
 module HsToCoq.ConvertHaskell.TypeEnv.Instances where
 
 import Data.Foldable
@@ -16,9 +18,16 @@ import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Unit.Module.ModDetails
+import GHC.Core.InstEnv
+import GHC.Core.RoughMap (RoughMatchTc(..))
+import GHC.Types.Var
+#else
 import HscTypes
 import InstEnv
 import Var
+#endif
 
 data ConvertedInstance =
   ConvertedInstance { convertedInstanceClass :: ConvertedTyCl
@@ -32,7 +41,7 @@ data ConvertedInstance =
 type ConvertedInstanceEnv = [ConvertedInstance]
 
 instancesOfModDetails :: ConversionMonad r m => ModDetails -> m ConvertedInstanceEnv
-instancesOfModDetails mod = mapM convertInstance $ md_insts mod
+instancesOfModDetails mod = mapM convertInstance GHC_900($ instEnvElts) $ md_insts mod
 
 convertInstance :: ConversionMonad r m => ClsInst -> m ConvertedInstance
 convertInstance inst = do
@@ -42,7 +51,12 @@ convertInstance inst = do
   convertedInstanceTypes <- mapM convertType tms
   let convertedInstanceSubst = M.fromList $ zip
         (fst <$> convertedTyClTyVars convertedInstanceClass) convertedInstanceTypes
-  convertedInstanceTops <- mapM (var TypeNS) (catMaybes $ is_tcs inst)
+  convertedInstanceTops <- mapM (var TypeNS)
+#if __GLASGOW_HASKELL__ >= 900
+                             [n | RM_KnownTc n <- is_tcs inst]
+#else
+                             (catMaybes $ is_tcs inst)
+#endif
   pure ConvertedInstance{..}
   where tyVarToBinder tv = do
           name <- var TypeNS  $ varName tv

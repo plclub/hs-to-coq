@@ -1,11 +1,10 @@
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module HsToCoq.Util.GHC.Exception (module Exception, gWithFile) where
 
 import Control.Monad.IO.Class
 import System.IO
-
-import Exception
 
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.Maybe         as M
@@ -17,6 +16,13 @@ import qualified Control.Monad.Trans.State.Strict  as SS
 import qualified Control.Monad.Trans.State.Lazy    as SL
 import qualified Control.Monad.Trans.RWS.Strict    as RWSS
 import qualified Control.Monad.Trans.RWS.Lazy      as RWSL
+import qualified Control.Monad.Catch as MC
+
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Utils.Exception as Exception
+#define gbracket MC.bracket
+#else
+import Exception
 
 instance ExceptionMonad m => ExceptionMonad (I.IdentityT m) where
   gcatch  = I.liftCatch gcatch
@@ -58,6 +64,7 @@ instance (ExceptionMonad m, Monoid w) => ExceptionMonad (RWSS.RWST r w s m) wher
 instance (ExceptionMonad m, Monoid w) => ExceptionMonad (RWSL.RWST r w s m) where
   gcatch  = RWSL.liftCatch gcatch
   gmask f = RWSL.RWST $ \r s -> gmask $ (\m -> RWSL.runRWST m r s) . f . RWSL.mapRWST
+#endif
 
 -- Other MTL transformers will be added as necessary
 

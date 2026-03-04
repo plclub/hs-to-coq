@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module HsToCoq.Util.TempFiles (
   gWithTempFile, gWithSystemTempFile,
   gIgnoringIOErrors
@@ -9,7 +10,14 @@ import System.IO
 import System.Directory
 
 import GHC
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Utils.Exception
+import qualified Control.Monad.Catch as MC
+#define gcatch MC.catch
+#define gbracket MC.bracket
+#else
 import Exception
+#endif
 
 -- Based on "System.IO.Temp", from the @temporary@ package
 

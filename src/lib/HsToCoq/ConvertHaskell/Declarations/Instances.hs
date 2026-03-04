@@ -5,6 +5,7 @@
              OverloadedStrings,
              ScopedTypeVariables,
              FlexibleContexts #-}
+#include "ghc-compat.h"
 
 module HsToCoq.ConvertHaskell.Declarations.Instances (
   convertClsInstDecls
@@ -28,7 +29,11 @@ import Control.Monad.State
 import qualified Data.Map.Strict as M
 
 import GHC hiding (Name)
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Data.Bag (bagToList)
+#else
 import Bag
+#endif
 #if __GLASGOW_HASKELL__ >= 806
 import HsToCoq.Util.GHC.HsTypes (noExtCon)
 #endif
@@ -144,7 +149,12 @@ data InstanceInfo = InstanceInfo { instanceName       :: !Qualid
 -- TODO use LocalConvMonad instead?
 convertClsInstDeclInfo :: ConversionMonad r m => ClsInstDecl GhcRn -> m InstanceInfo
 convertClsInstDeclInfo ClsInstDecl{..} = do
-  (instanceName, instanceTy)  <- convertInstanceNameAndTy $ hsib_body cid_poly_ty
+#if __GLASGOW_HASKELL__ >= 900
+  let unwrapSigType = sig_body . unLoc
+#else
+  let unwrapSigType = hsib_body
+#endif
+  (instanceName, instanceTy)  <- convertInstanceNameAndTy $ unwrapSigType cid_poly_ty
   utvm                        <- unusedTyVarModeFor instanceName
   instanceHead                <- withCurrentDefinition instanceName $ convertLHsSigType utvm cid_poly_ty
   instanceClass               <- termHead instanceHead
@@ -193,7 +203,12 @@ bindsToMap binds = fmap M.fromList $ forM binds $ \hs_bind -> do
 
 clsInstFamiliesToMap :: ConversionMonad r m => [LTyFamInstDecl GhcRn] -> m (M.Map Qualid (HsType GhcRn))
 clsInstFamiliesToMap assocTys =
-  fmap M.fromList . for assocTys $ \(L _ (TyFamInstDecl HsIB {hsib_body = FamEqn{..}})) ->
+  fmap M.fromList . for assocTys $
+#if __GLASGOW_HASKELL__ >= 900
+    \(L _ (TyFamInstDecl _ FamEqn{..})) ->
+#else
+    \(L _ (TyFamInstDecl HsIB {hsib_body = FamEqn{..}})) ->
+#endif
     (, unLoc feqn_rhs) <$> var TypeNS (unLoc feqn_tycon)
 
 -- Module-local

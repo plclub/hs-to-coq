@@ -27,6 +27,14 @@ or disappear when it doesn't exist (GHC < 8.6).
   'NoExtField' or 'NoExt').
 #endif
 
+#if __GLASGOW_HASKELL__ >= 900
+#define GHC_900(x) x
+#define NOT_GHC_900(x)
+#else
+#define GHC_900(x)
+#define NOT_GHC_900(x) x
+#endif
+
 #if __GLASGOW_HASKELL__ >= 810
 
 #define PlaceHolder NoExtField

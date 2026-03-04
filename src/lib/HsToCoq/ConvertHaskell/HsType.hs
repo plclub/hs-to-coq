@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP,
              LambdaCase,
              OverloadedStrings,
-             FlexibleContexts #-}
+             FlexibleContexts, TypeApplications #-}
 
 #include "ghc-compat.h"
 
@@ -48,27 +48,29 @@ import HsToCoq.ConvertHaskell.Literals
 #if __GLASGOW_HASKELL__ < 806
 -- In later versions of GHC. [HsTyVarBndr] is a [NamedThing], so we won't need
 -- this function.
-getLHsTyVarName :: LHsTyVarBndr GhcRn -> GHC.Name
+getLHsTyVarName :: LHsTyVarBndr _ GhcRn -> GHC.Name
 getLHsTyVarName tv = case unLoc tv of
   UserTyVar   NOEXTP tv    -> unLoc tv
   KindedTyVar NOEXTP tv _k -> unLoc tv
 #endif
 
-convertLHsTyVarBndr :: LocalConvMonad r m => Explicitness -> LHsTyVarBndr GhcRn -> m Binder
+convertLHsTyVarBndr :: LocalConvMonad r m => Explicitness -> LHsTyVarBndr flag GhcRn -> m Binder
 convertLHsTyVarBndr ex tv = case unLoc tv of
-  UserTyVar   NOEXTP tv   -> mkBinder ex . Ident <$> var TypeNS (unLoc tv)
-  KindedTyVar NOEXTP tv k -> mkBinders ex <$> (pure . Ident <$> var TypeNS (unLoc tv)) <*> convertLHsType k
+  UserTyVar   NOEXTP GHC_900(_) tv   -> mkBinder ex . Ident <$> var TypeNS (unLoc tv)
+  KindedTyVar NOEXTP GHC_900(_) tv k -> mkBinders ex <$> (pure . Ident <$> var TypeNS (unLoc tv)) <*> convertLHsType k
 #if __GLASGOW_HASKELL__ >= 806
   XTyVarBndr v -> noExtCon v
 #endif
 
-convertLHsTyVarBndrs :: LocalConvMonad r m => Explicitness -> [LHsTyVarBndr GhcRn] -> m [Binder]
+convertLHsTyVarBndrs :: LocalConvMonad r m => Explicitness -> [LHsTyVarBndr flag GhcRn] -> m [Binder]
 convertLHsTyVarBndrs ex = mapM (convertLHsTyVarBndr ex)
 
 --------------------------------------------------------------------------------
 
 convertHsType :: LocalConvMonad r m => HsType GhcRn -> m Term
-#if __GLASGOW_HASKELL__ >= 810
+#if __GLASGOW_HASKELL__ >= 900
+convertHsType (HsForAllTy NOEXTP (HsForAllInvis _ tvs) ty) = do
+#elif __GLASGOW_HASKELL__ >= 810
 convertHsType (HsForAllTy NOEXTP _ tvs ty) = do
 #else
 convertHsType (HsForAllTy NOEXTP tvs ty) = do
@@ -113,7 +115,7 @@ convertHsType (HsCoreTy _) =
   convUnsupported' "[internal] embedded core types"
 #endif
 
-convertHsType (HsFunTy NOEXTP ty1 ty2) =
+convertHsType (HsFunTy NOEXTP GHC_900(_) ty1 ty2) =
   Arrow <$> convertLHsType ty1 <*> convertLHsType ty2
 
 convertHsType (HsListTy NOEXTP ty) =
@@ -122,15 +124,17 @@ convertHsType (HsListTy NOEXTP ty) =
 convertHsType (HsTupleTy NOEXTP tupTy tys) = do
   case tupTy of
     HsUnboxedTuple           -> pure () -- TODO: Mark converted unboxed tuples specially?
+    HsBoxedOrConstraintTuple -> pure () -- Sure, it's boxed, why not
+#if __GLASGOW_HASKELL__ < 900
     HsBoxedTuple             -> pure ()
     HsConstraintTuple        -> convUnsupported' "constraint tuples"
-    HsBoxedOrConstraintTuple -> pure () -- Sure, it's boxed, why not
+#endif
   case tys of
     []   -> pure $ Var "unit"
     [ty] -> convertLHsType ty
     _    -> (`InScope` "type") . foldl1 (mkInfix ?? "*") <$> traverse convertLHsType tys
 
-convertHsType (HsOpTy NOEXTP ty1 op ty2) =
+convertHsType (HsOpTy NOEXTP GHC_900(_) ty1 op ty2) =
   App2 <$> (Qualid <$> var TypeNS (unLoc op)) <*> convertLHsType ty1 <*> convertLHsType ty2   -- ???
 
 convertHsType (HsParTy NOEXTP ty) =
@@ -190,7 +194,9 @@ convertLHsType = convertHsType . unLoc
 --------------------------------------------------------------------------------
 
 convertLHsSigTypeWithExcls :: LocalConvMonad r m => UnusedTyVarMode -> LHsSigType GhcRn -> [Qualid] -> m Term
-#if __GLASGOW_HASKELL__ >= 808
+#if __GLASGOW_HASKELL__ >= 900
+convertLHsSigTypeWithExcls utvm (L _ (HsSig _ (HsOuterImplicit hs_itvs) hs_lty)) excls = do
+#elif __GLASGOW_HASKELL__ >= 808
 convertLHsSigTypeWithExcls utvm (HsIB hs_itvs hs_lty) excls = do
 #elif __GLASGOW_HASKELL__ == 806
 convertLHsSigTypeWithExcls utvm (HsIB (HsIBRn {hsib_vars=hs_itvs}) hs_lty) excls = do
@@ -199,9 +205,10 @@ convertLHsSigTypeWithExcls utvm (HsIB hs_itvs hs_lty _) excls = do
 #endif
   coq_itvs <- traverse (var TypeNS) hs_itvs
   coq_ty   <- convertLHsType hs_lty
-
   finishConvertHsSigTypeWithExcls utvm coq_itvs coq_ty excls
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 900
+convertLHsSigTypeWithExcls _ (L _ (XHsSigType v)) _ = noExtCon v
+#elif __GLASGOW_HASKELL__ >= 806
 convertLHsSigTypeWithExcls _ (XHsImplicitBndrs v) _ = noExtCon v
 #endif
 
@@ -228,6 +235,10 @@ convertLHsSigWcType _ (XHsWildCardBndrs v) = noExtCon v
 
 --------------------------------------------------------------------------------
 
+#if __GLASGOW_HASKELL__ >= 900
+#define HsConDeclDetails HsConDeclGADTDetails
+#endif
+
 convertHsSigType_
   :: LocalConvMonad r m
   => UnusedTyVarMode
@@ -245,10 +256,19 @@ convertHsSigType_ _ (XLHsQTyVars v) _ _ _ _ = noExtCon v
 #endif
 
 convertArgs :: LocalConvMonad r m => HsConDeclDetails GhcRn -> Term -> m Term
+#if __GLASGOW_HASKELL__ >= 900
+convertArgs (PrefixConGADT args_) ty = do
+  let args = map hsScaledThing args_
+#else
 convertArgs (PrefixCon args) ty = do
+#endif
   coq_args <- traverse convertLHsType args
   pure (foldr Arrow ty coq_args)
+#if __GLASGOW_HASKELL__ >= 900
+convertArgs (RecConGADT rec _) ty = do
+#else
 convertArgs (RecCon rec) ty = do
+#endif
   tyss <- for (unLoc rec) $ \lfield -> case unLoc lfield of
     -- We must be careful to copy the type when multiple fields @fds@ are under
     -- the same signature @t@
@@ -259,12 +279,14 @@ convertArgs (RecCon rec) ty = do
     XConDeclField v -> noExtCon v
 #endif
   pure (foldr Arrow ty (concat tyss))
+#if __GLASGOW_HASKELL__ < 900
 convertArgs (InfixCon t1 t2) ty =
   liftA2 Arrow (convertLHsType t1) (liftA2 Arrow (convertLHsType t2) (pure ty))
+#endif
 
-binderName :: HsTyVarBndr GhcRn -> GHC.Name
-binderName (UserTyVar NOEXTP lname) = unLoc lname
-binderName (KindedTyVar NOEXTP lname _) = unLoc lname
+binderName :: HsTyVarBndr flag GhcRn -> GHC.Name
+binderName (UserTyVar NOEXTP GHC_900(_) lname) = unLoc lname
+binderName (KindedTyVar NOEXTP GHC_900(_) lname _) = unLoc lname
 #if __GLASGOW_HASKELL__ >= 806
 binderName (XTyVarBndr v) = noExtCon v
 #endif

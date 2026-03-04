@@ -16,7 +16,13 @@ A 10-line patch extending the GHC-API would make that go away
 module HsToCoq.Util.GHC.Deriving (initForDeriving, addDerivedInstances) where
 
 import GHC
-#if __GLASGOW_HASKELL__ >= 808
+
+import Control.Monad
+
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins
+import GHC.Types.SourceText
+#elif __GLASGOW_HASKELL__ >= 808
 import GhcPlugins (SourceText(NoSourceText), PromotionFlag(NotPromoted))
 #else
 import GhcPlugins (SourceText(NoSourceText))
@@ -24,6 +30,22 @@ import GhcPlugins (SourceText(NoSourceText))
 
 import Control.Monad
 
+import GHC.IO (throwIO)
+#if __GLASGOW_HASKELL__ >= 902
+import GHC.Utils.Outputable
+import GHC.Driver.Session
+import GHC.Tc.Utils.Monad
+import GHC.Tc.Utils.Env
+import GHC.Tc.Utils.TcType
+import GHC.Tc.TyCl.Instance (tcInstDeclsDeriv)
+import GHC.Types.SourceFile (HscSource(HsSrcFile))
+import GHC.Types.SourceText (SourceText(NoSourceText))
+import GHC.Types.Var
+import GHC.Types.Error
+import GHC.Core.Type
+import GHC.Core.TyCo.Rep
+import GHC.Core.InstEnv (instanceSig)
+#else
 import Outputable
 import TcRnMonad
 import TcEnv
@@ -41,8 +63,8 @@ import TcTyClsDecls
 import Module
 import SrcLoc
 import FastString
-import GHC.IO (throwIO)
 import DynFlags
+#endif
 import qualified GHC.LanguageExtensions as LangExt
 
 -- We need to allow IncoherentInstances for the hack in HsToCoq.Util.GHC.Deriving
@@ -95,20 +117,39 @@ initTcHack tcm action = do
 
  (msgs, mba) <- liftIO $ initTc hsc_env_tmp HsSrcFile False mod src_span action
  case mba of Just x ->  return x
-             Nothing -> liftIO $ throwIO $ mkSrcErr $ snd msgs
+             Nothing -> liftIO $ throwIO $ mkSrcErr $
+#if __GLASGOW_HASKELL__ >= 900
+               fmap GhcTcRnMessage msgs
+#else
+               snd msgs
+#endif
 
 fakeDerivingMod :: Module
-fakeDerivingMod = mkModule interactiveUnitId (mkModuleName "Deriving")
+fakeDerivingMod = mkModule
+#if __GLASGOW_HASKELL__ >= 900
+  interactiveUnit
+#else
+  interactiveUnitId
+#endif
+  (mkModuleName "Deriving")
 
 
 instInfoToDecl :: InstInfo GhcRn -> LInstDecl GhcRn
-instInfoToDecl inst_info = noLoc $ ClsInstD NOEXT (ClsInstDecl
+instInfoToDecl inst_info =
+#if __GLASGOW_HASKELL__ >= 900
+  noLocA
+#else
+  noLoc
+#endif
+    $ ClsInstD NOEXT (ClsInstDecl
     { cid_binds = ib_binds (iBinds inst_info)
     , cid_sigs = []
     , cid_tyfam_insts = []
     , cid_datafam_insts = []
     , cid_overlap_mode = Nothing
-#if __GLASGOW_HASKELL__ >= 808
+#if __GLASGOW_HASKELL__ >= 900
+    , cid_poly_ty = noLocA $ HsSig NOEXT (HsOuterImplicit tvars_) $ noLocA $ HsQualTy NOEXT (noLocA ctxt) inst_head
+#elif __GLASGOW_HASKELL__ >= 808
     , cid_poly_ty = HsIB @GhcRn tvars_ (noLoc (HsQualTy NOEXT (noLoc ctxt) inst_head))
 #elif __GLASGOW_HASKELL__ == 806
     , cid_poly_ty = HsIB @GhcRn (HsIBRn tvars_ True) (noLoc (HsQualTy NOEXT (noLoc ctxt) inst_head))
@@ -124,10 +165,14 @@ instInfoToDecl inst_info = noLoc $ ClsInstD NOEXT (ClsInstDecl
     tvars_ :: [Name]
     tvars_ = map tyVarName tvars
     ctxt = map typeToLHsType' theta
-    inst_head = foldl lHsAppTy (noLoc (HsTyVar NOEXT NotPromoted (noLoc (getName cls)))) $
+    inst_head = foldl lHsAppTy (noLocA (HsTyVar noAnn NotPromoted (noLocA (getName cls)))) $
         map typeToLHsType' args
 
-    lHsAppTy f x = noLoc (HsAppTy NOEXT f x)
+    lHsAppTy f x = noLocA (HsAppTy NOEXT f x)
+
+#if __GLASGOW_HASKELL__ >= 900
+#define noLoc noLocA
+#endif
 
 -- Taken from HsUtils. We need it to produce a Name, not a RdrName
 typeToLHsType' :: Type -> LHsType GhcRn
@@ -135,7 +180,12 @@ typeToLHsType' ty
   = go ty
   where
     go :: Type -> LHsType GhcRn
-    go ty@(FunTy {}) | (arg, res) <- splitFunTy ty =
+    go ty@(FunTy {})
+#if __GLASGOW_HASKELL__ >= 900
+      | (_, arg, res) <- splitFunTy ty =
+#else
+      | (arg, res) <- splitFunTy ty =
+#endif
       if isPredTy arg then
         let (theta, tau) = tcSplitPhiTy ty in
         noLoc (HsQualTy { hst_ctxt = noLoc (map go theta)
@@ -146,17 +196,30 @@ typeToLHsType' ty
                         })
       else nlHsFunTy (go arg) (go res)
     go ty@(ForAllTy {})
+#if __GLASGOW_HASKELL__ >= 900
+      | (tvs, tau) <- tcSplitForAllTyVars ty
+#else
       | (tvs, tau) <- tcSplitForAllTys ty
-      = noLoc (HsForAllTy { hst_bndrs = map go_tv tvs
+#endif
+      = noLoc (HsForAllTy {
+#if __GLASGOW_HASKELL__ >= 900
+                            hst_tele = HsForAllInvis noAnn (map go_tv tvs)
+#else
+                            hst_bndrs = map go_tv tvs
+#if __GLASGOW_HASKELL__ >= 810
+                          , hst_fvf = ForallInvis
+#endif
+#endif
                           , hst_body = go tau
 #if __GLASGOW_HASKELL__ >= 806
                           , hst_xforall = NOEXT
 #endif
-#if __GLASGOW_HASKELL__ >= 810
-                          , hst_fvf = ForallInvis
-#endif
                           })
+#if __GLASGOW_HASKELL__ >= 900
+    go (TyVarTy tv)         = nlHsTyVar NotPromoted (getName tv)
+#else
     go (TyVarTy tv)         = nlHsTyVar (getName tv)
+#endif
     go (AppTy t1 t2)        = nlHsAppTy (go t1) (go t2)
     go (LitTy (NumTyLit n)) = noLoc $ HsTyLit NOEXT (HsNumTy NoSourceText n)
     go (LitTy (StrTyLit s)) = noLoc $ HsTyLit NOEXT (HsStrTy NoSourceText s)
@@ -164,10 +227,19 @@ typeToLHsType' ty
       | any isInvisibleTyConBinder (tyConBinders tc)
         -- We must produce an explicit kind signature here to make certain
         -- programs kind-check. See Note [Kind signatures in typeToLHsType].
+#if __GLASGOW_HASKELL__ >= 900
+      = noLocA $ HsKindSig noAnn lhs_ty (go (Type.typeKind ty))
+#else
       = noLoc $ HsKindSig NOEXT lhs_ty (go (Type.typeKind ty))
+#endif
       | otherwise = lhs_ty
        where
-        lhs_ty = nlHsTyConApp (getName tc) (map go args')
+        lhs_ty = nlHsTyConApp
+#if __GLASGOW_HASKELL__ >= 900
+          NotPromoted Prefix (getName tc) (map (HsValArg . go) args')
+#else
+          (getName tc) (map go args')
+#endif
         args'  = filterOutInvisibleTypes tc args
     go (CastTy ty _)        = go ty
     go (CoercionTy co)      = pprPanic "toLHsSigWcType" (ppr co)
@@ -175,7 +247,15 @@ typeToLHsType' ty
          -- Source-language types have _invisible_ kind arguments,
          -- so we must remove them here (Trac #8563)
 
-    go_tv :: TyVar -> LHsTyVarBndr GhcRn
-    go_tv tv = noLoc $ KindedTyVar NOEXT
+    go_tv :: TyVar -> LHsTyVarBndr
+#if __GLASGOW_HASKELL__ >= 900
+      Specificity
+#endif
+      GhcRn
+    go_tv tv = noLoc $ KindedTyVar
+#if __GLASGOW_HASKELL__ >= 900
+        noAnn InferredSpec
+#else
+        NOEXT
+#endif
         (noLoc (getName tv)) (go (tyVarKind tv))
-

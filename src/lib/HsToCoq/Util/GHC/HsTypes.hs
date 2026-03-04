@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, PartialTypeSignatures #-}
 
 module HsToCoq.Util.GHC.HsTypes (
   module HsTypes,
@@ -10,6 +10,12 @@ module HsToCoq.Util.GHC.HsTypes (
 #if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 810
 import GHC.Stack (HasCallStack)
 #endif
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins
+import GHC.Hs.Type as HsTypes
+import GHC.Hs.Extension (GhcPass, GhcRn)
+import Language.Haskell.Syntax.Extension (IdP, DataConCantHappen, dataConCantHappen)
+#else
 #if __GLASGOW_HASKELL__ >= 810
 import GHC.Hs.Extension
 import GHC.Hs.Types as HsTypes
@@ -20,8 +26,15 @@ import HsTypes
 import RdrName (RdrName)
 import Name (Name)
 import SrcLoc
+#endif
 
+#if __GLASGOW_HASKELL__ >= 900
+viewHsTyVar :: HsType (GhcPass pass) -> Maybe (IdP (GhcPass pass))
+viewLHsTyVar :: LHsType (GhcPass pass) -> Maybe (IdP (GhcPass pass))
+#else
 viewHsTyVar :: HsType pass -> Maybe (IdP pass)
+viewLHsTyVar :: LHsType pass -> Maybe (IdP pass)
+#endif
 #if __GLASGOW_HASKELL__ >= 806
 viewHsTyVar (HsTyVar _ _ (L _ name))                  = Just name
 #else
@@ -31,19 +44,23 @@ viewHsTyVar (HsAppsTy [L _ (HsAppPrefix lty)])        = viewLHsTyVar lty
 #endif
 viewHsTyVar _                                         = Nothing
 
-viewLHsTyVar :: LHsType pass -> Maybe (IdP pass)
 viewLHsTyVar = viewHsTyVar . unLoc
 
 -- Compatibility shim for FieldOcc (the fields were flipped since GHC 8.6)
 #if __GLASGOW_HASKELL__ >= 806
 selectorFieldOcc_ :: FieldOcc GhcRn -> Name
 selectorFieldOcc_ (FieldOcc n _) = n
+#if __GLASGOW_HASKELL__ < 900
 selectorFieldOcc_ (XFieldOcc v) = noExtCon v
+#endif
 
-fieldOcc :: Located RdrName -> Name -> FieldOcc GhcRn
+fieldOcc :: GenLocated _ RdrName -> Name -> FieldOcc GhcRn
 fieldOcc r n = FieldOcc n r
 
-#if __GLASGOW_HASKELL__ < 810
+#if __GLASGOW_HASKELL__ >= 900
+noExtCon :: HasCallStack => DataConCantHappen -> a
+noExtCon = dataConCantHappen
+#elif __GLASGOW_HASKELL__ < 810
 noExtCon :: HasCallStack => NoExt -> a
 noExtCon _ = error "cannot happen"
 #endif
