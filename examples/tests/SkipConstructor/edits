@@ -9,6 +9,6 @@ skip equation SkipConstructor.extraUnderscore _
 skip module GHC.Skip # It's been copied into the preamble
 skip SkipConstructor.Default__T
 
-rename type  GHC.Maybe.Maybe   = option
-rename value GHC.Maybe.Just    = Some
-rename value GHC.Maybe.Nothing = None
+rename type  GHC.Internal.Maybe.Maybe   = option
+rename value GHC.Internal.Maybe.Just    = Some
+rename value GHC.Internal.Maybe.Nothing = None
