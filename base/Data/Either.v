@@ -120,7 +120,8 @@ Program Instance Semigroup__Either {a : Type} {b : Type}
    : forall {a : Type},
      forall {b : Type}, Either inst_e a -> Either inst_e b -> Either inst_e b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Either_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Either_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Either_pure {inst_e : Type}
    : forall {a : Type}, a -> Either inst_e a :=

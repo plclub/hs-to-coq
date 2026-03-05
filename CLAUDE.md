@@ -101,7 +101,9 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 
 ## CI (`.github/workflows/hs-to-coq.yml`)
 
-Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker), `tests` (haskell-actions + opam for Coq), `test-translation` (haskell:9.10.3 Docker, verifies base/ regeneration matches). Sets `LANG=C.utf8` globally for Unicode support.
+Four independent jobs (no `needs` chains): `build-haskell` (haskell:9.10.3 container), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 container), `tests` (haskell-actions + opam for Coq, no container), `test-translation` (haskell:9.10.3 container, verifies base/ regeneration matches). Triggers: push, pull_request, workflow_dispatch. Sets `LANG=C.utf8` globally.
+
+**Container job gotcha**: Container jobs need `STACK_ROOT: /workspace/.stack` as a job-level env var because `/github/home/` is owned by root but the runner user differs. Cache paths must use `${{ env.STACK_ROOT }}` instead of `~/.stack`. The non-container `tests` job uses `~/.stack` normally.
 
 ## GHC Version Compatibility
 

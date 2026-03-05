@@ -104,7 +104,7 @@ Program Instance Ord1__Product {f : Type -> Type} {g : Type -> Type}
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
-      | a, Pair x y => Pair (a GHC.Base.<$ x) (a GHC.Base.<$ y)
+      | a, Pair x y => Pair (GHC.Base.op_zlzd__ a x) (GHC.Base.op_zlzd__ a y)
       end.
 
 #[global]
@@ -320,7 +320,8 @@ Program Instance Traversable__Product {f : Type -> Type} {g : Type -> Type}
      forall {b : Type},
      Product inst_f inst_g a -> Product inst_f inst_g b -> Product inst_f inst_g b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Product_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Product_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Product_pure {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{GHC.Base.Applicative inst_f} `{GHC.Base.Applicative inst_g}

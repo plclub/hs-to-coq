@@ -147,7 +147,7 @@ Instance Unpeel_Alt (k : Type) (f : k -> Type) (a : k) : HsToCoq.Unpeel.Unpeel (
 #[local] Definition Functor__Alt_op_zlzd__ {inst_f : Type -> Type}
   `{GHC.Base.Functor inst_f}
    : forall {a : Type}, forall {b : Type}, a -> Alt inst_f b -> Alt inst_f a :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (_GHC.Base.<$_).
+  fun {a : Type} {b : Type} => GHC.Prim.coerce (GHC.Base.op_zlzd__).
 
 #[global]
 Program Instance Functor__Alt {f : Type -> Type} `{GHC.Base.Functor f}
@@ -247,7 +247,8 @@ Program Instance Functor__Dual : GHC.Base.Functor Dual :=
 #[local] Definition Applicative__Dual_op_ztzg__
    : forall {a : Type}, forall {b : Type}, Dual a -> Dual b -> Dual b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Dual_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Dual_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Dual_pure : forall {a : Type}, a -> Dual a :=
   fun {a : Type} => Mk_Dual.
@@ -429,7 +430,8 @@ Program Instance Functor__Sum : GHC.Base.Functor Sum :=
 #[local] Definition Applicative__Sum_op_ztzg__
    : forall {a : Type}, forall {b : Type}, Sum a -> Sum b -> Sum b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Sum_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Sum_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Sum_pure : forall {a : Type}, a -> Sum a :=
   fun {a : Type} => Mk_Sum.
@@ -534,7 +536,8 @@ Program Instance Functor__Product : GHC.Base.Functor Product :=
 #[local] Definition Applicative__Product_op_ztzg__
    : forall {a : Type}, forall {b : Type}, Product a -> Product b -> Product b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Product_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Product_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Product_pure
    : forall {a : Type}, a -> Product a :=

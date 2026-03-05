@@ -128,7 +128,7 @@ Program Instance Functor__WrappedMonad {m : Type -> Type} `{GHC.Base.Monad m}
      WrappedMonad inst_m a -> WrappedMonad inst_m b -> WrappedMonad inst_m b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 =>
-      Applicative__WrappedMonad_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+      Applicative__WrappedMonad_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__WrappedMonad_pure {inst_m : Type -> Type}
   `{GHC.Base.Monad inst_m}
@@ -222,7 +222,7 @@ Program Instance Functor__WrappedArrow {a : Type -> Type -> Type} {b : Type}
      WrappedArrow inst_a inst_b b -> WrappedArrow inst_a inst_b b :=
   fun {a : Type} {b : Type} =>
     fun a1 a2 =>
-      Applicative__WrappedArrow_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+      Applicative__WrappedArrow_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__WrappedArrow_pure {inst_a
    : Type -> Type -> Type} {inst_b : Type} `{Control.Arrow.Arrow inst_a}

@@ -82,7 +82,7 @@ Record Applicative__Dict (f : Type -> Type) := Applicative__Dict_Build {
 
 Notation "'_<$_'" := (op_zlzd__).
 
-Infix "<$" := (_<$_) (at level 99).
+Infix "<$" := (op_zlzd__) (at level 99).
 
 #[global] Definition Applicative (f : Type -> Type) `{Functor f} :=
   forall r__, (Applicative__Dict f -> r__) -> r__.
@@ -885,7 +885,7 @@ Program Instance Functor__pair_type {a : Type}
      GHC.Tuple.pair_type inst_a a ->
      GHC.Tuple.pair_type inst_a b -> GHC.Tuple.pair_type inst_a b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__pair_type_op_zlztzg__ (id <$ a1) a2.
+    fun a1 a2 => Applicative__pair_type_op_zlztzg__ (op_zlzd__ id a1) a2.
 
 #[local] Definition Applicative__pair_type_pure {inst_a : Type} `{Monoid inst_a}
    : forall {a : Type}, a -> GHC.Tuple.pair_type inst_a a :=
@@ -998,7 +998,7 @@ Program Instance Functor__triple_type {a : Type} {b : Type}
      GHC.Tuple.triple_type inst_a inst_b b ->
      GHC.Tuple.triple_type inst_a inst_b b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__triple_type_op_zlztzg__ (id <$ a1) a2.
+    fun a1 a2 => Applicative__triple_type_op_zlztzg__ (op_zlzd__ id a1) a2.
 
 #[local] Definition Applicative__triple_type_pure {inst_a : Type} {inst_b
    : Type} `{Monoid inst_a} `{Monoid inst_b}
@@ -1120,7 +1120,7 @@ Program Instance Functor__quad_type {a : Type} {b : Type} {c : Type}
      GHC.Tuple.quad_type inst_a inst_b inst_c b ->
      GHC.Tuple.quad_type inst_a inst_b inst_c b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__quad_type_op_zlztzg__ (id <$ a1) a2.
+    fun a1 a2 => Applicative__quad_type_op_zlztzg__ (op_zlzd__ id a1) a2.
 
 #[local] Definition Applicative__quad_type_pure {inst_a : Type} {inst_b : Type}
   {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
@@ -1405,7 +1405,7 @@ Program Instance Functor__list : Functor list :=
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
-      | b, NEcons _ as_ => NEcons b (b <$ as_)
+      | b, NEcons _ as_ => NEcons b (op_zlzd__ b as_)
       end.
 
 #[global]
@@ -1504,7 +1504,7 @@ Program Instance Monad__list : Monad list :=
    : forall {a : Type},
      forall {b : Type}, NonEmpty a -> NonEmpty b -> NonEmpty b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__NonEmpty_op_zlztzg__ (id <$ a1) a2.
+    fun a1 a2 => Applicative__NonEmpty_op_zlztzg__ (op_zlzd__ id a1) a2.
 
 #[global]
 Program Instance Applicative__NonEmpty : Applicative NonEmpty :=
@@ -1738,7 +1738,7 @@ Export ManualNotations.
 Notation "'_GHC.Base.<<>>_'" := (op_zlzlzgzg__).
 Infix "GHC.Base.<<>>" := (_<<>>_) (at level 99).
 Notation "'_GHC.Base.<$_'" := (op_zlzd__).
-Infix "GHC.Base.<$" := (_<$_) (at level 99).
+Infix "GHC.Base.<$" := (op_zlzd__) (at level 99).
 Notation "'_GHC.Base.<*>_'" := (op_zlztzg__).
 Infix "GHC.Base.<*>" := (_<*>_) (at level 99).
 Notation "'_GHC.Base.*>_'" := (op_ztzg__).

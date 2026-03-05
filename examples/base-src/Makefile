@@ -20,8 +20,6 @@ HANDMOD = \
   Data/Bits \
   Control/Category \
   Control/Arrow \
-  Data/Functor/Identity \
-  Data/Traversable \
   Data/Functor/Classes \
   GHC/Prim \
   GHC/Types \
@@ -32,6 +30,16 @@ HANDMOD = \
   HsToCoq/Nat \
   GHC/Unicode \
   Prelude\
+
+# Generated modules that must be listed early in _CoqProject
+# (before other generated modules) to avoid Coq stack overflow
+# in typeclass resolution. These were formerly in HANDMOD.
+EARLY_GHC_INTERNAL_MODULES = \
+  Data/Functor/Identity \
+  Data/Traversable
+
+# No early base modules currently needed
+EARLY_BASE_MODULES =
 
 # Generated modules from ghc-internal
 # Source at ghc-internal/src/GHC/Internal/...
@@ -76,6 +84,8 @@ BASE_MODULES = \
 
 # All generated modules (for _CoqProject etc.)
 MODULES = $(GHC_INTERNAL_MODULES) $(GHC_INTERNAL_GHC_MODULES) $(BASE_MODULES)
+EARLY_MODULES = $(EARLY_GHC_INTERNAL_MODULES) $(EARLY_BASE_MODULES)
+ALL_MODULES = $(EARLY_MODULES) $(MODULES)
 
 RENAMED = \
   Data/SemigroupInternal \
@@ -91,7 +101,9 @@ SPECIAL_MODULES = \
 VFILES_GHC_INTERNAL     = $(addprefix $(OUT)/,$(addsuffix .v,$(GHC_INTERNAL_MODULES)))
 VFILES_GHC_INTERNAL_GHC = $(addprefix $(OUT)/,$(addsuffix .v,$(GHC_INTERNAL_GHC_MODULES)))
 VFILES_BASE_GEN  = $(addprefix $(OUT)/,$(addsuffix .v,$(BASE_MODULES)))
-VFILES_GEN       = $(VFILES_GHC_INTERNAL) $(VFILES_GHC_INTERNAL_GHC) $(VFILES_BASE_GEN)
+VFILES_EARLY_GHC_INTERNAL = $(addprefix $(OUT)/,$(addsuffix .v,$(EARLY_GHC_INTERNAL_MODULES)))
+VFILES_EARLY_BASE = $(addprefix $(OUT)/,$(addsuffix .v,$(EARLY_BASE_MODULES)))
+VFILES_GEN       = $(VFILES_GHC_INTERNAL) $(VFILES_GHC_INTERNAL_GHC) $(VFILES_BASE_GEN) $(VFILES_EARLY_GHC_INTERNAL) $(VFILES_EARLY_BASE)
 VFILES_RENAMED   = $(addprefix $(OUT)/,$(addsuffix .v,$(RENAMED)))
 VFILES_MAN       = $(addprefix $(OUT)/,$(addsuffix .v,$(HANDMOD)))
 VFILES_SPECIAL   = $(addprefix $(OUT)/,$(addsuffix .v,$(SPECIAL_MODULES)))
@@ -111,7 +123,7 @@ $(OUT)/_CoqProject : Makefile
 	mkdir -p $(OUT)
 	> $@
 	echo '-Q . ""' >> $@
-	echo $(addsuffix .v,$(HANDMOD)) >> $@
+	echo $(addsuffix .v,$(HANDMOD)) $(addsuffix .v,$(EARLY_MODULES)) >> $@
 	echo $(addsuffix .v,$(MODULES)) >> $@
 	echo $(addsuffix .v,$(RENAMED)) >> $@
 	echo $(addsuffix .v,$(SPECIAL_MODULES)) >> $@
@@ -176,7 +188,7 @@ include deps/*.mk
 
 # Rule for Data/* and Control/* modules from ghc-internal
 # Source: ghc-internal/src/GHC/Internal/$*.hs
-$(VFILES_GHC_INTERNAL): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
+$(VFILES_GHC_INTERNAL) $(VFILES_EARLY_GHC_INTERNAL): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
 	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
@@ -195,7 +207,7 @@ $(VFILES_GHC_INTERNAL_GHC): $(OUT)/GHC/%.v : $$(wildcard module-edits/GHC/$$*/pr
 	test -e $@
 
 # Rule for modules still in base/src
-$(VFILES_BASE_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
+$(VFILES_BASE_GEN) $(VFILES_EARLY_BASE): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
 	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \

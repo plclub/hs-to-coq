@@ -1,7 +1,5 @@
-# GHC 9.10: Eq2/Ord2 gained quantified superclass constraints that Coq can't handle.
-# Remove the quantified constraints by redefining the class wrapper definitions.
-redefine Definition Data.Functor.Classes.Eq2 (f : Type -> Type -> Type) := forall r__, (Eq2__Dict f -> r__) -> r__.
-redefine Definition Data.Functor.Classes.Ord2 (f : Type -> Type -> Type) `{Eq2 f} := forall r__, (Ord2__Dict f -> r__) -> r__.
+# GHC 9.10: Eq2/Ord2 gained quantified superclass constraints (forall a. Eq a => Eq1 (f a))
+# that Coq can't handle. TODO: need edit support to drop quantified constraints.
 
 order Data.Functor.Classes.Eq1__pair_type  Data.Functor.Classes.Ord1__pair_type
 order Data.Functor.Classes.Eq2__pair_type  Data.Functor.Classes.Ord2__pair_type

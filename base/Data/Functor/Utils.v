@@ -194,7 +194,8 @@ Program Instance Functor__StateL {s : Type} : GHC.Base.Functor (StateL s) :=
    : forall {a : Type},
      forall {b : Type}, StateL inst_s a -> StateL inst_s b -> StateL inst_s b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__StateL_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__StateL_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__StateL_pure {inst_s : Type}
    : forall {a : Type}, a -> StateL inst_s a :=
@@ -266,7 +267,8 @@ Program Instance Functor__StateR {s : Type} : GHC.Base.Functor (StateR s) :=
    : forall {a : Type},
      forall {b : Type}, StateR inst_s a -> StateR inst_s b -> StateR inst_s b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__StateR_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__StateR_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__StateR_pure {inst_s : Type}
    : forall {a : Type}, a -> StateR inst_s a :=

@@ -130,7 +130,7 @@ Instance Ord__Last {a} `{GHC.Base.Ord a} : GHC.Base.Ord (Last a) :=
 #[global] Definition Functor__Ap_op_zlzd__ {inst_f : Type -> Type}
   `{GHC.Base.Functor inst_f}
    : forall {a : Type}, forall {b : Type}, a -> Ap inst_f b -> Ap inst_f a :=
-  fun {a} {b} x y => let 'Mk_Ap z := y in Mk_Ap (x GHC.Base.<$ z).
+  fun {a} {b} x y => let 'Mk_Ap z := y in Mk_Ap (GHC.Base.op_zlzd__ x z).
 
 #[global]
 Program Instance Functor__Ap {f : Type -> Type} `{GHC.Base.Functor f}
@@ -199,7 +199,7 @@ Program Instance MonadFail__Ap {f : Type -> Type} `{Control.Monad.Fail.MonadFail
 
 #[global] Definition Functor__Last_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> Last b -> Last a :=
-  fun {a} {b} x y => let 'Mk_Last z := y in Mk_Last (x GHC.Base.<$ z).
+  fun {a} {b} x y => let 'Mk_Last z := y in Mk_Last (GHC.Base.op_zlzd__ x z).
 
 #[global]
 Program Instance Functor__Last : GHC.Base.Functor Last :=
@@ -274,7 +274,7 @@ Program Instance Monad__Last : GHC.Base.Monad Last :=
 
 #[global] Definition Functor__First_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> First b -> First a :=
-  fun {a} {b} x y => let 'Mk_First z := y in Mk_First (x GHC.Base.<$ z).
+  fun {a} {b} x y => let 'Mk_First z := y in Mk_First (GHC.Base.op_zlzd__ x z).
 
 #[global]
 Program Instance Functor__First : GHC.Base.Functor First :=

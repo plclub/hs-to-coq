@@ -216,7 +216,8 @@ Program Instance Functor__Const {m : Type} : GHC.Base.Functor (Const m) :=
    : forall {a : Type},
      forall {b : Type}, Const inst_m a -> Const inst_m b -> Const inst_m b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Const_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Const_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Const_pure {inst_m : Type} `{GHC.Base.Monoid
   inst_m}

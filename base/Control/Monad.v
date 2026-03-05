@@ -62,7 +62,8 @@ Infix "<=<" := (_<=<_) (at level 99).
 #[global] Definition mapAndUnzipM {m : Type -> Type} {a : Type} {b : Type} {c
    : Type} `{GHC.Base.Applicative m}
    : (a -> m (b * c)%type) -> list a -> m (list b * list c)%type :=
-  fun f xs => GHC.List.unzip Data.Functor.<$> Data.Traversable.traverse f xs.
+  fun f xs =>
+    Data.Functor.op_zlzdzg__ GHC.List.unzip (Data.Traversable.traverse f xs).
 
 #[global] Definition zipWithM {m} {a} {b} {c} `{_ : GHC.Base.Applicative m}
    : (a -> b -> m c) -> list a -> list b -> m (list c) :=
@@ -100,7 +101,7 @@ Infix "<=<" := (_<=<_) (at level 99).
 
 Notation "'_<$!>_'" := (op_zlzdznzg__).
 
-Infix "<$!>" := (_<$!>_) (at level 99).
+Infix "<$!>" := (op_zlzdznzg__) (at level 99).
 
 (* Skipping definition `Control.Monad.mfilter' *)
 
@@ -110,7 +111,7 @@ Infix "Control.Monad.>=>" := (_>=>_) (at level 99).
 Notation "'_Control.Monad.<=<_'" := (op_zlzezl__).
 Infix "Control.Monad.<=<" := (_<=<_) (at level 99).
 Notation "'_Control.Monad.<$!>_'" := (op_zlzdznzg__).
-Infix "Control.Monad.<$!>" := (_<$!>_) (at level 99).
+Infix "Control.Monad.<$!>" := (op_zlzdznzg__) (at level 99).
 End Notations.
 
 (* External variables:

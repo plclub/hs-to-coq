@@ -152,7 +152,8 @@ Program Instance Functor__Proxy : GHC.Base.Functor Proxy :=
 #[local] Definition Applicative__Proxy_op_ztzg__
    : forall {a : Type}, forall {b : Type}, Proxy a -> Proxy b -> Proxy b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Proxy_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Proxy_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Proxy_pure : forall {a : Type}, a -> Proxy a :=
   fun {a : Type} => fun arg_0__ => Mk_Proxy.

@@ -787,7 +787,7 @@ Program Instance Bifunctor__Arg : Data.Bifunctor.Bifunctor Arg :=
   `{GHC.Base.Applicative f} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
-      | f, g, Mk_Arg a b => (Mk_Arg Data.Functor.<$> f a) GHC.Base.<*> g b
+      | f, g, Mk_Arg a b => Data.Functor.op_zlzdzg__ Mk_Arg (f a) GHC.Base.<*> g b
       end.
 
 #[local] Definition Bifoldable__Arg_bifoldMap

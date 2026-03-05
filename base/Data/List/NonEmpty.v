@@ -280,7 +280,8 @@ Infix "<|" := (_<|_) (at level 99).
   `{GHC.Base.Functor f}
    : f (a * b)%type -> (f a * f b)%type :=
   fun xs =>
-    pair (Data.Tuple.fst Data.Functor.<$> xs) (Data.Tuple.snd Data.Functor.<$> xs).
+    pair (Data.Functor.op_zlzdzg__ Data.Tuple.fst xs) (Data.Functor.op_zlzdzg__
+          Data.Tuple.snd xs).
 
 #[global] Definition nubBy {a : Type}
    : (a -> a -> bool) -> GHC.Base.NonEmpty a -> GHC.Base.NonEmpty a :=

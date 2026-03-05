@@ -11,9 +11,17 @@ skip Data.Traversable.Traversable__Last
 # type inference issue
 skip Data.Traversable.foldMapDefault
 
-# Need Data.Functor.Utils (but I am lazy right now)
-# skip Data.Traversable.mapAccumL
-# skip Data.Traversable.mapAccumR
+# GHC 9.10: mapAccumL/mapAccumR/fmapDefault use GHC.Prim.coerce which causes
+# infinite typeclass resolution in Coq. Redefine with explicit constructors.
+redefine Definition Data.Traversable.mapAccumL {t : Type -> Type} {s : Type} {a : Type} {b : Type} `{Traversable t} : (s -> a -> (s * b)) -> s -> t a -> (s * t b) := fun f s0 t => Data.Functor.Utils.runStateL (traverse (Data.Functor.Utils.Mk_StateL GHC.Base.∘ GHC.Base.flip f) t) s0.
+
+redefine Definition Data.Traversable.mapAccumR {t : Type -> Type} {s : Type} {a : Type} {b : Type} `{Traversable t} : (s -> a -> (s * b)) -> s -> t a -> (s * t b) := fun f s0 t => Data.Functor.Utils.runStateR (traverse (Data.Functor.Utils.Mk_StateR GHC.Base.∘ GHC.Base.flip f) t) s0.
+
+redefine Definition Data.Traversable.fmapDefault {t : Type -> Type} {a : Type} {b : Type} `{Traversable t} : (a -> b) -> t a -> t b := fun f x => Data.Functor.Identity.runIdentity (traverse (fun a => Data.Functor.Identity.Mk_Identity (f a)) x).
+
+# GHC 9.10: mapAccumM/forAccumM use coerce with StateT, skip for now
+skip Data.Traversable.mapAccumM
+skip Data.Traversable.forAccumM
 
 # Ordering
 order Data.Traversable.Traversable__list Data.Traversable.Traversable__NonEmpty_traverse

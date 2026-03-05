@@ -163,7 +163,7 @@ Program Instance Ord1__Compose {f : Type -> Type} {g : Type -> Type}
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
-      | a, Mk_Compose x => Mk_Compose (GHC.Base.fmap (_GHC.Base.<$_ a) x)
+      | a, Mk_Compose x => Mk_Compose (GHC.Base.fmap (GHC.Base.op_zlzd__ a) x)
       end.
 
 #[global]
@@ -295,8 +295,8 @@ Program Instance Foldable__Compose {f : Type -> Type} {g : Type -> Type}
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_Compose t =>
-          Mk_Compose Data.Functor.<$>
-          Data.Traversable.traverse (Data.Traversable.traverse f) t
+          Data.Functor.op_zlzdzg__ Mk_Compose (Data.Traversable.traverse
+                                    (Data.Traversable.traverse f) t)
       end.
 
 #[local] Definition Traversable__Compose_mapM {inst_f : Type -> Type} {inst_g
@@ -388,7 +388,8 @@ Program Instance Traversable__Compose {f : Type -> Type} {g : Type -> Type}
      forall {b : Type},
      Compose inst_f inst_g a -> Compose inst_f inst_g b -> Compose inst_f inst_g b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Compose_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Compose_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Compose_pure {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{GHC.Base.Applicative inst_f} `{GHC.Base.Applicative inst_g}

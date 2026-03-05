@@ -107,8 +107,8 @@ Program Instance Ord1__Sum {f : Type -> Type} {g : Type -> Type}
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
-      | a, InL x => InL (a GHC.Base.<$ x)
-      | a, InR y => InR (a GHC.Base.<$ y)
+      | a, InL x => InL (GHC.Base.op_zlzd__ a x)
+      | a, InR y => InR (GHC.Base.op_zlzd__ a y)
       end.
 
 #[global]
@@ -228,8 +228,8 @@ Program Instance Foldable__Sum {f : Type -> Type} {g : Type -> Type}
   fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
-      | f, InL x => InL Data.Functor.<$> Data.Traversable.traverse f x
-      | f, InR y => InR Data.Functor.<$> Data.Traversable.traverse f y
+      | f, InL x => Data.Functor.op_zlzdzg__ InL (Data.Traversable.traverse f x)
+      | f, InR y => Data.Functor.op_zlzdzg__ InR (Data.Traversable.traverse f y)
       end.
 
 #[local] Definition Traversable__Sum_mapM {inst_f : Type -> Type} {inst_g

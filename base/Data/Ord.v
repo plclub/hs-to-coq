@@ -185,7 +185,8 @@ Program Instance Functor__Down : GHC.Base.Functor Down :=
 #[local] Definition Applicative__Down_op_ztzg__
    : forall {a : Type}, forall {b : Type}, Down a -> Down b -> Down b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__Down_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__Down_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__Down_pure : forall {a : Type}, a -> Down a :=
   fun {a : Type} => Mk_Down.

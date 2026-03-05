@@ -281,8 +281,8 @@ Program Instance Bitraversable__sept_type {x : Type} {y : Type} {z : Type} {w
   `{GHC.Base.Applicative f} =>
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
-      | f, _, Data.Either.Left a => Data.Either.Left Data.Functor.<$> f a
-      | _, g, Data.Either.Right b => Data.Either.Right Data.Functor.<$> g b
+      | f, _, Data.Either.Left a => Data.Functor.op_zlzdzg__ Data.Either.Left (f a)
+      | _, g, Data.Either.Right b => Data.Functor.op_zlzdzg__ Data.Either.Right (g b)
       end.
 
 #[global]
@@ -315,7 +315,7 @@ Program Instance Bitraversable__Either : Bitraversable Data.Either.Either :=
     fun arg_0__ arg_1__ arg_2__ =>
       match arg_0__, arg_1__, arg_2__ with
       | f, _, Data.Functor.Const.Mk_Const a =>
-          Data.Functor.Const.Mk_Const Data.Functor.<$> f a
+          Data.Functor.op_zlzdzg__ Data.Functor.Const.Mk_Const (f a)
       end.
 
 #[global]

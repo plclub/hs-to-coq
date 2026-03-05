@@ -30,12 +30,12 @@ Import GHC.Base.Notations.
 
 Notation "'_<$>_'" := (op_zlzdzg__).
 
-Infix "<$>" := (_<$>_) (at level 99).
+Infix "<$>" := (op_zlzdzg__) (at level 99).
 
 #[global] Definition op_zlzazg__ {f : Type -> Type} {a : Type} {b : Type}
   `{GHC.Base.Functor f}
    : f a -> (a -> b) -> f b :=
-  fun as_ f => f <$> as_.
+  fun as_ f => op_zlzdzg__ f as_.
 
 Notation "'_<&>_'" := (op_zlzazg__).
 
@@ -44,28 +44,28 @@ Infix "<&>" := (_<&>_) (at level 99).
 #[global] Definition op_zdzg__ {f : Type -> Type} {a : Type} {b : Type}
   `{GHC.Base.Functor f}
    : f a -> b -> f b :=
-  GHC.Base.flip _GHC.Base.<$_.
+  GHC.Base.flip GHC.Base.op_zlzd__.
 
 Notation "'_$>_'" := (op_zdzg__).
 
-Infix "$>" := (_$>_) (at level 99).
+Infix "$>" := (op_zdzg__) (at level 99).
 
 #[global] Definition unzip {f : Type -> Type} {a : Type} {b : Type}
   `{GHC.Base.Functor f}
    : f (a * b)%type -> (f a * f b)%type :=
-  fun xs => pair (Data.Tuple.fst <$> xs) (Data.Tuple.snd <$> xs).
+  fun xs => pair (op_zlzdzg__ Data.Tuple.fst xs) (op_zlzdzg__ Data.Tuple.snd xs).
 
 #[global] Definition void {f : Type -> Type} {a : Type} `{GHC.Base.Functor f}
    : f a -> f unit :=
-  fun x => tt GHC.Base.<$ x.
+  fun x => GHC.Base.op_zlzd__ tt x.
 
 Module Notations.
 Notation "'_Data.Functor.<$>_'" := (op_zlzdzg__).
-Infix "Data.Functor.<$>" := (_<$>_) (at level 99).
+Infix "Data.Functor.<$>" := (op_zlzdzg__) (at level 99).
 Notation "'_Data.Functor.<&>_'" := (op_zlzazg__).
 Infix "Data.Functor.<&>" := (_<&>_) (at level 99).
 Notation "'_Data.Functor.$>_'" := (op_zdzg__).
-Infix "Data.Functor.$>" := (_$>_) (at level 99).
+Infix "Data.Functor.$>" := (op_zdzg__) (at level 99).
 End Notations.
 
 (* External variables:
