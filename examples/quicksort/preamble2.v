@@ -1,5 +1,5 @@
 Require Proofs.Data.OldList.
-Require Omega.
+Require Import Lia.
 Require Import Coq.Lists.List.
 Ltac solve_quicksort_termination :=
   Coq.Program.Tactics.program_simpl;
@@ -9,4 +9,4 @@ Ltac solve_quicksort_termination :=
     symmetry in H end;
   match goal with [ H : partition _ _ = (_,_) |- _ ] =>
     apply partition_length in H end;
-  simpl;Omega.omega.
+  simpl; lia.

@@ -181,7 +181,8 @@ Proof.
   rewrite unroll_deferred_fix.
   destruct xs.
   * apply perm_nil.
-  * destruct (OldList.partition (fun arg_1__ : a => _<_ arg_1__ a0) xs) eqn:?.
+  * unfold GHC.Prim.rightSection.
+    destruct (OldList.partition (fun arg_1__ : a => _<_ arg_1__ a0) xs) eqn:?.
     simpl app.
     rewrite <- Permutation_middle.
     apply Permutation_cons; [reflexivity|].
@@ -278,7 +279,8 @@ Proof.
   rewrite unroll_deferred_fix.
   destruct xs.
   * apply SSorted_nil.
-  * destruct (OldList.partition (fun arg_1__ : a => _<_ arg_1__ a0) xs) eqn:?.
+  * unfold GHC.Prim.rightSection.
+    destruct (OldList.partition (fun arg_1__ : a => _<_ arg_1__ a0) xs) eqn:?.
     simpl app.
     apply StronglySorted_app_cons.
     - apply (H (length l)).
