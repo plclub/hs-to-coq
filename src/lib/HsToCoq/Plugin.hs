@@ -208,6 +208,7 @@ proofPass :: PluginPass -- ModGuts -> CoreM ModGuts
 proofPass guts@ModGuts {..} = do
     dflags <- getDynFlags
     liftIO $ withFile coq WriteMode $ \h -> do
+      hSetEncoding h utf8
 #if __GLASGOW_HASKELL__ >= 900
       let ctx = initSDocContext dflags defaultDumpStyle
       printSDocLn ctx (PageMode False) h $

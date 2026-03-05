@@ -69,4 +69,4 @@ instance (ExceptionMonad m, Monoid w) => ExceptionMonad (RWSL.RWST r w s m) wher
 -- Other MTL transformers will be added as necessary
 
 gWithFile :: ExceptionMonad m => FilePath -> IOMode -> (Handle -> m r) -> m r
-gWithFile file mode = gbracket (liftIO $ openFile file mode) (liftIO . hClose)
+gWithFile file mode = gbracket (liftIO $ openFile file mode >>= \h -> hSetEncoding h utf8 >> pure h) (liftIO . hClose)
