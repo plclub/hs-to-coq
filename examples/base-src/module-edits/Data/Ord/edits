@@ -37,32 +37,11 @@ redefine Local Definition Data.Ord.Ord__Down_max {inst_a : Type} `{GHC.Base.Ord 
     | Mk_Down x, Mk_Down y => Mk_Down (GHC.Base.min x y)
     end.
 
-# GHC 9.10: Replace coerce-based definitions with explicit pattern matching
-# to avoid stack overflow from Coercible/Unpeel resolution loops
-
-redefine Local Definition Data.Ord.Semigroup__Down_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Semigroup inst_a}
-   : Down inst_a -> Down inst_a -> Down inst_a :=
-  fun x y => match x, y with | Mk_Down a, Mk_Down b => Mk_Down (a GHC.Base.<<>> b) end.
-
-redefine Local Definition Data.Ord.Monoid__Down_mappend {inst_a : Type} `{GHC.Base.Monoid inst_a}
-   : Down inst_a -> Down inst_a -> Down inst_a :=
-  fun x y => match x, y with | Mk_Down a, Mk_Down b => Mk_Down (GHC.Base.mappend a b) end.
-
+# GHC 9.10: coerce-based definitions are expanded automatically by hs-to-coq
+# Exception: mconcat has nested newtype inside list, which the expansion can't handle
 redefine Local Definition Data.Ord.Monoid__Down_mconcat {inst_a : Type} `{GHC.Base.Monoid inst_a}
    : list (Down inst_a) -> Down inst_a :=
   fun xs => Mk_Down (GHC.Base.mconcat (GHC.Base.map (fun x => match x with | Mk_Down a => a end) xs)).
-
-redefine Local Definition Data.Ord.Monoid__Down_mempty {inst_a : Type} `{GHC.Base.Monoid inst_a}
-   : Down inst_a :=
-  Mk_Down GHC.Base.mempty.
-
-redefine Local Definition Data.Ord.Functor__Down_fmap
-   : forall {a : Type}, forall {b : Type}, (a -> b) -> Down a -> Down b :=
-  fun {a : Type} {b : Type} f x => match x with | Mk_Down a => Mk_Down (f a) end.
-
-redefine Local Definition Data.Ord.Applicative__Down_op_zlztzg__
-   : forall {a : Type}, forall {b : Type}, Down (a -> b) -> Down a -> Down b :=
-  fun {a : Type} {b : Type} f x => match f, x with | Mk_Down g, Mk_Down a => Mk_Down (g a) end.
 
 order Data.Ord.Eq___Down         Data.Ord.Ord__Down
 order Data.Ord.Semigroup__Down   Data.Ord.Monoid__Down

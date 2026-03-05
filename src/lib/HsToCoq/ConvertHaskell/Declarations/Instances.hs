@@ -20,7 +20,9 @@ import Data.Maybe
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Bifunctor
+import Data.List (partition, sortBy)
 import Data.Monoid
+import Data.Ord (comparing)
 import qualified Data.Text as T
 import Control.Monad.Reader.Class
 
@@ -57,6 +59,201 @@ import HsToCoq.ConvertHaskell.Axiomatize
 import HsToCoq.ConvertHaskell.Declarations.Class
 import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 import HsToCoq.ConvertHaskell.TypeEnv.Instances
+
+import qualified Data.Set as S
+
+--------------------------------------------------------------------------------
+
+-- | Check if a type name is a single-constructor, single-field type (newtype).
+-- Returns (constructor, accessor) if so.
+lookupNewtypeInfo :: ConversionMonad r m
+                  => Qualid -> m (Maybe (Qualid, Qualid))
+lookupNewtypeInfo typeName = do
+    mcons <- lookupConstructors typeName
+    case mcons of
+      Just [con] -> do
+        mfields <- lookupConstructorFields con
+        case mfields of
+          Just (RecordFields [field]) -> pure $ Just (con, field)
+          Just (NonRecordFields 1)    -> pure $ Just (con, con) -- no accessor
+          _                           -> pure Nothing
+      _ -> pure Nothing
+
+-- | Extract the head type constructor from a Gallina type term.
+-- e.g. (Min inst_a) -> Just "Min", (list a) -> Just "list"
+typeHead :: Term -> Maybe Qualid
+typeHead (Qualid q)                      = Just q
+typeHead (App (Qualid q) _)              = Just q
+typeHead (Parens t)                      = typeHead t
+typeHead (InScope t _)                   = typeHead t
+typeHead _                               = Nothing
+
+-- | Decompose an arrow type into arguments and result, skipping forall binders.
+-- Returns ([argTypes], resultType)
+decomposeArrowType :: Term -> ([Term], Term)
+decomposeArrowType (Forall _ t)  = decomposeArrowType t
+decomposeArrowType (Arrow a b)   = let (args, ret) = decomposeArrowType b
+                                   in (a : args, ret)
+decomposeArrowType (Parens t)    = decomposeArrowType t
+decomposeArrowType t             = ([], t)
+
+-- | Count the forall binders in a type (to generate matching implicit args).
+countForallBinders :: Term -> Int
+countForallBinders (Forall bs t) = length (NE.toList bs) + countForallBinders t
+countForallBinders _             = 0
+
+-- | Expand a coerce-based definition body using explicit newtype wrapping.
+-- If the body contains GHC.Prim.coerce and we can determine the newtype
+-- constructors from the declared type, replace coerce with explicit
+-- pattern matching (unwrap arguments, apply function, wrap result).
+expandCoerce :: ConversionMonad r m
+             => [Binder]    -- ^ The definition's explicit arguments
+             -> Maybe Term  -- ^ The declared type (if available)
+             -> Term        -- ^ The definition body
+             -> m Term
+expandCoerce defArgs mDeclType body = case stripFunBinders body of
+    -- Strip any leading fun binders (implicit or explicit) from body
+    -- and work on the inner coerce expression
+    (outerBinders, innerBody) -> case innerBody of
+
+      -- Pattern: GHC.Prim.coerce (f : srcType) with parens
+      App (Qualid (Qualified "GHC.Prim" "coerce"))
+          (PosArg (Parens (HasType innerFn _srcType)) :| [])
+        | Just declType <- mDeclType
+        -> rewrap outerBinders <$> expandCoerceWithTypes defArgs declType innerFn
+
+      -- Pattern: GHC.Prim.coerce (f : srcType) without parens
+      App (Qualid (Qualified "GHC.Prim" "coerce"))
+          (PosArg (HasType innerFn _srcType) :| [])
+        | Just declType <- mDeclType
+        -> rewrap outerBinders <$> expandCoerceWithTypes defArgs declType innerFn
+
+      -- Pattern: GHC.Prim.coerce (f) with parens (no type annotation)
+      App (Qualid (Qualified "GHC.Prim" "coerce"))
+          (PosArg (Parens innerFn) :| [])
+        | Just declType <- mDeclType
+        -> rewrap outerBinders <$> expandCoerceWithTypes defArgs declType innerFn
+
+      -- Pattern: GHC.Prim.coerce f without parens (no type annotation)
+      App (Qualid (Qualified "GHC.Prim" "coerce"))
+          (PosArg innerFn :| [])
+        | Just declType <- mDeclType
+        -> rewrap outerBinders <$> expandCoerceWithTypes defArgs declType innerFn
+
+      -- Pattern: bare GHC.Prim.coerce used as a function
+      Qualid (Qualified "GHC.Prim" "coerce")
+        | Just declType <- mDeclType
+        -> rewrap outerBinders <$> expandBareCoerce defArgs declType
+
+      -- Pattern: GHC.Prim.coerce (f : srcType) :: dstType (old GHC 8.x pattern)
+      HasType app@(App (Qualid (Qualified "GHC.Prim" "coerce"))
+                       (PosArg (Parens (Qualid _)) :| [])) _
+        -> pure $ rewrap outerBinders app  -- existing hack: just strip type ascription
+
+      _ -> pure body
+  where
+    -- Strip leading Fun binders to expose the inner coerce body
+    stripFunBinders :: Term -> ([NonEmpty Binder], Term)
+    stripFunBinders (Fun bs inner) =
+      let (rest, core) = stripFunBinders inner
+      in (bs : rest, core)
+    stripFunBinders t = ([], t)
+
+    -- Re-wrap an expanded body with the stripped binders
+    rewrap :: [NonEmpty Binder] -> Term -> Term
+    rewrap [] t     = t
+    rewrap (bs:rest) t = Fun bs (rewrap rest t)
+
+-- | Expand coerce when we have a typed inner function and a declared type.
+expandCoerceWithTypes :: ConversionMonad r m
+                      => [Binder] -> Term -> Term -> m Term
+expandCoerceWithTypes defArgs declType innerFn = do
+    let (argTypes, retType) = decomposeArrowType declType
+        nImplicit = countForallBinders declType
+    -- Try to find newtype info for argument and return types
+    argInfos <- mapM getNewtypeWrap argTypes
+    retInfo  <- getNewtypeWrap retType
+    -- If at least one argument or the return type is a newtype, expand
+    if any isNewtype argInfos || isNewtype retInfo
+      then buildExpandedBody nImplicit defArgs argInfos retInfo innerFn
+      else pure $ App (Qualid (Qualified "GHC.Prim" "coerce"))
+                      (PosArg (Parens innerFn) :| [])
+
+-- | Expand bare coerce (used as identity-like function between newtype and base type).
+-- For bare coerce, we generate an explicit lambda that unwraps newtype args,
+-- applies any function args, and wraps the result.
+expandBareCoerce :: ConversionMonad r m
+                 => [Binder] -> Term -> m Term
+expandBareCoerce _defArgs declType = do
+    let (argTypes, retType) = decomposeArrowType declType
+    argInfos <- mapM getNewtypeWrap argTypes
+    retInfo  <- getNewtypeWrap retType
+    if any isNewtype argInfos || isNewtype retInfo
+      then do
+        let varNames = [ Bare (T.pack ("arg_" ++ show i ++ "__"))
+                       | i <- [0 :: Int .. length argTypes - 1] ]
+            indexed = zip3 [0::Int ..] argInfos varNames
+            innerExpr = buildInnerExpr indexed retInfo
+            explicitArgs = [ExplicitBinder (Ident v) | v <- varNames]
+        case NE.nonEmpty explicitArgs of
+          Just binders -> pure $ Fun binders innerExpr
+          Nothing      -> pure $ Qualid (Qualified "GHC.Prim" "coerce")
+      else pure $ Qualid (Qualified "GHC.Prim" "coerce")
+  where
+    -- Build the inner expression for bare coerce
+    -- For single arg: wrap(unwrap(arg))
+    -- For multi arg like (a->b->c) -> F a -> F b -> F c:
+    --   apply first non-newtype arg to remaining unwrapped args, then wrap
+    buildInnerExpr :: [(Int, NewtypeWrap, Qualid)] -> NewtypeWrap -> Term
+    buildInnerExpr indexed retInfo =
+      let (fnArgs, dataArgs) = partition (\(_, nw, _) -> not (isNewtype nw)) indexed
+          unwrapped = [(i, unwrapArg nw (Qualid v)) | (i, nw, v) <- dataArgs]
+          fnTerms = [(i, Qualid v) | (i, _, v) <- fnArgs]
+          allTerms = map snd $ sortBy (comparing fst) (unwrapped ++ fnTerms)
+          applied = case allTerms of
+            []     -> Qualid (Qualified "GHC.Prim" "coerce")
+            [x]    -> x
+            (f:xs) -> foldl (\acc a -> App acc (PosArg a :| [])) f xs
+      in wrapResult retInfo applied
+
+data NewtypeWrap = IsNewtype Qualid Qualid  -- constructor, accessor
+                 | NotNewtype
+                 deriving (Eq)
+
+isNewtype :: NewtypeWrap -> Bool
+isNewtype (IsNewtype _ _) = True
+isNewtype _               = False
+
+getNewtypeWrap :: ConversionMonad r m => Term -> m NewtypeWrap
+getNewtypeWrap ty = case typeHead ty of
+    Just q  -> do
+      minfo <- lookupNewtypeInfo q
+      case minfo of
+        Just (con, acc) -> pure $ IsNewtype con acc
+        Nothing         -> pure NotNewtype
+    Nothing -> pure NotNewtype
+
+unwrapArg :: NewtypeWrap -> Term -> Term
+unwrapArg (IsNewtype _con acc) var = App (Qualid acc) (PosArg var :| [])
+unwrapArg NotNewtype            var = var
+
+wrapResult :: NewtypeWrap -> Term -> Term
+wrapResult (IsNewtype con _acc) inner = App (Qualid con) (PosArg inner :| [])
+wrapResult NotNewtype            inner = inner
+
+-- | Build the expanded function body with explicit wrapping/unwrapping.
+buildExpandedBody :: ConversionMonad r m
+                  => Int -> [Binder] -> [NewtypeWrap] -> NewtypeWrap -> Term -> m Term
+buildExpandedBody _nImplicit _defArgs argInfos retInfo innerFn = do
+    let varNames = [ Bare (T.pack ("arg_" ++ show i ++ "__"))
+                   | i <- [0 :: Int .. length argInfos - 1] ]
+        unwrappedArgs = zipWith unwrapArg argInfos (map Qualid varNames)
+        innerApp = foldl (\f a -> App f (PosArg a :| [])) innerFn unwrappedArgs
+        wrappedResult = wrapResult retInfo innerApp
+        binders = [ExplicitBinder (Ident v) | v <- varNames]
+    case NE.nonEmpty binders of
+      Just bs -> pure $ Fun bs wrappedResult
+      Nothing -> pure wrappedResult
 
 --------------------------------------------------------------------------------
 
@@ -303,19 +500,8 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
         methBody <- case (M.lookup meth cid_binds_map, M.lookup meth cid_types_map, M.lookup meth classDefaults) of
           (Just bind, _, _) ->
             local (envFor meth) $ convertMethodBinding localMeth bind >>= \case
-              ConvertedDefinitionBinding cd ->
-                let body = case cd^.convDefBody of
-                      -- HACK Detect definitions emitted by
-                      -- GeneralizedNewtypeDeriving (in GHC 8.10.7) and adjust
-                      -- to avoid `Unpeel` instance resolution problems.  This
-                      -- is a liberal heuristic: it will identify any body of
-                      -- the form `GHC.Prim.coerce (f) :: t` as having been
-                      -- generated by GeneralizedNewtypeDeriving.  In practice,
-                      -- this is unlikely to be a problem, since all we do is
-                      -- throw away the ascription.
-                      HasType app@(App (Qualid (Qualified "GHC.Prim" "coerce")) (PosArg (Parens (Qualid _)) :| [])) _ -> app
-                      b -> b
-                in pure . CM_Defined CL_Term $ maybeFun (cd^.convDefArgs) body
+              ConvertedDefinitionBinding cd -> do
+                pure . CM_Defined CL_Term $ maybeFun (cd^.convDefArgs) (cd^.convDefBody)
                 -- We have a tough time handling recursion (including mutual
                 -- recursion) here because of name overloading
               ConvertedPatternBinding {} ->
@@ -369,7 +555,12 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             
             -- We've converted the method, now sentenceify it
             ty    <- makeTy sub className meth
-            qbody <- quantify sub meth $ substTy sub' body
+            -- Expand GHC.Prim.coerce into explicit newtype wrapping/unwrapping
+            -- to avoid Coq Coercible/Unpeel resolution loops
+            expandedBody <- case level of
+              CL_Term -> expandCoerce [] (Just ty) body
+              _       -> pure body
+            qbody <- quantify sub meth $ substTy sub' expandedBody
             pure . DefinitionSentence $ DefinitionDef Local
                                                       localMeth
                                                       (subst allLocalNames <$> params)
