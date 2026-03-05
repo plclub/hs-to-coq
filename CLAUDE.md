@@ -101,7 +101,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 
 ## CI (`.github/workflows/hs-to-coq.yml`)
 
-Four jobs: `build-haskell` (Stack + GHC 9.10.3), `test-coq-files` (Coq 8.20 via opam), `tests` (unit + example tests), `test-translation` (verifies generated `.v` files match repo convenience copies via `git diff-index`). Sets `LANG=C.utf8` globally for Unicode support.
+Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker), `tests` (haskell-actions + opam for Coq), `test-translation` (haskell:9.10.3 Docker, verifies base/ regeneration matches). Sets `LANG=C.utf8` globally for Unicode support.
 
 ## GHC Version Compatibility
 
@@ -131,6 +131,9 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 - **`GHC.Prim.coerce` with abstract types**: Coq can't resolve `Coercible` for newtypes with abstract type vars. Fix: replace with explicit pattern matching
 - **`rightSection`**: GHC 9.10 desugars `(op x)` to `rightSection op x`. Defined in `base/GHC/Prim.v`. Operators with invalid Coq chars (like `$`) are rendered as z-encoded names (e.g. `op_zd__`) instead of notation form. Proofs involving `rightSection` need `unfold GHC.Prim.rightSection` before `lia`
 - **`foldMap'` in Foldable**: GHC 9.10 added this to the Foldable class. Old restored .v files need the field added manually
+
+### Containers submodule
+Containers is at v0.6.0.1, which has `foldl'` ambiguity with GHC 9.10 (Prelude now re-exports `Data.Foldable.foldl'`). The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is skipped in CI.
 
 ### Coq 8.20 compatibility
 - `Program Instance` needs `#[global]` prefix for cross-module visibility
