@@ -331,7 +331,7 @@ instance Gallina Term where
 
   -- Special notation for somehting that looks like an operator an
   -- is applied to two arguments
-  renderGallina' p (App2 (Qualid op) l r) | qualidIsOp op =
+  renderGallina' p (App2 (Qualid op) l r) | qualidIsOp op, qualidHasValidCoqOp op =
     case lookup op precTable of
       Just (n, LeftAssociativity)  ->
         maybeParen (n < p) $ group $
@@ -377,7 +377,7 @@ instance Gallina Term where
     <> "end"
 
   renderGallina' p (Qualid qid)
-    | qualidIsOp qid = renderQPrefix qid
+    | qualidIsOp qid, qualidHasValidCoqOp qid = renderQPrefix qid
     | otherwise      = renderGallina' p qid
 
   renderGallina' p (RawQualid qid) = renderGallina' p qid

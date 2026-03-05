@@ -32,7 +32,7 @@ module HsToCoq.Coq.Gallina.Util (
   qualidBase, qualidModule, qualidMapBase, qualidExtendBase,
   splitModule,
   qualidToIdent, identToQualid, identToBase,
-  qualidIsOp, qualidToOp, qualidToPrefix,
+  qualidIsOp, qualidHasValidCoqOp, qualidToOp, qualidToPrefix,
   unsafeIdentToQualid,
   nameToTerm, nameToPattern,
   binderArgs,
@@ -233,6 +233,17 @@ qualidToIdent (Qualified qid aid) = qid <> "." <> aid
 
 qualidIsOp :: Qualid -> Bool
 qualidIsOp = identIsOp . qualidBase
+
+-- | Check if the decoded operator uses only valid Coq operator characters.
+-- Coq symbols consist of: + - * / \ < > = ~ ! @ # % ^ & | : ? , and Unicode symbols.
+-- Characters like '$' are not valid.
+qualidHasValidCoqOp :: Qualid -> Bool
+qualidHasValidCoqOp qid = case identToOp (qualidBase qid) of
+  Nothing -> False
+  Just op -> T.all isValidCoqOpChar op
+  where
+    isValidCoqOpChar c = c `elem` ("+-*/\\<>=~!@#%^&|:?," :: [Char])
+                      || c > '\x7f'  -- Unicode symbols
 
 qualidToOp :: Qualid -> Maybe Op
 qualidToOp (Qualified qid aid) = ((qid <> ".") <>) <$> identToOp aid

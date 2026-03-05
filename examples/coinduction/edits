@@ -1,4 +1,5 @@
 rename type GHC.Natural.Natural = Coq.Numbers.BinNums.N
+rename type GHC.Num.Natural.Natural = Coq.Numbers.BinNums.N
 termination Memo.mkTrie corecursive
 termination Memo.mapTrie corecursive
 termination Memo.lookupTrie { measure arg_1__ (Coq.NArith.BinNat.N.lt) }

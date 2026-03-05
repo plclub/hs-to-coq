@@ -27,6 +27,8 @@ jobs:
   build-haskell:
     name: Build hs-to-coq (GHC 9.10)
     runs-on: ubuntu-latest
+    container:
+      image: haskell:9.10.3
     needs: pre_check
     if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
     steps:
@@ -38,39 +40,27 @@ jobs:
           path: |
             ~/.stack
             .stack-work
-          key: stack-${{ runner.os }}-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
-      - uses: haskell-actions/setup@v2
-        with:
-          ghc-version: '9.10.3'
-          enable-stack: true
-          stack-version: 'latest'
+          key: stack-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
       - name: Build hs-to-coq
-        run: stack --no-terminal --install-ghc build
+        run: stack --no-terminal --system-ghc build
 
   test-coq-files:
     name: Testing base, containers (Coq 8.20)
     runs-on: ubuntu-latest
+    container:
+      image: mathcomp/mathcomp:2.5.0-coq-8.20
     needs: pre_check
     if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Coq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y opam
-          opam init -j 2 -n -y -c ocaml-base-compiler.4.14.2
-          opam repo add coq-released https://coq.inria.fr/opam/released || true
-          opam install -y coq.8.20.1 coq-mathcomp-ssreflect
       - name: Compiling base
         run: |
-          eval $(opam env)
           (cd base; coq_makefile -f _CoqProject -o Makefile)
           make -j -C base
           (cd base-thy; coq_makefile -f _CoqProject -o Makefile)
           make -j -C base-thy
       - name: Compiling containers
         run: |
-          eval $(opam env)
           (cd examples/containers/lib; coq_makefile -f _CoqProject -o Makefile)
           make -j -C examples/containers/lib
           (cd examples/containers/theories; coq_makefile -f _CoqProject -o Makefile)
@@ -113,38 +103,33 @@ jobs:
           make -C examples/base-tests
           (cd base-thy; coq_makefile -f _CoqProject -o Makefile)
           make -j -C base-thy
-          # Examples that work with GHC 9.10 + Coq 8.20
           make -C examples/compiler
           make -C examples/rle
           make -C examples/quicksort
           make -C examples/dlist
-          # TODO: successors, intervals, coinduction need re-translation for GHC 9.10
 
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)
     runs-on: ubuntu-latest
+    container:
+      image: haskell:9.10.3
     needs: [build-haskell, pre_check]
     if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Installing dependencies for Linux
-        run: sudo apt-get install -y xutils-dev
-      - uses: haskell-actions/setup@v2
-        with:
-          ghc-version: '9.10.3'
-          enable-stack: true
-          stack-version: 'latest'
+      - name: Installing dependencies
+        run: apt-get update && apt-get install -y xutils-dev
       - name: Caching Stack
         uses: actions/cache@v4
         with:
           path: |
             ~/.stack
             .stack-work
-          key: stack-${{ runner.os }}-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
+          key: stack-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
       - name: Build hs-to-coq
-        run: stack --no-terminal --install-ghc build
+        run: stack --no-terminal --system-ghc build
       - name: Translating base
         run: |
           make -C examples/base-src clean
