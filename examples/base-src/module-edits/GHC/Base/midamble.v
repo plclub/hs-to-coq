@@ -457,3 +457,15 @@ Instance Eq___option {a} `{Eq_ a} : Eq_ (option a) := fun _ k => k {|
 #[global]
 Instance Ord__option {a} `{Ord a} : Ord (option a) :=
   ord_default compare_option.
+
+(* Eq for NonEmpty — GHC 9.10 derives using dataToTag# *)
+
+Definition eq_NonEmpty {a} `{Eq_ a} (x y : NonEmpty a) : bool :=
+  match x, y with
+  | NEcons a1 as1, NEcons b1 bs1 => (a1 == b1) && (as1 == bs1)
+  end.
+
+#[global]
+Instance Eq___NonEmpty {a} `{Eq_ a} : Eq_ (NonEmpty a) := fun _ k => k {|
+  op_zeze____ := eq_NonEmpty;
+  op_zsze____ := fun x y => negb (eq_NonEmpty x y) |}.

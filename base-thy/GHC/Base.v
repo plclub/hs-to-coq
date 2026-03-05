@@ -275,8 +275,8 @@ Ltac unfold_zeze :=
   Eq_comparison___,
   Eq_pair___ ,
   Eq_list,
-  Eq___NonEmpty, Base.Eq___NonEmpty_op_zeze__,
-  Eq___option, Base.Eq___option_op_zeze__.
+  Eq___NonEmpty, eq_NonEmpty,
+  Eq___option, eq_option.
 
 Ltac unfold_zsze :=
   repeat unfold op_zsze__, op_zsze____,

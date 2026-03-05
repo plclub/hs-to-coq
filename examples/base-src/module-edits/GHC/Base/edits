@@ -90,8 +90,8 @@ skip GHC.Base.primIntToChar
 skip GHC.Base.primCharToInt
 skip GHC.Base.primUnicodeMaxChar
 
-# GHC 9.10 generates dataToTag#-based Eq/Ord for Maybe/option which
-# hs-to-coq can't translate. Skip them; defined manually in midamble.
+# GHC 9.10 generates dataToTag#-based Eq/Ord for Maybe/option and NonEmpty
+# which hs-to-coq can't translate. Skip them; defined manually in midamble.
 skip GHC.Base.Eq___option_op_zeze__
 skip GHC.Base.Eq___option_op_zsze__
 skip GHC.Base.Eq___option
@@ -103,6 +103,10 @@ skip GHC.Base.Ord__option_op_zgze__
 skip GHC.Base.Ord__option_max
 skip GHC.Base.Ord__option_min
 skip GHC.Base.Ord__option
+
+skip GHC.Base.Eq___NonEmpty_op_zeze__
+skip GHC.Base.Eq___NonEmpty_op_zsze__
+skip GHC.Base.Eq___NonEmpty
 
 ## Type class instance ordering
 
