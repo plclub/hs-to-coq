@@ -17,6 +17,8 @@
 - [x] README updated for GHC 9.10.3 and Coq 8.20
 - [x] CLAUDE.md updated with comprehensive docs
 - [x] GHC submodule at ghc-9.10.3-release
+- [x] Containers `make clean && make` works (Makefile preserves .v files, builds lib + theories)
+- [x] Improved error messages in ProcessFiles.hs (load failure recovery, per-module diagnostics)
 
 ## Known Issues (not blocking CI)
 - [ ] `Data/Functor/Classes` still manual: quantified superclass constraints in Eq2/Ord2
