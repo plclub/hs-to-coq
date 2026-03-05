@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: haskell:9.10.3
-      options: --user root
     env:
       HOME: /root
     steps:
@@ -28,7 +27,7 @@ jobs:
             .stack-work
           key: stack-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
       - name: Build hs-to-coq
-        run: stack --no-terminal --system-ghc build
+        run: stack --no-terminal --system-ghc --allow-different-user build
 
   test-coq-files:
     name: Testing base, containers (Coq 8.20)
@@ -117,7 +116,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: haskell:9.10.3
-      options: --user root
     env:
       HOME: /root
     steps:
@@ -134,7 +132,7 @@ jobs:
             .stack-work
           key: stack-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
       - name: Build hs-to-coq
-        run: stack --no-terminal --system-ghc build
+        run: stack --no-terminal --system-ghc --allow-different-user build
       - name: Translating base
         run: |
           make -C examples/base-src clean

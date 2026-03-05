@@ -7,7 +7,7 @@ $(error "Using `hs-to-coq/common.mk' outside the hs-to-coq directory requires se
 endif
 HS_TO_COQ = $(shell cd $(HS_TO_COQ_DIR) && stack exec env | perl -ne 'print "$$1/hs-to-coq\n" if /^PATH=([^:]+)/')
 else
-HS_TO_COQ = stack exec hs-to-coq --
+HS_TO_COQ = stack --allow-different-user exec hs-to-coq --
 endif
 else
 ifndef FOREIGN_HS_TO_COQ
