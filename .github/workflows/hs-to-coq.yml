@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: haskell:9.10.3
+      options: --user root
     env:
       STACK_ROOT: /workspace/.stack
     steps:
@@ -35,6 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mathcomp/mathcomp:2.5.0-coq-8.20
+      options: --user root
     steps:
       - uses: actions/checkout@v4
       - name: Compiling base
@@ -100,6 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: haskell:9.10.3
+      options: --user root
     env:
       STACK_ROOT: /workspace/.stack
     steps:
