@@ -101,7 +101,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 
 ## CI (`.github/workflows/hs-to-coq.yml`)
 
-Four jobs: `build-haskell` (Stack + GHC 9.10.3), `test-coq-files` (Coq 8.20 Docker), `tests` (unit + example tests), `test-translation` (verifies generated `.v` files match repo convenience copies via `git diff-index`).
+Four jobs: `build-haskell` (Stack + GHC 9.10.3), `test-coq-files` (Coq 8.20 via opam), `tests` (unit + example tests), `test-translation` (verifies generated `.v` files match repo convenience copies via `git diff-index`). Sets `LANG=C.utf8` globally for Unicode support.
 
 ## GHC Version Compatibility
 
@@ -134,8 +134,19 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 
 ### Coq 8.20 compatibility
 - `Program Instance` needs `#[global]` prefix for cross-module visibility
+- `Program Definition` with `#[global]` needs locality before `Program` (i.e., `#[global] Program Definition`, not `Program #[global] Definition`)
 - Type and constructor cannot share the same name (e.g., `StateT`)
-- `omega` tactic replaced by `lia`
+- `omega` tactic replaced by `lia`; `le_lt_n_Sm` removed (use `lia` instead)
+- `intuition` solves more goals — proof bullet structures may need adjustment
+- `f_solver` may solve different/more goals, changing remaining goal structure
+- `auto` no longer solves `E.eq` reflexivity goals from OrderedType — use explicit `apply E.eq_refl`/`apply E.eq_sym`
+- `zify` handles `Z.of_N (Z.to_N ...)` differently — use `try rewrite Z2N.id` instead of `rewrite Z2N.id`
+- Section `Variable` hypotheses now generate side conditions in `rewrite` that weren't needed before
+- `Require Import` inside sections may not export notations after section ends (e.g., `==>` from Morphisms)
+- Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
+- `Program Definition` obligation ordering may differ (e.g., fst before snd)
+- Bound variable naming in goals may change (e.g., `bm0` → `bm`) — use explicit `with` clauses
+- Typeclass resolution may not unfold definition chains (`Key→N→Word`) — add explicit instances
 
 ## Workflow
 
