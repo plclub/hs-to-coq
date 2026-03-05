@@ -401,7 +401,7 @@ Qed.
     intros. induction H.
     - simpl. reflexivity.
     - simpl. rewrite Zpos_P_of_succ_nat. rewrite Nat2Z.inj_add.
-      rewrite <- IHBounded1. rewrite <- IHBounded2. rewrite size_size. omega.
+      rewrite <- IHBounded1. rewrite <- IHBounded2. rewrite size_size. lia.
   Qed.
 
   Lemma cardinal_1 : cardinal m = length (elements m).
@@ -409,7 +409,7 @@ Qed.
     intros. unfold cardinal. unfold elements. destruct m. simpl.
     assert (Z.of_nat (map_size x0) = Z.of_nat (length (toList x0))). {
     rewrite <- size_equiv. eapply size_spec. apply w. apply w. }
-    omega.
+    lia.
   Qed.
 
 Lemma foldlWithKey2_fold_left:

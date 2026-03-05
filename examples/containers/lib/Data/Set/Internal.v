@@ -53,11 +53,11 @@ Arguments Mk_MergeSet {_} _.
 
 (* Midamble *)
 
-Require Omega.
+Require Lia.
 
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;Lia.lia.
 
 Fixpoint set_size {a} (s : Set_ a) : nat :=
   match s with
@@ -67,9 +67,9 @@ Fixpoint set_size {a} (s : Set_ a) : nat :=
 
 Require Import HsToCoq.Err.
 
-Instance Set_Default {a} : Default (Set_ a) :=
+#[global] Instance Set_Default {a} : Default (Set_ a) :=
   Build_Default _ Tip.
-Instance MergeSetDefault {a} : Default (MergeSet a) :=
+#[global] Instance MergeSetDefault {a} : Default (MergeSet a) :=
   Build_Default _ (Mk_MergeSet default).
 
 (* Converted value declarations: *)
@@ -283,8 +283,7 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
    : Set_ inst_a -> Set_ inst_a -> Set_ inst_a :=
   union.
 
-#[global]
-Program Instance Semigroup__Set_ {a : Type} `{GHC.Base.Ord a}
+#[global] Program Instance Semigroup__Set_ {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Semigroup (Set_ a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Set__op_zlzlzgzg__ |}.
@@ -309,8 +308,7 @@ Program Instance Semigroup__Set_ {a : Type} `{GHC.Base.Ord a}
    : Set_ inst_a :=
   empty.
 
-#[global]
-Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
+#[global] Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Monoid (Set_ a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Set__mappend ;
@@ -440,19 +438,14 @@ Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
    : forall {a : Type}, Set_ a -> list a :=
   fun {a : Type} => toList.
 
-#[global]
-Program Instance Foldable__Set_ : Data.Foldable.Foldable Set_ :=
+#[global] Program Instance Foldable__Set_ : Data.Foldable.Foldable Set_ :=
   fun _ k__ =>
     k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__Set__fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Set__foldMap ;
-           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__Set__foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Set__foldl ;
-           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Set__foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Set__foldr ;
-           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} => Foldable__Set__foldr' ;
            Data.Foldable.length__ := fun {a : Type} => Foldable__Set__length ;
            Data.Foldable.null__ := fun {a : Type} => Foldable__Set__null ;
            Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
@@ -475,8 +468,7 @@ Program Instance Foldable__Set_ : Data.Foldable.Foldable Set_ :=
    : Set_ inst_a -> Set_ inst_a -> bool :=
   fun x y => negb (Eq___Set__op_zeze__ x y).
 
-#[global]
-Program Instance Eq___Set_ {a : Type} `{GHC.Base.Eq_ a}
+#[global] Program Instance Eq___Set_ {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (Set_ a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Set__op_zeze__ ;
@@ -510,8 +502,7 @@ Program Instance Eq___Set_ {a : Type} `{GHC.Base.Eq_ a}
    : Set_ inst_a -> Set_ inst_a -> Set_ inst_a :=
   fun x y => if Ord__Set__op_zlze__ x y : bool then x else y.
 
-#[global]
-Program Instance Ord__Set_ {a : Type} `{GHC.Base.Ord a}
+#[global] Program Instance Ord__Set_ {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (Set_ a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Set__op_zl__ ;
@@ -533,8 +524,7 @@ Program Instance Ord__Set_ {a : Type} `{GHC.Base.Ord a}
       andb (size m GHC.Base.== size n) (Data.Functor.Classes.liftEq eq (toList m)
             (toList n)).
 
-#[global]
-Program Instance Eq1__Set_ : Data.Functor.Classes.Eq1 Set_ :=
+#[global] Program Instance Eq1__Set_ : Data.Functor.Classes.Eq1 Set_ :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
              Eq1__Set__liftEq |}.
@@ -545,8 +535,7 @@ Program Instance Eq1__Set_ : Data.Functor.Classes.Eq1 Set_ :=
   fun {a : Type} {b : Type} =>
     fun cmp m n => Data.Functor.Classes.liftCompare cmp (toList m) (toList n).
 
-#[global]
-Program Instance Ord1__Set_ : Data.Functor.Classes.Ord1 Set_ :=
+#[global] Program Instance Ord1__Set_ : Data.Functor.Classes.Ord1 Set_ :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
              Ord1__Set__liftCompare |}.
@@ -616,8 +605,7 @@ Solve Obligations with (termination_by_omega).
     | Mk_MergeSet xs, Mk_MergeSet ys => Mk_MergeSet (merge xs ys)
     end.
 
-#[global]
-Program Instance Semigroup__MergeSet {a : Type}
+#[global] Program Instance Semigroup__MergeSet {a : Type}
    : GHC.Base.Semigroup (MergeSet a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__MergeSet_op_zlzlzgzg__ |}.
@@ -633,8 +621,7 @@ Program Instance Semigroup__MergeSet {a : Type}
    : list (MergeSet inst_a) -> MergeSet inst_a :=
   GHC.Base.foldr Monoid__MergeSet_mappend Monoid__MergeSet_mempty.
 
-#[global]
-Program Instance Monoid__MergeSet {a : Type} : GHC.Base.Monoid (MergeSet a) :=
+#[global] Program Instance Monoid__MergeSet {a : Type} : GHC.Base.Monoid (MergeSet a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__MergeSet_mappend ;
            GHC.Base.mconcat__ := Monoid__MergeSet_mconcat ;
@@ -1325,9 +1312,9 @@ End Notations.
      false id list negb nil op_zt__ option orb pair prod set_size true
      Data.Bits.shiftL Data.Bits.shiftR Data.Either.Either Data.Either.Left
      Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldMap
-     Data.Foldable.foldMap'__ Data.Foldable.foldMap__ Data.Foldable.fold__
-     Data.Foldable.foldl' Data.Foldable.foldl'__ Data.Foldable.foldl__
-     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
+     Data.Foldable.foldMap__ Data.Foldable.fold__
+     Data.Foldable.foldl' Data.Foldable.foldl__
+     Data.Foldable.foldr__ Data.Foldable.length__
      Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
      Data.Foldable.toList__ Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1
      Data.Functor.Classes.liftCompare Data.Functor.Classes.liftCompare__

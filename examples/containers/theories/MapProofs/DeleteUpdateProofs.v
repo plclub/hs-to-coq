@@ -215,20 +215,20 @@ intros ????? HB HP.
       * applyDesc e glue_Desc. solve_Desc e.
         rewrite -> (sem_outside_above HB1) by solve_Bounds e.
         rewrite -> (sem_outside_below HB2) by solve_Bounds e.
-        simpl_options. rewrite <-H1. cbn -[Z.add]. rewrite Hsz. omega.
+        simpl_options. rewrite <-H1. cbn -[Z.add]. rewrite Hsz. lia.
     + applyDesc e IHHB1. replace (x == x0) with false by solve_Bounds e.
       rewrite -> (sem_outside_below HB2) by solve_Bounds e.
       simpl_options. destruct (sem s1 x); cbn -[Z.add] in *; applyDesc e (@balanceR_Desc e a).
       destruct (f x a0) eqn : ?. simpl in Hsz. rewrite Hsz. left. assumption.
       simpl in Hsz. rewrite Hsz. solve_size.
       solve_Desc e. rewrite Hsz0. destruct (f x a0); simpl in Hsz; rewrite Hsz;
-      cbn -[Z.add]. reflexivity. omega. solve_Desc e.
+      cbn -[Z.add]. reflexivity. lia. solve_Desc e.
     + applyDesc e IHHB2. replace (x == x0) with false by (order e).
       rewrite -> (sem_outside_above HB1) by solve_Bounds e.
       simpl_options. destruct (sem s2 x); cbn -[Z.add] in *; applyDesc e (@balanceL_Desc e a).
       destruct (f x a0) eqn : ?. simpl in Hsz. rewrite Hsz. left. assumption.
       simpl in Hsz. rewrite Hsz. solve_size.
-      solve_Desc e. rewrite Hsz0. destruct (f x a0); simpl in Hsz; rewrite Hsz; cbn -[Z.add]; omega.
+      solve_Desc e. rewrite Hsz0. destruct (f x a0); simpl in Hsz; rewrite Hsz; cbn -[Z.add]; lia.
       solve_Desc e.
 Qed.
 

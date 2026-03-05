@@ -1,16 +1,16 @@
-Require Import Omega.
+Require Import Lia.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.NArith.NArith.
 Require Import Coq.Bool.Bool.
 Local Open Scope Z_scope.
 
-(** ** An omega that works for [N]
+(** ** An lia that works for [N]
 
 This is mostly to work around https://github.com/coq/coq/issues/6602.
 
 *)
 
-Ltac Nomega := rewrite ?N.pred_sub in *; zify; omega.
+Ltac Nomega := rewrite ?N.pred_sub in *; zify; lia.
 
 
 (** ** Utility lemmas about [Z], [N] and bits.
@@ -39,7 +39,7 @@ Proof.
 Qed.
 
 Lemma succ_nonneg: forall n, 0 <= n -> 0 <= Z.succ n.
-Proof. intros. omega. Qed.
+Proof. intros. lia. Qed.
 
 
 Lemma ones_nonneg: forall n, 0 <= n -> 0 <= Z.ones n.
@@ -50,13 +50,13 @@ Proof.
   rewrite Z.mul_1_l.
   rewrite <- Z.lt_le_pred.
   apply Z.pow_pos_nonneg; auto.
-  omega.
+  lia.
 Qed.
 
 Lemma log2_ones: forall n, 0 < n -> Z.log2 (Z.ones n) = Z.pred n.
   intros.
   unfold Z.ones.
-  rewrite -> Z.shiftl_mul_pow2 by omega.
+  rewrite -> Z.shiftl_mul_pow2 by lia.
   rewrite Z.mul_1_l.
   apply Z.log2_pred_pow2.
   assumption.
@@ -75,7 +75,7 @@ Hint Resolve <- Z.land_nonneg : nonneg.
 Hint Resolve Z.pow_nonneg : nonneg.
 Hint Extern 1 (0 <= Z.succ (Z.pred (Z.of_N _))) => rewrite Z.succ_pred : nonneg.
 Hint Resolve <- Z.lxor_nonneg : nonneg.
-Hint Extern 0 => omega : nonneg.
+Hint Extern 0 => lia : nonneg.
 
 Ltac nonneg := solve [auto with nonneg].
 
@@ -133,7 +133,7 @@ Proof.
   intros.
   destruct (Z.leb_spec 0 m), (Z.ltb_spec m n);
     simpl; try apply not_true_is_false;
-    rewrite Z.ones_spec_iff; omega.
+    rewrite Z.ones_spec_iff; lia.
 Qed.
 
 Lemma lor_ones_ones: forall b1 b2, 0 <= b1 -> 0 <= b2 ->
@@ -143,7 +143,7 @@ Proof.
   apply Z.bits_inj'. intros z?.
   rewrite -> Z.lor_spec.
   repeat rewrite -> ones_spec by (try rewrite Z.max_le_iff; auto).
-  destruct (Z.leb_spec 0 z), (Z.ltb_spec z b1), (Z.ltb_spec z b2), (Z.ltb_spec z (Z.max b1 b2)),  (Zmax_spec b1 b2); intuition; simpl; try omega.
+  destruct (Z.leb_spec 0 z), (Z.ltb_spec z b1), (Z.ltb_spec z b2), (Z.ltb_spec z (Z.max b1 b2)),  (Zmax_spec b1 b2); intuition; simpl; try lia.
 Qed. 
 
 
@@ -256,7 +256,7 @@ Proof.
       simpl in *.
       rewrite -> ! andb_true_r in H0.
       assumption.
-      omega.
+      lia.
 Qed.
 
 Lemma Z_shiftl_inj:
@@ -269,14 +269,14 @@ Proof.
     intros i ?.
     apply Z.bits_inj_iff in H0.
     specialize (H0 (i + n)).
-    do 2 rewrite -> Z.shiftl_spec in H0 by omega.
-    replace (i + n - n) with i in H0 by omega.
+    do 2 rewrite -> Z.shiftl_spec in H0 by lia.
+    replace (i + n - n) with i in H0 by lia.
     assumption.
   * apply Z.bits_inj'.
     intros i ?.
     apply Z.bits_inj_iff in H0.
     specialize (H0 (i - n)).
-    do 2 rewrite -> Z.shiftl_spec by omega.
+    do 2 rewrite -> Z.shiftl_spec by lia.
     assumption.
 Qed.
 
@@ -289,7 +289,7 @@ Proof.
     intros i.
     apply N.bits_inj_iff in H.
     specialize (H (i + n)%N).
-    do 2 rewrite -> N.shiftl_spec_alt in H by omega.
+    do 2 rewrite -> N.shiftl_spec_alt in H by lia.
     assumption.
   * subst. reflexivity.
 Qed.
@@ -304,8 +304,8 @@ Proof.
   rewrite -> Z.shiftl_spec by nonneg.
   rewrite Z.bits_0. rewrite andb_false_iff.
   destruct (Z.ltb_spec j n).
-  * left. apply Z.testbit_neg_r. omega.
-  * right. apply Z.ones_spec_high. omega.
+  * left. apply Z.testbit_neg_r. lia.
+  * right. apply Z.ones_spec_high. lia.
 Qed.
 
 Lemma N_land_shiftl_ones:
@@ -390,7 +390,7 @@ Proof.
   rewrite -> ones_spec by nonneg.
   rewrite -> Z.pow2_bits_eqb by nonneg.
   destruct (Z.leb_spec 0 j), (Z.ltb_spec j b), (Z.ltb_spec j (Z.succ b)), (Z.eqb_spec b j);
-    simpl; try congruence; omega.
+    simpl; try congruence; lia.
 Qed.
 
 
@@ -437,11 +437,11 @@ Proof.
       rewrite -> Z.ones_spec_low in H0.
       do 2 rewrite andb_true_r in H0.
       assumption.
-      omega.
+      lia.
     + apply Z.bits_inj_iff in H.
       specialize (H (j - b)).
-      do 2 rewrite -> Z.shiftr_spec in H by omega.
-      replace (j - b + b) with j in H by omega.
+      do 2 rewrite -> Z.shiftr_spec in H by lia.
+      replace (j - b + b) with j in H by lia.
       assumption.
 Qed.
 
@@ -538,7 +538,7 @@ Proof.
           specialize (H (N.succ i)).
           rewrite Pos_0_testbit_succ, Pos_1_testbit_succ in H.
           assumption.
-        ** zify. omega.
+        ** zify. lia.
       + change (p <= p1)%positive.
         apply IHp. intro i.
         specialize (H (N.succ i)).

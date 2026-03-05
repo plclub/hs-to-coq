@@ -109,7 +109,7 @@ Arguments AltAdj {_} {_} _.
 
 Arguments AltSame {_} {_}.
 
-Instance Default__AreWeStrict : HsToCoq.Err.Default AreWeStrict :=
+#[global] Instance Default__AreWeStrict : HsToCoq.Err.Default AreWeStrict :=
   HsToCoq.Err.Build_Default _ Strict.
 
 #[global] Definition matchedKey {f} {k} {x} {y} {z} (arg_0__
@@ -129,11 +129,11 @@ Instance Default__AreWeStrict : HsToCoq.Err.Default AreWeStrict :=
 
 (* Midamble *)
 
-Require Omega.
+Require Lia.
 
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;Lia.lia.
 
 Fixpoint map_size {a} {b} (s : Map a b) : nat :=
   match s with
@@ -143,9 +143,9 @@ Fixpoint map_size {a} {b} (s : Map a b) : nat :=
 
 Require Import HsToCoq.Err.
 
-Instance Map_Default {k}{v} : Default (Map k v) :=
+#[global] Instance Map_Default {k}{v} : Default (Map k v) :=
   Build_Default _ Tip.
-Instance AlteredDefault {k}{v} : Default (Altered k v) :=
+#[global] Instance AlteredDefault {k}{v} : Default (Altered k v) :=
   Build_Default _ AltSame.
 
 (* This doesn't translate automatically for two reasons:
@@ -377,8 +377,7 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
    : Map inst_k inst_v -> Map inst_k inst_v -> Map inst_k inst_v :=
   union.
 
-#[global]
-Program Instance Semigroup__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
+#[global] Program Instance Semigroup__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
    : GHC.Base.Semigroup (Map k v) :=
   fun _ k__ => k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Map_op_zlzlzgzg__ |}.
 
@@ -405,8 +404,7 @@ Program Instance Semigroup__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
    : Map inst_k inst_v :=
   empty.
 
-#[global]
-Program Instance Monoid__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
+#[global] Program Instance Monoid__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
    : GHC.Base.Monoid (Map k v) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Map_mappend ;
@@ -434,8 +432,7 @@ Program Instance Monoid__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
 #[local] Definition Functor__Map_op_zlzd__ {k : Type} {a : Type} {b : Type} :=
   (@functor__Map_op_zlzd__ k a b).
 
-#[global]
-Program Instance Functor__Map {k : Type} : GHC.Base.Functor (Map k) :=
+#[global] Program Instance Functor__Map {k : Type} : GHC.Base.Functor (Map k) :=
   fun _ k__ =>
     k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Map_fmap ;
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Map_op_zlzd__ |}.
@@ -466,8 +463,7 @@ Program Instance Functor__Map {k : Type} : GHC.Base.Functor (Map k) :=
   fun {a : Type} {b : Type} =>
     Functor__WhenMissing_fmap GHC.Base.∘ GHC.Base.const.
 
-#[global]
-Program Instance Functor__WhenMissing {f : Type -> Type} {k : Type} {x : Type}
+#[global] Program Instance Functor__WhenMissing {f : Type -> Type} {k : Type} {x : Type}
   `{GHC.Base.Applicative f} `{GHC.Base.Monad f}
    : GHC.Base.Functor (WhenMissing f k x) :=
   fun _ k__ =>
@@ -513,8 +509,7 @@ Program Instance Functor__WhenMissing {f : Type -> Type} {k : Type} {x : Type}
   fun {a : Type} {b : Type} =>
     Functor__WhenMatched_fmap GHC.Base.∘ GHC.Base.const.
 
-#[global]
-Program Instance Functor__WhenMatched {f : Type -> Type} {k : Type} {x : Type}
+#[global] Program Instance Functor__WhenMatched {f : Type -> Type} {k : Type} {x : Type}
   {y : Type} `{GHC.Base.Functor f}
    : GHC.Base.Functor (WhenMatched f k x y) :=
   fun _ k__ =>
@@ -560,8 +555,7 @@ Program Instance Functor__WhenMatched {f : Type -> Type} {k : Type} {x : Type}
    : Map inst_k inst_a -> Map inst_k inst_a -> bool :=
   fun x y => negb (Eq___Map_op_zeze__ x y).
 
-#[global]
-Program Instance Eq___Map {k : Type} {a : Type} `{GHC.Base.Eq_ k} `{GHC.Base.Eq_
+#[global] Program Instance Eq___Map {k : Type} {a : Type} `{GHC.Base.Eq_ k} `{GHC.Base.Eq_
   a}
    : GHC.Base.Eq_ (Map k a) :=
   fun _ k__ =>
@@ -603,8 +597,7 @@ Program Instance Eq___Map {k : Type} {a : Type} `{GHC.Base.Eq_ k} `{GHC.Base.Eq_
    : Map inst_k inst_v -> Map inst_k inst_v -> Map inst_k inst_v :=
   fun x y => if Ord__Map_op_zlze__ x y : bool then x else y.
 
-#[global]
-Program Instance Ord__Map {k : Type} {v : Type} `{GHC.Base.Ord k} `{GHC.Base.Ord
+#[global] Program Instance Ord__Map {k : Type} {v : Type} `{GHC.Base.Ord k} `{GHC.Base.Ord
   v}
    : GHC.Base.Ord (Map k v) :=
   fun _ k__ =>
@@ -631,8 +624,7 @@ Program Instance Ord__Map {k : Type} {v : Type} `{GHC.Base.Ord k} `{GHC.Base.Ord
       andb (size m GHC.Base.== size n) (Data.Functor.Classes.liftEq
             (Data.Functor.Classes.liftEq2 eqk eqv) (toList m) (toList n)).
 
-#[global]
-Program Instance Eq2__Map : Data.Functor.Classes.Eq2 Map :=
+#[global] Program Instance Eq2__Map : Data.Functor.Classes.Eq2 Map :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftEq2__ := fun {a : Type}
            {b : Type}
@@ -655,8 +647,7 @@ Program Instance Eq2__Map : Data.Functor.Classes.Eq2 Map :=
       Data.Functor.Classes.liftCompare (Data.Functor.Classes.liftCompare2 cmpk cmpv)
       (toList m) (toList n).
 
-#[global]
-Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
+#[global] Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftCompare2__ := fun {a : Type}
            {b : Type}
@@ -850,19 +841,14 @@ Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
    : forall {a : Type}, Map inst_k a -> list a :=
   fun {a : Type} => elems.
 
-#[global]
-Program Instance Foldable__Map {k : Type} : Data.Foldable.Foldable (Map k) :=
+#[global] Program Instance Foldable__Map {k : Type} : Data.Foldable.Foldable (Map k) :=
   fun _ k__ =>
     k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__Map_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Map_foldMap ;
-           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__Map_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Map_foldl ;
-           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__Map_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Map_foldr ;
-           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} => Foldable__Map_foldr' ;
            Data.Foldable.length__ := fun {a : Type} => Foldable__Map_length ;
            Data.Foldable.null__ := fun {a : Type} => Foldable__Map_null ;
            Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
@@ -870,8 +856,7 @@ Program Instance Foldable__Map {k : Type} : Data.Foldable.Foldable (Map k) :=
            Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Map_sum ;
            Data.Foldable.toList__ := fun {a : Type} => Foldable__Map_toList |}.
 
-#[global]
-Program Instance Traversable__Map {k : Type}
+#[global] Program Instance Traversable__Map {k : Type}
    : Data.Traversable.Traversable (Map k) :=
   fun _ k__ =>
     k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
@@ -2691,9 +2676,9 @@ End Notations.
      Bool.Sumbool.sumbool_of_bool Eq Gt Lt None Some Type andb bool comparison cons
      false functor__Map_op_zlzd__ id list map_size negb nil op_zt__ option pair prod
      true unit Data.Bits.shiftL Data.Bits.shiftR Data.Either.Either Data.Either.Left
-     Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldMap'__
+     Data.Either.Right Data.Foldable.Foldable
      Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'
-     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
+     Data.Foldable.foldl__
      Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
      Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
      Data.Functor.op_zlzdzg__ Data.Functor.Classes.Eq2 Data.Functor.Classes.Ord2

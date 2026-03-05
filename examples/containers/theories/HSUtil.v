@@ -551,7 +551,7 @@ Proof.
   split => [? | bits]; first by subst.
   apply Z.bits_inj_iff => ix.
   case: (Z_le_dec 0 ix) => [POS | NEG]; first by apply bits.
-  rewrite !Z.testbit_neg_r //; omega.
+  rewrite !Z.testbit_neg_r //; lia.
 Qed.
 
 Theorem Z_negb_testbit_iff (m n : Z) :
@@ -565,7 +565,7 @@ Proof.
   - case: (Z_le_dec 0 n) => [POS | NEG].
     + move: bits => /(_ n POS).
       by rewrite Z.bits_0 Z.land_spec Z.shiftl_spec // testbit_1 Z.sub_diag /= andbT => ->.
-    + rewrite Z.testbit_neg_r //; omega.
+    + rewrite Z.testbit_neg_r //; lia.
 Qed.
 
 Theorem Z_negb_testbit_eq (m n : Z) :

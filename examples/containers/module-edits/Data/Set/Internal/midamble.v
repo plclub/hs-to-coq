@@ -1,8 +1,8 @@
-Require Omega.
+Require Lia.
 
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;Lia.lia.
 
 Fixpoint set_size {a} (s : Set_ a) : nat :=
   match s with

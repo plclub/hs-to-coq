@@ -1,4 +1,4 @@
-Require Import Omega.
+Require Import Lia.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.NArith.NArith.
 Require Import Coq.Bool.Bool.
@@ -492,7 +492,7 @@ Lemma isSubrange_halfRange:
     * rewrite N.eqb_eq.
       destruct h.
       - rewrite N.shiftl_lor.
-        rewrite -> N.shiftl_shiftl by omega.
+        rewrite -> N.shiftl_shiftl by lia.
         replace (1 + (b - 1)) with b by Nomega.
         rewrite N.shiftr_lor.
         rewrite -> N.shiftr_shiftl_l by lia.
@@ -503,7 +503,7 @@ Lemma isSubrange_halfRange:
         replace (N.shiftr 1 1) with 0 by reflexivity.
         rewrite N.lor_0_r.
         reflexivity.
-      - rewrite -> N.shiftl_shiftl by omega.
+      - rewrite -> N.shiftl_shiftl by lia.
         replace (1 + (b - 1)) with b by Nomega.
         rewrite -> N.shiftr_shiftl_l by lia.
         replace (b - b) with 0 by lia.
@@ -640,7 +640,7 @@ Proof.
   rewrite <- N.shiftl_1_l.
   rewrite <- N_shiftl_add by nonneg.
   f_equal.
-  rewrite N.shiftl_mul_pow2 by omega.
+  rewrite N.shiftl_mul_pow2 by lia.
   replace (2 ^ 1) with 2 by reflexivity.
   apply N.bits_inj_iff. intros i.
   rewrite N.lor_spec.
@@ -974,7 +974,7 @@ Proof.
 
   rewrite -> N.shiftr_shiftl_r by lia.
   replace b with (b2 + (b - b2)) at 1 by lia.
-  rewrite <- N.shiftr_shiftr by omega.
+  rewrite <- N.shiftr_shiftr by lia.
   rewrite -> H0 by lia.
   reflexivity.
 Qed.
@@ -1035,7 +1035,7 @@ Proof.
   unfold commonRangeDisj, halfRange, rPrefix, rBits, snd in *.
   replace (msDiffBit _ _) with b.
   * f_equal.
-    rewrite -> N.shiftl_shiftl by omega.
+    rewrite -> N.shiftl_shiftl by lia.
     replace (1 + (b - 1)) with b by Nomega.
     rewrite -> N.shiftr_shiftl_l by lia.
     replace (b - b) with 0 by lia.
@@ -1048,7 +1048,7 @@ Proof.
     }
     
     rewrite N.shiftl_lor.
-    rewrite -> N.shiftl_shiftl by omega.
+    rewrite -> N.shiftl_shiftl by lia.
     replace (1 + (b - 1)) with b by lia.
     rewrite N.shiftl_1_l.
 

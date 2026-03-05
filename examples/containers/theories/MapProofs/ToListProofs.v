@@ -683,7 +683,7 @@ Proof.
   - simpl. rewrite toList_Bin. simpl. rewrite app_length. simpl.
     rewrite Nat2Z.inj_add. rewrite <- IHBounded1.
     rewrite Nat2Z.inj_succ. rewrite <- IHBounded2.
-    omega.
+    lia.
 Qed.
 
 (** ** Verification of [Eq] *)

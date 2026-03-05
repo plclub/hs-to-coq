@@ -124,7 +124,7 @@ Require GHC.Err.
 Definition complement' x :=
   Coq.NArith.BinNat.N.lxor x (Coq.NArith.BinNat.N.ones (#64%N)).
 
-Instance Default_Map {a} : Err.Default (IntMap a) := {| Err.default := Nil |}.
+#[global] Instance Default_Map {a} : Err.Default (IntMap a) := {| Err.default := Nil |}.
 
 Fixpoint IntMap_op_zlzd__ {a} {b} (x: a) (m: IntMap b): IntMap a :=
       match x , m with
@@ -141,10 +141,10 @@ Fixpoint size_nat {a} (t : IntMap a) : nat :=
   | Nil => 0
   end.
 
-Require Omega.
+Require Lia.
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;Lia.lia.
 
 
 Require Import Coq.Numbers.BinNums.
@@ -243,8 +243,7 @@ Require Import Coq.Numbers.BinNums.
    : IntMap inst_a -> IntMap inst_a -> IntMap inst_a :=
   union.
 
-#[global]
-Program Instance Semigroup__IntMap {a : Type} : GHC.Base.Semigroup (IntMap a) :=
+#[global] Program Instance Semigroup__IntMap {a : Type} : GHC.Base.Semigroup (IntMap a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__IntMap_op_zlzlzgzg__ |}.
 
@@ -267,8 +266,7 @@ Program Instance Semigroup__IntMap {a : Type} : GHC.Base.Semigroup (IntMap a) :=
 #[local] Definition Monoid__IntMap_mempty {inst_a : Type} : IntMap inst_a :=
   empty.
 
-#[global]
-Program Instance Monoid__IntMap {a : Type} : GHC.Base.Monoid (IntMap a) :=
+#[global] Program Instance Monoid__IntMap {a : Type} : GHC.Base.Monoid (IntMap a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__IntMap_mappend ;
            GHC.Base.mconcat__ := Monoid__IntMap_mconcat ;
@@ -416,19 +414,14 @@ Program Instance Monoid__IntMap {a : Type} : GHC.Base.Monoid (IntMap a) :=
    : forall {a : Type}, IntMap a -> list a :=
   fun {a : Type} => elems.
 
-#[global]
-Program Instance Foldable__IntMap : Data.Foldable.Foldable IntMap :=
+#[global] Program Instance Foldable__IntMap : Data.Foldable.Foldable IntMap :=
   fun _ k__ =>
     k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__IntMap_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__IntMap_foldMap ;
-           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__IntMap_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__IntMap_foldl ;
-           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} => Foldable__IntMap_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__IntMap_foldr ;
-           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} => Foldable__IntMap_foldr' ;
            Data.Foldable.length__ := fun {a : Type} => Foldable__IntMap_length ;
            Data.Foldable.null__ := fun {a : Type} => Foldable__IntMap_null ;
            Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
@@ -495,15 +488,13 @@ Program Instance Foldable__IntMap : Data.Foldable.Foldable IntMap :=
 #[global] Definition Functor__IntMap_op_zlzd__ {a} {b} :=
   (@IntMap_op_zlzd__ a b).
 
-#[global]
-Program Instance Functor__IntMap : GHC.Base.Functor IntMap :=
+#[global] Program Instance Functor__IntMap : GHC.Base.Functor IntMap :=
   fun _ k__ =>
     k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__IntMap_fmap ;
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
              Functor__IntMap_op_zlzd__ |}.
 
-#[global]
-Program Instance Traversable__IntMap : Data.Traversable.Traversable IntMap :=
+#[global] Program Instance Traversable__IntMap : Data.Traversable.Traversable IntMap :=
   fun _ k__ =>
     k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
            {a : Type}
@@ -585,8 +576,7 @@ Fixpoint nequal {a} `{GHC.Base.Eq_ a} (arg_0__ arg_1__ : IntMap a) : bool
    : IntMap inst_a -> IntMap inst_a -> bool :=
   fun t1 t2 => nequal t1 t2.
 
-#[global]
-Program Instance Eq___IntMap {a : Type} `{GHC.Base.Eq_ a}
+#[global] Program Instance Eq___IntMap {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (IntMap a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___IntMap_op_zeze__ ;
@@ -646,8 +636,7 @@ Program Instance Eq___IntMap {a : Type} `{GHC.Base.Eq_ a}
    : IntMap inst_a -> IntMap inst_a -> IntMap inst_a :=
   fun x y => if Ord__IntMap_op_zlze__ x y : bool then x else y.
 
-#[global]
-Program Instance Ord__IntMap {a : Type} `{GHC.Base.Ord a}
+#[global] Program Instance Ord__IntMap {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (IntMap a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__IntMap_op_zl__ ;
@@ -2087,9 +2076,9 @@ End Notations.
      false id list negb nil op_zt__ option orb pair true Coq.NArith.BinNat.N.ldiff
      Coq.Numbers.BinNums.N Coq.ZArith.BinInt.Z.of_N Data.Bits.op_zizazi__
      Data.Bits.op_zizbzi__ Data.Bits.xor Data.Either.Either Data.Either.Left
-     Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldMap'__
+     Data.Either.Right Data.Foldable.Foldable
      Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'
-     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
+     Data.Foldable.foldl__
      Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
      Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
      Data.Functor.op_zlzdzg__ Data.Functor.Identity.Identity Data.IntSet.Internal.Bin

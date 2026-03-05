@@ -59,10 +59,10 @@ Inductive Stack : Type :=
   | Push : Prefix -> IntSet -> Stack -> Stack
   | Nada : Stack.
 
-Instance Default__IntSet : HsToCoq.Err.Default IntSet :=
+#[global] Instance Default__IntSet : HsToCoq.Err.Default IntSet :=
   HsToCoq.Err.Build_Default _ Nil.
 
-Instance Default__Stack : HsToCoq.Err.Default Stack :=
+#[global] Instance Default__Stack : HsToCoq.Err.Default Stack :=
   HsToCoq.Err.Build_Default _ Nada.
 
 (* Midamble *)
@@ -76,10 +76,10 @@ Fixpoint size_nat (t : IntSet) : nat :=
   | Nil => 0
   end.
 
-Require Omega.
+Require Lia.
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;Lia.lia.
 
 
 Require Import Coq.NArith.NArith.
@@ -157,8 +157,7 @@ Solve Obligations with (termination_by_omega).
    : IntSet -> IntSet -> IntSet :=
   union.
 
-#[global]
-Program Instance Semigroup__IntSet : GHC.Base.Semigroup IntSet :=
+#[global] Program Instance Semigroup__IntSet : GHC.Base.Semigroup IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__IntSet_op_zlzlzgzg__ |}.
 
@@ -178,8 +177,7 @@ Program Instance Semigroup__IntSet : GHC.Base.Semigroup IntSet :=
 #[local] Definition Monoid__IntSet_mempty : IntSet :=
   empty.
 
-#[global]
-Program Instance Monoid__IntSet : GHC.Base.Monoid IntSet :=
+#[global] Program Instance Monoid__IntSet : GHC.Base.Monoid IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__IntSet_mappend ;
            GHC.Base.mconcat__ := Monoid__IntSet_mconcat ;
@@ -217,8 +215,7 @@ Fixpoint nequal (arg_0__ arg_1__ : IntSet) : bool
 #[local] Definition Eq___IntSet_op_zsze__ : IntSet -> IntSet -> bool :=
   fun t1 t2 => nequal t1 t2.
 
-#[global]
-Program Instance Eq___IntSet : GHC.Base.Eq_ IntSet :=
+#[global] Program Instance Eq___IntSet : GHC.Base.Eq_ IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___IntSet_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___IntSet_op_zsze__ |}.
@@ -254,7 +251,7 @@ Program Instance Eq___IntSet : GHC.Base.Eq_ IntSet :=
 #[global] Definition revNatSafe n :=
   Coq.NArith.BinNat.N.modulo (revNat n) (Coq.NArith.BinNat.N.pow 2 64).
 
-Program #[global] Definition foldrBits {a}
+#[global] Program Definition foldrBits {a}
    : Coq.Numbers.BinNums.N ->
      (Coq.Numbers.BinNums.N -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
@@ -314,8 +311,7 @@ Solve Obligations with (BitTerminationProofs.termination_foldl).
 #[local] Definition Ord__IntSet_min : IntSet -> IntSet -> IntSet :=
   fun x y => if Ord__IntSet_op_zlze__ x y : bool then x else y.
 
-#[global]
-Program Instance Ord__IntSet : GHC.Base.Ord IntSet :=
+#[global] Program Instance Ord__IntSet : GHC.Base.Ord IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__IntSet_op_zl__ ;
            GHC.Base.op_zlze____ := Ord__IntSet_op_zlze__ ;
@@ -808,7 +804,7 @@ Program Fixpoint disjoint (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__
      end.
 Solve Obligations with (termination_by_omega).
 
-Program #[global] Definition foldl'Bits {a}
+#[global] Program Definition foldl'Bits {a}
    : Coq.Numbers.BinNums.N ->
      (a -> Coq.Numbers.BinNums.N -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
@@ -1012,7 +1008,7 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
 #[global] Definition fold {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   foldr.
 
-Program #[global] Definition foldr'Bits {a}
+#[global] Program Definition foldr'Bits {a}
    : Coq.Numbers.BinNums.N ->
      (Coq.Numbers.BinNums.N -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
@@ -1048,7 +1044,7 @@ Solve Obligations with (BitTerminationProofs.termination_foldl).
       | _ => go z t
       end.
 
-Program #[global] Definition foldlBits {a}
+#[global] Program Definition foldlBits {a}
    : Coq.Numbers.BinNums.N ->
      (a -> Coq.Numbers.BinNums.N -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>

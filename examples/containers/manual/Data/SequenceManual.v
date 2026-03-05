@@ -177,7 +177,7 @@ Definition getElem {a} (arg_1__ : Elem a) :=
     | Mk_Elem getElem => getElem
   end.
 (* Midamble *)
-Require Import Omega.
+Require Import Lia.
 
 (*  ----------------------------------------------------------- *)
 
@@ -324,7 +324,7 @@ Proof.
   specialize (IH _ s a2 xs).
   destruct (getNodes _ _ _).
   simpl in *.
-  omega.
+  lia.
 Qed.
 
 Program Fixpoint  mkTree {a} `{(Sized a)} (s:nat) (x : list a) {measure (length x)} : FingerTree a :=
@@ -346,7 +346,7 @@ Program Fixpoint  mkTree {a} `{(Sized a)} (s:nat) (x : list a) {measure (length 
 Obligation 1.
   clear mkTree.
   pose proof (getNodes_length (s + (s + (s + 0))) x4 xs).
-  destruct (getNodes _ _ _). simpl in *. inversion_clear Heq_anonymous. omega.
+  destruct (getNodes _ _ _). simpl in *. inversion_clear Heq_anonymous. lia.
 Qed.
 
 

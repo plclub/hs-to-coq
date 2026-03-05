@@ -81,7 +81,7 @@ Definition getNodes {a} : GHC.Num.Int -> a -> list a -> (list (Node a) * Digit a
              end.
 
 (*
-Require Import Omega.
+Require Import Lia.
 Program Fixpoint  mkTree {a} `{(Sized a)} (s: GHC.Num.Int) (x : list a) {measure (length x)} : FingerTree a :=
     match x with
     | nil => Empty
