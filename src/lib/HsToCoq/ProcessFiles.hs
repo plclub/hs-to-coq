@@ -75,6 +75,7 @@ processFiles mode files = do
       -- stripped from the parsed AST. The module graph is still available even
       -- when load fails.
       do
+        liftIO $ putStrLn "hs-to-coq: initial load failed, attempting recovery by stripping standalone deriving declarations"
         filterModules <- case mode of
           Recursive    -> pure pure
           NonRecursive -> do
@@ -86,15 +87,21 @@ processFiles mode files = do
                           =<< filterModules . mgModSummaries
                           =<< getModuleGraph
         if null modSummaries
-          then pure Nothing
+          then do
+            liftIO $ putStrLn "hs-to-coq: error: no modules found in module graph after filtering"
+            pure Nothing
           else do
             results <- traverse (processWithStrippedDerivs skipInfo) modSummaries
             let successes = [tcm | Just tcm <- results]
             if null successes
-              then pure Nothing
+              then do
+                liftIO $ putStrLn "hs-to-coq: error: all modules failed to typecheck"
+                pure Nothing
               else pure (Just successes)
 #else
-      pure Nothing
+      do
+        liftIO $ putStrLn "hs-to-coq: error: GHC load failed (standalone deriving recovery requires GHC >= 9.10)"
+        pure Nothing
 #endif
 
 #if __GLASGOW_HASKELL__ >= 910
@@ -102,7 +109,14 @@ processFiles mode files = do
 -- then add back derived instances via addDerivedInstances.
 processWithStrippedDerivs :: GlobalMonad r m => DerivSkipInfo -> ModSummary -> m (Maybe TypecheckedModule)
 processWithStrippedDerivs skipInfo ms =
-  handleSourceError (\_ -> return Nothing) $ do
+  handleSourceError (\e -> do
+    liftIO $ putStrLn $ "hs-to-coq: warning: failed to typecheck "
+      ++ moduleNameString (moduleName (ms_mod ms))
+      ++ " even after stripping standalone deriving declarations:"
+    liftIO $ putStrLn $ "  " ++ show e
+    return Nothing) $ do
+    liftIO $ putStrLn $ "hs-to-coq: retrying " ++ moduleNameString (moduleName (ms_mod ms))
+      ++ " with standalone deriving declarations stripped"
     pm <- parseModule ms
     let pm' = stripStandaloneDerivDecls pm
     tcm <- typecheckModule pm'

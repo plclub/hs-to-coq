@@ -62,11 +62,14 @@ VFILES_DROPIN = $(addprefix $(OUT)/,$(addsuffix .v,$(DROPIN)))
 
 VFILES = $(VFILES_GEN_TEST) $(VFILES_GEN) $(VFILES_HS_SPEC_GEN) $(VFILES_MAN) $(VFILES_SPECIAL) $(VFILES_DROPIN)
 
-all: vfiles coq
+# Default target: if lib/ already has .v files (pre-translated), just build Coq.
+# Use 'make vfiles' to regenerate from Haskell (requires compatible GHC).
+all: coq theories
 
 vfiles: $(OUT)/edits  $(HS_SPEC)/README.md $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
 
-$(OUT)/_CoqProject : Makefile $(OUT)/README.md
+$(OUT)/_CoqProject : Makefile
+	mkdir -p $(OUT)
 	> $@
 	echo '-Q . ""' >> $@
 	echo '-Q ../../../base ""' >> $@
@@ -74,9 +77,6 @@ $(OUT)/_CoqProject : Makefile $(OUT)/README.md
 	echo $(addsuffix .v,$(MODULES)) >> $@
 	echo $(addsuffix .v,$(SPECIAL_MODULES)) >> $@
 	echo $(addsuffix .v,$(DROPIN)) >> $@
-
-$(OUT)/Makefile: $(OUT)/_CoqProject $(VFILES) $(OUT)/README.md
-	cd $(OUT); coq_makefile -f _CoqProject -o Makefile
 
 $(OUT)/edits: $(OUT)/README.md
 	ln -fs ../edits $(OUT)/edits
@@ -93,8 +93,15 @@ $(HS_SPEC)/README.md:
 	echo 'This directory contains a Coq’ified version of the Haskell containers library specification' >> $@
 	echo 'Do not edit files here! Instead, look in `examples/containers`.' >> $@
 
-coq: $(OUT)/Makefile $(VFILES)
+coq: $(OUT)/_CoqProject
+	cd $(OUT) && coq_makefile -f _CoqProject -o Makefile
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
+
+theories: coq
+	if test -f theories/_CoqProject; then \
+	  cd theories && coq_makefile -f _CoqProject -o Makefile && \
+	  $(MAKE) -f Makefile OPT=$(COQFLAGS); \
+	fi
 
 HS_TO_COQ_OPTS := \
   -e ../../base/edits \
@@ -154,6 +161,14 @@ $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preambl
 	       drop-in/$*.hs
 
 clean:
+	# Clean build artifacts but keep .v source files (can't regenerate with GHC 9.10)
+	cd $(OUT) 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
+	rm -f $(OUT)/Makefile $(OUT)/_CoqProject
+	cd theories 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
+	rm -f theories/Makefile
+	rm -f counts.pdf *.aux *.log
+
+distclean:
 	rm -rf $(OUT) $(HS_SPEC)
 	rm -f counts.pdf *.aux *.log
 
