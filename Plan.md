@@ -22,7 +22,6 @@
 
 ## Known Issues (not blocking CI)
 - [ ] `Data/Functor/Classes` still manual: quantified superclass constraints in Eq2/Ord2
-- [ ] `Control/Category`, `Control/Arrow` still manual: Category__arrow unit-id issue
 - [ ] `bag` example: ssreflect proofs need updating for Coq 8.20/mathcomp
 - [ ] `graph`, `shuffle`, `wc`, `core-semantics`, `transformers`: submodules not checked out
 - [ ] Unit tests: MutrecInst, TopBind, ExceptInDataDefinition, TypeAnnotations still in TODO_PASS
