@@ -118,10 +118,15 @@ These must use old versions from git master with manual fixes:
 Previously broken modules now regenerable (fixed via `DerivSkipInfo` filtering + parsed-AST standalone-deriving stripping + `skip method` default-binding filtering in `Class.hs`):
 - `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity`
 
+### Deriving pipeline (GHC 9.10)
+GHC's `load LoadAllTargets` processes standalone `deriving instance` declarations during typechecking — before `addDerivedInstances` runs. If any fail (e.g. types from skipped modules), `load` returns `Failed`. The fallback in `ProcessFiles.hs` strips all standalone deriving decls from the **parsed** AST, then typechecks, then uses `addDerivedInstances` to re-derive the ones we want.
+
 ### Locale for hs-to-coq
 Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before running hs-to-coq or the output will fail with encoding errors on systems with POSIX locale.
 
 ### Common edit patterns for GHC 9.10
+- **`skip` vs `skip method`**: Never use `skip Mod.func` for class methods — use `skip method Mod.Class func` only. Using both causes "skipping a binding" errors.
+- **`SigPat` in GHC 9.10**: `foldl'`/`foldr'`/`foldMap'` default implementations use `SigPat` which hs-to-coq doesn't support. Skip via `skip method`.
 - **mconcat `foldl' (<>) mempty`**: GHC 9.10 generates this but it creates circular deps. Fix: `redefine` to use `foldr mappend mempty` + `order mempty mconcat`
 - **`GHC.Prim.coerce` with abstract types**: Coq can't resolve `Coercible` for newtypes with abstract type vars. Fix: replace with explicit pattern matching
 - **`rightSection`**: GHC 9.10 desugars `(op x)` to `rightSection op x`. Defined in `base/GHC/Prim.v`
@@ -131,4 +136,8 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 - `Program Instance` needs `#[global]` prefix for cross-module visibility
 - Type and constructor cannot share the same name (e.g., `StateT`)
 - `omega` tactic replaced by `lia`
+
+## Workflow
+
+- Commit to git at each milestone with `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
 
