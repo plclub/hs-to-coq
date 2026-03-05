@@ -27,6 +27,7 @@ import qualified GHC
 #if __GLASGOW_HASKELL__ >= 900
 import GHC.Data.Bag (bagToList)
 import GHC.Utils.Outputable (Outputable())
+import GHC.Types.Name (occNameString, nameOccName)
 #else
 import Outputable (Outputable())
 import Bag
@@ -227,7 +228,16 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
   -- memberSigs.at name ?= sigs
 
   type_defs  <- M.fromList <$> traverse (convertAssociatedTypeDefault argNames . unLoc) typeDefaults
-  value_defs <- fmap M.fromList $ for (bagToList defaults) $
+  -- Filter out default method bindings for skipped methods
+  let isSkippedDefault lbind =
+        let bindName = case unLoc lbind of
+              FunBind { fun_id = L _ n } -> Just (T.pack (occNameString (nameOccName n)))
+              _                          -> Nothing
+        in case bindName of
+             Just bname -> (name, bname) `S.member` skippedMethodsS
+             Nothing    -> False
+      filteredDefaults = filter (not . isSkippedDefault) (bagToList defaults)
+  value_defs <- fmap M.fromList $ for filteredDefaults $
                 convertTypedModuleBinding Nothing . unLoc >=> \case
                   Just (ConvertedDefinitionBinding cd) -> do
 --                      typeArgs <- getImplicitBindersForClassMember name convDefName
