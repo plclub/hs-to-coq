@@ -104,72 +104,11 @@ defaultMethods:
     (PosArg (Qualid (Qualified "GHC.Base" "mempty")) :| [])),(Qualified "GHC.Base"
     "mempty",App (Qualid (Qualified "GHC.Base" "mconcat")) (PosArg (Qualid (Bare "nil"))
     :| []))]
-  GHC.Base.Semigroup: 'fromList [(Qualified "GHC.Base" "op_zlzlzgzg__",Fun (ExplicitBinder
+  GHC.Base.Semigroup: fromList [(Qualified "GHC.Base" "op_zlzlzgzg__",Fun (ExplicitBinder
     (Ident (Bare "a")) :| [ExplicitBinder (Ident (Bare "b"))]) (App (Qualid (Qualified
     "GHC.Base" "sconcat")) (PosArg (Parens (App (Qualid (Qualified "GHC.Base" "NEcons"))
     (PosArg (Qualid (Bare "a")) :| [PosArg (App (Qualid (Bare "cons")) (PosArg (Qualid
-    (Bare "b")) :| [PosArg (Qualid (Bare "nil"))]))]))) :| []))),(Qualified "GHC.Base"
-    "sconcat",Fun (ExplicitBinder (Ident (Bare "arg_0__")) :| []) (Match (MatchItem
-    (Qualid (Bare "arg_0__")) Nothing Nothing :| []) Nothing [Equation (MultPattern
-    (ArgsPat (Qualified "GHC.Base" "NEcons") [QualidPat (Bare "a"),QualidPat (Bare
-    "as_")] :| []) :| []) (Let (Bare "go") [] Nothing (Fix (FixOne (FixBody (Bare
-    "go") (ExplicitBinder (Ident (Bare "arg_1__")) :| [ExplicitBinder (Ident (Bare
-    "arg_2__"))]) Nothing Nothing (Match (MatchItem (Qualid (Bare "arg_1__")) Nothing
-    Nothing :| [MatchItem (Qualid (Bare "arg_2__")) Nothing Nothing]) Nothing [Equation
-    (MultPattern (QualidPat (Bare "b") :| [ArgsPat (Bare "cons") [QualidPat (Bare
-    "c"),QualidPat (Bare "cs")]]) :| []) (App (Qualid (Qualified "GHC.Base" "op_zlzlzgzg__"))
-    (PosArg (Qualid (Bare "b")) :| [PosArg (App (App (Qualid (Bare "go")) (PosArg
-    (Qualid (Bare "c")) :| [])) (PosArg (Qualid (Bare "cs")) :| []))])),Equation (MultPattern
-    (QualidPat (Bare "b") :| [ArgsPat (Bare "nil") []]) :| []) (Qualid (Bare "b"))]))))
-    (App (App (Qualid (Bare "go")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid
-    (Bare "as_")) :| [])))])),(Qualified "GHC.Base" "stimes",Fun (ExplicitBinder (Ident
-    (Bare "y0")) :| [ExplicitBinder (Ident (Bare "x0"))]) (Let (Bare "g") [] Nothing
-    (Fix (FixOne (FixBody (Bare "g") (ExplicitBinder (Ident (Bare "x")) :| [ExplicitBinder
-    (Ident (Bare "y")),ExplicitBinder (Ident (Bare "z"))]) Nothing Nothing (If LinearIf
-    (HasType (App (Qualid (Qualified "GHC.Base" "op_zeze__")) (PosArg (App (Qualid
-    (Qualified "GHC.Real" "rem")) (PosArg (Qualid (Bare "y")) :| [PosArg (App (Qualid
-    (Qualified "GHC.Num" "fromInteger")) (PosArg (Num 2) :| []))])) :| [PosArg (App
-    (Qualid (Qualified "GHC.Num" "fromInteger")) (PosArg (Num 0) :| []))])) (Qualid
-    (Bare "bool"))) Nothing (App (App (App (Qualid (Bare "g")) (PosArg (Parens (App
-    (Qualid (Qualified "GHC.Base" "op_zlzlzgzg__")) (PosArg (Qualid (Bare "x")) :|
-    [PosArg (Qualid (Bare "x"))]))) :| [])) (PosArg (Parens (App (Qualid (Qualified
-    "GHC.Real" "quot")) (PosArg (Qualid (Bare "y")) :| [PosArg (App (Qualid (Qualified
-    "GHC.Num" "fromInteger")) (PosArg (Num 2) :| []))]))) :| [])) (PosArg (Qualid
-    (Bare "z")) :| [])) (If LinearIf (HasType (App (Qualid (Qualified "GHC.Base" "op_zeze__"))
-    (PosArg (Qualid (Bare "y")) :| [PosArg (App (Qualid (Qualified "GHC.Num" "fromInteger"))
-    (PosArg (Num 1) :| []))])) (Qualid (Bare "bool"))) Nothing (App (Qualid (Qualified
-    "GHC.Base" "op_zlzlzgzg__")) (PosArg (Qualid (Bare "x")) :| [PosArg (Qualid (Bare
-    "z"))])) (App (App (App (Qualid (Bare "g")) (PosArg (Parens (App (Qualid (Qualified
-    "GHC.Base" "op_zlzlzgzg__")) (PosArg (Qualid (Bare "x")) :| [PosArg (Qualid (Bare
-    "x"))]))) :| [])) (PosArg (Parens (App (Qualid (Qualified "GHC.Real" "quot"))
-    (PosArg (Qualid (Bare "y")) :| [PosArg (App (Qualid (Qualified "GHC.Num" "fromInteger"))
-    (PosArg (Num 2) :| []))]))) :| [])) (PosArg (Parens (App (Qualid (Qualified "GHC.Base"
-    "op_zlzlzgzg__")) (PosArg (Qualid (Bare "x")) :| [PosArg (Qualid (Bare "z"))])))
-    :| []))))))) (Let (Bare "f") [] Nothing (Fix (FixOne (FixBody (Bare "f") (ExplicitBinder
-    (Ident (Bare "x")) :| [ExplicitBinder (Ident (Bare "y"))]) Nothing Nothing (If
-    LinearIf (HasType (App (Qualid (Qualified "GHC.Base" "op_zeze__")) (PosArg (App
-    (Qualid (Qualified "GHC.Real" "rem")) (PosArg (Qualid (Bare "y")) :| [PosArg (App
-    (Qualid (Qualified "GHC.Num" "fromInteger")) (PosArg (Num 2) :| []))])) :| [PosArg
-    (App (Qualid (Qualified "GHC.Num" "fromInteger")) (PosArg (Num 0) :| []))])) (Qualid
-    (Bare "bool"))) Nothing (App (App (Qualid (Bare "f")) (PosArg (Parens (App (Qualid
-    (Qualified "GHC.Base" "op_zlzlzgzg__")) (PosArg (Qualid (Bare "x")) :| [PosArg
-    (Qualid (Bare "x"))]))) :| [])) (PosArg (Parens (App (Qualid (Qualified "GHC.Real"
-    "quot")) (PosArg (Qualid (Bare "y")) :| [PosArg (App (Qualid (Qualified "GHC.Num"
-    "fromInteger")) (PosArg (Num 2) :| []))]))) :| [])) (If LinearIf (HasType (App
-    (Qualid (Qualified "GHC.Base" "op_zeze__")) (PosArg (Qualid (Bare "y")) :| [PosArg
-    (App (Qualid (Qualified "GHC.Num" "fromInteger")) (PosArg (Num 1) :| []))])) (Qualid
-    (Bare "bool"))) Nothing (Qualid (Bare "x")) (App (App (App (Qualid (Bare "g"))
-    (PosArg (Parens (App (Qualid (Qualified "GHC.Base" "op_zlzlzgzg__")) (PosArg (Qualid
-    (Bare "x")) :| [PosArg (Qualid (Bare "x"))]))) :| [])) (PosArg (Parens (App (Qualid
-    (Qualified "GHC.Real" "quot")) (PosArg (Qualid (Bare "y")) :| [PosArg (App (Qualid
-    (Qualified "GHC.Num" "fromInteger")) (PosArg (Num 2) :| []))]))) :| [])) (PosArg
-    (Qualid (Bare "x")) :| []))))))) (If LinearIf (HasType (App (Qualid (Qualified
-    "GHC.Base" "op_zlze__")) (PosArg (Qualid (Bare "y0")) :| [PosArg (App (Qualid
-    (Qualified "GHC.Num" "fromInteger")) (PosArg (Num 0) :| []))])) (Qualid (Bare
-    "bool"))) Nothing (App (Qualid (Qualified "GHC.Err" "errorWithoutStackTrace"))
-    (PosArg (HsString "stimes: positive multiplier expected") :| [])) (App (App (Qualid
-    (Bare "f")) (PosArg (Qualid (Bare "x0")) :| [])) (PosArg (Qualid (Bare "y0"))
-    :| []))))))]'
+    (Bare "b")) :| [PosArg (Qualid (Bare "nil"))]))]))) :| [])))]
 superclassCount:
   GHC.Base.Applicative: '1'
   GHC.Base.Functor: '0'

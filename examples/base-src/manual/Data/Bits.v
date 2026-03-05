@@ -66,6 +66,13 @@ Definition testBitDefault {a} `{Bits a} `{Num a} : a -> Int -> bool :=
     end)).
 
 
+Definition option_eq {a} `{Eq_ a} (x y : option a) : bool :=
+  match x, y with
+  | None, None => true
+  | Some a, Some b => GHC.Base.op_zeze__ a b
+  | _, _ => false
+  end.
+
 Definition isBitSubType {a} {b} `{Bits a} `{Bits b} : a -> b -> bool :=
   fun arg_65__ arg_66__ =>
     match arg_65__ , arg_66__ with
@@ -77,31 +84,31 @@ Definition isBitSubType {a} {b} `{Bits a} `{Bits b} : a -> b -> bool :=
                    if andb (negb xSigned) ySigned
                    then match xWidth with
                           | (Some xW) => match yWidth with
-                                           | (Some yW) => op_zl__ xW yW
+                                           | (Some yW) => GHC.Base.op_zl__ xW yW
                                            | _ => false
                                          end
                           | _ => false
                         end
                    else false in
                  let j_72__ :=
-                   if GHC.Base.op_zeze__ xSigned ySigned
+                   if Bool.eqb xSigned ySigned
                    then match xWidth with
                           | (Some xW) => match yWidth with
-                                           | (Some yW) => op_zlze__ xW yW
+                                           | (Some yW) => GHC.Base.op_zlze__ xW yW
                                            | _ => j_71__
                                          end
                           | _ => j_71__
                         end
                    else j_71__ in
                  let j_73__ :=
-                   if andb (negb xSigned) (andb (negb ySigned) (GHC.Base.op_zeze__ None yWidth))
+                   if andb (negb xSigned) (andb (negb ySigned) (match yWidth with | None => true | _ => false end))
                    then true
                    else j_72__ in
                  let j_74__ :=
-                   if andb ySigned (GHC.Base.op_zeze__ None yWidth)
+                   if andb ySigned (match yWidth with | None => true | _ => false end)
                    then true
                    else j_73__ in
-                 if andb (GHC.Base.op_zeze__ xWidth yWidth) (GHC.Base.op_zeze__ xSigned ySigned)
+                 if andb (option_eq xWidth yWidth) (Bool.eqb xSigned ySigned)
                  then true
                  else j_74__
     end.
@@ -144,7 +151,7 @@ Definition toIntegralSized {a} {b} `{GHC.Real.Integral a} `{GHC.Real.Integral b}
                  if andb (isSigned x) (negb (isSigned y))
                  then match xWidth with
                         | (Some xW) => match yWidth with
-                                         | (Some yW) => if op_zlze__ xW (GHC.Num.op_zp__ yW (GHC.Num.fromInteger 1))
+                                         | (Some yW) => if GHC.Base.op_zlze__ xW (GHC.Num.op_zp__ yW (GHC.Num.fromInteger 1))
                                                         then None
                                                         else j_84__
                                          | _ => j_84__
@@ -155,8 +162,8 @@ Definition toIntegralSized {a} {b} `{GHC.Real.Integral a} `{GHC.Real.Integral b}
                if isBitSubType x y
                then None
                else j_85__ in
-             if andb (Data.Maybe.maybe true (fun arg_87__ => op_zlze__ arg_87__ x)
-                     yMinBound) (Data.Maybe.maybe true (fun arg_88__ => op_zlze__ x arg_88__)
+             if andb (Data.Maybe.maybe true (fun arg_87__ => GHC.Base.op_zlze__ arg_87__ x)
+                     yMinBound) (Data.Maybe.maybe true (fun arg_88__ => GHC.Base.op_zlze__ x arg_88__)
                      yMaxBound)
              then Some y
              else None
@@ -190,6 +197,7 @@ Definition clearBit_bool : bool -> Int -> bool :=
     end)).
 
 (* Converted type class instance declarations: *)
+#[global]
 Instance instance_Bits_bool_37__ : Bits bool := {
   op_zizazi__ := andb ;
   op_zizbzi__ := orb ;
@@ -252,6 +260,7 @@ Instance instance_Bits_bool_37__ : Bits bool := {
     end)) ;
   zeroBits := clearBit_bool (bit_bool #0) #0 }.
 
+#[global]
 Instance instance_FiniteBits_bool_52__ : FiniteBits bool := {
   finiteBitSize := (fun arg_53__ => (match arg_53__ with | _ => #1 end)) ;
   countTrailingZeros := (fun arg_54__ =>
@@ -278,6 +287,7 @@ Definition shift_Int (x:Int) (i:Int) :=
   else if x > #0 then Z.shiftl x i
        else x.
 
+#[global]
 Instance instance_Bits_Int : Bits Int :=  {
   op_zizazi__ := Z.land ;
   op_zizbzi__ := Z.lor ;
@@ -324,6 +334,7 @@ Definition N_popcount (a : N) : N :=
   end.
 
 
+#[global]
 Instance Bits__N : Bits N :=  {
   op_zizazi__ := N.land ;
   op_zizbzi__ := N.lor ;

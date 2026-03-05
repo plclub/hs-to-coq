@@ -55,6 +55,7 @@ Local Definition Category__arrow_op_z2218U__
      GHC.Prim.arrow b c -> GHC.Prim.arrow a b -> GHC.Prim.arrow a c :=
   fun {b : Type} {c : Type} {a : Type} => _GHC.Base.∘_.
 
+#[global]
 Program Instance Category__arrow : Category GHC.Prim.arrow :=
   fun _ k__ =>
     k__ {| id__ := fun {a : Type} => Category__arrow_id ;

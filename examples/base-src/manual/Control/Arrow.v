@@ -261,6 +261,7 @@ Local Definition Arrow__arrow_second
   fun {b : Type} {c : Type} {d : Type} =>
     (fun arg_0__ => Arrow__arrow_op_ztztzt__ Control.Category.id arg_0__).
 
+#[global]
 Program Instance Arrow__arrow : Arrow GHC.Prim.arrow :=
   fun _ k__ =>
     k__ {| arr__ := fun {b : Type} {c : Type} => Arrow__arrow_arr ;
@@ -294,6 +295,7 @@ Local Definition ArrowApply__arrow_app
      forall {c : Type}, GHC.Prim.arrow (GHC.Prim.arrow b c * b)%type c :=
   fun {b : Type} {c : Type} => fun '(pair f x) => f x.
 
+#[global]
 Program Instance ArrowApply__arrow : ArrowApply GHC.Prim.arrow :=
   fun _ k__ =>
     k__ {| app__ := fun {b : Type} {c : Type} => ArrowApply__arrow_app |}.
@@ -317,6 +319,7 @@ Local Definition Functor__ArrowMonad_op_zlzd__ {inst_a : Type -> Type -> Type}
      forall {b : Type}, a -> ArrowMonad inst_a b -> ArrowMonad inst_a a :=
   fun {a : Type} {b : Type} => Functor__ArrowMonad_fmap GHC.Base.∘ GHC.Base.const.
 
+#[global]
 Program Instance Functor__ArrowMonad {a : Type -> Type -> Type} `{Arrow a}
    : GHC.Base.Functor (ArrowMonad a) :=
   fun _ k__ =>

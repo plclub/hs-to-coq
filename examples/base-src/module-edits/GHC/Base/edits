@@ -90,21 +90,21 @@ skip GHC.Base.primIntToChar
 skip GHC.Base.primCharToInt
 skip GHC.Base.primUnicodeMaxChar
 
-# GHC 9.10 generates dataToTag#-based Eq for Maybe/option which
-# references patternFailure/GHC.Err, creating a circular import.
-# Redefine with simple pattern matching.
-redefine Local Definition GHC.Base.Eq___option_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b =>
-    match a, b with
-    | Some a1, Some b1 => ((a1 == b1))
-    | None, None => true
-    | _, _ => false
-    end.
+# GHC 9.10 generates dataToTag#-based Eq/Ord for Maybe/option which
+# hs-to-coq can't translate. Skip them; defined manually in midamble.
+skip GHC.Base.Eq___option_op_zeze__
+skip GHC.Base.Eq___option_op_zsze__
+skip GHC.Base.Eq___option
+skip GHC.Base.Ord__option_compare
+skip GHC.Base.Ord__option_op_zl__
+skip GHC.Base.Ord__option_op_zlze__
+skip GHC.Base.Ord__option_op_zg__
+skip GHC.Base.Ord__option_op_zgze__
+skip GHC.Base.Ord__option_max
+skip GHC.Base.Ord__option_min
+skip GHC.Base.Ord__option
 
 ## Type class instance ordering
-
-order GHC.Base.Eq___option GHC.Base.Ord__option
 
 # order for arrow instances (all skipped in GHC 9.10)
 

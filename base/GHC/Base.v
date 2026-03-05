@@ -579,136 +579,34 @@ Require String Ascii.
 Export String.StringSyntax Ascii.AsciiSyntax.
 End ManualNotations.
 
+(* Eq/Ord for option (Maybe) — GHC 9.10 derives these using dataToTag#
+   which hs-to-coq can't translate *)
+
+Definition eq_option {a} `{Eq_ a} (x y : option a) : bool :=
+  match x, y with
+  | Some a1, Some b1 => a1 == b1
+  | None, None => true
+  | _, _ => false
+  end.
+
+Definition compare_option {a} `{Ord a} (x y : option a) : comparison :=
+  match x, y with
+  | None, None => Eq
+  | None, Some _ => Lt
+  | Some _, None => Gt
+  | Some a1, Some b1 => compare a1 b1
+  end.
+
+#[global]
+Instance Eq___option {a} `{Eq_ a} : Eq_ (option a) := fun _ k => k {|
+  op_zeze____ := eq_option;
+  op_zsze____ := fun x y => negb (eq_option x y) |}.
+
+#[global]
+Instance Ord__option {a} `{Ord a} : Ord (option a) :=
+  ord_default compare_option.
+
 (* Converted value declarations: *)
-
-#[local] Definition Eq___option_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b =>
-    match a, b with
-    | Some a1, Some b1 => a1 == b1
-    | None, None => true
-    | _, _ => false
-    end.
-
-#[local] Definition Eq___option_op_zsze__ {inst_a : Type} `{Eq_ inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun x y => negb (Eq___option_op_zeze__ x y).
-
-#[global]
-Program Instance Eq___option {a : Type} `{Eq_ a} : Eq_ (option a) :=
-  fun _ k__ =>
-    k__ {| op_zeze____ := Eq___option_op_zeze__ ;
-           op_zsze____ := Eq___option_op_zsze__ |}.
-
-#[local] Definition Ord__option_op_zl__ {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b =>
-    match a with
-    | None => match b with | None => false | _ => true end
-    | Some a1 => match b with | Some b1 => (a1 < b1) | _ => false end
-    end.
-
-#[local] Definition Ord__option_op_zlze__ {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b => negb (Ord__option_op_zl__ b a).
-
-#[local] Definition Ord__option_op_zg__ {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b => Ord__option_op_zl__ b a.
-
-#[local] Definition Ord__option_op_zgze__ {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> bool :=
-  fun a b => negb (Ord__option_op_zl__ a b).
-
-#[local] Definition Ord__option_compare {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> comparison :=
-  fun a b =>
-    match a with
-    | None => match b with | None => Eq | _ => Lt end
-    | Some a1 => match b with | Some b1 => (compare a1 b1) | _ => Gt end
-    end.
-
-#[local] Definition Ord__option_max {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> option inst_a :=
-  fun x y => if Ord__option_op_zlze__ x y : bool then y else x.
-
-#[local] Definition Ord__option_min {inst_a : Type} `{Ord inst_a}
-   : option inst_a -> option inst_a -> option inst_a :=
-  fun x y => if Ord__option_op_zlze__ x y : bool then x else y.
-
-#[global]
-Program Instance Ord__option {a : Type} `{Ord a} : Ord (option a) :=
-  fun _ k__ =>
-    k__ {| op_zl____ := Ord__option_op_zl__ ;
-           op_zlze____ := Ord__option_op_zlze__ ;
-           op_zg____ := Ord__option_op_zg__ ;
-           op_zgze____ := Ord__option_op_zgze__ ;
-           compare__ := Ord__option_compare ;
-           max__ := Ord__option_max ;
-           min__ := Ord__option_min |}.
-
-#[local] Definition Eq___NonEmpty_op_zeze__ {inst_a : Type} `{Eq_ inst_a}
-   : NonEmpty inst_a -> NonEmpty inst_a -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | NEcons a1 a2, NEcons b1 b2 => (andb ((a1 == b1)) ((a2 == b2)))
-    end.
-
-#[local] Definition Eq___NonEmpty_op_zsze__ {inst_a : Type} `{Eq_ inst_a}
-   : NonEmpty inst_a -> NonEmpty inst_a -> bool :=
-  fun x y => negb (Eq___NonEmpty_op_zeze__ x y).
-
-#[global]
-Program Instance Eq___NonEmpty {a : Type} `{Eq_ a} : Eq_ (NonEmpty a) :=
-  fun _ k__ =>
-    k__ {| op_zeze____ := Eq___NonEmpty_op_zeze__ ;
-           op_zsze____ := Eq___NonEmpty_op_zsze__ |}.
-
-(* Skipping instance `GHC.Base.Ord__NonEmpty' of class `GHC.Base.Ord' *)
-
-#[local] Definition Eq___Void_op_zeze__ : Void -> Void -> bool :=
-  fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | _, z => true end.
-
-#[local] Definition Eq___Void_op_zsze__ : Void -> Void -> bool :=
-  fun x y => negb (Eq___Void_op_zeze__ x y).
-
-#[global]
-Program Instance Eq___Void : Eq_ Void :=
-  fun _ k__ =>
-    k__ {| op_zeze____ := Eq___Void_op_zeze__ ;
-           op_zsze____ := Eq___Void_op_zsze__ |}.
-
-#[local] Definition Ord__Void_compare : Void -> Void -> comparison :=
-  fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | _, z => Eq end.
-
-#[local] Definition Ord__Void_op_zl__ : Void -> Void -> bool :=
-  fun x y => Ord__Void_compare x y == Lt.
-
-#[local] Definition Ord__Void_op_zlze__ : Void -> Void -> bool :=
-  fun x y => Ord__Void_compare x y /= Gt.
-
-#[local] Definition Ord__Void_op_zg__ : Void -> Void -> bool :=
-  fun x y => Ord__Void_compare x y == Gt.
-
-#[local] Definition Ord__Void_op_zgze__ : Void -> Void -> bool :=
-  fun x y => Ord__Void_compare x y /= Lt.
-
-#[local] Definition Ord__Void_max : Void -> Void -> Void :=
-  fun x y => if Ord__Void_op_zlze__ x y : bool then y else x.
-
-#[local] Definition Ord__Void_min : Void -> Void -> Void :=
-  fun x y => if Ord__Void_op_zlze__ x y : bool then x else y.
-
-#[global]
-Program Instance Ord__Void : Ord Void :=
-  fun _ k__ =>
-    k__ {| op_zl____ := Ord__Void_op_zl__ ;
-           op_zlze____ := Ord__Void_op_zlze__ ;
-           op_zg____ := Ord__Void_op_zg__ ;
-           op_zgze____ := Ord__Void_op_zgze__ ;
-           compare__ := Ord__Void_compare ;
-           max__ := Ord__Void_max ;
-           min__ := Ord__Void_min |}.
 
 #[local] Definition Semigroup__list_op_zlzlzgzg__ {inst_a : Type}
    : list inst_a -> list inst_a -> list inst_a :=
@@ -1831,10 +1729,9 @@ Infix "GHC.Base.=<<" := (_=<<_) (at level 99).
 End Notations.
 
 (* External variables:
-     Eq Eq_ Gt Lt None Ord Some String Type andb bool compare compare__ comparison
-     cons false list max__ min__ negb nil op_zeze__ op_zeze____ op_zg____ op_zgze____
-     op_zl__ op_zl____ op_zlze____ op_zsze__ op_zsze____ option pair true tt unit
-     Coq.Init.Datatypes.app Coq.Lists.List.flat_map Coq.Lists.List.map
-     GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type
-     GHC.Tuple.sext_type GHC.Tuple.triple_type
+     Eq Gt Lt None Some String Type andb bool comparison cons false list nil
+     op_zeze__ option pair true tt unit Coq.Init.Datatypes.app
+     Coq.Lists.List.flat_map Coq.Lists.List.map GHC.Tuple.pair_type
+     GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type GHC.Tuple.sext_type
+     GHC.Tuple.triple_type
 *)

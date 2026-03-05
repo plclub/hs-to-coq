@@ -430,3 +430,30 @@ Notation "'_GHC.Base.>=_'" := (op_zgze__).
 Require String Ascii.
 Export String.StringSyntax Ascii.AsciiSyntax.
 End ManualNotations.
+
+(* Eq/Ord for option (Maybe) — GHC 9.10 derives these using dataToTag#
+   which hs-to-coq can't translate *)
+
+Definition eq_option {a} `{Eq_ a} (x y : option a) : bool :=
+  match x, y with
+  | Some a1, Some b1 => a1 == b1
+  | None, None => true
+  | _, _ => false
+  end.
+
+Definition compare_option {a} `{Ord a} (x y : option a) : comparison :=
+  match x, y with
+  | None, None => Eq
+  | None, Some _ => Lt
+  | Some _, None => Gt
+  | Some a1, Some b1 => compare a1 b1
+  end.
+
+#[global]
+Instance Eq___option {a} `{Eq_ a} : Eq_ (option a) := fun _ k => k {|
+  op_zeze____ := eq_option;
+  op_zsze____ := fun x y => negb (eq_option x y) |}.
+
+#[global]
+Instance Ord__option {a} `{Ord a} : Ord (option a) :=
+  ord_default compare_option.
