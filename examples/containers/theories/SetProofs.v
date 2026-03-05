@@ -4566,7 +4566,7 @@ Proof.
   * reflexivity.
 Qed.
 
-Require Import Tactics.
+Require Import MapProofs.Tactics.
 
 (* This is a copy of the local fixpoint from Haskell’s [validsize] function. *)
 
@@ -4593,7 +4593,7 @@ Lemma validsize_realsize : forall s,
 Proof.
   intros.
   change (realsize s == Some (size s) = true  <-> realsize s = Some (size s)).
-  unfold op_zeze__, Eq___option, op_zeze____, Base.Eq___option_op_zeze__.
+  unfold op_zeze__, Eq___option, op_zeze____, eq_option.
   unfold op_zeze__, Eq_Integer___, op_zeze____.
   destruct (realsize s); try rewrite  Z.eqb_eq; simpl;
   intuition (subst; congruence || reflexivity).
@@ -5234,13 +5234,13 @@ Module SetFSet (E : OrderedType) <: WSfun(E) <: WS <: Sfun(E) <: S.
   Program Definition fold : forall A : Type, (elt -> A -> A) -> t -> A -> A
     := fun a k s n => foldl (fun x e => k e x) n s.
 
-  Program Definition filter : (elt -> bool) -> t -> t := filter.
+  Program Definition filter : (elt -> bool) -> t -> t := Data.Set.Internal.filter.
   Next Obligation.
     destruct x0. simpl.
     eapply filter_Bounded with (ub := None) (lb := None); assumption.
   Qed.
 
-  Program Definition partition : (elt -> bool) -> t -> t * t := partition.
+  Program Definition partition : (elt -> bool) -> t -> t * t := Data.Set.Internal.partition.
   Next Obligation.
     destruct x0. simpl.
     eapply partition_Bounded with (ub := None) (lb := None); intuition.

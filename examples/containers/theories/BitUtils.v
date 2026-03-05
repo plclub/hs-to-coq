@@ -83,10 +83,7 @@ Lemma N_gt_0_neq:
   forall n, (n <> 0 <-> 0 < n)%N.
 Proof.
   intros.
-  destruct n; intuition.
-  * inversion H.
-  * apply pos_pos.
-  * inversion H0.
+  destruct n; split; intro; try lia; try discriminate; try apply pos_pos.
 Qed.
 
 (** *** Lemmas about [N] and [Z], especially related to bits *)
@@ -501,57 +498,15 @@ Lemma N_bits_impl_le:
   (forall i, N.testbit a i = true -> N.testbit b i = true) ->
   (a <= b)%N.
 Proof.
-  intros.
-  induction a; try apply N.le_0_l.
-  destruct b.
-  * exfalso.
-    refine (Pbit_faithful_0 p _).
-    intro j.
-    specialize (H (N.of_nat j)).
-    rewrite N.bits_0 in H.
-    simpl in H; rewrite Ptestbit_Pbit in H. 
-    destruct (Pos.testbit_nat p j) eqn:?; intuition.
-  * simpl in *.
-    change (Pos.le p p0).
-    revert p0 H.
-    induction p; intros p0 H.
-    - destruct p0 eqn:?.
-      + change (p <= p1)%positive.
-        apply IHp. intro i.
-        specialize (H (N.succ i)).
-        rewrite !Pos_1_testbit_succ in H.
-        assumption.
-      + exfalso.
-        specialize (H 0%N).
-        simpl in H. intuition congruence.
-      + exfalso.
-        refine (Pbit_faithful_0 p _).
-        intro j.
-        specialize (H (N.succ (N.of_nat j))).
-        rewrite <- Nat2N.inj_succ in H at 2.
-        rewrite Pos_1_testbit_succ, Ptestbit_Pbit in H. 
-        destruct (Pos.testbit_nat p j) eqn:?; intuition.
-    - destruct p0 eqn:?.
-      + transitivity (p1~0)%positive.
-        ** change (p <= p1)%positive.
-          apply IHp. intro i.
-          specialize (H (N.succ i)).
-          rewrite Pos_0_testbit_succ, Pos_1_testbit_succ in H.
-          assumption.
-        ** zify. lia.
-      + change (p <= p1)%positive.
-        apply IHp. intro i.
-        specialize (H (N.succ i)).
-        rewrite !Pos_0_testbit_succ in H.
-        assumption.
-      + exfalso.
-        refine (Pbit_faithful_0 p _).
-        intro j.
-        specialize (H (N.succ (N.of_nat j))).
-        rewrite <- Nat2N.inj_succ in H at 2.
-        rewrite Pos_0_testbit_succ, Ptestbit_Pbit in H. 
-        destruct (Pos.testbit_nat p j) eqn:?; intuition.
-     - apply Pos.le_1_l.
+  intros a b H.
+  assert (Heq : N.land a b = a).
+  { apply N.bits_inj. intro n.
+    rewrite N.land_spec.
+    destruct (N.testbit a n) eqn:Ha.
+    - rewrite (H _ Ha). reflexivity.
+    - rewrite andb_false_l. reflexivity. }
+  rewrite <- Heq.
+  apply N.land_le_r.
 Qed.
 
 

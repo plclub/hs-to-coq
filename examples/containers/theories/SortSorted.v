@@ -7,6 +7,7 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Classes.Morphisms.
 
 Require Import Coq.Lists.List.
+Require Import Lia.
 Import ListNotations.
 
 (* Basic Haskell libraries *)

@@ -40,18 +40,26 @@ Module OrdTheories(E: OrderedType).
     destruct (E.eq_dec e1 e2); constructor; auto.
   Qed.
 
+  Local Lemma lt_irrefl : forall x : E.t, ~ E.lt x x.
+  Proof.
+    intros x H. apply E.lt_not_eq in H. exact (H (E.eq_refl x)).
+  Qed.
+
   Lemma elt_ltP { e1 e2 } : reflect (E.lt e1 e2) (e1 GHC.Base.< e2).
   Proof.
     rewrite /_GHC.Base.<_ /Ord_t /ord_default /=.
     rewrite /_GHC.Base.==_ /Eq_comparison___ /= /eq_comparison /ot_compare.
-    do 2 destruct_match=>//; constructor; auto.
+    destruct (E.compare e1 e2); simpl; constructor; auto.
+    - intro Hlt. apply E.lt_not_eq in Hlt. contradiction.
+    - intro Hlt. assert (E.lt e1 e1) by (eapply E.lt_trans; eauto).
+      apply E.lt_not_eq in H. contradiction (H (E.eq_refl e1)).
   Qed.
 
   Lemma elt_leP { e1 e2 } : reflect (OrdFacts.TO.le e1 e2) (e1 GHC.Base.<= e2).
   Proof.
     rewrite /_GHC.Base.<=_ /Ord_t /ord_default /=.
     rewrite /_GHC.Base.==_ /Eq_comparison___ /= /eq_comparison /ot_compare.
-    do 2 destruct_match=>//; constructor; auto;
+    destruct (E.compare e2 e1); simpl; constructor;
       rewrite /OrdFacts.TO.le /OrdFacts.TO.eq /OrdFacts.TO.lt;
       intuition; OrdFacts.order.
   Qed.
@@ -60,14 +68,17 @@ Module OrdTheories(E: OrderedType).
   Proof.
     rewrite /_GHC.Base.>_ /Ord_t /ord_default /=.
     rewrite /_GHC.Base.==_ /Eq_comparison___ /= /eq_comparison /ot_compare.
-    do 2 destruct_match=>//; constructor; auto.
+    destruct (E.compare e2 e1); simpl; constructor; auto.
+    - intro Hlt. apply E.lt_not_eq in Hlt. contradiction.
+    - intro Hlt. assert (E.lt e2 e2) by (eapply E.lt_trans; eauto).
+      apply E.lt_not_eq in H. contradiction (H (E.eq_refl e2)).
   Qed.
 
   Lemma elt_geP { e1 e2 } : reflect (OrdFacts.TO.le e2 e1) (e1 GHC.Base.>= e2).
   Proof.
     rewrite /_GHC.Base.>=_ /Ord_t /ord_default /=.
     rewrite /_GHC.Base.==_ /Eq_comparison___ /= /eq_comparison /ot_compare.
-    do 2 destruct_match=>//; constructor; auto;
+    destruct (E.compare e1 e2); simpl; constructor;
       rewrite /OrdFacts.TO.le /OrdFacts.TO.eq /OrdFacts.TO.lt;
       intuition; OrdFacts.order.
   Qed.
@@ -75,7 +86,9 @@ Module OrdTheories(E: OrderedType).
   Lemma elt_compare_ltP {e1 e2} :
     reflect (E.lt e1 e2) (eq_comparison (compare e1 e2) Lt).
   Proof.
-    rewrite_compare_e; destruct_match; constructor; auto.
+    rewrite_compare_e; destruct (E.compare e1 e2); simpl; constructor; auto.
+    intro Hlt. apply E.lt_not_eq in Hlt. contradiction.
+    intro Hlt. exact (lt_irrefl _ (E.lt_trans Hlt l)).
   Qed.
 
   Lemma elt_compare_lt'P {e1 e2} :
@@ -83,14 +96,16 @@ Module OrdTheories(E: OrderedType).
             (eq_comparison (compare e1 e2) Lt).
   Proof.
     rewrite_compare_e.
-    destruct_match; constructor; auto;
+    destruct (E.compare e1 e2); simpl; constructor; auto;
       move=>Hcontra; inversion Hcontra.
   Qed.
 
   Lemma elt_compare_gtP {e1 e2} :
     reflect (E.lt e2 e1) (eq_comparison (compare e1 e2) Gt).
   Proof.
-    rewrite_compare_e; destruct_match; constructor; auto.
+    rewrite_compare_e; destruct (E.compare e1 e2); simpl; constructor; auto.
+    intro Hlt. exact (lt_irrefl _ (E.lt_trans l Hlt)).
+    intro Hlt. apply E.lt_not_eq in Hlt. symmetry in e. contradiction.
   Qed.
 
   Lemma elt_compare_gt'P {e1 e2} :
@@ -98,14 +113,16 @@ Module OrdTheories(E: OrderedType).
             (eq_comparison (compare e1 e2) Gt).
   Proof.
     rewrite_compare_e.
-    destruct_match; constructor; auto;
+    destruct (E.compare e1 e2); simpl; constructor; auto;
       move=>Hcontra; inversion Hcontra.
   Qed.
 
   Lemma elt_compare_eqP {e1 e2} :
     reflect (E.eq e1 e2) (eq_comparison (compare e1 e2) Eq).
   Proof.
-    rewrite_compare_e; destruct_match; constructor; auto.
+    rewrite_compare_e; destruct (E.compare e1 e2); simpl; constructor; auto.
+    intro Heq. apply E.lt_not_eq in l. contradiction.
+    intro Heq. apply E.lt_not_eq in l. symmetry in Heq. contradiction.
   Qed.
 
   Lemma elt_compare_eq'P {e1 e2} :
@@ -113,7 +130,7 @@ Module OrdTheories(E: OrderedType).
             (eq_comparison (compare e1 e2) Eq).
   Proof.
     rewrite_compare_e.
-    destruct_match; constructor; auto;
+    destruct (E.compare e1 e2); simpl; constructor; auto;
       move=>Hcontra; inversion Hcontra.
   Qed.
 
@@ -177,15 +194,19 @@ Module OrdTheories(E: OrderedType).
   Instance EqLaws_elt : EqLaws elt.
   Proof.
     constructor.
-    - rewrite /ssrbool.reflexive. intros.
-      apply /elt_eqP. auto.
-    - rewrite /ssrbool.symmetric. intros x y.
-      apply /elt_eqP. destruct_match; move: Heq; move /elt_eqP; auto.
-    - rewrite /ssrbool.transitive. intros y x z.
-      move /elt_eqP => H1 /elt_eqP H2. apply /elt_eqP; OrdFacts.order.
-    - intros x y. rewrite /_GHC.Base./=_ /Eq_t /=.
-      rewrite negb_involutive. apply /elt_eqP.
-      destruct_match; move: Heq; move /elt_eqP; auto.
+    - intro x. unfold op_zeze__, Eq_t. simpl.
+      destruct (E.eq_dec x x) as [|n]; [reflexivity | exfalso; exact (n (E.eq_refl x))].
+    - intros x y. unfold op_zeze__, Eq_t. simpl.
+      destruct (E.eq_dec x y) as [e|n], (E.eq_dec y x) as [e'|n']; auto.
+      + exfalso; exact (n' (E.eq_sym e)).
+      + exfalso; exact (n (E.eq_sym e')).
+    - intros y x z. unfold op_zeze__, Eq_t. simpl.
+      destruct (E.eq_dec x y) as [e1|n1]; [|discriminate].
+      destruct (E.eq_dec y z) as [e2|n2]; [|discriminate].
+      destruct (E.eq_dec x z) as [e3|n3]; [reflexivity|].
+      exfalso; exact (n3 (E.eq_trans e1 e2)).
+    - intros x y. unfold op_zeze__, op_zsze__, Eq_t. simpl.
+      destruct (E.eq_dec x y); simpl; auto.
   Defined.
 
   (** [rewrite -/is_true] does not work, so we use this: *)

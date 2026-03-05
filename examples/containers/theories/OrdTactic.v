@@ -9,6 +9,7 @@ the module system.
 
 Require Import GHC.Base.
 Require Import Proofs.GHC.Base.
+Require Import Lia.
 Set Bullet Behavior "Strict Subproofs".
 
 Class OrdLaws (t : Type) {HEq : Eq_ t} {HOrd : Ord t} {HEqLaw : EqLaws t} :=
