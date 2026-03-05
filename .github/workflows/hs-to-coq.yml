@@ -15,10 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: haskell:9.10.3
+      options: --user root
     env:
-      # The haskell image configures stack/cabal/ghc at /root but GitHub Actions
-      # overrides HOME to /github/home in container jobs. Reset HOME so stack
-      # finds its global config (system-ghc: true) at /root/.stack/config.yaml.
       HOME: /root
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +38,11 @@ jobs:
       - uses: coq-community/docker-coq-action@v1
         with:
           custom_image: 'mathcomp/mathcomp:2.5.0-coq-8.20'
-          custom_script: |
+          before_script: |
+            startGroup "Workaround permission issue"
+            sudo chown -R coq:coq .
+            endGroup
+          script: |
             startGroup "Compiling base"
             (cd base; coq_makefile -f _CoqProject -o Makefile)
             make -j -C base
@@ -115,6 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: haskell:9.10.3
+      options: --user root
     env:
       HOME: /root
     steps:
