@@ -120,8 +120,10 @@ jobs:
       HOME: /root
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - name: Initialize required submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git submodule update --init examples/ghc/ghc
       - name: Installing dependencies
         run: apt-get update && apt-get install -y xutils-dev
       - name: Caching Stack

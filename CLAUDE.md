@@ -39,8 +39,10 @@ make -C examples/base-tests
 # Run all examples (full bootstrap)
 cd examples && ./boot.sh
 
-# Build a specific example (e.g., containers lib + theories)
-make -C examples/containers
+# Build a specific example (e.g., containers)
+make -C examples/containers          # lib + theories
+make -C examples/containers/lib      # just the generated library
+make -C examples/containers/theories # just the proofs (depends on lib)
 ```
 
 Use relative path instead of absolute path when `cd` to a directory.
@@ -103,7 +105,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 
 Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker), `tests` (haskell-actions + opam for Coq), `test-translation` (haskell:9.10.3 Docker, verifies base/ regeneration matches). Sets `LANG=C.utf8` globally for Unicode support.
 
-**Container job gotcha**: Container jobs need `STACK_ROOT: /workspace/.stack` as a job-level env var because `/github/home/` is owned by root but the runner user differs. Cache paths must use `${{ env.STACK_ROOT }}` instead of `~/.stack`. The non-container `tests` job uses `~/.stack` normally.
+**Container job gotcha**: Container jobs use `--allow-different-user` for stack commands (ownership mismatch between host-mounted workspace and container user). For docker-coq-action, use `before_script` with `sudo chown -R coq:coq .` (not `custom_script`, which bypasses permission setup). `common.mk` already includes `--allow-different-user` in the `HS_TO_COQ` variable.
 
 ## GHC Version Compatibility
 
@@ -115,11 +117,12 @@ GHC 9.10 moved most `base` implementations to `ghc-internal`. Source files are n
 
 ### Modules that can't be regenerated
 These must use old versions from git master with manual fixes:
-- `Data/Functor/Classes` — GHC 9.10 added quantified superclass constraints to Eq2/Ord2 (`forall a. Eq a => Eq1 (f a)`) that Coq can't resolve in the CPS encoding
+- `Data/Functor/Classes` — hs-to-coq generates valid output, but Coq can't compile it: GHC 9.10 added quantified superclass constraints to Eq2/Ord2 (`forall a. Eq a => Eq1 (f a)`) that Coq can't resolve in the CPS encoding. The manual version has the same compilation failure. Nothing downstream imports Eq2/Ord2 so this is tolerated.
 
 Previously broken modules now regenerable:
 - `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity` — fixed via `DerivSkipInfo` filtering + parsed-AST standalone-deriving stripping + `skip method` default-binding filtering in `Class.hs`
 - `Control/Category`, `Control/Arrow` — fixed by stripping invisible RuntimeRep args from `(->)` TyCon in Type.hs and flexible type matching in lookupInstance
+- **`(->)` TyCon in GHC 9.10**: `FunTyCon` reports 0 `tyConBinders` (unlike regular TyCons). RuntimeRep args appear as regular type args. `Type.hs` handles this by detecting `GHC.Prim.arrow` with null binders and passing empty args to `convertTyConApp`. `lookupInstance` uses `termHead` for flexible matching (e.g., `arrow` matches `arrow LiftedRep LiftedRep`).
 - Identity and Traversable now fully auto-generated (edits handle coerce issues)
 - `_CoqProject` ordering matters: Identity/Traversable must be listed early (EARLY_GHC_INTERNAL_MODULES in Makefile) to avoid Coq typeclass resolution stack overflow
 

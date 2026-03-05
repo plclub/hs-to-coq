@@ -19,9 +19,11 @@
 - [x] GHC submodule at ghc-9.10.3-release
 - [x] Containers `make clean && make` works (Makefile preserves .v files, builds lib + theories)
 - [x] Improved error messages in ProcessFiles.hs (load failure recovery, per-module diagnostics)
+- [x] Control/Category and Control/Arrow auto-generated (RuntimeRep arg stripping + flexible instance lookup)
+- [x] CI container permission fixes (--allow-different-user for stack, chown for docker-coq-action)
 
 ## Known Issues (not blocking CI)
-- [ ] `Data/Functor/Classes` still manual: quantified superclass constraints in Eq2/Ord2
+- [ ] `Data/Functor/Classes` still manual: translation succeeds but Coq can't compile due to quantified superclass constraints in Eq2/Ord2 (manual version also fails — pre-existing issue)
 - [ ] `bag` example: ssreflect proofs need updating for Coq 8.20/mathcomp
 - [ ] `graph`, `shuffle`, `wc`, `core-semantics`, `transformers`: submodules not checked out
 - [ ] Unit tests: MutrecInst, TopBind, ExceptInDataDefinition, TypeAnnotations still in TODO_PASS
