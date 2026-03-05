@@ -116,9 +116,12 @@ GHC 9.10 moved most `base` implementations to `ghc-internal`. Source files are n
 ### Modules that can't be regenerated
 These must use old versions from git master with manual fixes:
 - `Control/Category`, `Control/Arrow` — Category__arrow fails with dummy unit-id
+- `Data/Functor/Classes` — GHC 9.10 added quantified superclass constraints to Eq2/Ord2 (`forall a. Eq a => Eq1 (f a)`) that Coq can't resolve in the CPS encoding
 
 Previously broken modules now regenerable (fixed via `DerivSkipInfo` filtering + parsed-AST standalone-deriving stripping + `skip method` default-binding filtering in `Class.hs`):
 - `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity`
+- Identity and Traversable now fully auto-generated (edits handle coerce issues)
+- `_CoqProject` ordering matters: Identity/Traversable must be listed early (EARLY_GHC_INTERNAL_MODULES in Makefile) to avoid Coq typeclass resolution stack overflow
 
 ### Deriving pipeline (GHC 9.10)
 GHC's `load LoadAllTargets` processes standalone `deriving instance` declarations during typechecking — before `addDerivedInstances` runs. If any fail (e.g. types from skipped modules), `load` returns `Failed`. The fallback in `ProcessFiles.hs` strips all standalone deriving decls from the **parsed** AST, then typechecks, then uses `addDerivedInstances` to re-derive the ones we want.
