@@ -1,7 +1,7 @@
 
 # hs-to-coq
 
-![hs-to-coq](https://github.com/plclub/hs-to-coq/workflows/hs-to-coq/badge.svg?branch=master)
+![hs-to-coq](https://github.com/plclub/hs-to-coq/workflows/hs-to-coq/badge.svg?branch=ghc910-coq820)
 
 Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-coq-devs.20.26.20users)
 
@@ -9,8 +9,8 @@ This repository contains a converter from Haskell code to equivalent
 Coq code, as part of the [CoreSpec] component of the [DeepSpec]
 project.
 
-CPP'18 paper [“Total Haskell is Reasonable
-Coq”](https://arxiv.org/abs/1711.09286) by Antal Spector-Zabusky,
+CPP'18 paper ["Total Haskell is Reasonable
+Coq"](https://arxiv.org/abs/1711.09286) by Antal Spector-Zabusky,
 Joachim Breitner, Christine Rizkallah, and Stephanie Weirich. This
 paper describes the following examples:
 
@@ -32,7 +32,7 @@ available!**](https://hs-to-coq.readthedocs.io/en/latest/)
 
 # Installation
 
-`hs-to-coq` uses Coq 8.10.2 and ssreflect.
+**Current target: GHC 9.10.3 and Coq 8.20** (branch `ghc910-coq820`)
 
 ## Compilation
 
@@ -45,33 +45,41 @@ To build `hs-to-coq`, then run
 
     stack build
 
-(`hs-to-coq` can be built with GHC 8.4, 8.6, 8.8, and 8.10. However, the repo
-only contains the translation of Haskell libraries such as `base` from GHC
-8.4. Therefore, it is advised to build `hs-to-coq` with GHC 8.4 if you plan to
-use example translations contained in this repo.)
-
 ## Building the `base` library
 
 This repository comes with a version of (parts of the) Haskell base library
 converted to Coq, which you will likely need if you want to verify Haskell
 code.
 
-You must have Coq 8.10.2 and ssreflect to build the base library. To
+You must have Coq 8.20 and ssreflect to build the base library. To
 install these tools:
 
   1. `opam repo add coq-released https://coq.inria.fr/opam/released` (for
      SSReflect and MathComp)
   2. `opam update`
-  3. `opam install coq.8.10.2 coq-mathcomp-ssreflect.1.10.0`
+  3. `opam install coq.8.20.1 coq-mathcomp-ssreflect`
 
 Once installed, you can build the base library with
 
     cd base && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
-Th directory `base-thy/` contains auxillary definitions and lemmas, such as
+The directory `base-thy/` contains auxiliary definitions and lemmas, such as
 lawful type-class instances. You can build these with
 
     cd base-thy && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
+
+## Regenerating the `base` library
+
+The `base/` directory contains a convenience copy of the generated Coq files.
+To regenerate from Haskell source (requires the `ghc-internal` submodule):
+
+    git submodule update --init --recursive
+    make -C examples/base-src clean
+    make -C examples/base-src
+
+This runs hs-to-coq on the GHC 9.10 base/ghc-internal sources and
+compiles the resulting Coq files. Set `LANG=C.utf8` if you encounter
+encoding errors (generated files contain Unicode characters like `∘`).
 
 # Using the tool
 
@@ -121,7 +129,6 @@ for the edits files.
   * [intervals](examples/intervals) A simple example described in this
     [blog post](https://www.joachim-breitner.de/blog/734-Finding_bugs_in_Haskell_code_by_proving_it).
 
-  * [ghc](examples/ghc) Modules of GHC itself.
   * [containers](examples/containers) Modules from the `containers` library,
 	including `Data.Set` and `Data.IntSet`
   * [bag](examples/bag) Multiset implementation from GHC's implemention
@@ -130,12 +137,15 @@ for the edits files.
   * [quicksort](examples/quicksort) Quicksort
   * [rle](examples/rle) Run-length encoding
   * [coinduction](examples/coinduction) Translating infinite data structures
+  * [dlist](examples/dlist) Difference lists
+  * [lambda](examples/lambda) Lambda calculus
+  * [simple](examples/simple) Simple example
   * [base-src](examples/base-src) The sources of the `base/` directory
   * [tests](examples/tests) Simple unit-tests
   * [base-tests](examples/base-tests) Unit-tests that require `base/`
 
 
-  Some examples use git submodule, so run
+  Some examples use git submodules, so run
 
       git submodule update --init --recursive
 
