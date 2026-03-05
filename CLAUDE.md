@@ -114,8 +114,12 @@ GHC 9.10 moved most `base` implementations to `ghc-internal`. Source files are n
 ### Modules that can't be regenerated
 These must use old versions from git master with manual fixes:
 - `Control/Category`, `Control/Arrow` — Category__arrow fails with dummy unit-id
-- `Data/Foldable`, `Data/Traversable` — deriving issues with Generics types
-- `Data/Functor/Const`, `Data/Functor/Identity` — deriving issues
+
+Previously broken modules now regenerable (fixed via `DerivSkipInfo` filtering + parsed-AST standalone-deriving stripping + `skip method` default-binding filtering in `Class.hs`):
+- `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity`
+
+### Locale for hs-to-coq
+Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before running hs-to-coq or the output will fail with encoding errors on systems with POSIX locale.
 
 ### Common edit patterns for GHC 9.10
 - **mconcat `foldl' (<>) mempty`**: GHC 9.10 generates this but it creates circular deps. Fix: `redefine` to use `foldr mappend mempty` + `order mempty mconcat`
