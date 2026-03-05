@@ -28,7 +28,7 @@ Arguments Mk_Down {_} _.
 
 (* Midamble *)
 
-(* Eq instance for Down — the derived instance uses coerce which gets lost *)
+(* Eq instance for Down -- the derived instance uses coerce which gets lost *)
 #[local] Definition Eq___Down_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Down inst_a -> Down inst_a -> bool :=
   fun x y => match x, y with | Mk_Down a, Mk_Down b => a GHC.Base.== b end.
@@ -49,10 +49,8 @@ Program Instance Eq___Down {a : Type} `{GHC.Base.Eq_ a}
 #[local] Definition Semigroup__Down_op_zlzlzgzg__ {inst_a : Type}
   `{GHC.Base.Semigroup inst_a}
    : Down inst_a -> Down inst_a -> Down inst_a :=
-  fun x y =>
-    match x, y with
-    | Mk_Down a, Mk_Down b => Mk_Down (a GHC.Base.<<>> b)
-    end.
+  fun arg_0__ arg_1__ =>
+    Mk_Down (_GHC.Base.<<>>_ (getDown arg_0__) (getDown arg_1__)).
 
 #[global]
 Program Instance Semigroup__Down {a : Type} `{GHC.Base.Semigroup a}
@@ -63,10 +61,8 @@ Program Instance Semigroup__Down {a : Type} `{GHC.Base.Semigroup a}
 #[local] Definition Monoid__Down_mappend {inst_a : Type} `{GHC.Base.Monoid
   inst_a}
    : Down inst_a -> Down inst_a -> Down inst_a :=
-  fun x y =>
-    match x, y with
-    | Mk_Down a, Mk_Down b => Mk_Down (GHC.Base.mappend a b)
-    end.
+  fun arg_0__ arg_1__ =>
+    Mk_Down (GHC.Base.mappend (getDown arg_0__) (getDown arg_1__)).
 
 #[local] Definition Monoid__Down_mconcat {inst_a : Type} `{GHC.Base.Monoid
   inst_a}
@@ -161,7 +157,8 @@ Program Instance Ord__Down {a : Type} `{GHC.Base.Ord a}
 
 #[local] Definition Functor__Down_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Down a -> Down b :=
-  fun {a : Type} {b : Type} f x => let 'Mk_Down a := x in Mk_Down (f a).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Down (arg_0__ (getDown arg_1__)).
 
 #[local] Definition Functor__Down_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> Down b -> Down a :=
@@ -175,10 +172,8 @@ Program Instance Functor__Down : GHC.Base.Functor Down :=
 
 #[local] Definition Applicative__Down_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Down (a -> b) -> Down a -> Down b :=
-  fun {a : Type} {b : Type} f x =>
-    match f, x with
-    | Mk_Down g, Mk_Down a => Mk_Down (g a)
-    end.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Down (getDown arg_0__ (getDown arg_1__)).
 
 #[local] Definition Applicative__Down_liftA2
    : forall {a : Type},

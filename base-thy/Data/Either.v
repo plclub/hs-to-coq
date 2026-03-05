@@ -12,8 +12,7 @@ Instance EqLaws_Data_Either_Either {a b} `{EqLaws a} `{EqLaws b} : EqLaws (Eithe
 Proof.
   split; repeat unfold op_zeze__, op_zsze__, op_zeze____, op_zsze____,
   Either.Eq___Either,
-  Either.Eq___Either_op_zeze__,
-  Either.Eq___Either_op_zsze__.
+  eq_Either.
   - case=> ? /=; apply Eq_refl.
   - do 2 case=> ? //=; apply Eq_sym.
   - do 3 case=> ? //=; apply Eq_trans.
@@ -24,7 +23,7 @@ Instance EqExact_Data_Either_Either {a b} `{EqExact a} `{EqExact b} : EqExact (E
 Proof.
   split ;
     unfold op_zeze__, op_zsze__,
-    Eq___Either ,  op_zeze____, op_zsze____=> - [xl|xr] [yl|yr] //=; try (by constructor);
+    Eq___Either, eq_Either, op_zeze____, op_zsze____=> - [xl|xr] [yl|yr] //=; try (by constructor);
     case E: (_ == _); constructor; move/Eq_eq in E;
     by [rewrite E | contradict E; case: E].
 Qed.

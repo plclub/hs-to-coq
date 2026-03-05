@@ -24,7 +24,6 @@ Require Import Data.SemigroupInternal.
 Require GHC.Base.
 Require GHC.List.
 Require GHC.Num.
-Require GHC.Prim.
 Require GHC.Tuple.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -569,7 +568,8 @@ Program Instance Foldable__Proxy : Foldable Data.Proxy.Proxy :=
 #[local] Definition Foldable__Dual_foldMap
    : forall {m : Type},
      forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Dual a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} => GHC.Prim.coerce.
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun arg_0__ arg_1__ => arg_0__ (getDual arg_1__).
 
 #[local] Definition Foldable__Dual_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Dual m -> m :=
@@ -577,7 +577,8 @@ Program Instance Foldable__Proxy : Foldable Data.Proxy.Proxy :=
 
 #[local] Definition Foldable__Dual_foldl
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Dual a -> b :=
-  fun {b : Type} {a : Type} => GHC.Prim.coerce.
+  fun {b : Type} {a : Type} =>
+    fun arg_0__ arg_1__ arg_2__ => arg_0__ arg_1__ (getDual arg_2__).
 
 #[local] Definition Foldable__Dual_foldr
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Dual a -> b :=
@@ -623,7 +624,8 @@ Program Instance Foldable__Dual : Foldable Dual :=
 #[local] Definition Foldable__Sum_foldMap
    : forall {m : Type},
      forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Sum a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} => GHC.Prim.coerce.
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun arg_0__ arg_1__ => arg_0__ (getSum arg_1__).
 
 #[local] Definition Foldable__Sum_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Sum m -> m :=
@@ -631,7 +633,8 @@ Program Instance Foldable__Dual : Foldable Dual :=
 
 #[local] Definition Foldable__Sum_foldl
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Sum a -> b :=
-  fun {b : Type} {a : Type} => GHC.Prim.coerce.
+  fun {b : Type} {a : Type} =>
+    fun arg_0__ arg_1__ arg_2__ => arg_0__ arg_1__ (getSum arg_2__).
 
 #[local] Definition Foldable__Sum_foldr
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Sum a -> b :=
@@ -676,7 +679,8 @@ Program Instance Foldable__Sum : Foldable Sum :=
 #[local] Definition Foldable__Product_foldMap
    : forall {m : Type},
      forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Product a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} => GHC.Prim.coerce.
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun arg_0__ arg_1__ => arg_0__ (getProduct arg_1__).
 
 #[local] Definition Foldable__Product_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Product m -> m :=
@@ -684,7 +688,8 @@ Program Instance Foldable__Sum : Foldable Sum :=
 
 #[local] Definition Foldable__Product_foldl
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Product a -> b :=
-  fun {b : Type} {a : Type} => GHC.Prim.coerce.
+  fun {b : Type} {a : Type} =>
+    fun arg_0__ arg_1__ arg_2__ => arg_0__ arg_1__ (getProduct arg_2__).
 
 #[local] Definition Foldable__Product_foldr
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Product a -> b :=
@@ -998,6 +1003,5 @@ Program Instance Foldable__Ap {f : Type -> Type} `{(Foldable f)}
      GHC.Base.mconcat GHC.Base.mempty GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__ GHC.Base.op_ztzg__ GHC.Base.pure
      GHC.Base.return_ GHC.List.length GHC.List.null GHC.List.product GHC.List.sum
-     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.coerce
-     GHC.Tuple.pair_type
+     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Tuple.pair_type
 *)

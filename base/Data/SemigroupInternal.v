@@ -219,7 +219,8 @@ Program Instance Monoid__Dual {a : Type} `{GHC.Base.Monoid a}
 
 #[local] Definition Functor__Dual_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Dual a -> Dual b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Dual (arg_0__ (getDual arg_1__)).
 
 #[local] Definition Functor__Dual_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> Dual b -> Dual a :=
@@ -233,7 +234,8 @@ Program Instance Functor__Dual : GHC.Base.Functor Dual :=
 
 #[local] Definition Applicative__Dual_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Dual (a -> b) -> Dual a -> Dual b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Dual (getDual arg_0__ (getDual arg_1__)).
 
 #[local] Definition Applicative__Dual_liftA2
    : forall {a : Type},
@@ -286,8 +288,8 @@ Instance Unpeel_Endo a : HsToCoq.Unpeel.Unpeel (Endo a) (a -> a) :=
 
 #[local] Definition Semigroup__Endo_op_zlzlzgzg__ {inst_a : Type}
    : Endo inst_a -> Endo inst_a -> Endo inst_a :=
-  GHC.Prim.coerce (_GHC.Base.∘_ : (inst_a -> inst_a) ->
-                   (inst_a -> inst_a) -> (inst_a -> inst_a)).
+  fun arg_0__ arg_1__ =>
+    Mk_Endo (_GHC.Base.∘_ (appEndo arg_0__) (appEndo arg_1__)).
 
 #[global]
 Program Instance Semigroup__Endo {a : Type} : GHC.Base.Semigroup (Endo a) :=
@@ -316,7 +318,7 @@ Instance Unpeel_All : HsToCoq.Unpeel.Unpeel All bool :=
   HsToCoq.Unpeel.Build_Unpeel _ _ getAll Mk_All.
 
 #[local] Definition Semigroup__All_op_zlzlzgzg__ : All -> All -> All :=
-  GHC.Prim.coerce andb.
+  fun arg_0__ arg_1__ => Mk_All (andb (getAll arg_0__) (getAll arg_1__)).
 
 #[global]
 Program Instance Semigroup__All : GHC.Base.Semigroup All :=
@@ -342,7 +344,7 @@ Instance Unpeel_Any : HsToCoq.Unpeel.Unpeel Any bool :=
   HsToCoq.Unpeel.Build_Unpeel _ _ getAny Mk_Any.
 
 #[local] Definition Semigroup__Any_op_zlzlzgzg__ : Any -> Any -> Any :=
-  GHC.Prim.coerce orb.
+  fun arg_0__ arg_1__ => Mk_Any (orb (getAny arg_0__) (getAny arg_1__)).
 
 #[global]
 Program Instance Semigroup__Any : GHC.Base.Semigroup Any :=
@@ -370,7 +372,7 @@ Instance Unpeel_Sum a : HsToCoq.Unpeel.Unpeel (Sum a) a :=
 #[local] Definition Semigroup__Sum_op_zlzlzgzg__ {inst_a : Type} `{GHC.Num.Num
   inst_a}
    : Sum inst_a -> Sum inst_a -> Sum inst_a :=
-  GHC.Prim.coerce (_GHC.Num.+_ : inst_a -> inst_a -> inst_a).
+  fun arg_0__ arg_1__ => Mk_Sum (_GHC.Num.+_ (getSum arg_0__) (getSum arg_1__)).
 
 #[global]
 Program Instance Semigroup__Sum {a : Type} `{GHC.Num.Num a}
@@ -399,7 +401,8 @@ Program Instance Monoid__Sum {a : Type} `{GHC.Num.Num a}
 
 #[local] Definition Functor__Sum_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Sum a -> Sum b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Sum (arg_0__ (getSum arg_1__)).
 
 #[local] Definition Functor__Sum_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> Sum b -> Sum a :=
@@ -413,7 +416,8 @@ Program Instance Functor__Sum : GHC.Base.Functor Sum :=
 
 #[local] Definition Applicative__Sum_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Sum (a -> b) -> Sum a -> Sum b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Sum (getSum arg_0__ (getSum arg_1__)).
 
 #[local] Definition Applicative__Sum_liftA2
    : forall {a : Type},
@@ -467,7 +471,8 @@ Instance Unpeel_Product a : HsToCoq.Unpeel.Unpeel (Product a) a :=
 #[local] Definition Semigroup__Product_op_zlzlzgzg__ {inst_a : Type}
   `{GHC.Num.Num inst_a}
    : Product inst_a -> Product inst_a -> Product inst_a :=
-  GHC.Prim.coerce (_GHC.Num.*_ : inst_a -> inst_a -> inst_a).
+  fun arg_0__ arg_1__ =>
+    Mk_Product (_GHC.Num.*_ (getProduct arg_0__) (getProduct arg_1__)).
 
 #[global]
 Program Instance Semigroup__Product {a : Type} `{GHC.Num.Num a}
@@ -499,7 +504,8 @@ Program Instance Monoid__Product {a : Type} `{GHC.Num.Num a}
 
 #[local] Definition Functor__Product_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Product a -> Product b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Product (arg_0__ (getProduct arg_1__)).
 
 #[local] Definition Functor__Product_op_zlzd__
    : forall {a : Type}, forall {b : Type}, a -> Product b -> Product a :=
@@ -515,7 +521,8 @@ Program Instance Functor__Product : GHC.Base.Functor Product :=
 #[local] Definition Applicative__Product_op_zlztzg__
    : forall {a : Type},
      forall {b : Type}, Product (a -> b) -> Product a -> Product b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Product (getProduct arg_0__ (getProduct arg_1__)).
 
 #[local] Definition Applicative__Product_liftA2
    : forall {a : Type},

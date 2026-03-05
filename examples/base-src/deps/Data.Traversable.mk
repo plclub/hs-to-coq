@@ -1,1 +1,1 @@
-/tmp/claude-1000/Data/Traversable.v: ../../base/Data/Either.h2ci ../../base/Data/Foldable.h2ci ../../base/Data/Functor/Const.h2ci ../../base/Data/Monoid.h2ci ../../base/Data/SemigroupInternal.h2ci ../../base/GHC/Base.h2ci
+../../base/Data/Traversable.v: ../../base/Data/Either.h2ci ../../base/Data/Foldable.h2ci ../../base/Data/Functor/Const.h2ci ../../base/Data/Monoid.h2ci ../../base/Data/SemigroupInternal.h2ci ../../base/GHC/Base.h2ci

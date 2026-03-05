@@ -70,3 +70,7 @@ skip method Data.Foldable.Foldable foldMap'
 rewrite forall x, Data.Foldable.foldl' x = Data.Foldable.foldl x
 rewrite forall x, Data.Foldable.foldMap' x = Data.Foldable.foldMap x
 
+# Provide standalone foldl' as alias for foldl (no strictness distinction in Coq)
+add Data.Foldable Definition Data.Foldable.foldl' {t : Type -> Type} `{Foldable t}
+  : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> t a -> b := @foldl t _.
+

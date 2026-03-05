@@ -187,19 +187,23 @@ addDerivedInstances dsi tcm = do
         setGblEnv tcg_env_hack $
 #if __GLASGOW_HASKELL__ >= 910
             do (_, _, deriv_infos, _) <- tcTyAndClassDecls (hs_tyclds hsgroup_filtered)
-               -- Try all standalone deriving declarations at once first
+               -- Try all derivations at once first
                (mb_result, _msgs) <- tryTc (tcInstDeclsDeriv deriv_infos (hs_derivds hsgroup_filtered))
                case mb_result of
                  Just (_gbl, infos, _binds) -> return infos
                  Nothing -> do
-                   -- Fall back: process each standalone deriving declaration
-                   -- individually, skipping any that fail
-                   results <- forM (hs_derivds hsgroup_filtered) $ \deriv_decl -> do
-                     (mb, _) <- tryTc (tcInstDeclsDeriv deriv_infos [deriv_decl])
+                   -- Fall back: try each DerivInfo individually
+                   derivResults <- forM deriv_infos $ \di -> do
+                     (mb, _) <- tryTc (tcInstDeclsDeriv [di] [])
                      return $ case mb of
                        Just (_, infos, _) -> infos
                        Nothing -> []
-                   return (concat results)
+                   standaloneResults <- forM (hs_derivds hsgroup_filtered) $ \deriv_decl -> do
+                     (mb, _) <- tryTc (tcInstDeclsDeriv [] [deriv_decl])
+                     return $ case mb of
+                       Just (_, infos, _) -> infos
+                       Nothing -> []
+                   return (concat derivResults ++ concat standaloneResults)
 #elif __GLASGOW_HASKELL__ >= 810
             do (_, _, deriv_info) <- tcTyAndClassDecls (hs_tyclds hsgroup_filtered)
                (mb_result, _msgs) <- tryTc (tcInstDeclsDeriv deriv_info (hs_derivds hsgroup_filtered))

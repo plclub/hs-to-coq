@@ -1,4 +1,4 @@
-(* Eq instance for Down — the derived instance uses coerce which gets lost *)
+(* Eq instance for Down -- the derived instance uses coerce which gets lost *)
 #[local] Definition Eq___Down_op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Down inst_a -> Down inst_a -> bool :=
   fun x y => match x, y with | Mk_Down a, Mk_Down b => a GHC.Base.== b end.

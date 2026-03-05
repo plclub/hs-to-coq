@@ -431,7 +431,7 @@ Require String Ascii.
 Export String.StringSyntax Ascii.AsciiSyntax.
 End ManualNotations.
 
-(* Eq/Ord for option (Maybe) — GHC 9.10 derives these using dataToTag#
+(* Eq/Ord for option (Maybe) -- GHC 9.10 derives these using dataToTag#
    which hs-to-coq can't translate *)
 
 Definition eq_option {a} `{Eq_ a} (x y : option a) : bool :=
@@ -458,7 +458,7 @@ Instance Eq___option {a} `{Eq_ a} : Eq_ (option a) := fun _ k => k {|
 Instance Ord__option {a} `{Ord a} : Ord (option a) :=
   ord_default compare_option.
 
-(* Eq for NonEmpty — GHC 9.10 derives using dataToTag# *)
+(* Eq for NonEmpty -- GHC 9.10 derives using dataToTag# *)
 
 Definition eq_NonEmpty {a} `{Eq_ a} (x y : NonEmpty a) : bool :=
   match x, y with
@@ -469,3 +469,18 @@ Definition eq_NonEmpty {a} `{Eq_ a} (x y : NonEmpty a) : bool :=
 Instance Eq___NonEmpty {a} `{Eq_ a} : Eq_ (NonEmpty a) := fun _ k => k {|
   op_zeze____ := eq_NonEmpty;
   op_zsze____ := fun x y => negb (eq_NonEmpty x y) |}.
+
+(* Ord for NonEmpty -- GHC 9.10 derives using dataToTag# *)
+
+Definition compare_NonEmpty {a} `{Ord a} (x y : NonEmpty a) : comparison :=
+  match x, y with
+  | NEcons a1 as1, NEcons b1 bs1 =>
+    match compare a1 b1 with
+    | Eq => compare as1 bs1
+    | c => c
+    end
+  end.
+
+#[global]
+Instance Ord__NonEmpty {a} `{Ord a} : Ord (NonEmpty a) :=
+  ord_default compare_NonEmpty.

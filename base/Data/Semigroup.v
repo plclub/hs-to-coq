@@ -145,10 +145,7 @@ Program Instance Semigroup__SLast {a} : GHC.Base.Semigroup (Last a) := fun _ k =
 #[local] Definition Semigroup__Min_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
   inst_a}
    : Min inst_a -> Min inst_a -> Min inst_a :=
-  fun x y =>
-    match x, y with
-    | Mk_Min a, Mk_Min b => Mk_Min (GHC.Base.min a b)
-    end.
+  fun arg_0__ arg_1__ => Mk_Min (GHC.Base.min (getMin arg_0__) (getMin arg_1__)).
 
 #[global]
 Program Instance Semigroup__Min {a : Type} `{GHC.Base.Ord a}
@@ -301,17 +298,14 @@ Program Instance Traversable__Min : Data.Traversable.Traversable Min :=
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type}, (a -> b -> c) -> Min a -> Min b -> Min c :=
-  fun {a : Type} {b : Type} {c : Type} f x y =>
-    match x, y with
-    | Mk_Min a, Mk_Min b => Mk_Min (f a b)
-    end.
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      Mk_Min (arg_0__ (getMin arg_1__) (getMin arg_2__)).
 
 #[local] Definition Applicative__Min_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Min (a -> b) -> Min a -> Min b :=
-  fun {a : Type} {b : Type} f x =>
-    match f, x with
-    | Mk_Min g, Mk_Min a => Mk_Min (g a)
-    end.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Min (getMin arg_0__ (getMin arg_1__)).
 
 #[local] Definition Applicative__Min_op_ztzg__
    : forall {a : Type}, forall {b : Type}, Min a -> Min b -> Min b :=
@@ -364,10 +358,7 @@ Program Instance Monad__Min : GHC.Base.Monad Min :=
 #[local] Definition Semigroup__Max_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord
   inst_a}
    : Max inst_a -> Max inst_a -> Max inst_a :=
-  fun x y =>
-    match x, y with
-    | Mk_Max a, Mk_Max b => Mk_Max (GHC.Base.max a b)
-    end.
+  fun arg_0__ arg_1__ => Mk_Max (GHC.Base.max (getMax arg_0__) (getMax arg_1__)).
 
 #[global]
 Program Instance Semigroup__Max {a : Type} `{GHC.Base.Ord a}
@@ -520,17 +511,14 @@ Program Instance Traversable__Max : Data.Traversable.Traversable Max :=
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type}, (a -> b -> c) -> Max a -> Max b -> Max c :=
-  fun {a : Type} {b : Type} {c : Type} f x y =>
-    match x, y with
-    | Mk_Max a, Mk_Max b => Mk_Max (f a b)
-    end.
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      Mk_Max (arg_0__ (getMax arg_1__) (getMax arg_2__)).
 
 #[local] Definition Applicative__Max_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Max (a -> b) -> Max a -> Max b :=
-  fun {a : Type} {b : Type} f x =>
-    match f, x with
-    | Mk_Max g, Mk_Max a => Mk_Max (g a)
-    end.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Max (getMax arg_0__ (getMax arg_1__)).
 
 #[local] Definition Applicative__Max_op_ztzg__
    : forall {a : Type}, forall {b : Type}, Max a -> Max b -> Max b :=
@@ -1028,17 +1016,14 @@ Program Instance Traversable__First : Data.Traversable.Traversable First :=
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type}, (a -> b -> c) -> First a -> First b -> First c :=
-  fun {a : Type} {b : Type} {c : Type} f x y =>
-    match x, y with
-    | Mk_First a, Mk_First b => Mk_First (f a b)
-    end.
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      Mk_First (arg_0__ (getFirst arg_1__) (getFirst arg_2__)).
 
 #[local] Definition Applicative__First_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, First (a -> b) -> First a -> First b :=
-  fun {a : Type} {b : Type} f x =>
-    match f, x with
-    | Mk_First g, Mk_First a => Mk_First (g a)
-    end.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_First (getFirst arg_0__ (getFirst arg_1__)).
 
 #[local] Definition Applicative__First_op_ztzg__
    : forall {a : Type}, forall {b : Type}, First a -> First b -> First b :=
@@ -1241,17 +1226,14 @@ Program Instance Traversable__Last : Data.Traversable.Traversable Last :=
    : forall {a : Type},
      forall {b : Type},
      forall {c : Type}, (a -> b -> c) -> Last a -> Last b -> Last c :=
-  fun {a : Type} {b : Type} {c : Type} f x y =>
-    match x, y with
-    | Mk_Last a, Mk_Last b => Mk_Last (f a b)
-    end.
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      Mk_Last (arg_0__ (getLast arg_1__) (getLast arg_2__)).
 
 #[local] Definition Applicative__Last_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Last (a -> b) -> Last a -> Last b :=
-  fun {a : Type} {b : Type} f x =>
-    match f, x with
-    | Mk_Last g, Mk_Last a => Mk_Last (g a)
-    end.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Last (getLast arg_0__ (getLast arg_1__)).
 
 #[local] Definition Applicative__Last_op_ztzg__
    : forall {a : Type}, forall {b : Type}, Last a -> Last b -> Last b :=
@@ -1298,10 +1280,8 @@ Program Instance Monad__Last : GHC.Base.Monad Last :=
 #[local] Definition Semigroup__WrappedMonoid_op_zlzlzgzg__ {inst_m : Type}
   `{GHC.Base.Monoid inst_m}
    : WrappedMonoid inst_m -> WrappedMonoid inst_m -> WrappedMonoid inst_m :=
-  fun x y =>
-    match x, y with
-    | WrapMonoid a, WrapMonoid b => WrapMonoid (GHC.Base.mappend a b)
-    end.
+  fun arg_0__ arg_1__ =>
+    WrapMonoid (GHC.Base.mappend (unwrapMonoid arg_0__) (unwrapMonoid arg_1__)).
 
 #[global]
 Program Instance Semigroup__WrappedMonoid {m : Type} `{GHC.Base.Monoid m}

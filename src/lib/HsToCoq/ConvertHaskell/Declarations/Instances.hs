@@ -43,6 +43,7 @@ import HsToCoq.Util.GHC.Module
 import HsToCoq.Util.Monad (ErrorString)
 
 import HsToCoq.Coq.Gallina
+
 import HsToCoq.Coq.Subst
 import HsToCoq.Coq.SubstTy
 import HsToCoq.Coq.Pretty
@@ -500,14 +501,12 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
         methBody <- case (M.lookup meth cid_binds_map, M.lookup meth cid_types_map, M.lookup meth classDefaults) of
           (Just bind, _, _) ->
             local (envFor meth) $ convertMethodBinding localMeth bind >>= \case
-              ConvertedDefinitionBinding cd -> do
+              ConvertedDefinitionBinding cd ->
                 pure . CM_Defined CL_Term $ maybeFun (cd^.convDefArgs) (cd^.convDefBody)
-                -- We have a tough time handling recursion (including mutual
-                -- recursion) here because of name overloading
               ConvertedPatternBinding {} ->
-                convUnsupportedHere "pattern bindings in instances"
+                throwProgramError "pattern bindings in instances"
               ConvertedAxiomBinding {} ->
-                convUnsupportedHere "axiom bindings in instances"
+                throwProgramError "axiom bindings in instances"
               RedefinedBinding _ def ->
                 CM_Renamed (definitionSentence def) <$ case def of
                   CoqInductiveDef        _   -> editFailure   "cannot redefine an instance method definition into an Inductive"
@@ -516,7 +515,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
                   CoqInstanceDef         _   -> editFailure   "cannot redefine an instance method definition into an Instance"
                   CoqAxiomDef            _   -> pure ()
                   CoqAssertionDef        apf -> editFailure $ "cannot redefine an instance method definition into " ++ anAssertionVariety apf
-              SkippedBinding _ -> convUnsupportedHere "skipping binding in instance"
+              SkippedBinding _ -> throwProgramError "skipping binding in instance"
 
           (Nothing, Just assoc, _) ->
             let convertedType = withCurrentDefinition meth $ convertHsType assoc in

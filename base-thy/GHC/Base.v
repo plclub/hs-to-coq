@@ -297,7 +297,7 @@ Lemma simpl_option_some_eq a `{Eq_ a} (x y :a) :
   (Some x == Some y) = (x == y).
 Proof.
     repeat unfold Eq___option, op_zeze__, op_zeze____,
-           Base.Eq___option_op_zeze__, op_zeze____.
+           eq_option, op_zeze____.
     auto.
 Qed.
 
@@ -305,7 +305,7 @@ Lemma simpl_option_none_eq a `{Eq_ a} :
   ((None : option a) == None) = true.
 Proof.
     repeat unfold Eq___option, op_zeze__, op_zeze____,
-           Base.Eq___option_op_zeze__, op_zeze____.
+           eq_option, op_zeze____.
     auto.
 Qed.
 
@@ -598,7 +598,7 @@ Proof.
       Base.Semigroup__option_op_zlzlzgzg__.
   - intros x y z.
     destruct x; destruct y; destruct z; try apply Eq_refl.
-    unfold op_zeze__, Eq___option, op_zeze____, Base.Eq___option_op_zeze__.
+    unfold op_zeze__, Eq___option, op_zeze____, eq_option.
     apply semigroup_assoc.
 Qed.
 

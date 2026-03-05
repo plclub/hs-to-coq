@@ -37,7 +37,7 @@ Arguments Mk_Compose {_} {_} {_} {_} {_} _.
 
 (* Midamble *)
 
-(* Semigroup and Monoid for Compose — generated code has duplicate {k : Type}
+(* Semigroup and Monoid for Compose -- generated code has duplicate {k : Type}
    bindings and uses coerce. We define these manually with correct type vars
    and explicit pattern matching. *)
 
