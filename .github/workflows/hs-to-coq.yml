@@ -107,6 +107,11 @@ jobs:
           make -C examples/rle
           make -C examples/quicksort
           make -C examples/dlist
+          make -C examples/coinduction
+          make -C examples/intervals
+          make -C examples/successors
+          make -C examples/lambda
+          make -C examples/simple
 
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)
