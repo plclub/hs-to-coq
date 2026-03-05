@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: haskell:9.10.3
+    env:
+      STACK_ROOT: /workspace/.stack
     steps:
       - uses: actions/checkout@v4
       - name: Caching Stack
@@ -22,7 +24,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.stack
+            ${{ env.STACK_ROOT }}
             .stack-work
           key: stack-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
       - name: Build hs-to-coq
@@ -98,6 +100,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: haskell:9.10.3
+    env:
+      STACK_ROOT: /workspace/.stack
     steps:
       - uses: actions/checkout@v4
         with:
@@ -108,7 +112,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.stack
+            ${{ env.STACK_ROOT }}
             .stack-work
           key: stack-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
       - name: Build hs-to-coq
