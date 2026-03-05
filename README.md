@@ -51,13 +51,13 @@ This repository comes with a version of (parts of the) Haskell base library
 converted to Coq, which you will likely need if you want to verify Haskell
 code.
 
-You must have Coq 8.20 and ssreflect to build the base library. To
-install these tools:
+You must have Coq 8.20 and MathComp (with Hierarchy Builder) to build
+the base library and containers proofs. To install these tools:
 
   1. `opam repo add coq-released https://coq.inria.fr/opam/released` (for
      SSReflect and MathComp)
   2. `opam update`
-  3. `opam install coq.8.20.1 coq-mathcomp-ssreflect`
+  3. `opam install coq.8.20.1 coq-mathcomp-ssreflect coq-hierarchy-builder`
 
 Once installed, you can build the base library with
 
