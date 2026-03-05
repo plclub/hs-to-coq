@@ -39,8 +39,8 @@ make -C examples/base-tests
 # Run all examples (full bootstrap)
 cd examples && ./boot.sh
 
-# Build a specific example (e.g., containers)
-make -C examples/containers/lib
+# Build a specific example (e.g., containers lib + theories)
+make -C examples/containers
 ```
 
 Use relative path instead of absolute path when `cd` to a directory.
@@ -101,7 +101,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 
 ## CI (`.github/workflows/hs-to-coq.yml`)
 
-Four independent jobs (no `needs` chains): `build-haskell` (haskell:9.10.3 container), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 container), `tests` (haskell-actions + opam for Coq, no container), `test-translation` (haskell:9.10.3 container, verifies base/ regeneration matches). Triggers: push, pull_request, workflow_dispatch. Sets `LANG=C.utf8` globally.
+Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker), `tests` (haskell-actions + opam for Coq), `test-translation` (haskell:9.10.3 Docker, verifies base/ regeneration matches). Sets `LANG=C.utf8` globally for Unicode support.
 
 **Container job gotcha**: Container jobs need `STACK_ROOT: /workspace/.stack` as a job-level env var because `/github/home/` is owned by root but the runner user differs. Cache paths must use `${{ env.STACK_ROOT }}` instead of `~/.stack`. The non-container `tests` job uses `~/.stack` normally.
 
@@ -138,7 +138,7 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 - **`foldMap'` in Foldable**: GHC 9.10 added this to the Foldable class. Old restored .v files need the field added manually
 
 ### Containers submodule
-Containers is at v0.6.0.1, which has `foldl'` ambiguity with GHC 9.10 (Prelude now re-exports `Data.Foldable.foldl'`). The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is skipped in CI.
+Containers is at v0.6.0.1, which has `foldl'` ambiguity with GHC 9.10 (Prelude now re-exports `Data.Foldable.foldl'`). The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is skipped in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything.
 
 ### Coq 8.20 compatibility
 - `Program Instance` needs `#[global]` prefix for cross-module visibility
