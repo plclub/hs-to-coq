@@ -17,13 +17,13 @@ PASS = \
   RecordConstruction \
   TalkExample \
   OrdTest \
-  Invariant
+  Invariant \
+  Deriv2 \
+  Deriv3
 
 
 # tests that *should* pass but currently fail
 TODO_PASS  = \
-  Deriv2 \
-  Deriv3 \
   Arrow \
   EqList \
   PaperExamples \

@@ -552,6 +552,10 @@ instance Gallina Sentence where
   renderGallina' p (FixpointSentence        fix)    = renderGallina' p fix
   renderGallina' p (ProgramSentence sen@(InstanceSentence _) pf) = "#[global]"
                                                                    <!> "Program" <+> renderGallina' p sen <!> renderObligation pf
+  -- Coq 8.20: locality attributes must come before Program, not after
+  renderGallina' p (ProgramSentence (DefinitionSentence (DefinitionDef loc name args oty body ex)) pf) =
+    let sen' = DefinitionSentence (DefinitionDef ExportL name args oty body ex)
+    in renderLocality loc <> "Program" <+> renderGallina' p sen' <!> renderObligation pf
   renderGallina' p (ProgramSentence         sen pf) = "Program" <+> renderGallina' p sen <!> renderObligation pf
   renderGallina' p (AssertionSentence       ass pf) = renderGallina' p ass <!> renderGallina' p pf
   renderGallina' p (ModuleSentence          mod)    = renderGallina' p mod

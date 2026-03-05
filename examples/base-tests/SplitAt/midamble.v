@@ -1,4 +1,4 @@
-Require Import Omega.
+Require Import Lia.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
@@ -13,7 +13,7 @@ Proof.
     destruct (n <=? 0)%Z.
     + reflexivity.
     + specialize (IHxs (n - 1)%Z). 
-      omega.
+      lia.
 Qed.
 
 Lemma length_drop_lt:
@@ -25,8 +25,8 @@ Proof.
   * congruence.
   * simpl.
     rewrite <- H.
-    apply le_lt_n_Sm.
-    apply length_drop_le.
+    specialize (length_drop_le (n - 1)%Z xs).
+    lia.
 Qed.
 
 Ltac solve_splitAt := Coq.Program.Tactics.program_simpl; apply length_drop_lt; intuition.

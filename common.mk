@@ -21,3 +21,7 @@ HS_TO_COQ = cabal new-run --project-file=$(TOP)/cabal.project  -v0 $(CABAL_OPTS)
 endif
 
 SHELL = bash
+
+# GHC 9.10: generated .v files contain Unicode (e.g. ∘).
+# Ensure hs-to-coq can encode output correctly.
+export LANG := C.utf8
