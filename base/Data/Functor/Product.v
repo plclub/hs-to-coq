@@ -34,27 +34,6 @@ Arguments Pair {_} {_} {_} {_} _ _.
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Data.Functor.Product.Show__Product' *)
-
-(* Skipping all instances of class `GHC.Read.Read', including
-   `Data.Functor.Product.Read__Product' *)
-
-#[local] Definition Ord1__Product_liftCompare {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Functor.Classes.Ord1 inst_f} `{Data.Functor.Classes.Ord1
-  inst_g}
-   : forall {a : Type},
-     forall {b : Type},
-     (a -> b -> comparison) ->
-     Product inst_f inst_g a -> Product inst_f inst_g b -> comparison :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ arg_2__ =>
-      match arg_0__, arg_1__, arg_2__ with
-      | comp, Pair x1 y1, Pair x2 y2 =>
-          GHC.Base.mappend (Data.Functor.Classes.liftCompare comp x1 x2)
-                           (Data.Functor.Classes.liftCompare comp y1 y2)
-      end.
-
 #[local] Definition Eq1__Product_liftEq {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Functor.Classes.Eq1 inst_f} `{Data.Functor.Classes.Eq1
   inst_g}
@@ -78,6 +57,21 @@ Program Instance Eq1__Product {f : Type -> Type} {g : Type -> Type}
     k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
              Eq1__Product_liftEq |}.
 
+#[local] Definition Ord1__Product_liftCompare {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Functor.Classes.Ord1 inst_f} `{Data.Functor.Classes.Ord1
+  inst_g}
+   : forall {a : Type},
+     forall {b : Type},
+     (a -> b -> comparison) ->
+     Product inst_f inst_g a -> Product inst_f inst_g b -> comparison :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | comp, Pair x1 y1, Pair x2 y2 =>
+          GHC.Base.mappend (Data.Functor.Classes.liftCompare comp x1 x2)
+                           (Data.Functor.Classes.liftCompare comp y1 y2)
+      end.
+
 #[global]
 Program Instance Ord1__Product {f : Type -> Type} {g : Type -> Type}
   `{Data.Functor.Classes.Ord1 f} `{Data.Functor.Classes.Ord1 g}
@@ -85,109 +79,6 @@ Program Instance Ord1__Product {f : Type -> Type} {g : Type -> Type}
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
              Ord1__Product_liftCompare |}.
-
-#[local] Definition Ord__Product_compare {inst_k : Type} {inst_f
-   : inst_k -> Type} {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Ord
-  (inst_f inst_a)} `{GHC.Base.Ord (inst_g inst_a)}
-   : Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a -> comparison :=
-  fun a b =>
-    let 'Pair a1 a2 := a in
-    let 'Pair b1 b2 := b in
-    match (GHC.Base.compare a1 b1) with
-    | Lt => Lt
-    | Eq => (GHC.Base.compare a2 b2)
-    | Gt => Gt
-    end.
-
-#[local] Definition Ord__Product_op_zl__ {inst_k : Type} {inst_f
-   : inst_k -> Type} {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Ord
-  (inst_f inst_a)} `{GHC.Base.Ord (inst_g inst_a)}
-   : Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a -> bool :=
-  fun a b =>
-    let 'Pair a1 a2 := a in
-    let 'Pair b1 b2 := b in
-    match (GHC.Base.compare a1 b1) with
-    | Lt => true
-    | Eq => (a2 GHC.Base.< b2)
-    | Gt => false
-    end.
-
-#[local] Definition Ord__Product_op_zlze__ {inst_k : Type} {inst_f
-   : inst_k -> Type} {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Ord
-  (inst_f inst_a)} `{GHC.Base.Ord (inst_g inst_a)}
-   : Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a -> bool :=
-  fun a b => negb (Ord__Product_op_zl__ b a).
-
-#[local] Definition Ord__Product_op_zg__ {inst_k : Type} {inst_f
-   : inst_k -> Type} {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Ord
-  (inst_f inst_a)} `{GHC.Base.Ord (inst_g inst_a)}
-   : Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a -> bool :=
-  fun a b => Ord__Product_op_zl__ b a.
-
-#[local] Definition Ord__Product_op_zgze__ {inst_k : Type} {inst_f
-   : inst_k -> Type} {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Ord
-  (inst_f inst_a)} `{GHC.Base.Ord (inst_g inst_a)}
-   : Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a -> bool :=
-  fun a b => negb (Ord__Product_op_zl__ a b).
-
-#[local] Definition Ord__Product_max {inst_k : Type} {inst_f : inst_k -> Type}
-  {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Ord (inst_f inst_a)}
-  `{GHC.Base.Ord (inst_g inst_a)}
-   : Product inst_f inst_g inst_a ->
-     Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a :=
-  fun x y => if Ord__Product_op_zlze__ x y : bool then y else x.
-
-#[local] Definition Ord__Product_min {inst_k : Type} {inst_f : inst_k -> Type}
-  {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Ord (inst_f inst_a)}
-  `{GHC.Base.Ord (inst_g inst_a)}
-   : Product inst_f inst_g inst_a ->
-     Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a :=
-  fun x y => if Ord__Product_op_zlze__ x y : bool then x else y.
-
-#[local] Definition Eq___Product_op_zeze__ {inst_k : Type} {inst_f
-   : inst_k -> Type} {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Eq_
-  (inst_f inst_a)} `{GHC.Base.Eq_ (inst_g inst_a)}
-   : Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Pair a1 a2, Pair b1 b2 => (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
-    end.
-
-#[local] Definition Eq___Product_op_zsze__ {inst_k : Type} {inst_f
-   : inst_k -> Type} {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Eq_
-  (inst_f inst_a)} `{GHC.Base.Eq_ (inst_g inst_a)}
-   : Product inst_f inst_g inst_a -> Product inst_f inst_g inst_a -> bool :=
-  fun x y => negb (Eq___Product_op_zeze__ x y).
-
-#[global]
-Program Instance Eq___Product {k : Type} {f : k -> Type} {a : k} {g : k -> Type}
-  `{GHC.Base.Eq_ (f a)} `{GHC.Base.Eq_ (g a)}
-   : GHC.Base.Eq_ (Product f g a) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Product_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Product_op_zsze__ |}.
-
-#[global]
-Program Instance Ord__Product {k : Type} {f : k -> Type} {a : k} {g : k -> Type}
-  `{GHC.Base.Ord (f a)} `{GHC.Base.Ord (g a)}
-   : GHC.Base.Ord (Product f g a) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zl____ := Ord__Product_op_zl__ ;
-           GHC.Base.op_zlze____ := Ord__Product_op_zlze__ ;
-           GHC.Base.op_zg____ := Ord__Product_op_zg__ ;
-           GHC.Base.op_zgze____ := Ord__Product_op_zgze__ ;
-           GHC.Base.compare__ := Ord__Product_compare ;
-           GHC.Base.max__ := Ord__Product_max ;
-           GHC.Base.min__ := Ord__Product_min |}.
-
-(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
-   `Data.Functor.Product.Data__Product' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic', including
-   `Data.Functor.Product.Generic__Product' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Data.Functor.Product.Generic1__Product__5' *)
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
    `Data.Functor.Product.Read1__Product' *)
@@ -245,36 +136,6 @@ Program Instance Functor__Product {f : Type -> Type} {g : Type -> Type}
      forall `{GHC.Base.Monoid m}, Product inst_f inst_g m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Product_foldMap GHC.Base.id.
 
-#[local] Definition Foldable__Product_foldr {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
-  inst_g}
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Product inst_f inst_g a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Product_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
-
-#[local] Definition Foldable__Product_foldl' {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
-  inst_g}
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Product inst_f inst_g a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in
-      Foldable__Product_foldr f' GHC.Base.id xs z0.
-
-#[local] Definition Foldable__Product_foldMap' {inst_f : Type -> Type} {inst_g
-   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
-  inst_g}
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> Product inst_f inst_g a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__Product_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
 #[local] Definition Foldable__Product_foldl {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
@@ -287,25 +148,25 @@ Program Instance Functor__Product {f : Type -> Type} {g : Type -> Type}
                                                                   (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                    GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__Product_foldr' {inst_f : Type -> Type} {inst_g
+#[local] Definition Foldable__Product_foldr {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> Product inst_f inst_g a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in
-      Foldable__Product_foldl f' GHC.Base.id xs z0.
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__Product_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Product_length {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, Product inst_f inst_g a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__Product_foldl' (fun arg_0__ arg_1__ =>
-                                match arg_0__, arg_1__ with
-                                | c, _ => c GHC.Num.+ #1
-                                end) #0.
+    Foldable__Product_foldl (fun arg_0__ arg_1__ =>
+                               match arg_0__, arg_1__ with
+                               | c, _ => c GHC.Num.+ #1
+                               end) #0.
 
 #[local] Definition Foldable__Product_null {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -345,14 +206,8 @@ Program Instance Foldable__Product {f : Type -> Type} {g : Type -> Type}
              Foldable__Product_fold ;
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__Product_foldMap ;
-           Data.Foldable.foldMap'__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__Product_foldMap' ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Product_foldl ;
-           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} =>
-             Foldable__Product_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Product_foldr ;
-           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} =>
-             Foldable__Product_foldr' ;
            Data.Foldable.length__ := fun {a : Type} => Foldable__Product_length ;
            Data.Foldable.null__ := fun {a : Type} => Foldable__Product_null ;
            Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
@@ -626,12 +481,11 @@ Program Instance Monoid__Product {k : Type} {f : k -> Type} {a : k} {g
            GHC.Base.mempty__ := Monoid__Product_mempty |}.
 
 (* External variables:
-     Eq Gt Lt Type andb bool comparison false list negb op_zt__ pair true
+     Type andb bool comparison false list op_zt__ pair true
      Control.Monad.Zip.MonadZip Control.Monad.Zip.munzip__ Control.Monad.Zip.mzipWith
      Control.Monad.Zip.mzipWith__ Control.Monad.Zip.mzip__ Coq.Program.Basics.compose
-     Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap'__
-     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
-     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
+     Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap__
+     Data.Foldable.fold__ Data.Foldable.foldl__ Data.Foldable.foldr__
      Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
      Data.Foldable.sum__ Data.Foldable.toList__ Data.Functor.Classes.Eq1
      Data.Functor.Classes.Ord1 Data.Functor.Classes.liftCompare
@@ -643,17 +497,14 @@ Program Instance Monoid__Product {k : Type} {f : k -> Type} {a : k} {g
      Data.SemigroupInternal.getSum Data.Traversable.Traversable
      Data.Traversable.mapM__ Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse Data.Traversable.traverse__ Data.Tuple.fst
-     Data.Tuple.snd GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad
-     GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.build' GHC.Base.compare
-     GHC.Base.compare__ GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr
-     GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__ GHC.Base.liftM GHC.Base.mappend
-     GHC.Base.mappend__ GHC.Base.max__ GHC.Base.mconcat__ GHC.Base.mempty
-     GHC.Base.mempty__ GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__
-     GHC.Base.op_zeze____ GHC.Base.op_zg____ GHC.Base.op_zgze____
-     GHC.Base.op_zgzg____ GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____
-     GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
-     GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
-     GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_zsze____
-     GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return___
-     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Tuple.pair2
+     Data.Tuple.snd GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monad
+     GHC.Base.Monoid GHC.Base.Semigroup GHC.Base.build' GHC.Base.flip GHC.Base.fmap
+     GHC.Base.fmap__ GHC.Base.foldr GHC.Base.id GHC.Base.liftA2 GHC.Base.liftA2__
+     GHC.Base.liftM GHC.Base.mappend GHC.Base.mappend__ GHC.Base.mconcat__
+     GHC.Base.mempty GHC.Base.mempty__ GHC.Base.op_z2218U__ GHC.Base.op_zgzg____
+     GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__
+     GHC.Base.op_zlzd____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
+     GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
+     GHC.Base.pure__ GHC.Base.return___ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
+     GHC.Num.op_zp__ GHC.Tuple.pair2
 *)

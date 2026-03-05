@@ -64,3 +64,9 @@ skip Data.Foldable.Foldable__Down
 skip method Data.Foldable.Foldable foldr'
 skip method Data.Foldable.Foldable foldl'
 skip method Data.Foldable.Foldable foldMap'
+
+# In Coq, there's no strictness distinction. Rewrite strict variants to lazy ones
+# so generated code that references foldl'/foldMap' uses the available class methods.
+rewrite forall x, Data.Foldable.foldl' x = Data.Foldable.foldl x
+rewrite forall x, Data.Foldable.foldMap' x = Data.Foldable.foldMap x
+

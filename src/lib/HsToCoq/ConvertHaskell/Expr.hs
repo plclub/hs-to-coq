@@ -606,6 +606,7 @@ convertExpr_ HsEmbTy{} =
   convUnsupported "embedded type expressions (RequiredTypeArguments)"
 convertExpr_ (XExpr (ExpandedThingRn _ e)) = convertExpr e
 convertExpr_ (XExpr (PopErrCtxt e)) = convertLExpr e
+convertExpr_ e = convUnsupported $ "unhandled HsExpr constructor: " ++ GHC.showPprUnsafe e
 #elif __GLASGOW_HASKELL__ >= 900
 convertExpr_ (XExpr (HsExpanded _ e)) = convertExpr e
 #else

@@ -31,12 +31,6 @@ Arguments Mk_KProxy {_}.
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `GHC.Enum.Bounded', including
-   `Data.Proxy.Bounded__Proxy' *)
-
-(* Skipping all instances of class `GHC.Read.Read', including
-   `Data.Proxy.Read__Proxy' *)
-
 #[local] Definition Eq___Proxy_op_zeze__ {inst_k : Type} {inst_s : inst_k}
    : Proxy inst_s -> Proxy inst_s -> bool :=
   fun arg_0__ arg_1__ => true.

@@ -1,3 +1,16 @@
+superclassCount:
+  Data.Traversable.Traversable: '2'
+defaultMethods:
+  Data.Traversable.Traversable: fromList [(Qualified "Data.Traversable" "mapM",Qualid
+    (Qualified "Data.Traversable" "traverse")),(Qualified "Data.Traversable" "sequence",Qualid
+    (Qualified "Data.Traversable" "sequenceA")),(Qualified "Data.Traversable" "sequenceA",App
+    (Qualid (Qualified "Data.Traversable" "traverse")) (PosArg (Qualid (Qualified
+    "GHC.Base" "id")) :| [])),(Qualified "Data.Traversable" "traverse",Fun (ExplicitBinder
+    (Ident (Bare "f")) :| []) (App (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg
+    (Qualid (Qualified "Data.Traversable" "sequenceA")) :| [PosArg (App (Qualid (Qualified
+    "GHC.Base" "fmap")) (PosArg (Qualid (Bare "f")) :| []))])))]
+classTypes:
+  Data.Traversable.Traversable: fromList []
 classDefns:
   Data.Traversable.Traversable: ClassDefinition (Qualified "Data.Traversable" "Traversable")
     [Typed Ungeneralizable Explicit (Ident (Bare "t") :| []) (Arrow (Qualid (Bare
@@ -38,16 +51,3 @@ classDefns:
     (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "a")) :| [])) (App (Qualid (Bare
     "f")) (PosArg (App (Qualid (Bare "t")) (PosArg (Qualid (Bare "b")) :| [])) :|
     []))))))))]
-classTypes:
-  Data.Traversable.Traversable: fromList []
-defaultMethods:
-  Data.Traversable.Traversable: fromList [(Qualified "Data.Traversable" "mapM",Qualid
-    (Qualified "Data.Traversable" "traverse")),(Qualified "Data.Traversable" "sequence",Qualid
-    (Qualified "Data.Traversable" "sequenceA")),(Qualified "Data.Traversable" "sequenceA",App
-    (Qualid (Qualified "Data.Traversable" "traverse")) (PosArg (Qualid (Qualified
-    "GHC.Base" "id")) :| [])),(Qualified "Data.Traversable" "traverse",Fun (ExplicitBinder
-    (Ident (Bare "f")) :| []) (App (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg
-    (Qualid (Qualified "Data.Traversable" "sequenceA")) :| [PosArg (App (Qualid (Qualified
-    "GHC.Base" "fmap")) (PosArg (Qualid (Bare "f")) :| []))])))]
-superclassCount:
-  Data.Traversable.Traversable: '2'

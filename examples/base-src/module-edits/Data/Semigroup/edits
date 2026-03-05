@@ -1,7 +1,6 @@
 rename value Data.Semigroup.option = Data.Semigroup.destruct_option
 
-add Data.Semigroup Instance Unpeel_Option a : HsToCoq.Unpeel.Unpeel (Option a) (option a) :=
-      HsToCoq.Unpeel.Build_Unpeel _ _ getOption Mk_Option.
+# GHC 9.10: Option type removed from Data.Semigroup
 add Data.Semigroup Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
       HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
 add Data.Semigroup Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) a :=
@@ -19,7 +18,6 @@ skip Data.Semigroup.stimesMonoid
 
 # needs stimesMonoid, Alternative
 skip Data.Semigroup.Semigroup__Alt
-skip Data.Semigroup.MonadPlus__Option
 
 # looping
 skip Data.Semigroup.cycle1
@@ -38,6 +36,56 @@ skip Data.Semigroup.Monoid__Max
 
 
 
+# GHC 9.10: Replace coerce-based definitions with explicit pattern matching
+
+redefine Local Definition Data.Semigroup.Semigroup__Min_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Min inst_a -> Min inst_a -> Min inst_a :=
+  fun x y => match x, y with | Mk_Min a, Mk_Min b => Mk_Min (GHC.Base.min a b) end.
+
+redefine Local Definition Data.Semigroup.Applicative__Min_liftA2
+   : forall {a : Type}, forall {b : Type}, forall {c : Type}, (a -> b -> c) -> Min a -> Min b -> Min c :=
+  fun {a : Type} {b : Type} {c : Type} f x y => match x, y with | Mk_Min a, Mk_Min b => Mk_Min (f a b) end.
+
+redefine Local Definition Data.Semigroup.Applicative__Min_op_zlztzg__
+   : forall {a : Type}, forall {b : Type}, Min (a -> b) -> Min a -> Min b :=
+  fun {a : Type} {b : Type} f x => match f, x with | Mk_Min g, Mk_Min a => Mk_Min (g a) end.
+
+redefine Local Definition Data.Semigroup.Semigroup__Max_op_zlzlzgzg__ {inst_a : Type} `{GHC.Base.Ord inst_a}
+   : Max inst_a -> Max inst_a -> Max inst_a :=
+  fun x y => match x, y with | Mk_Max a, Mk_Max b => Mk_Max (GHC.Base.max a b) end.
+
+redefine Local Definition Data.Semigroup.Applicative__Max_liftA2
+   : forall {a : Type}, forall {b : Type}, forall {c : Type}, (a -> b -> c) -> Max a -> Max b -> Max c :=
+  fun {a : Type} {b : Type} {c : Type} f x y => match x, y with | Mk_Max a, Mk_Max b => Mk_Max (f a b) end.
+
+redefine Local Definition Data.Semigroup.Applicative__Max_op_zlztzg__
+   : forall {a : Type}, forall {b : Type}, Max (a -> b) -> Max a -> Max b :=
+  fun {a : Type} {b : Type} f x => match f, x with | Mk_Max g, Mk_Max a => Mk_Max (g a) end.
+
+redefine Local Definition Data.Semigroup.Applicative__First_liftA2
+   : forall {a : Type}, forall {b : Type}, forall {c : Type}, (a -> b -> c) -> First a -> First b -> First c :=
+  fun {a : Type} {b : Type} {c : Type} f x y => match x, y with | Mk_First a, Mk_First b => Mk_First (f a b) end.
+
+redefine Local Definition Data.Semigroup.Applicative__First_op_zlztzg__
+   : forall {a : Type}, forall {b : Type}, First (a -> b) -> First a -> First b :=
+  fun {a : Type} {b : Type} f x => match f, x with | Mk_First g, Mk_First a => Mk_First (g a) end.
+
+redefine Local Definition Data.Semigroup.Applicative__Last_liftA2
+   : forall {a : Type}, forall {b : Type}, forall {c : Type}, (a -> b -> c) -> Last a -> Last b -> Last c :=
+  fun {a : Type} {b : Type} {c : Type} f x y => match x, y with | Mk_Last a, Mk_Last b => Mk_Last (f a b) end.
+
+redefine Local Definition Data.Semigroup.Applicative__Last_op_zlztzg__
+   : forall {a : Type}, forall {b : Type}, Last (a -> b) -> Last a -> Last b :=
+  fun {a : Type} {b : Type} f x => match f, x with | Mk_Last g, Mk_Last a => Mk_Last (g a) end.
+
+redefine Local Definition Data.Semigroup.Semigroup__WrappedMonoid_op_zlzlzgzg__ {inst_m : Type} `{GHC.Base.Monoid inst_m}
+   : WrappedMonoid inst_m -> WrappedMonoid inst_m -> WrappedMonoid inst_m :=
+  fun x y => match x, y with | WrapMonoid a, WrapMonoid b => WrapMonoid (GHC.Base.mappend a b) end.
+
+redefine Local Definition Data.Semigroup.Monoid__WrappedMonoid_mconcat {inst_m : Type} `{GHC.Base.Monoid inst_m}
+   : list (WrappedMonoid inst_m) -> WrappedMonoid inst_m :=
+  fun xs => WrapMonoid (GHC.Base.mconcat (GHC.Base.map (fun x => match x with | WrapMonoid a => a end) xs)).
+
 ##################################
 
 order Unpeel_Min Data.Semigroup.Eq___Min_op_zeze__
@@ -45,36 +93,30 @@ order Unpeel_Max Data.Semigroup.Eq___Max_op_zeze__
 order Unpeel_First Data.Semigroup.Eq___First_op_zeze__
 order Unpeel_Last Data.Semigroup.Eq___Last_op_zeze__
 order Unpeel_WrappedMonoid Data.Semigroup.Eq___WrappedMonoid_op_zeze__
-order Unpeel_Option Data.Semigroup.Eq___Option_op_zeze__
 
 order Data.Semigroup.Eq___Max           Data.Semigroup.Ord__Max
 order Data.Semigroup.Eq___Min           Data.Semigroup.Ord__Min
 order Data.Semigroup.Eq___First         Data.Semigroup.Ord__First
 order Data.Semigroup.Eq___Last          Data.Semigroup.Ord__Last
-order Data.Semigroup.Eq___Option        Data.Semigroup.Ord__Option
 order Data.Semigroup.Eq___WrappedMonoid Data.Semigroup.Ord__WrappedMonoid
 
 order Data.Semigroup.Semigroup__WrappedMonoid Data.Semigroup.Monoid__WrappedMonoid_mappend
-order Data.Semigroup.Semigroup__Option        Data.Semigroup.Monoid__Option_mappend
 
 order Data.Semigroup.Functor__Max    Data.Semigroup.Applicative__Max    Data.Semigroup.Monad__Max_op_zgzg__
 order Data.Semigroup.Functor__Min    Data.Semigroup.Applicative__Min    Data.Semigroup.Monad__Min_op_zgzg__
 order Data.Semigroup.Functor__First  Data.Semigroup.Applicative__First  Data.Semigroup.Monad__First_op_zgzg__
 order Data.Semigroup.Functor__Last   Data.Semigroup.Applicative__Last   Data.Semigroup.Monad__Last_op_zgzg__
-order Data.Semigroup.Functor__Option Data.Semigroup.Applicative__Option Data.Semigroup.Monad__Option_op_zgzg__
 
 order Data.Semigroup.Foldable__Max    Data.Semigroup.Traversable__Max
 order Data.Semigroup.Foldable__Min    Data.Semigroup.Traversable__Min
 order Data.Semigroup.Foldable__First  Data.Semigroup.Traversable__First
 order Data.Semigroup.Foldable__Last   Data.Semigroup.Traversable__Last
-order Data.Semigroup.Foldable__Option Data.Semigroup.Traversable__Option
 
 order Data.Semigroup.Bifunctor__Arg  Data.Semigroup.Bitraversable__Arg
 order Data.Semigroup.Bifoldable__Arg Data.Semigroup.Bitraversable__Arg
 order Data.Semigroup.Functor__Arg    Data.Semigroup.Traversable__Arg
 order Data.Semigroup.Foldable__Arg   Data.Semigroup.Traversable__Arg
 
-order Data.Semigroup.Functor__Option Data.Semigroup.Traversable__Option
 
 # Instance names for nested products are created wrongly, so
 # Semigroup (,) and Semigroup (,,) clash

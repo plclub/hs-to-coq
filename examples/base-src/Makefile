@@ -18,6 +18,11 @@ HANDMOD = \
   GHC/Real \
   GHC/Enum \
   Data/Bits \
+  Control/Category \
+  Control/Arrow \
+  Data/Functor/Identity \
+  Data/Traversable \
+  Data/Functor/Classes \
   GHC/Prim \
   GHC/Types \
   GHC/Tuple \
@@ -47,13 +52,9 @@ GHC_INTERNAL_MODULES = \
   Control/Monad \
   Data/Monoid \
   Data/Functor/Utils \
-  Data/Traversable \
   Control/Monad/Fail \
   Data/Foldable \
-  Control/Arrow \
-  Data/Functor/Identity \
-  Data/Functor/Const \
-  Control/Category
+  Data/Functor/Const
 
 # GHC/* modules in ghc-internal that need special path mapping
 # GHC/List -> ghc-internal/src/GHC/Internal/List.hs (not GHC/Internal/GHC/List.hs)
@@ -63,7 +64,6 @@ GHC_INTERNAL_GHC_MODULES = \
 # Generated modules still in base/src/ (with real content, not re-exports)
 BASE_MODULES = \
   Control/Applicative \
-  Data/Functor/Classes \
   Data/Bifunctor \
   Data/List/NonEmpty \
   Data/Semigroup \

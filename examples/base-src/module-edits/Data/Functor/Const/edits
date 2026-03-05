@@ -13,4 +13,27 @@ delete unused type variables Data.Functor.Const.Monoid__Const
 
 order Unpeel_Const Data.Functor.Const.Eq___Const_op_zeze__
 
+# GHC 9.10: Replace coerce-based definitions with explicit pattern matching
+# to avoid stack overflow from Coercible/Unpeel resolution loops
+
+redefine Local Definition Data.Functor.Const.Semigroup__Const_op_zlzlzgzg__ {inst_a : Type} {inst_k : Type} {inst_b : inst_k} `{GHC.Base.Semigroup inst_a}
+   : Const inst_a inst_b -> Const inst_a inst_b -> Const inst_a inst_b :=
+  fun x y => match x, y with | Mk_Const a, Mk_Const b => Mk_Const (a GHC.Base.<<>> b) end.
+
+redefine Local Definition Data.Functor.Const.Monoid__Const_mappend {inst_a : Type} {inst_k : Type} {inst_b : inst_k} `{GHC.Base.Monoid inst_a}
+   : Const inst_a inst_b -> Const inst_a inst_b -> Const inst_a inst_b :=
+  fun x y => match x, y with | Mk_Const a, Mk_Const b => Mk_Const (GHC.Base.mappend a b) end.
+
+redefine Local Definition Data.Functor.Const.Monoid__Const_mconcat {inst_a : Type} {inst_k : Type} {inst_b : inst_k} `{GHC.Base.Monoid inst_a}
+   : list (Const inst_a inst_b) -> Const inst_a inst_b :=
+  fun xs => Mk_Const (GHC.Base.mconcat (GHC.Base.map (fun x => match x with | Mk_Const a => a end) xs)).
+
+redefine Local Definition Data.Functor.Const.Monoid__Const_mempty {inst_a : Type} {inst_k : Type} {inst_b : inst_k} `{GHC.Base.Monoid inst_a}
+   : Const inst_a inst_b :=
+  Mk_Const GHC.Base.mempty.
+
+redefine Local Definition Data.Functor.Const.Applicative__Const_op_zlztzg__ {inst_m : Type} `{GHC.Base.Monoid inst_m}
+   : forall {a : Type}, forall {b : Type}, Const inst_m (a -> b) -> Const inst_m a -> Const inst_m b :=
+  fun {a : Type} {b : Type} x y => match x, y with | Mk_Const a, Mk_Const b => Mk_Const (GHC.Base.mappend a b) end.
+
 order Data.Functor.Const.Functor__Const Data.Functor.Const.Applicative__Const_op_ztzg__

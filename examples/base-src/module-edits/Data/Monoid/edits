@@ -1,35 +1,71 @@
-polykinds Data.Monoid.Ap k
-data kinds Data.Monoid.Ap (k -> Type), k
+# Ap has poly-kinded f in Haskell (forall k. (k -> Type) -> k -> Type)
+# Coq can't infer the kind, so we fix it to Type -> Type
+redefine Inductive Data.Monoid.Ap (f : Type -> Type) (a : Type) : Type := | Mk_Ap (getAp : f a) : Ap f a.
 
-add Data.Monoid Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) (option a) :=
-	 HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
-add Data.Monoid Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) (option a) :=
-	 HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
-add Data.Monoid Instance Unpeel_Ap (k : Type) (f : k -> Type) (a : k) : HsToCoq.Unpeel.Unpeel (Ap f a) (f a) :=
-	HsToCoq.Unpeel.Build_Unpeel _ _ getAp Mk_Ap.
+# GHC.Prim.coerce on typeclass methods causes Coq typeclass resolution loops
+# for Ap, Last, First newtypes. Replace with explicit wrap/unwrap.
 
-order Unpeel_Dual Data.Monoid.Eq___Dual_op_zeze__
-order Unpeel_Dual Data.Monoid.Eq___Dual_op_zsze__
-order Data.Monoid.Eq___Dual Data.Monoid.Ord__Dual
-order Unpeel_Dual Data.Monoid.Functor__Dual Data.Monoid.Applicative__Dual Data.Monoid.Monad__Dual
+# Ap instances (wrapping f a)
+redefine Definition Data.Monoid.Functor__Ap_fmap {inst_f : Type -> Type} `{GHC.Base.Functor inst_f} : forall {a : Type}, forall {b : Type}, (a -> b) -> Ap inst_f a -> Ap inst_f b := fun {a} {b} g x => match x with | Mk_Ap y => Mk_Ap (GHC.Base.fmap g y) end.
 
-order Unpeel_Last Data.Monoid.Eq___Last_op_zeze__
-order Unpeel_Last Data.Monoid.Eq___Last_op_zsze__
-order Data.Monoid.Eq___Last Data.Monoid.Ord__Last
-order Unpeel_Last Data.Monoid.Functor__Last Data.Monoid.Applicative__Last Data.Monoid.Monad__Last
-order Data.Monoid.Semigroup__Last Data.Monoid.Monoid__Last_mappend
+redefine Definition Data.Monoid.Functor__Ap_op_zlzd__ {inst_f : Type -> Type} `{GHC.Base.Functor inst_f} : forall {a : Type}, forall {b : Type}, a -> Ap inst_f b -> Ap inst_f a := fun {a} {b} x y => match y with | Mk_Ap z => Mk_Ap (x GHC.Base.<$ z) end.
 
-order Unpeel_First Data.Monoid.Eq___First_op_zeze__
-order Unpeel_First Data.Monoid.Eq___First_op_zsze__
-order Data.Monoid.Eq___First Data.Monoid.Ord__First
-order Unpeel_First Data.Monoid.Functor__First Data.Monoid.Applicative__First Data.Monoid.Monad__First
-order Data.Monoid.Semigroup__First Data.Monoid.Monoid__First_mappend
+redefine Definition Data.Monoid.Applicative__Ap_liftA2 {inst_f : Type -> Type} `{GHC.Base.Applicative inst_f} : forall {a : Type}, forall {b : Type}, forall {c : Type}, (a -> b -> c) -> Ap inst_f a -> Ap inst_f b -> Ap inst_f c := fun {a} {b} {c} g x y => match x, y with | Mk_Ap x', Mk_Ap y' => Mk_Ap (GHC.Base.liftA2 g x' y') end.
 
-order Unpeel_Ap Data.Monoid.Applicative__Ap_liftA2
-order Data.Monoid.Functor__Ap Data.Monoid.Applicative__Ap
+redefine Definition Data.Monoid.Applicative__Ap_op_zlztzg__ {inst_f : Type -> Type} `{GHC.Base.Applicative inst_f} : forall {a : Type}, forall {b : Type}, Ap inst_f (a -> b) -> Ap inst_f a -> Ap inst_f b := fun {a} {b} g x => match g, x with | Mk_Ap g', Mk_Ap x' => Mk_Ap (g' GHC.Base.<*> x') end.
 
-# Read and Show instances
-skip Data.Monoid.Read__Last
-skip Data.Monoid.Read__First
-skip Data.Monoid.Show__Last
-skip Data.Monoid.Show__First
+redefine Definition Data.Monoid.Applicative__Ap_op_ztzg__ {inst_f : Type -> Type} `{GHC.Base.Applicative inst_f} : forall {a : Type}, forall {b : Type}, Ap inst_f a -> Ap inst_f b -> Ap inst_f b := fun {a} {b} x y => match x, y with | Mk_Ap x', Mk_Ap y' => Mk_Ap (x' GHC.Base.*> y') end.
+
+redefine Definition Data.Monoid.Applicative__Ap_pure {inst_f : Type -> Type} `{GHC.Base.Applicative inst_f} : forall {a : Type}, a -> Ap inst_f a := fun {a} x => Mk_Ap (GHC.Base.pure x).
+
+redefine Definition Data.Monoid.Monad__Ap_op_zgzg__ {inst_f : Type -> Type} `{GHC.Base.Monad inst_f} : forall {a : Type}, forall {b : Type}, Ap inst_f a -> Ap inst_f b -> Ap inst_f b := fun {a} {b} x y => match x, y with | Mk_Ap x', Mk_Ap y' => Mk_Ap (x' GHC.Base.>> y') end.
+
+redefine Definition Data.Monoid.Monad__Ap_op_zgzgze__ {inst_f : Type -> Type} `{GHC.Base.Monad inst_f} : forall {a : Type}, forall {b : Type}, Ap inst_f a -> (a -> Ap inst_f b) -> Ap inst_f b := fun {a} {b} x k => match x with | Mk_Ap x' => Mk_Ap (x' GHC.Base.>>= (fun v => match k v with | Mk_Ap y => y end)) end.
+
+redefine Definition Data.Monoid.Monad__Ap_return_ {inst_f : Type -> Type} `{GHC.Base.Monad inst_f} : forall {a : Type}, a -> Ap inst_f a := fun {a} x => Mk_Ap (GHC.Base.return_ x).
+
+redefine Definition Data.Monoid.MonadFail__Ap_fail {inst_f : Type -> Type} `{Control.Monad.Fail.MonadFail inst_f} : forall {a : Type}, GHC.Base.String -> Ap inst_f a := fun {a} s => Mk_Ap (Control.Monad.Fail.fail s).
+
+# Last instances (wrapping option a)
+redefine Definition Data.Monoid.Functor__Last_fmap : forall {a : Type}, forall {b : Type}, (a -> b) -> Last a -> Last b := fun {a} {b} g x => match x with | Mk_Last y => Mk_Last (GHC.Base.fmap g y) end.
+
+redefine Definition Data.Monoid.Functor__Last_op_zlzd__ : forall {a : Type}, forall {b : Type}, a -> Last b -> Last a := fun {a} {b} x y => match y with | Mk_Last z => Mk_Last (x GHC.Base.<$ z) end.
+
+redefine Definition Data.Monoid.Applicative__Last_liftA2 : forall {a : Type}, forall {b : Type}, forall {c : Type}, (a -> b -> c) -> Last a -> Last b -> Last c := fun {a} {b} {c} g x y => match x, y with | Mk_Last x', Mk_Last y' => Mk_Last (GHC.Base.liftA2 g x' y') end.
+
+redefine Definition Data.Monoid.Applicative__Last_op_zlztzg__ : forall {a : Type}, forall {b : Type}, Last (a -> b) -> Last a -> Last b := fun {a} {b} g x => match g, x with | Mk_Last g', Mk_Last x' => Mk_Last (g' GHC.Base.<*> x') end.
+
+redefine Definition Data.Monoid.Applicative__Last_op_ztzg__ : forall {a : Type}, forall {b : Type}, Last a -> Last b -> Last b := fun {a} {b} x y => match x, y with | Mk_Last x', Mk_Last y' => Mk_Last (x' GHC.Base.*> y') end.
+
+redefine Definition Data.Monoid.Applicative__Last_pure : forall {a : Type}, a -> Last a := fun {a} x => Mk_Last (GHC.Base.pure x).
+
+redefine Definition Data.Monoid.Monad__Last_op_zgzg__ : forall {a : Type}, forall {b : Type}, Last a -> Last b -> Last b := fun {a} {b} x y => match x, y with | Mk_Last x', Mk_Last y' => Mk_Last (x' GHC.Base.>> y') end.
+
+redefine Definition Data.Monoid.Monad__Last_op_zgzgze__ : forall {a : Type}, forall {b : Type}, Last a -> (a -> Last b) -> Last b := fun {a} {b} x k => match x with | Mk_Last x' => Mk_Last (x' GHC.Base.>>= (fun v => match k v with | Mk_Last y => y end)) end.
+
+redefine Definition Data.Monoid.Monad__Last_return_ : forall {a : Type}, a -> Last a := fun {a} x => Mk_Last (GHC.Base.return_ x).
+
+# First instances (wrapping option a)
+redefine Definition Data.Monoid.Functor__First_fmap : forall {a : Type}, forall {b : Type}, (a -> b) -> First a -> First b := fun {a} {b} g x => match x with | Mk_First y => Mk_First (GHC.Base.fmap g y) end.
+
+redefine Definition Data.Monoid.Functor__First_op_zlzd__ : forall {a : Type}, forall {b : Type}, a -> First b -> First a := fun {a} {b} x y => match y with | Mk_First z => Mk_First (x GHC.Base.<$ z) end.
+
+redefine Definition Data.Monoid.Applicative__First_liftA2 : forall {a : Type}, forall {b : Type}, forall {c : Type}, (a -> b -> c) -> First a -> First b -> First c := fun {a} {b} {c} g x y => match x, y with | Mk_First x', Mk_First y' => Mk_First (GHC.Base.liftA2 g x' y') end.
+
+redefine Definition Data.Monoid.Applicative__First_op_zlztzg__ : forall {a : Type}, forall {b : Type}, First (a -> b) -> First a -> First b := fun {a} {b} g x => match g, x with | Mk_First g', Mk_First x' => Mk_First (g' GHC.Base.<*> x') end.
+
+redefine Definition Data.Monoid.Applicative__First_op_ztzg__ : forall {a : Type}, forall {b : Type}, First a -> First b -> First b := fun {a} {b} x y => match x, y with | Mk_First x', Mk_First y' => Mk_First (x' GHC.Base.*> y') end.
+
+redefine Definition Data.Monoid.Applicative__First_pure : forall {a : Type}, a -> First a := fun {a} x => Mk_First (GHC.Base.pure x).
+
+redefine Definition Data.Monoid.Monad__First_op_zgzg__ : forall {a : Type}, forall {b : Type}, First a -> First b -> First b := fun {a} {b} x y => match x, y with | Mk_First x', Mk_First y' => Mk_First (x' GHC.Base.>> y') end.
+
+redefine Definition Data.Monoid.Monad__First_op_zgzgze__ : forall {a : Type}, forall {b : Type}, First a -> (a -> First b) -> First b := fun {a} {b} x k => match x with | Mk_First x' => Mk_First (x' GHC.Base.>>= (fun v => match k v with | Mk_First y => y end)) end.
+
+redefine Definition Data.Monoid.Monad__First_return_ : forall {a : Type}, a -> First a := fun {a} x => Mk_First (GHC.Base.return_ x).
+
+
+# Fix ordering: Functor must come before Applicative, Applicative before Monad
+order Data.Monoid.Functor__Ap Data.Monoid.Applicative__Ap Data.Monoid.Monad__Ap Data.Monoid.MonadFail__Ap
+order Data.Monoid.Functor__Last Data.Monoid.Applicative__Last Data.Monoid.Monad__Last
+order Data.Monoid.Functor__First Data.Monoid.Applicative__First Data.Monoid.Monad__First

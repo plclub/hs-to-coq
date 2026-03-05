@@ -237,21 +237,30 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
              Just bname -> (name, bname) `S.member` skippedMethodsS
              Nothing    -> False
       filteredDefaults = filter (not . isSkippedDefault) (bagToList defaults)
-  value_defs <- fmap M.fromList $ for filteredDefaults $
+  value_defs <- fmap (M.fromList . catMaybes) $ for filteredDefaults $
                 convertTypedModuleBinding Nothing . unLoc >=> \case
                   Just (ConvertedDefinitionBinding cd) -> do
 --                      typeArgs <- getImplicitBindersForClassMember name convDefName
                       -- We have a tough time handling recursion (including mutual
                       -- recursion) here because of name overloading
-                      pure (cd^.convDefName, maybe id Fun (NE.nonEmpty $ cd^.convDefArgs) $ cd^.convDefBody)
+                      pure $ Just (cd^.convDefName, maybe id Fun (NE.nonEmpty $ cd^.convDefArgs) $ cd^.convDefBody)
                   Just (ConvertedPatternBinding    _ _)                     ->
                       convUnsupportedHere "pattern bindings in class declarations"
                   Just (ConvertedAxiomBinding      _ _)                     ->
                       convUnsupportedHere "axiom bindings in class declarations"
+                  Just (RedefinedBinding           rname (CoqDefinitionDef (DefinitionDef _ _ rargs _ rbody _))) ->
+                      -- Support redefining class method default implementations.
+                      -- Useful when the default uses unsupported syntax (e.g. SigPat)
+                      -- but can be expressed differently in Coq.
+                      pure $ Just (rname, maybe id Fun (NE.nonEmpty rargs) rbody)
                   Just (RedefinedBinding           _ _)                     ->
-                      convUnsupportedHere "redefining class method declarations"
+                      convUnsupportedHere "redefining class method declarations (only Definition form supported)"
                   Just (SkippedBinding _) ->
-                      convUnsupportedHere "skipping a binding (use `skip method')"
+                      -- Allow skipping individual default method implementations
+                      -- while keeping the method in the class Dict.
+                      -- Useful when the default uses unsupported syntax (e.g. SigPat)
+                      -- but per-instance implementations are fine.
+                      pure Nothing
                   Nothing                                                   ->
                       convUnsupportedHere "skipping a type class method (use `skip method`)"
   let defs = type_defs <> value_defs

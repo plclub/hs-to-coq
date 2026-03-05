@@ -140,7 +140,8 @@ Program Instance MonadZip__Identity : MonadZip Data.Functor.Identity.Identity :=
            mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
              MonadZip__Identity_mzipWith |}.
 
-(* Skipping instance `Control.Monad.Zip.MonadZip__Solo' — depends on skipped Monad__Solo *)
+(* Skipping instance `Control.Monad.Zip.MonadZip__Solo' of class
+   `Control.Monad.Zip.MonadZip' *)
 
 #[local] Definition MonadZip__Dual_munzip
    : forall {a : Type},
@@ -456,6 +457,5 @@ Program Instance MonadZip__Down : MonadZip Data.Ord.Down :=
      Data.SemigroupInternal.Dual Data.SemigroupInternal.Mk_Alt
      Data.SemigroupInternal.Product Data.SemigroupInternal.Sum Data.Tuple.fst
      Data.Tuple.snd GHC.Base.Monad GHC.Base.NonEmpty GHC.Base.liftM GHC.Base.liftM2
-     GHC.List.unzip GHC.List.zip GHC.List.zipWith GHC.Tuple.MkSolo GHC.Tuple.Solo
-     GHC.Tuple.pair2
+     GHC.List.unzip GHC.List.zip GHC.List.zipWith GHC.Tuple.pair2
 *)

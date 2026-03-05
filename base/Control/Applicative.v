@@ -46,24 +46,6 @@ Arguments WrapArrow {_} {_} {_} _.
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
-   `Control.Applicative.Data__WrappedArrow' *)
-
-(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
-   `Control.Applicative.Data__WrappedMonad' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic', including
-   `Control.Applicative.Generic__WrappedArrow' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Control.Applicative.Generic1__WrappedArrow__5' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic', including
-   `Control.Applicative.Generic__WrappedMonad' *)
-
-(* Skipping all instances of class `GHC.Generics.Generic1', including
-   `Control.Applicative.Generic1__WrappedMonad__5' *)
-
 Instance Unpeel_WrappedMonad {m} {a}
    : HsToCoq.Unpeel.Unpeel (WrappedMonad m a) (m a) :=
   HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonad WrapMonad.

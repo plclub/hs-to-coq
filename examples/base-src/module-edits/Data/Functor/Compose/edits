@@ -14,3 +14,20 @@ order Data.Functor.Compose.Eq___Compose Data.Functor.Compose.Ord__Compose
 
 skip Data.Functor.Compose.liftReadPrecCompose
 skip Data.Functor.Compose.liftShowsPrecCompose
+
+# GHC 9.10: foldMap' not available in our Foldable; redefine length to use foldMap
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_length {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, Compose inst_f inst_g a -> GHC.Num.Int := fun {a : Type} arg => match arg with | Mk_Compose t => Data.SemigroupInternal.getSum (Data.Foldable.foldMap (fun x => Data.SemigroupInternal.Mk_Sum (Data.Foldable.length x)) t) end.
+
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_product {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a := fun {a : Type} `{GHC.Num.Num a} arg => match arg with | Mk_Compose t => Data.SemigroupInternal.getProduct (Data.Foldable.foldMap (fun x => Data.SemigroupInternal.Mk_Product (Data.Foldable.product x)) t) end.
+
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_sum {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a := fun {a : Type} `{GHC.Num.Num a} arg => match arg with | Mk_Compose t => Data.SemigroupInternal.getSum (Data.Foldable.foldMap (fun x => Data.SemigroupInternal.Mk_Sum (Data.Foldable.sum x)) t) end.
+
+# GHC 9.10: Replace coerce-based definitions with explicit pattern matching
+
+
+skip Data.Functor.Compose.Semigroup__Compose_op_zlzlzgzg__
+skip Data.Functor.Compose.Semigroup__Compose
+skip Data.Functor.Compose.Monoid__Compose_mappend
+skip Data.Functor.Compose.Monoid__Compose_mconcat
+skip Data.Functor.Compose.Monoid__Compose_mempty
+skip Data.Functor.Compose.Monoid__Compose
