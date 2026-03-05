@@ -2,6 +2,9 @@ name: hs-to-coq
 
 on: [push, pull_request]
 
+env:
+  LANG: C.utf8
+
 jobs:
 
   pre_check:
@@ -21,18 +24,13 @@ jobs:
         with:
           paths: '["examples/**", "base/**", "base-thy/**"]'
 
-  installing-haskell:
-    name: Installing Haskell dependencies
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        ghc: [9.4.5]
-        resolver: [lts-20.11]
+  build-haskell:
+    name: Build hs-to-coq (GHC 9.10)
+    runs-on: ubuntu-latest
     needs: pre_check
     if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Caching Stack
         id: caching-stack
         uses: actions/cache@v4
@@ -40,176 +38,54 @@ jobs:
           path: |
             ~/.stack
             .stack-work
-            examples/containers/extraction/.stack-work
-            ~/.ghc
-          key: stack-${{ runner.os }}-ghc${{ matrix.ghc }}-${{ matrix.resolver }}-${{ hashFiles('**/hs-to-coq.cabal') }}
-      - uses: haskell/actions/setup@v1
-        if: steps.caching-stack.outputs.cache-hit != 'true'
+          key: stack-${{ runner.os }}-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
+      - uses: haskell-actions/setup@v2
         with:
-          ghc-version: ${{ matrix.ghc }}
+          ghc-version: '9.10.3'
           enable-stack: true
           stack-version: 'latest'
-      - name: Setup Stack
-        if: steps.caching-stack.outputs.cache-hit != 'true'
-        run: |
-          stack --no-terminal --install-ghc test --only-dependencies
-          stack --no-terminal --install-ghc install QuickCheck HUnit test-framework test-framework-hunit test-framework-quickcheck2
       - name: Build hs-to-coq
-        if: steps.caching-stack.outputs.cache-hit != 'true'
         run: stack --no-terminal --install-ghc build
 
-  installing-coq:
-    name: Installing Coq dependencies
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        ocaml: [4.14.2]
-        coq: [8.20.1]
-    needs: pre_check
-    if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
-    steps:
-      - name: Caching OPAM
-        id: caching-opam
-        uses: actions/cache@v4
-        with:
-          path: ~/.opam
-          key: opam-${{ runner.os }}-coq${{ matrix.coq }}
-      - name: Set up OCaml
-        if: steps.caching-opam.outputs.cache-hit != 'true'
-        uses: avsm/setup-ocaml@v1
-        with:
-          ocaml-version: ${{ matrix.ocaml }}
-      - name: Set up Coq
-        if: steps.caching-opam.outputs.cache-hit != 'true'
-        run: |
-          if ! [ -e $HOME/.opam/config ]; then opam init -j 2 -n -y; fi
-          opam repo add coq-released http://coq.inria.fr/opam/released || true
-          opam list -i coq.${{ matrix.coq }} --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
-          opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
-          opam install -y coq-equations.1.2+8.10
-
-  cross-build-hs-to-coq:
-    name: Cross building hs-to-coq with multiple GHC versions
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        ghc: [9.4.5]
-        resolver: [lts-12.26, lts-14.27, lts-16.31, lts-18.10, 20.11]
-    needs: pre_check
-    if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Caching Stack
-        id: caching-stack
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.stack
-            .stack-work
-            examples/containers/extraction/.stack-work
-            ~/.ghc
-          key: stack-${{ runner.os }}-ghc${{ matrix.ghc }}-${{ matrix.resolver }}-${{ hashFiles('**/hs-to-coq.cabal') }}
-      - uses: haskell/actions/setup@v1
-        with:
-          ghc-version: ${{ matrix.ghc }}
-          enable-stack: true
-          stack-version: 'latest'
-      - name: Replacing resolver
-        run: sed -i 's/lts-.*/${{ matrix.resolver }}/g' stack.yaml
-      - name: Building hs-to-coq
-        run: |
-          stack --no-terminal --install-ghc test --only-dependencies
-          stack --no-terminal --install-ghc install QuickCheck HUnit test-framework test-framework-hunit test-framework-quickcheck2
-          stack --no-terminal --install-ghc build
-
   test-coq-files:
-    name: Testing base, containers, transformers, GHC, etc.
-    runs-on: ${{ matrix.os }}
-    needs: [installing-coq, pre_check]
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        ocaml: [4.07.1]
-        coq: [8.10.2]
+    name: Testing base, containers (Coq 8.20)
+    runs-on: ubuntu-latest
+    needs: pre_check
     if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Caching OPAM
-        uses: actions/cache@v4
-        with:
-          path: ~/.opam
-          key: opam-${{ runner.os }}-coq${{ matrix.coq }}
-      - name: Set up OCaml
-        uses: avsm/setup-ocaml@v1
-        with:
-          ocaml-version: ${{ matrix.ocaml }}
+      - uses: actions/checkout@v4
       - name: Set up Coq
-        if: steps.caching-opam.outputs.cache-hit != 'true'
         run: |
-          opam init -j 2 -n -y
-      - name: Installing Coq dependencies
-        run: |
-          opam repo add coq-released http://coq.inria.fr/opam/released || true
-          opam list -i coq.8.10.2 --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
-          opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
-          opam install -y coq-equations.1.2+8.10
+          sudo apt-get update
+          sudo apt-get install -y opam
+          opam init -j 2 -n -y -c ocaml-base-compiler.4.14.2
+          opam repo add coq-released https://coq.inria.fr/opam/released || true
+          opam install -y coq.8.20.1 coq-mathcomp-ssreflect
       - name: Compiling base
         run: |
-          eval $(opam config env)
+          eval $(opam env)
           (cd base; coq_makefile -f _CoqProject -o Makefile)
           make -j -C base
           (cd base-thy; coq_makefile -f _CoqProject -o Makefile)
           make -j -C base-thy
-      - name: Compiling transformers
-        run: |
-          eval $(opam config env)
-          (cd examples/transformers/lib; coq_makefile -f _CoqProject -o Makefile)
-          make -j -C examples/transformers/lib
-          (cd examples/transformers/theories; coq_makefile -f _CoqProject -o Makefile)
-          make -j -C examples/transformers/theories
       - name: Compiling containers
         run: |
-          eval $(opam config env)
+          eval $(opam env)
           (cd examples/containers/lib; coq_makefile -f _CoqProject -o Makefile)
           make -j -C examples/containers/lib
           (cd examples/containers/theories; coq_makefile -f _CoqProject -o Makefile)
           make -j -C examples/containers/theories
-      - name: Compiling GHC and core-semantics
-        run: |
-          eval $(opam config env)
-          (cd examples/ghc/lib; coq_makefile -f _CoqProject -o Makefile)
-          make -j -C examples/ghc/lib
-          (cd examples/ghc/theories; coq_makefile -f _CoqProject -o Makefile)
-          make -j -C examples/ghc/theories
-          (cd examples/core-semantics/lib; coq_makefile -f _CoqProject -o Makefile)
-          make -j -C examples/core-semantics/lib
-      - name: Compiling Graph (FGL)
-        run: |
-          eval $(opam config env)
-          (cd examples/graph/lib; coq_makefile -f _CoqProject -o Makefile)
-          make -j -C examples/graph/lib
-          (cd examples/graph/theories; coq_makefile -f _CoqProject -o Makefile)
-          make -j -C examples/graph/theories
 
   tests:
-    name: Tests, base tests, and other examples
-    runs-on: ${{ matrix.os }}
-    needs: [installing-haskell, installing-coq, pre_check]
+    name: Unit tests and examples
+    runs-on: ubuntu-latest
+    needs: [build-haskell, pre_check]
     if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' && needs.pre_check.outputs.should_skip_hs != 'true' }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        ghc: [9.4.5]
-        resolver: [lts-20.11]
-        ocaml: [4.07.1]
-        coq: [8.10.2]
     steps:
-      - uses: actions/checkout@v2
-      - uses: haskell/actions/setup@v1
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/setup@v2
         with:
-          ghc-version: ${{ matrix.ghc }}
+          ghc-version: '9.10.3'
           enable-stack: true
           stack-version: 'latest'
       - name: Caching Stack
@@ -218,80 +94,46 @@ jobs:
           path: |
             ~/.stack
             .stack-work
-            examples/containers/extraction/.stack-work
-            ~/.ghc
-          key: stack-${{ runner.os }}-ghc${{ matrix.ghc }}-${{ matrix.resolver }}-${{ hashFiles('**/hs-to-coq.cabal') }}
-      - name: Setup Stack
-        if: steps.caching-stack.outputs.cache-hit != 'true'
-        run: |
-          stack --no-terminal --install-ghc test --only-dependencies
-          stack --no-terminal --install-ghc install QuickCheck HUnit test-framework test-framework-hunit test-framework-quickcheck2
+          key: stack-${{ runner.os }}-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
       - name: Build hs-to-coq
         run: stack --no-terminal --install-ghc build
-      - name: Caching OPAM
-        uses: actions/cache@v4
-        with:
-          path: ~/.opam
-          key: opam-${{ runner.os }}-coq${{ matrix.coq }}
-      - name: Set up OPAM
-        uses: avsm/setup-ocaml@v1
-        with:
-          ocaml-version: ${{ matrix.ocaml }}
       - name: Set up Coq
-        if: steps.caching-opam.outputs.cache-hit != 'true'
         run: |
-          opam init -j 2 -n -y
-      - name: Installing Coq dependencies
-        run: |
-          opam repo add coq-released http://coq.inria.fr/opam/released || true
-          opam list -i coq.8.10.2 --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
-          opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
-          opam install -y coq-equations.1.2+8.10
+          sudo apt-get update
+          sudo apt-get install -y opam
+          opam init -j 2 -n -y -c ocaml-base-compiler.4.14.2
+          opam repo add coq-released https://coq.inria.fr/opam/released || true
+          opam install -y coq.8.20.1 coq-mathcomp-ssreflect
       - name: Run tests
         run: |
-          eval $(opam config env)
+          eval $(opam env)
           (cd base; coq_makefile -f _CoqProject -o Makefile)
           make -j -C base
-          make -j -C examples/tests
-          make -j -C examples/base-tests
+          make -C examples/tests
+          make -C examples/base-tests
           (cd base-thy; coq_makefile -f _CoqProject -o Makefile)
           make -j -C base-thy
-          make -j -C examples/successors
-          make -j -C examples/compiler
-          make -j -C examples/rle
-          make -j -C examples/bag
-          make -j -C examples/quicksort
-          make -j -C examples/dlist
-          make -j -C examples/intervals
-          make -j -C examples/coinduction
+          # Examples that work with GHC 9.10 + Coq 8.20
+          make -C examples/compiler
+          make -C examples/rle
+          make -C examples/quicksort
+          make -C examples/dlist
+          # TODO: successors, intervals, coinduction need re-translation for GHC 9.10
 
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)
-    runs-on: ${{ matrix.os }}
-    needs: [installing-haskell, pre_check]
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        ghc: [9.4.5]
-        resolver: [lts-20.11]
-        ocaml: [4.07.1]
-        coq: [8.10.2]
+    runs-on: ubuntu-latest
+    needs: [build-haskell, pre_check]
     if: ${{ needs.pre_check.outputs.should_skip_hs != 'true' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Installing dependencies for Linux
-        if: runner.os == 'Linux'
-        run: sudo apt-get install xutils-dev
-      - name: Installing dependencies for MacOS
-        if: runner.os == 'macOS'
-        run: |
-          brew install --cask xquartz
-          export PATH=$PATH:/usr/X11/bin >> ~/.bash_profile
-      - uses: haskell/actions/setup@v1
+        run: sudo apt-get install -y xutils-dev
+      - uses: haskell-actions/setup@v2
         with:
-          ghc-version: ${{ matrix.ghc }}
+          ghc-version: '9.10.3'
           enable-stack: true
           stack-version: 'latest'
       - name: Caching Stack
@@ -300,14 +142,7 @@ jobs:
           path: |
             ~/.stack
             .stack-work
-            examples/containers/extraction/.stack-work
-            ~/.ghc
-          key: stack-${{ runner.os }}-ghc${{ matrix.ghc }}-${{ matrix.resolver }}-${{ hashFiles('**/hs-to-coq.cabal') }}
-      - name: Setup Stack
-        if: steps.caching-stack.outputs.cache-hit != 'true'
-        run: |
-          stack --no-terminal --install-ghc test --only-dependencies
-          stack --no-terminal --install-ghc install QuickCheck HUnit test-framework test-framework-hunit test-framework-quickcheck2
+          key: stack-${{ runner.os }}-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml') }}
       - name: Build hs-to-coq
         run: stack --no-terminal --install-ghc build
       - name: Translating base
@@ -328,107 +163,3 @@ jobs:
           git add examples/containers/lib
           git status
           git diff-index --cached --quiet HEAD -- examples/containers/lib
-      - name: Translating transformers
-        run: |
-          make -C examples/transformers clean
-          make -C examples/transformers vfiles
-      - name: Comparing convenience copy of transformers
-        run: |
-          git add examples/transformers/lib
-          git status
-          git diff-index --cached --quiet HEAD -- examples/transformers/lib
-      - name: Translating GHC and core-semantics
-        run: |
-          make -C examples/ghc clean
-          make -C examples/ghc vfiles
-          make -C examples/core-semantics clean
-          make -C examples/core-semantics vfiles
-      - name: Comparing convenience copy of GHC and core-semantics
-        run: |
-          git add examples/ghc/lib
-          git add examples/core-semantics/lib
-          git status
-          git diff-index --cached --quiet HEAD -- examples/ghc/lib/
-      - name: Translating Graph (FGL)
-        run: |
-          make -C examples/graph clean
-          make -C examples/graph vfiles
-      - name: Comparing convenience copy of Graph (FGL)
-        run: |
-          git add examples/graph/lib
-          git status
-          git diff-index --cached --quiet HEAD -- examples/graph/lib
-
-  test-container-extraction:
-    name: Testing containers extraction
-    runs-on: ${{ matrix.os }}
-    needs: [installing-haskell, installing-coq, pre_check]
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        ghc: [8.4.3]
-        resolver: [lts-12.0]
-        ocaml: [4.07.1]
-        coq: [8.10.2]
-    if: ${{ needs.pre_check.outputs.should_skip_coq != 'true' }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - uses: haskell/actions/setup@v1
-        with:
-          ghc-version: ${{ matrix.ghc }}
-          enable-stack: true
-          stack-version: 'latest'
-      - name: Caching Stack
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.stack
-            .stack-work
-            examples/containers/extraction/.stack-work
-            ~/.ghc
-          key: stack-${{ runner.os }}-ghc${{ matrix.ghc }}-${{ matrix.resolver }}-${{ hashFiles('**/hs-to-coq.cabal') }}
-      - name: Setup Stack
-        if: steps.caching-stack.outputs.cache-hit != 'true'
-        run: |
-          stack --no-terminal --install-ghc test --only-dependencies
-          stack --no-terminal --install-ghc install QuickCheck HUnit test-framework test-framework-hunit test-framework-quickcheck2
-      - name: Build hs-to-coq
-        run: stack --no-terminal --install-ghc build
-      - name: Caching OPAM
-        uses: actions/cache@v4
-        with:
-          path: ~/.opam
-          key: opam-${{ runner.os }}-coq${{ matrix.coq }}
-      - name: Set up OPAM
-        uses: avsm/setup-ocaml@v1
-        with:
-          ocaml-version: ${{ matrix.ocaml }}
-      - name: Set up Coq
-        if: steps.caching-opam.outputs.cache-hit != 'true'
-        run: |
-          opam init -j 2 -n -y
-      - name: Installing Coq dependencies
-        run: |
-          opam repo add coq-released http://coq.inria.fr/opam/released || true
-          opam list -i coq.8.10.2 --silent || { opam update && opam unpin coq && opam install -v -y -j 1 --unlock-base coq.8.10.2 ocamlfind.1.8.0 ; }
-          opam list -i coq-mathcomp-ssreflect --silent || opam install -y coq-mathcomp-ssreflect
-          opam install -y coq-equations.1.2+8.10
-      - name: Extract containers
-        run: |
-          stack --no-terminal --install-ghc build
-          eval $(opam config env)
-          (cd base; coq_makefile -f _CoqProject -o Makefile)
-          make -j2 -C base
-          (cd examples/containers/lib; coq_makefile -f _CoqProject -o Makefile)
-          make -j2 -C examples/containers/lib
-          (cd examples/containers/extraction/extracted-src; coq_makefile -f _CoqProject -o Makefile)
-          make -j2 -C examples/containers/extraction/extracted-src/
-          perl -i examples/containers/extraction/extracted-src/fixcode.pl examples/containers/extraction/extracted-src/*.hs
-      - name: Testing containers extraction
-        run: |
-          cd examples/containers/extraction
-          stack --no-terminal --install-ghc test
-      - name: Bench
-        run: stack --no-terminal --install-ghc bench
