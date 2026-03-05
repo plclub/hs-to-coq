@@ -4919,7 +4919,7 @@ Proof.
   rewrite foldlBits_eq at 1. unfold foldlBits_go, proj1_sig.
   unfoldMethods. Int_Word_N.
   replace (wordToN bm =? Z.to_N 0)%N with false
-    by (symmetry; apply N.eqb_neq; unfold isBitMask in *; zify; rewrite Z2N.id; lia).
+    by (symmetry; apply N.eqb_neq; unfold isBitMask in *; zify; try rewrite Z2N.id; lia).
   (* eek *)
   replace (Sumbool.sumbool_of_bool false) with (@right (false = true) (false = false) (@eq_refl bool false))
     by reflexivity.
@@ -5300,7 +5300,7 @@ Proof.
   * exists (fun _ => false).
     split.
     + constructor. auto.
-    + intuition. congruence.
+    + intuition; try congruence.
   * destruct IHl as [?[??]].
     eexists.
     split.
@@ -6404,7 +6404,7 @@ Module IntSetFSet <: WSfun(Int_as_OT) <: WS <: Sfun(Int_as_OT) <: S.
   Definition filter : (elt -> bool) -> t -> t.
     refine (fun p ws =>
        s <-- ws;;
-       pack (filter p s) _).
+       pack (Data.IntSet.InternalWord.filter p s) _).
     apply filter_WF; assumption.
   Defined.
 
@@ -6412,12 +6412,12 @@ Module IntSetFSet <: WSfun(Int_as_OT) <: WS <: Sfun(Int_as_OT) <: S.
   Program Definition partition : (elt -> bool) -> t -> t * t :=
      (fun p ws => Data.IntSet.InternalWord.partition p ws).
   Next Obligation.
-    rewrite partition_snd.
+    rewrite partition_fst.
     apply filter_WF.
     destruct ws; auto.
   Qed.
   Next Obligation.
-    rewrite partition_fst.
+    rewrite partition_snd.
     apply filter_WF.
     destruct ws; auto.
   Qed.

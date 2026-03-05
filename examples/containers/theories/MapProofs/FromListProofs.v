@@ -1635,10 +1635,7 @@ Qed.
 Lemma foldl_foldl' : forall {b} f (x : b) (l: list (e * a)),
   Foldable.foldl f x l = Foldable.foldl' f x l.
 Proof.
-  intros.  unfold Foldable.foldl, Foldable.foldl'; unfold Foldable.Foldable__list;
-    unfold  Foldable.foldl__ , Foldable.foldl'__ ;
-    unfold Foldable.Foldable__list_foldl', Foldable.Foldable__list_foldl;
-    unfold Base.foldl, Base.foldl'. reflexivity.
+  intros. unfold Foldable.foldl'. reflexivity.
 Qed.
 
 Definition fromList'' :=

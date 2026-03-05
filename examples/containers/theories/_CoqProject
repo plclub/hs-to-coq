@@ -32,9 +32,7 @@ MapProofs.v
 IntSetProofs.v
 IntSetWordProofs.v
 RevNatSlowProofs.v
-../hs-spec/IntSetProperties.v
 IntSetUtil.v
-IntSetPropertyProofs.v
 DyadicIntervals.v
 Set.v
 IntMapProofs.v

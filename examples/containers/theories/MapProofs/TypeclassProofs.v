@@ -4,6 +4,7 @@ Require Import MapProofs.Bounds.
 Require Import MapProofs.MapFunctionProofs.
 Require Import MapProofs.ToListProofs.
 Require Import MapProofs.UnionIntersectDifferenceProofs.
+Require Import Coq.Logic.ProofIrrelevance.
 (** ** [Maps]s with [WF] *)
 
 Definition WFMap  (e : Type) `{Ord e} (a: Type)  : Type := {m : Map e a | WF m}.

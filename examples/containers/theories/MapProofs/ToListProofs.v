@@ -284,8 +284,7 @@ Proof.
   all: try solve [exfalso; lia_sizes]. (* Some are simply impossible *)
   all: repeat find_Tip.
   all: rewrite ?toList_Bin, <- ?app_assoc; try reflexivity.
-  simpl. rewrite <- app_assoc. simpl. reflexivity. simpl. rewrite <-app_assoc. simpl.
-  reflexivity.
+  simpl. rewrite <- app_assoc. simpl. reflexivity.
 Qed.
 
 Lemma toList_balanceL:

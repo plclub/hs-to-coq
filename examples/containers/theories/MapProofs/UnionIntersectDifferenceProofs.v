@@ -4,6 +4,7 @@ Require Import MapProofs.Bounds.
 Require Import MapProofs.Tactics.
 Require Import MapProofs.InsertProofs.
 Require Import MapProofs.DeleteUpdateProofs.
+Require Import Coq.Classes.Morphisms.
 
 Section WF_Part1.
 Context {e : Type} {a : Type} {HEq : Eq_ e} {HOrd : Ord e} {HEqLaws : EqLaws e}  {HOrdLaws : OrdLaws e}.
@@ -521,15 +522,14 @@ intros ????? HB1 HB2 HP.
     + inversion H3; subst; clear H3.
       applyDesc e (@insertWithKey_Desc e a). solve_Desc e. f_solver e;
       assert (sem s3 x0 = sem s3 i) by (apply sem_resp_eq; order e); rewrite <- H1 in Heqo0.
-      destruct (sem s3 x0). assert (f x0 vx a2 = f i vx a2). apply equal_f. apply equal_f.
-      apply HP. order e. rewrite H3 in Hsem. rewrite Heqo0 in Hsem. symmetry. assumption.
-      rewrite <- Hsem. assumption.
-      destruct (sem s3 x0). assert (f x0 vx a1 = f i vx a1). apply equal_f. apply equal_f.
-      apply HP. order e. rewrite H3 in Hsem. rewrite Heqo0 in Hsem. inversion Hsem.
-      rewrite Heqo0 in Hsem. inversion Hsem.
-      destruct (sem s3 x0). assert (f x0 vx a1 = f i vx a1). apply equal_f. apply equal_f.
-      apply HP. order e. rewrite H3 in Hsem. rewrite Heqo0 in Hsem. inversion Hsem.
-      rewrite Heqo0 in Hsem. inversion Hsem.
+      all: rewrite Heqo0 in Hsem; simpl in Hsem;
+        solve [ inversion Hsem
+              | symmetry; assumption
+              | match goal with
+                | [ Hs : Some (?ff _ _ ?v) = _ |- _ ] =>
+                  assert (ff x0 vx v = ff i vx v) by (apply equal_f; apply equal_f; apply HP; order e);
+                  congruence
+                end ].
     + inversion H3; subst; clear H3.
       eapply splitLookup_Desc; try eassumption.
       intros.

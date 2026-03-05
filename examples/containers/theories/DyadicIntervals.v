@@ -789,7 +789,9 @@ Proof.
     apply N.bits_inj_iff. intros j.
     replace j with ((j + b2) - b2) by lia.
     rewrite <- N.shiftl_spec_high by Nomega.
-    rewrite <- msDiffBit_Same with (p1 := (N.shiftl p1 (b1))) (p2 := (N.shiftl p2 (b2))); try lia.
+    rewrite <- msDiffBit_Same with (p1 := (N.shiftl p1 (b1))) (p2 := (N.shiftl p2 (b2))).
+    2: { exact (disjoint_rPrefix_differ _ _ H). }
+    2: { lia. }
     rewrite -> !N.shiftl_spec_high' by Nomega.
     rewrite -> !N.shiftr_spec by Nomega.
     rewrite -> !N.shiftl_spec_high' by Nomega.
@@ -874,8 +876,9 @@ Proof.
   intros.
   unfold commonRangeDisj.
   rewrite msDiffBit_sym.
-  rewrite msDiffBit_shiftr_same.
-  reflexivity.
+  destruct (N.eq_dec (rPrefix r1) (rPrefix r2)) as [Heq|Hne].
+  - rewrite Heq. reflexivity.
+  - rewrite msDiffBit_shiftr_same by (intro HH; apply Hne; symmetry; exact HH). reflexivity.
 Qed.
 
 Lemma commonRangeDisj_rBits_lt_l:
@@ -959,17 +962,17 @@ Proof.
   rewrite <- not_true_iff_false in H0.
   rewrite <- not_true_iff_false.
   contradict H0.
-  clear H.
-
   rewrite -> N2Z.inj_le in H1.
 
   destruct r1 as [p1 b1], r2 as [p2 b2]. simpl in *.
+  assert (Hne: N.shiftl p1 b1 <> N.shiftl p2 b2) by (apply (disjoint_rPrefix_differ (p1,b1) (p2,b2)); assumption).
+  clear H.
   set (b := msDiffBit _ _) in *.
   apply N.eqb_eq in H0.
   apply N.eqb_eq.
 
   subst b.
-  rewrite -> msDiffBit_shiftr_same by nonneg.
+  rewrite -> msDiffBit_shiftr_same by assumption.
   set (b := msDiffBit _ _) in *.
 
   rewrite -> N.shiftr_shiftl_r by lia.

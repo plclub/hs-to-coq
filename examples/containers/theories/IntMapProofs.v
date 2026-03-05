@@ -29,6 +29,9 @@ Axiom deferredFix2_eq : forall a b r `{Default r} (f : (a -> b -> r) -> (a -> b 
 From Coq Require Import ssreflect.
 From Coq Require Import Unicode.Utf8.
 
+(* Coq 8.20: typeclass resolution no longer unfolds Key→N→Word to find EqLaws_Word *)
+#[export] Instance EqLaws_Key : Base.EqLaws Key := Proofs.GHC.Base.EqLaws_Word.
+
 Lemma oro_None_r {a} (x:option a) : oro x None = x.
 Proof. destruct x; simpl; reflexivity. Qed.
 Lemma oro_None_l {a} (x:option a) : oro None x = x.

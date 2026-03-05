@@ -30,16 +30,14 @@ Proof.
     destruct Hthere as [[??]|Hthere].
       (*TODO: See why this is not rewriting automatically*)
     * subst. applyDesc e (@balanceR_Desc e a). rewrite size_Bin in *. rewrite size_Bin in H1.
-      solve_size. solve_Desc e. repeat(rewrite size_Bin in H1). rewrite size_Bin in Hsz0. solve_size.
-      (*subst; applyDesc e (@balanceR_Desc e a); solve_Desc e.*)
+      solve_size. all: solve_Desc e; repeat(rewrite size_Bin in H1); try (rewrite size_Bin in Hsz0); solve_size.
     * subst; applyDesc e (@balanceR_Desc e a). rewrite size_Bin in *. rewrite size_Bin in H1. solve_size.
-      solve_Desc e. rewrite size_Bin in Hsz0. solve_size.
+      all: solve_Desc e; try (rewrite size_Bin in Hsz0); solve_size.
   - eapply minViewSure_Desc; only 1: solve_Bounded e.
     intros y vy r [Hthere HD].
     applyDesc e HD.
     destruct Hthere as [[??]|Hthere]; subst; applyDesc e (@balanceL_Desc e a).
-    rewrite size_Bin in H1. solve_size. solve_Desc e. rewrite size_Bin in Hsz0. solve_size.
-    rewrite size_Bin in H1. solve_size. solve_Desc e. rewrite size_Bin in Hsz0. solve_size.
+    all: rewrite size_Bin in H1; solve_size; solve_Desc e; try (rewrite size_Bin in Hsz0); solve_size.
 
 Qed.
 
