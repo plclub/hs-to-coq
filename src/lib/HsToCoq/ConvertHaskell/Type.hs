@@ -51,6 +51,12 @@ convertType_ b (TyConApp tc ts@(_:_)) = do
   case convertedTc of
     (Qualified m t) | m == "GHC.Prim" && t == "TYPE"
                       -> pure $ Qualid (Bare "Type")
+                    -- GHC 9.10: (->) has no tyConBinders (it's a FunTyCon).
+                    -- When partially applied with only RuntimeRep args
+                    -- (e.g., (->) @LiftedRep @LiftedRep in instance heads),
+                    -- drop them and return plain GHC.Prim.arrow.
+                    | m == "GHC.Prim" && t == "arrow" && null (tyConBinders tc)
+                      -> convertTyConApp b tc [] convertedTc
                     | m == "GHC.Tuple" && length ts > 1 ->
                       if (t == "pair_type" || t == "op_Z2T__") || (t == "triple_type" && length ts > 2) ||
                          (t == "quad_type" && length ts > 3) || (t == "quint_type" && length ts > 4) ||

@@ -18,8 +18,6 @@ HANDMOD = \
   GHC/Real \
   GHC/Enum \
   Data/Bits \
-  Control/Category \
-  Control/Arrow \
   Data/Functor/Classes \
   GHC/Prim \
   GHC/Types \
@@ -62,7 +60,9 @@ GHC_INTERNAL_MODULES = \
   Data/Functor/Utils \
   Control/Monad/Fail \
   Data/Foldable \
-  Data/Functor/Const
+  Data/Functor/Const \
+  Control/Category \
+  Control/Arrow
 
 # GHC/* modules in ghc-internal that need special path mapping
 # GHC/List -> ghc-internal/src/GHC/Internal/List.hs (not GHC/Internal/GHC/List.hs)

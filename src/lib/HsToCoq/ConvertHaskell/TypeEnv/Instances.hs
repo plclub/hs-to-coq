@@ -67,5 +67,12 @@ lookupInstance :: ConversionMonad r m => Term -> Qualid -> ConvertedInstanceEnv 
 lookupInstance instTy className env = case find matchInstance env of
   Just t -> pure t
   _      -> throwProgramError $ "The class " <> showP className <> " of " <> showP instTy <> " is not found"
-  where matchInstance i = elem instTy (convertedInstanceTypes i) &&
+  where matchInstance i = any (matchType instTy) (convertedInstanceTypes i) &&
           convertedTyClName (convertedInstanceClass i) == className
+        -- Match types, allowing for the env type to have extra type arguments
+        -- from GHC's representation polymorphism (e.g., instTy = GHC.Prim.arrow
+        -- matching env type = GHC.Prim.arrow LiftedRep LiftedRep)
+        matchType needle haystack
+          | needle == haystack = True
+          | Qualid q <- needle, termHead haystack == Just q = True
+          | otherwise = False
