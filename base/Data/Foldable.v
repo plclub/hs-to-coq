@@ -991,6 +991,10 @@ Program Instance Foldable__Ap {f : Type -> Type} `{(Foldable f)}
     Data.Monoid.getFirst GHC.Base.∘
     foldMap (fun x => Data.Monoid.Mk_First (if p x : bool then Some x else None)).
 
+#[global] Definition foldl' {t : Type -> Type} `{Foldable t}
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> t a -> b :=
+  (@foldl t _).
+
 (* External variables:
      Alt Dual Mk_All Mk_Any Mk_Dual Mk_Endo Mk_Product Mk_Sum None Product Some Sum
      Type appEndo bool cons false getAll getAlt getAny getDual getProduct getSum list

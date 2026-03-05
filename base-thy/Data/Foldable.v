@@ -71,8 +71,9 @@ Ltac unfold_Foldable_foldr :=
   Foldable.Foldable__list_foldr.
 
 Ltac unfold_Foldable_foldl' :=
-  unfold Foldable.foldl',  Foldable.Foldable__list, 
-  Foldable.foldl'__, Foldable.Foldable__list_foldl', Base.foldl'.
+  unfold Foldable.foldl',
+  Foldable.foldl,  Foldable.Foldable__list,
+  Foldable.foldl__, Foldable.Foldable__list_foldl, Base.foldl.
 
 Ltac unfold_Foldable_foldl :=
   unfold Foldable.foldl,  Foldable.Foldable__list, 
