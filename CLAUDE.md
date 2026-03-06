@@ -173,10 +173,12 @@ Containers is at v0.7. The `.v` files in `examples/containers/lib/` were transla
 - `setoid_rewrite` under binders may fail with `UNDEFINED EVARS` — replace with explicit `replace`+`funext` or direct monad law rewrites
 - `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — proofs unfolding Foldable for lists need different unfolding chains
 - `eval unfold f` in sections with implicit args: use `let x := constr:(@f explicit_args) in let rhs := eval unfold f in x` — plain `eval unfold f in f` can't infer implicit params
+- `f_equal` is more aggressive — may fully solve goals that previously required `extensionality` or further tactics, causing "No such goal" errors on dead proof code
 
 ## Workflow
 
 - Keep a record (as a markdown file) of every time the user intervene
 - Every time before you commit, you should also check if other modules have been broken due to this change. For example, check `examples/test` even if you have only been working on `examples/containers`.
+- After significant functional changes (e.g., replacing `redefine` with native implementations), update README files, CLAUDE.md, and any plan documents to reflect the new state before committing.
 - Commit to git at each milestone with `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
 
