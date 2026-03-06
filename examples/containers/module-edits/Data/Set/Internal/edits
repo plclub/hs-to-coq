@@ -35,15 +35,36 @@ obligations Data.Set.Internal.link termination_by_omega
 termination Data.Set.Internal.merge {measure (Nat.add (set_size arg_0__) (set_size arg_1__))}
 obligations Data.Set.Internal.merge termination_by_omega
 
-## local functions. Proving this termination with program fixpoint looks very tricky.
-in Data.Set.Internal.fromDistinctAscList  termination create deferred
-in Data.Set.Internal.fromDistinctAscList  termination go     deferred
-in Data.Set.Internal.fromAscList          termination create deferred
-in Data.Set.Internal.fromAscList          termination go     deferred
+## fromList still has create/go local functions
 in Data.Set.Internal.fromList             termination create deferred
 in Data.Set.Internal.fromList             termination go     deferred
-in Data.Set.Internal.fromDistinctDescList termination create deferred
-in Data.Set.Internal.fromDistinctDescList termination go     deferred
+
+## fromDistinctAscList/fromDistinctDescList rewritten in v0.7 (stack-based, no create/go)
+## fromAscList now delegates to fromDistinctAscList
+skip Data.Set.Internal.fromDistinctAscList
+skip Data.Set.Internal.fromDistinctDescList
+skip Data.Set.Internal.fromDistinctAscList_linkTop
+skip Data.Set.Internal.fromDistinctAscList_linkAll
+skip Data.Set.Internal.fromDistinctDescList_linkTop
+skip Data.Set.Internal.fromDistinctDescList_linkAll
+skip Data.Set.Internal.foldl'Stack
+skip Data.Set.Internal.fromAscList
+skip Data.Set.Internal.fromDescList
+
+# New in v0.7
+skip Data.Set.Internal.IsList__Set_
+skip Data.Set.Internal.alterF
+skip Data.Set.Internal.alteredSet
+skip Data.Set.Internal.intersections
+skip Data.Set.Internal.Intersection
+skip Data.Set.Internal.getIntersection
+skip Data.Set.Internal.Semigroup__Intersection
+skip Data.Set.Internal.Lift__Set
+skip Data.Set.Internal.AlteredSet
+
+# New types from fromDistinctAscList rewrite
+skip Data.Set.Internal.Stack
+skip Data.Set.Internal.FromDistinctMonoState
 
 # Boring
 order Data.Set.Internal.Foldable__Set_ Data.Set.Internal.Monoid__MergeSet Data.Set.Internal.cartesianProduct

@@ -62,6 +62,17 @@ redefine Definition Data.IntSet.Internal.branchMask : Prefix -> (Prefix -> Mask)
 redefine Definition Data.IntSet.Internal.indexOfTheOnlyBit :=
  fun x => Coq.NArith.BinNat.N.log2 x.
 
+# highestBitSet uses countLeadingZeros which doesn't exist for N; use log2 instead
+redefine Definition Data.IntSet.Internal.highestBitSet : Nat -> Coq.Numbers.BinNums.N :=
+ fun x => Coq.NArith.BinNat.N.log2 x.
+
+# lowestBitSet uses countTrailingZeros which doesn't exist for N
+# lowestBitSet x = log2(lowestBitMask x) = log2(x .&. negate x)
+# For N type, we can use: log2(x land ((ones 64) lxor (x - 1) land x))
+# Simplify: for well-formed bitmaps, indexOfTheOnlyBit (lowestBitMask x) works
+redefine Definition Data.IntSet.Internal.lowestBitSet : Nat -> Coq.Numbers.BinNums.N :=
+ fun x => Data.IntSet.Internal.indexOfTheOnlyBit (Utils.Containers.Internal.BitUtil.lowestBitMask x).
+
 # avoid complement
 skip Data.IntSet.Internal.prefixBitMask
 rewrite forall x, (x Data.Bits..&. Data.IntSet.Internal.prefixBitMask) = Coq.NArith.BinNat.N.ldiff x Data.IntSet.Internal.suffixBitMask
@@ -116,10 +127,24 @@ skip Data.IntSet.Internal.node
 skip Data.IntSet.Internal.fromListConstr
 skip Data.IntSet.Internal.intSetDataType
 
-# mutual recursion 
+# mutual recursion
 skip Data.IntSet.Internal.fromDistinctAscList
 skip Data.IntSet.Internal.fromAscList
 
+# New in v0.7 - skip Inserted type (only used in fromAscList which is skipped, and
+# its type/constructor name collision is not allowed in Coq 8.20)
+skip Data.IntSet.Internal.Inserted
+skip Data.IntSet.Internal.IsList__IntSet
+skip Data.IntSet.Internal.fromRange
+skip Data.IntSet.Internal.alterF
+skip Data.IntSet.Internal.mapMonotonic
+skip Data.IntSet.Internal.takeWhileAntitone
+skip Data.IntSet.Internal.dropWhileAntitone
+skip Data.IntSet.Internal.spanAntitone
+skip Data.IntSet.Internal.Lift__IntSet
+skip Data.IntSet.Internal.fromMonoList
+skip Data.IntSet.Internal.addAll'
+skip Data.IntSet.Internal.addAll
 
 ### Type class ordering information ###
 

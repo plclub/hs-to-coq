@@ -50,6 +50,14 @@ redefine Definition Data.IntSet.InternalWord.natFromInt := IntWord.wordFromInt.
 # indexOfTheOnlyBit uses pointers and ugly stuff
 redefine Definition Data.IntSet.InternalWord.indexOfTheOnlyBit := IntWord.indexOfTheOnlyBit.
 
+# highestBitSet uses countLeadingZeros which doesn't translate
+redefine Definition Data.IntSet.InternalWord.highestBitSet : Nat -> IntWord.Int :=
+ fun x => IntWord.indexOfTheOnlyBit (IntWord.highestBitMask x).
+
+# lowestBitSet uses countTrailingZeros which doesn't translate
+redefine Definition Data.IntSet.InternalWord.lowestBitSet : Nat -> IntWord.Int :=
+ fun x => IntWord.indexOfTheOnlyBit (Data.IntSet.InternalWord.lowestBitMask x).
+
 redefine Definition Data.IntSet.InternalWord.suffixBitMask : IntWord.Int := GHC.Num.fromInteger 63.
 
 # This code is dead for well-formed input. Giving an explicit value
@@ -84,10 +92,24 @@ skip Data.IntSet.InternalWord.node
 skip Data.IntSet.InternalWord.fromListConstr
 skip Data.IntSet.InternalWord.intSetDataType
 
-# mutual recursion 
+# mutual recursion
 skip Data.IntSet.InternalWord.fromDistinctAscList
 skip Data.IntSet.InternalWord.fromAscList
 
+# New in v0.7 - skip Inserted type (only used in fromAscList which is skipped, and
+# its type/constructor name collision is not allowed in Coq 8.20)
+skip Data.IntSet.InternalWord.Inserted
+skip Data.IntSet.InternalWord.IsList__IntSet
+skip Data.IntSet.InternalWord.fromRange
+skip Data.IntSet.InternalWord.alterF
+skip Data.IntSet.InternalWord.mapMonotonic
+skip Data.IntSet.InternalWord.takeWhileAntitone
+skip Data.IntSet.InternalWord.dropWhileAntitone
+skip Data.IntSet.InternalWord.spanAntitone
+skip Data.IntSet.InternalWord.Lift__IntSet
+skip Data.IntSet.InternalWord.fromMonoList
+skip Data.IntSet.InternalWord.addAll'
+skip Data.IntSet.InternalWord.addAll
 
 ### Type class ordering information ###
 

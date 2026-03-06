@@ -109,7 +109,7 @@ Arguments AltAdj {_} {_} _.
 
 Arguments AltSame {_} {_}.
 
-#[global] Instance Default__AreWeStrict : HsToCoq.Err.Default AreWeStrict :=
+Instance Default__AreWeStrict : HsToCoq.Err.Default AreWeStrict :=
   HsToCoq.Err.Build_Default _ Strict.
 
 #[global] Definition matchedKey {f} {k} {x} {y} {z} (arg_0__
@@ -143,9 +143,9 @@ Fixpoint map_size {a} {b} (s : Map a b) : nat :=
 
 Require Import HsToCoq.Err.
 
-#[global] Instance Map_Default {k}{v} : Default (Map k v) :=
+Instance Map_Default {k}{v} : Default (Map k v) :=
   Build_Default _ Tip.
-#[global] Instance AlteredDefault {k}{v} : Default (Altered k v) :=
+Instance AlteredDefault {k}{v} : Default (Altered k v) :=
   Build_Default _ AltSame.
 
 (* This doesn't translate automatically for two reasons:
@@ -377,7 +377,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
    : Map inst_k inst_v -> Map inst_k inst_v -> Map inst_k inst_v :=
   union.
 
-#[global] Program Instance Semigroup__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
+#[global]
+Program Instance Semigroup__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
    : GHC.Base.Semigroup (Map k v) :=
   fun _ k__ => k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Map_op_zlzlzgzg__ |}.
 
@@ -404,14 +405,15 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
    : Map inst_k inst_v :=
   empty.
 
-#[global] Program Instance Monoid__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
+#[global]
+Program Instance Monoid__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
    : GHC.Base.Monoid (Map k v) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Map_mappend ;
            GHC.Base.mconcat__ := Monoid__Map_mconcat ;
            GHC.Base.mempty__ := Monoid__Map_mempty |}.
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `Data.Map.Internal.Data__Map' *)
 
 #[global] Definition map {a : Type} {b : Type} {k : Type}
@@ -432,7 +434,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
 #[local] Definition Functor__Map_op_zlzd__ {k : Type} {a : Type} {b : Type} :=
   (@functor__Map_op_zlzd__ k a b).
 
-#[global] Program Instance Functor__Map {k : Type} : GHC.Base.Functor (Map k) :=
+#[global]
+Program Instance Functor__Map {k : Type} : GHC.Base.Functor (Map k) :=
   fun _ k__ =>
     k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Map_fmap ;
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Map_op_zlzd__ |}.
@@ -463,7 +466,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
   fun {a : Type} {b : Type} =>
     Functor__WhenMissing_fmap GHC.Base.∘ GHC.Base.const.
 
-#[global] Program Instance Functor__WhenMissing {f : Type -> Type} {k : Type} {x : Type}
+#[global]
+Program Instance Functor__WhenMissing {f : Type -> Type} {k : Type} {x : Type}
   `{GHC.Base.Applicative f} `{GHC.Base.Monad f}
    : GHC.Base.Functor (WhenMissing f k x) :=
   fun _ k__ =>
@@ -509,7 +513,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
   fun {a : Type} {b : Type} =>
     Functor__WhenMatched_fmap GHC.Base.∘ GHC.Base.const.
 
-#[global] Program Instance Functor__WhenMatched {f : Type -> Type} {k : Type} {x : Type}
+#[global]
+Program Instance Functor__WhenMatched {f : Type -> Type} {k : Type} {x : Type}
   {y : Type} `{GHC.Base.Functor f}
    : GHC.Base.Functor (WhenMatched f k x y) :=
   fun _ k__ =>
@@ -527,8 +532,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
 (* Skipping instance `Data.Map.Internal.Monad__WhenMatched' of class
    `GHC.Base.Monad' *)
 
-(* Skipping all instances of class `GHC.Exts.IsList', including
-   `Data.Map.Internal.IsList__Map' *)
+(* Skipping instance `Data.Map.Internal.IsList__Map' of class
+   `GHC.Internal.IsList.IsList' *)
 
 #[global] Definition foldrWithKey {k : Type} {a : Type} {b : Type}
    : (k -> a -> b -> b) -> b -> Map k a -> b :=
@@ -555,7 +560,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
    : Map inst_k inst_a -> Map inst_k inst_a -> bool :=
   fun x y => negb (Eq___Map_op_zeze__ x y).
 
-#[global] Program Instance Eq___Map {k : Type} {a : Type} `{GHC.Base.Eq_ k} `{GHC.Base.Eq_
+#[global]
+Program Instance Eq___Map {k : Type} {a : Type} `{GHC.Base.Eq_ k} `{GHC.Base.Eq_
   a}
    : GHC.Base.Eq_ (Map k a) :=
   fun _ k__ =>
@@ -597,7 +603,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
    : Map inst_k inst_v -> Map inst_k inst_v -> Map inst_k inst_v :=
   fun x y => if Ord__Map_op_zlze__ x y : bool then x else y.
 
-#[global] Program Instance Ord__Map {k : Type} {v : Type} `{GHC.Base.Ord k} `{GHC.Base.Ord
+#[global]
+Program Instance Ord__Map {k : Type} {v : Type} `{GHC.Base.Ord k} `{GHC.Base.Ord
   v}
    : GHC.Base.Ord (Map k v) :=
   fun _ k__ =>
@@ -624,7 +631,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
       andb (size m GHC.Base.== size n) (Data.Functor.Classes.liftEq
             (Data.Functor.Classes.liftEq2 eqk eqv) (toList m) (toList n)).
 
-#[global] Program Instance Eq2__Map : Data.Functor.Classes.Eq2 Map :=
+#[global]
+Program Instance Eq2__Map : Data.Functor.Classes.Eq2 Map :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftEq2__ := fun {a : Type}
            {b : Type}
@@ -647,7 +655,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
       Data.Functor.Classes.liftCompare (Data.Functor.Classes.liftCompare2 cmpk cmpv)
       (toList m) (toList n).
 
-#[global] Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
+#[global]
+Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftCompare2__ := fun {a : Type}
            {b : Type}
@@ -676,7 +685,7 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
          | Tip => GHC.Base.pure Tip
          | Bin num_1__ k v _ _ =>
              if num_1__ GHC.Base.== #1 : bool
-             then (fun v' => Bin #1 k v' Tip Tip) Data.Functor.<$> f k v else
+             then Data.Functor.op_zlzdzg__ (fun v' => Bin #1 k v' Tip Tip) (f k v) else
              match arg_0__ with
              | Bin s k v l r =>
                  GHC.Base.liftA3 (GHC.Base.flip (Bin s k)) (go l) (f k v) (go r)
@@ -748,28 +757,6 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
            end in
       go t.
 
-#[global] Definition foldl' {a : Type} {b : Type} {k : Type}
-   : (a -> b -> a) -> a -> Map k b -> a :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Tip => z'
-         | z', Bin _ _ x l r => go (f (go z' l) x) r
-         end in
-    go z.
-
-#[local] Definition Foldable__Map_foldl' {inst_k : Type}
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> Map inst_k a -> b :=
-  fun {b : Type} {a : Type} => foldl'.
-
-#[local] Definition Foldable__Map_foldMap' {inst_k : Type}
-   : forall {m : Type},
-     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Map inst_k a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__Map_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
 #[global] Definition foldl {a : Type} {b : Type} {k : Type}
    : (a -> b -> a) -> a -> Map k b -> a :=
   fun f z =>
@@ -800,21 +787,6 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
      forall {b : Type}, (a -> b -> b) -> b -> Map inst_k a -> b :=
   fun {a : Type} {b : Type} => foldr.
 
-#[global] Definition foldr' {a : Type} {b : Type} {k : Type}
-   : (a -> b -> b) -> b -> Map k a -> b :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Tip => z'
-         | z', Bin _ _ x l r => go (f x (go z' r)) l
-         end in
-    go z.
-
-#[local] Definition Foldable__Map_foldr' {inst_k : Type}
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> Map inst_k a -> b :=
-  fun {a : Type} {b : Type} => foldr'.
-
 #[local] Definition Foldable__Map_length {inst_k : Type}
    : forall {a : Type}, Map inst_k a -> GHC.Num.Int :=
   fun {a : Type} => size.
@@ -825,6 +797,16 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
 #[local] Definition Foldable__Map_null {inst_k : Type}
    : forall {a : Type}, Map inst_k a -> bool :=
   fun {a : Type} => null.
+
+#[global] Definition foldl' {a : Type} {b : Type} {k : Type}
+   : (a -> b -> a) -> a -> Map k b -> a :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Tip => z'
+         | z', Bin _ _ x l r => let z'' := go z' l in go (f z'' x) r
+         end in
+    go z.
 
 #[local] Definition Foldable__Map_product {inst_k : Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Map inst_k a -> a :=
@@ -841,7 +823,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
    : forall {a : Type}, Map inst_k a -> list a :=
   fun {a : Type} => elems.
 
-#[global] Program Instance Foldable__Map {k : Type} : Data.Foldable.Foldable (Map k) :=
+#[global]
+Program Instance Foldable__Map {k : Type} : Data.Foldable.Foldable (Map k) :=
   fun _ k__ =>
     k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__Map_fold ;
@@ -856,7 +839,8 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
            Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Map_sum ;
            Data.Foldable.toList__ := fun {a : Type} => Foldable__Map_toList |}.
 
-#[global] Program Instance Traversable__Map {k : Type}
+#[global]
+Program Instance Traversable__Map {k : Type}
    : Data.Traversable.Traversable (Map k) :=
   fun _ k__ =>
     k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
@@ -877,6 +861,9 @@ Fixpoint union {k : Type} {a : Type} `{GHC.Base.Ord k} (arg_0__ arg_1__
            {b : Type}
            `{GHC.Base.Applicative f} =>
              Traversable__Map_traverse |}.
+
+(* Skipping instance `Data.Map.Internal.Bifoldable__Map' of class
+   `Data.Bifoldable.Bifoldable' *)
 
 (* Skipping all instances of class `Control.DeepSeq.NFData', including
    `Data.Map.Internal.NFData__Map' *)
@@ -1882,12 +1869,30 @@ Fixpoint intersectionWithKey {k : Type} {a : Type} {b : Type} {c : Type}
          end
      end.
 
+Fixpoint disjoint {k : Type} {a : Type} {b : Type} `{GHC.Base.Ord k} (arg_0__
+                    : Map k a) (arg_1__ : Map k b) : bool
+  := match arg_0__, arg_1__ with
+     | Tip, _ => true
+     | _, Tip => true
+     | Bin num_2__ k _ _ _, t =>
+         if num_2__ GHC.Base.== #1 : bool then notMember k t else
+         match arg_0__, arg_1__ with
+         | Bin _ k _ l r, t =>
+             let 'pair (pair lt found) gt := splitMember k t in
+             andb (negb found) (andb (disjoint l lt) (disjoint r gt))
+         | _, _ => GHC.Err.patternFailure
+         end
+     end.
+
+(* Skipping definition `Data.Map.Internal.compose' *)
+
 #[global] Definition mapGentlyWhenMissing {f : Type -> Type} {a : Type} {b
    : Type} {k : Type} {x : Type} `{GHC.Base.Functor f}
    : (a -> b) -> WhenMissing f k x a -> WhenMissing f k x b :=
   fun f t =>
-    Mk_WhenMissing (fun m => GHC.Base.fmap f Data.Functor.<$> missingSubtree t m)
-                   (fun k x => GHC.Base.fmap f Data.Functor.<$> missingKey t k x).
+    Mk_WhenMissing (fun m =>
+                      Data.Functor.op_zlzdzg__ (GHC.Base.fmap f) (missingSubtree t m)) (fun k x =>
+                      Data.Functor.op_zlzdzg__ (GHC.Base.fmap f) (missingKey t k x)).
 
 #[global] Definition runWhenMatched {f : Type -> Type} {k : Type} {x : Type} {y
    : Type} {z : Type}
@@ -1904,7 +1909,7 @@ Fixpoint intersectionWithKey {k : Type} {a : Type} {b : Type} {c : Type}
    : (a -> b) -> WhenMatched f k x y a -> WhenMatched f k x y b :=
   fun f t =>
     zipWithMaybeAMatched (fun k x y =>
-                            GHC.Base.fmap f Data.Functor.<$> runWhenMatched t k x y).
+                            Data.Functor.op_zlzdzg__ (GHC.Base.fmap f) (runWhenMatched t k x y)).
 
 #[global] Definition lmapWhenMissing {b : Type} {a : Type} {f : Type -> Type} {k
    : Type} {x : Type}
@@ -1937,7 +1942,7 @@ Fixpoint intersectionWithKey {k : Type} {a : Type} {b : Type} {c : Type}
 #[global] Definition zipWithAMatched {f : Type -> Type} {k : Type} {x : Type} {y
    : Type} {z : Type} `{GHC.Base.Applicative f}
    : (k -> x -> y -> f z) -> WhenMatched f k x y z :=
-  fun f => Mk_WhenMatched (fun k x y => Some Data.Functor.<$> f k x y).
+  fun f => Mk_WhenMatched (fun k x y => Data.Functor.op_zlzdzg__ Some (f k x y)).
 
 #[global] Definition zipWithMaybeMatched {f : Type -> Type} {k : Type} {x
    : Type} {y : Type} {z : Type} `{GHC.Base.Applicative f}
@@ -1955,6 +1960,22 @@ Fixpoint intersectionWithKey {k : Type} {a : Type} {b : Type} {c : Type}
    : WhenMissing f k x x :=
   Mk_WhenMissing GHC.Base.pure (fun arg_0__ arg_1__ =>
                     match arg_0__, arg_1__ with
+                    | _, v => GHC.Base.pure (Some v)
+                    end).
+
+Fixpoint forceTree {k} {a} (arg_0__ : Map k a) : unit
+  := match arg_0__ with
+     | Bin _ _ v l r =>
+         GHC.Prim.seq v (GHC.Prim.seq (forceTree l) (GHC.Prim.seq (forceTree r) tt))
+     | Tip => tt
+     end.
+
+#[global] Definition preserveMissing' {f : Type -> Type} {k : Type} {x : Type}
+  `{GHC.Base.Applicative f}
+   : WhenMissing f k x x :=
+  Mk_WhenMissing (fun t => GHC.Base.pure (GHC.Prim.seq (forceTree t) t))
+                 (fun arg_1__ arg_2__ =>
+                    match arg_1__, arg_2__ with
                     | _, v => GHC.Base.pure (Some v)
                     end).
 
@@ -2042,13 +2063,14 @@ Fixpoint filterWithKeyA {f} {k} {a} `{GHC.Base.Applicative f} (arg_0__
    : (k -> x -> f bool) -> WhenMissing f k x x :=
   fun f =>
     Mk_WhenMissing (fun m => filterWithKeyA f m) (fun k x =>
-                      boolITE None (Some x) Data.Functor.<$> f k x).
+                      Data.Functor.op_zlzdzg__ (boolITE None (Some x)) (f k x)).
 
 #[global] Definition traverseMissing {f : Type -> Type} {k : Type} {x : Type} {y
    : Type} `{GHC.Base.Applicative f}
    : (k -> x -> f y) -> WhenMissing f k x y :=
   fun f =>
-    Mk_WhenMissing (traverseWithKey f) (fun k x => Some Data.Functor.<$> f k x).
+    Mk_WhenMissing (traverseWithKey f) (fun k x =>
+                      Data.Functor.op_zlzdzg__ Some (f k x)).
 
 #[global] Definition traverseMaybeWithKey {f : Type -> Type} {k : Type} {a
    : Type} {b : Type} `{GHC.Base.Applicative f}
@@ -2057,7 +2079,8 @@ Fixpoint filterWithKeyA {f} {k} {a} `{GHC.Base.Applicative f} (arg_0__
     := match arg_0__, arg_1__ with
        | _, Tip => GHC.Base.pure Tip
        | f, Bin _ kx x Tip Tip =>
-           Data.Maybe.maybe Tip (fun x' => Bin #1 kx x' Tip Tip) Data.Functor.<$> f kx x
+           Data.Functor.op_zlzdzg__ (Data.Maybe.maybe Tip (fun x' => Bin #1 kx x' Tip Tip))
+                                    (f kx x)
        | f, Bin _ kx x l r =>
            let combine :=
              fun l' mx r' =>
@@ -2145,11 +2168,23 @@ Fixpoint submap' {a} {b} {c} `{GHC.Base.Ord a} (arg_0__ : (b -> c -> bool))
   := match arg_0__, arg_1__, arg_2__ with
      | _, Tip, _ => true
      | _, _, Tip => false
-     | f, Bin _ kx x l r, t =>
-         let 'pair (pair lt found) gt := splitLookup kx t in
-         match found with
-         | None => false
-         | Some y => andb (f x y) (andb (submap' f l lt) (submap' f r gt))
+     | f, Bin num_3__ kx x _ _, t =>
+         if num_3__ GHC.Base.== #1 : bool
+         then match lookup kx t with
+              | Some y => f x y
+              | None => false
+              end else
+         match arg_0__, arg_1__, arg_2__ with
+         | f, Bin _ kx x l r, t =>
+             let 'pair (pair lt found) gt := splitLookup kx t in
+             match found with
+             | None => false
+             | Some y =>
+                 andb (f x y) (andb (size l GHC.Base.<= size lt) (andb (size r GHC.Base.<=
+                                                                        size gt) (andb (submap' f l lt) (submap' f r
+                                                                                        gt))))
+             end
+         | _, _, _ => GHC.Err.patternFailure
          end
      end.
 
@@ -2406,6 +2441,16 @@ Fixpoint mapKeysMonotonic {k1 : Type} {k2 : Type} {a : Type} (arg_0__
          Bin sz (f k) x (mapKeysMonotonic f l) (mapKeysMonotonic f r)
      end.
 
+#[global] Definition foldr' {a : Type} {b : Type} {k : Type}
+   : (a -> b -> b) -> b -> Map k a -> b :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Tip => z'
+         | z', Bin _ _ x l r => go (f x (go z' r)) l
+         end in
+    go z.
+
 #[global] Definition foldrWithKey' {k : Type} {a : Type} {b : Type}
    : (k -> a -> b -> b) -> b -> Map k a -> b :=
   fun f z =>
@@ -2432,7 +2477,7 @@ Fixpoint mapKeysMonotonic {k1 : Type} {k2 : Type} {a : Type} (arg_0__
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | z', Tip => z'
-         | z', Bin _ kx x l r => go (f (go z' l) kx x) r
+         | z', Bin _ kx x l r => let z'' := go z' l in go (f z'' kx x) r
          end in
     go z.
 
@@ -2469,6 +2514,8 @@ Fixpoint keysSet {k : Type} {a : Type} (arg_0__ : Map k a)
      | Bin sz kx _ l r => Data.Set.Internal.Bin sz kx (keysSet l) (keysSet r)
      end.
 
+(* Skipping definition `Data.Map.Internal.argSet' *)
+
 Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
                    : Data.Set.Internal.Set_ k) : Map k a
   := match arg_0__, arg_1__ with
@@ -2476,6 +2523,8 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
      | f, Data.Set.Internal.Bin sz x l r =>
          Bin sz x (f x) (fromSet f l) (fromSet f r)
      end.
+
+(* Skipping definition `Data.Map.Internal.fromArgSet' *)
 
 #[global] Definition toDescList {k : Type} {a : Type}
    : Map k a -> list (k * a)%type :=
@@ -2489,169 +2538,31 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
    : (a -> k -> b -> a) -> a -> Map k b -> a :=
   foldlWithKey.
 
-#[global] Definition fromDistinctAscList {k : Type} {a : Type}
-   : list (k * a)%type -> Map k a :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => Tip
-    | cons (pair kx0 x0) xs0 =>
-        let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
-                                              match arg_1__, arg_2__ with
-                                              | _, nil => (pair Tip nil)
-                                              | s, (cons x' xs' as xs) =>
-                                                  if s GHC.Base.== #1 : bool
-                                                  then let 'pair kx x := x' in
-                                                       (pair (Bin #1 kx x Tip Tip) xs') else
-                                                  match create (Data.Bits.shiftR s #1) xs with
-                                                  | (pair _ nil as res) => res
-                                                  | pair l (cons (pair ky y) ys) =>
-                                                      let 'pair r zs := create (Data.Bits.shiftR s #1) ys in
-                                                      (pair (link ky y l r) zs)
-                                                  end
-                                              end) in
-        let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_15__ arg_16__ arg_17__ =>
-                                              match arg_15__, arg_16__, arg_17__ with
-                                              | _, t, nil => t
-                                              | s, l, cons (pair kx x) xs =>
-                                                  let 'pair r ys := create s xs in
-                                                  let t' := link kx x l r in go (Data.Bits.shiftL s #1) t' ys
-                                              end) in
-        go (#1 : GHC.Num.Int) (Bin #1 kx0 x0 Tip Tip) xs0
-    end.
+(* Skipping definition `Data.Map.Internal.fromAscList' *)
 
-#[global] Definition fromAscList {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : list (k * a)%type -> Map k a :=
-  fun xs =>
-    let fix combineEq' arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z, nil => cons z nil
-         | (pair kz _ as z), cons (pair kx xx as x) xs' =>
-             if kx GHC.Base.== kz : bool then combineEq' (pair kx xx) xs' else
-             cons z (combineEq' x xs')
-         end in
-    let combineEq :=
-      fun xs' =>
-        match xs' with
-        | nil => nil
-        | cons x nil => cons x nil
-        | cons x xx => combineEq' x xx
-        end in
-    fromDistinctAscList (combineEq xs).
+(* Skipping definition `Data.Map.Internal.fromDescList' *)
 
-#[global] Definition fromDistinctDescList {k : Type} {a : Type}
-   : list (k * a)%type -> Map k a :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => Tip
-    | cons (pair kx0 x0) xs0 =>
-        let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
-                                              match arg_1__, arg_2__ with
-                                              | _, nil => (pair Tip nil)
-                                              | s, (cons x' xs' as xs) =>
-                                                  if s GHC.Base.== #1 : bool
-                                                  then let 'pair kx x := x' in
-                                                       (pair (Bin #1 kx x Tip Tip) xs') else
-                                                  match create (Data.Bits.shiftR s #1) xs with
-                                                  | (pair _ nil as res) => res
-                                                  | pair r (cons (pair ky y) ys) =>
-                                                      let 'pair l zs := create (Data.Bits.shiftR s #1) ys in
-                                                      (pair (link ky y l r) zs)
-                                                  end
-                                              end) in
-        let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_15__ arg_16__ arg_17__ =>
-                                              match arg_15__, arg_16__, arg_17__ with
-                                              | _, t, nil => t
-                                              | s, r, cons (pair kx x) xs =>
-                                                  let 'pair l ys := create s xs in
-                                                  let t' := link kx x l r in go (Data.Bits.shiftL s #1) t' ys
-                                              end) in
-        go (#1 : GHC.Num.Int) (Bin #1 kx0 x0 Tip Tip) xs0
-    end.
+(* Skipping definition `Data.Map.Internal.fromAscListWith' *)
 
-#[global] Definition fromDescList {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : list (k * a)%type -> Map k a :=
-  fun xs =>
-    let fix combineEq' arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z, nil => cons z nil
-         | (pair kz _ as z), cons (pair kx xx as x) xs' =>
-             if kx GHC.Base.== kz : bool then combineEq' (pair kx xx) xs' else
-             cons z (combineEq' x xs')
-         end in
-    let combineEq :=
-      fun xs' =>
-        match xs' with
-        | nil => nil
-        | cons x nil => cons x nil
-        | cons x xx => combineEq' x xx
-        end in
-    fromDistinctDescList (combineEq xs).
+(* Skipping definition `Data.Map.Internal.fromDescListWith' *)
 
-#[global] Definition fromAscListWithKey {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : (k -> a -> a -> a) -> list (k * a)%type -> Map k a :=
-  fun f xs =>
-    let fix combineEq' arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z, nil => cons z nil
-         | (pair kz zz as z), cons (pair kx xx as x) xs' =>
-             if kx GHC.Base.== kz : bool
-             then let yy := f kx xx zz in combineEq' (pair kx yy) xs' else
-             cons z (combineEq' x xs')
-         end in
-    let combineEq :=
-      fun arg_7__ arg_8__ =>
-        match arg_7__, arg_8__ with
-        | _, xs' =>
-            match xs' with
-            | nil => nil
-            | cons x nil => cons x nil
-            | cons x xx => combineEq' x xx
-            end
-        end in
-    fromDistinctAscList (combineEq f xs).
+(* Skipping definition `Data.Map.Internal.fromAscListWithKey' *)
 
-#[global] Definition fromAscListWith {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : (a -> a -> a) -> list (k * a)%type -> Map k a :=
-  fun f xs =>
-    fromAscListWithKey (fun arg_0__ arg_1__ arg_2__ =>
-                          match arg_0__, arg_1__, arg_2__ with
-                          | _, x, y => f x y
-                          end) xs.
+(* Skipping definition `Data.Map.Internal.fromDescListWithKey' *)
 
-#[global] Definition fromDescListWithKey {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : (k -> a -> a -> a) -> list (k * a)%type -> Map k a :=
-  fun f xs =>
-    let fix combineEq' arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z, nil => cons z nil
-         | (pair kz zz as z), cons (pair kx xx as x) xs' =>
-             if kx GHC.Base.== kz : bool
-             then let yy := f kx xx zz in combineEq' (pair kx yy) xs' else
-             cons z (combineEq' x xs')
-         end in
-    let combineEq :=
-      fun arg_7__ arg_8__ =>
-        match arg_7__, arg_8__ with
-        | _, xs' =>
-            match xs' with
-            | nil => nil
-            | cons x nil => cons x nil
-            | cons x xx => combineEq' x xx
-            end
-        end in
-    fromDistinctDescList (combineEq f xs).
+(* Skipping definition `Data.Map.Internal.fromDistinctAscList' *)
 
-#[global] Definition fromDescListWith {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : (a -> a -> a) -> list (k * a)%type -> Map k a :=
-  fun f xs =>
-    fromDescListWithKey (fun arg_0__ arg_1__ arg_2__ =>
-                           match arg_0__, arg_1__, arg_2__ with
-                           | _, x, y => f x y
-                           end) xs.
+(* Skipping definition `Data.Map.Internal.fromDistinctAscList_linkTop' *)
+
+(* Skipping definition `Data.Map.Internal.fromDistinctAscList_linkAll' *)
+
+(* Skipping definition `Data.Map.Internal.fromDistinctDescList' *)
+
+(* Skipping definition `Data.Map.Internal.fromDistinctDescList_linkTop' *)
+
+(* Skipping definition `Data.Map.Internal.fromDistinctDescList_linkAll' *)
+
+(* Skipping definition `Data.Map.Internal.foldl'Stack' *)
 
 (* Skipping definition `Data.Map.Internal.deleteFindMin' *)
 
@@ -2675,21 +2586,20 @@ End Notations.
 (* External variables:
      Bool.Sumbool.sumbool_of_bool Eq Gt Lt None Some Type andb bool comparison cons
      false functor__Map_op_zlzd__ id list map_size negb nil op_zt__ option pair prod
-     true unit Data.Bits.shiftL Data.Bits.shiftR Data.Either.Either Data.Either.Left
-     Data.Either.Right Data.Foldable.Foldable
+     true tt unit Data.Bits.shiftL Data.Bits.shiftR Data.Either.Either
+     Data.Either.Left Data.Either.Right Data.Foldable.Foldable
      Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'
-     Data.Foldable.foldl__
-     Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
-     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
-     Data.Functor.op_zlzdzg__ Data.Functor.Classes.Eq2 Data.Functor.Classes.Ord2
-     Data.Functor.Classes.liftCompare Data.Functor.Classes.liftCompare2
-     Data.Functor.Classes.liftCompare2__ Data.Functor.Classes.liftEq
-     Data.Functor.Classes.liftEq2 Data.Functor.Classes.liftEq2__
-     Data.Functor.Identity.Identity Data.Functor.Identity.Mk_Identity
-     Data.Functor.Identity.runIdentity Data.Maybe.maybe Data.Set.Internal.Bin
-     Data.Set.Internal.Set_ Data.Set.Internal.Tip Data.Set.Internal.splitMember
-     Data.Traversable.Traversable Data.Traversable.mapM__
-     Data.Traversable.sequenceA__ Data.Traversable.sequence__
+     Data.Foldable.foldl__ Data.Foldable.foldr__ Data.Foldable.length__
+     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
+     Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.Functor.Classes.Eq2
+     Data.Functor.Classes.Ord2 Data.Functor.Classes.liftCompare
+     Data.Functor.Classes.liftCompare2 Data.Functor.Classes.liftCompare2__
+     Data.Functor.Classes.liftEq Data.Functor.Classes.liftEq2
+     Data.Functor.Classes.liftEq2__ Data.Functor.Identity.Identity
+     Data.Functor.Identity.Mk_Identity Data.Functor.Identity.runIdentity
+     Data.Maybe.maybe Data.Set.Internal.Bin Data.Set.Internal.Set_
+     Data.Set.Internal.Tip Data.Set.Internal.splitMember Data.Traversable.Traversable
+     Data.Traversable.mapM__ Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse__ GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor
      GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.compare
      GHC.Base.compare__ GHC.Base.const GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__

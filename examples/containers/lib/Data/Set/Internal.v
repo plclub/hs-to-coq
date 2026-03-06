@@ -22,6 +22,7 @@ Require Data.Functor.Classes.
 Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
+Require GHC.Prim.
 Require GHC.Tuple.
 Require HsToCoq.DeferredFix.
 Require Nat.
@@ -67,9 +68,9 @@ Fixpoint set_size {a} (s : Set_ a) : nat :=
 
 Require Import HsToCoq.Err.
 
-#[global] Instance Set_Default {a} : Default (Set_ a) :=
+Instance Set_Default {a} : Default (Set_ a) :=
   Build_Default _ Tip.
-#[global] Instance MergeSetDefault {a} : Default (MergeSet a) :=
+Instance MergeSetDefault {a} : Default (MergeSet a) :=
   Build_Default _ (Mk_MergeSet default).
 
 (* Converted value declarations: *)
@@ -117,7 +118,7 @@ Require Import HsToCoq.Err.
                                                                                                size lrr) x lrr r)
                  | _ =>
                      let 'pair _ _ := scrut_9__ in
-                     GHC.Err.error (GHC.Base.hs_string__ "Failure in Data.Map.balanceL")
+                     GHC.Err.error (GHC.Base.hs_string__ "Failure in Data.Set.balanceL")
                  end else
             Bin ((#1 GHC.Num.+ ls) GHC.Num.+ rs) x l r
         end
@@ -158,7 +159,7 @@ Require Import HsToCoq.Err.
                                                                                              size rlr) rx rlr rr)
                  | _ =>
                      let 'pair _ _ := scrut_9__ in
-                     GHC.Err.error (GHC.Base.hs_string__ "Failure in Data.Map.balanceR")
+                     GHC.Err.error (GHC.Base.hs_string__ "Failure in Data.Set.balanceR")
                  end else
             Bin ((#1 GHC.Num.+ ls) GHC.Num.+ rs) x l r
         end
@@ -283,7 +284,8 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
    : Set_ inst_a -> Set_ inst_a -> Set_ inst_a :=
   union.
 
-#[global] Program Instance Semigroup__Set_ {a : Type} `{GHC.Base.Ord a}
+#[global]
+Program Instance Semigroup__Set_ {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Semigroup (Set_ a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__Set__op_zlzlzgzg__ |}.
@@ -308,7 +310,8 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
    : Set_ inst_a :=
   empty.
 
-#[global] Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
+#[global]
+Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Monoid (Set_ a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__Set__mappend ;
@@ -347,27 +350,6 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
            end in
       go t.
 
-#[global] Definition foldl' {a : Type} {b : Type}
-   : (a -> b -> a) -> a -> Set_ b -> a :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Tip => z'
-         | z', Bin _ x l r => go (f (go z' l) x) r
-         end in
-    go z.
-
-#[local] Definition Foldable__Set__foldl'
-   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Set_ a -> b :=
-  fun {b : Type} {a : Type} => foldl'.
-
-#[local] Definition Foldable__Set__foldMap'
-   : forall {m : Type},
-     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Set_ a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-    fun f =>
-      Foldable__Set__foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
-
 #[global] Definition foldl {a : Type} {b : Type}
    : (a -> b -> a) -> a -> Set_ b -> a :=
   fun f z =>
@@ -396,20 +378,6 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Set_ a -> b :=
   fun {a : Type} {b : Type} => foldr.
 
-#[global] Definition foldr' {a : Type} {b : Type}
-   : (a -> b -> b) -> b -> Set_ a -> b :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Tip => z'
-         | z', Bin _ x l r => go (f x (go z' r)) l
-         end in
-    go z.
-
-#[local] Definition Foldable__Set__foldr'
-   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Set_ a -> b :=
-  fun {a : Type} {b : Type} => foldr'.
-
 #[local] Definition Foldable__Set__length
    : forall {a : Type}, Set_ a -> GHC.Num.Int :=
   fun {a : Type} => size.
@@ -419,6 +387,16 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
 
 #[local] Definition Foldable__Set__null : forall {a : Type}, Set_ a -> bool :=
   fun {a : Type} => null.
+
+#[global] Definition foldl' {a : Type} {b : Type}
+   : (a -> b -> a) -> a -> Set_ b -> a :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Tip => z'
+         | z', Bin _ x l r => let z'' := go z' l in go (f z'' x) r
+         end in
+    go z.
 
 #[local] Definition Foldable__Set__product
    : forall {a : Type}, forall `{GHC.Num.Num a}, Set_ a -> a :=
@@ -438,7 +416,8 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
    : forall {a : Type}, Set_ a -> list a :=
   fun {a : Type} => toList.
 
-#[global] Program Instance Foldable__Set_ : Data.Foldable.Foldable Set_ :=
+#[global]
+Program Instance Foldable__Set_ : Data.Foldable.Foldable Set_ :=
   fun _ k__ =>
     k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
              Foldable__Set__fold ;
@@ -453,11 +432,14 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
            Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Set__sum ;
            Data.Foldable.toList__ := fun {a : Type} => Foldable__Set__toList |}.
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `Data.Set.Internal.Data__Set_' *)
 
-(* Skipping all instances of class `GHC.Exts.IsList', including
-   `Data.Set.Internal.IsList__Set_' *)
+(* Skipping instance `Data.Set.Internal.Semigroup__Intersection' of class
+   `GHC.Base.Semigroup' *)
+
+(* Skipping instance `Data.Set.Internal.IsList__Set_' of class
+   `GHC.Internal.IsList.IsList' *)
 
 #[local] Definition Eq___Set__op_zeze__ {inst_a : Type} `{GHC.Base.Eq_ inst_a}
    : Set_ inst_a -> Set_ inst_a -> bool :=
@@ -468,7 +450,8 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
    : Set_ inst_a -> Set_ inst_a -> bool :=
   fun x y => negb (Eq___Set__op_zeze__ x y).
 
-#[global] Program Instance Eq___Set_ {a : Type} `{GHC.Base.Eq_ a}
+#[global]
+Program Instance Eq___Set_ {a : Type} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (Set_ a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Set__op_zeze__ ;
@@ -502,7 +485,8 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
    : Set_ inst_a -> Set_ inst_a -> Set_ inst_a :=
   fun x y => if Ord__Set__op_zlze__ x y : bool then x else y.
 
-#[global] Program Instance Ord__Set_ {a : Type} `{GHC.Base.Ord a}
+#[global]
+Program Instance Ord__Set_ {a : Type} `{GHC.Base.Ord a}
    : GHC.Base.Ord (Set_ a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__Set__op_zl__ ;
@@ -524,7 +508,8 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
       andb (size m GHC.Base.== size n) (Data.Functor.Classes.liftEq eq (toList m)
             (toList n)).
 
-#[global] Program Instance Eq1__Set_ : Data.Functor.Classes.Eq1 Set_ :=
+#[global]
+Program Instance Eq1__Set_ : Data.Functor.Classes.Eq1 Set_ :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
              Eq1__Set__liftEq |}.
@@ -535,7 +520,8 @@ Fixpoint union {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : Set_ a
   fun {a : Type} {b : Type} =>
     fun cmp m n => Data.Functor.Classes.liftCompare cmp (toList m) (toList n).
 
-#[global] Program Instance Ord1__Set_ : Data.Functor.Classes.Ord1 Set_ :=
+#[global]
+Program Instance Ord1__Set_ : Data.Functor.Classes.Ord1 Set_ :=
   fun _ k__ =>
     k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
              Ord1__Set__liftCompare |}.
@@ -605,7 +591,8 @@ Solve Obligations with (termination_by_omega).
     | Mk_MergeSet xs, Mk_MergeSet ys => Mk_MergeSet (merge xs ys)
     end.
 
-#[global] Program Instance Semigroup__MergeSet {a : Type}
+#[global]
+Program Instance Semigroup__MergeSet {a : Type}
    : GHC.Base.Semigroup (MergeSet a) :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__MergeSet_op_zlzlzgzg__ |}.
@@ -621,7 +608,8 @@ Solve Obligations with (termination_by_omega).
    : list (MergeSet inst_a) -> MergeSet inst_a :=
   GHC.Base.foldr Monoid__MergeSet_mappend Monoid__MergeSet_mempty.
 
-#[global] Program Instance Monoid__MergeSet {a : Type} : GHC.Base.Monoid (MergeSet a) :=
+#[global]
+Program Instance Monoid__MergeSet {a : Type} : GHC.Base.Monoid (MergeSet a) :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__MergeSet_mappend ;
            GHC.Base.mconcat__ := Monoid__MergeSet_mconcat ;
@@ -779,6 +767,10 @@ Infix "\\" := (_\\_) (at level 99).
          end in
   go.
 
+(* Skipping definition `Data.Set.Internal.alterF' *)
+
+(* Skipping definition `Data.Set.Internal.alteredSet' *)
+
 Fixpoint splitMember {a : Type} `{GHC.Base.Ord a} (arg_0__ : a) (arg_1__
                        : Set_ a) : (Set_ a * bool * Set_ a)%type
   := match arg_0__, arg_1__ with
@@ -799,26 +791,37 @@ Fixpoint isSubsetOfX {a} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : bool
   := match arg_0__, arg_1__ with
      | Tip, _ => true
      | _, Tip => false
-     | Bin _ x l r, t =>
-         let 'pair (pair lt found) gt := splitMember x t in
-         andb found (andb (isSubsetOfX l lt) (isSubsetOfX r gt))
+     | Bin num_2__ x _ _, t =>
+         if num_2__ GHC.Base.== #1 : bool then member x t else
+         match arg_0__, arg_1__ with
+         | Bin _ x l r, t =>
+             let 'pair (pair lt found) gt := splitMember x t in
+             andb found (andb (size l GHC.Base.<= size lt) (andb (size r GHC.Base.<= size gt)
+                                                                 (andb (isSubsetOfX l lt) (isSubsetOfX r gt))))
+         | _, _ => GHC.Err.patternFailure
+         end
      end.
+
+#[global] Definition isProperSubsetOf {a : Type} `{GHC.Base.Ord a}
+   : Set_ a -> Set_ a -> bool :=
+  fun s1 s2 => andb (size s1 GHC.Base.< size s2) (isSubsetOfX s1 s2).
 
 #[global] Definition isSubsetOf {a : Type} `{GHC.Base.Ord a}
    : Set_ a -> Set_ a -> bool :=
   fun t1 t2 => andb (size t1 GHC.Base.<= size t2) (isSubsetOfX t1 t2).
 
-#[global] Definition isProperSubsetOf {a : Type} `{GHC.Base.Ord a}
-   : Set_ a -> Set_ a -> bool :=
-  fun s1 s2 => andb (size s1 GHC.Base.< size s2) (isSubsetOf s1 s2).
-
 Fixpoint disjoint {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a) : bool
   := match arg_0__, arg_1__ with
      | Tip, _ => true
      | _, Tip => true
-     | Bin _ x l r, t =>
-         let 'pair (pair lt found) gt := splitMember x t in
-         andb (negb found) (andb (disjoint l lt) (disjoint r gt))
+     | Bin num_2__ x _ _, t =>
+         if num_2__ GHC.Base.== #1 : bool then notMember x t else
+         match arg_0__, arg_1__ with
+         | Bin _ x l r, t =>
+             let 'pair (pair lt found) gt := splitMember x t in
+             andb (negb found) (andb (disjoint l lt) (disjoint r gt))
+         | _, _ => GHC.Err.patternFailure
+         end
      end.
 
 Fixpoint lookupMinSure {a} (arg_0__ : a) (arg_1__ : Set_ a) : a
@@ -881,6 +884,8 @@ Fixpoint intersection {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__ : Set_ a)
               else link x l1l2 r1r2 else
          merge l1l2 r1r2
      end.
+
+(* Skipping definition `Data.Set.Internal.intersections' *)
 
 Fixpoint filter {a : Type} (arg_0__ : a -> bool) (arg_1__ : Set_ a) : Set_ a
   := match arg_0__, arg_1__ with
@@ -980,6 +985,16 @@ Fixpoint mapMonotonic {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__
    : (a -> b -> b) -> b -> Set_ a -> b :=
   foldr.
 
+#[global] Definition foldr' {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> Set_ a -> b :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Tip => z'
+         | z', Bin _ x l r => go (f x (go z' r)) l
+         end in
+    go z.
+
 #[global] Definition elems {a : Type} : Set_ a -> list a :=
   toAscList.
 
@@ -991,6 +1006,10 @@ Fixpoint mapMonotonic {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__
 
 #[global] Definition foldlFB {a} {b} : (a -> b -> a) -> a -> Set_ b -> a :=
   foldl.
+
+(* Skipping definition `Data.Set.Internal.fromAscList' *)
+
+(* Skipping definition `Data.Set.Internal.fromDescList' *)
 
 #[global] Definition combineEq {a} `{GHC.Base.Eq_ a} : list a -> list a :=
   fun arg_0__ =>
@@ -1007,71 +1026,19 @@ Fixpoint mapMonotonic {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__
         combineEq' x xs
     end.
 
-#[global] Definition fromDistinctAscList {a : Type} : list a -> Set_ a :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => Tip
-    | cons x0 xs0 =>
-        let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
-                                              match arg_1__, arg_2__ with
-                                              | _, nil => (pair Tip nil)
-                                              | s, (cons x xs' as xs) =>
-                                                  if s GHC.Base.== #1 : bool then (pair (Bin #1 x Tip Tip) xs') else
-                                                  match create (Data.Bits.shiftR s #1) xs with
-                                                  | (pair _ nil as res) => res
-                                                  | pair l (cons y ys) =>
-                                                      let 'pair r zs := create (Data.Bits.shiftR s #1) ys in
-                                                      (pair (link y l r) zs)
-                                                  end
-                                              end) in
-        let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_13__ arg_14__ arg_15__ =>
-                                              match arg_13__, arg_14__, arg_15__ with
-                                              | _, t, nil => t
-                                              | s, l, cons x xs =>
-                                                  let 'pair r ys := create s xs in
-                                                  let t' := link x l r in go (Data.Bits.shiftL s #1) t' ys
-                                              end) in
-        go (#1 : GHC.Num.Int) (Bin #1 x0 Tip Tip) xs0
-    end.
+(* Skipping definition `Data.Set.Internal.fromDistinctAscList' *)
 
-#[global] Definition fromAscList {a : Type} `{GHC.Base.Eq_ a}
-   : list a -> Set_ a :=
-  fun xs => fromDistinctAscList (combineEq xs).
+(* Skipping definition `Data.Set.Internal.fromDistinctAscList_linkTop' *)
 
-#[global] Definition fromDistinctDescList {a : Type} : list a -> Set_ a :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => Tip
-    | cons x0 xs0 =>
-        let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
-                                              match arg_1__, arg_2__ with
-                                              | _, nil => (pair Tip nil)
-                                              | s, (cons x xs' as xs) =>
-                                                  if s GHC.Base.== #1 : bool then (pair (Bin #1 x Tip Tip) xs') else
-                                                  match create (Data.Bits.shiftR s #1) xs with
-                                                  | (pair _ nil as res) => res
-                                                  | pair r (cons y ys) =>
-                                                      let 'pair l zs := create (Data.Bits.shiftR s #1) ys in
-                                                      (pair (link y l r) zs)
-                                                  end
-                                              end) in
-        let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_13__ arg_14__ arg_15__ =>
-                                              match arg_13__, arg_14__, arg_15__ with
-                                              | _, t, nil => t
-                                              | s, r, cons x xs =>
-                                                  let 'pair l ys := create s xs in
-                                                  let t' := link x l r in go (Data.Bits.shiftL s #1) t' ys
-                                              end) in
-        go (#1 : GHC.Num.Int) (Bin #1 x0 Tip Tip) xs0
-    end.
+(* Skipping definition `Data.Set.Internal.fromDistinctAscList_linkAll' *)
 
-#[global] Definition fromDescList {a : Type} `{GHC.Base.Eq_ a}
-   : list a -> Set_ a :=
-  fun xs => fromDistinctDescList (combineEq xs).
+(* Skipping definition `Data.Set.Internal.fromDistinctDescList' *)
+
+(* Skipping definition `Data.Set.Internal.fromDistinctDescList_linkTop' *)
+
+(* Skipping definition `Data.Set.Internal.fromDistinctDescList_linkAll' *)
+
+(* Skipping definition `Data.Set.Internal.foldl'Stack' *)
 
 (* Skipping definition `Data.Set.Internal.findIndex' *)
 
@@ -1236,9 +1203,18 @@ Fixpoint dropWhileAntitone {a : Type} (arg_0__ : a -> bool) (arg_1__ : Set_ a)
 
 #[global] Definition cartesianProduct {a : Type} {b : Type}
    : Set_ a -> Set_ b -> Set_ (a * b)%type :=
-  fun as_ bs =>
-    getMergeSet (Data.Foldable.foldMap (fun a =>
-                                          Mk_MergeSet (mapMonotonic (GHC.Tuple.pair2 a) bs)) as_).
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | _as, Tip => Tip
+    | as_, Bin num_2__ b _ _ =>
+        if num_2__ GHC.Base.== #1 : bool
+        then mapMonotonic (GHC.Base.flip GHC.Tuple.pair2 b) as_ else
+        match arg_0__, arg_1__ with
+        | as_, bs =>
+            getMergeSet (Data.Foldable.foldMap (fun a =>
+                                                  Mk_MergeSet (mapMonotonic (GHC.Tuple.pair2 a) bs)) as_)
+        end
+    end.
 
 #[global] Definition disjointUnion {a : Type} {b : Type}
    : Set_ a -> Set_ b -> Set_ (Data.Either.Either a b) :=
@@ -1279,8 +1255,8 @@ Fixpoint balanced {a : Type} (t : Set_ a) : bool
       := match t' with
          | Tip => true
          | Bin _ x l r =>
-             andb (lo x) (andb (hi x) (andb (bounded lo (fun arg_0__ => arg_0__ GHC.Base.< x)
-                                             l) (bounded (fun arg_1__ => arg_1__ GHC.Base.> x) hi r)))
+             andb (lo x) (andb (hi x) (andb (bounded lo (GHC.Prim.rightSection _GHC.Base.<_
+                                                         x) l) (bounded (GHC.Prim.rightSection _GHC.Base.>_ x) hi r)))
          end in
     bounded (GHC.Base.const true) (GHC.Base.const true) t.
 
@@ -1312,9 +1288,8 @@ End Notations.
      false id list negb nil op_zt__ option orb pair prod set_size true
      Data.Bits.shiftL Data.Bits.shiftR Data.Either.Either Data.Either.Left
      Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldMap
-     Data.Foldable.foldMap__ Data.Foldable.fold__
-     Data.Foldable.foldl' Data.Foldable.foldl__
-     Data.Foldable.foldr__ Data.Foldable.length__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'
+     Data.Foldable.foldl__ Data.Foldable.foldr__ Data.Foldable.length__
      Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
      Data.Foldable.toList__ Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1
      Data.Functor.Classes.liftCompare Data.Functor.Classes.liftCompare__
@@ -1328,7 +1303,8 @@ End Notations.
      GHC.Base.op_zlze__ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
      GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Err.error
      GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Tuple.pair2
-     HsToCoq.DeferredFix.deferredFix2 HsToCoq.DeferredFix.deferredFix3 Nat.add
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.rightSection
+     GHC.Tuple.pair2 HsToCoq.DeferredFix.deferredFix2
+     HsToCoq.DeferredFix.deferredFix3 Nat.add
      Utils.Containers.Internal.PtrEquality.ptrEq
 *)

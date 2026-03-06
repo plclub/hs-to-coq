@@ -7,8 +7,8 @@ constructorTypes:
   Data.Set.Internal.Mk_MergeSet: Qualified "Data.Set.Internal" "MergeSet"
   Data.Set.Internal.Tip: Qualified "Data.Set.Internal" "Set_"
 constructors:
+  Data.Set.Internal.MergeSet: '[Qualified "Data.Set.Internal" "Mk_MergeSet"]'
   Data.Set.Internal.Set_: '[Qualified "Data.Set.Internal" "Bin",Qualified "Data.Set.Internal"
     "Tip"]'
-  Data.Set.Internal.MergeSet: '[Qualified "Data.Set.Internal" "Mk_MergeSet"]'
 recordFieldTypes:
   Data.Set.Internal.getMergeSet: Qualified "Data.Set.Internal" "MergeSet"

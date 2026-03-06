@@ -33,14 +33,14 @@ MODULES = \
   Data/IntSet/InternalWord \
   Data/IntMap/Internal \
   Data/Map/Internal \
-  IntSetValidity \
 
+# IntSetValidity and IntSetProperties need tasty-quickcheck (not available in stack env for v0.7)
+# Keep old .v files in lib/ for now; can re-enable once tasty is added
 HS_SPEC_MODULES = \
-  IntSetProperties
 
 # Non-standard file names
-SRC_FILE_IntSetProperties = containers/tests/intset-properties.hs
-SRC_FILE_Data/IntSet/InternalWord = containers/Data/IntSet/Internal.hs
+SRC_FILE_IntSetProperties = containers/containers-tests/tests/intset-properties.hs
+SRC_FILE_Data/IntSet/InternalWord = containers/containers/src/Data/IntSet/Internal.hs
 
 # Generated modules
 # generated directly from GHC/libraries/containers/tests
@@ -109,10 +109,9 @@ HS_TO_COQ_OPTS := \
   --iface-dir ../../base/ \
   --iface-dir $(OUT) \
   -N \
-  -i containers \
-  -i containers/tests \
-  -i containers/dist-install/build \
-  -I containers/include \
+  -i containers/containers/src \
+  -i containers/containers-tests/tests \
+  -I containers/containers/include \
 
 
 # KEEP THIS IN SYNC WITH THE NEXT RULE (there ought to be a better way)
@@ -124,8 +123,8 @@ $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 		     $(HS_TO_COQ_OPTS) \
 	             -o $(OUT) \
-	             $(wildcard containers/$*.hs) \
-		     $(wildcard containers/tests/$*.hs) \
+	             $(wildcard containers/containers/src/$*.hs) \
+		     $(wildcard containers/containers-tests/tests/$*.hs) \
 		     $(SRC_FILE_$*)
 	test -e $@
 
@@ -138,8 +137,8 @@ $(VFILES_HS_SPEC_GEN): $(HS_SPEC)/%.v : $$(wildcard module-edits/$$*/preamble.v)
 		     $(HS_TO_COQ_OPTS) \
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 	             -o $(HS_SPEC) \
-	             $(wildcard containers/$*.hs) \
-		     $(wildcard containers/tests/$*.hs) \
+	             $(wildcard containers/containers/src/$*.hs) \
+		     $(wildcard containers/containers-tests/tests/$*.hs) \
 		     $(SRC_FILE_$*)
 	test -e $@
 
@@ -155,9 +154,8 @@ $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preambl
 	       -o $(OUT) \
 	       -N \
 	       -p module-edits/$*/preamble.v \
-	       --ghc -icontainers \
-	       --ghc -icontainers/dist-install/build \
-	       -Icontainers/include \
+	       --ghc -icontainers/containers/src \
+	       -Icontainers/containers/include \
 	       drop-in/$*.hs
 
 clean:

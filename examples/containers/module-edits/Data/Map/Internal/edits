@@ -55,12 +55,36 @@ obligations Data.Map.Internal.link termination_by_omega
 termination Data.Map.Internal.link2 {measure (Nat.add (map_size arg_0__) (map_size arg_1__))}
 obligations Data.Map.Internal.link2 termination_by_omega
 
-in Data.Map.Internal.fromDistinctAscList  termination create deferred
-in Data.Map.Internal.fromDistinctAscList  termination go     deferred
-in Data.Map.Internal.fromDistinctDescList termination create deferred
-in Data.Map.Internal.fromDistinctDescList termination go     deferred
+## fromList still has create/go local functions
 in Data.Map.Internal.fromList             termination create deferred
 in Data.Map.Internal.fromList             termination go     deferred
+
+## fromDistinctAscList/fromDistinctDescList rewritten in v0.7 (stack-based)
+skip Data.Map.Internal.fromDistinctAscList
+skip Data.Map.Internal.fromDistinctDescList
+skip Data.Map.Internal.fromDistinctAscList_linkTop
+skip Data.Map.Internal.fromDistinctAscList_linkAll
+skip Data.Map.Internal.fromDistinctDescList_linkTop
+skip Data.Map.Internal.fromDistinctDescList_linkAll
+skip Data.Map.Internal.foldl'Stack
+skip Data.Map.Internal.fromAscList
+skip Data.Map.Internal.fromDescList
+skip Data.Map.Internal.fromAscListWithKey
+skip Data.Map.Internal.fromDescListWithKey
+skip Data.Map.Internal.fromAscListWith
+skip Data.Map.Internal.fromDescListWith
+
+## New types from fromDistinctAscList rewrite
+skip Data.Map.Internal.Stack
+skip Data.Map.Internal.FromDistinctMonoState
+
+## New in v0.7
+skip Data.Map.Internal.IsList__Map
+skip Data.Map.Internal.compose
+skip Data.Map.Internal.argSet
+skip Data.Map.Internal.fromArgSet
+skip Data.Map.Internal.Bifoldable__Map
+skip Data.Map.Internal.Lift__Map
 
 rename value Data.Map.Internal.WhenMatched = Data.Map.Internal.Mk_WhenMatched
 rename value Data.Map.Internal.TraceResult = Data.Map.Internal.Mk_TraceResult
