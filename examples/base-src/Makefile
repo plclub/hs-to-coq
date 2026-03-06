@@ -117,7 +117,7 @@ filelist:
 	@ls -1 $(addprefix base/src/,$(addsuffix .hs,$(BASE_MODULES)))
 	@ls -1 $(addprefix ghc-internal/src/GHC/Internal/,$(addsuffix .hs,$(GHC_INTERNAL_MODULES)))
 
-vfiles: $(OUT)/edits $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
+vfiles: $(OUT)/edits $(OUT)/README.md $(OUT)/_CoqProject $(OUT)/coq-hs-to-coq-base.opam $(VFILES)
 
 $(OUT)/_CoqProject : Makefile
 	mkdir -p $(OUT)
@@ -131,6 +131,37 @@ $(OUT)/_CoqProject : Makefile
 
 $(OUT)/Makefile: $(OUT)/_CoqProject
 	cd $(OUT); coq_makefile -f _CoqProject -o Makefile
+
+$(OUT)/coq-hs-to-coq-base.opam : Makefile
+	mkdir -p $(OUT)
+	> $@
+	echo 'opam-version: "2.0"' >> $@
+	echo 'name: "coq-hs-to-coq-base"' >> $@
+	echo 'version: "dev"' >> $@
+	echo 'synopsis: "Coq translation of parts of the Haskell base library"' >> $@
+	echo 'maintainer: "antal.b.sz@gmail.com"' >> $@
+	echo 'authors: [' >> $@
+	echo '  "Antal Spector-Zabusky"' >> $@
+	echo '  "Joachim Breitner"' >> $@
+	echo '  "Yao Li"' >> $@
+	echo '  "Christine Rizkallah"' >> $@
+	echo '  "John Wiegley"' >> $@
+	echo '  "Stephanie Weirich"' >> $@
+	echo ']' >> $@
+	echo 'license: "MIT"' >> $@
+	echo 'homepage: "https://github.com/plclub/hs-to-coq"' >> $@
+	echo 'bug-reports: "https://github.com/plclub/hs-to-coq/issues"' >> $@
+	echo 'dev-repo: "git+https://github.com/plclub/hs-to-coq.git"' >> $@
+	echo 'depends: [' >> $@
+	echo '  "coq" {>= "8.20" & < "8.21~"}' >> $@
+	echo ']' >> $@
+	echo 'build: [' >> $@
+	echo '  ["coq_makefile" "-f" "_CoqProject" "-o" "Makefile"]' >> $@
+	echo '  [make "-j%{jobs}%"]' >> $@
+	echo ']' >> $@
+	echo 'install: [' >> $@
+	echo '  [make "install"]' >> $@
+	echo ']' >> $@
 
 $(OUT)/edits:
 	mkdir -p $(OUT)
