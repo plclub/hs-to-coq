@@ -111,7 +111,8 @@ module Token
 
   def self.token(line)
     match = /^\s*(?:'((?:[^'\\]|\\.)+)'|(\S+))\s*{ Tok(Word|Op) +"((?:[^"\\]|\\.)+)" +}$/.match(line)
-    
+    return nil unless match
+
     name = if match[1] then match[1].gsub(/\\(.)/, '\1') else match[2] end
     type = match[3]
     tok  = match[4].gsub(/\\(.)/) { if '"\\'.includes? $1 then $1 else die "Unknown escape \\#{$1}" end }
@@ -182,6 +183,9 @@ class Parser
         @keywords[@category_type] << token
         return true
       end
+
+      # Skip non-Word/Op tokens (TokOpen, TokClose, TokTick, etc.)
+      return true if line.include?('{ Tok')
 
       die "Could not parse line:", line
     else
