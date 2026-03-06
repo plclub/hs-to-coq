@@ -110,7 +110,6 @@ clean make -C lambda clean
 clean make -C simple clean
 clean make -C ../base-thy clean
 clean make -C containers clean
-clean make -C containers/theories clean
 clean make -C base-src clean
 have ruby         && clean make -C ../emacs clean
 have sphinx-build && clean make -C ../doc   clean
