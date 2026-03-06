@@ -30,6 +30,7 @@ MODULES = \
   Data/Set/Internal \
   Utils/Containers/Internal/BitUtil \
   Data/IntSet/Internal \
+  IntSetValidity \
   Data/IntSet/InternalWord \
   Data/IntMap/Internal \
   Data/Map/Internal \
