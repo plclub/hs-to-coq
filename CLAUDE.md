@@ -169,6 +169,7 @@ Containers is at v0.6.0.1, which has `foldl'` ambiguity with GHC 9.10 (Prelude n
 
 ## Workflow
 
+- Keep a record (as a markdown file) of every time the user intervene
 - Every time before you commit, you should also check if other modules have been broken due to this change. For example, check `examples/test` even if you have only been working on `examples/containers`.
 - Commit to git at each milestone with `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
 
