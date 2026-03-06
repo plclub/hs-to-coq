@@ -146,8 +146,14 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 - **`rightSection`**: GHC 9.10 desugars `(op x)` to `rightSection op x`. Defined in `base/GHC/Prim.v`. Operators with invalid Coq chars (like `$`) are rendered as z-encoded names (e.g. `op_zd__`) instead of notation form. Proofs involving `rightSection` need `unfold GHC.Prim.rightSection` before `lia`
 - **`foldMap'` in Foldable**: GHC 9.10 added this to the Foldable class. Old restored .v files need the field added manually
 
+### Edits system gotchas
+- **`skip` overrides `redefine`**: In `definitionTask` (Monad.hs), `skip` is checked first. Remove `skip` directives before adding `redefine` for the same function.
+- **`redefine` type annotations**: The edits parser doesn't support `*` in product types or `%type` scope annotations. Omit the type signature (use `:=` directly) to work around parse errors.
+- **`order` with `redefine`**: When `redefine` introduces definition dependencies, add explicit `order` directives to ensure correct output ordering.
+- **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
+
 ### Containers submodule
-Containers is at v0.6.0.1, which has `foldl'` ambiguity with GHC 9.10 (Prelude now re-exports `Data.Foldable.foldl'`). The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is skipped in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything.
+Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is skipped in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. Several v0.7 functions (`fromDistinctAscList`, `split`, `splitMember`, etc.) use `redefine` edits to restore v0.6-compatible definitions so existing proofs compile.
 
 ### Coq 8.20 compatibility
 - `Program Instance` needs `#[global]` prefix for cross-module visibility
@@ -166,6 +172,7 @@ Containers is at v0.6.0.1, which has `foldl'` ambiguity with GHC 9.10 (Prelude n
 - Typeclass resolution may not unfold definition chains (`Key→N→Word`) — add explicit instances
 - `setoid_rewrite` under binders may fail with `UNDEFINED EVARS` — replace with explicit `replace`+`funext` or direct monad law rewrites
 - `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — proofs unfolding Foldable for lists need different unfolding chains
+- `eval unfold f` in sections with implicit args: use `let x := constr:(@f explicit_args) in let rhs := eval unfold f in x` — plain `eval unfold f in f` can't infer implicit params
 
 ## Workflow
 
