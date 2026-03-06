@@ -66,7 +66,7 @@ skip Data.List.NonEmpty.groupAllWith1
 skip Data.List.NonEmpty.group1
 
 
-# Something broke with derived instances (compare gets renamed to the instance’s method,
+# Something broke with derived instances (compare gets renamed to the instance's method,
 # even though it should use GHC.Base.compare) after going to qualified names
 skip Data.List.NonEmpty.Ord__NonEmpty
 #skip Data.List.NonEmpty.Eq___NonEmpty
