@@ -131,6 +131,7 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git submodule update --init examples/ghc/ghc
+          git submodule update --init examples/containers/containers
       - name: Installing dependencies
         run: apt-get update && apt-get install -y xutils-dev
       - name: Caching Stack
@@ -151,6 +152,10 @@ jobs:
           git add base
           git status
           git diff-index --cached --quiet HEAD -- base
-      # Note: containers v0.6.0.1 source has foldl' ambiguity with GHC 9.10
-      # The convenience copy in lib/ was translated with an older GHC and is stable.
-      # Skipping containers regeneration test until containers submodule is updated.
+      - name: Translating containers
+        run: make -C examples/containers vfiles
+      - name: Comparing convenience copy of containers
+        run: |
+          git add examples/containers/lib
+          git status
+          git diff-index --cached --quiet HEAD -- examples/containers/lib

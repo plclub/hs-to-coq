@@ -160,7 +160,7 @@ $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preambl
 	       drop-in/$*.hs
 
 clean:
-	# Clean build artifacts but keep .v source files (can't regenerate with GHC 9.10)
+	# Clean build artifacts but keep .v source files
 	cd $(OUT) 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
 	rm -f $(OUT)/Makefile $(OUT)/_CoqProject
 	cd theories 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
