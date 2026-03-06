@@ -39,80 +39,16 @@ obligations Data.Set.Internal.merge termination_by_omega
 in Data.Set.Internal.fromList             termination create deferred
 in Data.Set.Internal.fromList             termination go     deferred
 
-## fromDistinctAscList/fromDistinctDescList rewritten in v0.7 (stack-based).
-## Redefine with old v0.6 create/go algorithm so proofs still work.
-## Skip the new v0.7 helper types/functions.
-skip Data.Set.Internal.fromDistinctAscList_linkTop
-skip Data.Set.Internal.fromDistinctAscList_linkAll
-skip Data.Set.Internal.fromDistinctDescList_linkTop
-skip Data.Set.Internal.fromDistinctDescList_linkAll
-skip Data.Set.Internal.foldl'Stack
-
-redefine Definition Data.Set.Internal.fromDistinctAscList {a : Type} : list a -> Set_ a :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => Tip
-    | cons x0 xs0 =>
-        let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
-                                              match arg_1__, arg_2__ with
-                                              | _, nil => (pair Tip nil)
-                                              | s, (cons x xs' as xs) =>
-                                                  if s GHC.Base.== #1 : bool then (pair (Bin #1 x Tip Tip) xs') else
-                                                  match create (Data.Bits.shiftR s #1) xs with
-                                                  | (pair _ nil as res) => res
-                                                  | pair l (cons y ys) =>
-                                                      let 'pair r zs := create (Data.Bits.shiftR s #1) ys in
-                                                      (pair (link y l r) zs)
-                                                  end
-                                              end) in
-        let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_13__ arg_14__ arg_15__ =>
-                                              match arg_13__, arg_14__, arg_15__ with
-                                              | _, t, nil => t
-                                              | s, l, cons x xs =>
-                                                  let 'pair r ys := create s xs in
-                                                  let t' := link x l r in go (Data.Bits.shiftL s #1) t' ys
-                                              end) in
-        go (#1 : GHC.Num.Int) (Bin #1 x0 Tip Tip) xs0
-    end.
-
-redefine Definition Data.Set.Internal.fromDistinctDescList {a : Type} : list a -> Set_ a :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => Tip
-    | cons x0 xs0 =>
-        let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
-                                              match arg_1__, arg_2__ with
-                                              | _, nil => (pair Tip nil)
-                                              | s, (cons x xs' as xs) =>
-                                                  if s GHC.Base.== #1 : bool then (pair (Bin #1 x Tip Tip) xs') else
-                                                  match create (Data.Bits.shiftR s #1) xs with
-                                                  | (pair _ nil as res) => res
-                                                  | pair r (cons y ys) =>
-                                                      let 'pair l zs := create (Data.Bits.shiftR s #1) ys in
-                                                      (pair (link y l r) zs)
-                                                  end
-                                              end) in
-        let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_13__ arg_14__ arg_15__ =>
-                                              match arg_13__, arg_14__, arg_15__ with
-                                              | _, t, nil => t
-                                              | s, r, cons x xs =>
-                                                  let 'pair l ys := create s xs in
-                                                  let t' := link x l r in go (Data.Bits.shiftL s #1) t' ys
-                                              end) in
-        go (#1 : GHC.Num.Int) (Bin #1 x0 Tip Tip) xs0
-    end.
-
-redefine Definition Data.Set.Internal.fromAscList {a : Type} `{GHC.Base.Eq_ a}
-   : list a -> Set_ a :=
-  fun xs => fromDistinctAscList (combineEq xs).
-
-redefine Definition Data.Set.Internal.fromDescList {a : Type} `{GHC.Base.Eq_ a}
-   : list a -> Set_ a :=
-  fun xs => fromDistinctDescList (combineEq xs).
+## fromDistinctAscList/fromDistinctDescList: v0.7 stack-based algorithm.
+## Auto-generated from Haskell. Order directives ensure correct emission.
+order Data.Set.Internal.Stack Data.Set.Internal.FromDistinctMonoState
+order Data.Set.Internal.FromDistinctMonoState Data.Set.Internal.foldl'Stack
+order Data.Set.Internal.foldl'Stack Data.Set.Internal.fromDistinctAscList_linkTop
+order Data.Set.Internal.fromDistinctAscList_linkTop Data.Set.Internal.fromDistinctAscList_linkAll
+order Data.Set.Internal.fromDistinctAscList_linkAll Data.Set.Internal.fromDistinctAscList
+order Data.Set.Internal.foldl'Stack Data.Set.Internal.fromDistinctDescList_linkTop
+order Data.Set.Internal.fromDistinctDescList_linkTop Data.Set.Internal.fromDistinctDescList_linkAll
+order Data.Set.Internal.fromDistinctDescList_linkAll Data.Set.Internal.fromDistinctDescList
 
 order Data.Set.Internal.combineEq Data.Set.Internal.fromAscList
 order Data.Set.Internal.combineEq Data.Set.Internal.fromDescList
@@ -130,9 +66,7 @@ skip Data.Set.Internal.Semigroup__Intersection
 skip Data.Set.Internal.Lift__Set
 skip Data.Set.Internal.AlteredSet
 
-# New types from fromDistinctAscList rewrite
-skip Data.Set.Internal.Stack
-skip Data.Set.Internal.FromDistinctMonoState
+# Types from fromDistinctAscList rewrite (auto-generated)
 
 # Boring
 order Data.Set.Internal.Foldable__Set_ Data.Set.Internal.Monoid__MergeSet Data.Set.Internal.cartesianProduct
