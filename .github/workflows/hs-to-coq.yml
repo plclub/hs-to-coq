@@ -42,6 +42,11 @@ jobs:
             sudo chown -R coq:coq .
             endGroup
           script: |
+            startGroup "Lint opam files"
+            opam lint base/coq-hs-to-coq-base.opam
+            opam lint base-thy/coq-hs-to-coq-base-thy.opam
+            opam lint examples/containers/coq-hs-to-coq-containers.opam
+            endGroup
             startGroup "Compiling base"
             (cd base; coq_makefile -f _CoqProject -o Makefile)
             make -j -C base
