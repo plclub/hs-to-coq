@@ -2538,25 +2538,173 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
    : (a -> k -> b -> a) -> a -> Map k b -> a :=
   foldlWithKey.
 
-(* Skipping definition `Data.Map.Internal.fromAscList' *)
+#[global] Definition fromDistinctAscList {k : Type} {a : Type}
+   : list (k * a) -> Map k a :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | nil => Tip
+    | cons (pair kx0 x0) xs0 =>
+        let create :=
+          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
+                                              match arg_1__, arg_2__ with
+                                              | _, nil => pair Tip nil
+                                              | s, (cons x' xs' as xs) =>
+                                                  if s GHC.Base.== #1 : bool
+                                                  then let 'pair kx x := x' in pair (Bin #1 kx x Tip Tip) xs'
+                                                  else match create (Data.Bits.shiftR s #1) xs with
+                                                       | (pair _ nil as res) => res
+                                                       | pair l (cons (pair ky y) ys) =>
+                                                           let 'pair r zs := create (Data.Bits.shiftR s #1) ys in
+                                                           pair (link ky y l r) zs
+                                                       end
+                                              end) in
+        let go :=
+          HsToCoq.DeferredFix.deferredFix3 (fun go arg_15__ arg_16__ arg_17__ =>
+                                              match arg_15__, arg_16__, arg_17__ with
+                                              | _, t, nil => t
+                                              | s, l, cons (pair kx x) xs =>
+                                                  let 'pair r ys := create s xs in
+                                                  let t' := link kx x l r in go (Data.Bits.shiftL s #1) t' ys
+                                              end) in
+        go (#1 : GHC.Num.Int) (Bin #1 kx0 x0 Tip Tip) xs0
+    end.
 
-(* Skipping definition `Data.Map.Internal.fromDescList' *)
+#[global] Definition fromAscList {k : Type} {a : Type} `{GHC.Base.Eq_ k}
+   : list (k * a) -> Map k a :=
+  fun xs =>
+    let fix combineEq' arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z, nil => cons z nil
+         | (pair kz _ as z), cons (pair kx xx as x) xs' =>
+             if kx GHC.Base.== kz : bool
+             then combineEq' (pair kx xx) xs'
+             else cons z (combineEq' x xs')
+         end in
+    let combineEq :=
+      fun xs' =>
+        match xs' with
+        | nil => nil
+        | cons x nil => cons x nil
+        | cons x xx => combineEq' x xx
+        end in
+    fromDistinctAscList (combineEq xs).
 
-(* Skipping definition `Data.Map.Internal.fromAscListWith' *)
+#[global] Definition fromDistinctDescList {k : Type} {a : Type}
+   : list (k * a) -> Map k a :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | nil => Tip
+    | cons (pair kx0 x0) xs0 =>
+        let create :=
+          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
+                                              match arg_1__, arg_2__ with
+                                              | _, nil => pair Tip nil
+                                              | s, (cons x' xs' as xs) =>
+                                                  if s GHC.Base.== #1 : bool
+                                                  then let 'pair kx x := x' in pair (Bin #1 kx x Tip Tip) xs'
+                                                  else match create (Data.Bits.shiftR s #1) xs with
+                                                       | (pair _ nil as res) => res
+                                                       | pair r (cons (pair ky y) ys) =>
+                                                           let 'pair l zs := create (Data.Bits.shiftR s #1) ys in
+                                                           pair (link ky y l r) zs
+                                                       end
+                                              end) in
+        let go :=
+          HsToCoq.DeferredFix.deferredFix3 (fun go arg_15__ arg_16__ arg_17__ =>
+                                              match arg_15__, arg_16__, arg_17__ with
+                                              | _, t, nil => t
+                                              | s, r, cons (pair kx x) xs =>
+                                                  let 'pair l ys := create s xs in
+                                                  let t' := link kx x l r in go (Data.Bits.shiftL s #1) t' ys
+                                              end) in
+        go (#1 : GHC.Num.Int) (Bin #1 kx0 x0 Tip Tip) xs0
+    end.
 
-(* Skipping definition `Data.Map.Internal.fromDescListWith' *)
+#[global] Definition fromDescList {k : Type} {a : Type} `{GHC.Base.Eq_ k}
+   : list (k * a) -> Map k a :=
+  fun xs =>
+    let fix combineEq' arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z, nil => cons z nil
+         | (pair kz _ as z), cons (pair kx xx as x) xs' =>
+             if kx GHC.Base.== kz : bool
+             then combineEq' (pair kx xx) xs'
+             else cons z (combineEq' x xs')
+         end in
+    let combineEq :=
+      fun xs' =>
+        match xs' with
+        | nil => nil
+        | cons x nil => cons x nil
+        | cons x xx => combineEq' x xx
+        end in
+    fromDistinctDescList (combineEq xs).
 
-(* Skipping definition `Data.Map.Internal.fromAscListWithKey' *)
+#[global] Definition fromAscListWithKey {k : Type} {a : Type} `{GHC.Base.Eq_ k}
+   : (k -> a -> a -> a) -> list (k * a) -> Map k a :=
+  fun f xs =>
+    let fix combineEq' arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z, nil => cons z nil
+         | (pair kz zz as z), cons (pair kx xx as x) xs' =>
+             if kx GHC.Base.== kz : bool
+             then let yy := f kx xx zz in combineEq' (pair kx yy) xs'
+             else cons z (combineEq' x xs')
+         end in
+    let combineEq :=
+      fun arg_7__ arg_8__ =>
+        match arg_7__, arg_8__ with
+        | _, xs' =>
+            match xs' with
+            | nil => nil
+            | cons x nil => cons x nil
+            | cons x xx => combineEq' x xx
+            end
+        end in
+    fromDistinctAscList (combineEq f xs).
 
-(* Skipping definition `Data.Map.Internal.fromDescListWithKey' *)
+#[global] Definition fromAscListWith {k : Type} {a : Type} `{GHC.Base.Eq_ k}
+   : (a -> a -> a) -> list (k * a) -> Map k a :=
+  fun f xs =>
+    fromAscListWithKey (fun arg_0__ arg_1__ arg_2__ =>
+                          match arg_0__, arg_1__, arg_2__ with
+                          | _, x, y => f x y
+                          end) xs.
 
-(* Skipping definition `Data.Map.Internal.fromDistinctAscList' *)
+#[global] Definition fromDescListWithKey {k : Type} {a : Type} `{GHC.Base.Eq_ k}
+   : (k -> a -> a -> a) -> list (k * a) -> Map k a :=
+  fun f xs =>
+    let fix combineEq' arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z, nil => cons z nil
+         | (pair kz zz as z), cons (pair kx xx as x) xs' =>
+             if kx GHC.Base.== kz : bool
+             then let yy := f kx xx zz in combineEq' (pair kx yy) xs'
+             else cons z (combineEq' x xs')
+         end in
+    let combineEq :=
+      fun arg_7__ arg_8__ =>
+        match arg_7__, arg_8__ with
+        | _, xs' =>
+            match xs' with
+            | nil => nil
+            | cons x nil => cons x nil
+            | cons x xx => combineEq' x xx
+            end
+        end in
+    fromDistinctDescList (combineEq f xs).
+
+#[global] Definition fromDescListWith {k : Type} {a : Type} `{GHC.Base.Eq_ k}
+   : (a -> a -> a) -> list (k * a) -> Map k a :=
+  fun f xs =>
+    fromDescListWithKey (fun arg_0__ arg_1__ arg_2__ =>
+                           match arg_0__, arg_1__, arg_2__ with
+                           | _, x, y => f x y
+                           end) xs.
 
 (* Skipping definition `Data.Map.Internal.fromDistinctAscList_linkTop' *)
 
 (* Skipping definition `Data.Map.Internal.fromDistinctAscList_linkAll' *)
-
-(* Skipping definition `Data.Map.Internal.fromDistinctDescList' *)
 
 (* Skipping definition `Data.Map.Internal.fromDistinctDescList_linkTop' *)
 

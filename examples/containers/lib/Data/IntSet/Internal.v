@@ -870,60 +870,56 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
 
 (* Skipping definition `Data.IntSet.Internal.spanAntitone' *)
 
-#[global] Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
+#[global] Definition split :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | x', (Bin p m l r as t') =>
-             if nomatch x' p m : bool
-             then if x' GHC.Base.< p : bool
-                  then (pair Nil t')
-                  else (pair t' Nil) else
-             if zero x' m : bool
-             then let 'pair lt gt := go x' l in
-                  pair lt (bin p m gt r) else
-             let 'pair lt gt := go x' r in
-             pair (bin p m l lt) gt
+             if match_ x' p m : bool
+             then if zero x' m : bool
+                  then let 'pair lt gt := go x' l in pair lt (union gt r)
+                  else let 'pair lt gt := go x' r in pair (union lt l) gt
+             else if x' GHC.Base.< p : bool
+                  then pair Nil t'
+                  else pair t' Nil
          | x', (Tip kx' bm as t') =>
              let lowerBitmap := bitmapOf x' GHC.Num.- #1 in
              let higherBitmap :=
                Coq.NArith.BinNat.N.ldiff (Coq.NArith.BinNat.N.ones (64 % N)) (lowerBitmap
                                           GHC.Num.+
                                           bitmapOf x') in
-             if kx' GHC.Base.> x' : bool then (pair Nil t') else
-             if kx' GHC.Base.< prefixOf x' : bool then (pair t' Nil) else
-             pair (tip kx' (Data.Bits.op_zizazi__ bm lowerBitmap)) (tip kx'
-                   (Data.Bits.op_zizazi__ bm higherBitmap))
-         | _, Nil => (pair Nil Nil)
+             if kx' GHC.Base.> x' : bool
+             then pair Nil t'
+             else if kx' GHC.Base.< prefixOf x' : bool
+                  then pair t' Nil
+                  else pair (tip kx' (Data.Bits.op_zizazi__ bm lowerBitmap)) (tip kx'
+                                                                                  (Data.Bits.op_zizazi__ bm
+                                                                                                         higherBitmap))
+         | _, Nil => pair Nil Nil
          end in
-    let j_22__ := let 'pair lt gt := go x t in pair lt gt in
+    let j_21__ := let 'pair lt gt := go x t in pair lt gt in
     match t with
-    | Bin p m l r =>
+    | Bin _ m l r =>
         if m GHC.Base.< #0 : bool
         then if x GHC.Base.>= #0 : bool
-             then let 'pair lt gt := go x l in
-                  let lt' := bin p m lt r in pair lt' gt
-             else let 'pair lt gt := go x r in
-                  let gt' := bin p m l gt in pair lt gt' else
-        j_22__
-    | _ => j_22__
+             then let 'pair lt gt := go x l in let lt' := union lt r in pair lt' gt
+             else let 'pair lt gt := go x r in let gt' := union gt l in pair lt gt'
+        else j_21__
+    | _ => j_21__
     end.
 
-#[global] Definition splitMember
-   : Key -> IntSet -> (IntSet * bool * IntSet)%type :=
+#[global] Definition splitMember :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | x', (Bin p m l r as t') =>
-             if nomatch x' p m : bool
-             then if x' GHC.Base.< p : bool
+             if match_ x' p m : bool
+             then if zero x' m : bool
+                  then let 'pair (pair lt fnd) gt := go x' l in pair (pair lt fnd) (union gt r)
+                  else let 'pair (pair lt fnd) gt := go x' r in pair (pair (union lt l) fnd) gt
+             else if x' GHC.Base.< p : bool
                   then pair (pair Nil false) t'
-                  else pair (pair t' false) Nil else
-             if zero x' m : bool
-             then let 'pair (pair lt fnd) gt := go x' l in
-                  let gt' := bin p m gt r in pair (pair lt fnd) gt' else
-             let 'pair (pair lt fnd) gt := go x' r in
-             let lt' := bin p m l lt in pair (pair lt' fnd) gt
+                  else pair (pair t' false) Nil
          | x', (Tip kx' bm as t') =>
              let bitmapOfx' := bitmapOf x' in
              let lowerBitmap := bitmapOfx' GHC.Num.- #1 in
@@ -931,25 +927,27 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
                Coq.NArith.BinNat.N.ldiff (Coq.NArith.BinNat.N.ones (64 % N)) (lowerBitmap
                                           GHC.Num.+
                                           bitmapOfx') in
-             if kx' GHC.Base.> x' : bool then pair (pair Nil false) t' else
-             if kx' GHC.Base.< prefixOf x' : bool then pair (pair t' false) Nil else
-             let gt := tip kx' (Data.Bits.op_zizazi__ bm higherBitmap) in
-             let found := (Data.Bits.op_zizazi__ bm bitmapOfx') GHC.Base./= #0 in
-             let lt := tip kx' (Data.Bits.op_zizazi__ bm lowerBitmap) in
-             pair (pair lt found) gt
+             if kx' GHC.Base.> x' : bool
+             then pair (pair Nil false) t'
+             else if kx' GHC.Base.< prefixOf x' : bool
+                  then pair (pair t' false) Nil
+                  else let gt := tip kx' (Data.Bits.op_zizazi__ bm higherBitmap) in
+                       let found := Data.Bits.op_zizazi__ bm bitmapOfx' GHC.Base./= #0 in
+                       let lt := tip kx' (Data.Bits.op_zizazi__ bm lowerBitmap) in
+                       pair (pair lt found) gt
          | _, Nil => pair (pair Nil false) Nil
          end in
-    let j_25__ := go x t in
+    let j_22__ := go x t in
     match t with
-    | Bin p m l r =>
+    | Bin _ m l r =>
         if m GHC.Base.< #0 : bool
         then if x GHC.Base.>= #0 : bool
              then let 'pair (pair lt fnd) gt := go x l in
-                  let lt' := bin p m lt r in pair (pair lt' fnd) gt
+                  let lt' := union lt r in pair (pair lt' fnd) gt
              else let 'pair (pair lt fnd) gt := go x r in
-                  let gt' := bin p m l gt in pair (pair lt fnd) gt' else
-        j_25__
-    | _ => j_25__
+                  let gt' := union gt l in pair (pair lt fnd) gt'
+        else j_22__
+    | _ => j_22__
     end.
 
 #[global] Definition maxView : IntSet -> option (Key * IntSet)%type :=

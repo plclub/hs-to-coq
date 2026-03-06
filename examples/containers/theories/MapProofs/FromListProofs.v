@@ -22,7 +22,8 @@ Context {e : Type} {a : Type} {HEq : Eq_ e} {HOrd : Ord e} {HEqLaws : EqLaws e} 
 Definition fromDistinctAscList_create_f : (Int -> list (e * a) -> (Map e a) * list (e * a)) ->
 (Int -> list (e * a) -> Map e a * list ( e * a)).
 Proof.
-  let rhs := eval unfold fromDistinctAscList in (@fromDistinctAscList e a) in
+  let x := constr:(@fromDistinctAscList e a) in
+  let rhs := eval unfold fromDistinctAscList in x in
   lazymatch rhs with context [deferredFix2 ?f] => exact f end.
 Defined.
 
@@ -136,7 +137,8 @@ Qed.
 Definition fromDistinctAscList_go_f : (Int -> Map e a -> list (e * a) -> Map e a) ->
  (Int -> Map e a -> list (e * a) -> Map e a).
 Proof.
-  let rhs := eval unfold fromDistinctAscList in (@fromDistinctAscList e a) in
+  let x := constr:(@fromDistinctAscList e a) in
+  let rhs := eval unfold fromDistinctAscList in x in
   let rhs := eval fold fromDistinctAscList_create_f in rhs in
   let rhs := eval fold fromDistinctAscList_create in rhs in
   lazymatch rhs with context [deferredFix3 ?f] => exact f end.
@@ -448,7 +450,8 @@ Local Definition gt : e * a -> e * a -> Prop
 Definition fromDistinctDescList_create_f : (Int -> list (e * a) -> (Map e a) * list (e * a)) ->
 (Int -> list (e * a) -> Map e a * list ( e * a)).
 Proof.
-  let rhs := eval unfold fromDistinctDescList in (@fromDistinctDescList e a) in
+  let x := constr:(@fromDistinctDescList e a) in
+  let rhs := eval unfold fromDistinctDescList in x in
   lazymatch rhs with context [deferredFix2 ?f] => exact f end.
 Defined.
 
@@ -530,7 +533,8 @@ Qed.
 Definition fromDistinctDescList_go_f : (Int -> Map e a -> list (e * a) -> Map e a) ->
  (Int -> Map e a -> list (e * a) -> Map e a).
 Proof.
-  let rhs := eval unfold fromDistinctDescList in (@fromDistinctDescList e a) in
+  let x := constr:(@fromDistinctDescList e a) in
+  let rhs := eval unfold fromDistinctDescList in x in
   let rhs := eval fold fromDistinctDescList_create_f in rhs in
   let rhs := eval fold fromDistinctDescList_create in rhs in
   lazymatch rhs with context [deferredFix3 ?f] => exact f end.

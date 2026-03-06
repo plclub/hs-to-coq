@@ -1007,10 +1007,6 @@ Fixpoint mapMonotonic {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__
 #[global] Definition foldlFB {a} {b} : (a -> b -> a) -> a -> Set_ b -> a :=
   foldl.
 
-(* Skipping definition `Data.Set.Internal.fromAscList' *)
-
-(* Skipping definition `Data.Set.Internal.fromDescList' *)
-
 #[global] Definition combineEq {a} `{GHC.Base.Eq_ a} : list a -> list a :=
   fun arg_0__ =>
     match arg_0__ with
@@ -1026,13 +1022,77 @@ Fixpoint mapMonotonic {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__
         combineEq' x xs
     end.
 
-(* Skipping definition `Data.Set.Internal.fromDistinctAscList' *)
+#[global] Definition fromDistinctAscList {a : Type} : list a -> Set_ a :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | nil => Tip
+    | cons x0 xs0 =>
+        let create :=
+          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
+                                              match arg_1__, arg_2__ with
+                                              | _, nil => pair Tip nil
+                                              | s, (cons x xs' as xs) =>
+                                                  if s GHC.Base.== #1 : bool
+                                                  then pair (Bin #1 x Tip Tip) xs'
+                                                  else match create (Data.Bits.shiftR s #1) xs with
+                                                       | (pair _ nil as res) => res
+                                                       | pair l (cons y ys) =>
+                                                           let 'pair r zs := create (Data.Bits.shiftR s #1) ys in
+                                                           pair (link y l r) zs
+                                                       end
+                                              end) in
+        let go :=
+          HsToCoq.DeferredFix.deferredFix3 (fun go arg_13__ arg_14__ arg_15__ =>
+                                              match arg_13__, arg_14__, arg_15__ with
+                                              | _, t, nil => t
+                                              | s, l, cons x xs =>
+                                                  let 'pair r ys := create s xs in
+                                                  let t' := link x l r in go (Data.Bits.shiftL s #1) t' ys
+                                              end) in
+        go (#1 : GHC.Num.Int) (Bin #1 x0 Tip Tip) xs0
+    end.
+
+#[global] Definition fromAscList {a : Type} `{GHC.Base.Eq_ a}
+   : list a -> Set_ a :=
+  fun xs => fromDistinctAscList (combineEq xs).
+
+#[global] Definition fromDistinctDescList {a : Type} : list a -> Set_ a :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | nil => Tip
+    | cons x0 xs0 =>
+        let create :=
+          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
+                                              match arg_1__, arg_2__ with
+                                              | _, nil => pair Tip nil
+                                              | s, (cons x xs' as xs) =>
+                                                  if s GHC.Base.== #1 : bool
+                                                  then pair (Bin #1 x Tip Tip) xs'
+                                                  else match create (Data.Bits.shiftR s #1) xs with
+                                                       | (pair _ nil as res) => res
+                                                       | pair r (cons y ys) =>
+                                                           let 'pair l zs := create (Data.Bits.shiftR s #1) ys in
+                                                           pair (link y l r) zs
+                                                       end
+                                              end) in
+        let go :=
+          HsToCoq.DeferredFix.deferredFix3 (fun go arg_13__ arg_14__ arg_15__ =>
+                                              match arg_13__, arg_14__, arg_15__ with
+                                              | _, t, nil => t
+                                              | s, r, cons x xs =>
+                                                  let 'pair l ys := create s xs in
+                                                  let t' := link x l r in go (Data.Bits.shiftL s #1) t' ys
+                                              end) in
+        go (#1 : GHC.Num.Int) (Bin #1 x0 Tip Tip) xs0
+    end.
+
+#[global] Definition fromDescList {a : Type} `{GHC.Base.Eq_ a}
+   : list a -> Set_ a :=
+  fun xs => fromDistinctDescList (combineEq xs).
 
 (* Skipping definition `Data.Set.Internal.fromDistinctAscList_linkTop' *)
 
 (* Skipping definition `Data.Set.Internal.fromDistinctAscList_linkAll' *)
-
-(* Skipping definition `Data.Set.Internal.fromDistinctDescList' *)
 
 (* Skipping definition `Data.Set.Internal.fromDistinctDescList_linkTop' *)
 

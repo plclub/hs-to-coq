@@ -2055,18 +2055,38 @@ Proof.
   - intuition.
   - simpl. destruct s3 eqn:Hs3.
     + rewrite<- Hs3 in *. clear Hs3 e0 s4 s5 s6.
-      eapply splitMember_Desc;
-        only 1: eassumption.
-      intros s4' b s5' HB1 HB2 Hi.
-      rewrite !andb_true_iff.
-      rewrite IHHB1_1 by assumption; clear IHHB1_1.
-      rewrite IHHB1_2 by assumption; clear IHHB1_2.
-      split;intro Hyp; [decompose [and] Hyp | split; [| split]];
-        try f_solver.
-      * specialize (Hyp x). specialize (Hi x).
-        rewrite Eq_refl in Hi. rewrite Eq_refl in Hyp.
+      (* v0.7: handle singleton optimization *)
+      match goal with | |- context [if ?c then _ else _] =>
+        destruct c eqn:Hsingleton end.
+      * (* Singleton case: sz = 1 *)
+        unfold op_zeze__, Eq_Integer___, op_zeze____ in Hsingleton.
+        apply Z.eqb_eq in Hsingleton.
+        postive_sizes.
+        assert (s1 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_1)); lia).
+        assert (s2 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_2)); lia).
+        simpl. setoid_rewrite orb_false_r.
+        rewrite notMember_spec by eassumption.
         rewrite negb_true_iff.
-        repeat f_solver_cleanup.
+        split.
+        -- intros Hnm i.
+           destruct (i == x) eqn:Hix; simpl; [|reflexivity].
+           erewrite sem_resp_eq by eassumption. assumption.
+        -- intros Hall.
+           specialize (Hall x). rewrite Eq_refl in Hall. simpl in Hall.
+           assumption.
+      * (* Non-singleton case: same as v0.6 *)
+        eapply splitMember_Desc;
+          only 1: eassumption.
+        intros s4' b s5' HB1 HB2 Hi.
+        rewrite !andb_true_iff.
+        rewrite IHHB1_1 by assumption; clear IHHB1_1.
+        rewrite IHHB1_2 by assumption; clear IHHB1_2.
+        split;intro Hyp; [decompose [and] Hyp | split; [| split]];
+          try f_solver.
+        -- specialize (Hyp x). specialize (Hi x).
+           rewrite Eq_refl in Hi. rewrite Eq_refl in Hyp.
+           rewrite negb_true_iff.
+           repeat f_solver_cleanup.
     + simpl. setoid_rewrite andb_false_r. intuition.
 Qed.
 
@@ -2516,7 +2536,8 @@ Qed.
 
 Definition fromDistinctAscList_create_f : (Int -> list e -> Set_ e * list e) -> (Int -> list e -> Set_ e * list e).
 Proof.
-  let rhs := eval unfold fromDistinctAscList in (@fromDistinctAscList e) in
+  let x := constr:(@fromDistinctAscList e) in
+  let rhs := eval unfold fromDistinctAscList in x in
   lazymatch rhs with context [deferredFix2 ?f] => exact f end.
 Defined.
 
@@ -2630,7 +2651,8 @@ Qed.
 
 Definition fromDistinctAscList_go_f : (Int -> Set_ e -> list e -> Set_ e) -> (Int -> Set_ e -> list e -> Set_ e).
 Proof.
-  let rhs := eval unfold fromDistinctAscList in (@fromDistinctAscList e) in
+  let x := constr:(@fromDistinctAscList e) in
+  let rhs := eval unfold fromDistinctAscList in x in
   let rhs := eval fold fromDistinctAscList_create_f in rhs in
   let rhs := eval fold fromDistinctAscList_create in rhs in
   lazymatch rhs with context [deferredFix3 ?f] => exact f end.
@@ -2900,7 +2922,8 @@ Qed.
 
 Definition fromDistinctDescList_create_f : (Int -> list e -> Set_ e * list e) -> (Int -> list e -> Set_ e * list e).
 Proof.
-  let rhs := eval unfold fromDistinctDescList in (@fromDistinctDescList e) in
+  let x := constr:(@fromDistinctDescList e) in
+  let rhs := eval unfold fromDistinctDescList in x in
   lazymatch rhs with context [deferredFix2 ?f] => exact f end.
 Defined.
 
@@ -2981,7 +3004,8 @@ Qed.
 
 Definition fromDistinctDescList_go_f : (Int -> Set_ e -> list e -> Set_ e) -> (Int -> Set_ e -> list e -> Set_ e).
 Proof.
-  let rhs := eval unfold fromDistinctDescList in (@fromDistinctDescList e) in
+  let x := constr:(@fromDistinctDescList e) in
+  let rhs := eval unfold fromDistinctDescList in x in
   let rhs := eval fold fromDistinctDescList_create_f in rhs in
   let rhs := eval fold fromDistinctDescList_create in rhs in
   lazymatch rhs with context [deferredFix3 ?f] => exact f end.
@@ -4062,61 +4086,6 @@ Qed.
 
 (** ** Verification of [isSubsetOf] *)
 
-Lemma isSubsetOfX_spec:
-  forall s1 s2 lb ub,
-  Bounded s1 lb ub ->
-  Bounded s2 lb ub ->
-  isSubsetOfX s1 s2 = true <-> (forall i, sem s1 i = true -> sem s2 i = true).
-Proof.
-  intros ???? HB1 HB2.
-  revert dependent s2.
-  induction HB1; intros; simpl; subst.
-  * intuition.
-  * destruct s0 eqn:Hs0.
-    - rewrite <- Hs0 in *.
-      clear s3 e0 s4 s5 Hs0.
-      eapply splitMember_Desc; [solve_Bounded|].
-      intros sr1 b sr2 HBsr1 HBsr2 Hsem.
-      rewrite !andb_true_iff.
-      rewrite IHHB1_1 by eassumption.
-      rewrite IHHB1_2 by eassumption.
-      split; intro; [destruct H1 as [?[??]] | split; [|split] ].
-      -- intros i Hi.
-         rewrite Hsem.
-         rewrite !orb_true_iff in Hi.
-         destruct Hi as [[Hi|Hi]|Hi];
-         destruct (i == x);
-         try reflexivity;
-         try congruence;
-         try apply H3 in Hi;
-         try apply H4 in Hi;
-         rewrite Hi;
-         rewrite ?orb_true_l, ?orb_true_r; reflexivity.
-     -- specialize (Hsem x).
-        rewrite Eq_refl in Hsem. rewrite <- Hsem.
-        apply H1.
-        rewrite Eq_refl.
-        rewrite ?orb_true_l, ?orb_true_r; reflexivity.
-     -- intros i Hi.
-        specialize (H1 i).
-        rewrite Hi in H1.
-        rewrite ?orb_true_l, ?orb_true_r in H1.
-        rewrite Hsem in H1.
-        specialize (H1 eq_refl).
-        repeat (f_solver_step; f_solver_cleanup).
-     -- intros i Hi.
-        specialize (H1 i).
-        rewrite Hi in H1.
-        rewrite ?orb_true_l, ?orb_true_r in H1.
-        rewrite Hsem in H1.
-        specialize (H1 eq_refl).
-        repeat (f_solver_step; f_solver_cleanup).
-    - intuition.
-      specialize (H1 x).
-      rewrite Eq_refl, orb_true_r in H1.
-      simpl in H1. intuition.
-Qed.
-
 Lemma subset_size:
   forall s1 s2 lb ub,
   Bounded s1 lb ub ->
@@ -4153,6 +4122,106 @@ Proof.
       repeat (f_solver_step; f_solver_cleanup).
     }
     lia.
+Qed.
+
+Lemma isSubsetOfX_spec:
+  forall s1 s2 lb ub,
+  Bounded s1 lb ub ->
+  Bounded s2 lb ub ->
+  isSubsetOfX s1 s2 = true <-> (forall i, sem s1 i = true -> sem s2 i = true).
+Proof.
+  intros ???? HB1 HB2.
+  revert dependent s2.
+  induction HB1; intros; simpl; subst.
+  * intuition.
+  * destruct s0 eqn:Hs0.
+    - rewrite <- Hs0 in *.
+      clear s3 e0 s4 s5 Hs0.
+      (* v0.7: handle singleton optimization *)
+      match goal with | |- context [if ?c then _ else _] =>
+        destruct c eqn:Hsingleton end.
+      + (* Singleton case: member x s0 *)
+        unfold op_zeze__, Eq_Integer___, op_zeze____ in Hsingleton.
+        apply Z.eqb_eq in Hsingleton.
+        postive_sizes.
+        assert (s1 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_1)); lia).
+        assert (s2 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_2)); lia).
+        simpl. rewrite member_spec by eassumption.
+        split.
+        -- intros Hm i Hi. rewrite orb_true_iff in Hi. destruct Hi as [Hi|Hi].
+           ++ simpl in Hi. erewrite sem_resp_eq; eassumption.
+           ++ discriminate.
+        -- intros Hi. apply Hi. rewrite Eq_refl. reflexivity.
+      + (* Non-singleton case *)
+        eapply splitMember_Desc; [solve_Bounded|].
+        intros sr1 b sr2 HBsr1 HBsr2 Hsem.
+        rewrite !andb_true_iff.
+        rewrite IHHB1_1 by eassumption.
+        rewrite IHHB1_2 by eassumption.
+        split; intro.
+        -- (* Forward *)
+           destruct H1 as [?[?[?[??]]]].
+           intros i Hi.
+           rewrite Hsem.
+           rewrite !orb_true_iff in Hi.
+           destruct Hi as [[Hi|Hi]|Hi];
+           destruct (i == x);
+           try reflexivity;
+           try congruence;
+           try apply H5 in Hi;
+           try apply H6 in Hi;
+           rewrite Hi;
+           rewrite ?orb_true_l, ?orb_true_r; reflexivity.
+        -- (* Backward *)
+           split; [|split; [|split; [|split]]].
+           ++ (* found *)
+              specialize (Hsem x).
+              rewrite Eq_refl in Hsem. rewrite <- Hsem.
+              apply H1.
+              rewrite Eq_refl.
+              rewrite ?orb_true_l, ?orb_true_r; reflexivity.
+           ++ (* size s1 <= size sr1 *)
+              unfold op_zlze__, Ord_Integer___, op_zlze____.
+              apply Z.leb_le.
+              eapply subset_size; [eassumption|eassumption|].
+              intros i Hi.
+              specialize (H1 i).
+              rewrite Hi in H1.
+              rewrite ?orb_true_l, ?orb_true_r in H1.
+              rewrite Hsem in H1.
+              specialize (H1 eq_refl).
+              repeat (f_solver_step; f_solver_cleanup).
+           ++ (* size s2 <= size sr2 *)
+              unfold op_zlze__, Ord_Integer___, op_zlze____.
+              apply Z.leb_le.
+              eapply subset_size; [eassumption|eassumption|].
+              intros i Hi.
+              specialize (H1 i).
+              rewrite Hi in H1.
+              rewrite ?orb_true_l, ?orb_true_r in H1.
+              rewrite Hsem in H1.
+              specialize (H1 eq_refl).
+              repeat (f_solver_step; f_solver_cleanup).
+           ++ (* isSubsetOfX s1 sr1 *)
+              intros i Hi.
+              specialize (H1 i).
+              rewrite Hi in H1.
+              rewrite ?orb_true_l, ?orb_true_r in H1.
+              rewrite Hsem in H1.
+              specialize (H1 eq_refl).
+              repeat (f_solver_step; f_solver_cleanup).
+           ++ (* isSubsetOfX s2 sr2 *)
+              intros i Hi.
+              specialize (H1 i).
+              rewrite Hi in H1.
+              rewrite ?orb_true_l, ?orb_true_r in H1.
+              rewrite Hsem in H1.
+              specialize (H1 eq_refl).
+              repeat (f_solver_step; f_solver_cleanup).
+    - intuition.
+      specialize (H1 x).
+      rewrite Eq_refl, orb_true_r in H1.
+      simpl in H1. intuition.
 Qed.
 
 Lemma isSubsetOf_spec:
@@ -4562,7 +4631,7 @@ Proof.
     by (apply H; intro; reflexivity).
   induction t; intros; simpl.
   * erewrite !H, !H0, IHt1, IHt2; auto.
-    intro; simpl; rewrite Ord_lt_le, Ord_gt_le; reflexivity.
+    intro; unfold GHC.Prim.rightSection; simpl; rewrite Ord_lt_le, Ord_gt_le; reflexivity.
   * reflexivity.
 Qed.
 

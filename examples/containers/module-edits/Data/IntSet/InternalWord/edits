@@ -5,6 +5,7 @@ rename module Data.IntSet.Internal Data.IntSet.InternalWord
 # Represent element type using Coq's infinite-bit N type
 #
 rename type GHC.Types.Int = IntWord.Int
+rename type GHC.Num.Int = IntWord.Int
 rename type GHC.Num.Word  = IntWord.Word
 
 ### Termination hints ###

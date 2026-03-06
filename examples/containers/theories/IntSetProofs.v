@@ -2466,7 +2466,7 @@ Lemma link_Desc:
   Desc (link p1' s1 p2' s2) r f.
 Proof.
   intros; subst.
-  unfold link.
+  unfold link, linkWithMask.
   rewrite branchMask_spec.
   rewrite mask_spec.
   rewrite -> zero_spec by (apply commonRangeDisj_rBits_pos; eapply Desc_rNonneg; eassumption).

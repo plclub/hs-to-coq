@@ -203,7 +203,8 @@ type MonadNewlineStatus s m = (MonadParse m, MonadState s m, Has s NewlineStatus
 
 token' :: MonadNewlineStatus s m => m (Maybe Token)
 token' = asum $
-  [ Nothing          <$  comment
+  [ Just (TokWord "#") <$  hashNum  -- #digit: hash-number prefix (before comment!)
+  , Nothing          <$  comment
   , Nothing          <$  space
   , newlineToken     <*  newline
   , Just TokTick     <$  tick
@@ -214,6 +215,9 @@ token' = asum $
   , Just . nameToken <$> qualid
   , Just TokEOF      <$  (guard =<< atEOF) ]
   where
+    -- Parse '#' only when immediately followed by a digit (for #n notation)
+    -- The following nat token will be parsed by the next call to token'
+    hashNum = parseCharTokenLookahead (const "#") (is '#') (maybe False isDigit)
     newlineToken = getPart <&> \case
                      NewlineSeparators -> Just TokNewline
                      NewlineWhitespace -> Nothing
