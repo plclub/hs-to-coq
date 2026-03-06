@@ -164,6 +164,8 @@ Containers is at v0.6.0.1, which has `foldl'` ambiguity with GHC 9.10 (Prelude n
 - `Program Definition` obligation ordering may differ (e.g., fst before snd)
 - Bound variable naming in goals may change (e.g., `bm0` → `bm`) — use explicit `with` clauses
 - Typeclass resolution may not unfold definition chains (`Key→N→Word`) — add explicit instances
+- `setoid_rewrite` under binders may fail with `UNDEFINED EVARS` — replace with explicit `replace`+`funext` or direct monad law rewrites
+- `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — proofs unfolding Foldable for lists need different unfolding chains
 
 ## Workflow
 
