@@ -108,6 +108,7 @@ clean make -C quicksort clean
 clean make -C coinduction clean
 clean make -C lambda clean
 clean make -C simple clean
+clean make -C bag clean
 clean make -C ../base-thy clean
 clean make -C containers clean
 clean make -C base-src clean
@@ -140,9 +141,9 @@ coq make -C intervals
 coq make -C successors
 coq make -C lambda
 coq make -C simple
+coq make -C bag
 
 # Not currently building (submodules not checked out or need porting):
 # make -C transformers vfiles && coq make -C transformers coq
 # make -C ghc vfiles && coq make -C ghc/lib
 # make -C core-semantics vfiles && coq make -C core-semantics coq
-# make -C bag  # ssreflect proofs need updating for Coq 8.20/mathcomp

@@ -110,6 +110,8 @@ jobs:
           make -C examples/successors
           make -C examples/lambda
           make -C examples/simple
+          (cd examples/bag; coq_makefile -f _CoqProject -o Makefile)
+          make -C examples/bag
 
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)

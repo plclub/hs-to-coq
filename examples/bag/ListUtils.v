@@ -142,17 +142,14 @@ Qed.
 Theorem hs_coq_any_list {A} (p : A -> bool) (l : list A) :
   Data.Foldable.any p l = any p l.
 Proof.
-  rewrite /Data.Foldable.any
+  rewrite /Data.Foldable.any /compose
           /Data.Foldable.foldMap /Foldable.Foldable__list /Foldable.foldMap__
           /= /Data.Foldable.Foldable__list_foldMap
-          /Data.Foldable.Foldable__list_foldr /=
-          /Base.mempty /SemigroupInternal.Monoid__Any /Base.mempty__
-          /SemigroupInternal.Monoid__Any_mempty
-          /Base.op_z2218U__.
-  rewrite -(orbF (any p l)); move: false => b.
-  elim: l => [|x l IH] //=.
-  rewrite -orbA -IH /compose /=.
-  by case: (GHC.Base.foldr _ _ _); case: (p x).
+          /Base.op_z2218U__ /compose
+          /Base.mconcat /SemigroupInternal.Monoid__Any /Base.mconcat__
+          /SemigroupInternal.Monoid__Any_mconcat
+          /Base.map.
+  by elim: l => [|x l IH] //=; rewrite IH.
 Qed.
 
 (***** partition *****)
