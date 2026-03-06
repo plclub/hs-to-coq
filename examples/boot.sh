@@ -8,7 +8,7 @@ set -e
 CLEAN=YES
 COQ=YES
 COQ_TEST=YES
-COQ_VERSION=8.10
+COQ_VERSION=8.20
 
 function clean ()    { if [ "$CLEAN"    = "YES" ]; then "$@"; fi }
 function coq ()      { if [ "$COQ"      = "YES" ]; then "$@"; fi }
@@ -104,17 +104,14 @@ clean make -C intervals clean
 clean make -C compiler clean
 clean make -C dlist clean
 clean make -C rle clean
-clean make -C bag clean
 clean make -C quicksort clean
 clean make -C coinduction clean
+clean make -C lambda clean
+clean make -C simple clean
 clean make -C ../base-thy clean
 clean make -C containers clean
 clean make -C containers/theories clean
-clean make -C ghc/theories clean
-clean make -C core-semantics clean
 clean make -C base-src clean
-clean make -C transformers clean
-clean make -C ghc clean
 have ruby         && clean make -C ../emacs clean
 have sphinx-build && clean make -C ../doc   clean
 
@@ -129,29 +126,24 @@ coq make -C base-src coq
 coq make -C ../base-thy
 coq-test make -C base-tests
 
-make -C containers vfiles
-coq make -C containers coq
+# Containers: convenience copy in lib/ is stable (not regenerated).
+# Only build the Coq files.
+coq make -C containers
 (cd containers/theories; coq coq_makefile -f _CoqProject -o Makefile)
 coq make -C containers/theories
 
-make -C transformers vfiles
-coq make -C transformers coq
-#coq make -C transformers/theories no theories yet
-
-make -C ghc vfiles
-coq make -C ghc/lib
-(cd ghc/theories; coq coq_makefile -f _CoqProject -o Makefile)
-coq make -C ghc/theories
-
-make -C core-semantics vfiles
-coq make -C core-semantics coq
-#coq make -C core-semantics/theories theories yet
-
-coq make -C successors
-coq make -C intervals
 coq make -C compiler
 coq make -C rle
-coq make -C bag
 coq make -C quicksort
 coq make -C dlist
 coq make -C coinduction
+coq make -C intervals
+coq make -C successors
+coq make -C lambda
+coq make -C simple
+
+# Not currently building (submodules not checked out or need porting):
+# make -C transformers vfiles && coq make -C transformers coq
+# make -C ghc vfiles && coq make -C ghc/lib
+# make -C core-semantics vfiles && coq make -C core-semantics coq
+# make -C bag  # ssreflect proofs need updating for Coq 8.20/mathcomp
