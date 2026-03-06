@@ -153,7 +153,7 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 - **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
 
 ### Containers submodule
-Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is skipped in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. Several v0.7 functions (`fromDistinctAscList`, `split`, `splitMember`, etc.) use `redefine` edits to restore v0.6-compatible definitions so existing proofs compile.
+Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. Some v0.7 functions use `redefine` edits to restore v0.6-compatible definitions so existing proofs compile (IntSet `split`/`splitMember`, Map `fromDistinctAscList` family). Set `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList` now use native v0.7 stack-based definitions with rewritten proofs.
 
 ### Coq 8.20 compatibility
 - `Program Instance` needs `#[global]` prefix for cross-module visibility

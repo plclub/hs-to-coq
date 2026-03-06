@@ -72,11 +72,14 @@ upstream Haskell for these functions:
 - **IntSet**: `split`, `splitMember` — v0.7 uses `nomatch`/`bin`; redefined to
   use `match_`/`union` (v0.6 logic) so IntSet proof scripts compile.
 - **Set**: `fromDistinctAscList`, `fromDistinctDescList`, `fromAscList`,
-  `fromDescList` — v0.7 rewrote these with a stack-based algorithm; redefined
-  to use v0.6's `deferredFix`-based implementation.
+  `fromDescList` — these now use the **native v0.7 stack-based algorithm**
+  (auto-generated from Haskell). The proofs in `SetProofs.v` were rewritten
+  to use structural induction on the `Stack`/`FromDistinctMonoState` types.
 - **Map**: `fromDistinctAscList`, `fromDistinctDescList`, `fromAscList`,
   `fromDescList`, `fromAscListWithKey`, `fromDescListWithKey`,
-  `fromAscListWith`, `fromDescListWith` — same as Set.
+  `fromAscListWith`, `fromDescListWith` — v0.7 rewrote these with a
+  stack-based algorithm; redefined to use v0.6's `deferredFix`-based
+  implementation. (Native v0.7 support for Map is planned.)
 
 The redefined functions are semantically equivalent to the v0.7 originals but
 use the v0.6 implementation structure that the proofs were written against.
