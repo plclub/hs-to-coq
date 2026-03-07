@@ -69,6 +69,10 @@ Inductive MaxView k a : Type :=
 Inductive MinView k a : Type :=
   | Mk_MinView : k -> a -> (Map k a) -> MinView k a.
 
+Inductive Stack k a : Type :=
+  | Push : k -> a -> (Map k a) -> (Stack k a) -> Stack k a
+  | Nada : Stack k a.
+
 Inductive WhenMissing f k x y : Type :=
   | Mk_WhenMissing (missingSubtree : Map k x -> f (Map k y)) (missingKey
     : k -> x -> f (option y))
@@ -76,6 +80,10 @@ Inductive WhenMissing f k x y : Type :=
 
 #[global] Definition SimpleWhenMissing :=
   (WhenMissing Data.Functor.Identity.Identity)%type.
+
+Inductive FromDistinctMonoState k a : Type :=
+  | State0 : (Stack k a) -> FromDistinctMonoState k a
+  | State1 : (Map k a) -> (Stack k a) -> FromDistinctMonoState k a.
 
 Inductive AreWeStrict : Type := | Strict : AreWeStrict | Lazy : AreWeStrict.
 
@@ -99,7 +107,15 @@ Arguments Mk_MaxView {_} {_} _ _ _.
 
 Arguments Mk_MinView {_} {_} _ _ _.
 
+Arguments Push {_} {_} _ _ _ _.
+
+Arguments Nada {_} {_}.
+
 Arguments Mk_WhenMissing {_} {_} {_} {_} _ _.
+
+Arguments State0 {_} {_} _.
+
+Arguments State1 {_} {_} _ _.
 
 Arguments AltSmaller {_} {_} _.
 
@@ -2538,47 +2554,55 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
    : (a -> k -> b -> a) -> a -> Map k b -> a :=
   foldlWithKey.
 
-#[global] Definition fromDistinctAscList {k : Type} {a : Type}
-   : list (k * a) -> Map k a :=
+#[global] Definition foldl'Stack {b : Type} {k : Type} {a : Type}
+   : (b -> k -> a -> Map k a -> b) -> b -> Stack k a -> b :=
+  fun f =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z, Nada => z
+         | z, Push kx x t stk => go (f z kx x t) stk
+         end in
+    go.
+
+Fixpoint fromDistinctAscList_linkTop {k : Type} {a : Type} (arg_0__ : Map k a)
+                                     (arg_1__ : Stack k a) : FromDistinctMonoState k a
+  := let j_3__ := match arg_0__, arg_1__ with | l, stk => State1 l stk end in
+     match arg_0__, arg_1__ with
+     | (Bin rsz _ _ _ _ as r), Push kx x (Bin lsz _ _ _ _ as l) stk =>
+         if rsz GHC.Base.== lsz : bool
+         then fromDistinctAscList_linkTop (bin kx x l r) stk else
+         j_3__
+     | _, _ => j_3__
+     end.
+
+#[global] Definition fromDistinctAscList_linkAll {k : Type} {a : Type}
+   : FromDistinctMonoState k a -> Map k a :=
   fun arg_0__ =>
     match arg_0__ with
-    | nil => Tip
-    | cons (pair kx0 x0) xs0 =>
-        let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
-                                              match arg_1__, arg_2__ with
-                                              | _, nil => pair Tip nil
-                                              | s, (cons x' xs' as xs) =>
-                                                  if s GHC.Base.== #1 : bool
-                                                  then let 'pair kx x := x' in pair (Bin #1 kx x Tip Tip) xs'
-                                                  else match create (Data.Bits.shiftR s #1) xs with
-                                                       | (pair _ nil as res) => res
-                                                       | pair l (cons (pair ky y) ys) =>
-                                                           let 'pair r zs := create (Data.Bits.shiftR s #1) ys in
-                                                           pair (link ky y l r) zs
-                                                       end
-                                              end) in
-        let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_15__ arg_16__ arg_17__ =>
-                                              match arg_15__, arg_16__, arg_17__ with
-                                              | _, t, nil => t
-                                              | s, l, cons (pair kx x) xs =>
-                                                  let 'pair r ys := create s xs in
-                                                  let t' := link kx x l r in go (Data.Bits.shiftL s #1) t' ys
-                                              end) in
-        go (#1 : GHC.Num.Int) (Bin #1 kx0 x0 Tip Tip) xs0
+    | State0 stk => foldl'Stack (fun r kx x l => link kx x l r) Tip stk
+    | State1 r0 stk => foldl'Stack (fun r kx x l => link kx x l r) r0 stk
     end.
 
+#[global] Definition fromDistinctAscList {k : Type} {a : Type}
+   : list (k * a)%type -> Map k a :=
+  let next {k} {a}
+   : FromDistinctMonoState k a -> (k * a)%type -> FromDistinctMonoState k a :=
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | State0 stk, pair kx x => fromDistinctAscList_linkTop (Bin #1 kx x Tip Tip) stk
+      | State1 l stk, pair kx x => State0 (Push kx x l stk)
+      end in
+  fromDistinctAscList_linkAll GHC.Base.∘ Data.Foldable.foldl' next (State0 Nada).
+
 #[global] Definition fromAscList {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : list (k * a) -> Map k a :=
+   : list (k * a)%type -> Map k a :=
   fun xs =>
     let fix combineEq' arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | z, nil => cons z nil
          | (pair kz _ as z), cons (pair kx xx as x) xs' =>
-             if kx GHC.Base.== kz : bool
-             then combineEq' (pair kx xx) xs'
-             else cons z (combineEq' x xs')
+             if kx GHC.Base.== kz : bool then combineEq' (pair kx xx) xs' else
+             cons z (combineEq' x xs')
          end in
     let combineEq :=
       fun xs' =>
@@ -2589,47 +2613,46 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
         end in
     fromDistinctAscList (combineEq xs).
 
-#[global] Definition fromDistinctDescList {k : Type} {a : Type}
-   : list (k * a) -> Map k a :=
+Fixpoint fromDistinctDescList_linkTop {k : Type} {a : Type} (arg_0__ : Map k a)
+                                      (arg_1__ : Stack k a) : FromDistinctMonoState k a
+  := let j_3__ := match arg_0__, arg_1__ with | r, stk => State1 r stk end in
+     match arg_0__, arg_1__ with
+     | (Bin lsz _ _ _ _ as l), Push kx x (Bin rsz _ _ _ _ as r) stk =>
+         if lsz GHC.Base.== rsz : bool
+         then fromDistinctDescList_linkTop (bin kx x l r) stk else
+         j_3__
+     | _, _ => j_3__
+     end.
+
+#[global] Definition fromDistinctDescList_linkAll {k : Type} {a : Type}
+   : FromDistinctMonoState k a -> Map k a :=
   fun arg_0__ =>
     match arg_0__ with
-    | nil => Tip
-    | cons (pair kx0 x0) xs0 =>
-        let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_1__ arg_2__ =>
-                                              match arg_1__, arg_2__ with
-                                              | _, nil => pair Tip nil
-                                              | s, (cons x' xs' as xs) =>
-                                                  if s GHC.Base.== #1 : bool
-                                                  then let 'pair kx x := x' in pair (Bin #1 kx x Tip Tip) xs'
-                                                  else match create (Data.Bits.shiftR s #1) xs with
-                                                       | (pair _ nil as res) => res
-                                                       | pair r (cons (pair ky y) ys) =>
-                                                           let 'pair l zs := create (Data.Bits.shiftR s #1) ys in
-                                                           pair (link ky y l r) zs
-                                                       end
-                                              end) in
-        let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_15__ arg_16__ arg_17__ =>
-                                              match arg_15__, arg_16__, arg_17__ with
-                                              | _, t, nil => t
-                                              | s, r, cons (pair kx x) xs =>
-                                                  let 'pair l ys := create s xs in
-                                                  let t' := link kx x l r in go (Data.Bits.shiftL s #1) t' ys
-                                              end) in
-        go (#1 : GHC.Num.Int) (Bin #1 kx0 x0 Tip Tip) xs0
+    | State0 stk => foldl'Stack (fun l kx x r => link kx x l r) Tip stk
+    | State1 l0 stk => foldl'Stack (fun l kx x r => link kx x l r) l0 stk
     end.
 
+#[global] Definition fromDistinctDescList {k : Type} {a : Type}
+   : list (k * a)%type -> Map k a :=
+  let next {k} {a}
+   : FromDistinctMonoState k a -> (k * a)%type -> FromDistinctMonoState k a :=
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | State0 stk, pair kx x =>
+          fromDistinctDescList_linkTop (Bin #1 kx x Tip Tip) stk
+      | State1 r stk, pair kx x => State0 (Push kx x r stk)
+      end in
+  fromDistinctDescList_linkAll GHC.Base.∘ Data.Foldable.foldl' next (State0 Nada).
+
 #[global] Definition fromDescList {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : list (k * a) -> Map k a :=
+   : list (k * a)%type -> Map k a :=
   fun xs =>
     let fix combineEq' arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | z, nil => cons z nil
          | (pair kz _ as z), cons (pair kx xx as x) xs' =>
-             if kx GHC.Base.== kz : bool
-             then combineEq' (pair kx xx) xs'
-             else cons z (combineEq' x xs')
+             if kx GHC.Base.== kz : bool then combineEq' (pair kx xx) xs' else
+             cons z (combineEq' x xs')
          end in
     let combineEq :=
       fun xs' =>
@@ -2641,15 +2664,15 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
     fromDistinctDescList (combineEq xs).
 
 #[global] Definition fromAscListWithKey {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : (k -> a -> a -> a) -> list (k * a) -> Map k a :=
+   : (k -> a -> a -> a) -> list (k * a)%type -> Map k a :=
   fun f xs =>
     let fix combineEq' arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | z, nil => cons z nil
          | (pair kz zz as z), cons (pair kx xx as x) xs' =>
              if kx GHC.Base.== kz : bool
-             then let yy := f kx xx zz in combineEq' (pair kx yy) xs'
-             else cons z (combineEq' x xs')
+             then let yy := f kx xx zz in combineEq' (pair kx yy) xs' else
+             cons z (combineEq' x xs')
          end in
     let combineEq :=
       fun arg_7__ arg_8__ =>
@@ -2664,7 +2687,7 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
     fromDistinctAscList (combineEq f xs).
 
 #[global] Definition fromAscListWith {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : (a -> a -> a) -> list (k * a) -> Map k a :=
+   : (a -> a -> a) -> list (k * a)%type -> Map k a :=
   fun f xs =>
     fromAscListWithKey (fun arg_0__ arg_1__ arg_2__ =>
                           match arg_0__, arg_1__, arg_2__ with
@@ -2672,15 +2695,15 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
                           end) xs.
 
 #[global] Definition fromDescListWithKey {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : (k -> a -> a -> a) -> list (k * a) -> Map k a :=
+   : (k -> a -> a -> a) -> list (k * a)%type -> Map k a :=
   fun f xs =>
     let fix combineEq' arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | z, nil => cons z nil
          | (pair kz zz as z), cons (pair kx xx as x) xs' =>
              if kx GHC.Base.== kz : bool
-             then let yy := f kx xx zz in combineEq' (pair kx yy) xs'
-             else cons z (combineEq' x xs')
+             then let yy := f kx xx zz in combineEq' (pair kx yy) xs' else
+             cons z (combineEq' x xs')
          end in
     let combineEq :=
       fun arg_7__ arg_8__ =>
@@ -2695,22 +2718,12 @@ Fixpoint fromSet {k : Type} {a : Type} (arg_0__ : k -> a) (arg_1__
     fromDistinctDescList (combineEq f xs).
 
 #[global] Definition fromDescListWith {k : Type} {a : Type} `{GHC.Base.Eq_ k}
-   : (a -> a -> a) -> list (k * a) -> Map k a :=
+   : (a -> a -> a) -> list (k * a)%type -> Map k a :=
   fun f xs =>
     fromDescListWithKey (fun arg_0__ arg_1__ arg_2__ =>
                            match arg_0__, arg_1__, arg_2__ with
                            | _, x, y => f x y
                            end) xs.
-
-(* Skipping definition `Data.Map.Internal.fromDistinctAscList_linkTop' *)
-
-(* Skipping definition `Data.Map.Internal.fromDistinctAscList_linkAll' *)
-
-(* Skipping definition `Data.Map.Internal.fromDistinctDescList_linkTop' *)
-
-(* Skipping definition `Data.Map.Internal.fromDistinctDescList_linkAll' *)
-
-(* Skipping definition `Data.Map.Internal.foldl'Stack' *)
 
 (* Skipping definition `Data.Map.Internal.deleteFindMin' *)
 
