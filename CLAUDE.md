@@ -99,6 +99,12 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 - Each Coq directory uses `_CoqProject` + `coq_makefile` to generate its Makefile
 - `.h2ci` files store interface information for cross-module translation
 
+### Stale .vo recovery
+If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the full chain: `base` → `base-thy` → `examples/containers/lib` → `examples/containers/theories` → `examples/ghc/lib` → `examples/ghc/theories`. Each needs `make clean && make -j`.
+
+### Axiomatized lib functions
+When lib/*.v functions are `Axiom` (e.g., `substExpr`, `cseExpr`), all theories/*.v proofs that unfold them (`done.`, `simpl`, `rewrite /func`) must be `Admitted`. Check with `grep "^Axiom" lib/Module.v` before attempting computation-based proofs.
+
 ## Test Structure
 
 - `examples/tests/` — Unit tests: each `.hs` file is translated to `.v` and type-checked with `coqc`. Tests categorized as `PASS`, `TODO_PASS` (known failures), `TODO_TRANSLATE`.
