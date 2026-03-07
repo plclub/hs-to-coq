@@ -77,9 +77,11 @@ upstream Haskell for these functions:
   to use structural induction on the `Stack`/`FromDistinctMonoState` types.
 - **Map**: `fromDistinctAscList`, `fromDistinctDescList`, `fromAscList`,
   `fromDescList`, `fromAscListWithKey`, `fromDescListWithKey`,
-  `fromAscListWith`, `fromDescListWith` — v0.7 rewrote these with a
-  stack-based algorithm; redefined to use v0.6's `deferredFix`-based
-  implementation. (Native v0.7 support for Map is planned.)
+  `fromAscListWith`, `fromDescListWith` — these now use the **native v0.7
+  stack-based algorithm** (auto-generated from Haskell). The proofs in
+  `MapProofs/FromListProofs.v` were rewritten using `stack_sem_rev` (for
+  ascending) and `sem_for_lists (rev xs)` (for descending) to handle the
+  non-commutativity of Map's `|||` (oro) operator.
 
 The redefined functions are semantically equivalent to the v0.7 originals but
 use the v0.6 implementation structure that the proofs were written against.
