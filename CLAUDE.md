@@ -43,6 +43,10 @@ cd examples && ./boot.sh
 make -C examples/containers          # lib + theories
 make -C examples/containers/lib      # just the generated library
 make -C examples/containers/theories # just the proofs (depends on lib)
+
+# Build GHC core example (depends on base, base-thy, containers)
+cd examples/ghc/lib && coq_makefile -f _CoqProject -o Makefile && make -j
+cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j
 ```
 
 Use relative path instead of absolute path when `cd` to a directory.
@@ -135,9 +139,6 @@ Previously broken modules now regenerable:
 ### Deriving pipeline (GHC 9.10)
 GHC's `load LoadAllTargets` processes standalone `deriving instance` declarations during typechecking — before `addDerivedInstances` runs. If any fail (e.g. types from skipped modules), `load` returns `Failed`. The fallback in `ProcessFiles.hs` strips all standalone deriving decls from the **parsed** AST, then typechecks, then uses `addDerivedInstances` to re-derive the ones we want.
 
-### Locale for hs-to-coq
-Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before running hs-to-coq or the output will fail with encoding errors on systems with POSIX locale.
-
 ### Common edit patterns for GHC 9.10
 - **`skip` vs `skip method`**: Never use `skip Mod.func` for class methods — use `skip method Mod.Class func` only. Using both causes "skipping a binding" errors.
 - **`SigPat` in GHC 9.10**: `foldl'`/`foldr'`/`foldMap'` default implementations use `SigPat` which hs-to-coq doesn't support. Skip via `skip method`.
@@ -170,26 +171,16 @@ Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories
 Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList` all use native v0.7 definitions with rewritten proofs. Map `fromList` proofs are `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing issue). `hs-spec/IntSetProperties.v` is auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps). The manual `Test/QuickCheck/Property.v` provides z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
 
 ### Coq 8.20 compatibility
-- `Program Instance` needs `#[global]` prefix for cross-module visibility
-- `Program Definition` with `#[global]` needs locality before `Program` (i.e., `#[global] Program Definition`, not `Program #[global] Definition`)
+- `#[global]` required: `Program Instance` and `Program Definition` need `#[global]` prefix. Locality goes before `Program` (i.e., `#[global] Program Definition`).
 - Type and constructor cannot share the same name (e.g., `StateT`)
-- `omega` tactic replaced by `lia`; `le_lt_n_Sm` removed (use `lia` instead)
-- `intuition` solves more goals — proof bullet structures may need adjustment
-- `f_solver` may solve different/more goals, changing remaining goal structure
-- `auto` no longer solves `E.eq` reflexivity goals from OrderedType — use explicit `apply E.eq_refl`/`apply E.eq_sym`
-- `zify` handles `Z.of_N (Z.to_N ...)` differently — use `try rewrite Z2N.id` instead of `rewrite Z2N.id`
-- Section `Variable` hypotheses now generate side conditions in `rewrite` that weren't needed before
-- `Require Import` inside sections may not export notations after section ends (e.g., `==>` from Morphisms)
-- Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
-- `Program Definition` obligation ordering may differ (e.g., fst before snd)
-- Bound variable naming in goals may change (e.g., `bm0` → `bm`) — use explicit `with` clauses
+- `omega` → `lia`; `le_lt_n_Sm` removed (use `lia` instead)
+- `intuition`/`f_equal`/`auto` solve more goals — proof bullet structures may break. `auto` no longer resolves `E.eq` goals — use explicit `apply E.eq_refl`.
+- Section `Variable` hypotheses generate side conditions in `rewrite`. `clear -H1 H2` clears section variables — add them to keep list (e.g., `clear -H1 H2 HEqLaws HOrdLaws`).
+- `Program Fixpoint ... := _.` obligations may have all variables pre-introduced (no products to `intros`). Use `match goal with` to find hypotheses.
 - Typeclass resolution may not unfold definition chains (`Key→N→Word`) — add explicit instances
-- `setoid_rewrite` under binders may fail with `UNDEFINED EVARS` — replace with explicit `replace`+`funext` or direct monad law rewrites
-- `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — proofs unfolding Foldable for lists need different unfolding chains
-- `eval unfold f` in sections with implicit args: use `let x := constr:(@f explicit_args) in let rhs := eval unfold f in x` — plain `eval unfold f in f` can't infer implicit params
-- `f_equal` is more aggressive — may fully solve goals that previously required `extensionality` or further tactics, causing "No such goal" errors on dead proof code
-- `Program Fixpoint ... := _.` with `Next Obligation.`: obligations may have all variables pre-introduced (no products to `intros`). The CPS pattern `intros X HX. apply HX. clear HX.` needs replacing with direct `apply HK` using already-in-context hypotheses. Use `match goal with` to find and rename hypotheses robustly.
-- `clear -H1 H2` in sections: only keeps named hypotheses and their transitive dependencies. Section variables like `HEqLaws`/`HOrdLaws` are cleared if no kept hypothesis depends on them. This breaks tactics like `order e` that need them. Fix: `clear -H1 H2 HEqLaws HOrdLaws`.
+- Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
+- `eval unfold f` in sections: use `let x := constr:(@f args) in let rhs := eval unfold f in x`
+- `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — different unfolding chains needed
 
 ## Workflow
 
