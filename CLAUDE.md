@@ -152,6 +152,20 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 - **`order` with `redefine`**: When `redefine` introduces definition dependencies, add explicit `order` directives to ensure correct output ordering.
 - **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
 
+### GHC example (examples/ghc/)
+Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories/*.v files compile (many proofs Admitted). Key GHC 9.10 changes affecting theories:
+- `Alt` type: tuple → `Mk_Alt` constructor. Intro patterns change from `[[dc pats] rhs]` to `[dc pats rhs]`.
+- `Mk_Id` has 7 fields (added `varMult : Mult` as 4th field). Pattern matches need extra wildcard.
+- `realUnique` type: `N` → `Unique`. Breaks proofs using `N.eqb_neq`, `N.compare_refl`.
+- `lookupIdSubst`: no longer takes `String` doc parameter.
+- `mkVarApps`: uses `foldl'` not `foldl`. Use `hs_coq_foldl'_list`.
+- State monad: bare function type (`s -> (a * s)`) not newtype wrapper. `StateLogic.v` rewritten.
+- `substExpr`, `cseExpr`, `cseBind`, `try_for_cse`: axiomatized. Computation proofs Admitted.
+- GoDom strict positivity: use `alt_rhs` projection function, not pattern-match lambda.
+- `Var` has single constructor (`Mk_Id` only, no `TyVar`).
+- `cse_bind` has 5 args (added `env_rhs` parameter).
+- Makefile uses explicit GHC 9.10 path mappings (e.g., `SRCPATH_Var = ghc/compiler/GHC/Types/Var.hs`).
+
 ### Containers submodule
 Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList` all use native v0.7 definitions with rewritten proofs. Map `fromList` proofs are `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing issue). `hs-spec/IntSetProperties.v` is auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps). The manual `Test/QuickCheck/Property.v` provides z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
 

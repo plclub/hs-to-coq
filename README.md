@@ -129,8 +129,10 @@ for the edits files.
   * [intervals](examples/intervals) A simple example described in this
     [blog post](https://www.joachim-breitner.de/blog/734-Finding_bugs_in_Haskell_code_by_proving_it).
 
-  * [containers](examples/containers) Modules from the `containers` library,
-	including `Data.Set` and `Data.IntSet`
+  * [containers](examples/containers) Modules from the `containers` library (v0.7),
+	including `Data.Set` and `Data.IntSet`, with verified proofs
+  * [ghc](examples/ghc) GHC core language modules translated from GHC 9.10.3,
+    with well-scopedness and optimization proofs
   * [bag](examples/bag) Multiset implementation from GHC's implemention
   * [successors](examples/successors) Successors Monad
   * [compiler](examples/compiler) Hutton's razor
