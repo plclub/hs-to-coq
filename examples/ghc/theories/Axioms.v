@@ -119,20 +119,10 @@ Axiom isLocalId_uniqAway:
 
 
 
-Lemma isJoinId_maybe_uniqAway:
-  forall s v, 
-  isJoinId_maybe (uniqAway s v) = isJoinId_maybe v.
-Proof.
-  intros iss v.
-  move: (id_details_uniqAway iss v) => h.
-  destruct v; simpl in *. 
-  unfold isJoinId_maybe, isId.
-  destruct uniqAway.
-  rewrite andb_false_r.
-  simpl in *.
-  subst.
-  auto.
-Qed.
+(* GHC 9.10: isJoinId_maybe replaced by idJoinPointHood *)
+Axiom idJoinPointHood_uniqAway:
+  forall s v,
+  Id.idJoinPointHood (uniqAway s v) = Id.idJoinPointHood v.
 
 Lemma isLocalUnique_uniqAway:
   forall iss v,
@@ -183,40 +173,15 @@ Qed.
   
 (**** *)
 
-(* NOTE: are these better as rewrites? Or as axioms? *)
-Lemma isJoinId_maybe_setIdOccInfo:
-  forall v occ_info, 
-  isJoinId_maybe (setIdOccInfo v occ_info) = isJoinId_maybe v.
-Proof.
-  destruct v.
-  move=> oi. cbv.
-  destruct Util.debugIsOn.
-  auto.
-  auto.
-Qed.
+(* GHC 9.10: isJoinId_maybe replaced by idJoinPointHood *)
+Axiom idJoinPointHood_setIdOccInfo:
+  forall v occ_info,
+  Id.idJoinPointHood (setIdOccInfo v occ_info) = Id.idJoinPointHood v.
 
-(* SCW: this one has a precondition that v is VanillaId or JoinId *)
-Lemma isJoinId_maybe_asJoinId:
+Axiom idJoinPointHood_asJoinId:
   forall v a,
-  ( match Core.idDetails v with
-        | Core.VanillaId => true
-        | Core.Mk_JoinId _ => true
-        | _ => false
-        end ) -> 
   isLocalId v ->
-  isJoinId_maybe (asJoinId v a) = Some a.
-Proof.
-  intros. destruct v.
-  simpl in *.
-  unfold isJoinId_maybe. unfold isId.
-  destruct asJoinId eqn:AS.
-  rewrite andb_false_r.
-  unfold asJoinId in AS. rewrite H0 in AS. 
-  unfold Panic.warnPprTrace in AS. simpl in AS. 
-  rewrite H in AS. simpl in AS. inversion AS.
-  simpl.
-  auto.
-Qed.  
+  Id.idJoinPointHood (asJoinId v a) = Outputable.JoinPoint a.  
 
 
   

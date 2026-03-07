@@ -75,22 +75,27 @@ Lemma lookupVarEnv_eq :
 Proof.
   move=> A v1 v2 vs.
   elim: vs => [i].
-  unfold elemVarEnv, lookupVarEnv.
-  unfold  UniqFM.elemUFM,  UniqFM.lookupUFM.
+  unfold lookupVarEnv.
+  unfold UniqFM.lookupUFM.
   move=> h.
-  erewrite lookup_eq ; eauto.
+  apply eq_unique in h.
+  rewrite h.
+  reflexivity.
 Qed.
 
 Lemma elemVarEnv_eq :
   forall A v1 v2 (vs : VarEnv A),
     (v1 == v2) = true ->
     elemVarEnv v1 vs = elemVarEnv v2 vs.
+Proof.
   move=> A v1 v2 vs.
   elim: vs => [i].
-  unfold elemVarEnv, lookupVarEnv.
-  unfold  UniqFM.elemUFM,  UniqFM.lookupUFM.
+  unfold elemVarEnv.
+  unfold UniqFM.elemUFM.
   move=> h.
-  erewrite member_eq ; eauto.
+  apply eq_unique in h.
+  rewrite h.
+  reflexivity.
 Qed.
 
 
@@ -151,24 +156,20 @@ Proof.
 Qed.
 
 Lemma elemVarEnv_extendVarEnv_neq :
-  forall A v1 v2 (vs : VarEnv A) val, 
+  forall A v1 v2 (vs : VarEnv A) val,
     v1 == v2 <> true ->
     elemVarEnv v2 (extendVarEnv vs v1 val) = elemVarEnv v2 vs.
 Proof.
   move=> A v1 v2 vs val.
   elim: vs => [i].
-  unfold elemVarEnv, lookupVarEnv, extendVarEnv.
-  unfold  UniqFM.elemUFM,  UniqFM.lookupUFM, UniqFM.addToUFM.
+  unfold elemVarEnv, extendVarEnv.
+  unfold UniqFM.elemUFM, UniqFM.addToUFM.
   move=> h.
   rewrite member_insert.
-  elim M: (IntMap.member (Unique.getWordKey (Unique.getUnique v2)) i).
-  rewrite orbT. done.
-  rewrite orbF.
-  apply /Eq_eq.
-  move => h0.
-  rewrite <- eq_unique in h0.
-  rewrite Eq_sym in h0.
-  done.
+  have HEQ: (Unique.getWordKey (Unique.getUnique v2) ==
+             Unique.getWordKey (Unique.getUnique v1)) = false.
+  { apply /Eq_eq. move => h0. apply h. apply eq_unique. auto. }
+  rewrite HEQ. simpl. reflexivity.
 Qed.  
 
 
@@ -468,7 +469,7 @@ Qed.
 
 
 Lemma extendInScopeSetList_cons : forall v vs in_scope_set,
-           (extendInScopeSetList in_scope_set (v :: vs) = 
+           (extendInScopeSetList in_scope_set (v :: vs) =
             (extendInScopeSetList (extendInScopeSet in_scope_set v) vs)).
 Proof.
   unfold extendInScopeSetList.
@@ -476,9 +477,6 @@ Proof.
   unfold_Foldable_foldl.
   simpl.
   f_equal.
-  unfold Pos.to_nat.
-  unfold Pos.iter_op.
-  omega.
 Qed.
 
 Lemma extendInScopeSetList_nil : forall in_scope_set,
@@ -489,7 +487,6 @@ Proof.
   unfold_Foldable_foldl.
   simpl.
   f_equal.
-  omega.
 Qed.
 
 

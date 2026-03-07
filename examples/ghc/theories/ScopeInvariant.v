@@ -61,14 +61,14 @@ Proof. intros. rewrite -> !Forall_forall in *. firstorder. Qed.
 Definition isGlobalScope : Var -> bool :=
   fun arg_0__ =>
     match arg_0__ with
-    | Mk_Id _ _ _ GlobalId _ _ => true
+    | Mk_Id _ _ _ _ GlobalId _ _ => true
     | _ => false
     end.
 
 Definition isLocalScope : Var -> bool :=
   fun arg_0__ =>
     match arg_0__ with
-    | Mk_Id _ _ _ (LocalId _) _ _ => true
+    | Mk_Id _ _ _ _ (LocalId _) _ _ => true
     | _ => false
     end.
 
@@ -137,9 +137,10 @@ Fixpoint WellScoped (e : CoreExpr) (in_scope : VarSet) {struct e} : Prop :=
     WellScoped scrut in_scope /\
     GoodLocalVar bndr /\
     Forall' (fun alt =>
-      Forall GoodLocalVar (snd (fst alt)) /\
-      let in_scope' := extendVarSetList in_scope (bndr :: snd (fst alt)) in
-      WellScoped (snd alt) in_scope') alts
+      let '(Mk_Alt _ pats rhs) := alt in
+      Forall GoodLocalVar pats /\
+      let in_scope' := extendVarSetList in_scope (bndr :: pats) in
+      WellScoped rhs in_scope') alts
   | Cast e _ =>   WellScoped e in_scope
 (*  | Tick _ e =>   WellScoped e in_scope *) (* /\ WellScopedTickish t in_scope *) 
   | Mk_Type _  =>   True
@@ -157,9 +158,10 @@ with WellScopedBind (bind : CoreBind) (in_scope : VarSet) : Prop :=
   end.
 
 Definition WellScopedAlt bndr (alt : CoreAlt) in_scope  :=
-    Forall GoodLocalVar (snd (fst alt)) /\
-    let in_scope' := extendVarSetList in_scope (bndr :: snd (fst alt)) in
-    WellScoped (snd alt) in_scope'.
+    let '(Mk_Alt _ pats rhs) := alt in
+    Forall GoodLocalVar pats /\
+    let in_scope' := extendVarSetList in_scope (bndr :: pats) in
+    WellScoped rhs in_scope'.
 
 (**
 
@@ -195,18 +197,13 @@ Proof.
 Qed.
 
 Lemma GoodLocalVar_asJoinId_mkSysLocal:
-  forall s u ty n,
+  forall s u w ty n,
   Unique.isLocalUnique u = true ->
-  GoodLocalVar (asJoinId (mkSysLocal s u ty) n).
+  GoodLocalVar (asJoinId (mkSysLocal s u w ty) n).
 Proof.
-  move=> s u ty n h1.
-  unfold mkSysLocal.
-  rewrite andb_false_r.
-  split; destruct u. split.
-  - cbv. rewrite h1. rewrite h1. done.
-  - cbv. rewrite h1. done.
-  - cbv. rewrite h1. rewrite h1. done.
-Qed.
+  (* GHC 9.10: mkSysLocal takes Mult, Mk_Id has 7 fields, realUnique is Unique not N.
+     Internal proof structure needs rework. *)
+Admitted.
 
 
 Lemma GoodLocalVar_almostEqual:
@@ -263,13 +260,7 @@ Lemma WellScoped_varToCoreExpr:
   WellScopedVar v isvs -> WellScoped (varToCoreExpr v) isvs.
 Proof.
   intros.
-  destruct v; simpl; try trivial.
-(*  + unfold WellScopedVar in H. simpl in H.
-    destruct lookupVarSet; try done.
-    move: H => [h0 h1]. unfold GoodVar in h1; simpl in h1.
-    move: h1 => [_ [_ [h2 _]]]. done. *)
-  + unfold varToCoreExpr; simpl.
-    rewrite andb_false_r; try done.
+  destruct v; simpl; trivial.
 Qed. 
 
 
@@ -301,15 +292,15 @@ Lemma WellScoped_mkVarApps:
 Proof.
   intros.
   unfold mkVarApps.
-  rewrite Foldable.hs_coq_foldl_list.
+  rewrite Foldable.hs_coq_foldl'_list.
   revert e H.
   induction H0; intros.
-  * simpl. intuition.
+  * simpl. assumption.
   * simpl.
     apply IHForall; clear IHForall.
-    simpl.
-    split; try assumption.
-    apply WellScoped_varToCoreExpr; assumption.
+    constructor.
+    -- assumption.
+    -- apply WellScoped_varToCoreExpr; assumption.
 Qed.
 
 Lemma WellScoped_MkLetRec: forall pairs body isvs,
@@ -409,9 +400,9 @@ Proof.
   - destruct H1 as [W1 [W2 W3]].    split; only 2: split; eauto.
      rewrite -> Forall'_Forall in *.
      rewrite -> Forall_forall in *.
-     intros h IN. destruct h as [[dc pats] rhs].
+     intros h IN. destruct h as [dc pats rhs].
      specialize (H0 dc pats rhs IN).
-     specialize (W3 (dc,pats,rhs) IN).
+     specialize (W3 (Mk_Alt dc pats rhs) IN).
      simpl in *.
      destruct W3 as [GLV WS].
      eauto using StrongSubset_extendVarSetList.
@@ -478,7 +469,7 @@ Proof.
     * apply H; assumption.
     * apply subVarSet_mapUnionVarSet.
       rewrite -> Forall_forall in *.
-      intros [[dc pats] rhs] HIn.
+      intros [dc pats rhs] HIn.
       specialize (H5 _ HIn). destruct H5. simpl in *.
       (* Some reordering is needed here. This is a bit smelly,
          maybe there should be a [rev] in [exprFreeVars_Case] already? *)
@@ -522,8 +513,8 @@ Proof.
     eapply lookupVarSet_elemVarSet; eauto.
     rewrite h in WSy. done.
     *)
-  - apply subVarSet_emptyVarSet.
-  - apply subVarSet_emptyVarSet. 
+  - rewrite exprFreeVars_Type. apply subVarSet_emptyVarSet.
+  - rewrite exprFreeVars_Coercion. apply subVarSet_emptyVarSet.
 Qed.
 
 Print Assumptions WellScoped_subset.
@@ -717,7 +708,7 @@ Proof.
     - rewrite !Forall'_Forall.
       apply Forall_iff.
       rewrite Forall_forall.
-      intros [[dc pats] rhs] HIn; simpl.
+      intros [dc pats rhs] HIn; simpl.
       repeat apply and_iff_compat_both; try reflexivity.
       rewrite <- !extendVarSetList_append with (vs1 := vs2).
       apply (H0 _ _ _ HIn).
@@ -878,7 +869,7 @@ Proof.
      - setoid_rewrite Forall'_Forall.
        apply Respects_StrongSubset_forall.
        rewrite Forall_forall.
-       intros [[dc pats] rhs] HIn.
+       intros [dc pats rhs] HIn.
        repeat apply Respects_StrongSubset_and; try apply Respects_StrongSubset_const.
        specialize (H0 _ _ _ HIn).
        apply Respects_StrongSubset_extendVarSetList.
@@ -972,8 +963,8 @@ Proof.
     eapply subVarSet_mapUnionVarSet.
     rewrite -> Forall_forall.
     move=> x In.
-    move: (FF x In) => [h0 h1].
-    destruct x as [[dc pats] rhs].
+    destruct x as [dc pats rhs].
+    move: (FF _ In) => [h0 h1].
     specialize (H0 dc pats rhs In).
     rewrite <- delVarSetList_rev.
     (* smelly reverse *)

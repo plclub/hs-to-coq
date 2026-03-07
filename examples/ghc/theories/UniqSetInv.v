@@ -72,7 +72,7 @@ Qed.
 (* ---------------------------------------- *)
 
 Lemma lookup_delFromUFM:
-  forall A (H: Uniquable A) z (s : UniqFM A) (x y: A),
+  forall A (H: Uniquable A) z (s : UniqFM A A) (x y: A),
    (lookupUFM s x = Some y ->
        getUnique x = getUnique y) ->
       lookupUFM (delFromUFM s z) x = Some y ->
@@ -88,7 +88,6 @@ Proof.
   - apply eqUnique_neq in EQ.
     intro L.
     rewrite delete_neq in L.
-    + apply (Hu L).
     + unfold getWordKey.
       unfold getKey.
       unfold not in *.
@@ -98,10 +97,11 @@ Proof.
       destruct (getUnique z).
       subst.
       auto.
+    + apply (Hu L).
 Qed.
 
 Lemma lookup_fold_left_app_delFromUFM:
-  forall {A} {H: Uniquable A} (s : UniqFM A) (x y: A) (zs: list A),
+  forall {A} {H: Uniquable A} (s : UniqFM A A) (x y: A) (zs: list A),
     (lookupUFM s x = Some y ->
      getUnique x = getUnique y) ->
     lookupUFM (fold_left delFromUFM zs s) x = Some y ->
@@ -123,7 +123,7 @@ Proof.
 Qed.
 
 Lemma lookup_delFromUFM_Directly:
-  forall A (H: Uniquable A) z (s : UniqFM A) (x y: A),
+  forall A (H: Uniquable A) z (s : UniqFM A A) (x y: A),
    (lookupUFM s x = Some y ->
        getUnique x = getUnique y) ->
       lookupUFM (delFromUFM_Directly s z) x = Some y ->
@@ -139,7 +139,6 @@ Proof.
   - apply eqUnique_neq in EQ.
     intro L.
     rewrite delete_neq in L.
-    + apply (Hu L).
     + unfold getWordKey.
       unfold getKey.
       unfold not in *.
@@ -149,10 +148,11 @@ Proof.
       apply EQ.
       f_equal.
       assumption.
+    + apply (Hu L).
 Qed.
 
 Lemma lookup_fold_left_app_delFromUFM_Directly:
-  forall {A} {H: Uniquable A} (s : UniqFM A) (x y: A)
+  forall {A} {H: Uniquable A} (s : UniqFM A A) (x y: A)
     (zs: list Unique),
     (lookupUFM s x = Some y ->
      getUnique x = getUnique y) ->
@@ -169,7 +169,7 @@ Proof.
     auto.
   - simpl.
     intros Hl Hf.
-    apply (IHzs' (delFromUFM s z)); [|auto].
+    apply (IHzs' (delFromUFM_Directly s z)); [|auto].
     apply lookup_delFromUFM_Directly.
     auto.
 Qed.
@@ -196,7 +196,7 @@ Qed.
 (** The invariant is that for any unique, the result that we get out has 
     the same unique stored.
 *)
-Polymorphic Definition UniqInv@{i} {a:Type@{i}} (fm : UniqFM.UniqFM a) `{Unique.Uniquable a} : Type@{i} :=
+Polymorphic Definition UniqInv@{i} {a:Type@{i}} (fm : UniqFM.UniqFM a a) `{Unique.Uniquable a} : Type@{i} :=
   forall (x:a)(y:a), 
     UniqFM.lookupUFM fm x = Some y -> getUnique x = getUnique y. 
 
@@ -207,7 +207,7 @@ Polymorphic Definition UniqSet@{i} (a:Type@{i}) `{Unique.Uniquable a} : Type@{i}
 Local Notation Mk_UniqSet s:= (@existT _ _ s _).
 
 Definition getUniqSet' {a}`{Uniquable a} (arg_0__ : UniqSet a) :=
-  let 'existT getUniqSet' _ := arg_0__ in
+  let 'existT _ getUniqSet' _ := arg_0__ in
   getUniqSet'.
 
 (* Converted value declarations: *)
@@ -283,17 +283,17 @@ destruct (eqUnique (getUnique z) (getUnique x)) eqn:EQ.
   auto.
 - apply eqUnique_neq in EQ.
   rewrite lookup_insert_neq in H0.
-  apply wildcard'.
-  auto.
-  unfold getWordKey.
-  unfold getKey.
-  unfold not in *.
-  intro h.
-  apply EQ.
-  destruct (getUnique x).
-  destruct (getUnique z).
-  subst.
-  auto.
+  + unfold getWordKey.
+    unfold getKey.
+    unfold not in *.
+    intro h.
+    apply EQ.
+    destruct (getUnique x).
+    destruct (getUnique z).
+    subst.
+    auto.
+  + apply wildcard'.
+    auto.
 Defined.
 
 Definition addListToUniqSet {a} `{Unique.Uniquable a}
@@ -311,7 +311,7 @@ Next Obligation.
   intros x y.
   specialize (wildcard' x y).
   unfold delListFromUFM in *.
-  rewrite Foldable.hs_coq_foldl_list.
+  rewrite Foldable.hs_coq_foldl'_list.
   apply lookup_fold_left_app_delFromUFM.
   assumption.
 Qed.
@@ -327,7 +327,7 @@ Next Obligation.
   intros x y.
   specialize (wildcard' x y).
   unfold delListFromUFM_Directly in *.
-  rewrite Foldable.hs_coq_foldl_list.
+  rewrite Foldable.hs_coq_foldl'_list.
   apply lookup_fold_left_app_delFromUFM_Directly.
   assumption.
 Qed.
@@ -345,13 +345,6 @@ Next Obligation.
   apply lookup_delFromUFM.
   assumption.
 Defined.
-
-Program Definition delOneFromUniqSet_Directly {a} `{Unique.Uniquable a}
-   : UniqSet a -> Unique.Unique -> UniqSet a :=
-  fun x y =>
-    match x, y with
-    | Mk_UniqSet s, u => Mk_UniqSet (UniqFM.delFromUFM_Directly s u)
-    end.
 
 Program Definition delOneFromUniqSet_Directly {a} `{Unique.Uniquable a}
    : UniqSet a -> Unique.Unique -> UniqSet a :=
@@ -419,7 +412,7 @@ Next Obligation.
   apply h.
 Defined.
 
-Definition getUniqSet {a} `{Unique.Uniquable a} : UniqSet a -> UniqFM.UniqFM a :=
+Definition getUniqSet {a} `{Unique.Uniquable a} : UniqSet a -> UniqFM.UniqFM a a :=
   getUniqSet'.
 
 Definition disjointUniqSet {a} `{Unique.Uniquable a} : UniqSet a -> UniqSet a -> bool :=
@@ -451,7 +444,7 @@ Definition lookupUniqSet {a} {b} `{Unique.Uniquable a} `{Unique.Uniquable b}
    : UniqSet b -> a -> option b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | Mk_UniqSet s, k => UniqFM.lookupUFM s k
+    | Mk_UniqSet s, k => UniqFM.lookupUFM_Directly s (getUnique k)
     end.
 
 Definition lookupUniqSet_Directly {a} `{Unique.Uniquable a}
@@ -497,7 +490,7 @@ Definition nonDetFoldUniqSet_Directly {elt} {a} `{Unique.Uniquable elt} `{Unique
    : (Unique.Unique -> elt -> a -> a) -> a -> UniqSet elt -> a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | f, n, Mk_UniqSet s => UniqFM.nonDetFoldUFM_Directly f n s
+    | f, n, Mk_UniqSet s => UniqFM.nonDetFoldWithKeyUFM f n s
     end.
 
 Definition nonDetKeysUniqSet {elt} `{Unique.Uniquable elt} : UniqSet elt -> list Unique.Unique :=
@@ -507,43 +500,51 @@ Program Definition partitionUniqSet {a} `{Unique.Uniquable a}
    : (a -> bool) -> UniqSet a -> (UniqSet a * UniqSet a)%type :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | p, existT s _ => let '(x,y):= (UniqFM.partitionUFM p s) in (existT _ x _, existT _ y _)
+    | p, existT _ s _ => let '(x,y):= (UniqFM.partitionUFM p s) in (existT _ x _, existT _ y _)
     end.
 Next Obligation.
   unfold UniqInv in *.
   intros x' y' Hl.
   apply wildcard'.
-  destruct x as [m'].
   destruct s as [m].
-  eapply lookup_partition. split; [|eauto].
-  left. unfold fst. inversion Heq_anonymous. reflexivity.
+  unfold partitionUFM in Heq_anonymous.
+  destruct (Internal.partition arg_0__ m) as [l r] eqn:Hp.
+  destruct x as [m'].
+  inversion Heq_anonymous; subst.
+  unfold lookupUFM in *.
+  apply (@lookup_partition a (getWordKey (getUnique x')) y' m l arg_0__).
+  split; [|exact Hl].
+  left. unfold fst. rewrite Hp. simpl. reflexivity.
 Defined.
 
 Next Obligation.
   unfold UniqInv in *.
   intros x' y' Hl.
   apply wildcard'.
+  destruct s as [m].
+  unfold partitionUFM in Heq_anonymous.
+  destruct (Internal.partition arg_0__ m) as [l r] eqn:Hp.
   destruct y as [m'].
-  destruct s as [m].  
-  eapply lookup_partition. split; [|eauto].
-  right. unfold snd. inversion Heq_anonymous. reflexivity.
+  inversion Heq_anonymous; subst.
+  unfold lookupUFM in *.
+  apply (@lookup_partition a (getWordKey (getUnique x')) y' m r arg_0__).
+  split; [|exact Hl].
+  right. unfold snd. rewrite Hp. simpl. reflexivity.
 Defined.
 
-Program Definition restrictUniqSetToUFM {a} {b} `{Unique.Uniquable a} 
-   : UniqSet a -> UniqFM.UniqFM b -> UniqSet a :=
+Program Definition restrictUniqSetToUFM {a} {b} `{Unique.Uniquable a}
+   : UniqSet a -> UniqFM.UniqFM b b -> UniqSet a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | Mk_UniqSet s, m => Mk_UniqSet (UniqFM.intersectUFM s m)
+    | Mk_UniqSet (UFM si), UFM mi => Mk_UniqSet (UFM (Data.IntMap.Internal.intersection si mi))
     end.
 Next Obligation.
   unfold UniqInv in *.
   intros x' y'.
-  unfold lookupUFM, intersectUFM in *.
-  destruct s.
-  destruct arg_1__.
+  unfold lookupUFM in *.
   intro h.
   rewrite <- lookup_intersection in h. destruct h.
-  eauto.
+  apply wildcard'. unfold lookupUFM. assumption.
 Defined.
 
 Definition sizeUniqSet {a} `{Unique.Uniquable a} : UniqSet a -> nat :=
@@ -579,7 +580,7 @@ Definition uniqSetAll {a} `{Unique.Uniquable a} : (a -> bool) -> UniqSet a -> bo
 Definition uniqSetAny {a} `{Unique.Uniquable a} : (a -> bool) -> UniqSet a -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | p, existT s _ => UniqFM.anyUFM p s
+    | p, existT _ s _ => UniqFM.anyUFM p s
     end.
 
 (*
@@ -598,14 +599,14 @@ Next Obligation.
   unfold UniqInv.
   intros x0 y.
   unfold lookupUFM, unitUFM.
-  intros. 
-  eapply lookup_singleton_key in H0 as Hk.
-  eapply lookup_singleton_val in H0 as Hv.
+  intro Hlookup.
+  pose proof (lookup_singleton_key _ _ _ _ Hlookup) as Hk.
+  pose proof (lookup_singleton_val _ _ _ _ Hlookup) as Hv.
   destruct (getWordKey (getUnique x0) == getWordKey (getUnique x)) eqn:Heq.
   - move /Eq_eq in Heq. unfold getWordKey, getKey in Heq.
     destruct (getUnique x0) eqn:Hu1; destruct (getUnique x) eqn:Hu2; subst.
     auto.
-  - congruence.
+  - rewrite Hk in Heq. discriminate.
 Defined.
 
 (* Definition unsafeUFMToUniqSet {a} : UniqFM.UniqFM a -> UniqSet a :=

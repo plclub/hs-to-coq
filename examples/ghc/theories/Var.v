@@ -21,9 +21,13 @@ Require Import Proofs.Unique.
 Opaque Base.hs_string__.
 
 Ltac unfold_zeze :=
-  repeat (GHC.Base.unfold_zeze; unfold Core.Eq___Var, Core.Eq___Var_op_zeze__).
+  repeat (GHC.Base.unfold_zeze;
+    unfold Core.Eq___Var, Core.Eq___Var_op_zeze__,
+           Unique.Eq___Unique, Unique.Eq___Unique_op_zeze__, Unique.eqUnique).
 Ltac unfold_zsze :=
-  repeat (GHC.Base.unfold_zsze; unfold Core.Eq___Var, Core.Eq___Var_op_zsze__).
+  repeat (GHC.Base.unfold_zsze;
+    unfold Core.Eq___Var, Core.Eq___Var_op_zsze__,
+           Unique.Eq___Unique, Unique.Eq___Unique_op_zeze__, Unique.eqUnique).
 
 (** ** Stuff about [Var] and [Unique] *)
 
@@ -49,8 +53,8 @@ Proof.
   unfold Unique.getUnique.
   unfold Uniquable__Var, getUnique__, Core.Uniquable__Var_getUnique,
   varUnique.
-  destruct v1; destruct v2; simpl;
-  apply N.eqb_eq.
+  destruct v1; destruct v2; simpl.
+  destruct realUnique; destruct realUnique0; simpl; apply N.eqb_eq.
 Qed.
 
 Instance EqLaws_Var : EqLaws Var.
@@ -59,19 +63,23 @@ Proof.
   - unfold ssrbool.reflexive.
     unfold_zeze.
     intros. unfold is_true.
+    destruct x; destruct realUnique; simpl.
     apply N.eqb_refl.
   - unfold ssrbool.symmetric.
     intros. unfold_zeze.
+    destruct x; destruct y; destruct realUnique; destruct realUnique0; simpl in *.
     rewrite N.eqb_sym; auto.
   - unfold ssrbool.transitive.
     unfold_zeze.
     unfold is_true.
     intros x y z.
-    destruct x; destruct y; destruct z; simpl;
+    destruct x; destruct y; destruct z;
+    destruct realUnique; destruct realUnique0; destruct realUnique1; simpl;
     repeat erewrite N.eqb_eq; intro h; rewrite h; auto.
   - intros.
     unfold_zsze.
     unfold_zeze.
+    destruct x; destruct y; destruct realUnique; destruct realUnique0; simpl.
     rewrite negb_involutive.
     reflexivity.
 Qed.
@@ -87,11 +95,11 @@ Proof.
   intros.
   unfold_zeze.
   unfold varUnique.
-  set (n1 := realUnique v1).
-  set (n2 := realUnique v2).
+  destruct (realUnique v1) eqn:E1.
+  destruct (realUnique v2) eqn:E2.
+  simpl.
   unfold is_true.
   rewrite N.eqb_eq.
-  unfold Unique.mkUniqueGrimily in *.
   intuition congruence.
 Qed.
 
@@ -128,7 +136,8 @@ Qed.
 Lemma var_eq_realUnique v1 v2 :
   (v1 == v2) = (realUnique v1 == realUnique v2).
 Proof.
-  repeat unfold op_zeze__, op_zeze____,Core.Eq___Var_op_zeze__,Core.Eq___Var.
+  repeat unfold op_zeze__, op_zeze____,Core.Eq___Var_op_zeze__,Core.Eq___Var,
+    Unique.Eq___Unique, Unique.Eq___Unique_op_zeze__, Unique.eqUnique.
   auto.
 Qed.
 
@@ -148,14 +157,7 @@ Module Var_as_DT <: BooleanDecidableType <: DecidableType.
 
   Definition eq_equiv : Equivalence eq.
   Proof.
-  split.
-  - unfold eq, eqb, Reflexive.
-    apply Eq_refl.
-  - unfold eq, eqb, Symmetric.
-    eauto using Eq_sym.
-  - unfold eq, eqb, Transitive.
-    intros x y z h1 h2.
-    eapply  Eq_trans; eauto.
+  unfold eq, eqb. exact (@Eq_Equivalence _ _ EqLaws_Var).
   Defined.
 
   Definition eq_dec : forall x y : t, { eq x y } + { ~ (eq x y) }.
@@ -163,8 +165,9 @@ Module Var_as_DT <: BooleanDecidableType <: DecidableType.
   intros x y.
   unfold eq, eqb.
   unfold_zeze.
-  destruct x eqn:X; destruct y eqn:Y;  simpl.
-  all: destruct (N.eqb realUnique realUnique0) eqn:EQ ; [left; auto | right; auto].
+  destruct x eqn:X; destruct y eqn:Y; simpl.
+  destruct realUnique; destruct realUnique0; simpl.
+  destruct (N.eqb n n0) eqn:EQ ; [left; auto | right; auto].
   Defined.
 
   Lemma eqb_eq : forall x y, eqb x y = true <-> eq x y.
@@ -178,10 +181,12 @@ Module Var_as_DT <: BooleanDecidableType <: DecidableType.
 End Var_as_DT.
 
 Lemma realUnique_eq: forall v v',
-    (realUnique v =? realUnique v')%N = Var_as_DT.eqb v v'.
+    (Unique.getKey (realUnique v) =? Unique.getKey (realUnique v'))%N = Var_as_DT.eqb v v'.
 Proof.
   intros.
-  unfold Var_as_DT.eqb. cbn. reflexivity.
+  unfold Var_as_DT.eqb. unfold_zeze.
+  destruct v; destruct v'; destruct realUnique; destruct realUnique0.
+  simpl. reflexivity.
 Qed.
 
 
@@ -204,9 +209,9 @@ Inductive almostEqual : Var -> Var -> Prop :=
 (* | AE_TcTyVar : forall n u ty1 ty2,
    almostEqual (Mk_TcTyVar n u ty1 ty2)
                (Mk_TcTyVar n u ty1 ty2) *)
- | AE_Id : forall n u ty ids idd id1 id2,
-   almostEqual (Mk_Id n u ty ids idd id1)
-               (Mk_Id n u ty ids idd id2).
+ | AE_Id : forall n u ty m ids idd id1 id2,
+   almostEqual (Mk_Id n u ty m ids idd id1)
+               (Mk_Id n u ty m ids idd id2).
 
 
 Lemma almostEqual_refl:
@@ -248,7 +253,7 @@ Lemma almostEqual_eq :
     almostEqual v1 v2 -> (v1 == v2).
 Proof.
   intros v1 v2 H.
-  inversion H; unfold_zeze; simpl; apply N.eqb_refl.
+  inversion H; unfold_zeze; destruct u; simpl; apply N.eqb_refl.
 Qed.
 
 Instance eq_m :
@@ -256,6 +261,8 @@ Instance eq_m :
 Proof.
   unfold_zeze.
   move=> x1 y1 E1 x2 y2 E2.
+  destruct (realUnique x1); destruct (realUnique y1);
+  destruct (realUnique x2); destruct (realUnique y2); simpl in *.
   apply N.eqb_eq in E1.
   apply N.eqb_eq in E2.
   rewrite E1. rewrite E2.
@@ -276,19 +283,26 @@ Qed.
 
 (** ** [isJoinId] etc. *)
 
+(* In GHC 9.10, isJoinId_maybe was replaced by idJoinPointHood.
+   We define isJoinId_maybe as a compatibility wrapper. *)
+Definition isJoinId_maybe (v : Var) : option BasicTypes.JoinArity :=
+  match Id.idJoinPointHood v with
+  | Outputable.JoinPoint a => Some a
+  | Outputable.NotJoinPoint => None
+  end.
+
 Lemma isJoinId_eq : forall v,
-  isJoinId v = match isJoinId_maybe v with | None => false |Some _ => true end.
+  Id.isJoinId v = match isJoinId_maybe v with | None => false |Some _ => true end.
 Proof.
-  unfold isJoinId.
-  induction v; auto; simpl.
-  unfold isJoinId_maybe; simpl.
-  rewrite andb_false_r.
-  all: destruct id_details; done.
+  intros v.
+  unfold isJoinId_maybe, Id.isJoinId, Id.idJoinPointHood.
+  destruct v; simpl.
+  destruct id_details; simpl; reflexivity.
 Qed.
 
 Lemma isJoinId_ae: forall v1 v2,
   almostEqual v1 v2 ->
-  isJoinId v1 = isJoinId v2.
+  Id.isJoinId v1 = Id.isJoinId v2.
 Proof.
   intros.
   induction H; reflexivity.
@@ -296,29 +310,24 @@ Qed.
 
 
 Lemma isJoinId_isJoinId_maybe: forall v,
-  isJoinId v = true ->
-  isJoinId_maybe v = Some (idJoinArity v).
+  Id.isJoinId v = true ->
+  isJoinId_maybe v = Some (Id.idJoinArity v).
 Proof.
-  unfold isJoinId.
-  induction v; simpl; intros; auto; try discriminate.
-  destruct id_details; try discriminate.
-  unfold idJoinArity,isJoinId_maybe; simpl.
-  rewrite andb_false_r.
+  intros v H.
+  unfold isJoinId_maybe, Id.isJoinId, Id.idJoinPointHood, Id.idJoinArity in *.
+  destruct v; simpl in *.
+  destruct id_details; simpl in *; try discriminate.
   reflexivity.
 Qed.
 
 Lemma idJoinArity_join: forall v a,
-  isJoinId_maybe v = Some a -> idJoinArity v = a.
+  isJoinId_maybe v = Some a -> Id.idJoinArity v = a.
 Proof.
-  unfold isJoinId, isJoinId_maybe, idJoinArity.
-  induction v; simpl; intros; auto; try discriminate.
-  rewrite andb_false_r in H.
-  destruct id_details; simpl; try discriminate.
-  inversion H.
-  unfold isJoinId_maybe; simpl.
-  rewrite andb_false_r.
-  simpl.
-  reflexivity.
+  intros v a H.
+  unfold isJoinId_maybe, Id.idJoinArity, Id.idJoinPointHood in *.
+  destruct v; simpl in *.
+  destruct id_details; simpl in *; try discriminate.
+  inversion H. reflexivity.
 Qed.
 
 
