@@ -8,15 +8,15 @@ Require Import HsToCoq.Err.
 Require Import Coq.Numbers.BinNums.
 
 Definition FastString := String.
-Instance instance_FastString_Eq_ : Eq_ FastString.
+#[global] Instance instance_FastString_Eq_ : Eq_ FastString.
 eapply Eq_list.
 Qed.
 
-Instance instance_FastString_Ord : Ord FastString.
+#[global] Instance instance_FastString_Ord : Ord FastString.
 eapply Ord_list.
 Qed.
 
-Instance instance_FastString_Default : HsToCoq.Err.Default FastString.
+#[global] Instance instance_FastString_Default : HsToCoq.Err.Default FastString.
 eapply default_list.
 Qed.
 
@@ -41,7 +41,25 @@ Axiom fastStringToByteString : FastString -> GHC.Base.String.
 
 Axiom nullFS : FastString -> bool.
 
-(* These commands won't prevent Coq from using 'reflexivity' to solve goals. 
+(* GHC 9.10: LexicalFastString is a newtype for lexical comparison *)
+Definition LexicalFastString := FastString.
+
+#[global] Instance instance_LexicalFastString_Eq_ : Eq_ LexicalFastString.
+eapply Eq_list.
+Qed.
+
+#[global] Instance instance_LexicalFastString_Ord : Ord LexicalFastString.
+eapply Ord_list.
+Qed.
+
+#[global] Instance instance_LexicalFastString_Default : HsToCoq.Err.Default LexicalFastString.
+eapply default_list.
+Qed.
+
+Axiom bytesFS : FastString -> list Char.
+Axiom lexicalCompareFS : FastString -> FastString -> comparison.
+
+(* These commands won't prevent Coq from using 'reflexivity' to solve goals.
    But they will stop simpl from unfolding the definitions. *)
 Global Opaque FastString.
 Global Opaque fsLit.

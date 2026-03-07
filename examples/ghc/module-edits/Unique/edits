@@ -3,6 +3,13 @@ skip module Coq.ZArith.BinInt.Z
 skip module Coq.NArith.BinNat.N
 
 rename type GHC.Num.Int = BinNums.N
+rename type GHC.Internal.Word.Word64 = BinNums.N
+
+# GHC 9.10: intToWord64 is identity (both mapped to N)
+rewrite forall x, GHC.Utils.Word64.intToWord64 x = x
+rename value GHC.Utils.Word64.intToWord64 = GHC.Base.id
+# GHC 9.10: GHC.Prelude.Basic.shiftL is just Data.Bits.shiftL
+rename value GHC.Prelude.Basic.shiftL = Data.Bits.shiftL
 
 # add an (axiomatized test) whether the bits in the unique correspond to a
 # local identifier
@@ -55,6 +62,15 @@ redefine Definition Unique.unpkUnique : Unique -> (GHC.Char.Char * GHC.Num.Int) 
 
 # unused
 skip Unique.newTagUnique
+
+# maxLocalUnique: uniqueMask is GHC.Num.Int (Z) but mkLocalUnique expects N
+redefine Definition Unique.maxLocalUnique : Unique := mkLocalUnique (Coq.ZArith.BinInt.Z.to_N uniqueMask).
+
+# mkTag: shiftL returns Z but function signature expects N (from rename type)
+skip Unique.mkTag
+
+# isValidKnownKeyUnique: unpkUnique returns Z but comparisons expect N
+skip Unique.isValidKnownKeyUnique
 
 
 order Unique.Eq___Unique Unique.hasKey Ord__Unique

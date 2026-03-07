@@ -1,3 +1,8 @@
+# GHC 9.10: skip unsupported modules
+skip module GHC.Builtin.Uniques
+skip module GHC.Types.TyThing
+skip module GHC.Unit.Home
+
 skip Name.mkWiredInName
 skip Name.wiredInNameTyThing_maybe
 

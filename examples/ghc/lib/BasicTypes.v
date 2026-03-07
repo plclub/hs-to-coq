@@ -10,11 +10,50 @@ Unset Printing Implicit Defensive.
 Require Coq.Program.Tactics.
 Require Coq.Program.Wf.
 
+(* Preamble *)
+
+(* Types that were in BasicTypes in GHC 8.4 but moved to separate modules in GHC 9.10.
+   GHC.Types.SourceText, GHC.Types.Fixity, GHC.Unit.Module.Warnings *)
+
+Require FastString.
+Require SrcLoc.
+
+(* From GHC.Types.SourceText *)
+Inductive SourceText : Type :=
+  | Mk_SourceText : GHC.Base.String -> SourceText
+  | NoSourceText : SourceText.
+
+Inductive StringLiteral : Type :=
+  | Mk_StringLiteral (sl_st : SourceText) (sl_fs : FastString.FastString)
+   : StringLiteral.
+
+(* From GHC.Types.Fixity *)
+Inductive FixityDirection : Type :=
+  | InfixL : FixityDirection
+  | InfixR : FixityDirection
+  | InfixN : FixityDirection.
+
+Inductive Fixity : Type :=
+  | Mk_Fixity : SourceText -> GHC.Num.Int -> FixityDirection -> Fixity.
+
+Inductive LexicalFixity : Type :=
+  | Prefix : LexicalFixity
+  | Infix : LexicalFixity.
+
+(* From GHC.Unit.Module.Warnings *)
+Inductive WarningTxt : Type :=
+  | Mk_WarningTxt
+   : (SrcLoc.Located SourceText) ->
+     list (SrcLoc.Located StringLiteral) -> WarningTxt
+  | DeprecatedTxt
+   : (SrcLoc.Located SourceText) ->
+     list (SrcLoc.Located StringLiteral) -> WarningTxt.
+
 (* Converted imports: *)
 
 Require Data.Bits.
-Require Data.Maybe.
 Require Datatypes.
+Require FastString.
 Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
@@ -83,7 +122,7 @@ Inductive SuccessFlag : Type :=
   bool%type.
 
 #[global] Definition RuleName :=
-  GHC.Data.FastString.FastString%type.
+  FastString.FastString%type.
 
 Inductive RuleMatchInfo : Type :=
   | ConLike : RuleMatchInfo
@@ -94,7 +133,7 @@ Inductive RuleMatchInfo : Type :=
 
 Inductive RecFlag : Type := | Recursive : RecFlag | NonRecursive : RecFlag.
 
-Inductive PprPrec : Type := | PprPrec : GHC.Num.Int -> PprPrec.
+Inductive PprPrec : Type := | Mk_PprPrec : GHC.Num.Int -> PprPrec.
 
 #[global] Definition PhaseNum :=
   nat.
@@ -149,10 +188,6 @@ Inductive InlineSpec : Type :=
   | Opaque : SourceText -> InlineSpec
   | NoUserInlinePrag : InlineSpec.
 
-Inductive GenReason : Type :=
-  | DoExpansion : Language.Haskell.Syntax.Expr.HsDoFlavour -> GenReason
-  | OtherExpansion : GenReason.
-
 Inductive FunctionOrData : Type :=
   | IsFunction : FunctionOrData
   | IsData : FunctionOrData.
@@ -162,11 +197,7 @@ Inductive FunctionOrData : Type :=
 
 Inductive EP a : Type := | Mk_EP (fromEP : a) (toEP : a) : EP a.
 
-Inductive DoPmc : Type := | SkipPmc : DoPmc | DoPmc : DoPmc.
-
-Inductive Origin : Type :=
-  | FromSource : Origin
-  | Generated : GenReason -> DoPmc -> Origin.
+Inductive DoPmc : Type := | SkipPmc : DoPmc | Mk_DoPmc : DoPmc.
 
 Inductive DefaultingStrategy : Type :=
   | DefaultKindVars : DefaultingStrategy
@@ -202,7 +233,7 @@ Inductive OccInfo : Type :=
   nat.
 
 Inductive Alignment : Type :=
-  | Alignment (alignmentBytes : GHC.Num.Int) : Alignment.
+  | Mk_Alignment (alignmentBytes : GHC.Num.Int) : Alignment.
 
 Inductive Activation : Type :=
   | AlwaysActive : Activation
@@ -305,17 +336,11 @@ Instance Default__InsideLam : HsToCoq.Err.Default InsideLam :=
 Instance Default__InlineSpec : HsToCoq.Err.Default InlineSpec :=
   HsToCoq.Err.Build_Default _ NoUserInlinePrag.
 
-Instance Default__GenReason : HsToCoq.Err.Default GenReason :=
-  HsToCoq.Err.Build_Default _ OtherExpansion.
-
 Instance Default__FunctionOrData : HsToCoq.Err.Default FunctionOrData :=
   HsToCoq.Err.Build_Default _ IsFunction.
 
 Instance Default__DoPmc : HsToCoq.Err.Default DoPmc :=
   HsToCoq.Err.Build_Default _ SkipPmc.
-
-Instance Default__Origin : HsToCoq.Err.Default Origin :=
-  HsToCoq.Err.Build_Default _ FromSource.
 
 Instance Default__DefaultingStrategy : HsToCoq.Err.Default DefaultingStrategy :=
   HsToCoq.Err.Build_Default _ DefaultKindVars.
@@ -330,7 +355,7 @@ Instance Default__OccInfo : HsToCoq.Err.Default OccInfo :=
   HsToCoq.Err.Build_Default _ (ManyOccs HsToCoq.Err.default).
 
 Instance Default__Alignment : HsToCoq.Err.Default Alignment :=
-  HsToCoq.Err.Build_Default _ (Alignment HsToCoq.Err.default).
+  HsToCoq.Err.Build_Default _ (Mk_Alignment HsToCoq.Err.default).
 
 Instance Default__Activation : HsToCoq.Err.Default Activation :=
   HsToCoq.Err.Build_Default _ AlwaysActive.
@@ -418,7 +443,7 @@ Instance Default__Activation : HsToCoq.Err.Default Activation :=
   end.
 
 #[global] Definition alignmentBytes (arg_0__ : Alignment) :=
-  let 'Alignment alignmentBytes := arg_0__ in
+  let 'Mk_Alignment alignmentBytes := arg_0__ in
   alignmentBytes.
 
 #[global] Definition inl_act (arg_0__ : InlinePragma) :=
@@ -444,6 +469,27 @@ Instance Default__Activation : HsToCoq.Err.Default Activation :=
 (* Midamble *)
 
 Require HsToCoq.Err.
+
+Instance Default__SourceText : HsToCoq.Err.Default SourceText :=
+  HsToCoq.Err.Build_Default _ NoSourceText.
+
+(* Eq instance needed by Ord__IntWithInf *)
+Definition Eq__IntWithInf_op_zeze : IntWithInf -> IntWithInf -> bool :=
+  fun a b =>
+    match a, b with
+    | Int x, Int y => x GHC.Base.== y
+    | Infinity, Infinity => true
+    | _, _ => false
+    end.
+
+#[global]
+Instance Eq__IntWithInf : GHC.Base.Eq_ IntWithInf :=
+  fun _ k => k {|
+    GHC.Base.op_zeze____ := Eq__IntWithInf_op_zeze ;
+    GHC.Base.op_zsze____ := fun a b => negb (Eq__IntWithInf_op_zeze a b)
+  |}.
+Instance Default__FixityDirection : HsToCoq.Err.Default FixityDirection :=
+  HsToCoq.Err.Build_Default _ InfixL.
 
 Instance Default__OverlapMode : HsToCoq.Err.Default OverlapMode :=
   HsToCoq.Err.Build_Default _ (NoOverlap HsToCoq.Err.default).
@@ -787,20 +833,20 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
     end.
 
 #[global] Definition fIRST_TAG : HsSyn.ConTag :=
-  #1.
+  1 % nat.
 
 #[global] Definition mkAlignment : GHC.Num.Int -> Alignment :=
   fun n =>
-    if n GHC.Base.== #1 : bool then Alignment #1 else
-    if n GHC.Base.== #2 : bool then Alignment #2 else
-    if n GHC.Base.== #4 : bool then Alignment #4 else
-    if n GHC.Base.== #8 : bool then Alignment #8 else
-    if n GHC.Base.== #16 : bool then Alignment #16 else
-    if n GHC.Base.== #32 : bool then Alignment #32 else
-    if n GHC.Base.== #64 : bool then Alignment #64 else
-    if n GHC.Base.== #128 : bool then Alignment #128 else
-    if n GHC.Base.== #256 : bool then Alignment #256 else
-    if n GHC.Base.== #512 : bool then Alignment #512 else
+    if n GHC.Base.== #1 : bool then Mk_Alignment #1 else
+    if n GHC.Base.== #2 : bool then Mk_Alignment #2 else
+    if n GHC.Base.== #4 : bool then Mk_Alignment #4 else
+    if n GHC.Base.== #8 : bool then Mk_Alignment #8 else
+    if n GHC.Base.== #16 : bool then Mk_Alignment #16 else
+    if n GHC.Base.== #32 : bool then Mk_Alignment #32 else
+    if n GHC.Base.== #64 : bool then Mk_Alignment #64 else
+    if n GHC.Base.== #128 : bool then Mk_Alignment #128 else
+    if n GHC.Base.== #256 : bool then Mk_Alignment #256 else
+    if n GHC.Base.== #512 : bool then Mk_Alignment #512 else
     Panic.panic (GHC.Base.hs_string__
                  "mkAlignment: received either a non power of 2 argument or > 512").
 
@@ -808,12 +854,12 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
   fun x =>
     let scrut_0__ := Data.Bits.op_zizazi__ x #7 in
     let 'num_1__ := scrut_0__ in
-    if num_1__ GHC.Base.== #0 : bool then Alignment #8 else
+    if num_1__ GHC.Base.== #0 : bool then Mk_Alignment #8 else
     let 'num_2__ := scrut_0__ in
-    if num_2__ GHC.Base.== #4 : bool then Alignment #4 else
+    if num_2__ GHC.Base.== #4 : bool then Mk_Alignment #4 else
     let 'num_3__ := scrut_0__ in
-    if num_3__ GHC.Base.== #2 : bool then Alignment #2 else
-    Alignment #1.
+    if num_3__ GHC.Base.== #2 : bool then Mk_Alignment #2 else
+    Mk_Alignment #1.
 
 #[global] Definition noOneShotInfo : OneShotInfo :=
   NoOneShotInfo.
@@ -894,34 +940,15 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
     | false => NonRecursive
     end.
 
-#[global] Definition isGenerated : Origin -> bool :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | Generated _ _ => true
-    | FromSource => false
-    end.
+(* Skipping definition `BasicTypes.isGenerated' *)
 
-#[global] Definition doExpansionFlavour
-   : Origin -> option Language.Haskell.Syntax.Expr.HsDoFlavour :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | Generated (DoExpansion f) _ => Some f
-    | _ => None
-    end.
+(* Skipping definition `BasicTypes.doExpansionFlavour' *)
 
-#[global] Definition isDoExpansionGenerated : Origin -> bool :=
-  Data.Maybe.isJust GHC.Base.∘ doExpansionFlavour.
+(* Skipping definition `BasicTypes.isDoExpansionGenerated' *)
 
-#[global] Definition doExpansionOrigin
-   : Language.Haskell.Syntax.Expr.HsDoFlavour -> Origin :=
-  fun f => Generated (DoExpansion f) DoPmc.
+(* Skipping definition `BasicTypes.doExpansionOrigin' *)
 
-#[global] Definition requiresPMC : Origin -> bool :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | Generated _ SkipPmc => false
-    | _ => true
-    end.
+(* Skipping definition `BasicTypes.requiresPMC' *)
 
 #[global] Definition setOverlapModeMaybe
    : OverlapFlag -> option OverlapMode -> OverlapFlag :=
@@ -967,22 +994,22 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
 (* Skipping definition `BasicTypes.pprSafeOverlap' *)
 
 #[global] Definition topPrec : PprPrec :=
-  PprPrec #0.
+  Mk_PprPrec #0.
 
 #[global] Definition sigPrec : PprPrec :=
-  PprPrec #1.
+  Mk_PprPrec #1.
 
 #[global] Definition funPrec : PprPrec :=
-  PprPrec #2.
+  Mk_PprPrec #2.
 
 #[global] Definition opPrec : PprPrec :=
-  PprPrec #2.
+  Mk_PprPrec #2.
 
 #[global] Definition starPrec : PprPrec :=
-  PprPrec #3.
+  Mk_PprPrec #3.
 
 #[global] Definition appPrec : PprPrec :=
-  PprPrec #4.
+  Mk_PprPrec #4.
 
 #[global] Definition maxPrec : PprPrec :=
   appPrec.
@@ -1013,13 +1040,7 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
 
 (* Skipping definition `BasicTypes.pprAlternative' *)
 
-#[global] Definition unboxedTupleOrSumExtension
-   : UnboxedTupleOrSum -> GHC.LanguageExtensions.Type.Extension :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | UnboxedTupleType => GHC.LanguageExtensions.Type.UnboxedTuples
-    | UnboxedSumType => GHC.LanguageExtensions.Type.UnboxedSums
-    end.
+(* Skipping definition `BasicTypes.unboxedTupleOrSumExtension' *)
 
 #[global] Definition oneBranch : BranchCount :=
   #1.
@@ -1136,36 +1157,26 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
     | FinalPhase => FinalActive
     end.
 
-#[global] Definition nextPhase : CompilerPhase -> CompilerPhase :=
-  fun arg_0__ =>
-    let j_3__ :=
-      match arg_0__ with
-      | Phase n => Phase (n GHC.Num.- #1)
-      | FinalPhase => FinalPhase
-      | _ => GHC.Err.patternFailure
-      end in
-    match arg_0__ with
-    | InitialPhase => Phase #2
-    | Phase num_1__ => if num_1__ GHC.Base.== #0 : bool then FinalPhase else j_3__
-    | _ => j_3__
-    end.
+(* Skipping definition `BasicTypes.nextPhase' *)
 
-#[global] Definition laterPhase
-   : CompilerPhase -> CompilerPhase -> CompilerPhase :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Phase n1, Phase n2 => Phase (GHC.Base.min n1 n2)
-    | InitialPhase, p2 => p2
-    | FinalPhase, _ => FinalPhase
-    | p1, InitialPhase => p1
-    | _, FinalPhase => FinalPhase
-    end.
+(* Skipping definition `BasicTypes.laterPhase' *)
 
-#[global] Definition activateAfterInitial : Activation :=
-  activeAfter (nextPhase InitialPhase).
+(* Skipping definition `BasicTypes.activateAfterInitial' *)
 
 #[global] Definition activateDuringFinal : Activation :=
   FinalActive.
+
+(* Skipping definition `BasicTypes.isActive' *)
+
+#[global] Definition activeInInitialPhase : Activation -> bool :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | AlwaysActive => true
+    | ActiveBefore _ _ => true
+    | _ => false
+    end.
+
+(* Skipping definition `BasicTypes.activeInPhase' *)
 
 #[global] Definition activeInFinalPhase : Activation -> bool :=
   fun arg_0__ =>
@@ -1176,55 +1187,13 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
     | _ => false
     end.
 
-#[global] Definition activeInInitialPhase : Activation -> bool :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | AlwaysActive => true
-    | ActiveBefore _ _ => true
-    | _ => false
-    end.
-
-#[global] Definition activeInPhase : PhaseNum -> Activation -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | _, AlwaysActive => true
-    | _, NeverActive => false
-    | _, FinalActive => false
-    | p, ActiveAfter _ n => p GHC.Base.<= n
-    | p, ActiveBefore _ n => p GHC.Base.> n
-    end.
-
-#[global] Definition isActive : CompilerPhase -> Activation -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InitialPhase, act => activeInInitialPhase act
-    | Phase p, act => activeInPhase p act
-    | FinalPhase, act => activeInFinalPhase act
-    end.
-
 #[global] Definition isNeverActive : Activation -> bool :=
   fun arg_0__ => match arg_0__ with | NeverActive => true | _ => false end.
 
 #[global] Definition isAlwaysActive : Activation -> bool :=
   fun arg_0__ => match arg_0__ with | AlwaysActive => true | _ => false end.
 
-#[global] Definition competesWith : Activation -> Activation -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | AlwaysActive, _ => true
-    | NeverActive, _ => false
-    | _, NeverActive => false
-    | FinalActive, FinalActive => true
-    | FinalActive, _ => false
-    | ActiveBefore _ _, AlwaysActive => true
-    | ActiveBefore _ _, FinalActive => false
-    | ActiveBefore _ _, ActiveBefore _ _ => true
-    | ActiveBefore _ a, ActiveAfter _ b => a GHC.Base.< b
-    | ActiveAfter _ _, AlwaysActive => false
-    | ActiveAfter _ _, FinalActive => true
-    | ActiveAfter _ _, ActiveBefore _ _ => false
-    | ActiveAfter _ a, ActiveAfter _ b => a GHC.Base.>= b
-    end.
+(* Skipping definition `BasicTypes.competesWith' *)
 
 #[global] Definition isConLike : RuleMatchInfo -> bool :=
   fun arg_0__ => match arg_0__ with | ConLike => true | _ => false end.
@@ -1236,8 +1205,8 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
   fun arg_0__ => match arg_0__ with | NoUserInlinePrag => true | _ => false end.
 
 #[global] Definition defaultInlinePragma : InlinePragma :=
-  Mk_InlinePragma (Mk_SourceText (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
-                                                             "{-# INLINE"))) NoUserInlinePrag None AlwaysActive FunLike.
+  Mk_InlinePragma (Mk_SourceText (FastString.fsLit (GHC.Base.hs_string__
+                                                    "{-# INLINE"))) NoUserInlinePrag None AlwaysActive FunLike.
 
 #[global] Definition inlinePragmaSource : InlinePragma -> SourceText :=
   fun prag =>
@@ -1467,21 +1436,16 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
 
 (* External variables:
      Eq Gt Lt Mk_SourceText NoSourceText None Some SourceText Type andb bool
-     comparison false list nat op_zt__ option pair true tt unit Data.Bits.op_zizazi__
-     Data.Maybe.isJust Datatypes.id GHC.Base.Functor GHC.Base.Monoid GHC.Base.Ord
-     GHC.Base.Semigroup GHC.Base.String GHC.Base.compare GHC.Base.compare__
-     GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr GHC.Base.mappend GHC.Base.mappend__
-     GHC.Base.max__ GHC.Base.mconcat__ GHC.Base.mempty__ GHC.Base.min GHC.Base.min__
-     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zg__ GHC.Base.op_zg____
-     GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____
-     GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
-     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__
-     GHC.Data.FastString.FastString GHC.Data.FastString.fsLit GHC.Err.error
-     GHC.Err.patternFailure GHC.LanguageExtensions.Type.Extension
-     GHC.LanguageExtensions.Type.UnboxedSums
-     GHC.LanguageExtensions.Type.UnboxedTuples GHC.Num.Int GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.seq HsSyn.Boxed
-     HsSyn.Boxity HsSyn.ConTag HsSyn.Unboxed HsToCoq.Err.Build_Default
-     HsToCoq.Err.Default HsToCoq.Err.default Language.Haskell.Syntax.Expr.HsDoFlavour
-     Panic.panic Panic.someSDoc
+     comparison false list nat op_zt__ op_zv__ option pair true tt unit
+     Data.Bits.op_zizazi__ Datatypes.id FastString.FastString FastString.fsLit
+     GHC.Base.Functor GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.String
+     GHC.Base.compare GHC.Base.compare__ GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr
+     GHC.Base.mappend GHC.Base.mappend__ GHC.Base.max__ GHC.Base.mconcat__
+     GHC.Base.mempty__ GHC.Base.min__ GHC.Base.op_zeze__ GHC.Base.op_zg__
+     GHC.Base.op_zg____ GHC.Base.op_zgze____ GHC.Base.op_zl____ GHC.Base.op_zlzd__
+     GHC.Base.op_zlzd____ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
+     GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__ GHC.Err.error GHC.Num.Int
+     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.seq
+     HsSyn.Boxed HsSyn.Boxity HsSyn.ConTag HsSyn.Unboxed HsToCoq.Err.Build_Default
+     HsToCoq.Err.Default HsToCoq.Err.default Panic.panic Panic.someSDoc
 *)

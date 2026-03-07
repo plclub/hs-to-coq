@@ -40,6 +40,9 @@ order BasicTypes.Eq___SourceText      BasicTypes.Eq___OverlapMode_op_zeze__
 order BasicTypes.Eq___TailCallInfo    BasicTypes.Eq___OccInfo_op_zeze__
 order BasicTypes.Eq___StringLiteral   BasicTypes.Eq___WarningTxt_op_zeze__
 
+# fIRST_TAG uses ConTag = nat, but #1 needs Num nat
+redefine Definition BasicTypes.fIRST_TAG : HsSyn.ConTag := 1%nat.
+
 redefine Definition BasicTypes.RepArity  := nat.
 redefine Definition BasicTypes.PhaseNum  := nat.
 redefine Definition BasicTypes.JoinArity := nat.
@@ -50,6 +53,9 @@ skip BasicTypes.pprAlternative
 skip BasicTypes.Default__OverlapFlag
 skip BasicTypes.Default__InlinePragma
 
+# Coq 8.20: type and constructor cannot share the same name
+rename value GHC.Types.Basic.PprPrec = BasicTypes.Mk_PprPrec
+
 # GHC 9.10: unsupported class instances
 skip class Outputable.OutputableP
 
@@ -57,3 +63,27 @@ skip class Outputable.OutputableP
 skip module Language.Haskell.Syntax.Basic
 skip module Language.Haskell.Syntax.Type
 skip module Language.Haskell.Syntax.Expr
+skip module GHC.LanguageExtensions.Type
+skip BasicTypes.unboxedTupleOrSumExtension
+
+# CompilerPhase/Activation functions need Ord nat (PhaseNum=nat)
+skip BasicTypes.nextPhase
+skip BasicTypes.laterPhase
+skip BasicTypes.activateAfterInitial
+skip BasicTypes.activeInPhase
+skip BasicTypes.isActive
+skip BasicTypes.competesWith
+
+# GenReason uses HsDoFlavour from skipped Language.Haskell.Syntax.Expr
+skip BasicTypes.GenReason
+# Origin/GenReason chain depends on skipped Language.Haskell.Syntax.Expr
+skip BasicTypes.Origin
+skip BasicTypes.isGenerated
+skip BasicTypes.requiresPMC
+skip BasicTypes.isDoExpansionGenerated
+skip BasicTypes.doExpansionFlavour
+skip BasicTypes.doExpansionOrigin
+
+# Coq 8.20: type/constructor name clashes
+rename value GHC.Types.Basic.DoPmc = BasicTypes.Mk_DoPmc
+rename value GHC.Types.Basic.Alignment = BasicTypes.Mk_Alignment

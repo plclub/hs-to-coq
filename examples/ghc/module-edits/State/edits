@@ -1,1 +1,6 @@
+# GHC 9.10: Functor methods use unboxed tuples internally — redefine with regular tuples
+redefine Local Definition State.Functor__State_fmap {inst_s : Type} : forall {a : Type}, forall {b : Type}, (a -> b) -> State inst_s a -> State inst_s b := fun {a : Type} {b : Type} => fun f m => Mk_State (fun s => let 'pair r s' := runState' m s in pair (f r) s').
+
+redefine Local Definition State.Functor__State_op_zlzd__ {inst_s : Type} : forall {a : Type}, forall {b : Type}, a -> State inst_s b -> State inst_s a := fun {a : Type} {b : Type} => Functor__State_fmap GHC.Base.∘ GHC.Base.const.
+
 order State.Functor__State State.Applicative__State_liftA2 State.Applicative__State State.Monad__State_return_

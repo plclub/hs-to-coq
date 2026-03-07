@@ -2,12 +2,8 @@ skip UniqFM.pprUniqFM
 skip UniqFM.pluralUFM
 skip UniqFM.pprUFM
 
-# Needs Data.IntMap.Internal.mergeA
+# Needs mergeA
 skip UniqFM.equalKeysUFM
-
-# Needs Data.IntMap.Internal.mergeWithKey
-axiomatize definition UniqFM.plusUFM_CD
-axiomatize definition UniqFM.plusMaybeUFM_C
 
 # pick result type, GHC.Num.Int or N or nat?
 rename type GHC.Num.Int = nat
@@ -16,17 +12,44 @@ skip module Compiler.Hoopl.Dataflow
 # requires Hoopl
 skip UniqFM.joinUFM
 
-# These instances need the corresponding stuff in IntMap.
+# These instances need the corresponding stuff in Word64Map.
 order UniqFM.Functor__UniqFM UniqFM.Foldable__UniqFM UniqFM.Traversable__UniqFM
 order UniqFM.Semigroup__UniqFM UniqFM.Monoid__UniqFM_mappend
 order UniqFM.Semigroup__UniqFM UniqFM.Monoid__UniqFM_mconcat
 
-add UniqFM Instance Unpeel_UniqFM ele : HsToCoq.Unpeel.Unpeel (UniqFM ele) (IntMap.IntMap ele) :=
+# Coq 8.20: type/constructor name clash
+rename value GHC.Types.Unique.FM.NonDetUniqFM = UniqFM.Mk_NonDetUniqFM
+
+# Phantom type key needs explicit type annotation
+redefine Inductive UniqFM.UniqFM (key : Type) (ele : Type) : Type := | UFM : (GHC.Data.Word64Map.Internal.Word64Map ele) -> UniqFM key ele.
+redefine Inductive UniqFM.NonDetUniqFM (key : Type) (ele : Type) : Type := | Mk_NonDetUniqFM (getNonDet : UniqFM key ele) : NonDetUniqFM key ele.
+redefine Inductive UniqFM.Edit (a : Type) : Type := | Removed : a -> Edit a | Added : a -> Edit a | Changed : a -> a -> Edit a.
+
+# All instances have wrong universe for phantom key ({inst_k : Type} {inst_key : inst_k})
+# Skip and provide correct versions in midamble
+skip UniqFM.Functor__NonDetUniqFM
+skip UniqFM.Foldable__NonDetUniqFM
+skip UniqFM.Traversable__NonDetUniqFM
+skip UniqFM.Functor__UniqFM
+skip UniqFM.Foldable__UniqFM
+skip UniqFM.Traversable__UniqFM
+skip UniqFM.Semigroup__UniqFM
+skip UniqFM.Monoid__UniqFM
+
+# GHC 9.10: UniqFM uses Word64Map, alias to IntMap in Coq
+add UniqFM Instance Unpeel_UniqFM key ele : HsToCoq.Unpeel.Unpeel (UniqFM key ele) (GHC.Data.Word64Map.Internal.Word64Map ele) :=
   HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | UFM y => y end) UFM.
 
 rename value GHC.Types.Unique.getKey = Unique.getWordKey
 
 skip module Coq.ZArith.BinInt.Z
+
+# GHC.Prim.coerce can't resolve Coercible for UniqFM newtype
+skip UniqFM.addToUFM_L
+skip UniqFM.mergeUFM
+
+# IntMap.size returns N, not nat
+redefine Definition UniqFM.sizeUFM {key : Type} {elt : Type} : UniqFM key elt -> nat := fun x => match x with | UFM m => BinNat.N.to_nat (Data.IntMap.Internal.size m) end.
 
 order Unpeel_UniqFM UniqFM.Eq___UniqFM_op_zeze__
 order Unpeel_UniqFM UniqFM.Eq___UniqFM_op_zsze__

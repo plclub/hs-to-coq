@@ -12,7 +12,6 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require Control.Monad.Trans.Maybe.
 Require Coq.Init.Datatypes.
 Require Data.Either.
 Require Data.Foldable.
@@ -179,10 +178,7 @@ Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
     | Data.Either.Right x => Some x
     end.
 
-#[global] Definition liftMaybeT {m : Type -> Type} {a : Type} `{GHC.Base.Monad
-  m}
-   : m a -> Control.Monad.Trans.Maybe.MaybeT m a :=
-  fun act => Control.Monad.Trans.Maybe.Mk_MaybeT (GHC.Base.liftM Some act).
+(* Skipping definition `Maybes.liftMaybeT' *)
 
 (* Skipping definition `Maybes.tryMaybeT' *)
 
@@ -195,13 +191,13 @@ Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
   fun e => Failed e.
 
 (* External variables:
-     None Some Type bool false option true unit Control.Monad.Trans.Maybe.MaybeT
-     Control.Monad.Trans.Maybe.Mk_MaybeT Coq.Init.Datatypes.app Data.Either.Either
-     Data.Either.Left Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldlM
-     Data.Foldable.for__ Data.Maybe.fromMaybe GHC.Base.Applicative GHC.Base.Functor
-     GHC.Base.Monad GHC.Base.String GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__
-     GHC.Base.id GHC.Base.liftA2__ GHC.Base.liftM GHC.Base.op_zgzg____
-     GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
-     GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
-     GHC.Base.return_ GHC.Base.return___ GHC.Err.error HsToCoq.Err.Default
+     None Some Type bool false option true unit Coq.Init.Datatypes.app
+     Data.Either.Either Data.Either.Left Data.Either.Right Data.Foldable.Foldable
+     Data.Foldable.foldlM Data.Foldable.for__ Data.Maybe.fromMaybe
+     GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monad GHC.Base.String
+     GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__
+     GHC.Base.op_zgzg____ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__
+     GHC.Base.op_zlzd____ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
+     GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ GHC.Err.error
+     HsToCoq.Err.Default
 *)

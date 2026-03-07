@@ -10,6 +10,10 @@ Unset Printing Implicit Defensive.
 Require Coq.Program.Tactics.
 Require Coq.Program.Wf.
 
+(* Preamble *)
+
+Require Outputable.
+
 (* Converted imports: *)
 
 Require Coq.Init.Datatypes.
@@ -21,14 +25,11 @@ Require Data.Traversable.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.List.
-Require GHC.Num.
 Require GHC.Prim.
-Require GHC.Utils.Trace.
 Require HsToCoq.Err.
 Require Panic.
 Require Util.
 Import GHC.Base.Notations.
-Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
@@ -72,19 +73,11 @@ Import GHC.Num.Notations.
         | _, _ =>
             match arg_0__, arg_1__ with
             | xs, ys =>
-                GHC.Utils.Trace.warnPprTrace (orb (Util.lengthExceeds xs #100)
-                                                  (Util.lengthExceeds ys #100)) (GHC.Base.hs_string__ "unionLists")
-                                             (Panic.someSDoc) (Coq.Init.Datatypes.app (Coq.Lists.List.flat_map (fun x =>
-                                                                                                                  if isn'tIn
-                                                                                                                     (GHC.Base.hs_string__
-                                                                                                                      "unionLists")
-                                                                                                                     x
-                                                                                                                     ys : bool
-                                                                                                                  then cons
-                                                                                                                       x
-                                                                                                                       nil else
-                                                                                                                  nil)
-                                                                                                               xs) ys)
+                Coq.Init.Datatypes.app (Coq.Lists.List.flat_map (fun x =>
+                                                                   if isn'tIn (GHC.Base.hs_string__ "unionLists") x
+                                                                      ys : bool
+                                                                   then cons x nil else
+                                                                   nil) xs) ys
             end
         end
     end.
@@ -191,13 +184,12 @@ Axiom equivClasses : forall {a : Type},
 (* Skipping definition `ListSetOps.findDupsEq' *)
 
 (* External variables:
-     None Some Type bool comparison cons false list negb nil op_zt__ option orb pair
-     true Coq.Init.Datatypes.app Coq.Lists.List.flat_map Data.Foldable.elem
+     None Some Type bool comparison cons false list negb nil op_zt__ option pair true
+     Coq.Init.Datatypes.app Coq.Lists.List.flat_map Data.Foldable.elem
      Data.Foldable.notElem Data.Ord.comparing Data.Set.Internal.fromList
      Data.Set.Internal.member Data.Set.Internal.notMember Data.Traversable.mapAccumR
      Data.Tuple.fst GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord
      GHC.Base.String GHC.Base.op_zeze__ GHC.Base.op_zsze__ GHC.List.filter
-     GHC.Num.fromInteger GHC.Prim.rightSection GHC.Utils.Trace.warnPprTrace
-     HsToCoq.Err.Default Outputable.Outputable Panic.panic Panic.someSDoc
-     Util.HasDebugCallStack Util.lengthExceeds
+     GHC.Prim.rightSection HsToCoq.Err.Default Outputable.Outputable Panic.panic
+     Util.HasDebugCallStack
 *)

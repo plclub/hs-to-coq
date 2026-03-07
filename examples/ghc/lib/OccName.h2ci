@@ -11,7 +11,7 @@ constructorFields:
   OccName.MkOccEnv: NonRecordFields 1
   OccName.Mk_OccName: RecordFields [Qualified "OccName" "occNameSpace",Qualified "OccName"
     "occNameFS"]
-  OccName.OccSet: NonRecordFields 1
+  OccName.Mk_OccSet: NonRecordFields 1
   OccName.TcClsName: NonRecordFields 0
   OccName.TvName: NonRecordFields 0
   OccName.VarName: NonRecordFields 0
@@ -20,7 +20,7 @@ constructorTypes:
   OccName.FldName: Qualified "OccName" "NameSpace"
   OccName.MkOccEnv: Qualified "OccName" "OccEnv"
   OccName.Mk_OccName: Qualified "OccName" "OccName"
-  OccName.OccSet: Qualified "OccName" "OccSet"
+  OccName.Mk_OccSet: Qualified "OccName" "OccSet"
   OccName.TcClsName: Qualified "OccName" "NameSpace"
   OccName.TvName: Qualified "OccName" "NameSpace"
   OccName.VarName: Qualified "OccName" "NameSpace"
@@ -29,7 +29,7 @@ constructors:
     "OccName" "DataName",Qualified "OccName" "TvName",Qualified "OccName" "TcClsName"]'
   OccName.OccEnv: '[Qualified "OccName" "MkOccEnv"]'
   OccName.OccName: '[Qualified "OccName" "Mk_OccName"]'
-  OccName.OccSet: '[Qualified "OccName" "OccSet"]'
+  OccName.OccSet: '[Qualified "OccName" "Mk_OccSet"]'
 recordFieldTypes:
   OccName.fldParent: Qualified "OccName" "NameSpace"
   OccName.occNameFS: Qualified "OccName" "OccName"

@@ -122,19 +122,9 @@ Fixpoint foldrOL {a : Type} {b : Type} (arg_0__ : a -> b -> b) (arg_1__ : b)
                                                                   (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                    GHC.Base.flip f)) t)) z.
 
-#[global] Definition lengthOL {a} : OrdList a -> GHC.Num.Int :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | None => #0
-    | One _ => #1
-    | Cons _ as_ => #1 GHC.Num.+ Data.Foldable.length as_
-    | Snoc as_ _ => #1 GHC.Num.+ Data.Foldable.length as_
-    | Two as_ bs => Data.Foldable.length as_ GHC.Num.+ Data.Foldable.length bs
-    end.
-
 #[local] Definition Foldable__OrdList_length
    : forall {a : Type}, OrdList a -> GHC.Num.Int :=
-  fun {a : Type} => lengthOL.
+  fun {a : Type} => fun ol => foldrOL (fun _ n => #1 GHC.Num.+ n) #0 ol.
 
 #[global] Definition isNilOL {a : Type} : OrdList a -> bool :=
   fun arg_0__ => match arg_0__ with | None => true | _ => false end.
@@ -286,6 +276,8 @@ Program Instance Traversable__OrdList : Data.Traversable.Traversable OrdList :=
 
 (* Skipping definition `OrdList.lastOL' *)
 
+(* Skipping definition `OrdList.lengthOL' *)
+
 Fixpoint foldlOL {b : Type} {a : Type} (arg_0__ : b -> a -> b) (arg_1__ : b)
                  (arg_2__ : OrdList a) : b
   := match arg_0__, arg_1__, arg_2__ with
@@ -338,9 +330,9 @@ Fixpoint strictlyOrdOL {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__
      Eq Lt Type andb bool comparison cons false list nil true
      Coq.Program.Basics.compose Data.Foldable.Foldable Data.Foldable.foldMap__
      Data.Foldable.fold__ Data.Foldable.foldl__ Data.Foldable.foldr
-     Data.Foldable.foldr__ Data.Foldable.length Data.Foldable.length__
-     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
-     Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.SemigroupInternal.Mk_Dual
+     Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
+     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
+     Data.Functor.op_zlzdzg__ Data.SemigroupInternal.Mk_Dual
      Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
      Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
      Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct

@@ -96,9 +96,16 @@ rewrite forall x y, Panic.Plain.assert x y = y
 rename module GHC.Prelude GhcPrelude
 rename module GHC.Utils.Encoding Encoding
 
+# GHC 9.10: IsList.toList on NonEmpty converts to list
+rewrite forall x, GHC.Internal.IsList.toList x = match x with | GHC.Base.NEcons a as_ => cons a as_ end
+
 # GHC 9.10: global skip modules for unprocessed GHC packages
 skip module GHC.Data.FastString
 skip module GHC.Data.Strict
+# GHC.Data.Strict.Maybe is a strict Maybe — equivalent to option in Coq
+rename type GHC.Data.Strict.Maybe = option
+rename value GHC.Data.Strict.Just = Some
+rename value GHC.Data.Strict.Nothing = None
 skip module GHC.Prelude.Basic
 skip module GHC.Internal.Word
 skip module GHC.Internal.Ptr
@@ -133,6 +140,48 @@ skip module Data.List.NonEmpty
 skip module Data.IORef
 skip module Control.Monad.IO.Class
 skip module Control.DeepSeq
+skip module GHC.Utils.Trace
+# warnPprTrace is a debug function, replace with identity (drop the trace)
+rewrite forall a b c d, GHC.Utils.Trace.warnPprTrace a b c d = d
+
+# GHC 9.10: type renames for types from skipped modules that leak through
+rename type GHC.Data.FastString.FastString = FastString.FastString
+rename type GHC.Data.FastString.LexicalFastString = FastString.LexicalFastString
+rename value GHC.Data.FastString.fsLit = FastString.fsLit
+rename value GHC.Data.FastString.mkFastString = FastString.mkFastString
+rename value GHC.Data.FastString.unpackFS = FastString.unpackFS
+rename value GHC.Data.FastString.nullFS = FastString.nullFS
+rename value GHC.Data.FastString.concatFS = FastString.concatFS
+rename value GHC.Data.FastString.bytesFS = FastString.bytesFS
+rename value GHC.Data.FastString.uniqueOfFS = FastString.uniqueOfFS
+rename value GHC.Data.FastString.lexicalCompareFS = FastString.lexicalCompareFS
+
+rename type GHC.Unit.Types.Module = Module.Module
+rename type GHC.Unit.Types.Unit = Module.Unit
+rename type GHC.Unit.Types.InstalledModule = Module.InstalledModule
+rename value GHC.Unit.Types.mkModule = Module.mkModule
+rename value GHC.Unit.Types.moduleUnit = Module.moduleUnit
+rename value GHC.Unit.Types.isInteractiveModule = Module.isInteractiveModule
+rename value GHC.Unit.Types.baseUnit = Module.baseUnit
+rename value GHC.Unit.Types.bignumUnit = Module.bignumUnit
+rename value GHC.Unit.Types.experimentalUnit = Module.experimentalUnit
+rename value GHC.Unit.Types.ghcInternalUnit = Module.ghcInternalUnit
+rename value GHC.Unit.Types.mainUnit = Module.mainUnit
+rename value GHC.Unit.Types.primUnit = Module.primUnit
+rename value GHC.Unit.Types.thisGhcUnit = Module.thisGhcUnit
+
+rename type GHC.Unit.Module.Name.ModuleName = Module.ModuleName
+rename type Language.Haskell.Syntax.Module.Name.ModuleName = Module.ModuleName
+rename value Language.Haskell.Syntax.Module.Name.ModuleName = Module.Mk_ModuleName
+
+rename type GHC.Num.Integer.Integer = GHC.Num.Integer
+rename type GHC.Internal.Word.Word64 = BinNums.N
+
+# GHC 9.10: NonEmpty functions — skip module but provide rewrites for used functions
+skip Util.lastMaybe
+skip Util.snocView
+skip Bag.mapAndUnzipBagM
+skip Bag.flatMapBagPairM
 
 # Sub-modules split from BasicTypes in GHC 9.10
 rename module GHC.Types.Fixity BasicTypes

@@ -1,6 +1,35 @@
 rename type GHC.Num.Int = nat
 
+# Pretty-printing — Outputable module not translated
+skip Bag.pprBag
+
+# Uses Alternative (<|>) which is not defined for option
+skip Bag.lookupBag
+
+# Uses Data.List.NonEmpty.unzip which isn't in our base library
+skip Bag.unzipBag
+
 skip module GHC.Internal.IsList
 skip Bag.IsList__Bag
 
-in Bag.lengthBag rewrite forall xs, Data.Foldable.length xs = BinInt.Z.to_nat (Data.Foldable.length xs) 
+in Bag.lengthBag rewrite forall xs, Data.Foldable.length xs = BinInt.Z.to_nat (Data.Foldable.length xs)
+
+# GHC 9.10: Foldable__Bag_foldMap uses Data.Foldable.foldMap recursively on Bag
+# (before Foldable instance is defined). Use explicit Fixpoint instead.
+redefine Fixpoint Bag.Foldable__Bag_foldMap {m : Type} {a : Type} `{GHC.Base.Monoid m} (f : a -> m) (arg_1__ : Bag a) : m := match arg_1__ with | EmptyBag => GHC.Base.mempty | UnitBag x => f x | TwoBags b1 b2 => GHC.Base.mappend (Foldable__Bag_foldMap f b1) (Foldable__Bag_foldMap f b2) | ListBag ne => Data.Foldable.foldMap f ne end.
+
+# GHC 9.10: Foldable__Bag_foldr calls Data.Foldable.foldr recursively on Bag
+redefine Fixpoint Bag.Foldable__Bag_foldr {a : Type} {b : Type} (f : a -> b -> b) (z : b) (arg_2__ : Bag a) : b := match arg_2__ with | EmptyBag => z | UnitBag a1 => f a1 z | TwoBags b1 b2 => Foldable__Bag_foldr f (Foldable__Bag_foldr f z b2) b1 | ListBag a1 => Data.Foldable.foldr f z a1 end.
+
+# GHC 9.10: Foldable__Bag_null calls Data.Foldable.null recursively on Bag
+redefine Fixpoint Bag.Foldable__Bag_null {a : Type} (arg_0__ : Bag a) : bool := match arg_0__ with | EmptyBag => true | UnitBag _ => false | TwoBags a1 a2 => andb (Foldable__Bag_null a1) (Foldable__Bag_null a2) | ListBag a1 => Data.Foldable.null a1 end.
+
+# GHC 9.10: Functor__Bag_fmap uses GHC.Base.fmap recursively on Bag
+redefine Fixpoint Bag.Functor__Bag_fmap {a : Type} {b : Type} (f : a -> b) (arg_1__ : Bag a) : Bag b := match arg_1__ with | EmptyBag => EmptyBag | UnitBag a1 => UnitBag (f a1) | TwoBags a1 a2 => TwoBags (Functor__Bag_fmap f a1) (Functor__Bag_fmap f a2) | ListBag a1 => ListBag (GHC.Base.fmap f a1) end.
+
+# GHC 9.10: Functor__Bag_op_zlzd__ uses GHC.Base.op_zlzd__ recursively on Bag
+redefine Fixpoint Bag.Functor__Bag_op_zlzd__ {a : Type} {b : Type} (z : a) (arg_1__ : Bag b) : Bag a := match arg_1__ with | EmptyBag => EmptyBag | UnitBag _ => UnitBag z | TwoBags a1 a2 => TwoBags (Functor__Bag_op_zlzd__ z a1) (Functor__Bag_op_zlzd__ z a2) | ListBag a1 => ListBag (GHC.Base.op_zlzd__ z a1) end.
+
+# GHC 9.10: Traversable__Bag_traverse uses Data.Traversable.traverse recursively on Bag
+redefine Fixpoint Bag.Traversable__Bag_traverse {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} (fn : a -> f b) (arg_1__ : Bag a) : f (Bag b) := match arg_1__ with | EmptyBag => GHC.Base.pure EmptyBag | UnitBag a1 => GHC.Base.fmap (fun b1 => UnitBag b1) (fn a1) | TwoBags a1 a2 => GHC.Base.liftA2 (fun b1 b2 => TwoBags b1 b2) (Traversable__Bag_traverse fn a1) (Traversable__Bag_traverse fn a2) | ListBag a1 => GHC.Base.fmap (fun b1 => ListBag b1) (Data.Traversable.traverse fn a1) end.
+

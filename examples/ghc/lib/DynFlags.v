@@ -12,12 +12,10 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require BasicTypes.
 Require BinNums.
-Require FieldLabel.
 Require GHC.Base.
-Require GHC.Utils.CliOption.
 Require HsToCoq.Err.
+Require Module.
 
 (* Converted type declarations: *)
 
@@ -53,32 +51,21 @@ Inductive PackageDBFlag : Type :=
 
 Inductive PackageArg : Type :=
   | Mk_PackageArg : GHC.Base.String -> PackageArg
-  | UnitIdArg : GHC.Unit.Types.Unit -> PackageArg.
+  | UnitIdArg : Module.Unit -> PackageArg.
 
 Inductive OnOff a : Type := | On : a -> OnOff a | Off : a -> OnOff a.
 
 Inductive ModRenaming : Type :=
   | Mk_ModRenaming (modRenamingWithImplicit : bool) (modRenamings
-    : list (Language.Haskell.Syntax.Module.Name.ModuleName *
-            Language.Haskell.Syntax.Module.Name.ModuleName)%type)
+    : list (Module.ModuleName * Module.ModuleName)%type)
    : ModRenaming.
 
 Inductive PackageFlag : Type :=
   | ExposePackage : GHC.Base.String -> PackageArg -> ModRenaming -> PackageFlag
   | HidePackage : GHC.Base.String -> PackageFlag.
 
-Inductive LinkerInfo : Type :=
-  | GnuLD : list GHC.Utils.CliOption.Option -> LinkerInfo
-  | Mold : list GHC.Utils.CliOption.Option -> LinkerInfo
-  | GnuGold : list GHC.Utils.CliOption.Option -> LinkerInfo
-  | LlvmLLD : list GHC.Utils.CliOption.Option -> LinkerInfo
-  | DarwinLD : list GHC.Utils.CliOption.Option -> LinkerInfo
-  | SolarisLD : list GHC.Utils.CliOption.Option -> LinkerInfo
-  | AixLD : list GHC.Utils.CliOption.Option -> LinkerInfo
-  | UnknownLD : LinkerInfo.
-
 Inductive IncludeSpecs : Type :=
-  | IncludeSpecs (includePathsQuote : list GHC.Base.String) (includePathsGlobal
+  | Mk_IncludeSpecs (includePathsQuote : list GHC.Base.String) (includePathsGlobal
     : list GHC.Base.String) (includePathsQuoteImplicit : list GHC.Base.String)
    : IncludeSpecs.
 
@@ -160,11 +147,8 @@ Instance Default__ModRenaming : HsToCoq.Err.Default ModRenaming :=
   HsToCoq.Err.Build_Default _ (Mk_ModRenaming HsToCoq.Err.default
                              HsToCoq.Err.default).
 
-Instance Default__LinkerInfo : HsToCoq.Err.Default LinkerInfo :=
-  HsToCoq.Err.Build_Default _ UnknownLD.
-
 Instance Default__IncludeSpecs : HsToCoq.Err.Default IncludeSpecs :=
-  HsToCoq.Err.Build_Default _ (IncludeSpecs HsToCoq.Err.default
+  HsToCoq.Err.Build_Default _ (Mk_IncludeSpecs HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default).
 
 Instance Default__GhcMode : HsToCoq.Err.Default GhcMode :=
@@ -183,15 +167,15 @@ Instance Default__CompilerInfo : HsToCoq.Err.Default CompilerInfo :=
   HsToCoq.Err.Build_Default _ GCC.
 
 #[global] Definition includePathsGlobal (arg_0__ : IncludeSpecs) :=
-  let 'IncludeSpecs _ includePathsGlobal _ := arg_0__ in
+  let 'Mk_IncludeSpecs _ includePathsGlobal _ := arg_0__ in
   includePathsGlobal.
 
 #[global] Definition includePathsQuote (arg_0__ : IncludeSpecs) :=
-  let 'IncludeSpecs includePathsQuote _ _ := arg_0__ in
+  let 'Mk_IncludeSpecs includePathsQuote _ _ := arg_0__ in
   includePathsQuote.
 
 #[global] Definition includePathsQuoteImplicit (arg_0__ : IncludeSpecs) :=
-  let 'IncludeSpecs _ _ includePathsQuoteImplicit := arg_0__ in
+  let 'Mk_IncludeSpecs _ _ includePathsQuoteImplicit := arg_0__ in
   includePathsQuoteImplicit.
 
 (* Midamble *)
@@ -235,7 +219,7 @@ Admitted.
 
 (* Skipping definition `DynFlags.initDynFlags' *)
 
-Axiom defaultDynFlags : GHC.Settings.Settings -> DynFlags.
+(* Skipping definition `DynFlags.defaultDynFlags' *)
 
 (* Skipping definition `DynFlags.defaultFatalMessager' *)
 
@@ -274,13 +258,13 @@ Axiom hasNoOptCoercion : DynFlags -> bool.
 
 (* Skipping definition `DynFlags.dopt' *)
 
-Axiom dopt_set : DynFlags -> GHC.Driver.Flags.DumpFlag -> DynFlags.
+(* Skipping definition `DynFlags.dopt_set' *)
 
-Axiom dopt_unset : DynFlags -> GHC.Driver.Flags.DumpFlag -> DynFlags.
+(* Skipping definition `DynFlags.dopt_unset' *)
 
-Axiom gopt : GHC.Driver.Flags.GeneralFlag -> DynFlags -> bool.
+(* Skipping definition `DynFlags.gopt' *)
 
-Axiom gopt_set : DynFlags -> GHC.Driver.Flags.GeneralFlag -> DynFlags.
+(* Skipping definition `DynFlags.gopt_set' *)
 
 (* Skipping definition `DynFlags.gopt_unset' *)
 
@@ -290,11 +274,11 @@ Axiom gopt_set : DynFlags -> GHC.Driver.Flags.GeneralFlag -> DynFlags.
 
 (* Skipping definition `DynFlags.wopt_unset' *)
 
-Axiom wopt_fatal : GHC.Driver.Flags.WarningFlag -> DynFlags -> bool.
+(* Skipping definition `DynFlags.wopt_fatal' *)
 
-Axiom wopt_set_fatal : DynFlags -> GHC.Driver.Flags.WarningFlag -> DynFlags.
+(* Skipping definition `DynFlags.wopt_set_fatal' *)
 
-Axiom wopt_unset_fatal : DynFlags -> GHC.Driver.Flags.WarningFlag -> DynFlags.
+(* Skipping definition `DynFlags.wopt_unset_fatal' *)
 
 Axiom wopt_set_all_custom : DynFlags -> DynFlags.
 
@@ -304,15 +288,13 @@ Axiom wopt_set_all_fatal_custom : DynFlags -> DynFlags.
 
 Axiom wopt_unset_all_fatal_custom : DynFlags -> DynFlags.
 
-Axiom wopt_set_custom : DynFlags -> BasicTypes.WarningCategory -> DynFlags.
+(* Skipping definition `DynFlags.wopt_set_custom' *)
 
-Axiom wopt_unset_custom : DynFlags -> BasicTypes.WarningCategory -> DynFlags.
+(* Skipping definition `DynFlags.wopt_unset_custom' *)
 
-Axiom wopt_set_fatal_custom : DynFlags ->
-                              BasicTypes.WarningCategory -> DynFlags.
+(* Skipping definition `DynFlags.wopt_set_fatal_custom' *)
 
-Axiom wopt_unset_fatal_custom : DynFlags ->
-                                BasicTypes.WarningCategory -> DynFlags.
+(* Skipping definition `DynFlags.wopt_unset_fatal_custom' *)
 
 Axiom wopt_any_custom : DynFlags -> bool.
 
@@ -322,21 +304,19 @@ Axiom wopt_any_custom : DynFlags -> bool.
 
 (* Skipping definition `DynFlags.xopt_unset' *)
 
-Axiom xopt_set_unlessExplSpec : GHC.LanguageExtensions.Type.Extension ->
-                                (DynFlags -> GHC.LanguageExtensions.Type.Extension -> DynFlags) ->
-                                DynFlags -> DynFlags.
+(* Skipping definition `DynFlags.xopt_set_unlessExplSpec' *)
 
-Axiom xopt_DuplicateRecordFields : DynFlags -> FieldLabel.DuplicateRecordFields.
+(* Skipping definition `DynFlags.xopt_DuplicateRecordFields' *)
 
-Axiom xopt_FieldSelectors : DynFlags -> FieldLabel.FieldSelectors.
+(* Skipping definition `DynFlags.xopt_FieldSelectors' *)
 
 (* Skipping definition `DynFlags.lang_set' *)
 
-Axiom defaultFlags : GHC.Settings.Settings -> list GHC.Driver.Flags.GeneralFlag.
+(* Skipping definition `DynFlags.defaultFlags' *)
 
-Axiom validHoleFitDefaults : list GHC.Driver.Flags.GeneralFlag.
+(* Skipping definition `DynFlags.validHoleFitDefaults' *)
 
-Axiom optLevelFlags : list (list BinNums.N * GHC.Driver.Flags.GeneralFlag)%type.
+(* Skipping definition `DynFlags.optLevelFlags' *)
 
 Axiom turnOn : TurnOnFlag.
 
@@ -346,9 +326,9 @@ Axiom turnOff : TurnOnFlag.
 
 (* Skipping definition `DynFlags.languageExtensions' *)
 
-Axiom ways : DynFlags -> GHC.Platform.Ways.Ways.
+(* Skipping definition `DynFlags.ways' *)
 
-Axiom targetProfile : DynFlags -> GHC.Platform.Profile.Profile.
+(* Skipping definition `DynFlags.targetProfile' *)
 
 Axiom programName : DynFlags -> GHC.Base.String.
 
@@ -368,14 +348,13 @@ Axiom globalPackageDatabasePath : DynFlags -> GHC.Base.String.
 
 (* Skipping definition `DynFlags.versionedAppDir' *)
 
-Axiom versionedFilePath : GHC.Platform.ArchOS.ArchOS -> GHC.Base.String.
+(* Skipping definition `DynFlags.versionedFilePath' *)
 
-Axiom initSDocContext : DynFlags ->
-                        Outputable.PprStyle -> Outputable.SDocContext.
+(* Skipping definition `DynFlags.initSDocContext' *)
 
-Axiom initDefaultSDocContext : DynFlags -> Outputable.SDocContext.
+(* Skipping definition `DynFlags.initDefaultSDocContext' *)
 
-Axiom initPromotionTickContext : DynFlags -> Outputable.PromotionTickContext.
+(* Skipping definition `DynFlags.initPromotionTickContext' *)
 
 Axiom isSse4_2Enabled : DynFlags -> bool.
 
@@ -398,13 +377,7 @@ Axiom isBmiEnabled : DynFlags -> bool.
 Axiom isBmi2Enabled : DynFlags -> bool.
 
 (* External variables:
-     Type bool list op_zt__ option BasicTypes.WarningCategory BinNums.N
-     FieldLabel.DuplicateRecordFields FieldLabel.FieldSelectors GHC.Base.String
-     GHC.Driver.Flags.DumpFlag GHC.Driver.Flags.GeneralFlag
-     GHC.Driver.Flags.WarningFlag GHC.LanguageExtensions.Type.Extension
-     GHC.Platform.ArchOS.ArchOS GHC.Platform.Profile.Profile GHC.Platform.Ways.Ways
-     GHC.Settings.Settings GHC.Unit.Types.Unit GHC.Utils.CliOption.Option
+     Type bool list op_zt__ option BinNums.N GHC.Base.String
      HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
-     Language.Haskell.Syntax.Module.Name.ModuleName Outputable.PprStyle
-     Outputable.PromotionTickContext Outputable.SDocContext
+     Module.ModuleName Module.Unit
 *)

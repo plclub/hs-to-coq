@@ -2,7 +2,6 @@ constructorFields:
   BasicTypes.AbstractTypeFlavour: NonRecordFields 0
   BasicTypes.ActiveAfter: NonRecordFields 2
   BasicTypes.ActiveBefore: NonRecordFields 2
-  BasicTypes.Alignment: RecordFields [Qualified "BasicTypes" "alignmentBytes"]
   BasicTypes.AlwaysActive: NonRecordFields 0
   BasicTypes.AlwaysTailCalled: NonRecordFields 1
   BasicTypes.BoxedTuple: NonRecordFields 0
@@ -18,14 +17,10 @@ constructorFields:
   BasicTypes.DataTypeFlavour: NonRecordFields 0
   BasicTypes.DefaultKindVars: NonRecordFields 0
   BasicTypes.DefaultNonStandardTyVars: NonRecordFields 0
-  BasicTypes.DoExpansion: NonRecordFields 1
-  BasicTypes.DoPmc: NonRecordFields 0
   BasicTypes.Failed: NonRecordFields 0
   BasicTypes.FinalActive: NonRecordFields 0
   BasicTypes.FinalPhase: NonRecordFields 0
-  BasicTypes.FromSource: NonRecordFields 0
   BasicTypes.FunLike: NonRecordFields 0
-  BasicTypes.Generated: NonRecordFields 2
   BasicTypes.GenericDM: NonRecordFields 1
   BasicTypes.IAmALoopBreaker: RecordFields [Qualified "BasicTypes" "occ_rules_only",Qualified
     "BasicTypes" "occ_tail"]
@@ -47,6 +42,8 @@ constructorFields:
   BasicTypes.Lifted: NonRecordFields 0
   BasicTypes.ManyOccs: RecordFields [Qualified "BasicTypes" "occ_tail"]
   BasicTypes.MarkedCbv: NonRecordFields 0
+  BasicTypes.Mk_Alignment: RecordFields [Qualified "BasicTypes" "alignmentBytes"]
+  BasicTypes.Mk_DoPmc: NonRecordFields 0
   BasicTypes.Mk_EP: RecordFields [Qualified "BasicTypes" "fromEP",Qualified "BasicTypes"
     "toEP"]
   BasicTypes.Mk_InlinePragma: RecordFields [Qualified "BasicTypes" "inl_src",Qualified
@@ -54,6 +51,7 @@ constructorFields:
     "inl_act",Qualified "BasicTypes" "inl_rule"]
   BasicTypes.Mk_OverlapFlag: RecordFields [Qualified "BasicTypes" "overlapMode",Qualified
     "BasicTypes" "isSafeOverlap"]
+  BasicTypes.Mk_PprPrec: NonRecordFields 1
   BasicTypes.NeverActive: NonRecordFields 0
   BasicTypes.NewtypeFlavour: NonRecordFields 0
   BasicTypes.NoInline: NonRecordFields 1
@@ -74,12 +72,10 @@ constructorFields:
   BasicTypes.OneShotLam: NonRecordFields 0
   BasicTypes.Opaque: NonRecordFields 1
   BasicTypes.OpenFamilyFlavour: NonRecordFields 2
-  BasicTypes.OtherExpansion: NonRecordFields 0
   BasicTypes.Overlappable: NonRecordFields 1
   BasicTypes.Overlapping: NonRecordFields 1
   BasicTypes.Overlaps: NonRecordFields 1
   BasicTypes.Phase: NonRecordFields 1
-  BasicTypes.PprPrec: NonRecordFields 1
   BasicTypes.PromotedDataConFlavour: NonRecordFields 0
   BasicTypes.Recursive: NonRecordFields 0
   BasicTypes.SkipPmc: NonRecordFields 0
@@ -103,7 +99,6 @@ constructorTypes:
   BasicTypes.AbstractTypeFlavour: Qualified "BasicTypes" "TyConFlavour"
   BasicTypes.ActiveAfter: Qualified "BasicTypes" "Activation"
   BasicTypes.ActiveBefore: Qualified "BasicTypes" "Activation"
-  BasicTypes.Alignment: Qualified "BasicTypes" "Alignment"
   BasicTypes.AlwaysActive: Qualified "BasicTypes" "Activation"
   BasicTypes.AlwaysTailCalled: Qualified "BasicTypes" "TailCallInfo"
   BasicTypes.BoxedTuple: Qualified "BasicTypes" "TupleSort"
@@ -119,14 +114,10 @@ constructorTypes:
   BasicTypes.DataTypeFlavour: Qualified "BasicTypes" "TyConFlavour"
   BasicTypes.DefaultKindVars: Qualified "BasicTypes" "DefaultingStrategy"
   BasicTypes.DefaultNonStandardTyVars: Qualified "BasicTypes" "NonStandardDefaultingStrategy"
-  BasicTypes.DoExpansion: Qualified "BasicTypes" "GenReason"
-  BasicTypes.DoPmc: Qualified "BasicTypes" "DoPmc"
   BasicTypes.Failed: Qualified "BasicTypes" "SuccessFlag"
   BasicTypes.FinalActive: Qualified "BasicTypes" "Activation"
   BasicTypes.FinalPhase: Qualified "BasicTypes" "CompilerPhase"
-  BasicTypes.FromSource: Qualified "BasicTypes" "Origin"
   BasicTypes.FunLike: Qualified "BasicTypes" "RuleMatchInfo"
-  BasicTypes.Generated: Qualified "BasicTypes" "Origin"
   BasicTypes.GenericDM: Qualified "BasicTypes" "DefMethSpec"
   BasicTypes.IAmALoopBreaker: Qualified "BasicTypes" "OccInfo"
   BasicTypes.IAmData: Qualified "BasicTypes" "TypeOrData"
@@ -147,9 +138,12 @@ constructorTypes:
   BasicTypes.Lifted: Qualified "BasicTypes" "Levity"
   BasicTypes.ManyOccs: Qualified "BasicTypes" "OccInfo"
   BasicTypes.MarkedCbv: Qualified "BasicTypes" "CbvMark"
+  BasicTypes.Mk_Alignment: Qualified "BasicTypes" "Alignment"
+  BasicTypes.Mk_DoPmc: Qualified "BasicTypes" "DoPmc"
   BasicTypes.Mk_EP: Qualified "BasicTypes" "EP"
   BasicTypes.Mk_InlinePragma: Qualified "BasicTypes" "InlinePragma"
   BasicTypes.Mk_OverlapFlag: Qualified "BasicTypes" "OverlapFlag"
+  BasicTypes.Mk_PprPrec: Qualified "BasicTypes" "PprPrec"
   BasicTypes.NeverActive: Qualified "BasicTypes" "Activation"
   BasicTypes.NewtypeFlavour: Qualified "BasicTypes" "TyConFlavour"
   BasicTypes.NoInline: Qualified "BasicTypes" "InlineSpec"
@@ -169,12 +163,10 @@ constructorTypes:
   BasicTypes.OneShotLam: Qualified "BasicTypes" "OneShotInfo"
   BasicTypes.Opaque: Qualified "BasicTypes" "InlineSpec"
   BasicTypes.OpenFamilyFlavour: Qualified "BasicTypes" "TyConFlavour"
-  BasicTypes.OtherExpansion: Qualified "BasicTypes" "GenReason"
   BasicTypes.Overlappable: Qualified "BasicTypes" "OverlapMode"
   BasicTypes.Overlapping: Qualified "BasicTypes" "OverlapMode"
   BasicTypes.Overlaps: Qualified "BasicTypes" "OverlapMode"
   BasicTypes.Phase: Qualified "BasicTypes" "CompilerPhase"
-  BasicTypes.PprPrec: Qualified "BasicTypes" "PprPrec"
   BasicTypes.PromotedDataConFlavour: Qualified "BasicTypes" "TyConFlavour"
   BasicTypes.Recursive: Qualified "BasicTypes" "RecFlag"
   BasicTypes.SkipPmc: Qualified "BasicTypes" "DoPmc"
@@ -198,7 +190,7 @@ constructors:
   BasicTypes.Activation: '[Qualified "BasicTypes" "AlwaysActive",Qualified "BasicTypes"
     "ActiveBefore",Qualified "BasicTypes" "ActiveAfter",Qualified "BasicTypes" "FinalActive",Qualified
     "BasicTypes" "NeverActive"]'
-  BasicTypes.Alignment: '[Qualified "BasicTypes" "Alignment"]'
+  BasicTypes.Alignment: '[Qualified "BasicTypes" "Mk_Alignment"]'
   BasicTypes.CbvMark: '[Qualified "BasicTypes" "MarkedCbv",Qualified "BasicTypes"
     "NotMarkedCbv"]'
   BasicTypes.CompilerPhase: '[Qualified "BasicTypes" "InitialPhase",Qualified "BasicTypes"
@@ -207,12 +199,10 @@ constructors:
     "GenericDM"]'
   BasicTypes.DefaultingStrategy: '[Qualified "BasicTypes" "DefaultKindVars",Qualified
     "BasicTypes" "NonStandardDefaulting"]'
-  BasicTypes.DoPmc: '[Qualified "BasicTypes" "SkipPmc",Qualified "BasicTypes" "DoPmc"]'
+  BasicTypes.DoPmc: '[Qualified "BasicTypes" "SkipPmc",Qualified "BasicTypes" "Mk_DoPmc"]'
   BasicTypes.EP: '[Qualified "BasicTypes" "Mk_EP"]'
   BasicTypes.FunctionOrData: '[Qualified "BasicTypes" "IsFunction",Qualified "BasicTypes"
     "IsData"]'
-  BasicTypes.GenReason: '[Qualified "BasicTypes" "DoExpansion",Qualified "BasicTypes"
-    "OtherExpansion"]'
   BasicTypes.InlinePragma: '[Qualified "BasicTypes" "Mk_InlinePragma"]'
   BasicTypes.InlineSpec: '[Qualified "BasicTypes" "Inline",Qualified "BasicTypes"
     "Inlinable",Qualified "BasicTypes" "NoInline",Qualified "BasicTypes" "Opaque",Qualified
@@ -231,13 +221,11 @@ constructors:
     "BasicTypes" "OneOcc",Qualified "BasicTypes" "IAmALoopBreaker"]'
   BasicTypes.OneShotInfo: '[Qualified "BasicTypes" "NoOneShotInfo",Qualified "BasicTypes"
     "OneShotLam"]'
-  BasicTypes.Origin: '[Qualified "BasicTypes" "FromSource",Qualified "BasicTypes"
-    "Generated"]'
   BasicTypes.OverlapFlag: '[Qualified "BasicTypes" "Mk_OverlapFlag"]'
   BasicTypes.OverlapMode: '[Qualified "BasicTypes" "NoOverlap",Qualified "BasicTypes"
     "Overlappable",Qualified "BasicTypes" "Overlapping",Qualified "BasicTypes" "Overlaps",Qualified
     "BasicTypes" "Incoherent",Qualified "BasicTypes" "NonCanonical"]'
-  BasicTypes.PprPrec: '[Qualified "BasicTypes" "PprPrec"]'
+  BasicTypes.PprPrec: '[Qualified "BasicTypes" "Mk_PprPrec"]'
   BasicTypes.RecFlag: '[Qualified "BasicTypes" "Recursive",Qualified "BasicTypes"
     "NonRecursive"]'
   BasicTypes.RuleMatchInfo: '[Qualified "BasicTypes" "ConLike",Qualified "BasicTypes"

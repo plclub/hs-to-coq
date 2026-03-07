@@ -16,7 +16,6 @@ Require Data.Foldable.
 Require GHC.Base.
 Require GHC.Prim.
 Require HsToCoq.Unpeel.
-Require UniqDFM.
 Require UniqFM.
 Require Unique.
 Import GHC.Base.Notations.
@@ -46,17 +45,19 @@ Program Instance Semigroup__UniqSet {a : Type}
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__UniqSet_op_zlzlzgzg__ |}.
 
 Instance Unpeel_UniqSet ele
-   : HsToCoq.Unpeel.Unpeel (UniqSet ele) (UniqFM.UniqFM ele) :=
+   : HsToCoq.Unpeel.Unpeel (UniqSet ele) (UniqFM.UniqFM ele ele) :=
   HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(Mk_UniqSet y) => y) Mk_UniqSet.
 
-#[local] Definition Monoid__UniqSet_mappend {inst_a : Type}
+#[local] Definition Monoid__UniqSet_mappend {inst_a}
    : UniqSet inst_a -> UniqSet inst_a -> UniqSet inst_a :=
-  fun arg_0__ arg_1__ =>
-    Mk_UniqSet (GHC.Base.mappend (getUniqSet' arg_0__) (getUniqSet' arg_1__)).
+  fun x y => Mk_UniqSet (GHC.Base.mappend (getUniqSet' x) (getUniqSet' y)).
 
-#[local] Definition Monoid__UniqSet_mconcat {inst_a : Type}
+#[local] Definition Monoid__UniqSet_mconcat {inst_a}
    : list (UniqSet inst_a) -> UniqSet inst_a :=
-  fun arg_0__ => Mk_UniqSet (GHC.Base.mconcat arg_0__).
+  fun xs =>
+    Data.Foldable.foldr (fun x y =>
+                           Mk_UniqSet (getUniqSet' x GHC.Base.<<>> getUniqSet' y)) (Mk_UniqSet
+                         GHC.Base.mempty) xs.
 
 #[local] Definition Monoid__UniqSet_mempty {inst_a} : UniqSet inst_a :=
   Mk_UniqSet GHC.Base.mempty.
@@ -172,12 +173,7 @@ Program Instance Monoid__UniqSet {a : Type} : GHC.Base.Monoid (UniqSet a) :=
     | Mk_UniqSet s, t => Mk_UniqSet (UniqFM.minusUFM s t)
     end.
 
-#[global] Definition uniqSetMinusUDFM {key : Type} {b : Type}
-   : UniqSet key -> UniqFM.UniqFM key b -> UniqSet key :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Mk_UniqSet s, t => Mk_UniqSet (UniqDFM.ufmMinusUDFM s t)
-    end.
+(* Skipping definition `UniqSet.uniqSetMinusUDFM' *)
 
 #[global] Definition elementOfUniqSet {a : Type} `{Unique.Uniquable a}
    : a -> UniqSet a -> bool :=
@@ -276,15 +272,14 @@ Program Instance Monoid__UniqSet {a : Type} : GHC.Base.Monoid (UniqSet a) :=
 (* External variables:
      Type bool cons list nat op_zt__ option Data.Foldable.foldl' Data.Foldable.foldr
      GHC.Base.Monoid GHC.Base.Semigroup GHC.Base.map GHC.Base.mappend
-     GHC.Base.mappend__ GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty
-     GHC.Base.mempty__ GHC.Base.op_z2218U__ GHC.Base.op_zlzlzgzg__
-     GHC.Base.op_zlzlzgzg____ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
-     HsToCoq.Unpeel.Unpeel UniqDFM.ufmMinusUDFM UniqFM.UniqFM UniqFM.addToUFM
-     UniqFM.allUFM UniqFM.anyUFM UniqFM.delFromUFM UniqFM.delFromUFM_Directly
-     UniqFM.delListFromUFM UniqFM.delListFromUFM_Directly UniqFM.disjointUFM
-     UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.emptyUFM UniqFM.filterUFM
-     UniqFM.filterUFM_Directly UniqFM.intersectUFM UniqFM.isNullUFM UniqFM.lookupUFM
-     UniqFM.lookupUFM_Directly UniqFM.minusUFM UniqFM.nonDetEltsUFM
+     GHC.Base.mappend__ GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__
+     GHC.Base.op_z2218U__ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
+     GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel UniqFM.UniqFM
+     UniqFM.addToUFM UniqFM.allUFM UniqFM.anyUFM UniqFM.delFromUFM
+     UniqFM.delFromUFM_Directly UniqFM.delListFromUFM UniqFM.delListFromUFM_Directly
+     UniqFM.disjointUFM UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.emptyUFM
+     UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.intersectUFM UniqFM.isNullUFM
+     UniqFM.lookupUFM UniqFM.lookupUFM_Directly UniqFM.minusUFM UniqFM.nonDetEltsUFM
      UniqFM.nonDetKeysUFM UniqFM.nonDetStrictFoldUFM UniqFM.partitionUFM
      UniqFM.plusUFM UniqFM.sizeUFM UniqFM.unitUFM Unique.Uniquable Unique.Unique
 *)

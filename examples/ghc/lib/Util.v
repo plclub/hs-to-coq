@@ -16,7 +16,6 @@ Require HsToCoq.Nat.
 
 (* Converted imports: *)
 
-Require Control.Monad.
 Require Coq.Init.Datatypes.
 Require Coq.Lists.List.
 Require Data.Bifunctor.
@@ -29,8 +28,6 @@ Require Data.Set.Internal.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Char.
-Require GHC.Enum.
-Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
 Require GHC.Prim.
@@ -38,7 +35,6 @@ Require GHC.Tuple.
 Require HsToCoq.DeferredFix.
 Require HsToCoq.Err.
 Require Panic.
-Import Data.Bits.Notations.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
@@ -52,14 +48,12 @@ Inductive Direction : Type := | Forwards : Direction | Backwards : Direction.
 Instance Default__Direction : HsToCoq.Err.Default Direction :=
   HsToCoq.Err.Build_Default _ Forwards.
 
-(* The Haskell code containes partial or untranslateable code, which needs the
-   following *)
-
-Axiom missingValue : forall {a}, a.
-
 (* Midamble *)
 
-(* HasDebugCallStack is no longer needed - HasCallStack constraint is stripped *)
+(* HasDebugCallStack is a type alias for HasCallStack in GHC.
+   We define it as a trivial typeclass so references in other modules compile. *)
+Class HasDebugCallStack := {}.
+#[global] Instance hasDebugCallStack : HasDebugCallStack := {}.
 
 (* Converted value declarations: *)
 
@@ -558,26 +552,13 @@ Fixpoint dropList {b : Type} {a : Type} (arg_0__ : list b) (arg_1__ : list a)
                           | pair _ x2, x => pair x2 (Some x)
                           end) (pair None None).
 
-#[global] Definition lastMaybe {a : Type} : list a -> option a :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => None
-    | cons x xs => Some (Data.List.NonEmpty.last (GHC.Base.NEcons x xs))
-    end.
+(* Skipping definition `Util.lastMaybe' *)
 
 #[global] Definition onJust {b : Type} {a : Type}
    : b -> option a -> (a -> b) -> b :=
   fun dflt => GHC.Base.flip (Data.Maybe.maybe dflt).
 
-#[global] Definition snocView {a : Type} : list a -> option (list a * a)%type :=
-  let go {a} : GHC.Base.NonEmpty a -> (list a * a)%type :=
-    fix go (arg_0__ : GHC.Base.NonEmpty a) : (list a * a)%type
-      := let 'GHC.Base.NEcons x xs := arg_0__ in
-         match Data.List.NonEmpty.nonEmpty xs with
-         | None => pair nil x
-         | Some xs => let 'pair xs' x' := go xs in pair (cons x xs') x'
-         end in
-  GHC.Base.fmap go GHC.Base.∘ Data.List.NonEmpty.nonEmpty.
+(* Skipping definition `Util.snocView' *)
 
 #[global] Definition split
    : GHC.Char.Char -> GHC.Base.String -> list GHC.Base.String :=
@@ -592,11 +573,7 @@ Fixpoint dropList {b : Type} {a : Type} (arg_0__ : list b) (arg_1__ : list a)
                                       end).
 
 #[global] Definition capitalise : GHC.Base.String -> GHC.Base.String :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => nil
-    | cons c cs => cons (GHC.Internal.Unicode.toUpper c) cs
-    end.
+  fun arg_0__ => match arg_0__ with | nil => nil | cons c cs => cons c cs end.
 
 #[global] Definition isEqual : comparison -> bool :=
   fun arg_0__ => match arg_0__ with | Gt => false | Eq => true | Lt => false end.
@@ -678,217 +655,23 @@ Fixpoint strictZipWith3 {a : Type} {b : Type} {c : Type} {d : Type} (arg_0__
 
 Axiom looksLikePackageName : GHC.Base.String -> bool.
 
-#[global] Definition exactLog2
-   : GHC.Num.Integer.Integer -> option GHC.Num.Integer.Integer :=
-  fun x =>
-    let x' := GHC.Real.fromIntegral x : GHC.Internal.Int.Int32 in
-    let c := Data.Bits.countTrailingZeros x' in
-    if x GHC.Base.<= #0 : bool then None else
-    if x GHC.Base.>
-       GHC.Real.fromIntegral (GHC.Enum.maxBound : GHC.Internal.Int.Int32) : bool
-    then None else
-    if Data.Bits.op_zizazi__ x' (GHC.Num.negate x') GHC.Base./= x' : bool
-    then None else
-    Some (GHC.Real.fromIntegral c).
+(* Skipping definition `Util.exactLog2' *)
 
 (* Skipping definition `Util.readRational__' *)
 
 (* Skipping definition `Util.readRational' *)
 
-#[global] Definition readSignificandExponentPair__
-   : GHC.Internal.Text.ParserCombinators.ReadP.ReadS (GHC.Num.Integer.Integer *
-                                                      GHC.Num.Integer.Integer)%type :=
-  fun r =>
-    let fix span' arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | _, (nil as xs) => pair xs xs
-         | p, (cons x xs' as xs) =>
-             if x GHC.Base.== GHC.Char.hs_char__ "_" : bool then span' p xs' else
-             if p x : bool then let 'pair ys zs := span' p xs' in pair (cons x ys) zs else
-             pair nil xs
-         end in
-    let nonnull :=
-      fun p s =>
-        let cont_8__ arg_9__ :=
-          match arg_9__ with
-          | pair (cons _ _ as cs) t => GHC.Base.return_ (pair cs t)
-          | _ =>
-              missingValue (GHC.Base.hs_string__ "Partial pattern match in `do' notation")
-          end in
-        GHC.Base.return_ (span' p s) GHC.Base.>>= cont_8__ in
-    let lexDotDigits :=
-      fun arg_11__ =>
-        match arg_11__ with
-        | cons ("."%char) s => GHC.Base.return_ (span' GHC.Internal.Unicode.isDigit s)
-        | s => GHC.Base.return_ (pair (GHC.Base.hs_string__ "") s)
-        end in
-    let lexDecDigits := nonnull GHC.Internal.Unicode.isDigit in
-    let readDec :=
-      fun s =>
-        let cont_16__ arg_17__ :=
-          let 'pair ds r := arg_17__ in
-          GHC.Base.return_ (pair (Data.Foldable.foldl1 (fun n d =>
-                                                          (n GHC.Num.* #10) GHC.Num.+ d) (Coq.Lists.List.flat_map
-                                                                                          (fun d =>
-                                                                                             cons (GHC.Base.ord d
-                                                                                                   GHC.Num.-
-                                                                                                   GHC.Base.ord
-                                                                                                   (GHC.Char.hs_char__
-                                                                                                    "0")) nil) ds))
-                                 r) in
-        nonnull GHC.Internal.Unicode.isDigit s GHC.Base.>>= cont_16__ in
-    let readExp' :=
-      fun arg_20__ =>
-        match arg_20__ with
-        | cons ("+"%char) s => readDec s
-        | cons ("-"%char) s =>
-            let cont_22__ arg_23__ :=
-              let 'pair k t := arg_23__ in
-              GHC.Base.return_ (pair (GHC.Num.negate k) t) in
-            readDec s GHC.Base.>>= cont_22__
-        | s => readDec s
-        end in
-    let readExp :=
-      fun arg_27__ =>
-        let j_29__ := let 's := arg_27__ in GHC.Base.return_ (pair #0 s) in
-        match arg_27__ with
-        | cons e s =>
-            if Data.Foldable.elem e (GHC.Base.hs_string__ "eE") : bool then readExp' s else
-            j_29__
-        | _ => j_29__
-        end in
-    let readFix :=
-      fun r =>
-        let cont_32__ arg_33__ :=
-          let 'pair ds s := arg_33__ in
-          let cont_34__ arg_35__ :=
-            let 'pair ds' t := arg_35__ in
-            GHC.Base.return_ (pair (pair (GHC.Internal.Text.Read.read
-                                          (Coq.Init.Datatypes.app ds ds')) (Coq.Lists.List.length ds')) t) in
-          lexDotDigits s GHC.Base.>>= cont_34__ in
-        lexDecDigits r GHC.Base.>>= cont_32__ in
-    let cont_37__ arg_38__ :=
-      let 'pair (pair n d) s := arg_38__ in
-      let cont_39__ arg_40__ :=
-        let 'pair k t := arg_40__ in
-        let pair_ := pair n (GHC.Real.toInteger (k GHC.Num.- d)) in
-        GHC.Base.return_ (pair pair_ t) in
-      readExp s GHC.Base.>>= cont_39__ in
-    readFix r GHC.Base.>>= cont_37__.
+(* Skipping definition `Util.readSignificandExponentPair__' *)
 
-#[global] Definition readSignificandExponentPair
-   : GHC.Base.String ->
-     (GHC.Num.Integer.Integer * GHC.Num.Integer.Integer)%type :=
-  fun top_s =>
-    let read_me :=
-      fun s =>
-        match (let cont_0__ arg_1__ :=
-                   match arg_1__ with
-                   | pair x "" => GHC.Base.return_ x
-                   | _ =>
-                       missingValue (GHC.Base.hs_string__ "Partial pattern match in `do' notation")
-                   end in
-                 readSignificandExponentPair__ s GHC.Base.>>= cont_0__) with
-        | cons x nil => x
-        | nil =>
-            GHC.Err.error (Coq.Init.Datatypes.app (GHC.Base.hs_string__
-                                                   "readSignificandExponentPair: no parse:") top_s)
-        | _ =>
-            GHC.Err.error (Coq.Init.Datatypes.app (GHC.Base.hs_string__
-                                                   "readSignificandExponentPair: ambiguous parse:") top_s)
-        end in
-    match top_s with
-    | cons ("-"%char) xs => let 'pair i e := read_me xs in pair (GHC.Num.negate i) e
-    | xs => read_me xs
-    end.
+(* Skipping definition `Util.readSignificandExponentPair' *)
 
 (* Skipping definition `Util.readHexRational' *)
 
 (* Skipping definition `Util.readHexRational__' *)
 
-#[global] Definition readHexSignificandExponentPair__
-   : GHC.Base.String ->
-     option (GHC.Num.Integer.Integer * GHC.Num.Integer.Integer)%type :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | cons ("0"%char) (cons x rest) =>
-        let fix span' arg_1__ arg_2__
-          := match arg_1__, arg_2__ with
-             | _, (nil as xs) => pair xs xs
-             | p, (cons x xs' as xs) =>
-                 if x GHC.Base.== GHC.Char.hs_char__ "_" : bool then span' p xs' else
-                 if p x : bool then let 'pair ys zs := span' p xs' in pair (cons x ys) zs else
-                 pair nil xs
-             end in
-        let step :=
-          fun base n d =>
-            (base GHC.Num.* n) GHC.Num.+ GHC.Real.fromIntegral (Data.Char.digitToInt d) in
-        let steps := fun base n ds => Data.Foldable.foldl' (step base) n ds in
-        let dec :=
-          fun cs =>
-            let 'pair ds "" := span' GHC.Internal.Unicode.isDigit cs in
-            if negb (Data.Foldable.null ds) : bool then Some (steps #10 #0 ds) else
-            None in
-        let mk
-         : GHC.Num.Integer.Integer ->
-           nat -> (GHC.Num.Integer.Integer * GHC.Num.Integer.Integer)%type :=
-          fun n e => pair n (GHC.Real.fromIntegral e) in
-        let getExp :=
-          fun arg_16__ =>
-            match arg_16__ with
-            | cons ("+"%char) ds => dec ds
-            | cons ("-"%char) ds => GHC.Base.fmap GHC.Num.negate (dec ds)
-            | ds => dec ds
-            end in
-        let isExp :=
-          fun p =>
-            orb (p GHC.Base.== GHC.Char.hs_char__ "p") (p GHC.Base.==
-                 GHC.Char.hs_char__ "P") in
-        if orb (x GHC.Base.== GHC.Char.hs_char__ "X") (x GHC.Base.==
-                GHC.Char.hs_char__ "x") : bool
-        then let 'pair front rest2 := span' GHC.Internal.Unicode.isHexDigit rest in
-             Control.Monad.guard (negb (Data.Foldable.null front)) GHC.Base.>>
-             (let frontNum := steps #16 #0 front in
-              match rest2 with
-              | cons ("."%char) rest3 =>
-                  let 'pair back rest4 := span' GHC.Internal.Unicode.isHexDigit rest3 in
-                  Control.Monad.guard (negb (Data.Foldable.null back)) GHC.Base.>>
-                  (let exp1 := GHC.Num.negate (#4 GHC.Num.* Coq.Lists.List.length back) in
-                   let backNum := steps #16 frontNum back in
-                   let j_28__ := GHC.Base.return_ (mk backNum exp1) in
-                   match rest4 with
-                   | cons p ps =>
-                       if isExp p : bool
-                       then GHC.Base.fmap (mk backNum GHC.Base.∘
-                                           (GHC.Prim.rightSection _GHC.Num.+_ exp1)) (getExp ps) else
-                       j_28__
-                   | _ => j_28__
-                   end)
-              | cons p ps =>
-                  if isExp p : bool then GHC.Base.fmap (mk frontNum) (getExp ps) else
-                  None
-              | _ => None
-              end) else
-        None
-    | _ => None
-    end.
+(* Skipping definition `Util.readHexSignificandExponentPair' *)
 
-#[global] Definition readHexSignificandExponentPair
-   : GHC.Base.String ->
-     (GHC.Num.Integer.Integer * GHC.Num.Integer.Integer)%type :=
-  fun str =>
-    let readMe :=
-      fun as_ =>
-        match readHexSignificandExponentPair__ as_ with
-        | Some n => n
-        | _ =>
-            GHC.Err.error (Coq.Init.Datatypes.app (GHC.Base.hs_string__
-                                                   "readHexSignificandExponentPair: no parse:") str)
-        end in
-    match str with
-    | cons ("-"%char) xs => let 'pair i e := readMe xs in pair (GHC.Num.negate i) e
-    | xs => readMe xs
-    end.
+(* Skipping definition `Util.readHexSignificandExponentPair__' *)
 
 (* Skipping definition `Util.doesDirNameExist' *)
 
@@ -896,27 +679,9 @@ Axiom looksLikePackageName : GHC.Base.String -> bool.
 
 (* Skipping definition `Util.modificationTimeIfExists' *)
 
-#[global] Definition fileHashIfExists
-   : GHC.Base.String ->
-     GHC.Types.IO (option GHC.Internal.Fingerprint.Type.Fingerprint) :=
-  fun f =>
-    GHC.Utils.Exception.catchIO (GHC.Internal.Fingerprint.getFileHash f GHC.Base.>>=
-                                 (fun t => GHC.Base.return_ (Some t))) (fun e =>
-                                   if GHC.Internal.System.IO.Error.isDoesNotExistError e : bool
-                                   then GHC.Base.return_ None
-                                   else GHC.Internal.IO.Exception.ioError e).
+(* Skipping definition `Util.fileHashIfExists' *)
 
-#[global] Definition withAtomicRename {m : Type -> Type} {a : Type}
-  `{Control.Monad.IO.Class.MonadIO m}
-   : GHC.Base.String -> (GHC.Base.String -> m a) -> m a :=
-  fun targetFile f =>
-    let temp :=
-      System.FilePath.Posix.op_zlzizg__ targetFile (GHC.Base.hs_string__ "tmp") in
-    f temp GHC.Base.>>=
-    (fun res =>
-       Control.Monad.IO.Class.liftIO (System.Directory.renameFile temp targetFile)
-       GHC.Base.>>
-       GHC.Base.return_ res).
+(* Skipping definition `Util.withAtomicRename' *)
 
 (* Skipping definition `Util.splitLongestPrefix' *)
 
@@ -956,32 +721,19 @@ End Notations.
 
 (* External variables:
      Eq Gt HasDebugCallStack Lt None Some Type andb bool comparison cons false list
-     nat negb nil op_zt__ option orb pair true tt unit Control.Monad.guard
-     Control.Monad.IO.Class.MonadIO Control.Monad.IO.Class.liftIO
-     Coq.Init.Datatypes.app Coq.Lists.List.flat_map Coq.Lists.List.length
+     nat negb nil op_zt__ option orb pair true tt unit Coq.Init.Datatypes.app
      Coq.Lists.List.skipn Data.Bifunctor.first Data.Bifunctor.second Data.Bits.Bits
-     Data.Bits.countTrailingZeros Data.Bits.op_zizazi__ Data.Bits.xor
-     Data.Char.digitToInt Data.Either.Either Data.Either.Left Data.Either.Right
-     Data.Foldable.Foldable Data.Foldable.elem Data.Foldable.foldl'
-     Data.Foldable.foldl1 Data.Foldable.foldr Data.Foldable.null
-     Data.List.NonEmpty.last Data.List.NonEmpty.nonEmpty Data.Maybe.maybe
-     Data.OldList.zipWith4 Data.Set.Internal.empty Data.Set.Internal.insert
-     Data.Set.Internal.member Data.Tuple.uncurry GHC.Base.Applicative
-     GHC.Base.Functor GHC.Base.Monad GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord
-     GHC.Base.String GHC.Base.const GHC.Base.flip GHC.Base.fmap GHC.Base.id
-     GHC.Base.liftA2 GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zg__
-     GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.op_zlze__
-     GHC.Base.op_zsze__ GHC.Base.ord GHC.Base.pure GHC.Base.return_ GHC.Char.Char
-     GHC.Enum.maxBound GHC.Err.error GHC.Internal.Fingerprint.getFileHash
-     GHC.Internal.Fingerprint.Type.Fingerprint GHC.Internal.IO.Exception.ioError
-     GHC.Internal.Int.Int32 GHC.Internal.System.IO.Error.isDoesNotExistError
-     GHC.Internal.Text.ParserCombinators.ReadP.ReadS GHC.Internal.Text.Read.read
-     GHC.Internal.Unicode.isDigit GHC.Internal.Unicode.isHexDigit
-     GHC.Internal.Unicode.toUpper GHC.List.break GHC.List.filter GHC.List.reverse
+     Data.Bits.xor Data.Either.Either Data.Either.Left Data.Either.Right
+     Data.Foldable.Foldable Data.Foldable.foldl' Data.Foldable.foldr
+     Data.Foldable.null Data.Maybe.maybe Data.OldList.zipWith4
+     Data.Set.Internal.empty Data.Set.Internal.insert Data.Set.Internal.member
+     Data.Tuple.uncurry GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monad
+     GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord GHC.Base.String GHC.Base.const
+     GHC.Base.flip GHC.Base.fmap GHC.Base.id GHC.Base.liftA2 GHC.Base.op_z2218U__
+     GHC.Base.op_zeze__ GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.pure
+     GHC.Base.return_ GHC.Char.Char GHC.List.break GHC.List.filter GHC.List.reverse
      GHC.List.zip GHC.List.zipWith GHC.List.zipWith3 GHC.Num.fromInteger
-     GHC.Num.negate GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__
-     GHC.Num.Integer.Integer GHC.Prim.rightSection GHC.Prim.seq GHC.Real.fromIntegral
-     GHC.Real.toInteger GHC.Tuple.pair2 GHC.Types.IO GHC.Utils.Exception.catchIO
-     HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     Panic.panic System.Directory.renameFile System.FilePath.Posix.op_zlzizg__
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.rightSection GHC.Prim.seq
+     GHC.Tuple.pair2 HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default
+     HsToCoq.Err.Default Panic.panic
 *)

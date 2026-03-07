@@ -5,6 +5,9 @@ skip Maybes.firstJust
 # Needs Control.Exception.Base
 skip Maybes.tryMaybeT
 
+# Needs Control.Monad.Trans.Maybe (transformers not built)
+skip Maybes.liftMaybeT
+
 #
 # add Default constraint to partial function
 #

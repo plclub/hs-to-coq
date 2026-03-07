@@ -15,15 +15,11 @@ Require Coq.Program.Wf.
 Require Coq.Init.Datatypes.
 Require Coq.Program.Basics.
 Require Data.Foldable.
-Require Data.Maybe.
-Require Data.OldList.
 Require Data.SemigroupInternal.
 Require Data.Traversable.
 Require GHC.Base.
 Require GHC.Num.
-Require GHC.Parser.Annotation.
 Require HsToCoq.DeferredFix.
-Require MonadUtils.
 Require SrcLoc.
 Require UniqSet.
 Require Unique.
@@ -32,35 +28,24 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive BooleanFormula a : Type :=
+Inductive BooleanFormula (a : Type) : Type :=
   | Var : a -> BooleanFormula a
   | And
-   : list ((fun a_ => (GHC.Parser.Annotation.LocatedL (BooleanFormula a_))%type)
-           a) ->
+   : list (SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a)) ->
      BooleanFormula a
   | Or
-   : list ((fun a_ => (GHC.Parser.Annotation.LocatedL (BooleanFormula a_))%type)
-           a) ->
+   : list (SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a)) ->
      BooleanFormula a
   | Parens
-   : ((fun a_ => (GHC.Parser.Annotation.LocatedL (BooleanFormula a_))%type) a) ->
-     BooleanFormula a.
+   : SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a) -> BooleanFormula a.
 
 #[global] Definition LBooleanFormula :=
-  fun a_ => (GHC.Parser.Annotation.LocatedL (BooleanFormula a_))%type.
+  fun a_ => SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a_).
 
 Inductive Clause a : Type :=
   | Mk_Clause (clauseAtoms : UniqSet.UniqSet a) (clauseExprs
     : list (BooleanFormula a))
    : Clause a.
-
-Arguments Var {_} _.
-
-Arguments And {_} _.
-
-Arguments Or {_} _.
-
-Arguments Parens {_} _.
 
 Arguments Mk_Clause {_} _ _.
 
@@ -73,6 +58,11 @@ Arguments Mk_Clause {_} _ _.
   clauseExprs.
 
 (* Midamble *)
+
+Arguments Var {_} _.
+Arguments And {_} _.
+Arguments Or {_} _.
+Arguments Parens {_} _.
 
 Import GHC.Err.
 Instance Default_BooleanFormula {a} : Err.Default (BooleanFormula a) :=
@@ -89,97 +79,95 @@ Local Fixpoint size {a} (bf: BooleanFormula a) : nat :=
   end.
 
 Fixpoint BooleanFormula_eq {a} `{GHC.Base.Eq_ a} (bf1 : BooleanFormula a) (bf2 : BooleanFormula a) : bool :=
-  let eq' : GHC.Base.Eq_ (BooleanFormula a) := GHC.Base.eq_default BooleanFormula_eq in
+  let fix lbf_eq (xs ys : list (SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a))) : bool :=
+    match xs, ys with
+    | nil, nil => true
+    | cons (SrcLoc.L _ x) xs', cons (SrcLoc.L _ y) ys' => andb (BooleanFormula_eq x y) (lbf_eq xs' ys')
+    | _, _ => false
+    end in
     match bf1 , bf2 with
       | Var a1 , Var b1 => GHC.Base.op_zeze__ a1 b1
-      | And a1 , And b1 => GHC.Base.op_zeze__ a1 b1
-      | Or a1 , Or b1 => GHC.Base.op_zeze__ a1 b1
-      | Parens a1 , Parens b1 => GHC.Base.op_zeze__  a1 b1
+      | And a1 , And b1 => lbf_eq a1 b1
+      | Or a1 , Or b1 => lbf_eq a1 b1
+      | Parens (SrcLoc.L _ a1) , Parens (SrcLoc.L _ b1) => BooleanFormula_eq a1 b1
       | _ , _ => false
     end.
 
 Instance Eq_BooleanFormula {a} `{GHC.Base.Eq_ a} : GHC.Base.Eq_ (BooleanFormula a) :=
   GHC.Base.eq_default BooleanFormula_eq.
 
-(* We can fmap below once we cont'ified the Functor type class *)
+(* Helper to map over Located BooleanFormula lists *)
+Local Definition map_lbf {a b} (f : BooleanFormula a -> BooleanFormula b)
+  (xs : list (SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a)))
+  : list (SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula b)) :=
+  Coq.Lists.List.map (fun lbf => match lbf with SrcLoc.L l bf => SrcLoc.L l (f bf) end) xs.
+
 Local Definition BooleanFormula_fmap
    : forall {a} {b}, (a -> b) -> BooleanFormula a -> BooleanFormula b :=
-  fun {a} {b} => fix BooleanFormula_fmap arg_114__ arg_115__ :=
-      match arg_114__ , arg_115__ with
-        | f , Var a1 => Var (f a1)
-        | f , And a1 => And (GHC.Base.fmap (GHC.Base.fmap (BooleanFormula_fmap f)) a1)
-        | f , Or a1 => Or (GHC.Base.fmap (GHC.Base.fmap (BooleanFormula_fmap f)) a1)
-        | f , Parens a1 => Parens (GHC.Base.fmap (BooleanFormula_fmap f) a1)
+  fun {a} {b} => fix BooleanFormula_fmap f bf :=
+      match bf with
+        | Var a1 => Var (f a1)
+        | And a1 => And (map_lbf (BooleanFormula_fmap f) a1)
+        | Or a1 => Or (map_lbf (BooleanFormula_fmap f) a1)
+        | Parens (SrcLoc.L l a1) => Parens (SrcLoc.L l (BooleanFormula_fmap f a1))
       end.
 
 Local Definition BooleanFormula_traverse
-    : forall {f} {a} {b},   forall `{GHC.Base.Applicative f}, (a -> f b) -> BooleanFormula a -> f (BooleanFormula b) :=
-  fun {f0} {a} {b} `{GHC.Base.Applicative f0} => fix BooleanFormula_traverse arg_144__ arg_145__ :=
-      match arg_144__ , arg_145__ with
-        | f , Var a1 => GHC.Base.fmap  Var (f a1)
-        | f , And a1 => GHC.Base.fmap And (Data.Traversable.traverse (Data.Traversable.traverse
-                                                                           (BooleanFormula_traverse f)) a1)
-        | f , Or a1 => GHC.Base.fmap Or
-                        (@Data.Traversable.traverse _ _ _ _ f0 _ _ _ _ (Data.Traversable.traverse
-                                                                          (BooleanFormula_traverse f)) a1)
-        | f , Parens a1 => GHC.Base.fmap Parens
-                             (@Data.Traversable.traverse _ _ _ _ f0 _ _ _ _  (BooleanFormula_traverse f) a1)
+    : forall {f} {a} {b}, forall `{GHC.Base.Applicative f}, (a -> f b) -> BooleanFormula a -> f (BooleanFormula b) :=
+  fun {f0} {a} {b} `{GHC.Base.Applicative f0} => fix BooleanFormula_traverse g bf :=
+      match bf with
+        | Var a1 => GHC.Base.fmap Var (g a1)
+        | And a1 => GHC.Base.fmap And
+            (Data.Traversable.traverse
+              (fun lbf => match lbf with SrcLoc.L l x =>
+                GHC.Base.fmap (SrcLoc.L l) (BooleanFormula_traverse g x) end) a1)
+        | Or a1 => GHC.Base.fmap Or
+            (@Data.Traversable.traverse _ _ _ _ f0 _ _ _ _
+              (fun lbf => match lbf with SrcLoc.L l x =>
+                GHC.Base.fmap (SrcLoc.L l) (BooleanFormula_traverse g x) end) a1)
+        | Parens (SrcLoc.L l a1) => GHC.Base.fmap (fun x => Parens (SrcLoc.L l x))
+            (BooleanFormula_traverse g a1)
       end.
 
 Local Definition BooleanFormula_foldMap
     : forall {m} {a},
         forall `{GHC.Base.Monoid m}, (a -> m) -> BooleanFormula a -> m :=
-  fun {m} {a} `{GHC.Base.Monoid m} => fix foldMap arg_137__ arg_138__ :=
-      match arg_137__ , arg_138__ with
-        | f , Var a1 => f a1
-        | f , And a1 => Data.Foldable.foldMap (Data.Foldable.foldMap
-                                                 (foldMap f)) a1
-        | f , Or a1 => Data.Foldable.foldMap (Data.Foldable.foldMap
-                                                (foldMap f)) a1
-        | f , Parens a1 => Data.Foldable.foldMap (foldMap f) a1
+  fun {m} {a} `{GHC.Base.Monoid m} => fix foldMap g bf :=
+      match bf with
+        | Var a1 => g a1
+        | And a1 => Data.Foldable.foldMap
+            (fun lbf => match lbf with SrcLoc.L _ x => foldMap g x end) a1
+        | Or a1 => Data.Foldable.foldMap
+            (fun lbf => match lbf with SrcLoc.L _ x => foldMap g x end) a1
+        | Parens (SrcLoc.L _ a1) => foldMap g a1
+      end.
+
+Local Fixpoint bf_null {a} (arg_0__ : BooleanFormula a) : bool :=
+      match arg_0__ with
+      | Var _ => false
+      | And a1 => Data.Foldable.all (fun lbf => match lbf with SrcLoc.L _ x => bf_null x end) a1
+      | Or a1 => Data.Foldable.all (fun lbf => match lbf with SrcLoc.L _ x => bf_null x end) a1
+      | Parens (SrcLoc.L _ a1) => bf_null a1
+      end.
+
+Local Fixpoint bf_op_zlzd {a} {b} (z : a) (bf : BooleanFormula b) : BooleanFormula a :=
+      match bf with
+      | Var _ => Var z
+      | And a1 => And (Coq.Lists.List.map (fun lbf => match lbf with SrcLoc.L l x => SrcLoc.L l (bf_op_zlzd z x) end) a1)
+      | Or a1 => Or (Coq.Lists.List.map (fun lbf => match lbf with SrcLoc.L l x => SrcLoc.L l (bf_op_zlzd z x) end) a1)
+      | Parens (SrcLoc.L l a1) => Parens (SrcLoc.L l (bf_op_zlzd z a1))
       end.
 
 Local Definition BooleanFormula_foldr
     : forall {a} {b}, (a -> b -> b) -> b -> BooleanFormula a -> b :=
-  fun {a} {b} => fix foldr arg_97__ arg_98__ arg_99__ :=
-      match arg_97__ , arg_98__ , arg_99__ with
-        | f , z , Var a1 => f a1 z
-        | f , z , And a1 => (fun arg_101__ arg_102__ =>
-                                 match arg_101__ , arg_102__ with
-                                   | b5 , b6 => Data.Foldable.foldr (fun arg_103__ arg_104__ =>
-                                                                      match arg_103__ , arg_104__ with
-                                                                        | b3 , b4 => Data.Foldable.foldr (fun arg_105__
-                                                                                                              arg_106__ =>
-                                                                                                           match arg_105__
-                                                                                                               , arg_106__ with
-                                                                                                             | b1 ,
-                                                                                                               b2 =>
-                                                                                                               foldr
-                                                                                                               f b2 b1
-                                                                                                           end) b4 b3
-                                                                      end) b6 b5
-                                 end) a1 z
-        | f , z , Or a1 => (fun arg_114__ arg_115__ =>
-                                match arg_114__ , arg_115__ with
-                                  | b5 , b6 => Data.Foldable.foldr (fun arg_116__ arg_117__ =>
-                                                                     match arg_116__ , arg_117__ with
-                                                                       | b3 , b4 => Data.Foldable.foldr (fun arg_118__
-                                                                                                             arg_119__ =>
-                                                                                                          match arg_118__
-                                                                                                              , arg_119__ with
-                                                                                                            | b1 , b2 =>
-                                                                                                              foldr
-                                                                                                              f b2 b1
-                                                                                                          end) b4 b3
-                                                                     end) b6 b5
-                                end) a1 z
-        | f , z , Parens a1 => (fun arg_127__ arg_128__ =>
-                                    match arg_127__ , arg_128__ with
-                                      | b3 , b4 => Data.Foldable.foldr (fun arg_129__ arg_130__ =>
-                                                                         match arg_129__ , arg_130__ with
-                                                                           | b1 , b2 => foldr f b2 b1
-                                                                         end) b4 b3
-                                    end) a1 z
+  fun {a} {b} => fix foldr g z bf :=
+      match bf with
+        | Var a1 => g a1 z
+        | And a1 => Data.Foldable.foldr
+            (fun lbf acc => match lbf with SrcLoc.L _ x => foldr g acc x end) z a1
+        | Or a1 => Data.Foldable.foldr
+            (fun lbf acc => match lbf with SrcLoc.L _ x => foldr g acc x end) z a1
+        | Parens (SrcLoc.L _ a1) => foldr g z a1
       end.
 
 (* Converted value declarations: *)
@@ -188,17 +176,9 @@ Local Definition BooleanFormula_foldr
    : (a -> b) -> BooleanFormula a -> BooleanFormula b :=
   BooleanFormula_fmap.
 
-Fixpoint Functor__BooleanFormula_op_zlzd__ {a} {b} (arg_0__ : a) (arg_1__
-                                             : BooleanFormula b) : BooleanFormula a
-  := match arg_0__, arg_1__ with
-     | z, Var a1 => Var ((fun b1 => z) a1)
-     | z, And a1 =>
-         And (GHC.Base.fmap (GHC.Base.fmap (Functor__BooleanFormula_op_zlzd__ z)) a1)
-     | z, Or a1 =>
-         Or (GHC.Base.fmap (GHC.Base.fmap (Functor__BooleanFormula_op_zlzd__ z)) a1)
-     | z, Parens a1 =>
-         Parens (GHC.Base.fmap (Functor__BooleanFormula_op_zlzd__ z) a1)
-     end.
+#[local] Definition Functor__BooleanFormula_op_zlzd__ {a} {b}
+   : a -> BooleanFormula b -> BooleanFormula a :=
+  bf_op_zlzd.
 
 #[global]
 Program Instance Functor__BooleanFormula : GHC.Base.Functor BooleanFormula :=
@@ -240,15 +220,9 @@ Program Instance Functor__BooleanFormula : GHC.Base.Functor BooleanFormula :=
                                       | c, _ => c GHC.Num.+ #1
                                       end) #0.
 
-Fixpoint Foldable__BooleanFormula_null {a} (arg_0__ : BooleanFormula a) : bool
-  := match arg_0__ with
-     | Var _ => false
-     | And a1 =>
-         Data.Foldable.all (Data.Foldable.all Foldable__BooleanFormula_null) a1
-     | Or a1 =>
-         Data.Foldable.all (Data.Foldable.all Foldable__BooleanFormula_null) a1
-     | Parens a1 => Data.Foldable.all Foldable__BooleanFormula_null a1
-     end.
+#[local] Definition Foldable__BooleanFormula_null {a}
+   : BooleanFormula a -> bool :=
+  bf_null.
 
 #[local] Definition Foldable__BooleanFormula_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, BooleanFormula a -> a :=
@@ -355,41 +329,11 @@ Program Instance Traversable__BooleanFormula
 #[global] Definition mkBool {a} : bool -> BooleanFormula a :=
   fun arg_0__ => match arg_0__ with | false => mkFalse | true => mkTrue end.
 
-#[global] Definition mkAnd {a : Type} `{GHC.Base.Eq_ a}
-   : list (LBooleanFormula a) -> BooleanFormula a :=
-  let mkAnd' :=
-    fun arg_0__ =>
-      match arg_0__ with
-      | cons x nil => SrcLoc.unLoc x
-      | xs => And xs
-      end in
-  let fromAnd {a} : LBooleanFormula a -> option (list (LBooleanFormula a)) :=
-    fun arg_4__ =>
-      match arg_4__ with
-      | SrcLoc.L _ (And xs) => Some xs
-      | SrcLoc.L _ (Or nil) => None
-      | x => Some (cons x nil)
-      end in
-  Data.Maybe.maybe mkFalse (mkAnd' GHC.Base.∘ Data.OldList.nub) GHC.Base.∘
-  MonadUtils.concatMapM fromAnd.
+Axiom mkAnd : forall {a : Type},
+              forall `{GHC.Base.Eq_ a}, list (LBooleanFormula a) -> BooleanFormula a.
 
-#[global] Definition mkOr {a : Type} `{GHC.Base.Eq_ a}
-   : list (LBooleanFormula a) -> BooleanFormula a :=
-  let mkOr' :=
-    fun arg_0__ =>
-      match arg_0__ with
-      | cons x nil => SrcLoc.unLoc x
-      | xs => Or xs
-      end in
-  let fromOr :=
-    fun arg_4__ =>
-      match arg_4__ with
-      | SrcLoc.L _ (Or xs) => Some xs
-      | SrcLoc.L _ (And nil) => None
-      | x => Some (cons x nil)
-      end in
-  Data.Maybe.maybe mkTrue (mkOr' GHC.Base.∘ Data.OldList.nub) GHC.Base.∘
-  MonadUtils.concatMapM fromOr.
+Axiom mkOr : forall {a : Type},
+             forall `{GHC.Base.Eq_ a}, list (LBooleanFormula a) -> BooleanFormula a.
 
 #[global] Definition isFalse {a : Type} : BooleanFormula a -> bool :=
   fun arg_0__ => match arg_0__ with | Or nil => true | _ => false end.
@@ -511,12 +455,12 @@ Fixpoint impliesAtom {a : Type} `{GHC.Base.Eq_ a} (arg_0__ : BooleanFormula a)
 
 (* External variables:
      BooleanFormula_fmap BooleanFormula_foldMap BooleanFormula_foldr
-     BooleanFormula_traverse None Some Type bool cons false list nil option true
-     Coq.Init.Datatypes.app Coq.Program.Basics.compose Data.Foldable.Foldable
-     Data.Foldable.all Data.Foldable.any Data.Foldable.foldMap__ Data.Foldable.fold__
-     Data.Foldable.foldl__ Data.Foldable.foldr__ Data.Foldable.length__
-     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
-     Data.Foldable.toList__ Data.Maybe.maybe Data.OldList.nub
+     BooleanFormula_traverse None Some Type bf_null bf_op_zlzd bool cons false list
+     nil option true Coq.Init.Datatypes.app Coq.Program.Basics.compose
+     Data.Foldable.Foldable Data.Foldable.all Data.Foldable.any
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl__
+     Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
+     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
      Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
      Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
      Data.SemigroupInternal.appEndo Data.SemigroupInternal.getDual
@@ -524,11 +468,10 @@ Fixpoint impliesAtom {a : Type} `{GHC.Base.Eq_ a} (arg_0__ : BooleanFormula a)
      Data.Traversable.Traversable Data.Traversable.mapM__
      Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse__ GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor
-     GHC.Base.Monad GHC.Base.Monoid GHC.Base.build' GHC.Base.flip GHC.Base.fmap
-     GHC.Base.fmap__ GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
+     GHC.Base.Monad GHC.Base.Monoid GHC.Base.build' GHC.Base.flip GHC.Base.fmap__
+     GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zlzd____ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
-     GHC.Parser.Annotation.LocatedL HsToCoq.DeferredFix.deferredFix1
-     MonadUtils.concatMapM SrcLoc.L SrcLoc.unLoc UniqSet.UniqSet
-     UniqSet.addOneToUniqSet UniqSet.elementOfUniqSet UniqSet.emptyUniqSet
-     Unique.Uniquable
+     HsToCoq.DeferredFix.deferredFix1 SrcLoc.GenLocated SrcLoc.L SrcLoc.SrcSpan
+     SrcLoc.unLoc UniqSet.UniqSet UniqSet.addOneToUniqSet UniqSet.elementOfUniqSet
+     UniqSet.emptyUniqSet Unique.Uniquable
 *)

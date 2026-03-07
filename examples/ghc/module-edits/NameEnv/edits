@@ -1,3 +1,6 @@
+# GHC 9.10: skip unsupported imports
+skip module GHC.Types.Unique.Map
+
 skip NameEnv.lookupNameEnv_NF
 skip NameEnv.depAnal
 

@@ -29,6 +29,13 @@ skip Util.splitAtList
 
 ## TODO (axiomatize this in base)
 rewrite forall x, GHC.Unicode.toUpper x = x
+rewrite forall x, GHC.Internal.Unicode.toUpper x = x
+
+# GHC 9.10: readSignificandExponentPair and related use GHC.Internal.Unicode
+skip Util.readSignificandExponentPair__
+skip Util.readHexSignificandExponentPair__
+skip Util.readSignificandExponentPair
+skip Util.readHexSignificandExponentPair
 
 ## partial
 set type Util.only : forall {a}`{HsToCoq.Err.Default a}, (list a) -> a
@@ -39,7 +46,9 @@ skip Util.nTimes
 termination Util.nTimes deferred
 termination Util.split deferred
 
-in Util.exactLog2 termination pow2 deferred
+# GHC 9.10: exactLog2 uses GHC.Internal.Int.Int32 and GHC.Real
+skip Util.exactLog2
+# in Util.exactLog2 termination pow2 deferred
 in Util.transitiveClosure termination go deferred
 
 ## skipped definitions
@@ -133,6 +142,8 @@ skip Util.fuzzyMatch
 
 skip Util.getModificationUTCTime
 skip Util.modificationTimeIfExists
+skip Util.fileHashIfExists
+skip Util.withAtomicRename
 skip Util.global
 skip Util.globalM
 skip Util.hSetTranslit

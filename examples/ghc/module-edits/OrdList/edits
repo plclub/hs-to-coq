@@ -2,6 +2,11 @@
 skip OrdList.lastOL
 skip OrdList.headOL
 
+# GHC 9.10: lengthOL uses Foldable.length (circular with Foldable instance)
+# Redefine length method to use foldrOL directly, then lengthOL can reference the instance
+redefine Local Definition OrdList.Foldable__OrdList_length : forall {a : Type}, OrdList a -> GHC.Num.Int := fun {a : Type} => fun ol => foldrOL (fun _ n => #1 GHC.Num.+ n) #0 ol.
+skip OrdList.lengthOL
+
 order OrdList.Semigroup__OrdList OrdList.Monoid__OrdList_mappend
 order OrdList.Semigroup__OrdList OrdList.Monoid__OrdList_mconcat
 

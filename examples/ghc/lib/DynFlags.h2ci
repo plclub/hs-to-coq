@@ -11,7 +11,6 @@ classTypes:
   DynFlags.ContainsDynFlags: fromList []
   DynFlags.HasDynFlags: fromList []
 constructorFields:
-  DynFlags.AixLD: NonRecordFields 1
   DynFlags.AppleClang: NonRecordFields 0
   DynFlags.AppleClang51: NonRecordFields 0
   DynFlags.Clang: NonRecordFields 0
@@ -20,30 +19,25 @@ constructorFields:
   DynFlags.DT_Dont: NonRecordFields 0
   DynFlags.DT_Dyn: NonRecordFields 0
   DynFlags.DT_OK: NonRecordFields 0
-  DynFlags.DarwinLD: NonRecordFields 1
   DynFlags.Deployable: NonRecordFields 0
   DynFlags.DistrustPackage: NonRecordFields 1
   DynFlags.Emscripten: NonRecordFields 0
   DynFlags.ExposePackage: NonRecordFields 3
   DynFlags.GCC: NonRecordFields 0
   DynFlags.GlobalPkgDb: NonRecordFields 0
-  DynFlags.GnuGold: NonRecordFields 1
-  DynFlags.GnuLD: NonRecordFields 1
   DynFlags.HidePackage: NonRecordFields 1
   DynFlags.IgnorePackage: NonRecordFields 1
-  DynFlags.IncludeSpecs: RecordFields [Qualified "DynFlags" "includePathsQuote",Qualified
-    "DynFlags" "includePathsGlobal",Qualified "DynFlags" "includePathsQuoteImplicit"]
   DynFlags.LinkBinary: NonRecordFields 0
   DynFlags.LinkDynLib: NonRecordFields 0
   DynFlags.LinkInMemory: NonRecordFields 0
   DynFlags.LinkMergedObj: NonRecordFields 0
   DynFlags.LinkStaticLib: NonRecordFields 0
-  DynFlags.LlvmLLD: NonRecordFields 1
   DynFlags.MkDepend: NonRecordFields 0
+  DynFlags.Mk_IncludeSpecs: RecordFields [Qualified "DynFlags" "includePathsQuote",Qualified
+    "DynFlags" "includePathsGlobal",Qualified "DynFlags" "includePathsQuoteImplicit"]
   DynFlags.Mk_ModRenaming: RecordFields [Qualified "DynFlags" "modRenamingWithImplicit",Qualified
     "DynFlags" "modRenamings"]
   DynFlags.Mk_PackageArg: NonRecordFields 1
-  DynFlags.Mold: NonRecordFields 1
   DynFlags.NoGlobalPackageDB: NonRecordFields 0
   DynFlags.NoLink: NonRecordFields 0
   DynFlags.NoUserPackageDB: NonRecordFields 0
@@ -60,15 +54,12 @@ constructorFields:
   DynFlags.RtsOptsIgnoreAll: NonRecordFields 0
   DynFlags.RtsOptsNone: NonRecordFields 0
   DynFlags.RtsOptsSafeOnly: NonRecordFields 0
-  DynFlags.SolarisLD: NonRecordFields 1
   DynFlags.SystemDependent: NonRecordFields 0
   DynFlags.TrustPackage: NonRecordFields 1
   DynFlags.UnitIdArg: NonRecordFields 1
   DynFlags.UnknownCC: NonRecordFields 0
-  DynFlags.UnknownLD: NonRecordFields 0
   DynFlags.UserPkgDb: NonRecordFields 0
 constructorTypes:
-  DynFlags.AixLD: Qualified "DynFlags" "LinkerInfo"
   DynFlags.AppleClang: Qualified "DynFlags" "CompilerInfo"
   DynFlags.AppleClang51: Qualified "DynFlags" "CompilerInfo"
   DynFlags.Clang: Qualified "DynFlags" "CompilerInfo"
@@ -77,28 +68,23 @@ constructorTypes:
   DynFlags.DT_Dont: Qualified "DynFlags" "DynamicTooState"
   DynFlags.DT_Dyn: Qualified "DynFlags" "DynamicTooState"
   DynFlags.DT_OK: Qualified "DynFlags" "DynamicTooState"
-  DynFlags.DarwinLD: Qualified "DynFlags" "LinkerInfo"
   DynFlags.Deployable: Qualified "DynFlags" "DynLibLoader"
   DynFlags.DistrustPackage: Qualified "DynFlags" "TrustFlag"
   DynFlags.Emscripten: Qualified "DynFlags" "CompilerInfo"
   DynFlags.ExposePackage: Qualified "DynFlags" "PackageFlag"
   DynFlags.GCC: Qualified "DynFlags" "CompilerInfo"
   DynFlags.GlobalPkgDb: Qualified "DynFlags" "PkgDbRef"
-  DynFlags.GnuGold: Qualified "DynFlags" "LinkerInfo"
-  DynFlags.GnuLD: Qualified "DynFlags" "LinkerInfo"
   DynFlags.HidePackage: Qualified "DynFlags" "PackageFlag"
   DynFlags.IgnorePackage: Qualified "DynFlags" "IgnorePackageFlag"
-  DynFlags.IncludeSpecs: Qualified "DynFlags" "IncludeSpecs"
   DynFlags.LinkBinary: Qualified "DynFlags" "GhcLink"
   DynFlags.LinkDynLib: Qualified "DynFlags" "GhcLink"
   DynFlags.LinkInMemory: Qualified "DynFlags" "GhcLink"
   DynFlags.LinkMergedObj: Qualified "DynFlags" "GhcLink"
   DynFlags.LinkStaticLib: Qualified "DynFlags" "GhcLink"
-  DynFlags.LlvmLLD: Qualified "DynFlags" "LinkerInfo"
   DynFlags.MkDepend: Qualified "DynFlags" "GhcMode"
+  DynFlags.Mk_IncludeSpecs: Qualified "DynFlags" "IncludeSpecs"
   DynFlags.Mk_ModRenaming: Qualified "DynFlags" "ModRenaming"
   DynFlags.Mk_PackageArg: Qualified "DynFlags" "PackageArg"
-  DynFlags.Mold: Qualified "DynFlags" "LinkerInfo"
   DynFlags.NoGlobalPackageDB: Qualified "DynFlags" "PackageDBFlag"
   DynFlags.NoLink: Qualified "DynFlags" "GhcLink"
   DynFlags.NoUserPackageDB: Qualified "DynFlags" "PackageDBFlag"
@@ -115,12 +101,10 @@ constructorTypes:
   DynFlags.RtsOptsIgnoreAll: Qualified "DynFlags" "RtsOptsEnabled"
   DynFlags.RtsOptsNone: Qualified "DynFlags" "RtsOptsEnabled"
   DynFlags.RtsOptsSafeOnly: Qualified "DynFlags" "RtsOptsEnabled"
-  DynFlags.SolarisLD: Qualified "DynFlags" "LinkerInfo"
   DynFlags.SystemDependent: Qualified "DynFlags" "DynLibLoader"
   DynFlags.TrustPackage: Qualified "DynFlags" "TrustFlag"
   DynFlags.UnitIdArg: Qualified "DynFlags" "PackageArg"
   DynFlags.UnknownCC: Qualified "DynFlags" "CompilerInfo"
-  DynFlags.UnknownLD: Qualified "DynFlags" "LinkerInfo"
   DynFlags.UserPkgDb: Qualified "DynFlags" "PkgDbRef"
 constructors:
   DynFlags.CompilerInfo: '[Qualified "DynFlags" "GCC",Qualified "DynFlags" "Clang",Qualified
@@ -136,10 +120,7 @@ constructors:
   DynFlags.GhcMode: '[Qualified "DynFlags" "CompManager",Qualified "DynFlags" "OneShot",Qualified
     "DynFlags" "MkDepend"]'
   DynFlags.IgnorePackageFlag: '[Qualified "DynFlags" "IgnorePackage"]'
-  DynFlags.IncludeSpecs: '[Qualified "DynFlags" "IncludeSpecs"]'
-  DynFlags.LinkerInfo: '[Qualified "DynFlags" "GnuLD",Qualified "DynFlags" "Mold",Qualified
-    "DynFlags" "GnuGold",Qualified "DynFlags" "LlvmLLD",Qualified "DynFlags" "DarwinLD",Qualified
-    "DynFlags" "SolarisLD",Qualified "DynFlags" "AixLD",Qualified "DynFlags" "UnknownLD"]'
+  DynFlags.IncludeSpecs: '[Qualified "DynFlags" "Mk_IncludeSpecs"]'
   DynFlags.ModRenaming: '[Qualified "DynFlags" "Mk_ModRenaming"]'
   DynFlags.OnOff: '[Qualified "DynFlags" "On",Qualified "DynFlags" "Off"]'
   DynFlags.PackageArg: '[Qualified "DynFlags" "Mk_PackageArg",Qualified "DynFlags"
