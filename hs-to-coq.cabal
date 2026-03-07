@@ -144,10 +144,9 @@ library
     build-depends:
       exceptions
 
-  -- These are actually not used directly by hs-to-coq, but work around a
-  -- bug(?) in GHC-8.4 that no longer loads other packages if there is a GHC
-  -- environment file.  tasty-quickcheck and tasty-hunit are needed so GHC can
-  -- parse containers v0.7 test files (intset-properties.hs etc.).
+  -- These are not used directly by hs-to-coq but must be in the package DB
+  -- so that GHC (used internally by hs-to-coq) can parse Haskell test files.
+  -- test-framework-*: containers v0.6 tests; tasty-*: containers v0.7 tests.
   build-depends:
     test-framework >= 0.3.3,
     test-framework-quickcheck2 >= 0.2.9,
