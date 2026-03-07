@@ -146,11 +146,14 @@ library
 
   -- These are actually not used directly by hs-to-coq, but work around a
   -- bug(?) in GHC-8.4 that no longer loads other packages if there is a GHC
-  -- environment file
+  -- environment file.  tasty-quickcheck and tasty-hunit are needed so GHC can
+  -- parse containers v0.7 test files (intset-properties.hs etc.).
   build-depends:
     test-framework >= 0.3.3,
     test-framework-quickcheck2 >= 0.2.9,
-    test-framework-hunit
+    test-framework-hunit,
+    tasty-quickcheck,
+    tasty-hunit
 
   hs-source-dirs:      src/lib
   include-dirs:        src/include

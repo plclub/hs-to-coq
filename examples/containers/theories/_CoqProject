@@ -34,6 +34,7 @@ IntSetWordProofs.v
 RevNatSlowProofs.v
 IntSetUtil.v
 DyadicIntervals.v
+IntSetPropertyProofs.v
 Set.v
 IntMapProofs.v
 

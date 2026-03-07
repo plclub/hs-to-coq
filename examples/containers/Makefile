@@ -35,9 +35,9 @@ MODULES = \
   Data/IntMap/Internal \
   Data/Map/Internal \
 
-# IntSetValidity and IntSetProperties need tasty-quickcheck (not available in stack env for v0.7)
-# Keep old .v files in lib/ for now; can re-enable once tasty is added
+# tasty-quickcheck/tasty-hunit now in cabal deps
 HS_SPEC_MODULES = \
+  IntSetProperties
 
 # Non-standard file names
 SRC_FILE_IntSetProperties = containers/containers-tests/tests/intset-properties.hs

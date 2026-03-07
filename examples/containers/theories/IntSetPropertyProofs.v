@@ -123,11 +123,12 @@ Qed.
 Theorem thm_MemberFromList : toProp prop_MemberFromList.
 Proof.
   rewrite /prop_MemberFromList /= => xs _.
+  unfold GHC.Prim.rightSection.
   set abs_xs := flat_map _ xs.
   apply/andP; split.
   all: rewrite Foldable_all_ssreflect; apply/allP => /= k; rewrite in_elem.
   - rewrite fromList_member //.
-  - rewrite /notMember /notElem /= fromList_member //.
+  - rewrite /GHC.Base.op_z2218U__ /= /notMember /notElem /= fromList_member //.
     + move=> k_abs; have k_pos: (0 <= k)%N. {
         Nomega.
       }
