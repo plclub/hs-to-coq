@@ -25,7 +25,7 @@ jobs:
           path: |
             /root/.stack
             .stack-work
-          key: stack-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml', 'src/**') }}
+          key: stack-ghc9.10.3-${{ hashFiles('hs-to-coq.cabal', 'stack.yaml', 'src/**') }}
       - name: Build hs-to-coq
         run: stack --no-terminal --system-ghc --allow-different-user build
 
@@ -76,7 +76,7 @@ jobs:
           path: |
             ~/.stack
             .stack-work
-          key: stack-${{ runner.os }}-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml', 'src/**') }}
+          key: stack-${{ runner.os }}-ghc9.10.3-${{ hashFiles('hs-to-coq.cabal', 'stack.yaml', 'src/**') }}
       - name: Build hs-to-coq
         run: stack --no-terminal --install-ghc build
       - name: Set up Coq
@@ -140,7 +140,7 @@ jobs:
           path: |
             /root/.stack
             .stack-work
-          key: stack-ghc9.10.3-${{ hashFiles('**/hs-to-coq.cabal', 'stack.yaml', 'src/**') }}
+          key: stack-ghc9.10.3-${{ hashFiles('hs-to-coq.cabal', 'stack.yaml', 'src/**') }}
       - name: Build hs-to-coq
         run: stack --no-terminal --system-ghc --allow-different-user build
       - name: Translating base
