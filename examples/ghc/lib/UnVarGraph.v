@@ -36,13 +36,11 @@ Inductive UnVarGraph : Type :=
 Instance Default_UnVarSet : HsToCoq.Err.Default UnVarSet :=
   HsToCoq.Err.Build_Default _ (Mk_UnVarSet HsToCoq.Err.default).
 Instance Default_UnVarGraph : HsToCoq.Err.Default UnVarGraph :=
-  HsToCoq.Err.Build_Default _ (Mk_UnVarGraph HsToCoq.Err.default).
+  HsToCoq.Err.Build_Default _ (CG HsToCoq.Err.default).
 
 
 Instance Unpeel_UnVarSet : HsToCoq.Unpeel.Unpeel UnVarSet Data.IntSet.Internal.IntSet :=
   HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | Mk_UnVarSet y => y end) Mk_UnVarSet.
-Instance Unpeel_UnVarGraph : HsToCoq.Unpeel.Unpeel UnVarGraph (Bag.Bag Gen) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | Mk_UnVarGraph y => y end) Mk_UnVarGraph.
 
 (* Converted value declarations: *)
 
@@ -55,7 +53,7 @@ Instance Unpeel_UnVarGraph : HsToCoq.Unpeel.Unpeel UnVarGraph (Bag.Bag Gen) :=
 #[global] Definition k : Core.Var -> GHC.Num.Word :=
   fun v => Unique.getWordKey (Unique.getUnique v).
 
-#[global] Definition domUFMUnVarSet {k : Type} {key : k} {elt : Type}
+#[global] Definition domUFMUnVarSet {key : Type} {elt : Type}
    : UniqFM.UniqFM key elt -> UnVarSet :=
   fun ae => Mk_UnVarSet (UniqFM.ufmToSet_Directly ae).
 
@@ -92,7 +90,7 @@ Instance Unpeel_UnVarGraph : HsToCoq.Unpeel.Unpeel UnVarGraph (Bag.Bag Gen) :=
   fun s vs => minusUnVarSet s (mkUnVarSet vs).
 
 #[global] Definition sizeUnVarSet : UnVarSet -> nat :=
-  fun '(Mk_UnVarSet s) => GHC.Data.Word64Set.Internal.size s.
+  fun '(Mk_UnVarSet s) => BinNat.N.to_nat (GHC.Data.Word64Set.Internal.size s).
 
 #[global] Definition extendUnVarSet : Core.Var -> UnVarSet -> UnVarSet :=
   fun arg_0__ arg_1__ =>

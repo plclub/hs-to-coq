@@ -17,23 +17,27 @@ Require Coq.Program.Wf.
 
 Require Import AxiomatizedTypes.
 Require BasicTypes.
-Require FieldLabel.
+Require FastString.
+Require Import FieldLabel.
 Require GHC.Base.
 Require GHC.Char.
 Require GHC.Core.TyCo.Subst.
 Require GHC.Data.List.Infinite.
+Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Types.TyThing.
 Require HsSyn.
+Require Module.
 Require Name.
 Require NameEnv.
 Require OccName.
+Require Outputable.
 Require Pair.
 Require UniqSet.
 Require Unique.
 Require Util.
+Require BinNums.
 Require BooleanFormula.
-Require ConLike.
 Require Coq.Init.Datatypes.
 Require Coq.Init.Peano.
 Require Coq.Lists.List.
@@ -46,9 +50,9 @@ Require GHC.Core.TyCon.RecWalk.
 Require GHC.Data.Word64Map.Internal.
 Require GHC.Err.
 Require GHC.List.
-Require GHC.Num.
 Require GHC.Real.
 Require GHC.Stg.InferTags.TagSig.
+Require TcType.
 Require GHC.StgToCmm.Types.
 Require GHC.Types.Cpr.
 Require GHC.Types.Tickish.
@@ -59,8 +63,6 @@ Require Import Literal.
 Require Maybes.
 Require Panic.
 Require SrcLoc.
-Require TysWiredIn.
-Require UnVarGraph.
 Require UniqDFM.
 Require UniqDSet.
 Require UniqFM.
@@ -81,7 +83,7 @@ Inductive UnfoldingGuidance : Type :=
   | UnfNever : UnfoldingGuidance.
 
 Inductive UnfoldingCache : Type :=
-  | UnfoldingCache (uf_is_value : bool) (uf_is_conlike : bool) (uf_is_work_free
+  | Mk_UnfoldingCache (uf_is_value : bool) (uf_is_conlike : bool) (uf_is_work_free
     : bool) (uf_expandable : bool)
    : UnfoldingCache.
 
@@ -93,8 +95,8 @@ Inductive TypeShape : Type :=
   | TsUnk : TypeShape.
 
 Inductive TyLit : Type :=
-  | NumTyLit : GHC.Num.Integer.Integer -> TyLit
-  | StrTyLit : GHC.Data.FastString.FastString -> TyLit
+  | NumTyLit : GHC.Num.Integer -> TyLit
+  | StrTyLit : FastString.FastString -> TyLit
   | CharTyLit : GHC.Char.Char -> TyLit.
 
 #[global] Definition TyConRepName :=
@@ -104,7 +106,7 @@ Inductive TyLit : Type :=
   nat%type.
 
 Inductive TickBoxOp : Type :=
-  | TickBox : GHC.Unit.Types.Module -> TickBoxId -> TickBoxOp.
+  | TickBox : Module.Module -> TickBoxId -> TickBoxOp.
 
 Inductive StrictnessMark : Type :=
   | MarkedStrict : StrictnessMark
@@ -183,7 +185,7 @@ Inductive NormaliseStepResult ev : Type :=
 #[global] Definition Mult :=
   Type_%type.
 
-Inductive Scaled a : Type := | Scaled : Mult -> a -> Scaled a.
+Inductive Scaled a : Type := | Mk_Scaled : Mult -> a -> Scaled a.
 
 Inductive MCoercion : Type := | MRefl : MCoercion | MCo : Coercion -> MCoercion.
 
@@ -199,8 +201,8 @@ Inductive MCoercion : Type := | MRefl : MCoercion | MCo : Coercion -> MCoercion.
 #[global] Definition LevityType :=
   Type_%type.
 
-#[global] Definition KnotTied ty :=
-  ty%type.
+#[global] Definition KnotTied (ty : Type) : Type :=
+  ty.
 
 #[global] Definition KindOrType :=
   Type_%type.
@@ -317,7 +319,7 @@ Inductive CoSel : Type :=
 #[global] Definition ClassMinimalDef :=
   (BooleanFormula.BooleanFormula Name.Name)%type.
 
-Inductive Card : Type := | Card : nat -> Card.
+Inductive Card : Type := | Mk_Card : nat -> Card.
 
 #[global] Definition CardNonAbs :=
   Card%type.
@@ -336,7 +338,7 @@ with Demand : Type :=
 
 Inductive CafInfo : Type := | MayHaveCafRefs : CafInfo | NoCafRefs : CafInfo.
 
-Inductive BitField : Type := | BitField : GHC.Internal.Word.Word64 -> BitField.
+Inductive BitField : Type := | Mk_BitField : BinNums.N -> BitField.
 
 #[global] Definition ArityInfo :=
   BasicTypes.Arity%type.
@@ -360,7 +362,7 @@ with ClassBody : Type :=
 with ClassATItem : Type :=
   | ATI : TyCon -> (option (Type_ * TyFamEqnValidityInfo)%type) -> ClassATItem
 with TyCon : Type :=
-  | TyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
+  | Mk_TyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
     : list (VarBndr Var%type TyConBndrVis)%type) (tyConResKind : Kind)
   (tyConHasClosedResKind : bool) (tyConTyVars : list Var%type) (tyConKind : Kind)
   (tyConArity : BasicTypes.Arity) (tyConNullaryTy : Type_) (tyConRoles
@@ -374,7 +376,7 @@ with IdDetails : Type :=
   | VanillaId : IdDetails
   | RecSelId (sel_tycon : RecSelParent) (sel_fieldLabel : FieldLabel.FieldLabel)
   (sel_naughty : bool) (sel_cons
-    : (list ConLike.ConLike * list ConLike.ConLike)%type)
+    : (list ConLike * list ConLike)%type)
    : IdDetails
   | DataConWorkId : DataCon -> IdDetails
   | DataConWrapId : DataCon -> IdDetails
@@ -407,6 +409,9 @@ with DataConRep : Type :=
     : list HsImplBang)
    : DataConRep
 with EqSpec : Type := | Mk_EqSpec : Var%type -> Type_ -> EqSpec
+with ConLike : Type :=
+  | RealDataCon : DataCon -> ConLike
+  | PatSynCon : PatSyn -> ConLike
 with RecSelParent : Type :=
   | RecSelData : TyCon -> RecSelParent
   | RecSelPatSyn : PatSyn -> RecSelParent
@@ -426,7 +431,7 @@ with IdInfo : Type :=
   (bitfield : BitField) (lfInfo : (option GHC.StgToCmm.Types.LambdaFormInfo))
   (tagSig : (option GHC.Stg.InferTags.TagSig.TagSig))
    : IdInfo
-with DmdSig : Type := | DmdSig : DmdType -> DmdSig
+with DmdSig : Type := | Mk_DmdSig : DmdType -> DmdSig
 with DmdType : Type :=
   | Mk_DmdType (dt_env : DmdEnv) (dt_args : list Demand) : DmdType
 with DmdEnv : Type :=
@@ -631,7 +636,7 @@ Inductive AltCon : Type :=
   | LitAlt : Literal -> AltCon
   | DEFAULT : AltCon.
 
-Inductive Alt b : Type := | Alt : AltCon -> list b -> (Expr b) -> Alt b
+Inductive Alt b : Type := | Mk_Alt : AltCon -> list b -> (Expr b) -> Alt b
 with Expr b : Type :=
   | Mk_Var : Id -> Expr b
   | Lit : Literal -> Expr b
@@ -701,7 +706,7 @@ with Bind b : Type :=
   (Alt (TaggedBndr t))%type.
 
 Inductive AnnAlt bndr annot : Type :=
-  | AnnAlt
+  | Mk_AnnAlt
    : AltCon ->
      list bndr ->
      ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr annot) ->
@@ -756,7 +761,7 @@ with AnnBind bndr annot : Type :=
   (VarBndr TyVar unit)%type.
 
 Inductive TyCoFolder env a : Type :=
-  | TyCoFolder (tcf_view : Type_ -> option Type_) (tcf_tyvar : env -> TyVar -> a)
+  | Mk_TyCoFolder (tcf_view : Type_ -> option Type_) (tcf_tyvar : env -> TyVar -> a)
   (tcf_covar : env -> CoVar -> a) (tcf_hole : env -> CoercionHole -> a)
   (tcf_tycobinder : env -> TyCoVar -> ForAllTyFlag -> env)
    : TyCoFolder env a.
@@ -776,9 +781,6 @@ Inductive TyCoFolder env a : Type :=
 #[global] Definition LiftCoEnv :=
   (VarEnv Coercion)%type.
 
-Inductive LiftingContext : Type :=
-  | LC : GHC.Core.TyCo.Subst.Subst -> LiftCoEnv -> LiftingContext.
-
 #[global] Definition TidyEnv :=
   (OccName.TidyOccEnv * VarEnv Var)%type%type.
 
@@ -786,6 +788,15 @@ Inductive LiftingContext : Type :=
   (UniqSet.UniqSet Var)%type.
 
 Inductive InScopeSet : Type := | InScope : VarSet -> InScopeSet.
+
+(* Subst: term-level substitution, corresponding to Subst.
+   Defined here because it needs InScopeSet, VarEnv, CoreExpr, Type_, Coercion
+   which are all defined in this file. *)
+Inductive Subst : Type :=
+  | Mk_Subst : InScopeSet -> VarEnv CoreExpr -> VarEnv Type_ -> VarEnv Coercion -> Subst.
+
+Inductive LiftingContext : Type :=
+  | LC : Subst -> LiftCoEnv -> LiftingContext.
 
 Inductive InScopeEnv : Type :=
   | ISE : InScopeSet -> IdUnfoldingFun -> InScopeEnv.
@@ -798,7 +809,7 @@ Inductive CoreRule : Type :=
   | Rule (ru_name : BasicTypes.RuleName) (ru_act : BasicTypes.Activation) (ru_fn
     : Name.Name) (ru_rough : list (option Name.Name)) (ru_bndrs : list CoreBndr)
   (ru_args : list CoreExpr) (ru_rhs : CoreExpr) (ru_auto : bool) (ru_origin
-    : GHC.Unit.Types.Module) (ru_orphan : IsOrphan) (ru_local : bool)
+    : Module.Module) (ru_orphan : IsOrphan) (ru_local : bool)
    : CoreRule
   | BuiltinRule (ru_name : BasicTypes.RuleName) (ru_fn : Name.Name) (ru_nargs
     : nat) (ru_try : RuleFun)
@@ -823,7 +834,7 @@ Arguments NS_Abort {_}.
 
 Arguments NS_Step {_} _ _ _.
 
-Arguments Scaled {_} _ _.
+Arguments Mk_Scaled {_} _ _.
 
 Arguments TB {_} _ _.
 
@@ -831,7 +842,7 @@ Arguments NoExpansion {_}.
 
 Arguments ExpandsSyn {_} _ _ _.
 
-Arguments Alt {_} _ _ _.
+Arguments Mk_Alt {_} _ _ _.
 
 Arguments Mk_Var {_} _.
 
@@ -855,7 +866,7 @@ Arguments NonRec {_} _ _.
 
 Arguments Rec {_} _.
 
-Arguments AnnAlt {_} {_} _ _ _.
+Arguments Mk_AnnAlt {_} {_} _ _ _.
 
 Arguments AnnVar {_} {_} _.
 
@@ -879,129 +890,127 @@ Arguments AnnNonRec {_} {_} _ _.
 
 Arguments AnnRec {_} {_} _.
 
-Arguments TyCoFolder {_} {_} _ _ _ _ _.
+Arguments Mk_TyCoFolder {_} {_} _ _ _ _ _.
 
 Arguments Mk_TyCoMapper {_} {_} _ _ _ _ _.
 
-Instance Default__UnfoldingGuidance : HsToCoq.Err.Default UnfoldingGuidance :=
+#[global] Instance Default__UnfoldingGuidance : HsToCoq.Err.Default UnfoldingGuidance :=
   HsToCoq.Err.Build_Default _ (UnfWhen HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
 
-Instance Default__UnfoldingCache : HsToCoq.Err.Default UnfoldingCache :=
-  HsToCoq.Err.Build_Default _ (UnfoldingCache HsToCoq.Err.default
+#[global] Instance Default__UnfoldingCache : HsToCoq.Err.Default UnfoldingCache :=
+  HsToCoq.Err.Build_Default _ (Mk_UnfoldingCache HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__Unfolding : HsToCoq.Err.Default Unfolding :=
+#[global] Instance Default__Unfolding : HsToCoq.Err.Default Unfolding :=
   HsToCoq.Err.Build_Default _ NoUnfolding.
 
-Instance Default__TypeShape : HsToCoq.Err.Default TypeShape :=
+#[global] Instance Default__TypeShape : HsToCoq.Err.Default TypeShape :=
   HsToCoq.Err.Build_Default _ TsUnk.
 
-Instance Default__StrictnessMark : HsToCoq.Err.Default StrictnessMark :=
+#[global] Instance Default__StrictnessMark : HsToCoq.Err.Default StrictnessMark :=
   HsToCoq.Err.Build_Default _ MarkedStrict.
 
-Instance Default__Specificity : HsToCoq.Err.Default Specificity :=
+#[global] Instance Default__Specificity : HsToCoq.Err.Default Specificity :=
   HsToCoq.Err.Build_Default _ InferredSpec.
 
-Instance Default__PrimElemRep : HsToCoq.Err.Default PrimElemRep :=
+#[global] Instance Default__PrimElemRep : HsToCoq.Err.Default PrimElemRep :=
   HsToCoq.Err.Build_Default _ Int8ElemRep.
 
-Instance Default__PrimRep : HsToCoq.Err.Default PrimRep :=
+#[global] Instance Default__PrimRep : HsToCoq.Err.Default PrimRep :=
   HsToCoq.Err.Build_Default _ Int8Rep.
 
-Instance Default__PrimOrVoidRep : HsToCoq.Err.Default PrimOrVoidRep :=
+#[global] Instance Default__PrimOrVoidRep : HsToCoq.Err.Default PrimOrVoidRep :=
   HsToCoq.Err.Build_Default _ VoidRep.
 
-Instance Default__PromDataConInfo : HsToCoq.Err.Default PromDataConInfo :=
+#[global] Instance Default__PromDataConInfo : HsToCoq.Err.Default PromDataConInfo :=
   HsToCoq.Err.Build_Default _ NoPromInfo.
 
-Instance Default__MCoercion : HsToCoq.Err.Default MCoercion :=
+#[global] Instance Default__MCoercion : HsToCoq.Err.Default MCoercion :=
   HsToCoq.Err.Build_Default _ MRefl.
 
-Instance Default__KillFlags : HsToCoq.Err.Default KillFlags :=
+#[global] Instance Default__KillFlags : HsToCoq.Err.Default KillFlags :=
   HsToCoq.Err.Build_Default _ (Mk_KillFlags HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__IsOrphan : HsToCoq.Err.Default IsOrphan :=
+#[global] Instance Default__IsOrphan : HsToCoq.Err.Default IsOrphan :=
   HsToCoq.Err.Build_Default _ Mk_IsOrphan.
 
-Instance Default__Injectivity : HsToCoq.Err.Default Injectivity :=
+#[global] Instance Default__Injectivity : HsToCoq.Err.Default Injectivity :=
   HsToCoq.Err.Build_Default _ NotInjective.
 
-Instance Default__HsImplBang : HsToCoq.Err.Default HsImplBang :=
+#[global] Instance Default__HsImplBang : HsToCoq.Err.Default HsImplBang :=
   HsToCoq.Err.Build_Default _ HsLazy.
 
-Instance Default__FunTyFlag : HsToCoq.Err.Default FunTyFlag :=
+#[global] Instance Default__FunTyFlag : HsToCoq.Err.Default FunTyFlag :=
   HsToCoq.Err.Build_Default _ FTF_T_T.
 
-Instance Default__FunSel : HsToCoq.Err.Default FunSel :=
+#[global] Instance Default__FunSel : HsToCoq.Err.Default FunSel :=
   HsToCoq.Err.Build_Default _ SelMult.
 
-Instance Default__ForAllTyFlag : HsToCoq.Err.Default ForAllTyFlag :=
+#[global] Instance Default__ForAllTyFlag : HsToCoq.Err.Default ForAllTyFlag :=
   HsToCoq.Err.Build_Default _ Required.
 
-Instance Default__TyConBndrVis : HsToCoq.Err.Default TyConBndrVis :=
+#[global] Instance Default__TyConBndrVis : HsToCoq.Err.Default TyConBndrVis :=
   HsToCoq.Err.Build_Default _ AnonTCB.
 
-Instance Default__FamTyConFlav : HsToCoq.Err.Default FamTyConFlav :=
+#[global] Instance Default__FamTyConFlav : HsToCoq.Err.Default FamTyConFlav :=
   HsToCoq.Err.Build_Default _ OpenSynFamilyTyCon.
 
-Instance Default__ExportFlag : HsToCoq.Err.Default ExportFlag :=
+#[global] Instance Default__ExportFlag : HsToCoq.Err.Default ExportFlag :=
   HsToCoq.Err.Build_Default _ NotExported.
 
-Instance Default__IdScope : HsToCoq.Err.Default IdScope :=
+#[global] Instance Default__IdScope : HsToCoq.Err.Default IdScope :=
   HsToCoq.Err.Build_Default _ GlobalId.
 
-Instance Default__Divergence : HsToCoq.Err.Default Divergence :=
+#[global] Instance Default__Divergence : HsToCoq.Err.Default Divergence :=
   HsToCoq.Err.Build_Default _ Diverges.
 
-Instance Default__CoSel : HsToCoq.Err.Default CoSel :=
+#[global] Instance Default__CoSel : HsToCoq.Err.Default CoSel :=
   HsToCoq.Err.Build_Default _ SelForAll.
 
-Instance Default__Demand : HsToCoq.Err.Default Demand :=
+#[global] Instance Default__Demand : HsToCoq.Err.Default Demand :=
   HsToCoq.Err.Build_Default _ BotDmd.
 
-Instance Default__CafInfo : HsToCoq.Err.Default CafInfo :=
+#[global] Instance Default__CafInfo : HsToCoq.Err.Default CafInfo :=
   HsToCoq.Err.Build_Default _ MayHaveCafRefs.
 
-Instance Default__AlgTyConFlav : HsToCoq.Err.Default AlgTyConFlav :=
+#[global] Instance Default__AlgTyConFlav : HsToCoq.Err.Default AlgTyConFlav :=
   HsToCoq.Err.Build_Default _ UnboxedSumTyCon.
 
-Instance Default__ClassBody : HsToCoq.Err.Default ClassBody :=
+#[global] Instance Default__ClassBody : HsToCoq.Err.Default ClassBody :=
   HsToCoq.Err.Build_Default _ AbstractClass.
 
-Instance Default__TyCon : HsToCoq.Err.Default TyCon :=
-  HsToCoq.Err.Build_Default _ (TyCon HsToCoq.Err.default HsToCoq.Err.default
+#[global] Instance Default__TyConDetails : HsToCoq.Err.Default TyConDetails :=
+  HsToCoq.Err.Build_Default _ (PrimTyCon HsToCoq.Err.default).
+
+#[global] Instance Default__TyCon : HsToCoq.Err.Default TyCon :=
+  HsToCoq.Err.Build_Default _ (Mk_TyCon HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
 
-Instance Default__IdDetails : HsToCoq.Err.Default IdDetails :=
+#[global] Instance Default__IdDetails : HsToCoq.Err.Default IdDetails :=
   HsToCoq.Err.Build_Default _ VanillaId.
 
-Instance Default__DataConRep : HsToCoq.Err.Default DataConRep :=
+#[global] Instance Default__DataConRep : HsToCoq.Err.Default DataConRep :=
   HsToCoq.Err.Build_Default _ NoDataConRep.
 
-Instance Default__DmdType : HsToCoq.Err.Default DmdType :=
+#[global] Instance Default__DmdEnv : HsToCoq.Err.Default DmdEnv :=
+  HsToCoq.Err.Build_Default _ (DE HsToCoq.Err.default HsToCoq.Err.default).
+
+#[global] Instance Default__DmdType : HsToCoq.Err.Default DmdType :=
   HsToCoq.Err.Build_Default _ (Mk_DmdType HsToCoq.Err.default
                              HsToCoq.Err.default).
 
-Instance Default__DmdEnv : HsToCoq.Err.Default DmdEnv :=
-  HsToCoq.Err.Build_Default _ (DE HsToCoq.Err.default HsToCoq.Err.default).
-
-Instance Default__TyConDetails : HsToCoq.Err.Default TyConDetails :=
-  HsToCoq.Err.Build_Default _ (AlgTyCon HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default).
-
-Instance Default__AlgTyConRhs : HsToCoq.Err.Default AlgTyConRhs :=
+#[global] Instance Default__AlgTyConRhs : HsToCoq.Err.Default AlgTyConRhs :=
   HsToCoq.Err.Build_Default _ AbstractTyCon.
 
-Instance Default__TyFamEqnValidityInfo
+#[global] Instance Default__TyFamEqnValidityInfo
    : HsToCoq.Err.Default TyFamEqnValidityInfo :=
   HsToCoq.Err.Build_Default _ NoVI.
 
-Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
+#[global] Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
   HsToCoq.Err.Build_Default _ DEFAULT.
 
 #[global] Definition ug_args (arg_0__ : UnfoldingGuidance) :=
@@ -1071,19 +1080,19 @@ Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
   end.
 
 #[global] Definition uf_expandable (arg_0__ : UnfoldingCache) :=
-  let 'UnfoldingCache _ _ _ uf_expandable := arg_0__ in
+  let 'Mk_UnfoldingCache _ _ _ uf_expandable := arg_0__ in
   uf_expandable.
 
 #[global] Definition uf_is_conlike (arg_0__ : UnfoldingCache) :=
-  let 'UnfoldingCache _ uf_is_conlike _ _ := arg_0__ in
+  let 'Mk_UnfoldingCache _ uf_is_conlike _ _ := arg_0__ in
   uf_is_conlike.
 
 #[global] Definition uf_is_value (arg_0__ : UnfoldingCache) :=
-  let 'UnfoldingCache uf_is_value _ _ _ := arg_0__ in
+  let 'Mk_UnfoldingCache uf_is_value _ _ _ := arg_0__ in
   uf_is_value.
 
 #[global] Definition uf_is_work_free (arg_0__ : UnfoldingCache) :=
-  let 'UnfoldingCache _ _ uf_is_work_free _ := arg_0__ in
+  let 'Mk_UnfoldingCache _ _ uf_is_work_free _ := arg_0__ in
   uf_is_work_free.
 
 #[global] Definition kf_abs (arg_0__ : KillFlags) :=
@@ -1163,47 +1172,47 @@ Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
   end.
 
 #[global] Definition tyConArity (arg_0__ : TyCon) :=
-  let 'TyCon _ _ _ _ _ _ _ tyConArity _ _ _ := arg_0__ in
+  let 'Mk_TyCon _ _ _ _ _ _ _ tyConArity _ _ _ := arg_0__ in
   tyConArity.
 
 #[global] Definition tyConBinders (arg_0__ : TyCon) :=
-  let 'TyCon _ _ tyConBinders _ _ _ _ _ _ _ _ := arg_0__ in
+  let 'Mk_TyCon _ _ tyConBinders _ _ _ _ _ _ _ _ := arg_0__ in
   tyConBinders.
 
 #[global] Definition tyConDetails (arg_0__ : TyCon) :=
-  let 'TyCon _ _ _ _ _ _ _ _ _ _ tyConDetails := arg_0__ in
+  let 'Mk_TyCon _ _ _ _ _ _ _ _ _ _ tyConDetails := arg_0__ in
   tyConDetails.
 
 #[global] Definition tyConHasClosedResKind (arg_0__ : TyCon) :=
-  let 'TyCon _ _ _ _ tyConHasClosedResKind _ _ _ _ _ _ := arg_0__ in
+  let 'Mk_TyCon _ _ _ _ tyConHasClosedResKind _ _ _ _ _ _ := arg_0__ in
   tyConHasClosedResKind.
 
 #[global] Definition tyConKind (arg_0__ : TyCon) :=
-  let 'TyCon _ _ _ _ _ _ tyConKind _ _ _ _ := arg_0__ in
+  let 'Mk_TyCon _ _ _ _ _ _ tyConKind _ _ _ _ := arg_0__ in
   tyConKind.
 
 #[global] Definition tyConName (arg_0__ : TyCon) :=
-  let 'TyCon _ tyConName _ _ _ _ _ _ _ _ _ := arg_0__ in
+  let 'Mk_TyCon _ tyConName _ _ _ _ _ _ _ _ _ := arg_0__ in
   tyConName.
 
 #[global] Definition tyConNullaryTy (arg_0__ : TyCon) :=
-  let 'TyCon _ _ _ _ _ _ _ _ tyConNullaryTy _ _ := arg_0__ in
+  let 'Mk_TyCon _ _ _ _ _ _ _ _ tyConNullaryTy _ _ := arg_0__ in
   tyConNullaryTy.
 
 #[global] Definition tyConResKind (arg_0__ : TyCon) :=
-  let 'TyCon _ _ _ tyConResKind _ _ _ _ _ _ _ := arg_0__ in
+  let 'Mk_TyCon _ _ _ tyConResKind _ _ _ _ _ _ _ := arg_0__ in
   tyConResKind.
 
 #[global] Definition tyConRoles (arg_0__ : TyCon) :=
-  let 'TyCon _ _ _ _ _ _ _ _ _ tyConRoles _ := arg_0__ in
+  let 'Mk_TyCon _ _ _ _ _ _ _ _ _ tyConRoles _ := arg_0__ in
   tyConRoles.
 
 #[global] Definition tyConTyVars (arg_0__ : TyCon) :=
-  let 'TyCon _ _ _ _ _ tyConTyVars _ _ _ _ _ := arg_0__ in
+  let 'Mk_TyCon _ _ _ _ _ tyConTyVars _ _ _ _ _ := arg_0__ in
   tyConTyVars.
 
 #[global] Definition tyConUnique (arg_0__ : TyCon) :=
-  let 'TyCon tyConUnique _ _ _ _ _ _ _ _ _ _ := arg_0__ in
+  let 'Mk_TyCon tyConUnique _ _ _ _ _ _ _ _ _ _ := arg_0__ in
   tyConUnique.
 
 #[global] Definition idScope (arg_0__ : Var) :=
@@ -2286,23 +2295,23 @@ Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
   end.
 
 #[global] Definition tcf_covar {env} {a} (arg_0__ : TyCoFolder env a) :=
-  let 'TyCoFolder _ _ tcf_covar _ _ := arg_0__ in
+  let 'Mk_TyCoFolder _ _ tcf_covar _ _ := arg_0__ in
   tcf_covar.
 
 #[global] Definition tcf_hole {env} {a} (arg_0__ : TyCoFolder env a) :=
-  let 'TyCoFolder _ _ _ tcf_hole _ := arg_0__ in
+  let 'Mk_TyCoFolder _ _ _ tcf_hole _ := arg_0__ in
   tcf_hole.
 
 #[global] Definition tcf_tycobinder {env} {a} (arg_0__ : TyCoFolder env a) :=
-  let 'TyCoFolder _ _ _ _ tcf_tycobinder := arg_0__ in
+  let 'Mk_TyCoFolder _ _ _ _ tcf_tycobinder := arg_0__ in
   tcf_tycobinder.
 
 #[global] Definition tcf_tyvar {env} {a} (arg_0__ : TyCoFolder env a) :=
-  let 'TyCoFolder _ tcf_tyvar _ _ _ := arg_0__ in
+  let 'Mk_TyCoFolder _ tcf_tyvar _ _ _ := arg_0__ in
   tcf_tyvar.
 
 #[global] Definition tcf_view {env} {a} (arg_0__ : TyCoFolder env a) :=
-  let 'TyCoFolder tcf_view _ _ _ _ := arg_0__ in
+  let 'Mk_TyCoFolder tcf_view _ _ _ _ := arg_0__ in
   tcf_view.
 
 #[global] Definition ru_act (arg_0__ : CoreRule) :=
@@ -2440,48 +2449,34 @@ Require HsToCoq.Err.
 
 (*****)
 
-Instance Default__RuleInfo : HsToCoq.Err.Default RuleInfo :=
+#[global] Instance Default__RuleInfo : HsToCoq.Err.Default RuleInfo :=
   HsToCoq.Err.Build_Default _ EmptyRuleInfo.
 
-Instance Default__TickBoxOp : HsToCoq.Err.Default TickBoxOp :=
+#[global] Instance Default__TickBoxOp : HsToCoq.Err.Default TickBoxOp :=
   HsToCoq.Err.Build_Default _ (TickBox HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__Termination {r} : HsToCoq.Err.Default (Termination r) :=
-  HsToCoq.Err.Build_Default _ Diverges.
+(* Removed stale GHC 8.4 Default instances for Termination, StrictSig, JointDmd, Use *)
 
-Instance Default__DmdType : HsToCoq.Err.Default DmdType :=
-  HsToCoq.Err.Build_Default _ (Mk_DmdType HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default__DmdSig : HsToCoq.Err.Default DmdSig :=
+  HsToCoq.Err.Build_Default _ (Mk_DmdSig HsToCoq.Err.default).
 
-Instance Default__StrictSig : HsToCoq.Err.Default StrictSig :=
-  HsToCoq.Err.Build_Default _ (Mk_StrictSig HsToCoq.Err.default).
+#[global] Instance Default__BitField_G : HsToCoq.Err.Default BitField :=
+  HsToCoq.Err.Build_Default _ (Mk_BitField BinNums.N0).
 
-Instance Default__JointDmd `{HsToCoq.Err.Default a} `{HsToCoq.Err.Default b} : HsToCoq.Err.Default (JointDmd a b) :=
-  HsToCoq.Err.Build_Default _ (JD HsToCoq.Err.default HsToCoq.Err.default).
-
-Instance Default__Str {s} : HsToCoq.Err.Default (Str s) :=
-  HsToCoq.Err.Build_Default _ Lazy.
-Instance Default__Use {s} : HsToCoq.Err.Default (Use s) :=
-  HsToCoq.Err.Build_Default _ Abs.
-
-Instance Default__IdInfo : HsToCoq.Err.Default IdInfo :=
+#[global] Instance Default__IdInfo : HsToCoq.Err.Default IdInfo :=
   HsToCoq.Err.Build_Default _ (Mk_IdInfo HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
                          HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
-                         HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+                         HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__RecSelParent : HsToCoq.Err.Default RecSelParent :=
+#[global] Instance Default__RecSelParent : HsToCoq.Err.Default RecSelParent :=
   HsToCoq.Err.Build_Default _ (RecSelData HsToCoq.Err.default).
 
 
-Instance Default__Var : HsToCoq.Err.Default Var := HsToCoq.Err.Build_Default _ (Mk_Id HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default__Var : HsToCoq.Err.Default Var := HsToCoq.Err.Build_Default _ (Mk_Id HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
 
-Instance Default__DataCon : HsToCoq.Err.Default DataCon :=
- Err.Build_Default _ (MkData HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default nil nil nil nil HsToCoq.Err.default HsToCoq.Err.default nil HsToCoq.Err.default nil nil HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default__DataCon : HsToCoq.Err.Default DataCon. Admitted.
 (* ---- TyCon midamble ----- *)
-Instance Default__AlgTyConFlav : Err.Default AlgTyConFlav :=
-  Err.Build_Default _ (VanillaAlgTyCon Err.default).
-Instance Default__RuntimRepInfo : Err.Default RuntimeRepInfo :=
-  Err.Build_Default _ NoRRI.
 
 
 
@@ -2559,21 +2554,23 @@ Inductive LiftingContext : Type
   := | LC : TCvSubst -> LiftCoEnv -> LiftingContext.
 *)
 (* ------------- VarEnv midamble.v ------------ *)
-Instance Default__InScopeSet : HsToCoq.Err.Default InScopeSet :=
-  HsToCoq.Err.Build_Default _ (InScope HsToCoq.Err.default HsToCoq.Err.default).
-Instance Default__RnEnv2 : HsToCoq.Err.Default RnEnv2 :=
+#[global] Instance Default__InScopeSet : HsToCoq.Err.Default InScopeSet :=
+  HsToCoq.Err.Build_Default _ (InScope HsToCoq.Err.default).
+#[global] Instance Default__Subst : HsToCoq.Err.Default Subst :=
+  HsToCoq.Err.Build_Default _ (Mk_Subst HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default__RnEnv2 : HsToCoq.Err.Default RnEnv2 :=
   HsToCoq.Err.Build_Default _ (RV2 HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
-Instance Default__TidyEnv : HsToCoq.Err.Default TidyEnv :=
+#[global] Instance Default__TidyEnv : HsToCoq.Err.Default TidyEnv :=
   HsToCoq.Err.Build_Default _ (pair HsToCoq.Err.default HsToCoq.Err.default).
 
 
 (* ------------- CoreSyn midamble.v ------------ *)
 Require Import Coq.ZArith.ZArith.
-Require Import Omega.
+Require Import Lia.
 
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;lia.
 
 Ltac intro_split := 
   try intros [? [? [? ?]]];
@@ -2588,7 +2585,7 @@ Ltac solve_collectAnnArgsTicks :=
   try solve [distinguish3];
   try solve [repeat match goal with [ f : AnnExpr _ _ |- _ ] => destruct f end;
              Tactics.program_simpl;
-             omega].
+             lia].
 
 (* This function is needed to show the termination of collectAnnArgs, 
    collectAnnArgsTicks. *)
@@ -2600,11 +2597,11 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
   | AnnApp (_,e1) (_, e2) => S (size_AnnExpr' e1 + size_AnnExpr' e2)
   | AnnCase (_,scrut) bndr _ alts => 
     S (size_AnnExpr' scrut + 
-       List.fold_right plus 0 
+       List.fold_right plus 0
                           (List.map (fun p =>
-                                       match p with 
-                                         | (_,_,(_,e)) => size_AnnExpr' e
-                                    end) 
+                                       match p with
+                                         | Mk_AnnAlt _ _ (_,e) => size_AnnExpr' e
+                                    end)
                                     alts))
   | AnnLet (AnnNonRec v (_,rhs)) (_,body) => 
         S (size_AnnExpr' rhs + size_AnnExpr' body)
@@ -2621,32 +2618,28 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
 
 (* ---------------------------------- *)
 
-Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
+#[global] Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
   HsToCoq.Err.Build_Default _ (Mk_Var HsToCoq.Err.default).
-
-Instance Default__Tickish {a} : HsToCoq.Err.Default (Tickish a) :=
-  HsToCoq.Err.Build_Default _ (Breakpoint HsToCoq.Err.default HsToCoq.Err.default).
 
 Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
   HsToCoq.Err.Build_Default _ (TB HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
+#[global] Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
   HsToCoq.Err.Build_Default _ (AnnVar HsToCoq.Err.default). 
 
-Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
+#[global] Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
   HsToCoq.Err.Build_Default _ (AnnRec HsToCoq.Err.default). 
 
-Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
+#[global] Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
   HsToCoq.Err.Build_Default _ (Rec HsToCoq.Err.default). 
 
-Instance Default__CoreVect : HsToCoq.Err.Default CoreVect :=
-  HsToCoq.Err.Build_Default _ (Vect HsToCoq.Err.default HsToCoq.Err.default). 
+#[global] Instance Default__CoreRule : HsToCoq.Err.Default CoreRule. Admitted.
 
-Instance Default__CoreRule : HsToCoq.Err.Default CoreRule :=
-  HsToCoq.Err.Build_Default _ (BuiltinRule HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+Definition RuleBase := (NameEnv.NameEnv (list CoreRule))%type.
 
-Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv :=
-  HsToCoq.Err.Build_Default _ (Mk_RuleEnv HsToCoq.Err.default HsToCoq.Err.default).
+Axiom RuleEnv : Type.
+
+#[global] Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv. Admitted.
 
 
 (* ---------------------------------- *)
@@ -2672,7 +2665,7 @@ Definition collectNAnnBndrs {bndr} {annot}`{HsToCoq.Err.Default annot}
 
 Require Import HsToCoq.Nat.
 Require Import HsToCoq.Unpeel.
-Require Import Omega.
+Require Import Lia.
 
 Ltac solve_not_zero_N := match goal with
   | [ H : GHC.Base.op_zeze__ ?x ?y = false |- _ ] =>
@@ -2681,7 +2674,7 @@ Ltac solve_not_zero_N := match goal with
     simpl in H;
     apply N.eqb_neq in H end;
     zify;
-    omega.
+    lia.
 Ltac simpl_not_zero := match goal with
   | [ H : GHC.Base.op_zeze__ ?x ?y = false |- _ ] =>
   unfold GHC.Base.op_zeze__ in H;
@@ -2699,7 +2692,7 @@ Ltac solve_error_sub :=
       symmetry in HeqHltb;
       try (rewrite Nat.ltb_lt in HeqHltb);
       try (rewrite Nat.ltb_ge in HeqHltb);
-      try solve [zify; omega]
+      try solve [zify; lia]
   end.
 
 Ltac distinguish := split; intros; unfold not; intros [? ?]; discriminate.
@@ -2708,27 +2701,9 @@ Ltac solve_mkWorkerDemand := Tactics.program_simpl; simpl_not_zero; solve_error_
 Ltac solve_dmdTransform := Tactics.program_simpl; try solve_mkWorkerDemand; try distinguish.
 
 
-Instance Unpeel_StrictSig : Unpeel StrictSig DmdType :=
-  Build_Unpeel _ _ (fun x => match x with | Mk_StrictSig y => y end) Mk_StrictSig.
+Instance Unpeel_DmdSig : Unpeel DmdSig DmdType :=
+  Build_Unpeel _ _ (fun x => match x with | Mk_DmdSig y => y end) Mk_DmdSig.
 
-
-(* size metric, incase it is useful *)
-
-Definition Str_size {a} (f : a -> nat) (x : Str a) : nat :=
-  match x with
-  | Lazy => 0
-  | Mk_Str _ s => f s
-  end.
-
-Fixpoint StrDmd_size (s1 : StrDmd): nat :=
-  match s1 with
-  | HyperStr => 0
-  | SCall s => Nat.add 1 (StrDmd_size s)
-  | SProd ss => List.fold_left Nat.add (List.map (Str_size StrDmd_size) ss) 1
-  | HeadStr => 0
-  end.
-
-Definition ArgStrDmd_size := Str_size StrDmd_size.
 
 (* Converted value declarations: *)
 
@@ -2814,6 +2789,18 @@ Program Instance Eq___TyCon : GHC.Base.Eq_ TyCon :=
 
 #[local] Definition Ord__AltCon_min : AltCon -> AltCon -> AltCon :=
   fun x y => if Ord__AltCon_op_zlze__ x y : bool then x else y.
+
+#[local] Definition Eq__AltCon_op_zeze__ : AltCon -> AltCon -> bool :=
+  fun a b => Ord__AltCon_compare a b GHC.Base.== Eq.
+
+#[local] Definition Eq__AltCon_op_zsze__ : AltCon -> AltCon -> bool :=
+  fun a b => Ord__AltCon_compare a b GHC.Base./= Eq.
+
+#[global]
+Program Instance Eq__AltCon : GHC.Base.Eq_ AltCon :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq__AltCon_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq__AltCon_op_zsze__ |}.
 
 #[global]
 Program Instance Ord__AltCon : GHC.Base.Ord AltCon :=
@@ -3080,73 +3067,19 @@ Axiom viewCall : SubDemand -> option (Card * SubDemand)%type.
 Axiom viewProd : BasicTypes.Arity ->
                  SubDemand -> option (HsSyn.Boxity * list Demand)%type.
 
-#[local] Definition Eq___SubDemand_op_zeze__ : SubDemand -> SubDemand -> bool :=
-  fun d1 d2 =>
-    match d1 with
-    | Prod b1 ds1 =>
-        match viewProd (Coq.Lists.List.length ds1) d2 with
-        | Some (pair b2 ds2) => andb (b1 GHC.Base.== b2) (ds1 GHC.Base.== ds2)
-        | _ => false
-        end
-    | Call n1 sd1 =>
-        match viewCall d2 with
-        | Some (pair n2 sd2) => andb (n1 GHC.Base.== n2) (sd1 GHC.Base.== sd2)
-        | _ => false
-        end
-    | Poly b1 n1 =>
-        match d2 with
-        | Poly b2 n2 => andb (b1 GHC.Base.== b2) (n1 GHC.Base.== n2)
-        | _ => false
-        end
-    end.
-
-#[local] Definition Eq___SubDemand_op_zsze__ : SubDemand -> SubDemand -> bool :=
-  fun x y => negb (Eq___SubDemand_op_zeze__ x y).
-
-#[global]
-Program Instance Eq___SubDemand : GHC.Base.Eq_ SubDemand :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___SubDemand_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___SubDemand_op_zsze__ |}.
-
-#[local] Definition Eq___DmdEnv_op_zsze__ : DmdEnv -> DmdEnv -> bool :=
-  fun x y => negb (Eq___DmdEnv_op_zeze__ x y).
-
 Axiom defaultFvDmd : Divergence -> Demand.
 
-#[local] Definition Eq___DmdEnv_op_zeze__ : DmdEnv -> DmdEnv -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | DE fv1 div1, DE fv2 div2 =>
-        let canonicalise :=
-          fun div fv =>
-            UniqFM.filterUFM (GHC.Prim.rightSection Eq___DmdEnv_op_zsze__ (defaultFvDmd
-                                                                           div)) fv in
-        andb (div1 GHC.Base.== div2) (canonicalise div1 fv1 GHC.Base.==
-              canonicalise div2 fv2)
-    end.
+(* Eq_ instances for demand types — admitted because they require mutual
+   recursion and prerequisite instances (Eq_ Card, Eq_ Boxity, Eq_ Demand)
+   that are not auto-generated. *)
 
-#[global]
-Program Instance Eq___DmdEnv : GHC.Base.Eq_ DmdEnv :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___DmdEnv_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___DmdEnv_op_zsze__ |}.
-
-#[local] Definition Eq___DmdType_op_zeze__ : DmdType -> DmdType -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Mk_DmdType env1 ds1, Mk_DmdType env2 ds2 =>
-        andb (ds1 GHC.Base.== ds2) (env1 GHC.Base.== env2)
-    end.
-
-#[local] Definition Eq___DmdType_op_zsze__ : DmdType -> DmdType -> bool :=
-  fun x y => negb (Eq___DmdType_op_zeze__ x y).
-
-#[global]
-Program Instance Eq___DmdType : GHC.Base.Eq_ DmdType :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___DmdType_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___DmdType_op_zsze__ |}.
+#[global] Instance Eq___Boxity : GHC.Base.Eq_ HsSyn.Boxity. Admitted.
+#[global] Instance Eq___Card : GHC.Base.Eq_ Card. Admitted.
+#[global] Instance Eq___Divergence : GHC.Base.Eq_ Divergence. Admitted.
+#[global] Instance Eq___Demand : GHC.Base.Eq_ Demand. Admitted.
+#[global] Instance Eq___SubDemand : GHC.Base.Eq_ SubDemand. Admitted.
+#[global] Instance Eq___DmdEnv : GHC.Base.Eq_ DmdEnv. Admitted.
+#[global] Instance Eq___DmdType : GHC.Base.Eq_ DmdType. Admitted.
 
 (* Skipping all instances of class `GHC.Show.Show', including
    `Core.Show__Card' *)
@@ -3547,9 +3480,8 @@ Axiom assertGoodForAllCo : forall {a},
 Axiom mkNakedForAllCo : TyVar ->
                         ForAllTyFlag -> ForAllTyFlag -> CoercionN -> Coercion -> Coercion.
 
-(* Skipping definition `Core.mkCoVarCo' *)
-
-(* Skipping definition `Core.mkCoVarCos' *)
+Axiom mkCoVarCo : CoVar -> Coercion.
+Axiom mkCoVarCos : list CoVar -> list Coercion.
 
 Axiom mkAxInstCo : forall {br : BranchFlag},
                    HsSyn.Role ->
@@ -3697,7 +3629,14 @@ Axiom emptyLiftingContext : InScopeSet -> LiftingContext.
 
 Axiom mkLiftingContext : list (TyCoVar * Coercion)%type -> LiftingContext.
 
-Axiom mkSubstLiftingContext : GHC.Core.TyCo.Subst.Subst -> LiftingContext.
+Axiom mkSubstLiftingContext : Subst -> LiftingContext.
+Axiom cloneTyVarBndr : Subst -> TyVar -> Unique.Unique -> (Subst * TyVar)%type.
+Axiom extendTvSubst : Subst -> Var -> Type_ -> Subst.
+Axiom extendCvSubst : Subst -> Var -> Coercion -> Subst.
+Axiom substTyUnchecked : Subst -> Type_ -> Type_.
+Axiom substCo : Subst -> Coercion -> Coercion.
+Axiom isEmptySubst : Subst -> bool.
+Axiom emptySubst : Subst.
 
 Axiom extendLiftingContext : LiftingContext ->
                              TyCoVar -> Coercion -> LiftingContext.
@@ -3749,18 +3688,18 @@ Axiom substRightCo : LiftingContext -> Coercion -> Coercion.
 
 Axiom swapLiftCoEnv : LiftCoEnv -> LiftCoEnv.
 
-Axiom lcSubstLeft : LiftingContext -> GHC.Core.TyCo.Subst.Subst.
+Axiom lcSubstLeft : LiftingContext -> Subst.
 
-Axiom lcSubstRight : LiftingContext -> GHC.Core.TyCo.Subst.Subst.
+Axiom lcSubstRight : LiftingContext -> Subst.
 
-Axiom liftEnvSubstLeft : GHC.Core.TyCo.Subst.Subst ->
-                         LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
+Axiom liftEnvSubstLeft : Subst ->
+                         LiftCoEnv -> Subst.
 
-Axiom liftEnvSubstRight : GHC.Core.TyCo.Subst.Subst ->
-                          LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
+Axiom liftEnvSubstRight : Subst ->
+                          LiftCoEnv -> Subst.
 
 Axiom liftEnvSubst : (forall {a}, Pair.Pair a -> a) ->
-                     GHC.Core.TyCo.Subst.Subst -> LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
+                     Subst -> LiftCoEnv -> Subst.
 
 Axiom lcLookupCoVar : LiftingContext -> CoVar -> option Coercion.
 
@@ -4026,11 +3965,10 @@ Axiom cmpTyLit : TyLit -> TyLit -> comparison.
 
 Axiom cmpTyLitWith : forall {r},
                      forall `{GHC.Base.Ord r},
-                     (GHC.Data.FastString.FastString -> r) -> TyLit -> TyLit -> comparison.
+                     (FastString.FastString -> r) -> TyLit -> TyLit -> comparison.
 
-(* Skipping definition `Core.mkTyVarTy' *)
-
-(* Skipping definition `Core.mkTyVarTys' *)
+Axiom mkTyVarTy : TyVar -> Type_.
+Axiom mkTyVarTys : list TyVar -> list Type_.
 
 Axiom mkTyCoVarTy : TyCoVar -> Type_.
 
@@ -4161,8 +4099,8 @@ Axiom tyConRepName_maybe : TyCon -> option TyConRepName.
 
 Axiom mkPrelTyConRepName : Name.Name -> TyConRepName.
 
-Axiom tyConRepModOcc : GHC.Unit.Types.Module ->
-                       OccName.OccName -> (GHC.Unit.Types.Module * OccName.OccName)%type.
+Axiom tyConRepModOcc : Module.Module ->
+                       OccName.OccName -> (Module.Module * OccName.OccName)%type.
 
 Axiom isGcPtrRep : PrimRep -> bool.
 
@@ -4535,13 +4473,13 @@ Axiom splitAppTys : forall `{Util.HasDebugCallStack},
 Axiom splitAppTysNoView : forall `{Util.HasDebugCallStack},
                           Type_ -> (Type_ * list Type_)%type.
 
-Axiom mkNumLitTy : GHC.Num.Integer.Integer -> Type_.
+Axiom mkNumLitTy : GHC.Num.Integer -> Type_.
 
-Axiom isNumLitTy : Type_ -> option GHC.Num.Integer.Integer.
+Axiom isNumLitTy : Type_ -> option GHC.Num.Integer.
 
-Axiom mkStrLitTy : GHC.Data.FastString.FastString -> Type_.
+Axiom mkStrLitTy : FastString.FastString -> Type_.
 
-Axiom isStrLitTy : Type_ -> option GHC.Data.FastString.FastString.
+Axiom isStrLitTy : Type_ -> option FastString.FastString.
 
 Axiom mkCharLitTy : GHC.Char.Char -> Type_.
 
@@ -4838,6 +4776,8 @@ Axiom mkScaled : forall {a : Type}, Mult -> a -> Scaled a.
 Axiom scaledSet : forall {a : Type},
                   forall {b : Type}, Scaled a -> b -> Scaled b.
 
+Axiom ManyTy : Mult.
+Axiom OneTy : Mult.
 Axiom isManyTy : Mult -> bool.
 
 Axiom isOneTy : Mult -> bool.
@@ -5190,7 +5130,7 @@ Axiom pp_boxity : HsSyn.Boxity -> GHC.Base.String.
 #[global] Definition ruleName : CoreRule -> BasicTypes.RuleName :=
   ru_name.
 
-#[global] Definition ruleModule : CoreRule -> option GHC.Unit.Types.Module :=
+#[global] Definition ruleModule : CoreRule -> option Module.Module :=
   fun arg_0__ =>
     match arg_0__ with
     | Rule _ _ _ _ _ _ _ _ ru_origin _ _ => Some ru_origin
@@ -5236,11 +5176,11 @@ Axiom pp_boxity : HsSyn.Boxity -> GHC.Base.String.
 #[global] Definition noUnfolding : Unfolding :=
   NoUnfolding.
 
-(* Skipping definition `Core.evaldUnfolding' *)
+Axiom evaldUnfolding : Unfolding.
 
-(* Skipping definition `Core.bootUnfolding' *)
+Axiom bootUnfolding : Unfolding.
 
-(* Skipping definition `Core.mkOtherCon' *)
+Axiom mkOtherCon : list AltCon -> Unfolding.
 
 Axiom unfoldingTemplate : Unfolding -> CoreExpr.
 
@@ -5314,7 +5254,7 @@ Axiom unfoldingTemplate : Unfolding -> CoreExpr.
 #[global] Definition cmpAlt {a : Type} : Alt a -> Alt a -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | Alt con1 _ _, Alt con2 _ _ => cmpAltCon con1 con2
+    | Mk_Alt con1 _ _, Mk_Alt con2 _ _ => cmpAltCon con1 con2
     end.
 
 #[global] Definition ltAlt {a : Type} : Alt a -> Alt a -> bool :=
@@ -5331,8 +5271,8 @@ Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
                 Coq.Lists.List.flat_map cont_2__ prs)
        end in
      let deTagAlt {t} (arg_0__ : TaggedAlt t) : CoreAlt :=
-       let 'Alt con bndrs rhs := arg_0__ in
-       Alt con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
+       let 'Mk_Alt con bndrs rhs := arg_0__ in
+       Mk_Alt con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
                 Coq.Lists.List.flat_map cont_1__ bndrs) (deTagExpr rhs) in
      match arg_0__ with
      | Mk_Var v => Mk_Var v
@@ -5359,8 +5299,8 @@ Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
     end.
 
 #[global] Definition deTagAlt {t} : TaggedAlt t -> CoreAlt :=
-  fun '(Alt con bndrs rhs) =>
-    Alt con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
+  fun '(Mk_Alt con bndrs rhs) =>
+    Mk_Alt con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
              Coq.Lists.List.flat_map cont_1__ bndrs) (deTagExpr rhs).
 
 #[global] Definition mkApps {b : Type} : Expr b -> list (Arg b) -> Expr b :=
@@ -5397,21 +5337,20 @@ Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
 (* Skipping definition `Core.mkIntLit' *)
 
 #[global] Definition mkIntLitWrap {b : Type}
-   : Platform.Platform -> GHC.Num.Integer.Integer -> Expr b :=
+   : Platform.Platform -> GHC.Num.Integer -> Expr b :=
   fun platform n => Lit (mkLitIntWrap platform n).
 
 (* Skipping definition `Core.mkWordLit' *)
 
 #[global] Definition mkWordLitWrap {b : Type}
-   : Platform.Platform -> GHC.Num.Integer.Integer -> Expr b :=
+   : Platform.Platform -> GHC.Num.Integer -> Expr b :=
   fun platform w => Lit (mkLitWordWrap platform w).
 
-#[global] Definition mkWord8Lit {b : Type}
-   : GHC.Num.Integer.Integer -> Expr b :=
+#[global] Definition mkWord8Lit {b : Type} : GHC.Num.Integer -> Expr b :=
   fun w => Lit (mkLitWord8 w).
 
 #[global] Definition mkWord32LitWord32 {b : Type}
-   : GHC.Internal.Word.Word32 -> Expr b :=
+   : BinNums.N -> Expr b :=
   fun w => Lit (mkLitWord32 (GHC.Real.toInteger w)).
 
 (* Skipping definition `Core.mkWord64LitWord64' *)
@@ -5509,7 +5448,7 @@ Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
 
 #[global] Definition rhssOfAlts {b : Type} : list (Alt b) -> list (Expr b) :=
   fun alts =>
-    let cont_0__ arg_1__ := let 'Alt _ _ e := arg_1__ in cons e nil in
+    let cont_0__ arg_1__ := let 'Mk_Alt _ _ e := arg_1__ in cons e nil in
     Coq.Lists.List.flat_map cont_0__ alts.
 
 Fixpoint flattenBinds {b : Type} (arg_0__ : list (Bind b)) : list (b *
@@ -5721,8 +5660,8 @@ Solve Obligations with (solve_collectAnnArgsTicks).
          let 'pair _ e := arg_0__ in
          deAnnotate' e in
        let deAnnAlt {bndr annot : Type} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
-         let 'AnnAlt con args rhs := arg_0__ in
-         Alt con args (deAnnotate rhs) in
+         let 'Mk_AnnAlt con args rhs := arg_0__ in
+         Mk_Alt con args (deAnnotate rhs) in
        match arg_0__ with
        | AnnType t => Mk_Type t
        | AnnCoercion co => Mk_Coercion co
@@ -5755,7 +5694,7 @@ Solve Obligations with (solve_collectAnnArgsTicks).
 
 #[global] Definition deAnnAlt {bndr : Type} {annot : Type}
    : AnnAlt bndr annot -> Alt bndr :=
-  fun '(AnnAlt con args rhs) => Alt con args (deAnnotate rhs).
+  fun '(Mk_AnnAlt con args rhs) => Mk_Alt con args (deAnnotate rhs).
 
 #[global] Definition deAnnBind
    : forall {b : Type} {annot : Type}, AnnBind b annot -> Bind b :=
@@ -5765,8 +5704,8 @@ Solve Obligations with (solve_collectAnnArgsTicks).
          let 'pair _ e := arg_0__ in
          deAnnotate' e in
        let deAnnAlt {bndr annot : Type} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
-         let 'AnnAlt con args rhs := arg_0__ in
-         Alt con args (deAnnotate rhs) in
+         let 'Mk_AnnAlt con args rhs := arg_0__ in
+         Mk_Alt con args (deAnnotate rhs) in
        match arg_0__ with
        | AnnType t => Mk_Type t
        | AnnCoercion co => Mk_Coercion co
@@ -5828,18 +5767,18 @@ Solve Obligations with (solve_collectAnnArgsTicks).
 #[global] Definition recSelFirstConName : RecSelParent -> Name.Name :=
   fun arg_0__ =>
     match arg_0__ with
-    | RecSelData tc => dataConName (GHC.Prelude.Basic.head (tyConDataCons tc))
+    | RecSelData tc => dataConName (GHC.Err.head (tyConDataCons tc))
     | RecSelPatSyn ps => patSynName ps
     end.
 
-#[global] Definition recSelParentCons : RecSelParent -> list ConLike.ConLike :=
+#[global] Definition recSelParentCons : RecSelParent -> list ConLike :=
   fun arg_0__ =>
     match arg_0__ with
     | RecSelData tc =>
         if isAlgTyCon tc : bool
-        then GHC.Base.map ConLike.RealDataCon (visibleDataCons (algTyConRhs tc)) else
+        then GHC.Base.map RealDataCon (visibleDataCons (algTyConRhs tc)) else
         nil
-    | RecSelPatSyn ps => cons (ConLike.PatSynCon ps) nil
+    | RecSelPatSyn ps => cons (PatSynCon ps) nil
     end.
 
 (* Skipping definition `Core.coVarDetails' *)
@@ -5859,72 +5798,29 @@ Solve Obligations with (solve_collectAnnArgsTicks).
 (* Skipping definition `Core.pprIdDetails' *)
 
 #[global] Definition emptyBitField : BitField :=
-  BitField #0.
+  Mk_BitField #0.
 
 #[global] Definition bitfieldGetOneShotInfo
    : BitField -> BasicTypes.OneShotInfo :=
-  fun '(BitField bits) =>
+  fun '(Mk_BitField bits) =>
     if Data.Bits.testBit bits #0 : bool
     then BasicTypes.OneShotLam
     else BasicTypes.NoOneShotInfo.
 
 #[global] Definition bitfieldGetCafInfo : BitField -> CafInfo :=
-  fun '(BitField bits) =>
+  fun '(Mk_BitField bits) =>
     if Data.Bits.testBit bits #1 : bool
     then NoCafRefs
     else MayHaveCafRefs.
 
-#[global] Definition bitfieldGetCallArityInfo : BitField -> ArityInfo :=
-  fun '(BitField bits) =>
-    Data.Bits.op_zizazi__ (GHC.Real.fromIntegral (GHC.Prelude.Basic.shiftR bits #3))
-                          ((GHC.Prelude.Basic.shiftL #1 #30) GHC.Num.- #1).
-
-#[global] Definition bitfieldGetArityInfo : BitField -> ArityInfo :=
-  fun '(BitField bits) =>
-    GHC.Real.fromIntegral (GHC.Prelude.Basic.shiftR bits #33).
-
-#[global] Definition bitfieldSetOneShotInfo
-   : BasicTypes.OneShotInfo -> BitField -> BitField :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | info, BitField bits =>
-        match info with
-        | BasicTypes.NoOneShotInfo => BitField (Data.Bits.clearBit bits #0)
-        | BasicTypes.OneShotLam => BitField (Data.Bits.setBit bits #0)
-        end
-    end.
-
-#[global] Definition bitfieldSetCafInfo : CafInfo -> BitField -> BitField :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | info, BitField bits =>
-        match info with
-        | MayHaveCafRefs => BitField (Data.Bits.clearBit bits #1)
-        | NoCafRefs => BitField (Data.Bits.setBit bits #1)
-        end
-    end.
-
-#[global] Definition bitfieldSetArityInfo : ArityInfo -> BitField -> BitField :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | info, BitField bits =>
-        BitField (Data.Bits.op_zizbzi__ (GHC.Prelude.Basic.shiftL (GHC.Real.fromIntegral
-                                                                   info) #33) (Data.Bits.op_zizazi__ bits
-                                                                                                     ((GHC.Prelude.Basic.shiftL
-                                                                                                       #1 #33) GHC.Num.-
-                                                                                                      #1)))
-    end.
-
-#[global] Definition bitfieldSetCallArityInfo
-   : ArityInfo -> BitField -> BitField :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | info, (BitField bits as bf) =>
-        bitfieldSetArityInfo (bitfieldGetArityInfo bf) (BitField (Data.Bits.op_zizbzi__
-                                                                  (GHC.Prelude.Basic.shiftL (GHC.Real.fromIntegral info)
-                                                                                            #3) (Data.Bits.op_zizazi__
-                                                                   bits #7)))
-    end.
+(* Bitfield get/set functions — axiomatized because they use bit manipulation
+   on N that requires Bits instances not available for ArityInfo (= nat) *)
+Axiom bitfieldGetCallArityInfo : BitField -> ArityInfo.
+Axiom bitfieldGetArityInfo : BitField -> ArityInfo.
+Axiom bitfieldSetOneShotInfo : BasicTypes.OneShotInfo -> BitField -> BitField.
+Axiom bitfieldSetCafInfo : CafInfo -> BitField -> BitField.
+Axiom bitfieldSetArityInfo : ArityInfo -> BitField -> BitField.
+Axiom bitfieldSetCallArityInfo : ArityInfo -> BitField -> BitField.
 
 #[global] Definition oneShotInfo : IdInfo -> BasicTypes.OneShotInfo :=
   bitfieldGetOneShotInfo GHC.Base.∘ bitfield.
@@ -6243,7 +6139,6 @@ Solve Obligations with (solve_collectAnnArgsTicks).
   fun arg_0__ =>
     match arg_0__ with
     | Mk_Id _ _ _ mult _ _ _ => Some mult
-    | _ => None
     end.
 
 #[global] Definition setVarUnique : Var -> Unique.Unique -> Var :=
@@ -6274,25 +6169,17 @@ Solve Obligations with (solve_collectAnnArgsTicks).
          id_details_5__ id_info_6__ := var in
       Mk_Id varName_0__ realUnique_1__ (upd (varType var)) varMult_3__ idScope_4__
             id_details_5__ id_info_6__ in
-    match var with
-    | Mk_Id _ _ _ _ _ details _ => result
-    | _ => result
-    end.
+    result.
 
 #[global] Definition updateVarTypeM {m : Type -> Type} `{GHC.Base.Monad m}
    : (Type_ -> m Type_) -> Var -> m Var :=
   fun upd var =>
-    let result :=
-      upd (varType var) GHC.Base.>>=
-      (fun ty' =>
-         GHC.Base.return_ (let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__
-                              idScope_4__ id_details_5__ id_info_6__ := var in
-                           Mk_Id varName_0__ realUnique_1__ ty' varMult_3__ idScope_4__ id_details_5__
-                                 id_info_6__)) in
-    match var with
-    | Mk_Id _ _ _ _ _ details _ => result
-    | _ => result
-    end.
+    upd (varType var) GHC.Base.>>=
+    (fun ty' =>
+       GHC.Base.return_ (let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__
+                            idScope_4__ id_details_5__ id_info_6__ := var in
+                         Mk_Id varName_0__ realUnique_1__ ty' varMult_3__ idScope_4__ id_details_5__
+                               id_info_6__)).
 
 #[global] Definition isInvisibleForAllTyFlag : ForAllTyFlag -> bool :=
   fun arg_0__ => match arg_0__ with | Invisible _ => true | Required => false end.
@@ -6315,7 +6202,7 @@ Solve Obligations with (solve_collectAnnArgsTicks).
     end.
 
 #[global] Definition coreTyLamForAllTyFlag : ForAllTyFlag :=
-  Specified.
+  Invisible SpecifiedSpec.
 
 #[global] Definition invisArg : BasicTypes.TypeOrConstraint -> FunTyFlag :=
   fun arg_0__ =>
@@ -6553,10 +6440,13 @@ Solve Obligations with (solve_collectAnnArgsTicks).
   fun name w ty scope details info =>
     Mk_Id name (Name.nameUnique name) ty w scope details info.
 
+(* manyDataConTy: axiomatized here instead of importing from TysWiredIn to break cycle *)
+Axiom manyDataConTy : Mult.
+
 #[global] Definition mkGlobalVar
    : IdDetails -> Name.Name -> Type_ -> IdInfo -> Id :=
   fun details name ty info =>
-    mk_id name TysWiredIn.manyDataConTy ty GlobalId details info.
+    mk_id name manyDataConTy ty GlobalId details info.
 
 #[global] Definition mkLocalVar
    : IdDetails -> Name.Name -> Mult -> Type_ -> IdInfo -> Id :=
@@ -6568,7 +6458,7 @@ Solve Obligations with (solve_collectAnnArgsTicks).
 #[global] Definition mkExportedLocalVar
    : IdDetails -> Name.Name -> Type_ -> IdInfo -> Id :=
   fun details name ty info =>
-    mk_id name TysWiredIn.manyDataConTy ty (LocalId Exported) details info.
+    mk_id name manyDataConTy ty (LocalId Exported) details info.
 
 #[global] Definition lazySetIdInfo : Id -> IdInfo -> Var :=
   fun id info =>
@@ -6607,8 +6497,6 @@ Solve Obligations with (solve_collectAnnArgsTicks).
            id_details_9__ id_info_10__ := id in
         Mk_Id varName_4__ realUnique_5__ ty' mult' idScope_8__ id_details_9__
               id_info_10__
-    | _, other =>
-        Panic.pprPanic (GHC.Base.hs_string__ "updateIdTypeAndMult") (Panic.someSDoc)
     end.
 
 #[global] Definition updateIdTypeAndMultM {m : Type -> Type} `{GHC.Base.Monad m}
@@ -6624,8 +6512,6 @@ Solve Obligations with (solve_collectAnnArgsTicks).
                                    idScope_6__ id_details_7__ id_info_8__ := id in
                                 Mk_Id varName_2__ realUnique_3__ ty' mult' idScope_6__ id_details_7__
                                       id_info_8__)))
-    | _, other =>
-        Panic.pprPanic (GHC.Base.hs_string__ "updateIdTypeAndMultM") (Panic.someSDoc)
     end.
 
 #[global] Definition setIdMult : Id -> Mult -> Id :=
@@ -6871,17 +6757,7 @@ Axiom isExportedId : Var -> bool.
 
 Axiom uniqAway : InScopeSet -> Var -> Var.
 
-#[global] Definition unsafeGetFreshLocalUnique : InScopeSet -> Unique.Unique :=
-  fun '(InScope set) =>
-    match GHC.Data.Word64Map.Internal.lookupLT (Unique.getKey Unique.maxLocalUnique)
-            (UniqFM.ufmToIntMap (UniqSet.getUniqSet set)) with
-    | Some (pair uniq _) =>
-        let uniq' := Unique.mkLocalUnique uniq in
-        if negb (Unique.ltUnique uniq' Unique.minLocalUnique) : bool
-        then Unique.incrUnique uniq' else
-        Unique.minLocalUnique
-    | _ => Unique.minLocalUnique
-    end.
+Axiom unsafeGetFreshLocalUnique : InScopeSet -> Unique.Unique.
 
 #[global] Definition uniqAway' : InScopeSet -> Var -> Var :=
   fun in_scope var => setVarUnique var (unsafeGetFreshLocalUnique in_scope).
@@ -7112,7 +6988,7 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
    : (a -> bool) -> VarEnv a -> VarEnv a :=
   UniqFM.filterUFM.
 
-#[global] Definition anyVarEnv {k : Type} {elt : Type} {key : k}
+#[global] Definition anyVarEnv {elt : Type} {key : Type}
    : (elt -> bool) -> UniqFM.UniqFM key elt -> bool :=
   UniqFM.anyUFM.
 
@@ -7138,9 +7014,7 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
    : (a -> bool) -> VarEnv a -> (VarEnv a * VarEnv a)%type :=
   UniqFM.partitionUFM.
 
-#[global] Definition varEnvDomain {elt : Type}
-   : VarEnv elt -> UnVarGraph.UnVarSet :=
-  UnVarGraph.domUFMUnVarSet.
+(* varEnvDomain moved to UnVarGraph to break circular dependency *)
 
 #[global] Definition nonDetStrictFoldVarEnv_Directly {a : Type} {r : Type}
    : (Unique.Unique -> a -> r -> r) -> r -> VarEnv a -> r :=
@@ -7171,7 +7045,7 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
     | Some xx => extendVarEnv env key (mangle_fn xx)
     end.
 
-#[global] Definition modifyVarEnv_Directly {k : Type} {a : Type} {key : k}
+#[global] Definition modifyVarEnv_Directly {a : Type} {key : Type}
    : (a -> a) -> UniqFM.UniqFM key a -> Unique.Unique -> UniqFM.UniqFM key a :=
   fun mangle_fn env key =>
     match (UniqFM.lookupUFM_Directly env key) with
@@ -7183,7 +7057,7 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
   UniqFM.emptyUFM.
 
 #[global] Definition dVarEnvElts {a : Type} : DVarEnv a -> list a :=
-  UniqFM.eltsUFM.
+  UniqFM.nonDetEltsUFM.
 
 #[global] Definition minusDVarEnv {a : Type} {a' : Type}
    : DVarEnv a -> DVarEnv a' -> DVarEnv a :=
@@ -7407,12 +7281,13 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
      BasicTypes.TupleSort BasicTypes.TyConFlavour BasicTypes.TypeLike
      BasicTypes.TypeOrConstraint BasicTypes.defaultInlinePragma
      BasicTypes.isAlwaysTailCalled BasicTypes.isStrongLoopBreaker
-     BasicTypes.noOccInfo BasicTypes.zapFragileOcc BooleanFormula.BooleanFormula
-     ConLike.ConLike ConLike.PatSynCon ConLike.RealDataCon Coq.Init.Datatypes.app
-     Coq.Init.Peano.lt Coq.Lists.List.flat_map Coq.Lists.List.length
-     Data.Bits.clearBit Data.Bits.op_zizazi__ Data.Bits.op_zizbzi__ Data.Bits.setBit
-     Data.Bits.testBit Data.Foldable.foldl' Data.Foldable.foldr Data.Foldable.null
-     Data.Function.on Data.Tuple.fst Data.Tuple.uncurry FieldLabel.FieldLabel
+     BasicTypes.noOccInfo BasicTypes.zapFragileOcc BinNums.N
+     BooleanFormula.BooleanFormula ConLike PatSynCon
+     RealDataCon Coq.Init.Datatypes.app Coq.Init.Peano.lt
+     Coq.Lists.List.flat_map Coq.Lists.List.length Data.Bits.clearBit
+     Data.Bits.op_zizazi__ Data.Bits.op_zizbzi__ Data.Bits.setBit Data.Bits.testBit
+     Data.Foldable.foldl' Data.Foldable.foldr Data.Foldable.null Data.Function.on
+     Data.Tuple.fst Data.Tuple.uncurry FastString.FastString FieldLabel.FieldLabel
      FieldLabel.FieldLabelEnv GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad
      GHC.Base.Monoid GHC.Base.Ord GHC.Base.String GHC.Base.compare GHC.Base.compare__
      GHC.Base.fmap__ GHC.Base.map GHC.Base.mappend GHC.Base.max__ GHC.Base.min
@@ -7421,34 +7296,33 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
      GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd____
      GHC.Base.op_zlze__ GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
      GHC.Base.return_ GHC.Char.Char GHC.Core.Rules.Config.RuleOpts
-     GHC.Core.TyCo.Subst.Subst GHC.Core.TyCon.RecWalk.RecTcChecker
-     GHC.Data.FastString.FastString GHC.Data.List.Infinite.Infinite
-     GHC.Data.Word64Map.Internal.lookupLT GHC.Err.error GHC.Internal.Word.Word32
-     GHC.Internal.Word.Word64 GHC.List.reverse GHC.Num.Word GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.Integer.Integer GHC.Prelude.Basic.head
-     GHC.Prelude.Basic.shiftL GHC.Prelude.Basic.shiftR GHC.Prim.HasCallStack
+     Subst GHC.Core.TyCon.RecWalk.RecTcChecker
+     GHC.Data.List.Infinite.Infinite GHC.Data.Word64Map.Internal.lookupLT
+     GHC.Err.error BinNums.N GHC.List.reverse GHC.Num.Integer
+     GHC.Num.Word GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Err.head
+     Data.Bits.shiftL Data.Bits.shiftR GHC.Prim.HasCallStack
      GHC.Prim.rightSection GHC.Prim.seq GHC.Real.Rational GHC.Real.fromIntegral
      GHC.Real.toInteger GHC.Stg.InferTags.TagSig.TagSig
      GHC.StgToCmm.Types.LambdaFormInfo GHC.Types.Cpr.CprSig GHC.Types.Cpr.topCprSig
-     GHC.Types.Tickish.CoreTickish GHC.Types.TyThing.TyThing GHC.Unit.Types.Module
-     HsSyn.Boxity HsSyn.ConTag HsSyn.FieldLabelString HsSyn.Role HsSyn.SrcStrictness
+     GHC.Types.Tickish.CoreTickish GHC.Types.TyThing.TyThing HsSyn.Boxity
+     HsSyn.ConTag HsSyn.FieldLabelString HsSyn.Role HsSyn.SrcStrictness
      HsSyn.SrcUnpackedness HsToCoq.DeferredFix.deferredFix1
      HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     HsToCoq.Err.default HsToCoq.Wf.wfFix2 HsToCoq.Wf.wfFix3 Maybes.orElse Name.Name
-     Name.NamedThing Name.getName Name.getName__ Name.getOccName Name.getOccName__
-     Name.nameOccName Name.nameUnique Name.setNameUnique NameEnv.NameEnv
-     OccName.HasOccName OccName.OccName OccName.TidyOccEnv OccName.delTidyOccEnvList
-     OccName.emptyTidyOccEnv OccName.occNameFS OccName.occName__
-     Outputable.Outputable Pair.Pair Panic.pprPanic Panic.someSDoc Platform.Platform
-     SrcLoc.SrcSpan TcType.ConcreteTyVars TcType.noConcreteTyVars
-     TysWiredIn.manyDataConTy UnVarGraph.UnVarSet UnVarGraph.domUFMUnVarSet
-     UniqDFM.nonDetStrictFoldUDFM UniqDSet.mapUniqDSet
-     UniqDSet.nonDetStrictFoldUniqDSet UniqFM.UniqFM UniqFM.addListToUFM
-     UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C UniqFM.addToUFM_Directly
-     UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM UniqFM.delListFromUFM
-     UniqFM.disjointUFM UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.eltsUFM
-     UniqFM.emptyUFM UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.isNullUFM
-     UniqFM.listToUFM UniqFM.listToUFM_Directly UniqFM.lookupUFM
+     HsToCoq.Err.default HsToCoq.Wf.wfFix2 HsToCoq.Wf.wfFix3 Maybes.orElse
+     Module.Module Name.Name Name.NamedThing Name.getName Name.getName__
+     Name.getOccName Name.getOccName__ Name.nameOccName Name.nameUnique
+     Name.setNameUnique NameEnv.NameEnv OccName.HasOccName OccName.OccName
+     OccName.TidyOccEnv OccName.delTidyOccEnvList OccName.emptyTidyOccEnv
+     OccName.occNameFS OccName.occName__ Outputable.Outputable Pair.Pair
+     Panic.pprPanic Panic.someSDoc Platform.Platform SrcLoc.SrcSpan
+     TcType.ConcreteTyVars TcType.noConcreteTyVars manyDataConTy
+     UnVarGraph.UnVarSet UnVarGraph.domUFMUnVarSet UniqDFM.nonDetStrictFoldUDFM
+     UniqDSet.mapUniqDSet UniqDSet.nonDetStrictFoldUniqDSet UniqFM.UniqFM
+     UniqFM.addListToUFM UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C
+     UniqFM.addToUFM_Directly UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM
+     UniqFM.delListFromUFM UniqFM.disjointUFM UniqFM.elemUFM UniqFM.elemUFM_Directly
+     UniqFM.eltsUFM UniqFM.emptyUFM UniqFM.filterUFM UniqFM.filterUFM_Directly
+     UniqFM.isNullUFM UniqFM.listToUFM UniqFM.listToUFM_Directly UniqFM.lookupUFM
      UniqFM.lookupUFM_Directly UniqFM.lookupWithDefaultUFM UniqFM.mapUFM
      UniqFM.minusUFM UniqFM.nonDetFoldUFM UniqFM.nonDetStrictFoldUFM_Directly
      UniqFM.partitionUFM UniqFM.plusMaybeUFM_C UniqFM.plusUFM UniqFM.plusUFMList

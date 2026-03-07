@@ -25,15 +25,14 @@ Require Data.OldList.
 Require Data.Set.Internal.
 Require Data.Tuple.
 Require Datatypes.
+Require FastString.
 Require GHC.Base.
 Require GHC.Core.FamInstEnv.
 Require GHC.Core.Reduction.
-Require GHC.Core.TyCo.Compare.
 Require GHC.Core.TyCo.FVs.
 Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Types.Tickish.
-Require GHC.Utils.Trace.
 Require HsSyn.
 Require HsToCoq.DeferredFix.
 Require Id.
@@ -44,6 +43,7 @@ Require OrdList.
 Require Panic.
 Require PrelNames.
 Require PrimOp.
+Require RepType.
 Require Unique.
 Require Util.
 Import GHC.Base.Notations.
@@ -114,24 +114,8 @@ Fixpoint mkCast `{Util.HasDebugCallStack} (arg_0__ : Core.CoreExpr) (arg_1__
          then e else
          let j_7__ :=
            match arg_0__, arg_1__ with
-           | Core.Cast expr co2, co =>
-               GHC.Utils.Trace.warnPprTrace (let to_ty2 := Core.coercionRKind co2 in
-                                             let from_ty := Core.coercionLKind co in
-                                             negb (GHC.Core.TyCo.Compare.eqType from_ty to_ty2)) (GHC.Base.hs_string__
-                                             "mkCast") (Panic.someSDoc) (mkCast expr (Core.mkTransCo co2 co))
-           | expr, co =>
-               let from_ty := Core.coercionLKind co in
-               GHC.Utils.Trace.warnPprTrace (negb (GHC.Core.TyCo.Compare.eqType from_ty
-                                                                                (exprType expr))) (GHC.Base.hs_string__
-                                             "Trying to coerce") (GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend
-                                                                                                      (Datatypes.id
-                                                                                                       (GHC.Base.hs_string__
-                                                                                                        "("))
-                                                                                                      Panic.someSDoc)
-                                                                                                     Panic.someSDoc)
-                                                                                   (Datatypes.id (GHC.Base.hs_string__
-                                                                                                  ")"))) (Core.Cast expr
-                                                                                                                    co)
+           | Core.Cast expr co2, co => mkCast expr (Core.mkTransCo co2 co)
+           | expr, co => let from_ty := Core.coercionLKind co in Core.Cast expr co
            end in
          match arg_0__, arg_1__ with
          | Core.Mk_Coercion e_co, co =>
@@ -176,8 +160,8 @@ Fixpoint mkCast `{Util.HasDebugCallStack} (arg_0__ : Core.CoreExpr) (arg_1__
     let go :=
       fix go arg_0__
         := let go_a (arg_14__ : Core.Alt b) : Core.Alt b :=
-             let 'Core.Alt c bs e := arg_14__ in
-             Core.Alt c bs (go e) in
+             let 'Core.Mk_Alt c bs e := arg_14__ in
+             Core.Mk_Alt c bs (go e) in
            match arg_0__ with
            | Core.App e a => Core.App (go e) (go a)
            | Core.Lam b e => Core.Lam b (go e)
@@ -197,8 +181,8 @@ Fixpoint mkCast `{Util.HasDebugCallStack} (arg_0__ : Core.CoreExpr) (arg_1__
     let go_bs :=
       fix go arg_0__
         := let go_a (arg_14__ : Core.Alt b) : Core.Alt b :=
-             let 'Core.Alt c bs e := arg_14__ in
-             Core.Alt c bs (go e) in
+             let 'Core.Mk_Alt c bs e := arg_14__ in
+             Core.Mk_Alt c bs (go e) in
            match arg_0__ with
            | Core.App e a => Core.App (go e) (go a)
            | Core.Lam b e => Core.Lam b (go e)
@@ -218,7 +202,7 @@ Fixpoint mkCast `{Util.HasDebugCallStack} (arg_0__ : Core.CoreExpr) (arg_1__
     let go_b : b * Core.Expr b -> b * Core.Expr b :=
       fun '(pair b e) => pair b (go e) in
     let go_a : Core.Alt b -> Core.Alt b :=
-      fun '(Core.Alt c bs e) => Core.Alt c bs (go e) in
+      fun '(Core.Mk_Alt c bs e) => Core.Mk_Alt c bs (go e) in
     go expr.
 
 #[global] Definition stripTicksT {b : Type}
@@ -227,8 +211,8 @@ Fixpoint mkCast `{Util.HasDebugCallStack} (arg_0__ : Core.CoreExpr) (arg_1__
   fun p expr =>
     let go :=
       fix go arg_0__
-        := let go_a (arg_14__ : Core.Alt b) : OrdList.OrdList (Core.Tickish Core.Id) :=
-             let 'Core.Alt _ _ e := arg_14__ in
+        := let go_a (arg_14__ : Core.Alt b) : OrdList.OrdList (GHC.Types.Tickish.CoreTickish) :=
+             let 'Core.Mk_Alt _ _ e := arg_14__ in
              go e in
            match arg_0__ with
            | Core.App e a => OrdList.appOL (go e) (go a)
@@ -241,7 +225,7 @@ Fixpoint mkCast `{Util.HasDebugCallStack} (arg_0__ : Core.CoreExpr) (arg_1__
            end
       with go_bs arg_7__
         := let go_b (arg_11__ : b * Core.Expr b)
-            : OrdList.OrdList (Core.Tickish Core.Id) :=
+            : OrdList.OrdList (GHC.Types.Tickish.CoreTickish) :=
              let 'pair _ e := arg_11__ in
              go e in
            match arg_7__ with
@@ -250,8 +234,8 @@ Fixpoint mkCast `{Util.HasDebugCallStack} (arg_0__ : Core.CoreExpr) (arg_1__
            end for go in
     let go_bs :=
       fix go arg_0__
-        := let go_a (arg_14__ : Core.Alt b) : OrdList.OrdList (Core.Tickish Core.Id) :=
-             let 'Core.Alt _ _ e := arg_14__ in
+        := let go_a (arg_14__ : Core.Alt b) : OrdList.OrdList (GHC.Types.Tickish.CoreTickish) :=
+             let 'Core.Mk_Alt _ _ e := arg_14__ in
              go e in
            match arg_0__ with
            | Core.App e a => OrdList.appOL (go e) (go a)
@@ -264,17 +248,17 @@ Fixpoint mkCast `{Util.HasDebugCallStack} (arg_0__ : Core.CoreExpr) (arg_1__
            end
       with go_bs arg_7__
         := let go_b (arg_11__ : b * Core.Expr b)
-            : OrdList.OrdList (Core.Tickish Core.Id) :=
+            : OrdList.OrdList (GHC.Types.Tickish.CoreTickish) :=
              let 'pair _ e := arg_11__ in
              go e in
            match arg_7__ with
            | Core.NonRec _ e => go e
            | Core.Rec bs => OrdList.concatOL (GHC.Base.map go_b bs)
            end for go_bs in
-    let go_b : b * Core.Expr b -> OrdList.OrdList (Core.Tickish Core.Id) :=
+    let go_b : b * Core.Expr b -> OrdList.OrdList (GHC.Types.Tickish.CoreTickish) :=
       fun '(pair _ e) => go e in
-    let go_a : Core.Alt b -> OrdList.OrdList (Core.Tickish Core.Id) :=
-      fun '(Core.Alt _ _ e) => go e in
+    let go_a : Core.Alt b -> OrdList.OrdList (GHC.Types.Tickish.CoreTickish) :=
+      fun '(Core.Mk_Alt _ _ e) => go e in
     OrdList.fromOL (go expr).
 
 Axiom bindNonRec : forall `{Util.HasDebugCallStack},
@@ -310,7 +294,7 @@ Axiom exprOkForSpeculation : Core.CoreExpr -> bool.
 #[global] Definition mkDefaultCase
    : Core.CoreExpr -> Core.Id -> Core.CoreExpr -> Core.CoreExpr :=
   fun scrut case_bndr body =>
-    Core.Case scrut case_bndr (exprType body) (cons (Core.Alt Core.DEFAULT nil body)
+    Core.Case scrut case_bndr (exprType body) (cons (Core.Mk_Alt Core.DEFAULT nil body)
                                                     nil).
 
 #[global] Definition mkSingleAltCase
@@ -323,13 +307,13 @@ Axiom exprOkForSpeculation : Core.CoreExpr -> bool.
       | Some body_ty' => body_ty'
       | _ => Panic.pprPanic (GHC.Base.hs_string__ "mkSingleAltCase") (Panic.someSDoc)
       end in
-    Core.Case scrut case_bndr case_ty (cons (Core.Alt con bndrs body) nil).
+    Core.Case scrut case_bndr case_ty (cons (Core.Mk_Alt con bndrs body) nil).
 
 #[global] Definition findDefault {b : Type}
    : list (Core.Alt b) -> (list (Core.Alt b) * option (Core.Expr b))%type :=
   fun arg_0__ =>
     match arg_0__ with
-    | cons (Core.Alt Core.DEFAULT args rhs) alts => pair alts (Some rhs)
+    | cons (Core.Mk_Alt Core.DEFAULT args rhs) alts => pair alts (Some rhs)
     | alts => pair alts None
     end.
 
@@ -338,13 +322,13 @@ Axiom exprOkForSpeculation : Core.CoreExpr -> bool.
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | alts, None => alts
-    | alts, Some rhs => cons (Core.Alt Core.DEFAULT nil rhs) alts
+    | alts, Some rhs => cons (Core.Mk_Alt Core.DEFAULT nil rhs) alts
     end.
 
 #[global] Definition isDefaultAlt {b : Type} : Core.Alt b -> bool :=
   fun arg_0__ =>
     match arg_0__ with
-    | Core.Alt Core.DEFAULT _ _ => true
+    | Core.Mk_Alt Core.DEFAULT _ _ => true
     | _ => false
     end.
 
@@ -354,7 +338,7 @@ Axiom exprOkForSpeculation : Core.CoreExpr -> bool.
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | nil, deflt => deflt
-         | cons (Core.Alt con1 _ _ as alt) alts, deflt =>
+         | cons (Core.Mk_Alt con1 _ _ as alt) alts, deflt =>
              match Core.cmpAltCon con con1 with
              | Lt => deflt
              | Eq => Some alt
@@ -362,7 +346,7 @@ Axiom exprOkForSpeculation : Core.CoreExpr -> bool.
              end
          end in
     match alts with
-    | cons (Core.Alt Core.DEFAULT _ _ as deflt) alts => go alts (Some deflt)
+    | cons (Core.Mk_Alt Core.DEFAULT _ _ as deflt) alts => go alts (Some deflt)
     | _ => go alts None
     end.
 
@@ -400,17 +384,17 @@ Axiom exprOkForSpeculation : Core.CoreExpr -> bool.
     let impossible_alt {b} : list AxiomatizedTypes.Type_ -> Core.Alt b -> bool :=
       fun arg_1__ arg_2__ =>
         match arg_1__, arg_2__ with
-        | _, Core.Alt con _ _ =>
+        | _, Core.Mk_Alt con _ _ =>
             if Data.Set.Internal.member con imposs_cons_set : bool then true else
             match arg_1__, arg_2__ with
-            | inst_tys, Core.Alt (Core.DataAlt con) _ _ =>
+            | inst_tys, Core.Mk_Alt (Core.DataAlt con) _ _ =>
                 Core.dataConCannotMatch inst_tys con
             | _, _ => false
             end
         end in
     let 'pair alts_wo_default maybe_deflt := findDefault alts in
     let alt_cons :=
-      let cont_8__ arg_9__ := let 'Core.Alt con _ _ := arg_9__ in cons con nil in
+      let cont_8__ arg_9__ := let 'Core.Mk_Alt con _ _ := arg_9__ in cons con nil in
       Coq.Lists.List.flat_map cont_8__ alts_wo_default in
     let imposs_deflt_cons :=
       Coq.Init.Datatypes.app imposs_cons (Util.filterOut (GHC.Prim.rightSection
@@ -433,15 +417,15 @@ Axiom combineIdenticalAlts : list Core.AltCon ->
   fun w alts =>
     let scaleBndr : Core.CoreBndr -> Core.CoreBndr := fun b => Id.scaleVarBy w b in
     let scaleAlt : Core.CoreAlt -> Core.CoreAlt :=
-      fun '(Core.Alt con bndrs rhs) =>
-        Core.Alt con (GHC.Base.map scaleBndr bndrs) rhs in
+      fun '(Core.Mk_Alt con bndrs rhs) =>
+        Core.Mk_Alt con (GHC.Base.map scaleBndr bndrs) rhs in
     GHC.Base.map scaleAlt alts.
 
 #[global] Definition isUnsafeEqualityCase
    : Core.CoreExpr -> Core.Id -> list Core.CoreAlt -> option Core.CoreExpr :=
   fun scrut bndr alts =>
     match alts with
-    | cons (Core.Alt ac _ rhs) nil =>
+    | cons (Core.Mk_Alt ac _ rhs) nil =>
         match ac with
         | Core.DataAlt dc =>
             if andb (Unique.hasKey dc PrelNames.unsafeReflDataConKey) (Id.isDeadBinder
@@ -470,12 +454,9 @@ Axiom combineIdenticalAlts : list Core.AltCon ->
          | Core.App f t => if negb (Core.isRuntimeArg t) : bool then go f else k_not_triv
          | Core.Lam b e => if negb (Core.isRuntimeVar b) : bool then go e else k_not_triv
          | Core.Cast e _ => go e
-         | Core.Case e b _ as_ =>
+         | Core.Case e _ _ as_ =>
              if Data.Foldable.null as_ : bool then go e else
-             match isUnsafeEqualityCase e b as_ with
-             | Some rhs => go rhs
-             | _ => k_not_triv
-             end
+             k_not_triv
          | _ => k_not_triv
          end in
     go.
@@ -534,7 +515,7 @@ Axiom combineIdenticalAlts : list Core.AltCon ->
          | n, Core.Cast e _ => go n e
          | n, Core.Case scrut _ _ alts =>
              andb (ok scrut) (Data.Foldable.and (let cont_5__ arg_6__ :=
-                                                   let 'Core.Alt _ _ rhs := arg_6__ in
+                                                   let 'Core.Mk_Alt _ _ rhs := arg_6__ in
                                                    cons (go n rhs) nil in
                                                  Coq.Lists.List.flat_map cont_5__ alts))
          | n, Core.Lam x e =>
@@ -572,47 +553,24 @@ Axiom isExpandableApp : CheapAppFun.
 
 #[global] Definition exprIsExpandable : Core.CoreExpr -> bool :=
   fun e =>
-    let ok :=
-      fix go arg_1__ arg_2__
-        := match arg_1__, arg_2__ with
-           | n, Core.Mk_Var v => isExpandableApp v n
-           | _, Core.Lit _ => true
-           | _, Core.Mk_Type _ => true
-           | _, Core.Mk_Coercion _ => true
-           | n, Core.Cast e _ => go n e
-           | n, Core.Lam x e =>
-               if Core.isRuntimeVar x : bool
-               then orb (n GHC.Base.== #0) (go (n GHC.Num.- #1) e) else
-               go n e
-           | n, Core.App f e =>
-               if Core.isRuntimeArg e : bool then andb (go (n GHC.Num.+ #1) f) (ok e) else
-               go n f
-           | _, Core.Case _ _ _ _ => false
-           | _, Core.Let _ _ => false
-           end
-      with ok e
-        := go #0 e for ok in
-    let go :=
-      fix go arg_1__ arg_2__
-        := match arg_1__, arg_2__ with
-           | n, Core.Mk_Var v => isExpandableApp v n
-           | _, Core.Lit _ => true
-           | _, Core.Mk_Type _ => true
-           | _, Core.Mk_Coercion _ => true
-           | n, Core.Cast e _ => go n e
-           | n, Core.Lam x e =>
-               if Core.isRuntimeVar x : bool
-               then orb (n GHC.Base.== #0) (go (n GHC.Num.- #1) e) else
-               go n e
-           | n, Core.App f e =>
-               if Core.isRuntimeArg e : bool then andb (go (n GHC.Num.+ #1) f) (ok e) else
-               go n f
-           | _, Core.Case _ _ _ _ => false
-           | _, Core.Let _ _ => false
-           end
-      with ok e
-        := go #0 e for go in
-    ok e.
+    let fix go arg_1__ arg_2__
+      := match arg_1__, arg_2__ with
+         | n, Core.Mk_Var v => isExpandableApp v n
+         | _, Core.Lit _ => true
+         | _, Core.Mk_Type _ => true
+         | _, Core.Mk_Coercion _ => true
+         | n, Core.Cast e _ => go n e
+         | n, Core.Lam x e =>
+             if Core.isRuntimeVar x : bool
+             then orb (n GHC.Base.== #0) (go (n GHC.Num.- #1) e) else
+             go n e
+         | n, Core.App f e =>
+             if Core.isRuntimeArg e : bool then andb (go (n GHC.Num.+ #1) f) (go #0 e) else
+             go n f
+         | _, Core.Case _ _ _ _ => false
+         | _, Core.Let _ _ => false
+         end in
+    go #0 e.
 
 Axiom expr_ok : (Core.Id -> bool) ->
                 (AxiomatizedTypes.PrimOp -> bool) -> Core.CoreExpr -> bool.
@@ -634,7 +592,7 @@ Axiom app_ok : (Core.Id -> bool) ->
   fun arg_0__ =>
     match arg_0__ with
     | nil => true
-    | cons (Core.Alt con1 _ _) alts =>
+    | cons (Core.Mk_Alt con1 _ _) alts =>
         match con1 with
         | Core.DEFAULT => true
         | Core.LitAlt _ => false
@@ -643,11 +601,7 @@ Axiom app_ok : (Core.Id -> bool) ->
         end
     end.
 
-#[global] Definition etaExpansionTick {pass : GHC.Types.Tickish.TickishPass}
-   : Core.Id -> GHC.Types.Tickish.GenTickish pass -> bool :=
-  fun id t =>
-    andb (Id.hasNoBinding id) (orb (GHC.Types.Tickish.tickishFloatable t)
-                                   (GHC.Types.Tickish.isProfTick t)).
+Axiom etaExpansionTick : Core.Id -> GHC.Types.Tickish.CoreTickish -> bool.
 
 #[global] Definition exprIsHNFlike `{Util.HasDebugCallStack}
    : (Core.Var -> bool) -> (Core.Unfolding -> bool) -> Core.CoreExpr -> bool :=
@@ -680,11 +634,7 @@ Axiom app_ok : (Core.Id -> bool) ->
              if Core.isValArg a : bool then app_is_value e #1 else
              is_hnf_like e
          | Core.Let _ e => is_hnf_like e
-         | Core.Case e b _ as_ =>
-             match isUnsafeEqualityCase e b as_ with
-             | Some rhs => is_hnf_like rhs
-             | _ => false
-             end
+         | Core.Case _ _ _ _ => false
          end in
     is_hnf_like.
 
@@ -715,13 +665,13 @@ Axiom dataConRepInstPat : list Unique.Unique ->
                           Core.DataCon ->
                           list AxiomatizedTypes.Type_ -> (list Core.TyCoVar * list Core.Id)%type.
 
-Axiom dataConRepFSInstPat : list GHC.Data.FastString.FastString ->
+Axiom dataConRepFSInstPat : list FastString.FastString ->
                             list Unique.Unique ->
                             Core.Mult ->
                             Core.DataCon ->
                             list AxiomatizedTypes.Type_ -> (list Core.TyCoVar * list Core.Id)%type.
 
-Axiom dataConInstPat : list GHC.Data.FastString.FastString ->
+Axiom dataConInstPat : list FastString.FastString ->
                        list Unique.Unique ->
                        Core.Mult ->
                        Core.DataCon ->
@@ -734,21 +684,8 @@ Axiom cheapEqExpr' : forall {b : Type},
    : Core.Expr b -> Core.Expr b -> bool :=
   cheapEqExpr' (GHC.Base.const false).
 
-#[global] Definition eqTickish
-   : Core.RnEnv2 ->
-     GHC.Types.Tickish.CoreTickish -> GHC.Types.Tickish.CoreTickish -> bool :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | env
-    , GHC.Types.Tickish.Breakpoint lext lid lids lmod
-    , GHC.Types.Tickish.Breakpoint rext rid rids rmod =>
-        andb (lid GHC.Base.== rid) (andb (GHC.Base.map (Core.rnOccL env) lids
-                                          GHC.Base.==
-                                          GHC.Base.map (Core.rnOccR env) rids) (andb (lext GHC.Base.== rext) (lmod
-                                                                                      GHC.Base.==
-                                                                                      rmod)))
-    | _, l, r => l GHC.Base.== r
-    end.
+Axiom eqTickish : Core.RnEnv2 ->
+     GHC.Types.Tickish.CoreTickish -> GHC.Types.Tickish.CoreTickish -> bool.
 
 Axiom diffBinds : bool ->
                   Core.RnEnv2 ->
@@ -788,22 +725,11 @@ Axiom diffUnfold : Core.RnEnv2 ->
     | _ => false
     end.
 
-#[global] Definition normSplitTyConApp_maybe
+Axiom normSplitTyConApp_maybe
    : GHC.Core.FamInstEnv.FamInstEnvs ->
      AxiomatizedTypes.Type_ ->
      option (Core.TyCon * list AxiomatizedTypes.Type_ *
-             AxiomatizedTypes.Coercion)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | fam_envs, ty =>
-        let 'GHC.Core.Reduction.Reduction co ty1 := Maybes.orElse
-                                                      (GHC.Core.FamInstEnv.topNormaliseType_maybe fam_envs ty)
-                                                      (GHC.Core.Reduction.mkReflRedn HsSyn.Representational ty) in
-        match Core.splitTyConApp_maybe ty1 with
-        | Some (pair tc tc_args) => Some (pair (pair tc tc_args) co)
-        | _ => None
-        end
-    end.
+             AxiomatizedTypes.Coercion)%type.
 
 #[global] Definition extendInScopeSetBind
    : Core.InScopeSet -> Core.CoreBind -> Core.InScopeSet :=
@@ -848,26 +774,9 @@ Axiom diffUnfold : Core.RnEnv2 ->
     | _ => false
     end.
 
-#[global] Definition dumpIdInfoOfProgram
+Axiom dumpIdInfoOfProgram
    : bool ->
-     (Core.IdInfo -> GHC.Base.String) -> Core.CoreProgram -> GHC.Base.String :=
-  fun dump_locals ppr_id_info binds =>
-    let printId :=
-      fun id =>
-        if orb (Core.isExportedId id) dump_locals : bool
-        then GHC.Base.mappend (GHC.Base.mappend Panic.someSDoc Outputable.colon)
-                              (ppr_id_info (Core.idInfo id)) else
-        Panic.someSDoc in
-    let getIds :=
-      fun arg_1__ =>
-        match arg_1__ with
-        | Core.NonRec i _ => cons i nil
-        | Core.Rec bs => GHC.Base.map Data.Tuple.fst bs
-        end in
-    let ids :=
-      Data.OldList.sortBy (Data.Function.on Name.stableNameCmp Name.getName)
-      (Data.Foldable.concatMap getIds binds) in
-    Panic.someSDoc.
+     (Core.IdInfo -> GHC.Base.String) -> Core.CoreProgram -> GHC.Base.String.
 
 #[global] Definition wantCbvForId : bool -> Core.Var -> bool :=
   fun cbv_for_strict v =>
@@ -898,7 +807,7 @@ Axiom diffUnfold : Core.RnEnv2 ->
         | pair arg_id arg_cbv, rhs =>
             if andb (Core.isMarkedStrict arg_cbv) (shouldStrictifyIdForCbv arg_id) : bool
             then Core.Case (Core.Mk_Var (Id.zapIdUnfolding arg_id)) arg_id case_ty (cons
-                                                                                    (Core.Alt Core.DEFAULT nil rhs)
+                                                                                    (Core.Mk_Alt Core.DEFAULT nil rhs)
                                                                                     nil) else
             rhs
         end in
@@ -936,17 +845,16 @@ Axiom diffUnfold : Core.RnEnv2 ->
      Data.Foldable.concatMap Data.Foldable.foldr Data.Foldable.null Data.Function.on
      Data.Maybe.isJust Data.OldList.sortBy Data.Set.Internal.fromList
      Data.Set.Internal.member Data.Tuple.fst Data.Tuple.snd Datatypes.id
-     GHC.Base.String GHC.Base.const GHC.Base.id GHC.Base.map GHC.Base.mappend
-     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zg__ GHC.Base.op_zl__
-     GHC.Core.FamInstEnv.FamInstEnvs GHC.Core.FamInstEnv.topNormaliseType_maybe
-     GHC.Core.Reduction.Reduction GHC.Core.Reduction.mkReflRedn
-     GHC.Core.TyCo.Compare.eqType GHC.Core.TyCo.FVs.occCheckExpand
-     GHC.Core.TyCo.FVs.tyCoVarsOfType GHC.Data.FastString.FastString
-     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.rightSection
-     GHC.Types.Tickish.Breakpoint GHC.Types.Tickish.CoreTickish
-     GHC.Types.Tickish.GenTickish GHC.Types.Tickish.TickishPass
-     GHC.Types.Tickish.isProfTick GHC.Types.Tickish.tickishFloatable
-     GHC.Utils.Trace.warnPprTrace HsSyn.Representational
+     FastString.FastString GHC.Base.String GHC.Base.const GHC.Base.id GHC.Base.map
+     GHC.Base.mappend GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zg__
+     GHC.Base.op_zl__ GHC.Core.FamInstEnv.FamInstEnvs
+     GHC.Core.FamInstEnv.topNormaliseType_maybe GHC.Core.Reduction.Reduction
+     GHC.Core.Reduction.mkReflRedn GHC.Core.TyCo.FVs.occCheckExpand
+     GHC.Core.TyCo.FVs.tyCoVarsOfType GHC.Num.fromInteger GHC.Num.op_zm__
+     GHC.Num.op_zp__ GHC.Prim.rightSection GHC.Types.Tickish.Breakpoint
+     GHC.Types.Tickish.CoreTickish GHC.Types.Tickish.GenTickish
+     GHC.Types.Tickish.TickishPass GHC.Types.Tickish.isProfTick
+     GHC.Types.Tickish.tickishFloatable HsSyn.Representational
      HsToCoq.DeferredFix.deferredFix1 Id.hasNoBinding Id.idArity Id.idDemandInfo
      Id.idName Id.idType Id.idUnfolding Id.isConLikeId Id.isDataConWorkId
      Id.isDeadBinder Id.isJoinId Id.scaleVarBy Id.zapIdUnfolding Literal.LitString

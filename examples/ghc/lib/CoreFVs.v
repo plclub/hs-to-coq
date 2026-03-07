@@ -105,7 +105,7 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
          (FV.unionFV (expr_fvs expr) (GHC.Core.TyCo.FVs.tyCoFVsOfCo co)) fv_cand in_scope
          acc
      | Core.Case scrut bndr ty alts, fv_cand, in_scope, acc =>
-         let alt_fvs := fun '(Core.Alt _ bndrs rhs) => addBndrs bndrs (expr_fvs rhs) in
+         let alt_fvs := fun '(Core.Mk_Alt _ bndrs rhs) => addBndrs bndrs (expr_fvs rhs) in
          (FV.unionFV (FV.unionFV (expr_fvs scrut) (GHC.Core.TyCo.FVs.tyCoFVsOfType ty))
                      (addBndr bndr (FV.unionsFV (Lists.List.map alt_fvs alts)))) fv_cand in_scope acc
      | Core.Let (Core.NonRec bndr rhs) body, fv_cand, in_scope, acc =>
@@ -202,12 +202,7 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
 #[global] Definition exprs_fvs : list Core.CoreExpr -> FV.FV :=
   fun exprs => FV.mapUnionFV expr_fvs exprs.
 
-#[global] Definition tickish_fvs : GHC.Types.Tickish.CoreTickish -> FV.FV :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | GHC.Types.Tickish.Breakpoint _ _ ids _ => FV.mkFVs ids
-    | _ => FV.emptyFV
-    end.
+Axiom tickish_fvs : GHC.Types.Tickish.CoreTickish -> FV.FV.
 
 (* Skipping definition `CoreFVs.exprOrphNames' *)
 
@@ -222,9 +217,9 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
   fun f =>
     Data.Foldable.foldr (NameSet.unionNameSet GHC.Base.∘ f) NameSet.emptyNameSet.
 
-(* Skipping definition `CoreFVs.orphNamesOfTypes' *)
+Axiom orphNamesOfTypes : list AxiomatizedTypes.Type_ -> NameSet.NameSet.
 
-(* Skipping definition `CoreFVs.orphNamesOfCo' *)
+Axiom orphNamesOfCo : AxiomatizedTypes.Coercion -> NameSet.NameSet.
 
 #[global] Definition orphNamesOfMCo : Core.MCoercion -> NameSet.NameSet :=
   fun arg_0__ =>
@@ -251,12 +246,7 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
                                                                                           axiom)))) (Name.getName
                            (CoAxiom.coAxiomTyCon axiom)).
 
-#[global] Definition orph_names_of_fun_ty_con : Core.Mult -> NameSet.NameSet :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | Core.ManyTy => NameSet.unitNameSet TysWiredIn.unrestrictedFunTyConName
-    | _ => NameSet.emptyNameSet
-    end.
+Axiom orph_names_of_fun_ty_con : Core.Mult -> NameSet.NameSet.
 
 #[global] Definition ruleFVs : RuleFVsFrom -> Core.CoreRule -> FV.FV :=
   fun arg_0__ arg_1__ =>
@@ -296,8 +286,7 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
 #[global] Definition rulesFreeVars : list Core.CoreRule -> Core.VarSet :=
   fun rules => FV.fvVarSet (rulesFVs BothSides rules).
 
-#[global] Definition mkRuleInfo : list Core.CoreRule -> Core.RuleInfo :=
-  fun rules => Core.RuleInfo rules (rulesFreeVarsDSet rules).
+Axiom mkRuleInfo : list Core.CoreRule -> Core.RuleInfo.
 
 #[global] Definition freeVarsOf : CoreExprWithFVs -> Core.DIdSet :=
   fun '(pair fvs _) => fvs.
@@ -373,9 +362,9 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
            pair (unionFVs (freeVarsOf fun') (freeVarsOf arg')) (Core.AnnApp fun' arg')
        | Core.Case scrut bndr ty alts =>
            let fv_alt :=
-             fun '(Core.Alt con args rhs) =>
+             fun '(Core.Mk_Alt con args rhs) =>
                let rhs2 := freeVars rhs in
-               pair (delBindersFV args (freeVarsOf rhs2)) (Core.AnnAlt con args rhs2) in
+               pair (delBindersFV args (freeVarsOf rhs2)) (Core.Mk_AnnAlt con args rhs2) in
            let 'pair alts_fvs_s alts2 := NestedRecursionHelpers.mapAndUnzipFix fv_alt
                                            alts in
            let alts_fvs := unionFVss alts_fvs_s in
@@ -436,9 +425,9 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
            pair (unionFVs (freeVarsOf fun') (freeVarsOf arg')) (Core.AnnApp fun' arg')
        | Core.Case scrut bndr ty alts =>
            let fv_alt :=
-             fun '(Core.Alt con args rhs) =>
+             fun '(Core.Mk_Alt con args rhs) =>
                let rhs2 := freeVars rhs in
-               pair (delBindersFV args (freeVarsOf rhs2)) (Core.AnnAlt con args rhs2) in
+               pair (delBindersFV args (freeVarsOf rhs2)) (Core.Mk_AnnAlt con args rhs2) in
            let 'pair alts_fvs_s alts2 := NestedRecursionHelpers.mapAndUnzipFix fv_alt
                                            alts in
            let alts_fvs := unionFVss alts_fvs_s in

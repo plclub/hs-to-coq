@@ -23,6 +23,7 @@ Require Data.Bifunctor.
 Require Data.Foldable.
 Require Data.Traversable.
 Require Data.Tuple.
+Require FastString.
 Require GHC.Base.
 Require GHC.Builtin.Uniques.
 Require GHC.Prim.
@@ -45,9 +46,8 @@ Import GHC.Base.Notations.
      AxiomatizedTypes.Type_ -> BasicTypes.JoinArity -> ExitifyM Core.JoinId :=
   fun in_scope ty join_arity =>
     let exit_id_tmpl :=
-      Id.asJoinId (Id.mkSysLocal (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
-                                                             "exit")) GHC.Builtin.Uniques.initExitJoinUnique Core.ManyTy
-                   ty) join_arity in
+      Id.asJoinId (Id.mkSysLocal (FastString.fsLit (GHC.Base.hs_string__ "exit"))
+                   GHC.Builtin.Uniques.initExitJoinUnique Core.ManyTy ty) join_arity in
     GHC.Utils.Monad.State.Strict.get GHC.Base.>>=
     (fun fs =>
        let avoid :=
@@ -127,7 +127,7 @@ Import GHC.Base.Notations.
                                               let j_40__ :=
                                                 match arg_19__, arg_20__ with
                                                 | captured, pair _ (Core.AnnCase scrut bndr ty alts) =>
-                                                    Data.Traversable.forM alts (fun '(Core.AnnAlt dc pats rhs) =>
+                                                    Data.Traversable.forM alts (fun '(Core.Mk_AnnAlt dc pats rhs) =>
                                                                                   go (Coq.Init.Datatypes.app captured
                                                                                                              (Coq.Init.Datatypes.app
                                                                                                               (cons bndr
@@ -135,7 +135,7 @@ Import GHC.Base.Notations.
                                                                                                               pats)) rhs
                                                                                   GHC.Base.>>=
                                                                                   (fun rhs' =>
-                                                                                     GHC.Base.return_ (Core.Alt dc pats
+                                                                                     GHC.Base.return_ (Core.Mk_Alt dc pats
                                                                                                        rhs')))
                                                     GHC.Base.>>=
                                                     (fun alts' =>
@@ -150,7 +150,7 @@ Import GHC.Base.Notations.
                                                     let j_38__ :=
                                                       match ann_bind with
                                                       | Core.AnnRec pairs =>
-                                                          if Id.isJoinId (Data.Tuple.fst (GHC.Prelude.Basic.head
+                                                          if Id.isJoinId (Data.Tuple.fst (GHC.Err.head
                                                                                           pairs)) : bool
                                                           then let js := GHC.Base.map Data.Tuple.fst pairs in
                                                                Data.Traversable.forM pairs (fun '(pair j rhs) =>
@@ -249,9 +249,9 @@ Import GHC.Base.Notations.
            | in_scope, Core.Case scrut bndr ty alts =>
                let in_scope1 := Core.extendInScopeSet in_scope bndr in
                let go_alt :=
-                 fun '(Core.Alt dc pats rhs) =>
+                 fun '(Core.Mk_Alt dc pats rhs) =>
                    let in_scope' := Core.extendInScopeSetList in_scope1 pats in
-                   Core.Alt dc pats (go in_scope' rhs) in
+                   Core.Mk_Alt dc pats (go in_scope' rhs) in
                Core.Case (go in_scope scrut) bndr ty (GHC.Base.map go_alt alts)
            | in_scope, Core.Let (Core.NonRec bndr rhs) body =>
                let in_scope' := Core.extendInScopeSet in_scope bndr in
@@ -279,7 +279,7 @@ Import GHC.Base.Notations.
 (* External variables:
      andb bool cons false list negb nil op_zt__ pair AxiomatizedTypes.Type_
      BasicTypes.JoinArity Coq.Init.Datatypes.app Coq.Lists.List.flat_map
-     Coq.Lists.List.length Core.Alt Core.AnnAlt Core.AnnCase Core.AnnLet
+     Coq.Lists.List.length Core.Alt Core.Mk_AnnAlt Core.AnnCase Core.AnnLet
      Core.AnnNonRec Core.AnnRec Core.App Core.Case Core.Cast Core.CoreBind
      Core.CoreExpr Core.CoreProgram Core.InScopeSet Core.JoinId Core.Lam Core.Let
      Core.Lit Core.ManyTy Core.Mk_Coercion Core.Mk_Type Core.Mk_Var Core.NonRec
@@ -292,10 +292,10 @@ Import GHC.Base.Notations.
      CoreFVs.freeVars CoreUtils.exprType CoreUtils.extendInScopeSetBind
      CoreUtils.extendInScopeSetBndrs Data.Bifunctor.second Data.Foldable.all
      Data.Foldable.any Data.Foldable.elem Data.Foldable.foldr Data.Traversable.forM
-     Data.Tuple.fst Data.Tuple.snd GHC.Base.map GHC.Base.op_z2218U__
+     Data.Tuple.fst Data.Tuple.snd FastString.fsLit GHC.Base.map GHC.Base.op_z2218U__
      GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__ GHC.Base.return_
-     GHC.Builtin.Uniques.initExitJoinUnique GHC.Data.FastString.fsLit
-     GHC.Prelude.Basic.head GHC.Prim.rightSection GHC.Utils.Monad.State.Strict.State
+     GHC.Builtin.Uniques.initExitJoinUnique GHC.Err.head
+     GHC.Prim.rightSection GHC.Utils.Monad.State.Strict.State
      GHC.Utils.Monad.State.Strict.get GHC.Utils.Monad.State.Strict.put
      GHC.Utils.Monad.State.Strict.runState HsToCoq.DeferredFix.deferredFix2
      Id.asJoinId Id.idJoinArity Id.idJoinPointHood Id.isJoinId Id.mkSysLocal

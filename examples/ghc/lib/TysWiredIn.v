@@ -15,10 +15,13 @@ Require Coq.Program.Wf.
 Require AxiomatizedTypes.
 Require BasicTypes.
 Require Core.
-Require GHC.Base.
+Require FastString.
+Require Import GHC.Base.
 Require GHC.Core.Map.Type.
-Require GHC.Err.
+Require Import GHC.Err.
+Require Import HsToCoq.Err.
 Require HsSyn.
+Require Module.
 Require Name.
 Require OccName.
 Require PrelNames.
@@ -40,38 +43,9 @@ Arguments BI_NoBoxAvailable {_}.
 
 Arguments BI_Box {_} _ _ _.
 
-#[global] Definition bi_boxed_type {b} (arg_0__ : BoxingInfo b) :=
-  match arg_0__ with
-  | BI_NoBoxNeeded =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `bi_boxed_type' has no match in constructor `BI_NoBoxNeeded' of type `BoxingInfo'")
-  | BI_NoBoxAvailable =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `bi_boxed_type' has no match in constructor `BI_NoBoxAvailable' of type `BoxingInfo'")
-  | BI_Box _ _ bi_boxed_type => bi_boxed_type
-  end.
-
-#[global] Definition bi_data_con {b} (arg_0__ : BoxingInfo b) :=
-  match arg_0__ with
-  | BI_NoBoxNeeded =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `bi_data_con' has no match in constructor `BI_NoBoxNeeded' of type `BoxingInfo'")
-  | BI_NoBoxAvailable =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `bi_data_con' has no match in constructor `BI_NoBoxAvailable' of type `BoxingInfo'")
-  | BI_Box bi_data_con _ _ => bi_data_con
-  end.
-
-#[global] Definition bi_inst_con {b} (arg_0__ : BoxingInfo b) :=
-  match arg_0__ with
-  | BI_NoBoxNeeded =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `bi_inst_con' has no match in constructor `BI_NoBoxNeeded' of type `BoxingInfo'")
-  | BI_NoBoxAvailable =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `bi_inst_con' has no match in constructor `BI_NoBoxAvailable' of type `BoxingInfo'")
-  | BI_Box _ bi_inst_con _ => bi_inst_con
-  end.
+Axiom bi_boxed_type : forall {b}, BoxingInfo b -> AxiomatizedTypes.Type_.
+Axiom bi_data_con : forall {b}, BoxingInfo b -> Core.DataCon.
+Axiom bi_inst_con : forall {b}, BoxingInfo b -> Core.Expr b.
 
 (* Converted value declarations: *)
 
@@ -82,15 +56,15 @@ Axiom alpha_ty : list AxiomatizedTypes.Type_.
 Axiom wiredInTyCons : list Core.TyCon.
 
 Axiom mkWiredInTyConName : Name.BuiltInSyntax ->
-                           GHC.Unit.Types.Module ->
-                           GHC.Data.FastString.FastString -> Unique.Unique -> Core.TyCon -> Name.Name.
+                           Module.Module ->
+                           FastString.FastString -> Unique.Unique -> Core.TyCon -> Name.Name.
 
 Axiom mkWiredInDataConName : Name.BuiltInSyntax ->
-                             GHC.Unit.Types.Module ->
-                             GHC.Data.FastString.FastString -> Unique.Unique -> Core.DataCon -> Name.Name.
+                             Module.Module ->
+                             FastString.FastString -> Unique.Unique -> Core.DataCon -> Name.Name.
 
-Axiom mkWiredInIdName : GHC.Unit.Types.Module ->
-                        GHC.Data.FastString.FastString -> Unique.Unique -> Core.Id -> Name.Name.
+Axiom mkWiredInIdName : Module.Module ->
+                        FastString.FastString -> Unique.Unique -> Core.Id -> Name.Name.
 
 Axiom eqTyConName : Name.Name.
 
@@ -235,24 +209,20 @@ Axiom typeSymbolKind : AxiomatizedTypes.Kind.
 
 Axiom isBuiltInOcc_maybe : OccName.OccName -> option Name.Name.
 
-Axiom isTupleTyOcc_maybe : GHC.Unit.Types.Module ->
-                           OccName.OccName -> option Name.Name.
+Axiom isTupleTyOcc_maybe : Module.Module -> OccName.OccName -> option Name.Name.
 
-Axiom isCTupleOcc_maybe : GHC.Unit.Types.Module ->
-                          OccName.OccName -> option Name.Name.
+Axiom isCTupleOcc_maybe : Module.Module -> OccName.OccName -> option Name.Name.
 
 Axiom isTupleNTyOcc_maybe : OccName.OccName -> option Name.Name.
 
-Axiom isSumTyOcc_maybe : GHC.Unit.Types.Module ->
-                         OccName.OccName -> option Name.Name.
+Axiom isSumTyOcc_maybe : Module.Module -> OccName.OccName -> option Name.Name.
 
 Axiom isSumNTyOcc_maybe : OccName.OccName -> option Name.Name.
 
 Axiom arity_and_boxity : GHC.Base.String ->
                          option (BasicTypes.TupleSort * nat)%type.
 
-Axiom isPunOcc_maybe : GHC.Unit.Types.Module ->
-                       OccName.OccName -> option Name.Name.
+Axiom isPunOcc_maybe : Module.Module -> OccName.OccName -> option Name.Name.
 
 Axiom mkTupleOcc : OccName.NameSpace ->
                    HsSyn.Boxity -> BasicTypes.Arity -> (OccName.OccName * Name.BuiltInSyntax)%type.
@@ -312,8 +282,7 @@ Axiom isPromotedPairType : AxiomatizedTypes.Type_ ->
 
 (* Skipping definition `TysWiredIn.unboxedTupleArr' *)
 
-Axiom cTupleArr : GHC.Internal.Arr.Array nat (Core.TyCon * Core.DataCon *
-                                              GHC.Internal.Arr.Array nat Core.Id)%type.
+Axiom cTupleArr : list (Core.TyCon * Core.DataCon * list Core.Id)%type.
 
 Axiom unboxedTupleSumKind : Core.TyCon ->
                             list AxiomatizedTypes.Type_ -> AxiomatizedTypes.Kind.
@@ -323,8 +292,7 @@ Axiom unboxedTupleKind : list AxiomatizedTypes.Type_ -> AxiomatizedTypes.Kind.
 Axiom mk_tuple : HsSyn.Boxity -> nat -> (Core.TyCon * Core.DataCon)%type.
 
 Axiom mk_ctuple : BasicTypes.Arity ->
-                  (Core.TyCon * Core.DataCon *
-                   GHC.Internal.Arr.Array BasicTypes.ConTagZ Core.Id)%type.
+                  (Core.TyCon * Core.DataCon * list Core.Id)%type.
 
 Axiom unitTyCon : Core.TyCon.
 
@@ -464,7 +432,7 @@ Axiom sumRepDataConName : Name.Name.
 
 Axiom boxedRepDataConName : Name.Name.
 
-Axiom mk_runtime_rep_dc_name : GHC.Data.FastString.FastString ->
+Axiom mk_runtime_rep_dc_name : FastString.FastString ->
                                Unique.Unique -> Core.DataCon -> Name.Name.
 
 Axiom boxedRepDataCon : Core.DataCon.
@@ -571,8 +539,7 @@ Axiom boxingDataConMap : GHC.Core.Map.Type.TypeMap Core.DataCon.
 Axiom boxingDataCons : list (AxiomatizedTypes.Kind * Core.DataCon)%type.
 
 Axiom mkBoxingDataCon : Unique.Unique ->
-                        (AxiomatizedTypes.Kind * GHC.Data.FastString.FastString *
-                         GHC.Data.FastString.FastString)%type ->
+                        (AxiomatizedTypes.Kind * FastString.FastString * FastString.FastString)%type ->
                         (AxiomatizedTypes.Kind * Core.DataCon)%type.
 
 Axiom boolTy : AxiomatizedTypes.Type_.
@@ -703,9 +670,9 @@ Axiom pretendNameIsInScope : Name.Name -> bool.
      AxiomatizedTypes.PredType AxiomatizedTypes.ThetaType AxiomatizedTypes.Type_
      BasicTypes.Arity BasicTypes.ConTagZ BasicTypes.TupleSort Core.Class Core.DataCon
      Core.Expr Core.Id Core.PromDataConInfo Core.RuntimeRepType Core.Scaled
-     Core.TyCoVar Core.TyCon Core.TyVar GHC.Base.String GHC.Core.Map.Type.TypeMap
-     GHC.Data.FastString.FastString GHC.Err.error GHC.Internal.Arr.Array
-     GHC.Unit.Types.Module HsSyn.Boxity HsSyn.ConTag Name.BuiltInSyntax Name.Name
-     OccName.NameSpace OccName.OccName PrelNames.RdrName TcType.ConcreteTyVars
-     UniqSet.UniqSet Unique.Unique
+     Core.TyCoVar Core.TyCon Core.TyVar FastString.FastString GHC.Base.String
+     GHC.Core.Map.Type.TypeMap GHC.Err.error GHC.Internal.Arr.Array HsSyn.Boxity
+     HsSyn.ConTag Module.Module Name.BuiltInSyntax Name.Name OccName.NameSpace
+     OccName.OccName PrelNames.RdrName TcType.ConcreteTyVars UniqSet.UniqSet
+     Unique.Unique
 *)
