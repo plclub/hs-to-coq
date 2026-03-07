@@ -30,7 +30,7 @@ jobs:
         run: stack --no-terminal --system-ghc --allow-different-user build
 
   test-coq-files:
-    name: Testing base, containers (Coq 8.20)
+    name: Testing base, containers, ghc (Coq 8.20)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,6 +58,12 @@ jobs:
             make -j -C examples/containers/lib
             (cd examples/containers/theories; coq_makefile -f _CoqProject -o Makefile)
             make -j -C examples/containers/theories
+            endGroup
+            startGroup "Compiling GHC core"
+            (cd examples/ghc/lib; coq_makefile -f _CoqProject -o Makefile)
+            make -j -C examples/ghc/lib
+            (cd examples/ghc/theories; coq_makefile -f _CoqProject -o Makefile)
+            make -j -C examples/ghc/theories
             endGroup
 
   tests:
@@ -159,3 +165,10 @@ jobs:
           git add examples/containers/lib
           git status
           git diff-index --cached --quiet HEAD -- examples/containers/lib
+      - name: Translating GHC core
+        run: make -C examples/ghc vfiles
+      - name: Comparing convenience copy of GHC
+        run: |
+          git add examples/ghc/lib
+          git status
+          git diff-index --cached --quiet HEAD -- examples/ghc/lib
