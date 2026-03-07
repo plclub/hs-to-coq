@@ -7,10 +7,13 @@ rename type GHC.Types.Int = Coq.Numbers.BinNums.N
 
 skip module Test.QuickCheck
 skip module Test.QuickCheck.Property
+skip module Test.Tasty.QuickCheck
 skip module Utils.Containers.Internal.BitUtil
 
 rename type Test.QuickCheck.Property.Property = bool
 rename value Test.QuickCheck.Property..&&. = andb
+rename type Test.Tasty.QuickCheck.Property = bool
+rename value Test.Tasty.QuickCheck..&&. = andb
 
 rewrite forall s x, Test.QuickCheck.Property.counterexample s x = x
 

@@ -11,6 +11,7 @@ Require Import Psatz.
 Require Import CustomTactics.
 Require Import SortedUtil.
 Require Import Coq.Classes.Morphisms. (* For [Proper] *)
+Require Import Coq.Wellfounded.Inverse_Image.
 Set Bullet Behavior "Strict Subproofs".
 
 (** This file contains our specifications and proofs for [Data.Set]. The file
@@ -2055,18 +2056,38 @@ Proof.
   - intuition.
   - simpl. destruct s3 eqn:Hs3.
     + rewrite<- Hs3 in *. clear Hs3 e0 s4 s5 s6.
-      eapply splitMember_Desc;
-        only 1: eassumption.
-      intros s4' b s5' HB1 HB2 Hi.
-      rewrite !andb_true_iff.
-      rewrite IHHB1_1 by assumption; clear IHHB1_1.
-      rewrite IHHB1_2 by assumption; clear IHHB1_2.
-      split;intro Hyp; [decompose [and] Hyp | split; [| split]];
-        try f_solver.
-      * specialize (Hyp x). specialize (Hi x).
-        rewrite Eq_refl in Hi. rewrite Eq_refl in Hyp.
+      (* v0.7: handle singleton optimization *)
+      match goal with | |- context [if ?c then _ else _] =>
+        destruct c eqn:Hsingleton end.
+      * (* Singleton case: sz = 1 *)
+        unfold op_zeze__, Eq_Integer___, op_zeze____ in Hsingleton.
+        apply Z.eqb_eq in Hsingleton.
+        postive_sizes.
+        assert (s1 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_1)); lia).
+        assert (s2 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_2)); lia).
+        simpl. setoid_rewrite orb_false_r.
+        rewrite notMember_spec by eassumption.
         rewrite negb_true_iff.
-        repeat f_solver_cleanup.
+        split.
+        -- intros Hnm i.
+           destruct (i == x) eqn:Hix; simpl; [|reflexivity].
+           erewrite sem_resp_eq by eassumption. assumption.
+        -- intros Hall.
+           specialize (Hall x). rewrite Eq_refl in Hall. simpl in Hall.
+           assumption.
+      * (* Non-singleton case: same as v0.6 *)
+        eapply splitMember_Desc;
+          only 1: eassumption.
+        intros s4' b s5' HB1 HB2 Hi.
+        rewrite !andb_true_iff.
+        rewrite IHHB1_1 by assumption; clear IHHB1_1.
+        rewrite IHHB1_2 by assumption; clear IHHB1_2.
+        split;intro Hyp; [decompose [and] Hyp | split; [| split]];
+          try f_solver.
+        -- specialize (Hyp x). specialize (Hi x).
+           rewrite Eq_refl in Hi. rewrite Eq_refl in Hyp.
+           rewrite negb_true_iff.
+           repeat f_solver_cleanup.
     + simpl. setoid_rewrite andb_false_r. intuition.
 Qed.
 
@@ -2514,743 +2535,896 @@ Qed.
 
 (** ** Verification of [fromDistinctAscList] *)
 
-Definition fromDistinctAscList_create_f : (Int -> list e -> Set_ e * list e) -> (Int -> list e -> Set_ e * list e).
-Proof.
-  let rhs := eval unfold fromDistinctAscList in (@fromDistinctAscList e) in
-  lazymatch rhs with context [deferredFix2 ?f] => exact f end.
-Defined.
+(** The v0.7 algorithm uses a stack-based state machine driven by [foldl'].
+    We prove correctness directly on the generated definitions:
+    - [foldl'Stack], [fromDistinctAscList_linkTop], [fromDistinctAscList_linkAll]
+    - [fromDistinctAscList] = linkAll ∘ foldl' next (State0 Nada)
+*)
 
-Definition fromDistinctAscList_create : Int -> list e -> Set_ e * list e
-  := deferredFix2 (fromDistinctAscList_create_f).
+(** *** Semantic functions for Stack and State *)
 
-Lemma Z_shiftr_pos:
-  forall x, (1 < x -> 1 <= Z.shiftr x 1)%Z.
+Fixpoint stack_sem (stk : Stack e) (i : e) : bool :=
+  match stk with
+  | Nada => false
+  | Push x t stk' => (i == x) || sem t i || stack_sem stk' i
+  end.
+
+Fixpoint stack_size (stk : Stack e) : Z :=
+  match stk with
+  | Nada => 0
+  | Push _ t stk' => 1 + size t + stack_size stk'
+  end.
+
+Definition state_sem (st : FromDistinctMonoState e) (i : e) : bool :=
+  match st with
+  | State0 stk => stack_sem stk i
+  | State1 t stk => sem t i || stack_sem stk i
+  end.
+
+Definition state_size (st : FromDistinctMonoState e) : Z :=
+  match st with
+  | State0 stk => stack_size stk
+  | State1 t stk => size t + stack_size stk
+  end.
+
+(** *** Well-formedness of Stack for ascending lists *)
+
+Definition stack_ub (stk : Stack e) : bound :=
+  match stk with
+  | Nada => None
+  | Push x _ _ => Some x
+  end.
+
+Inductive WF_Stack_Asc : Stack e -> bound -> Prop :=
+  | WF_Nada_Asc : forall ub,
+      WF_Stack_Asc Nada ub
+  | WF_Push_Asc : forall x t stk ub,
+      Bounded t (stack_ub stk) (Some x) ->
+      isUB ub x = true ->
+      WF_Stack_Asc stk (Some x) ->
+      WF_Stack_Asc (Push x t stk) ub.
+
+Lemma WF_Stack_Asc_relax_ub :
+  forall stk ub1 ub2,
+  WF_Stack_Asc stk ub1 ->
+  (forall x, isUB ub1 x = true -> isUB ub2 x = true) ->
+  WF_Stack_Asc stk ub2.
 Proof.
-  intros.
-  rewrite Z.shiftr_div_pow2 by lia.
-  replace (2^1)%Z with 2%Z by reflexivity.
-  assert (2 <= x)%Z by lia. clear H.
-  apply Z.div_le_mono with (c := 2%Z) in H0.
-  apply H0.
-  lia.
+  intros stk ub1 ub2 HWF Hweaken.
+  inversion HWF as [| ? ? ? ? HBt Hub HWFstk']; subst.
+  - constructor.
+  - apply WF_Push_Asc; [assumption | apply Hweaken; assumption | assumption].
 Qed.
 
-Lemma Z_shiftl_pos:
-  forall x, (1 <= x -> 1 <= Z.shiftl x 1)%Z.
+Lemma WF_Stack_Asc_isLB_bound :
+  forall stk x,
+  WF_Stack_Asc stk (Some x) ->
+  isLB (stack_ub stk) x = true.
 Proof.
-  intros.
-  rewrite Z.shiftl_mul_pow2 by lia.
-  lia.
-Qed.
-
-
-Lemma Z_shiftr_lt:
-  forall x, (1 <= x -> Z.shiftr x 1 < x)%Z.
-Proof.
-  intros.
-  rewrite Z.shiftr_div_pow2 by lia.
-  replace (2^1)%Z with 2%Z by reflexivity.
-  apply Z_div_lt; lia.
-Qed.
-
-Require Import Coq.Wellfounded.Wellfounded.
-
-
-Lemma fromDistinctAscList_create_eq:
-  forall i xs, (1 <= i)%Z ->
-  fromDistinctAscList_create i xs = fromDistinctAscList_create_f fromDistinctAscList_create i xs.
-Proof.
-  intros.
-  change (uncurry fromDistinctAscList_create (i, xs) = uncurry (fromDistinctAscList_create_f fromDistinctAscList_create) (i, xs)).
-  apply deferredFix_eq_on with
-    (f := fun g => uncurry (fromDistinctAscList_create_f (curry g)))
-    (P := fun p => (1 <= fst p)%Z)
-    (R := fun x y => (1 <= fst x < fst y)%Z).
-  * eapply wf_inverse_image with (R := fun x y => (1 <= x < y)%Z).
-    apply Z.lt_wf with (z := 1%Z).
-  * clear i xs H.
-    intros g h x Px Heq.
-    destruct x as [i xs]. simpl in *.
-    unfold fromDistinctAscList_create_f.
-    destruct_match; try reflexivity.
-    repeat replace (#1) with 1%Z by reflexivity.
-    unfold op_zeze__, Eq_Integer___, op_zeze____.
-    destruct (Z.eqb_spec i 1); try reflexivity.
-    unfold curry.
-    assert (1 < i)%Z by lia.
-    assert (1 <= Z.shiftr i 1)%Z by (apply Z_shiftr_pos; lia).
-    assert (Z.shiftr i 1 < i)%Z by (apply Z_shiftr_lt; lia).
-    repeat expand_pairs. simpl.
-    rewrite Heq by eauto.
-    destruct_match; try reflexivity.
-    rewrite Heq by eauto.
-    reflexivity.
-  * simpl; lia.
-Qed.
-
-(* We need to know that [create] returns no longer list than it receives. *)
-Program Fixpoint fromDistinctAscList_create_preserves_length
-  i xs {measure (Z.to_nat i)} :
-  (1 <= i)%Z ->
-  forall (P : Set_ e * list e -> Prop),
-  ( forall s ys,
-    (length ys <= length xs)%nat ->
-    P (s, ys)
-  ) ->
-  P (fromDistinctAscList_create i xs) := _.
-Next Obligation.
-  intros.
-  rename fromDistinctAscList_create_preserves_length into IH.
-  rewrite fromDistinctAscList_create_eq by assumption.
-  unfold fromDistinctAscList_create_f.
-  destruct xs.
-  * apply H0. reflexivity.
-  * repeat replace (#1) with 1%Z by reflexivity.
-    unfold op_zeze__, Eq_Integer___, op_zeze____.
-    destruct (Z.eqb_spec i 1).
-    + apply H0. simpl. lia.
-    + assert (Z.to_nat (Bits.shiftR i #1) < Z.to_nat i)%nat. {
-        apply Z2Nat.inj_lt.
-        apply Z.shiftr_nonneg. lia.
-        lia.
-        apply Z_shiftr_lt; lia.
-      }
-      apply IH.
-      - assumption.
-      - apply Z_shiftr_pos; lia.
-      - intros.
-        destruct_match.
-        ** apply H0. simpl in *. lia.
-        ** apply IH.
-           -- assumption.
-           -- apply Z_shiftr_pos; lia.
-           -- intros.
-              apply H0. simpl in *. lia.
-Qed.
-
-Definition fromDistinctAscList_go_f : (Int -> Set_ e -> list e -> Set_ e) -> (Int -> Set_ e -> list e -> Set_ e).
-Proof.
-  let rhs := eval unfold fromDistinctAscList in (@fromDistinctAscList e) in
-  let rhs := eval fold fromDistinctAscList_create_f in rhs in
-  let rhs := eval fold fromDistinctAscList_create in rhs in
-  lazymatch rhs with context [deferredFix3 ?f] => exact f end.
-Defined.
-
-Definition fromDistinctAscList_go : Int -> Set_ e -> list e -> Set_ e
-  := deferredFix3 (fromDistinctAscList_go_f).
-
-Lemma fromDistinctAscList_go_eq:
-  forall i s xs, (0 < i)%Z ->
-  fromDistinctAscList_go i s xs = fromDistinctAscList_go_f fromDistinctAscList_go i s xs.
-Proof.
-  intros.
-  change (deferredFix (fun g => uncurry (uncurry (fromDistinctAscList_go_f (curry (curry g))))) (i, s, xs) =
-    uncurry (uncurry (fromDistinctAscList_go_f fromDistinctAscList_go)) (i, s, xs)).
-  rewrite deferredFix_eq_on with
-    (P := fun p => (1 <= fst (fst p))%Z)
-    (R := fun x y => (length (snd x) < length (snd y))%nat); only 1: reflexivity.
-  * apply well_founded_ltof with (f := fun x => length (snd x)).
-  * intros g h p Px Heq.
-    destruct p as [[x y] z].
-    simpl in *.
-    unfold fromDistinctAscList_go_f.
-    destruct_match; try reflexivity.
-    eapply fromDistinctAscList_create_preserves_length; try lia.
-    intros s' ys Hlength.
-    apply Heq.
-    + apply Z_shiftl_pos.
-      lia.
-    + simpl. lia.
-  * simpl. lia.
+  intros stk x HWF.
+  inversion HWF as [| ? ? ? ? _ Hub_x _]; subst.
+  - simpl. reflexivity.
+  - simpl stack_ub. simpl isLB. simpl isUB in Hub_x. exact Hub_x.
 Qed.
 
 Definition safeHd {a} : list a -> option a := fun xs =>
   match xs with [] => None | (x::_) => Some x end.
 
-Lemma mul_pow_sub:
-  forall sz, (0 < sz)%Z -> (2 * 2 ^ (sz - 1) = 2^sz)%Z.
+(** *** Helper lemmas for [bin] *)
+
+Lemma bin_Bounded :
+  forall x (l r : Set_ e) lb ub,
+  Bounded l lb (Some x) ->
+  Bounded r (Some x) ub ->
+  isLB lb x = true ->
+  isUB ub x = true ->
+  size l = size r ->
+  Bounded (bin x l r) lb ub.
 Proof.
-  intros.
-  rewrite <- Z.pow_succ_r by lia.
-  f_equal.
-  lia.
+  intros x l r lb ub HBl HBr Hlb Hub Hszeq.
+  unfold bin. simpl.
+  eapply BoundedBin; try eassumption.
+  - rewrite !size_size. lia.
+  - unfold balance_prop, delta, fromInteger, Num_Int__, Num_Integer__. rewrite Hszeq. lia.
 Qed.
 
-Program Fixpoint fromDistinctAscList_create_Desc
-  sz lb xs {measure (Z.to_nat sz)} :
-  (0 <= sz)%Z ->
-  StronglySorted (fun x y => x < y = true) (lb :: xs) ->
-  forall (P : Set_ e * list e -> Prop),
-  ( forall s ys,
-    Bounded s (Some lb) (safeHd ys) ->
-    xs = toList s ++ ys ->
-    ys = [] \/ size s = (2*2^sz-1)%Z ->
-    P (s, ys)
-  ) ->
-  P (fromDistinctAscList_create (2^sz)%Z xs) := _.
-Next Obligation.
-  intros ???? Hnonneg HSorted.
-  rename fromDistinctAscList_create_Desc into IH.
-  rewrite fromDistinctAscList_create_eq
-    by (enough (0 < 2^sz)%Z by lia; apply Z.pow_pos_nonneg; lia).
-  unfold fromDistinctAscList_create_f.
-  destruct xs.
-  * intros X HX. apply HX. clear HX.
-    - solve_Bounded.
-    - reflexivity.
-    - left. reflexivity.
-  * repeat replace (#1) with 1%Z by reflexivity.
-    unfold op_zeze__, Eq_Integer___, op_zeze____.
+Lemma bin_size :
+  forall x (l r : Set_ e),
+  size (bin x l r) = (1 + size l + size r)%Z.
+Proof.
+  intros. unfold bin. cbn [size]. rewrite !size_size.
+  unfold op_zp__, Num_Int__, fromInteger, Num_Integer__. lia.
+Qed.
 
-    inversion HSorted. subst.
-    inversion H2. subst. clear H2.
-    inversion H1. subst.
+Lemma bin_sem :
+  forall x (l r : Set_ e) i,
+  sem (bin x l r) i = sem l i || (i == x) || sem r i.
+Proof.
+  intros. unfold bin. simpl. reflexivity.
+Qed.
 
-    assert (isUB (safeHd xs) e0 = true). {
-      destruct xs; try reflexivity.
-      inversion H5. assumption.
+(** *** Correctness of [fromDistinctAscList_linkTop] *)
+
+Lemma linkTop_asc_sem :
+  forall r stk i,
+  state_sem (fromDistinctAscList_linkTop r stk) i = state_sem (State1 r stk) i.
+Proof.
+  intros r stk. revert r.
+  induction stk as [a0 s stk IHstk | ]; intros r i.
+  - (* Push *)
+    simpl fromDistinctAscList_linkTop.
+    destruct r as [rsz rv rl rr | ].
+    + destruct s as [lsz lv ll lr | ].
+      * unfold op_zeze__, Eq_Integer___, op_zeze____.
+        destruct (Z.eqb_spec rsz lsz).
+        -- rewrite IHstk. cbn [state_sem stack_sem].
+           rewrite bin_sem.
+           destruct (sem (Bin lsz lv ll lr) i), (i == a0), (sem (Bin rsz rv rl rr) i), (stack_sem stk i);
+             reflexivity.
+        -- reflexivity.
+      * reflexivity.
+    + reflexivity.
+  - (* Nada *) destruct r; reflexivity.
+Qed.
+
+Lemma linkTop_asc_size :
+  forall r stk,
+  state_size (fromDistinctAscList_linkTop r stk) = state_size (State1 r stk).
+Proof.
+  intros r stk. revert r.
+  induction stk as [a0 s stk IHstk | ]; intros r.
+  - (* Push *)
+    simpl fromDistinctAscList_linkTop.
+    destruct r as [rsz rv rl rr | ].
+    + destruct s as [lsz lv ll lr | ].
+      * unfold op_zeze__, Eq_Integer___, op_zeze____.
+        destruct (Z.eqb_spec rsz lsz).
+        -- rewrite IHstk. cbn [state_size stack_size].
+           rewrite bin_size. lia.
+        -- reflexivity.
+      * reflexivity.
+    + reflexivity.
+  - (* Nada *) destruct r; reflexivity.
+Qed.
+
+(** *** Correctness of [next] (ascending) *)
+
+Definition next_asc (st : FromDistinctMonoState e) (x : e) : FromDistinctMonoState e :=
+  match st with
+  | State0 stk => fromDistinctAscList_linkTop (Bin #1 x Tip Tip) stk
+  | State1 l stk => State0 (Push x l stk)
+  end.
+
+Lemma next_asc_eq :
+  forall st x,
+  next_asc st x =
+  match st with
+  | State0 stk => fromDistinctAscList_linkTop (Bin #1 x Tip Tip) stk
+  | State1 l stk => State0 (Push x l stk)
+  end.
+Proof. intros. destruct st; reflexivity. Qed.
+
+Lemma next_asc_sem :
+  forall st x i,
+  state_sem (next_asc st x) i = (i == x) || state_sem st i.
+Proof.
+  intros. destruct st.
+  - unfold next_asc. rewrite linkTop_asc_sem.
+    cbn [state_sem sem stack_sem].
+    rewrite !orb_false_r. reflexivity.
+  - cbn [next_asc state_sem stack_sem].
+    rewrite orb_assoc.
+    rewrite (orb_comm (i == x) (sem s i)).
+    rewrite <- orb_assoc. reflexivity.
+Qed.
+
+Lemma next_asc_size :
+  forall st x,
+  state_size (next_asc st x) = (1 + state_size st)%Z.
+Proof.
+  intros. destruct st.
+  - unfold next_asc. rewrite linkTop_asc_size.
+    cbn [state_size size stack_size].
+    unfold op_zp__, Num_Int__, fromInteger, Num_Integer__. lia.
+  - cbn [next_asc state_size stack_size]. lia.
+Qed.
+
+(** *** Semantic correctness of [foldl'] over [next_asc] *)
+
+Lemma foldl'_next_asc_sem :
+  forall xs st i,
+  state_sem (Data.Foldable.foldl' next_asc st xs) i =
+  List.elem i xs || state_sem st i.
+Proof.
+  induction xs as [| a0 xs IHxs]; intros.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_nil.
+    simpl. reflexivity.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_cons.
+    rewrite IHxs. rewrite next_asc_sem.
+    simpl List.elem. rewrite !orb_assoc.
+    rewrite (orb_comm (i == a0)). reflexivity.
+Qed.
+
+Lemma foldl'_next_asc_size :
+  forall xs st,
+  state_size (Data.Foldable.foldl' next_asc st xs) =
+  (Z.of_nat (length xs) + state_size st)%Z.
+Proof.
+  induction xs; intros.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_nil. simpl. lia.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_cons.
+    rewrite IHxs. rewrite next_asc_size. simpl length. lia.
+Qed.
+
+(** *** Bounded validity of [foldl'Stack] with [link] (ascending) *)
+
+Lemma foldl'Stack_link_asc_valid :
+  forall stk (acc : Set_ e) lb,
+  WF_Stack_Asc stk lb ->
+  Bounded acc (stack_ub stk) None ->
+  Bounded (foldl'Stack (fun r x l => link x l r) acc stk) None None /\
+  size (foldl'Stack (fun r x l => link x l r) acc stk) = size acc + stack_size stk /\
+  (forall i, sem (foldl'Stack (fun r x l => link x l r) acc stk) i =
+             sem acc i || stack_sem stk i).
+Proof.
+  induction stk as [a0 s stk IHstk | ]; intros acc lb HWF HBacc.
+  - (* Push *)
+    inversion HWF as [| ? ? ? ? HBt Hub HWFstk]; subst; clear HWF.
+    simpl foldl'Stack.
+    assert (Hlb_a0 : isLB (stack_ub stk) a0 = true). {
+      inversion HWFstk; subst; simpl; try reflexivity.
+      assumption.
     }
-
-    destruct (Z.eqb_spec (2^sz) 1).
-    - intros X HX. apply HX. clear HX.
-      ++ solve_Bounded.
-      ++ rewrite toList_Bin, toList_Tip, app_nil_r. reflexivity.
-      ++ right. rewrite size_Bin. lia.
-    - assert (~ (sz = 0))%Z by (intro; subst; simpl in n; congruence).
-      assert (sz > 0)%Z by lia.
-      replace ((Bits.shiftR (2 ^ sz)%Z 1%Z)) with (2^(sz - 1))%Z.
-      Focus 2.
-        unfold Bits.shiftR, Bits.instance_Bits_Int.
-        rewrite Z.shiftr_div_pow2 by lia.
-        rewrite Z.pow_sub_r by lia.
-        reflexivity.
-      assert (Z.to_nat (sz - 1) < Z.to_nat sz)%nat.
-      { rewrite Z2Nat.inj_sub by lia.
-        apply Nat.sub_lt.
-        apply Z2Nat.inj_le.
-        lia.
-        lia.
-        lia.
-        replace (Z.to_nat 1) with 1 by reflexivity.
-        lia.
-      }
-      eapply IH.
-      ++ assumption.
-      ++ lia.
-      ++ eassumption.
-      ++ intros l ys HBounded_l Hlist_l Hsize_l.
-         destruct ys.
-         + intros X HX. apply HX. clear HX.
-           ** solve_Bounded.
-           ** assumption.
-           ** left; reflexivity.
-         + simpl in HBounded_l.
-           destruct Hsize_l; try congruence.
-           eapply IH; clear IH.
-           ** assumption.
-           ** lia.
-           ** rewrite Hlist_l in H1.
-              apply StronglySorted_app in H1.
-              destruct H1.
-              eassumption.
-           ** intros r zs HBounded_r Hlist_r Hsize_r.
-              rewrite Hlist_l in HSorted.
-              assert (isLB (Some lb) e1 = true). {
-                apply StronglySorted_inv in HSorted.
-                destruct HSorted.
-                simpl.
-                rewrite Forall_forall in H10.
-                apply H10.
-                apply in_or_app. right. left. reflexivity.
-              }
-              rewrite Hlist_r in HSorted.
-              assert (isUB (safeHd zs) e1 = true). {
-                destruct zs; try reflexivity.
-                apply StronglySorted_inv in HSorted.
-                destruct HSorted.
-                apply StronglySorted_app in H10.
-                destruct H10.
-                apply StronglySorted_inv in H12.
-                destruct H12.
-                rewrite Forall_forall in H13.
-                apply H13.
-                apply in_or_app. right. left. reflexivity.
-              }
-              intros X HX. apply HX. clear HX.
-              -- applyDesc link_Desc.
-              -- erewrite toList_link by eassumption.
-                 rewrite Hlist_l. rewrite Hlist_r.
-                 rewrite <- !app_assoc.  reflexivity.
-              -- destruct Hsize_r; [left; assumption| right].
-                 applyDesc link_Desc.
-                 replace (size l). replace (size r).
-                 rewrite mul_pow_sub in * by lia.
-                 lia.
+    assert (HBlink : Desc (link a0 s acc) (stack_ub stk) None
+                       (1 + size s + size acc)
+                       (fun i => sem s i || (i == a0) || sem acc i)).
+    { applyDesc link_Desc. solve_Desc. }
+    set (la := link a0 s acc) in *.
+    assert (HB_la : Bounded la (stack_ub stk) None). {
+      apply HBlink. intros; assumption.
+    }
+    assert (Hsz_la : size la = #1 + size s + size acc). {
+      apply HBlink. intros; assumption.
+    }
+    assert (Hsem_la : forall i, sem la i = sem s i || (i == a0) || sem acc i). {
+      apply HBlink. intros ? ? ? HH. exact HH.
+    }
+    specialize (IHstk la (Some a0) HWFstk HB_la).
+    destruct IHstk as [IH1 [IH2 IH3]].
+    split; [| split].
+    + assumption.
+    + cbn [stack_size]. rewrite IH2. rewrite Hsz_la.
+      unfold op_zp__, Num_Int__, Num_Integer__, fromInteger. lia.
+    + intros i. rewrite IH3. rewrite Hsem_la.
+      simpl stack_sem. rewrite !orb_assoc.
+      destruct (sem s i), (i == a0), (sem acc i), (stack_sem stk i); reflexivity.
+  - (* Nada *)
+    simpl. split; [| split].
+    + solve_Bounded.
+    + lia.
+    + intros. rewrite orb_false_r. reflexivity.
 Qed.
 
-Program Fixpoint fromDistinctAscList_go_Desc
-  sz s xs {measure (length xs)} :
-  (0 <= sz)%Z ->
-  StronglySorted (fun x y => x < y = true) xs ->
-  Bounded s None (safeHd xs) ->
-  xs = [] \/ size s = (2*2^sz-1)%Z ->
-  Desc (fromDistinctAscList_go (2^sz)%Z s xs) None None (size s + List.length xs)
-    (fun i => sem s i || List.elem i xs) := _.
-Next Obligation.
-  intros.
-  rename fromDistinctAscList_go_Desc into IH.
-  rewrite fromDistinctAscList_go_eq by (apply Z.pow_pos_nonneg; lia).
-  unfold fromDistinctAscList_go_f.
-  destruct xs.
-  * replace (List.length []) with 0%Z by reflexivity.
-    rewrite Z.add_0_r.
-    solve_Desc.
-  * repeat replace (#1) with 1%Z by reflexivity.
-    replace ((Bits.shiftL (2 ^ sz)%Z 1))%Z with (2 ^ (1 + sz))%Z.
-    Focus 2.
-      unfold Bits.shiftL, Bits.instance_Bits_Int.
-      rewrite Z.shiftl_mul_pow2 by lia.
-      rewrite Z.pow_add_r by lia.
-      lia.
+(** *** WF state invariant for ascending construction *)
 
-    destruct H2; try congruence.
-    eapply fromDistinctAscList_create_Desc.
-    - lia.
-    - eassumption.
-    - intros.
-      subst.
-      simpl safeHd in *.
-      assert (isUB (safeHd ys) e0 = true). {
-        destruct ys; try reflexivity.
-        apply StronglySorted_inv in H0.
-        destruct H0.
-        rewrite Forall_forall in H4.
-        apply H4.
-        apply in_or_app. right. left. reflexivity.
-      }
-      applyDesc link_Desc.
-      eapply IH.
-      + simpl. rewrite app_length. lia.
-      + lia.
-      + apply StronglySorted_inv in H0.
-        destruct H0.
-        apply StronglySorted_app in H0.
-        destruct H0.
-        assumption.
-      + assumption.
-      + destruct H5; [left; assumption | right].
-        replace (size s1). replace (size s).  replace (size s0).
-        rewrite Z.pow_add_r by lia.
-        lia.
-      + intros.
-        solve_Desc.
-        ** replace (size s2). replace (size s1). replace (size s).
-           rewrite !List.hs_coq_list_length, !Zlength_correct.
-           simpl length.
-           rewrite app_length, Nat2Z.inj_succ, Nat2Z.inj_add.
-           erewrite <- size_spec by eassumption.
-           lia.
-        ** setoid_rewrite elem_cons.
-           setoid_rewrite elem_app.
-           setoid_rewrite <- toList_sem; only 2: eassumption.
-           f_solver.
+Inductive WF_State_Asc2 : FromDistinctMonoState e -> bound -> Prop :=
+  | WFSA_State0 : forall stk ub,
+      WF_Stack_Asc stk ub ->
+      WF_State_Asc2 (State0 stk) ub
+  | WFSA_State1 : forall t stk ub,
+      Bounded t (stack_ub stk) ub ->
+      WF_Stack_Asc stk ub ->
+      WF_State_Asc2 (State1 t stk) ub.
+
+Lemma linkTop_asc_WF2 :
+  forall r stk ub,
+  Bounded r (stack_ub stk) ub ->
+  WF_Stack_Asc stk ub ->
+  WF_State_Asc2 (fromDistinctAscList_linkTop r stk) ub.
+Proof.
+  intros r stk. revert r.
+  induction stk as [a0 s stk IHstk | ]; intros r ub HBr HWF.
+  - (* Push *)
+    simpl fromDistinctAscList_linkTop.
+    inversion HWF as [| ? ? ? ? HBs Hub HWFstk]; subst; clear HWF.
+    destruct r as [rsz rv rl rr | ].
+    + destruct s as [lsz lv ll lr | ].
+      * unfold op_zeze__, Eq_Integer___, op_zeze____.
+        destruct (Z.eqb_spec rsz lsz).
+        -- (* sizes match: recurse *)
+           apply IHstk.
+           ++ apply bin_Bounded; try assumption.
+              ** (* isLB (stack_ub stk) a0 *)
+                 assert (HlbLv : isLB (stack_ub stk) lv = true) by
+                   (inversion HBs; assumption).
+                 assert (HubLv : lv < a0 = true) by
+                   (inversion HBs; simpl isUB in *; assumption).
+                 eapply isLB_lt; eassumption.
+              ** (* size s = size r *) simpl. lia.
+           ++ eapply WF_Stack_Asc_relax_ub. exact HWFstk.
+              intros y Hy. simpl isUB in *.
+              destruct ub; simpl in *; [order e | reflexivity].
+        -- constructor; [assumption | apply WF_Push_Asc; assumption].
+      * constructor; [assumption | apply WF_Push_Asc; assumption].
+    + constructor; [assumption | apply WF_Push_Asc; assumption].
+  - (* Nada *) simpl. destruct r; constructor; assumption.
 Qed.
 
+Lemma next_asc_WF2 :
+  forall st x ub,
+  WF_State_Asc2 st (Some x) ->
+  isUB ub x = true ->
+  WF_State_Asc2 (next_asc st x) ub.
+Proof.
+  intros st x ub HWF Hub.
+  destruct st as [stk | t stk].
+  - (* State0: singleton then linkTop *)
+    inversion HWF as [? ? HWFstk |]; subst. simpl next_asc.
+    apply linkTop_asc_WF2.
+    + apply BoundedBin with (sz := 1%Z).
+      * apply BoundedTip.
+      * apply BoundedTip.
+      * (* isLB (stack_ub stk) x *)
+        apply WF_Stack_Asc_isLB_bound. assumption.
+      * assumption.
+      * simpl. lia.
+      * unfold balance_prop, delta, fromInteger, Num_Int__, Num_Integer__. lia.
+    + eapply WF_Stack_Asc_relax_ub. exact HWFstk.
+      intros y Hy. simpl isUB in *.
+      destruct ub; simpl in *; [order e | reflexivity].
+  - (* State1: push onto stack *)
+    inversion HWF as [| ? ? ? HBt HWFstk]; subst. simpl next_asc.
+    constructor. apply WF_Push_Asc; assumption.
+Qed.
+
+(** *** [linkAll] on a WF state produces a valid tree *)
+
+Lemma linkAll_asc_Bounded :
+  forall st ub,
+  WF_State_Asc2 st ub ->
+  Bounded (fromDistinctAscList_linkAll st) None None.
+Proof.
+  intros st ub HWF.
+  unfold fromDistinctAscList_linkAll.
+  destruct st; inversion HWF; subst.
+  - eapply (fun H1 H2 => proj1 (foldl'Stack_link_asc_valid _ _ _ H1 H2)).
+    + eassumption.
+    + apply BoundedTip.
+  - eapply (fun H1 H2 => proj1 (foldl'Stack_link_asc_valid _ _ _ H1 H2)).
+    + eassumption.
+    + eapply Bounded_relax_ub_None. eassumption.
+Qed.
+
+(** *** Tracking WF through the [foldl'] loop *)
+
+Lemma foldl'_next_asc_WF :
+  forall xs st ub,
+  WF_State_Asc2 st (safeHd xs) ->
+  (xs = nil -> WF_State_Asc2 st ub) ->
+  StronglySorted (fun x y : e => (x < y) = true) xs ->
+  (forall x, List.elem x xs = true -> isUB ub x = true) ->
+  WF_State_Asc2 (Data.Foldable.foldl' next_asc st xs) ub.
+Proof.
+  induction xs; intros st ub HWF0 HWFnil HSorted Hub.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_nil. apply HWFnil. reflexivity.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_cons.
+    apply IHxs.
+    + (* WF after processing a *)
+      destruct xs.
+      * simpl safeHd.
+        apply next_asc_WF2 with (ub := None).
+        -- simpl safeHd in HWF0. assumption.
+        -- simpl. reflexivity.
+      * simpl safeHd.
+        apply next_asc_WF2 with (ub := Some e0).
+        -- simpl safeHd in HWF0. assumption.
+        -- inversion HSorted as [| ? ? HSorted' HForall]; subst.
+           inversion HForall as [| ? ? Ha_lt_e0 _]; subst. assumption.
+    + intros Hnil. subst.
+      apply next_asc_WF2 with (ub := ub).
+      * simpl safeHd in HWF0. assumption.
+      * apply Hub. simpl. rewrite Eq_refl. reflexivity.
+    + inversion HSorted; subst. assumption.
+    + intros x Helem. apply Hub. simpl. rewrite Helem. apply orb_true_r.
+Qed.
+
+(** *** Assembling [fromDistinctAscList_Desc] *)
 
 Lemma fromDistinctAscList_Desc:
   forall xs,
   StronglySorted (fun x y => x < y = true) xs ->
   Desc (fromDistinctAscList xs) None None (List.length xs) (fun i => List.elem i xs).
 Proof.
-  intros.
-  unfold fromDistinctAscList.
-  fold fromDistinctAscList_create_f.
-  fold fromDistinctAscList_create.
-  fold fromDistinctAscList_go_f.
-  fold fromDistinctAscList_go.
-  destruct xs.
-  * solve_Desc.
-  * replace (#1) with (2^0)%Z by reflexivity.
-    eapply fromDistinctAscList_go_Desc.
-    + lia.
-    + apply StronglySorted_inv in H.
-      destruct H.
-      assumption.
-    + assert (isUB (safeHd xs) e0 = true). {
-        destruct xs; try reflexivity.
-        apply StronglySorted_inv in H.
-        destruct H.
-        rewrite Forall_forall in H0.
-        apply H0.
-        left. reflexivity.
-      }
-      solve_Bounded.
-    + right. reflexivity.
-    + intros.
-      rewrite List.hs_coq_list_length, Zlength_cons in *.
-      rewrite size_Bin in *.
-      solve_Desc.
-      setoid_rewrite elem_cons.
-      f_solver.
+  intros xs HSorted.
+  unfold fromDistinctAscList, op_z2218U__.
+  set (next := fun (arg_0__ : FromDistinctMonoState e) (arg_1__ : e) =>
+    match arg_0__, arg_1__ with
+    | State0 stk, x => fromDistinctAscList_linkTop (Bin #1 x Tip Tip) stk
+    | State1 l stk, x => State0 (Push x l stk)
+    end).
+  assert (Hnext_eq : forall st x, next st x = next_asc st x). {
+    intros. destruct st; reflexivity.
+  }
+  set (final_state := Data.Foldable.foldl' next (State0 Nada) xs).
+  assert (Hfinal_eq : final_state = Data.Foldable.foldl' next_asc (State0 Nada) xs). {
+    unfold final_state. f_equal.
+  }
+  (* 1. Semantic correctness *)
+  assert (Hsem_state : forall i, state_sem final_state i = List.elem i xs). {
+    intros i. rewrite Hfinal_eq.
+    rewrite foldl'_next_asc_sem. simpl. rewrite orb_false_r. reflexivity.
+  }
+  (* 2. Size correctness *)
+  assert (Hsize_state : state_size final_state = Z.of_nat (length xs)). {
+    rewrite Hfinal_eq.
+    rewrite foldl'_next_asc_size. simpl. lia.
+  }
+  (* 3. WF of final state *)
+  assert (HWF : exists ub, WF_State_Asc2 final_state ub). {
+    rewrite Hfinal_eq.
+    destruct xs.
+    - exists None. simpl.
+      rewrite Proofs.Data.Foldable.Foldable_foldl'_nil.
+      constructor. constructor.
+    - exists None.
+      apply foldl'_next_asc_WF with (ub := None).
+      + simpl safeHd. constructor. constructor.
+      + intros Hnil. discriminate.
+      + assumption.
+      + intros. simpl. reflexivity.
+  }
+  destruct HWF as [ub HWF_final].
+  (* 4. linkAll produces valid Bounded tree *)
+  assert (HBounded : Bounded (fromDistinctAscList_linkAll final_state) None None). {
+    eapply linkAll_asc_Bounded. eassumption.
+  }
+  (* 5. linkAll preserves semantics *)
+  assert (Hsem_out : forall i, sem (fromDistinctAscList_linkAll final_state) i =
+                                List.elem i xs). {
+    intro i.
+    unfold fromDistinctAscList_linkAll.
+    destruct final_state eqn:Hfs.
+    - inversion HWF_final; subst.
+      pose proof (foldl'Stack_link_asc_valid s Tip ub) as HV.
+      destruct HV as [_ [_ HVsem]].
+      * assumption.
+      * apply BoundedTip.
+      * rewrite HVsem. simpl. rewrite <- Hsem_state. simpl. reflexivity.
+    - inversion HWF_final; subst.
+      pose proof (foldl'Stack_link_asc_valid s0 s ub) as HV.
+      destruct HV as [_ [_ HVsem]].
+      * assumption.
+      * eapply Bounded_relax_ub_None. eassumption.
+      * rewrite HVsem. rewrite <- Hsem_state. simpl. reflexivity.
+  }
+  (* 6. linkAll preserves size *)
+  assert (Hsize_out : size (fromDistinctAscList_linkAll final_state) =
+                      Z.of_nat (length xs)). {
+    unfold fromDistinctAscList_linkAll.
+    destruct final_state eqn:Hfs.
+    - inversion HWF_final; subst.
+      pose proof (foldl'Stack_link_asc_valid s Tip ub) as HV.
+      destruct HV as [_ [HVsz _]].
+      * assumption.
+      * apply BoundedTip.
+      * rewrite HVsz. simpl.
+        rewrite <- Hsize_state. simpl. lia.
+    - inversion HWF_final; subst.
+      pose proof (foldl'Stack_link_asc_valid s0 s ub) as HV.
+      destruct HV as [_ [HVsz _]].
+      * assumption.
+      * eapply Bounded_relax_ub_None. eassumption.
+      * rewrite HVsz. rewrite <- Hsize_state. simpl. lia.
+  }
+  (* Assemble *)
+  apply showDesc. split; [| split].
+  - assumption.
+  - rewrite Hsize_out. rewrite List.hs_coq_list_length.
+    rewrite Zlength_correct. reflexivity.
+  - intros i. apply Hsem_out.
 Qed.
 
 (** ** Verification of [fromDistinctDescList] *)
 
-(** Copy’n’paste from [fromDistinctAscList] *)
+(** *** Well-formedness of Stack for descending lists *)
 
-Definition fromDistinctDescList_create_f : (Int -> list e -> Set_ e * list e) -> (Int -> list e -> Set_ e * list e).
+Inductive WF_Stack_Desc : Stack e -> bound -> Prop :=
+  | WF_Nada_Desc : forall lb,
+      WF_Stack_Desc Nada lb
+  | WF_Push_Desc : forall x t stk lb,
+      Bounded t (Some x) (stack_ub stk) ->
+      isLB lb x = true ->
+      WF_Stack_Desc stk (Some x) ->
+      WF_Stack_Desc (Push x t stk) lb.
+
+Lemma WF_Stack_Desc_relax_lb :
+  forall stk lb1 lb2,
+  WF_Stack_Desc stk lb1 ->
+  (forall x, isLB lb1 x = true -> isLB lb2 x = true) ->
+  WF_Stack_Desc stk lb2.
 Proof.
-  let rhs := eval unfold fromDistinctDescList in (@fromDistinctDescList e) in
-  lazymatch rhs with context [deferredFix2 ?f] => exact f end.
-Defined.
-
-Definition fromDistinctDescList_create : Int -> list e -> Set_ e * list e
-  := deferredFix2 (fromDistinctDescList_create_f).
-
-Lemma fromDistinctDescList_create_eq:
-  forall i xs, (1 <= i)%Z ->
-  fromDistinctDescList_create i xs = fromDistinctDescList_create_f fromDistinctDescList_create i xs.
-Proof.
-  intros.
-  change (uncurry fromDistinctDescList_create (i, xs) = uncurry (fromDistinctDescList_create_f fromDistinctDescList_create) (i, xs)).
-  apply deferredFix_eq_on with
-    (f := fun g => uncurry (fromDistinctDescList_create_f (curry g)))
-    (P := fun p => (1 <= fst p)%Z)
-    (R := fun x y => (1 <= fst x < fst y)%Z).
-  * eapply wf_inverse_image with (R := fun x y => (1 <= x < y)%Z).
-    apply Z.lt_wf with (z := 1%Z).
-  * clear i xs H.
-    intros g h x Px Heq.
-    destruct x as [i xs]. simpl in *.
-    unfold fromDistinctDescList_create_f.
-    destruct_match; try reflexivity.
-    repeat replace (#1) with 1%Z by reflexivity.
-    unfold op_zeze__, Eq_Integer___, op_zeze____.
-    destruct (Z.eqb_spec i 1); try reflexivity.
-    unfold curry.
-    assert (1 < i)%Z by lia.
-    assert (1 <= Z.shiftr i 1)%Z by (apply Z_shiftr_pos; lia).
-    assert (Z.shiftr i 1 < i)%Z by (apply Z_shiftr_lt; lia).
-    repeat expand_pairs. simpl.
-    rewrite Heq by eauto.
-    destruct_match; try reflexivity.
-    rewrite Heq by eauto.
-    reflexivity.
-  * simpl; lia.
+  intros stk lb1 lb2 HWF Hweaken.
+  inversion HWF as [| ? ? ? ? HBt Hlb HWFstk']; subst.
+  - constructor.
+  - apply WF_Push_Desc; [assumption | apply Hweaken; assumption | assumption].
 Qed.
 
-(* We need to know that [create] returns no longer list than it receives. *)
-Program Fixpoint fromDistinctDescList_create_preserves_length
-  i xs {measure (Z.to_nat i)} :
-  (1 <= i)%Z ->
-  forall (P : Set_ e * list e -> Prop),
-  ( forall s ys,
-    (length ys <= length xs)%nat ->
-    P (s, ys)
-  ) ->
-  P (fromDistinctDescList_create i xs) := _.
-Next Obligation.
-  intros.
-  rename fromDistinctDescList_create_preserves_length into IH.
-  rewrite fromDistinctDescList_create_eq by assumption.
-  unfold fromDistinctDescList_create_f.
-  destruct xs.
-  * apply H0. reflexivity.
-  * repeat replace (#1) with 1%Z by reflexivity.
-    unfold op_zeze__, Eq_Integer___, op_zeze____.
-    destruct (Z.eqb_spec i 1).
-    + apply H0. simpl. lia.
-    + assert (Z.to_nat (Bits.shiftR i #1) < Z.to_nat i)%nat. {
-        apply Z2Nat.inj_lt.
-        apply Z.shiftr_nonneg. lia.
-        lia.
-        apply Z_shiftr_lt; lia.
-      }
-      apply IH.
-      - assumption.
-      - apply Z_shiftr_pos; lia.
-      - intros.
-        destruct_match.
-        ** apply H0. simpl in *. lia.
-        ** apply IH.
-           -- assumption.
-           -- apply Z_shiftr_pos; lia.
-           -- intros.
-              apply H0. simpl in *. lia.
+Lemma WF_Stack_Desc_isUB_bound :
+  forall stk x,
+  WF_Stack_Desc stk (Some x) ->
+  isUB (stack_ub stk) x = true.
+Proof.
+  intros stk x HWF.
+  inversion HWF as [| ? ? ? ? _ Hlb_x _]; subst.
+  - simpl. reflexivity.
+  - simpl stack_ub. simpl isUB. simpl isLB in Hlb_x. exact Hlb_x.
 Qed.
 
-Definition fromDistinctDescList_go_f : (Int -> Set_ e -> list e -> Set_ e) -> (Int -> Set_ e -> list e -> Set_ e).
+(** *** Bounded validity of [foldl'Stack] with [link] (descending) *)
+
+Lemma foldl'Stack_link_desc_valid :
+  forall stk (acc : Set_ e) lb,
+  WF_Stack_Desc stk lb ->
+  Bounded acc None (stack_ub stk) ->
+  Bounded (foldl'Stack (fun l x r => link x l r) acc stk) None None /\
+  size (foldl'Stack (fun l x r => link x l r) acc stk) = size acc + stack_size stk /\
+  (forall i, sem (foldl'Stack (fun l x r => link x l r) acc stk) i =
+             sem acc i || stack_sem stk i).
 Proof.
-  let rhs := eval unfold fromDistinctDescList in (@fromDistinctDescList e) in
-  let rhs := eval fold fromDistinctDescList_create_f in rhs in
-  let rhs := eval fold fromDistinctDescList_create in rhs in
-  lazymatch rhs with context [deferredFix3 ?f] => exact f end.
-Defined.
-
-Definition fromDistinctDescList_go : Int -> Set_ e -> list e -> Set_ e
-  := deferredFix3 (fromDistinctDescList_go_f).
-
-Lemma fromDistinctDescList_go_eq:
-  forall i s xs, (0 < i)%Z ->
-  fromDistinctDescList_go i s xs = fromDistinctDescList_go_f fromDistinctDescList_go i s xs.
-Proof.
-  intros.
-  change (deferredFix (fun g => uncurry (uncurry (fromDistinctDescList_go_f (curry (curry g))))) (i, s, xs) =
-    uncurry (uncurry (fromDistinctDescList_go_f fromDistinctDescList_go)) (i, s, xs)).
-  rewrite deferredFix_eq_on with
-    (P := fun p => (1 <= fst (fst p))%Z)
-    (R := fun x y => (length (snd x) < length (snd y))%nat); only 1: reflexivity.
-  * apply well_founded_ltof with (f := fun x => length (snd x)).
-  * intros g h p Px Heq.
-    destruct p as [[x y] z].
-    simpl in *.
-    unfold fromDistinctDescList_go_f.
-    destruct_match; try reflexivity.
-    eapply fromDistinctDescList_create_preserves_length; try lia.
-    intros s' ys Hlength.
-    apply Heq.
-    + apply Z_shiftl_pos.
-      lia.
-    + simpl. lia.
-  * simpl. lia.
-Qed.
-
-
-Program Fixpoint fromDistinctDescList_create_Desc
-  sz ub xs {measure (Z.to_nat sz)} :
-  (0 <= sz)%Z ->
-  StronglySorted (fun x y => x > y = true) (ub :: xs) ->
-  forall (P : Set_ e * list e -> Prop),
-  ( forall s ys,
-    Bounded s (safeHd ys) (Some ub)   ->
-    xs = rev (toList s) ++ ys ->
-    ys = [] \/ size s = (2*2^sz-1)%Z ->
-    P (s, ys)
-  ) ->
-  P (fromDistinctDescList_create (2^sz)%Z xs) := _.
-Next Obligation.
-  intros ???? Hnonneg HSorted.
-  rename fromDistinctDescList_create_Desc into IH.
-  rewrite fromDistinctDescList_create_eq
-    by (enough (0 < 2^sz)%Z by lia; apply Z.pow_pos_nonneg; lia).
-  unfold fromDistinctDescList_create_f.
-  destruct xs.
-  * intros X HX. apply HX. clear HX.
-    - solve_Bounded.
-    - reflexivity.
-    - left. reflexivity.
-  * repeat replace (#1) with 1%Z by reflexivity.
-    unfold op_zeze__, Eq_Integer___, op_zeze____.
-
-    inversion HSorted. subst.
-    inversion H2. subst. clear H2.
-    inversion H1. subst.
-
-    assert (isLB (safeHd xs) e0 = true). {
-      destruct xs; try reflexivity.
-      inversion H5. simpl. order e.
+  induction stk as [a0 s stk IHstk | ]; intros acc lb HWF HBacc.
+  - (* Push *)
+    inversion HWF as [| ? ? ? ? HBt Hub HWFstk]; subst; clear HWF.
+    simpl foldl'Stack. simpl stack_ub in HBacc.
+    assert (Hlb_a0 : isUB (stack_ub stk) a0 = true). {
+      inversion HWFstk; subst; simpl; try reflexivity.
+      assumption.
     }
-
-    destruct (Z.eqb_spec (2^sz) 1).
-    - intros X HX. apply HX. clear HX.
-      ++ solve_Bounded.
-      ++ rewrite toList_Bin, toList_Tip, app_nil_r. reflexivity.
-      ++ right. rewrite size_Bin. lia.
-    - assert (~ (sz = 0))%Z by (intro; subst; simpl in n; congruence).
-      assert (sz > 0)%Z by lia.
-      replace ((Bits.shiftR (2 ^ sz)%Z 1%Z)) with (2^(sz - 1))%Z.
-      Focus 2.
-        unfold Bits.shiftR, Bits.instance_Bits_Int.
-        rewrite Z.shiftr_div_pow2 by lia.
-        rewrite Z.pow_sub_r by lia.
-        reflexivity.
-      assert (Z.to_nat (sz - 1) < Z.to_nat sz)%nat.
-      { rewrite Z2Nat.inj_sub by lia.
-        apply Nat.sub_lt.
-        apply Z2Nat.inj_le.
-        lia.
-        lia.
-        lia.
-        replace (Z.to_nat 1) with 1 by reflexivity.
-        lia.
-      }
-      eapply IH.
-      ++ assumption.
-      ++ lia.
-      ++ eassumption.
-      ++ intros l ys HBounded_l Hlist_l Hsize_l.
-         destruct ys.
-         + intros X HX. apply HX. clear HX.
-           ** solve_Bounded.
-           ** assumption.
-           ** left; reflexivity.
-         + simpl in HBounded_l.
-           destruct Hsize_l; try congruence.
-           eapply IH; clear IH.
-           ** assumption.
-           ** lia.
-           ** rewrite Hlist_l in H1.
-              apply StronglySorted_app in H1.
-              destruct H1.
-              eassumption.
-           ** intros r zs HBounded_r Hlist_r Hsize_r.
-              rewrite Hlist_l in HSorted.
-              assert (isUB (Some ub) e1 = true). {
-                apply StronglySorted_inv in HSorted.
-                destruct HSorted.
-                simpl.
-                rewrite Forall_forall in H10.
-                enough (ub > e1 = true) by (order e).
-                apply H10.
-                apply in_or_app. right. left. reflexivity.
-              }
-              rewrite Hlist_r in HSorted.
-              assert (isLB (safeHd zs) e1 = true). {
-                destruct zs; try reflexivity.
-                apply StronglySorted_inv in HSorted.
-                destruct HSorted.
-                apply StronglySorted_app in H10.
-                destruct H10.
-                apply StronglySorted_inv in H12.
-                destruct H12.
-                rewrite Forall_forall in H13.
-                simpl.
-                enough (e1 > e2 = true) by (order e).
-                apply H13.
-                apply in_or_app. right. left. reflexivity.
-              }
-              intros X HX. apply HX. clear HX.
-              -- applyDesc link_Desc.
-              -- erewrite toList_link by eassumption.
-                 rewrite Hlist_l. rewrite Hlist_r.
-                 rewrite !rev_app_distr; simpl.
-                 rewrite <- !app_assoc.  simpl. reflexivity.
-              -- destruct Hsize_r; [left; assumption| right].
-                 applyDesc link_Desc.
-                 replace (size l). replace (size r).
-                 rewrite mul_pow_sub in * by lia.
-                 lia.
+    assert (HBlink : Desc (link a0 acc s) None (stack_ub stk)
+                       (1 + size acc + size s)
+                       (fun i => sem acc i || (i == a0) || sem s i)).
+    { applyDesc link_Desc. solve_Desc. }
+    set (la := link a0 acc s) in *.
+    assert (HB_la : Bounded la None (stack_ub stk)). {
+      apply HBlink. intros; assumption.
+    }
+    assert (Hsz_la : size la = #1 + size acc + size s). {
+      apply HBlink. intros; assumption.
+    }
+    assert (Hsem_la : forall i, sem la i = sem acc i || (i == a0) || sem s i). {
+      apply HBlink. intros ? ? ? HH. exact HH.
+    }
+    specialize (IHstk la (Some a0) HWFstk HB_la).
+    destruct IHstk as [IH1 [IH2 IH3]].
+    split; [| split].
+    + assumption.
+    + cbn [stack_size]. rewrite IH2. rewrite Hsz_la.
+      unfold op_zp__, Num_Int__, Num_Integer__, fromInteger. lia.
+    + intros i. rewrite IH3. rewrite Hsem_la.
+      simpl stack_sem. rewrite !orb_assoc.
+      destruct (sem acc i), (i == a0), (sem s i), (stack_sem stk i); reflexivity.
+  - (* Nada *)
+    simpl. simpl stack_ub in HBacc. split; [| split].
+    + solve_Bounded.
+    + lia.
+    + intros. rewrite orb_false_r. reflexivity.
 Qed.
 
-Lemma elem_rev:
-  forall x xs, List.elem x (rev xs) = List.elem x xs.
+(** *** Correctness of [fromDistinctDescList_linkTop] *)
+
+Lemma linkTop_desc_sem :
+  forall l stk i,
+  state_sem (fromDistinctDescList_linkTop l stk) i = state_sem (State1 l stk) i.
 Proof.
-  intros.
-  induction xs.
-  * reflexivity.
-  * simpl. rewrite elem_app. rewrite orb_comm.
-    simpl. rewrite orb_false_r. rewrite IHxs. reflexivity.
+  intros l stk. revert l.
+  induction stk as [a0 s stk IHstk | ]; intros l i.
+  - (* Push *)
+    simpl fromDistinctDescList_linkTop.
+    destruct l as [lsz lv ll lr | ].
+    + destruct s as [rsz rv rl rr | ].
+      * unfold op_zeze__, Eq_Integer___, op_zeze____.
+        destruct (Z.eqb_spec lsz rsz).
+        -- rewrite IHstk. cbn [state_sem stack_sem].
+           rewrite bin_sem.
+           destruct (sem (Bin rsz rv rl rr) i), (i == a0), (sem (Bin lsz lv ll lr) i), (stack_sem stk i);
+             reflexivity.
+        -- reflexivity.
+      * reflexivity.
+    + reflexivity.
+  - (* Nada *) destruct l; reflexivity.
 Qed.
 
-Program Fixpoint fromDistinctDescList_go_Desc
-  sz s xs {measure (length xs)} :
-  (0 <= sz)%Z ->
-  StronglySorted (fun x y => x > y = true) xs ->
-  Bounded s (safeHd xs) None ->
-  xs = [] \/ size s = (2*2^sz-1)%Z ->
-  Desc (fromDistinctDescList_go (2^sz)%Z s xs) None None (size s + List.length xs)
-    (fun i => sem s i || List.elem i xs) := _.
-Next Obligation.
-  intros.
-  rename fromDistinctDescList_go_Desc into IH.
-  rewrite fromDistinctDescList_go_eq by (apply Z.pow_pos_nonneg; lia).
-  unfold fromDistinctDescList_go_f.
-  destruct xs.
-  * replace (List.length []) with 0%Z by reflexivity.
-    rewrite Z.add_0_r.
-    solve_Desc.
-  * repeat replace (#1) with 1%Z by reflexivity.
-    replace ((Bits.shiftL (2 ^ sz)%Z 1))%Z with (2 ^ (1 + sz))%Z.
-    Focus 2.
-      unfold Bits.shiftL, Bits.instance_Bits_Int.
-      rewrite Z.shiftl_mul_pow2 by lia.
-      rewrite Z.pow_add_r by lia.
-      lia.
-
-    destruct H2; try congruence.
-    eapply fromDistinctDescList_create_Desc.
-    - lia.
-    - eassumption.
-    - intros.
-      subst.
-      simpl safeHd in *.
-      assert (isLB (safeHd ys) e0 = true). {
-        destruct ys; try reflexivity.
-        apply StronglySorted_inv in H0.
-        destruct H0.
-        rewrite Forall_forall in H4.
-        simpl.
-        enough (e0 > e1 = true) by order e.
-        apply H4.
-        apply in_or_app. right. left. reflexivity.
-      }
-      applyDesc link_Desc.
-      eapply IH.
-      + simpl. rewrite app_length. lia.
-      + lia.
-      + apply StronglySorted_inv in H0.
-        destruct H0.
-        apply StronglySorted_app in H0.
-        destruct H0.
-        assumption.
-      + assumption.
-      + destruct H5; [left; assumption | right].
-        replace (size s1). replace (size s).  replace (size s0).
-        rewrite Z.pow_add_r by lia.
-        lia.
-      + intros.
-        solve_Desc.
-        ** replace (size s2). replace (size s1). replace (size s).
-           rewrite !List.hs_coq_list_length, !Zlength_correct.
-           simpl length.
-           rewrite app_length, Nat2Z.inj_succ, Nat2Z.inj_add, rev_length.
-           erewrite <- size_spec by eassumption.
-           lia.
-        ** setoid_rewrite elem_cons.
-           setoid_rewrite elem_app.
-           setoid_rewrite elem_rev.
-           setoid_rewrite <- toList_sem; only 2: eassumption.
-           f_solver.
+Lemma linkTop_desc_size :
+  forall l stk,
+  state_size (fromDistinctDescList_linkTop l stk) = state_size (State1 l stk).
+Proof.
+  intros l stk. revert l.
+  induction stk as [a0 s stk IHstk | ]; intros l.
+  - (* Push *)
+    simpl fromDistinctDescList_linkTop.
+    destruct l as [lsz lv ll lr | ].
+    + destruct s as [rsz rv rl rr | ].
+      * unfold op_zeze__, Eq_Integer___, op_zeze____.
+        destruct (Z.eqb_spec lsz rsz).
+        -- rewrite IHstk. cbn [state_size stack_size].
+           rewrite bin_size. lia.
+        -- reflexivity.
+      * reflexivity.
+    + reflexivity.
+  - (* Nada *) destruct l; reflexivity.
 Qed.
 
+(** *** Correctness of [next] (descending) *)
+
+Definition next_desc (st : FromDistinctMonoState e) (x : e) : FromDistinctMonoState e :=
+  match st with
+  | State0 stk => fromDistinctDescList_linkTop (Bin #1 x Tip Tip) stk
+  | State1 r stk => State0 (Push x r stk)
+  end.
+
+Lemma next_desc_sem :
+  forall st x i,
+  state_sem (next_desc st x) i = (i == x) || state_sem st i.
+Proof.
+  intros. destruct st.
+  - unfold next_desc. rewrite linkTop_desc_sem.
+    cbn [state_sem sem stack_sem].
+    rewrite !orb_false_r. reflexivity.
+  - cbn [next_desc state_sem stack_sem].
+    rewrite orb_assoc.
+    rewrite (orb_comm (i == x) (sem s i)).
+    rewrite <- orb_assoc. reflexivity.
+Qed.
+
+Lemma next_desc_size :
+  forall st x,
+  state_size (next_desc st x) = (1 + state_size st)%Z.
+Proof.
+  intros. destruct st.
+  - unfold next_desc. rewrite linkTop_desc_size.
+    cbn [state_size size stack_size].
+    unfold op_zp__, Num_Int__, fromInteger, Num_Integer__. lia.
+  - cbn [next_desc state_size stack_size]. lia.
+Qed.
+
+(** *** Semantic correctness of [foldl'] over [next_desc] *)
+
+Lemma foldl'_next_desc_sem :
+  forall xs st i,
+  state_sem (Data.Foldable.foldl' next_desc st xs) i =
+  List.elem i xs || state_sem st i.
+Proof.
+  induction xs as [| a0 xs IHxs]; intros.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_nil. simpl. reflexivity.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_cons.
+    rewrite IHxs. rewrite next_desc_sem.
+    simpl List.elem. rewrite !orb_assoc.
+    rewrite (orb_comm (i == a0)). reflexivity.
+Qed.
+
+Lemma foldl'_next_desc_size :
+  forall xs st,
+  state_size (Data.Foldable.foldl' next_desc st xs) =
+  (Z.of_nat (length xs) + state_size st)%Z.
+Proof.
+  induction xs; intros.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_nil. simpl. lia.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_cons.
+    rewrite IHxs. rewrite next_desc_size. simpl length. lia.
+Qed.
+
+(** *** WF state invariant for descending construction *)
+
+Inductive WF_State_Desc2 : FromDistinctMonoState e -> bound -> Prop :=
+  | WFSD_State0 : forall stk lb,
+      WF_Stack_Desc stk lb ->
+      WF_State_Desc2 (State0 stk) lb
+  | WFSD_State1 : forall t stk lb,
+      Bounded t lb (stack_ub stk) ->
+      WF_Stack_Desc stk lb ->
+      WF_State_Desc2 (State1 t stk) lb.
+
+Lemma linkTop_desc_WF2 :
+  forall l stk lb,
+  Bounded l lb (stack_ub stk) ->
+  WF_Stack_Desc stk lb ->
+  WF_State_Desc2 (fromDistinctDescList_linkTop l stk) lb.
+Proof.
+  intros l stk. revert l.
+  induction stk as [a0 s stk IHstk | ]; intros l lb HBl HWF.
+  - (* Push *)
+    simpl fromDistinctDescList_linkTop.
+    inversion HWF as [| ? ? ? ? HBs Hlb HWFstk]; subst; clear HWF.
+    destruct l as [lsz lv ll lr | ].
+    + destruct s as [rsz rv rl rr | ].
+      * unfold op_zeze__, Eq_Integer___, op_zeze____.
+        destruct (Z.eqb_spec lsz rsz).
+        -- (* sizes match: recurse *)
+           apply IHstk.
+           ++ apply bin_Bounded; try assumption.
+              ** (* isUB (stack_ub stk) a0 *)
+                 assert (Hub_rv : isUB (stack_ub stk) rv = true) by
+                   (inversion HBs; assumption).
+                 assert (Ha0_lt_rv : a0 < rv = true) by
+                   (inversion HBs; simpl isLB in *; assumption).
+                 eapply isUB_lt; eassumption.
+           ++ eapply WF_Stack_Desc_relax_lb. exact HWFstk.
+              intros y Hy. simpl isLB in *.
+              destruct lb; simpl in *; [order e | reflexivity].
+        -- constructor; [assumption | apply WF_Push_Desc; assumption].
+      * constructor; [assumption | apply WF_Push_Desc; assumption].
+    + constructor; [assumption | apply WF_Push_Desc; assumption].
+  - (* Nada *) simpl. destruct l; constructor; assumption.
+Qed.
+
+Lemma next_desc_WF2 :
+  forall st x lb,
+  WF_State_Desc2 st (Some x) ->
+  isLB lb x = true ->
+  WF_State_Desc2 (next_desc st x) lb.
+Proof.
+  intros st x lb HWF Hlb.
+  destruct st as [stk | t stk].
+  - (* State0: singleton then linkTop *)
+    inversion HWF as [? ? HWFstk |]; subst. simpl next_desc.
+    apply linkTop_desc_WF2.
+    + apply BoundedBin with (sz := 1%Z).
+      * apply BoundedTip.
+      * apply BoundedTip.
+      * assumption.
+      * (* isUB (stack_ub stk) x *)
+        apply WF_Stack_Desc_isUB_bound. assumption.
+      * simpl. lia.
+      * unfold balance_prop, delta, fromInteger, Num_Int__, Num_Integer__. lia.
+    + eapply WF_Stack_Desc_relax_lb. exact HWFstk.
+      intros y Hy. simpl isLB in *.
+      destruct lb; simpl in *; [order e | reflexivity].
+  - (* State1: push onto stack *)
+    inversion HWF as [| ? ? ? HBt HWFstk]; subst. simpl next_desc.
+    constructor. apply WF_Push_Desc; assumption.
+Qed.
+
+(** *** Tracking WF through the [foldl'] loop (descending) *)
+
+Lemma foldl'_next_desc_WF :
+  forall xs st lb,
+  WF_State_Desc2 st (safeHd xs) ->
+  (xs = nil -> WF_State_Desc2 st lb) ->
+  StronglySorted (fun x y : e => (x > y) = true) xs ->
+  (forall x, List.elem x xs = true -> isLB lb x = true) ->
+  WF_State_Desc2 (Data.Foldable.foldl' next_desc st xs) lb.
+Proof.
+  induction xs; intros st lb HWF0 HWFnil HSorted Hlb.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_nil. apply HWFnil. reflexivity.
+  - rewrite Proofs.Data.Foldable.Foldable_foldl'_cons.
+    apply IHxs.
+    + destruct xs.
+      * simpl safeHd.
+        apply next_desc_WF2 with (lb := None).
+        -- simpl safeHd in HWF0. assumption.
+        -- simpl. reflexivity.
+      * simpl safeHd.
+        apply next_desc_WF2 with (lb := Some e0).
+        -- simpl safeHd in HWF0. assumption.
+        -- inversion HSorted as [| ? ? HSorted' HForall]; subst.
+           inversion HForall as [| ? ? Ha_gt_e0 _]; subst. simpl. order e.
+    + intros Hnil. subst.
+      apply next_desc_WF2 with (lb := lb).
+      * simpl safeHd in HWF0. assumption.
+      * apply Hlb. simpl. rewrite Eq_refl. reflexivity.
+    + inversion HSorted; subst. assumption.
+    + intros x Helem. apply Hlb. simpl. rewrite Helem. apply orb_true_r.
+Qed.
+
+(** *** [linkAll] on a WF descending state produces a valid tree *)
+
+Lemma linkAll_desc_Bounded :
+  forall st lb,
+  WF_State_Desc2 st lb ->
+  Bounded (fromDistinctDescList_linkAll st) None None.
+Proof.
+  intros st lb HWF.
+  unfold fromDistinctDescList_linkAll.
+  destruct st; inversion HWF; subst.
+  - eapply (fun H1 H2 => proj1 (foldl'Stack_link_desc_valid _ _ _ H1 H2)).
+    + eassumption.
+    + apply BoundedTip.
+  - eapply (fun H1 H2 => proj1 (foldl'Stack_link_desc_valid _ _ _ H1 H2)).
+    + eassumption.
+    + eapply Bounded_relax_lb_None. eassumption.
+Qed.
+
+(** *** Assembling [fromDistinctDescList_Desc] *)
 
 Lemma fromDistinctDescList_Desc:
   forall xs,
   StronglySorted (fun x y => x > y = true) xs ->
   Desc (fromDistinctDescList xs) None None (List.length xs) (fun i => List.elem i xs).
 Proof.
-  intros.
-  unfold fromDistinctDescList.
-  fold fromDistinctDescList_create_f.
-  fold fromDistinctDescList_create.
-  fold fromDistinctDescList_go_f.
-  fold fromDistinctDescList_go.
-  destruct xs.
-  * solve_Desc.
-  * replace (#1) with (2^0)%Z by reflexivity.
-    eapply fromDistinctDescList_go_Desc.
-    + lia.
-    + apply StronglySorted_inv in H.
-      destruct H.
-      assumption.
-    + assert (isLB (safeHd xs) e0 = true). {
-        destruct xs; try reflexivity.
-        apply StronglySorted_inv in H.
-        destruct H.
-        rewrite Forall_forall in H0.
-        simpl.
-        enough (e0 > e1 = true) by order e.
-        apply H0.
-        left. reflexivity.
-      }
-      solve_Bounded.
-    + right. reflexivity.
-    + intros.
-      rewrite List.hs_coq_list_length, Zlength_cons in *.
-      rewrite size_Bin in *.
-      solve_Desc.
-      setoid_rewrite elem_cons.
-      f_solver.
+  intros xs HSorted.
+  unfold fromDistinctDescList, op_z2218U__.
+  set (next := fun (arg_0__ : FromDistinctMonoState e) (arg_1__ : e) =>
+    match arg_0__, arg_1__ with
+    | State0 stk, x => fromDistinctDescList_linkTop (Bin #1 x Tip Tip) stk
+    | State1 r stk, x => State0 (Push x r stk)
+    end).
+  assert (Hnext_eq : forall st x, next st x = next_desc st x). {
+    intros. destruct st; reflexivity.
+  }
+  set (final_state := Data.Foldable.foldl' next (State0 Nada) xs).
+  assert (Hfinal_eq : final_state = Data.Foldable.foldl' next_desc (State0 Nada) xs). {
+    unfold final_state. f_equal.
+  }
+  (* 1. Semantic correctness *)
+  assert (Hsem_state : forall i, state_sem final_state i = List.elem i xs). {
+    intros i. rewrite Hfinal_eq.
+    rewrite foldl'_next_desc_sem. simpl. rewrite orb_false_r. reflexivity.
+  }
+  (* 2. Size correctness *)
+  assert (Hsize_state : state_size final_state = Z.of_nat (length xs)). {
+    rewrite Hfinal_eq.
+    rewrite foldl'_next_desc_size. simpl. lia.
+  }
+  (* 3. WF *)
+  assert (HWF : exists lb, WF_State_Desc2 final_state lb). {
+    rewrite Hfinal_eq.
+    destruct xs.
+    - exists None. simpl.
+      rewrite Proofs.Data.Foldable.Foldable_foldl'_nil.
+      constructor. constructor.
+    - exists None.
+      apply foldl'_next_desc_WF with (lb := None).
+      + simpl safeHd. constructor. constructor.
+      + intros Hnil. discriminate.
+      + assumption.
+      + intros. simpl. reflexivity.
+  }
+  destruct HWF as [lb HWF_final].
+  assert (HBounded : Bounded (fromDistinctDescList_linkAll final_state) None None). {
+    eapply linkAll_desc_Bounded. eassumption.
+  }
+  (* Semantics through linkAll *)
+  assert (Hsem_out : forall i, sem (fromDistinctDescList_linkAll final_state) i =
+                                List.elem i xs). {
+    intro i.
+    unfold fromDistinctDescList_linkAll.
+    destruct final_state eqn:Hfs.
+    - inversion HWF_final; subst.
+      pose proof (foldl'Stack_link_desc_valid s Tip lb) as HV.
+      destruct HV as [_ [_ HVsem]].
+      * assumption.
+      * apply BoundedTip.
+      * rewrite HVsem. simpl.
+        rewrite <- Hsem_state. simpl. reflexivity.
+    - inversion HWF_final; subst.
+      pose proof (foldl'Stack_link_desc_valid s0 s lb) as HV.
+      destruct HV as [_ [_ HVsem]].
+      * assumption.
+      * eapply Bounded_relax_lb_None. eassumption.
+      * rewrite HVsem. rewrite <- Hsem_state. simpl. reflexivity.
+  }
+  (* Size through linkAll *)
+  assert (Hsize_out : size (fromDistinctDescList_linkAll final_state) =
+                      Z.of_nat (length xs)). {
+    unfold fromDistinctDescList_linkAll.
+    destruct final_state eqn:Hfs.
+    - inversion HWF_final; subst.
+      pose proof (foldl'Stack_link_desc_valid s Tip lb) as HV.
+      destruct HV as [_ [HVsz _]].
+      * assumption.
+      * apply BoundedTip.
+      * rewrite HVsz. rewrite <- Hsize_state. simpl. lia.
+    - inversion HWF_final; subst.
+      pose proof (foldl'Stack_link_desc_valid s0 s lb) as HV.
+      destruct HV as [_ [HVsz _]].
+      * assumption.
+      * eapply Bounded_relax_lb_None. eassumption.
+      * rewrite HVsz. rewrite <- Hsize_state. simpl. lia.
+  }
+  apply showDesc. split; [| split].
+  - assumption.
+  - rewrite Hsize_out. rewrite List.hs_coq_list_length.
+    rewrite Zlength_correct. reflexivity.
+  - intros i. apply Hsem_out.
 Qed.
 
 
@@ -3583,6 +3757,44 @@ Ltac zeta_one :=
      let e'' := context A [e'] in
      change e''
   end.
+
+Lemma Z_shiftr_pos:
+  forall x, (1 < x -> 1 <= Z.shiftr x 1)%Z.
+Proof.
+  intros.
+  rewrite Z.shiftr_div_pow2 by lia.
+  replace (2^1)%Z with 2%Z by reflexivity.
+  assert (2 <= x)%Z by lia. clear H.
+  apply Z.div_le_mono with (c := 2%Z) in H0.
+  apply H0.
+  lia.
+Qed.
+
+Lemma Z_shiftl_pos:
+  forall x, (1 <= x -> 1 <= Z.shiftl x 1)%Z.
+Proof.
+  intros.
+  rewrite Z.shiftl_mul_pow2 by lia.
+  lia.
+Qed.
+
+Lemma Z_shiftr_lt:
+  forall x, (1 <= x -> Z.shiftr x 1 < x)%Z.
+Proof.
+  intros.
+  rewrite Z.shiftr_div_pow2 by lia.
+  replace (2^1)%Z with 2%Z by reflexivity.
+  apply Z_div_lt; lia.
+Qed.
+
+Lemma mul_pow_sub:
+  forall sz, (0 < sz)%Z -> (2 * 2 ^ (sz - 1) = 2^sz)%Z.
+Proof.
+  intros.
+  rewrite <- Z.pow_succ_r by lia.
+  f_equal.
+  lia.
+Qed.
 
 (* Identical to [fromDistinctAscList_create_eq] *)
 Lemma fromList_create_eq:
@@ -4062,61 +4274,6 @@ Qed.
 
 (** ** Verification of [isSubsetOf] *)
 
-Lemma isSubsetOfX_spec:
-  forall s1 s2 lb ub,
-  Bounded s1 lb ub ->
-  Bounded s2 lb ub ->
-  isSubsetOfX s1 s2 = true <-> (forall i, sem s1 i = true -> sem s2 i = true).
-Proof.
-  intros ???? HB1 HB2.
-  revert dependent s2.
-  induction HB1; intros; simpl; subst.
-  * intuition.
-  * destruct s0 eqn:Hs0.
-    - rewrite <- Hs0 in *.
-      clear s3 e0 s4 s5 Hs0.
-      eapply splitMember_Desc; [solve_Bounded|].
-      intros sr1 b sr2 HBsr1 HBsr2 Hsem.
-      rewrite !andb_true_iff.
-      rewrite IHHB1_1 by eassumption.
-      rewrite IHHB1_2 by eassumption.
-      split; intro; [destruct H1 as [?[??]] | split; [|split] ].
-      -- intros i Hi.
-         rewrite Hsem.
-         rewrite !orb_true_iff in Hi.
-         destruct Hi as [[Hi|Hi]|Hi];
-         destruct (i == x);
-         try reflexivity;
-         try congruence;
-         try apply H3 in Hi;
-         try apply H4 in Hi;
-         rewrite Hi;
-         rewrite ?orb_true_l, ?orb_true_r; reflexivity.
-     -- specialize (Hsem x).
-        rewrite Eq_refl in Hsem. rewrite <- Hsem.
-        apply H1.
-        rewrite Eq_refl.
-        rewrite ?orb_true_l, ?orb_true_r; reflexivity.
-     -- intros i Hi.
-        specialize (H1 i).
-        rewrite Hi in H1.
-        rewrite ?orb_true_l, ?orb_true_r in H1.
-        rewrite Hsem in H1.
-        specialize (H1 eq_refl).
-        repeat (f_solver_step; f_solver_cleanup).
-     -- intros i Hi.
-        specialize (H1 i).
-        rewrite Hi in H1.
-        rewrite ?orb_true_l, ?orb_true_r in H1.
-        rewrite Hsem in H1.
-        specialize (H1 eq_refl).
-        repeat (f_solver_step; f_solver_cleanup).
-    - intuition.
-      specialize (H1 x).
-      rewrite Eq_refl, orb_true_r in H1.
-      simpl in H1. intuition.
-Qed.
-
 Lemma subset_size:
   forall s1 s2 lb ub,
   Bounded s1 lb ub ->
@@ -4153,6 +4310,106 @@ Proof.
       repeat (f_solver_step; f_solver_cleanup).
     }
     lia.
+Qed.
+
+Lemma isSubsetOfX_spec:
+  forall s1 s2 lb ub,
+  Bounded s1 lb ub ->
+  Bounded s2 lb ub ->
+  isSubsetOfX s1 s2 = true <-> (forall i, sem s1 i = true -> sem s2 i = true).
+Proof.
+  intros ???? HB1 HB2.
+  revert dependent s2.
+  induction HB1; intros; simpl; subst.
+  * intuition.
+  * destruct s0 eqn:Hs0.
+    - rewrite <- Hs0 in *.
+      clear s3 e0 s4 s5 Hs0.
+      (* v0.7: handle singleton optimization *)
+      match goal with | |- context [if ?c then _ else _] =>
+        destruct c eqn:Hsingleton end.
+      + (* Singleton case: member x s0 *)
+        unfold op_zeze__, Eq_Integer___, op_zeze____ in Hsingleton.
+        apply Z.eqb_eq in Hsingleton.
+        postive_sizes.
+        assert (s1 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_1)); lia).
+        assert (s2 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_2)); lia).
+        simpl. rewrite member_spec by eassumption.
+        split.
+        -- intros Hm i Hi. rewrite orb_true_iff in Hi. destruct Hi as [Hi|Hi].
+           ++ simpl in Hi. erewrite sem_resp_eq; eassumption.
+           ++ discriminate.
+        -- intros Hi. apply Hi. rewrite Eq_refl. reflexivity.
+      + (* Non-singleton case *)
+        eapply splitMember_Desc; [solve_Bounded|].
+        intros sr1 b sr2 HBsr1 HBsr2 Hsem.
+        rewrite !andb_true_iff.
+        rewrite IHHB1_1 by eassumption.
+        rewrite IHHB1_2 by eassumption.
+        split; intro.
+        -- (* Forward *)
+           destruct H1 as [?[?[?[??]]]].
+           intros i Hi.
+           rewrite Hsem.
+           rewrite !orb_true_iff in Hi.
+           destruct Hi as [[Hi|Hi]|Hi];
+           destruct (i == x);
+           try reflexivity;
+           try congruence;
+           try apply H5 in Hi;
+           try apply H6 in Hi;
+           rewrite Hi;
+           rewrite ?orb_true_l, ?orb_true_r; reflexivity.
+        -- (* Backward *)
+           split; [|split; [|split; [|split]]].
+           ++ (* found *)
+              specialize (Hsem x).
+              rewrite Eq_refl in Hsem. rewrite <- Hsem.
+              apply H1.
+              rewrite Eq_refl.
+              rewrite ?orb_true_l, ?orb_true_r; reflexivity.
+           ++ (* size s1 <= size sr1 *)
+              unfold op_zlze__, Ord_Integer___, op_zlze____.
+              apply Z.leb_le.
+              eapply subset_size; [eassumption|eassumption|].
+              intros i Hi.
+              specialize (H1 i).
+              rewrite Hi in H1.
+              rewrite ?orb_true_l, ?orb_true_r in H1.
+              rewrite Hsem in H1.
+              specialize (H1 eq_refl).
+              repeat (f_solver_step; f_solver_cleanup).
+           ++ (* size s2 <= size sr2 *)
+              unfold op_zlze__, Ord_Integer___, op_zlze____.
+              apply Z.leb_le.
+              eapply subset_size; [eassumption|eassumption|].
+              intros i Hi.
+              specialize (H1 i).
+              rewrite Hi in H1.
+              rewrite ?orb_true_l, ?orb_true_r in H1.
+              rewrite Hsem in H1.
+              specialize (H1 eq_refl).
+              repeat (f_solver_step; f_solver_cleanup).
+           ++ (* isSubsetOfX s1 sr1 *)
+              intros i Hi.
+              specialize (H1 i).
+              rewrite Hi in H1.
+              rewrite ?orb_true_l, ?orb_true_r in H1.
+              rewrite Hsem in H1.
+              specialize (H1 eq_refl).
+              repeat (f_solver_step; f_solver_cleanup).
+           ++ (* isSubsetOfX s2 sr2 *)
+              intros i Hi.
+              specialize (H1 i).
+              rewrite Hi in H1.
+              rewrite ?orb_true_l, ?orb_true_r in H1.
+              rewrite Hsem in H1.
+              specialize (H1 eq_refl).
+              repeat (f_solver_step; f_solver_cleanup).
+    - intuition.
+      specialize (H1 x).
+      rewrite Eq_refl, orb_true_r in H1.
+      simpl in H1. intuition.
 Qed.
 
 Lemma isSubsetOf_spec:
@@ -4562,13 +4819,13 @@ Proof.
     by (apply H; intro; reflexivity).
   induction t; intros; simpl.
   * erewrite !H, !H0, IHt1, IHt2; auto.
-    intro; simpl; rewrite Ord_lt_le, Ord_gt_le; reflexivity.
+    intro; unfold GHC.Prim.rightSection; simpl; rewrite Ord_lt_le, Ord_gt_le; reflexivity.
   * reflexivity.
 Qed.
 
 Require Import MapProofs.Tactics.
 
-(* This is a copy of the local fixpoint from Haskell’s [validsize] function. *)
+(* This is a copy of the local fixpoint from Haskell's [validsize] function. *)
 
 Definition realsize :=
   fix realsize (t' : Set_ e) : option Size :=

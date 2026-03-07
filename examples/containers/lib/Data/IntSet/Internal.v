@@ -55,15 +55,8 @@ Inductive IntSet : Type :=
   | Tip : Prefix -> BitMap -> IntSet
   | Nil : IntSet.
 
-Inductive Stack : Type :=
-  | Push : Prefix -> IntSet -> Stack -> Stack
-  | Nada : Stack.
-
-#[global] Instance Default__IntSet : HsToCoq.Err.Default IntSet :=
+Instance Default__IntSet : HsToCoq.Err.Default IntSet :=
   HsToCoq.Err.Build_Default _ Nil.
-
-#[global] Instance Default__Stack : HsToCoq.Err.Default Stack :=
-  HsToCoq.Err.Build_Default _ Nada.
 
 (* Midamble *)
 
@@ -100,12 +93,15 @@ Require Import Coq.NArith.NArith.
   fun i m => maskW (i) (m).
 
 #[global] Definition zero : Coq.Numbers.BinNums.N -> Mask -> bool :=
-  fun i m => ((i) Data.Bits..&.(**) (m)) GHC.Base.== #0.
+  fun i m => Data.Bits.op_zizazi__ (i) (m) GHC.Base.== #0.
+
+#[global] Definition linkWithMask
+   : Mask -> Prefix -> IntSet -> IntSet -> IntSet :=
+  fun m p1 t1 t2 =>
+    let p := mask p1 m in if zero p1 m : bool then Bin p m t1 t2 else Bin p m t2 t1.
 
 #[global] Definition link : Prefix -> IntSet -> Prefix -> IntSet -> IntSet :=
-  fun p1 t1 p2 t2 =>
-    let m := branchMask p1 p2 in
-    let p := mask p1 m in if zero p1 m : bool then Bin p m t1 t2 else Bin p m t2 t1.
+  fun p1 t1 p2 t2 => linkWithMask (branchMask p1 p2) p1 t1 t2.
 
 #[global] Definition nomatch
    : Coq.Numbers.BinNums.N -> Prefix -> Mask -> bool :=
@@ -119,7 +115,7 @@ Fixpoint insertBM (arg_0__ : Prefix) (arg_1__ : BitMap) (arg_2__ : IntSet)
          if zero kx m : bool then Bin p m (insertBM kx bm l) r else
          Bin p m l (insertBM kx bm r)
      | kx, bm, (Tip kx' bm' as t) =>
-         if kx' GHC.Base.== kx : bool then Tip kx' (bm Data.Bits..|.(**) bm') else
+         if kx' GHC.Base.== kx : bool then Tip kx' (Data.Bits.op_zizbzi__ bm bm') else
          link kx (Tip kx bm) kx' t
      | kx, bm, Nil => Tip kx bm
      end.
@@ -157,7 +153,8 @@ Solve Obligations with (termination_by_omega).
    : IntSet -> IntSet -> IntSet :=
   union.
 
-#[global] Program Instance Semigroup__IntSet : GHC.Base.Semigroup IntSet :=
+#[global]
+Program Instance Semigroup__IntSet : GHC.Base.Semigroup IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__IntSet_op_zlzlzgzg__ |}.
 
@@ -177,17 +174,18 @@ Solve Obligations with (termination_by_omega).
 #[local] Definition Monoid__IntSet_mempty : IntSet :=
   empty.
 
-#[global] Program Instance Monoid__IntSet : GHC.Base.Monoid IntSet :=
+#[global]
+Program Instance Monoid__IntSet : GHC.Base.Monoid IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__IntSet_mappend ;
            GHC.Base.mconcat__ := Monoid__IntSet_mconcat ;
            GHC.Base.mempty__ := Monoid__IntSet_mempty |}.
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `Data.IntSet.Internal.Data__IntSet' *)
 
-(* Skipping all instances of class `GHC.Exts.IsList', including
-   `Data.IntSet.Internal.IsList__IntSet' *)
+(* Skipping instance `Data.IntSet.Internal.IsList__IntSet' of class
+   `GHC.Internal.IsList.IsList' *)
 
 Fixpoint equal (arg_0__ arg_1__ : IntSet) : bool
   := match arg_0__, arg_1__ with
@@ -215,7 +213,8 @@ Fixpoint nequal (arg_0__ arg_1__ : IntSet) : bool
 #[local] Definition Eq___IntSet_op_zsze__ : IntSet -> IntSet -> bool :=
   fun t1 t2 => nequal t1 t2.
 
-#[global] Program Instance Eq___IntSet : GHC.Base.Eq_ IntSet :=
+#[global]
+Program Instance Eq___IntSet : GHC.Base.Eq_ IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___IntSet_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___IntSet_op_zsze__ |}.
@@ -225,28 +224,33 @@ Fixpoint nequal (arg_0__ arg_1__ : IntSet) : bool
 
 #[global] Definition revNat : Nat -> Nat :=
   fun x1 =>
-    let 'x2 := ((Utils.Containers.Internal.BitUtil.shiftRL x1 #1) Data.Bits..&.(**)
-                  #6148914691236517205) Data.Bits..|.(**)
-                 (Utils.Containers.Internal.BitUtil.shiftLL (x1 Data.Bits..&.(**)
-                                                             #6148914691236517205) #1) in
-    let 'x3 := ((Utils.Containers.Internal.BitUtil.shiftRL x2 #2) Data.Bits..&.(**)
-                  #3689348814741910323) Data.Bits..|.(**)
-                 (Utils.Containers.Internal.BitUtil.shiftLL (x2 Data.Bits..&.(**)
-                                                             #3689348814741910323) #2) in
-    let 'x4 := ((Utils.Containers.Internal.BitUtil.shiftRL x3 #4) Data.Bits..&.(**)
-                  #1085102592571150095) Data.Bits..|.(**)
-                 (Utils.Containers.Internal.BitUtil.shiftLL (x3 Data.Bits..&.(**)
-                                                             #1085102592571150095) #4) in
-    let 'x5 := ((Utils.Containers.Internal.BitUtil.shiftRL x4 #8) Data.Bits..&.(**)
-                  #71777214294589695) Data.Bits..|.(**)
-                 (Utils.Containers.Internal.BitUtil.shiftLL (x4 Data.Bits..&.(**)
-                                                             #71777214294589695) #8) in
-    let 'x6 := ((Utils.Containers.Internal.BitUtil.shiftRL x5 #16) Data.Bits..&.(**)
-                  #281470681808895) Data.Bits..|.(**)
-                 (Utils.Containers.Internal.BitUtil.shiftLL (x5 Data.Bits..&.(**)
-                                                             #281470681808895) #16) in
-    (Utils.Containers.Internal.BitUtil.shiftRL x6 #32) Data.Bits..|.(**)
-    (Utils.Containers.Internal.BitUtil.shiftLL x6 #32).
+    let 'x2 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__
+                                      (Utils.Containers.Internal.BitUtil.shiftRL x1 #1) #6148914691236517205)
+                                     (Utils.Containers.Internal.BitUtil.shiftLL (Data.Bits.op_zizazi__ x1
+                                                                                                       #6148914691236517205)
+                                                                                #1) in
+    let 'x3 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__
+                                      (Utils.Containers.Internal.BitUtil.shiftRL x2 #2) #3689348814741910323)
+                                     (Utils.Containers.Internal.BitUtil.shiftLL (Data.Bits.op_zizazi__ x2
+                                                                                                       #3689348814741910323)
+                                                                                #2) in
+    let 'x4 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__
+                                      (Utils.Containers.Internal.BitUtil.shiftRL x3 #4) #1085102592571150095)
+                                     (Utils.Containers.Internal.BitUtil.shiftLL (Data.Bits.op_zizazi__ x3
+                                                                                                       #1085102592571150095)
+                                                                                #4) in
+    let 'x5 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__
+                                      (Utils.Containers.Internal.BitUtil.shiftRL x4 #8) #71777214294589695)
+                                     (Utils.Containers.Internal.BitUtil.shiftLL (Data.Bits.op_zizazi__ x4
+                                                                                                       #71777214294589695)
+                                                                                #8) in
+    let 'x6 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__
+                                      (Utils.Containers.Internal.BitUtil.shiftRL x5 #16) #281470681808895)
+                                     (Utils.Containers.Internal.BitUtil.shiftLL (Data.Bits.op_zizazi__ x5
+                                                                                                       #281470681808895)
+                                                                                #16) in
+    Data.Bits.op_zizbzi__ (Utils.Containers.Internal.BitUtil.shiftRL x6 #32)
+                          (Utils.Containers.Internal.BitUtil.shiftLL x6 #32).
 
 #[global] Definition revNatSafe n :=
   Coq.NArith.BinNat.N.modulo (revNat n) (Coq.NArith.BinNat.N.pow 2 64).
@@ -311,7 +315,8 @@ Solve Obligations with (BitTerminationProofs.termination_foldl).
 #[local] Definition Ord__IntSet_min : IntSet -> IntSet -> IntSet :=
   fun x y => if Ord__IntSet_op_zlze__ x y : bool then x else y.
 
-#[global] Program Instance Ord__IntSet : GHC.Base.Ord IntSet :=
+#[global]
+Program Instance Ord__IntSet : GHC.Base.Ord IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__IntSet_op_zl__ ;
            GHC.Base.op_zlze____ := Ord__IntSet_op_zlze__ ;
@@ -361,7 +366,7 @@ Fixpoint deleteBM (arg_0__ : Prefix) (arg_1__ : BitMap) (arg_2__ : IntSet)
          bin p m l (deleteBM kx bm r)
      | kx, bm, (Tip kx' bm' as t) =>
          if kx' GHC.Base.== kx : bool
-         then tip kx (Data.Bits.xor bm' (bm' Data.Bits..&.(**) bm)) else
+         then tip kx (Data.Bits.xor bm' (Data.Bits.op_zizazi__ bm' bm)) else
          t
      | _, _, Nil => Nil
      end.
@@ -396,7 +401,7 @@ Program Fixpoint difference (arg_0__ arg_1__ : IntSet) {measure (size_nat
                   differenceTip r2
               | Tip kx2 bm2 =>
                   if Bool.Sumbool.sumbool_of_bool (kx GHC.Base.== kx2)
-                  then tip kx (Data.Bits.xor bm (bm Data.Bits..&.(**) bm2)) else
+                  then tip kx (Data.Bits.xor bm (Data.Bits.op_zizazi__ bm bm2)) else
                   t1
               | Nil => t1
               end in
@@ -437,7 +442,7 @@ Infix "\\" := (_\\_) (at level 99).
 
 #[global] Definition suffixOf
    : Coq.Numbers.BinNums.N -> Coq.Numbers.BinNums.N :=
-  fun x => x Data.Bits..&.(**) suffixBitMask.
+  fun x => Data.Bits.op_zizazi__ x suffixBitMask.
 
 #[global] Definition bitmapOf : Coq.Numbers.BinNums.N -> BitMap :=
   fun x => bitmapOfSuffix (suffixOf x).
@@ -454,7 +459,8 @@ Infix "\\" := (_\\_) (at level 99).
              if zero x m : bool then go l else
              go r
          | Tip y bm =>
-             andb (prefixOf x GHC.Base.== y) ((bitmapOf x Data.Bits..&.(**) bm) GHC.Base./=
+             andb (prefixOf x GHC.Base.== y) (Data.Bits.op_zizazi__ (bitmapOf x) bm
+                   GHC.Base./=
                    #0)
          | Nil => false
          end in
@@ -464,7 +470,7 @@ Infix "\\" := (_\\_) (at level 99).
   fun k => negb GHC.Base.∘ member k.
 
 #[global] Definition highestBitSet : Nat -> Coq.Numbers.BinNums.N :=
-  fun x => indexOfTheOnlyBit (Utils.Containers.Internal.BitUtil.highestBitMask x).
+  fun x => Coq.NArith.BinNat.N.log2 x.
 
 Fixpoint unsafeFindMax (arg_0__ : IntSet) : option Key
   := match arg_0__ with
@@ -485,7 +491,7 @@ Fixpoint unsafeFindMax (arg_0__ : IntSet) : option Key
              if zero x m : bool then go def l else
              go l r
          | def, Tip kx bm =>
-             let maskLT := (bitmapOf x GHC.Num.- #1) Data.Bits..&.(**) bm in
+             let maskLT := Data.Bits.op_zizazi__ (bitmapOf x GHC.Num.- #1) bm in
              if prefixOf x GHC.Base.> kx : bool
              then Some (kx GHC.Num.+ highestBitSet bm) else
              if andb (prefixOf x GHC.Base.== kx) (maskLT GHC.Base./= #0) : bool
@@ -529,11 +535,10 @@ Fixpoint unsafeFindMin (arg_0__ : IntSet) : option Key
              go def r
          | def, Tip kx bm =>
              let maskGT :=
-               (Coq.NArith.BinNat.N.ldiff (Coq.NArith.BinNat.N.ones (64 % N))
-                                          (Coq.NArith.BinNat.N.pred (Utils.Containers.Internal.BitUtil.shiftLL (bitmapOf
-                                                                                                                x) #1)))
-               Data.Bits..&.(**)
-               bm in
+               Data.Bits.op_zizazi__ (Coq.NArith.BinNat.N.ldiff (Coq.NArith.BinNat.N.ones (64 %
+                                                                                           N)) (Coq.NArith.BinNat.N.pred
+                                                                 (Utils.Containers.Internal.BitUtil.shiftLL (bitmapOf x)
+                                                                                                            #1))) bm in
              if prefixOf x GHC.Base.< kx : bool then Some (kx GHC.Num.+ lowestBitSet bm) else
              if andb (prefixOf x GHC.Base.== kx) (maskGT GHC.Base./= #0) : bool
              then Some (kx GHC.Num.+ lowestBitSet maskGT) else
@@ -564,9 +569,9 @@ Fixpoint unsafeFindMin (arg_0__ : IntSet) : option Key
              go l r
          | def, Tip kx bm =>
              let maskLE :=
-               ((Utils.Containers.Internal.BitUtil.shiftLL (bitmapOf x) #1) GHC.Num.- #1)
-               Data.Bits..&.(**)
-               bm in
+               Data.Bits.op_zizazi__ ((Utils.Containers.Internal.BitUtil.shiftLL (bitmapOf x)
+                                                                                 #1) GHC.Num.-
+                                      #1) bm in
              if prefixOf x GHC.Base.> kx : bool
              then Some (kx GHC.Num.+ highestBitSet bm) else
              if andb (prefixOf x GHC.Base.== kx) (maskLE GHC.Base./= #0) : bool
@@ -598,9 +603,9 @@ Fixpoint unsafeFindMin (arg_0__ : IntSet) : option Key
              go def r
          | def, Tip kx bm =>
              let maskGE :=
-               (Coq.NArith.BinNat.N.ldiff (Coq.NArith.BinNat.N.ones (64 % N))
-                                          (Coq.NArith.BinNat.N.pred (bitmapOf x))) Data.Bits..&.(**)
-               bm in
+               Data.Bits.op_zizazi__ (Coq.NArith.BinNat.N.ldiff (Coq.NArith.BinNat.N.ones (64 %
+                                                                                           N)) (Coq.NArith.BinNat.N.pred
+                                                                 (bitmapOf x))) bm in
              if prefixOf x GHC.Base.< kx : bool then Some (kx GHC.Num.+ lowestBitSet bm) else
              if andb (prefixOf x GHC.Base.== kx) (maskGE GHC.Base./= #0) : bool
              then Some (kx GHC.Num.+ lowestBitSet maskGE) else
@@ -626,6 +631,8 @@ Fixpoint unsafeFindMin (arg_0__ : IntSet) : option Key
 
 #[global] Definition delete : Key -> IntSet -> IntSet :=
   fun x => deleteBM (prefixOf x) (bitmapOf x).
+
+(* Skipping definition `Data.IntSet.Internal.alterF' *)
 
 Program Fixpoint intersection (arg_0__ arg_1__ : IntSet) {measure (size_nat
                                arg_0__ +
@@ -654,7 +661,7 @@ Program Fixpoint intersection (arg_0__ arg_1__ : IntSet) {measure (size_nat
                   intersectBM r1
               | Tip kx1 bm1 =>
                   if Bool.Sumbool.sumbool_of_bool (kx1 GHC.Base.== kx2)
-                  then tip kx1 (bm1 Data.Bits..&.(**) bm2) else
+                  then tip kx1 (Data.Bits.op_zizazi__ bm1 bm2) else
                   Nil
               | Nil => Nil
               end in
@@ -669,7 +676,7 @@ Program Fixpoint intersection (arg_0__ arg_1__ : IntSet) {measure (size_nat
                   intersectBM r2
               | Tip kx2 bm2 =>
                   if Bool.Sumbool.sumbool_of_bool (kx1 GHC.Base.== kx2)
-                  then tip kx1 (bm1 Data.Bits..&.(**) bm2) else
+                  then tip kx1 (Data.Bits.op_zizazi__ bm1 bm2) else
                   Nil
               | Nil => Nil
               end in
@@ -706,7 +713,7 @@ Fixpoint subsetCmp (arg_0__ arg_1__ : IntSet) : comparison
          | Tip kx1 bm1, Tip kx2 bm2 =>
              if kx1 GHC.Base./= kx2 : bool then Gt else
              if bm1 GHC.Base.== bm2 : bool then Eq else
-             if Data.Bits.xor bm1 (bm1 Data.Bits..&.(**) bm2) GHC.Base.== #0 : bool
+             if Data.Bits.xor bm1 (Data.Bits.op_zizazi__ bm1 bm2) GHC.Base.== #0 : bool
              then Lt else
              Gt
          | (Tip kx _ as t1), Bin p m l r =>
@@ -741,7 +748,7 @@ Fixpoint isSubsetOf (arg_0__ arg_1__ : IntSet) : bool
          match arg_0__, arg_1__ with
          | Bin _ _ _ _, _ => false
          | Tip kx1 bm1, Tip kx2 bm2 =>
-             andb (kx1 GHC.Base.== kx2) (Data.Bits.xor bm1 (bm1 Data.Bits..&.(**) bm2)
+             andb (kx1 GHC.Base.== kx2) (Data.Bits.xor bm1 (Data.Bits.op_zizazi__ bm1 bm2)
                    GHC.Base.==
                    #0)
          | (Tip kx _ as t1), Bin p m l r =>
@@ -780,7 +787,7 @@ Program Fixpoint disjoint (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__
                   disjointBM r1
               | Tip kx1 bm1 =>
                   if Bool.Sumbool.sumbool_of_bool (kx1 GHC.Base.== kx2)
-                  then (bm1 Data.Bits..&.(**) bm2) GHC.Base.== #0 else
+                  then (Data.Bits.op_zizazi__ bm1 bm2) GHC.Base.== #0 else
                   true
               | Nil => true
               end in
@@ -795,7 +802,7 @@ Program Fixpoint disjoint (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__
                   disjointBM r2
               | Tip kx2 bm2 =>
                   if Bool.Sumbool.sumbool_of_bool (kx1 GHC.Base.== kx2)
-                  then (bm1 Data.Bits..&.(**) bm2) GHC.Base.== #0 else
+                  then (Data.Bits.op_zizazi__ bm1 bm2) GHC.Base.== #0 else
                   true
               | Nil => true
               end in
@@ -828,7 +835,7 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
   := let bitPred :=
        fun kx bm bi =>
          if predicate (kx GHC.Num.+ bi) : bool
-         then bm Data.Bits..|.(**) bitmapOfSuffix bi else
+         then Data.Bits.op_zizbzi__ bm (bitmapOfSuffix bi) else
          bm in
      match t with
      | Bin p m l r => bin p m (filter predicate l) (filter predicate r)
@@ -843,7 +850,7 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
       := let bitPred :=
            fun kx bm bi =>
              if predicate (kx GHC.Num.+ bi) : bool
-             then bm Data.Bits..|.(**) bitmapOfSuffix bi else
+             then Data.Bits.op_zizbzi__ bm (bitmapOfSuffix bi) else
              bm in
          match t with
          | Bin p m l r =>
@@ -857,20 +864,26 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
          end in
     id (go predicate0 t0).
 
+(* Skipping definition `Data.IntSet.Internal.takeWhileAntitone' *)
+
+(* Skipping definition `Data.IntSet.Internal.dropWhileAntitone' *)
+
+(* Skipping definition `Data.IntSet.Internal.spanAntitone' *)
+
 #[global] Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | x', (Bin p m l r as t') =>
-             if match_ x' p m : bool
-             then if zero x' m : bool
-                  then let 'pair lt gt := go x' l in
-                       pair lt (union gt r)
-                  else let 'pair lt gt := go x' r in
-                       pair (union lt l) gt else
-             if x' GHC.Base.< p : bool
-             then (pair Nil t')
-             else (pair t' Nil)
+             if nomatch x' p m : bool
+             then if x' GHC.Base.< p : bool
+                  then (pair Nil t')
+                  else (pair t' Nil) else
+             if zero x' m : bool
+             then let 'pair lt gt := go x' l in
+                  pair lt (bin p m gt r) else
+             let 'pair lt gt := go x' r in
+             pair (bin p m l lt) gt
          | x', (Tip kx' bm as t') =>
              let lowerBitmap := bitmapOf x' GHC.Num.- #1 in
              let higherBitmap :=
@@ -879,21 +892,21 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
                                           bitmapOf x') in
              if kx' GHC.Base.> x' : bool then (pair Nil t') else
              if kx' GHC.Base.< prefixOf x' : bool then (pair t' Nil) else
-             pair (tip kx' (bm Data.Bits..&.(**) lowerBitmap)) (tip kx' (bm Data.Bits..&.(**)
-                                                                         higherBitmap))
+             pair (tip kx' (Data.Bits.op_zizazi__ bm lowerBitmap)) (tip kx'
+                   (Data.Bits.op_zizazi__ bm higherBitmap))
          | _, Nil => (pair Nil Nil)
          end in
-    let j_21__ := let 'pair lt gt := go x t in pair lt gt in
+    let j_22__ := let 'pair lt gt := go x t in pair lt gt in
     match t with
-    | Bin _ m l r =>
+    | Bin p m l r =>
         if m GHC.Base.< #0 : bool
         then if x GHC.Base.>= #0 : bool
              then let 'pair lt gt := go x l in
-                  let lt' := union lt r in pair lt' gt
+                  let lt' := bin p m lt r in pair lt' gt
              else let 'pair lt gt := go x r in
-                  let gt' := union gt l in pair lt gt' else
-        j_21__
-    | _ => j_21__
+                  let gt' := bin p m l gt in pair lt gt' else
+        j_22__
+    | _ => j_22__
     end.
 
 #[global] Definition splitMember
@@ -902,15 +915,15 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | x', (Bin p m l r as t') =>
-             if match_ x' p m : bool
-             then if zero x' m : bool
-                  then let 'pair (pair lt fnd) gt := go x' l in
-                       pair (pair lt fnd) (union gt r)
-                  else let 'pair (pair lt fnd) gt := go x' r in
-                       pair (pair (union lt l) fnd) gt else
-             if x' GHC.Base.< p : bool
-             then pair (pair Nil false) t'
-             else pair (pair t' false) Nil
+             if nomatch x' p m : bool
+             then if x' GHC.Base.< p : bool
+                  then pair (pair Nil false) t'
+                  else pair (pair t' false) Nil else
+             if zero x' m : bool
+             then let 'pair (pair lt fnd) gt := go x' l in
+                  let gt' := bin p m gt r in pair (pair lt fnd) gt' else
+             let 'pair (pair lt fnd) gt := go x' r in
+             let lt' := bin p m l lt in pair (pair lt' fnd) gt
          | x', (Tip kx' bm as t') =>
              let bitmapOfx' := bitmapOf x' in
              let lowerBitmap := bitmapOfx' GHC.Num.- #1 in
@@ -920,22 +933,23 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
                                           bitmapOfx') in
              if kx' GHC.Base.> x' : bool then pair (pair Nil false) t' else
              if kx' GHC.Base.< prefixOf x' : bool then pair (pair t' false) Nil else
-             let gt := tip kx' (bm Data.Bits..&.(**) higherBitmap) in
-             let found := (bm Data.Bits..&.(**) bitmapOfx') GHC.Base./= #0 in
-             let lt := tip kx' (bm Data.Bits..&.(**) lowerBitmap) in pair (pair lt found) gt
+             let gt := tip kx' (Data.Bits.op_zizazi__ bm higherBitmap) in
+             let found := (Data.Bits.op_zizazi__ bm bitmapOfx') GHC.Base./= #0 in
+             let lt := tip kx' (Data.Bits.op_zizazi__ bm lowerBitmap) in
+             pair (pair lt found) gt
          | _, Nil => pair (pair Nil false) Nil
          end in
-    let j_22__ := go x t in
+    let j_25__ := go x t in
     match t with
-    | Bin _ m l r =>
+    | Bin p m l r =>
         if m GHC.Base.< #0 : bool
         then if x GHC.Base.>= #0 : bool
              then let 'pair (pair lt fnd) gt := go x l in
-                  let lt' := union lt r in pair (pair lt' fnd) gt
+                  let lt' := bin p m lt r in pair (pair lt' fnd) gt
              else let 'pair (pair lt fnd) gt := go x r in
-                  let gt' := union gt l in pair (pair lt fnd) gt' else
-        j_22__
-    | _ => j_22__
+                  let gt' := bin p m l gt in pair (pair lt fnd) gt' else
+        j_25__
+    | _ => j_25__
     end.
 
 #[global] Definition maxView : IntSet -> option (Key * IntSet)%type :=
@@ -945,8 +959,8 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
          | Bin p m l r => let 'pair result r' := go r in pair result (bin p m l r')
          | Tip kx bm =>
              let 'bi := highestBitSet bm in
-             pair (kx GHC.Num.+ bi) (tip kx (Data.Bits.xor bm (bm Data.Bits..&.(**)
-                                                            bitmapOfSuffix bi)))
+             pair (kx GHC.Num.+ bi) (tip kx (Data.Bits.xor bm (Data.Bits.op_zizazi__ bm
+                                                                                     (bitmapOfSuffix bi))))
          | Nil => pair (0 % N) Nil
          end in
     let j_12__ := Some (go t) in
@@ -967,8 +981,8 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
          | Bin p m l r => let 'pair result l' := go l in pair result (bin p m l' r)
          | Tip kx bm =>
              let 'bi := lowestBitSet bm in
-             pair (kx GHC.Num.+ bi) (tip kx (Data.Bits.xor bm (bm Data.Bits..&.(**)
-                                                            bitmapOfSuffix bi)))
+             pair (kx GHC.Num.+ bi) (tip kx (Data.Bits.xor bm (Data.Bits.op_zizazi__ bm
+                                                                                     (bitmapOfSuffix bi))))
          | Nil => pair (0 % N) Nil
          end in
     let j_12__ := Some (go t) in
@@ -1004,6 +1018,8 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
 
 #[global] Definition map : (Key -> Key) -> IntSet -> IntSet :=
   fun f => fromList GHC.Base.∘ (GHC.Base.map f GHC.Base.∘ toList).
+
+(* Skipping definition `Data.IntSet.Internal.mapMonotonic' *)
 
 #[global] Definition fold {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   foldr.
@@ -1104,9 +1120,13 @@ Solve Obligations with (BitTerminationProofs.termination_foldl).
 #[global] Definition foldlFB {a} : (a -> Key -> a) -> a -> IntSet -> a :=
   foldl.
 
+(* Skipping definition `Data.IntSet.Internal.fromRange' *)
+
 (* Skipping definition `Data.IntSet.Internal.fromAscList' *)
 
 (* Skipping definition `Data.IntSet.Internal.fromDistinctAscList' *)
+
+(* Skipping definition `Data.IntSet.Internal.fromMonoList' *)
 
 (* Skipping definition `Data.IntSet.Internal.showTree' *)
 
@@ -1133,6 +1153,32 @@ Solve Obligations with (BitTerminationProofs.termination_foldl).
 (* Skipping definition `Data.IntSet.Internal.withEmpty' *)
 
 (* Skipping definition `Data.IntSet.Internal.prefixBitMask' *)
+
+#[global] Definition takeWhileAntitoneBits
+   : Coq.Numbers.BinNums.N -> (Coq.Numbers.BinNums.N -> bool) -> Nat -> Nat :=
+  fun prefix predicate bitmap =>
+    let next :=
+      fun arg_0__ arg_1__ arg_2__ =>
+        match arg_0__, arg_1__, arg_2__ with
+        | d, h, pair n' b' =>
+            if andb (Data.Bits.op_zizazi__ n' h GHC.Base./= #0) (predicate ((prefix
+                                                                             GHC.Num.+
+                                                                             b') GHC.Num.+
+                                                                            d)) : bool
+            then pair (Utils.Containers.Internal.BitUtil.shiftRL n' d) (b' GHC.Num.+ d)
+            else pair n' b'
+        end in
+    let 'pair _ b := next #1 #2 (next #2 #12 (next #4 #240 (next #8 #65280 (next #16
+                                                                                 #4294901760 (next #32
+                                                                                                   #18446744069414584320
+                                                                                                   (pair bitmap
+                                                                                                         #0)))))) in
+    let m :=
+      if orb (b GHC.Base./= #0) (andb (Data.Bits.op_zizazi__ bitmap #1 GHC.Base./= #0)
+                                      (predicate prefix)) : bool
+      then ((Utils.Containers.Internal.BitUtil.shiftLL #2 b) GHC.Num.- #1)
+      else ((Utils.Containers.Internal.BitUtil.shiftLL #1 b) GHC.Num.- #1) in
+    Data.Bits.op_zizazi__ bitmap m.
 
 #[global] Definition splitRoot : IntSet -> list IntSet :=
   fun arg_0__ =>
@@ -1166,7 +1212,6 @@ End Notations.
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Num.fromInteger GHC.Num.op_zm__
      GHC.Num.op_zp__ HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Wf.wfFix2
      Utils.Containers.Internal.BitUtil.bitcount
-     Utils.Containers.Internal.BitUtil.highestBitMask
      Utils.Containers.Internal.BitUtil.lowestBitMask
      Utils.Containers.Internal.BitUtil.shiftLL
      Utils.Containers.Internal.BitUtil.shiftRL

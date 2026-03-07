@@ -35,15 +35,38 @@ obligations Data.Set.Internal.link termination_by_omega
 termination Data.Set.Internal.merge {measure (Nat.add (set_size arg_0__) (set_size arg_1__))}
 obligations Data.Set.Internal.merge termination_by_omega
 
-## local functions. Proving this termination with program fixpoint looks very tricky.
-in Data.Set.Internal.fromDistinctAscList  termination create deferred
-in Data.Set.Internal.fromDistinctAscList  termination go     deferred
-in Data.Set.Internal.fromAscList          termination create deferred
-in Data.Set.Internal.fromAscList          termination go     deferred
+## fromList still has create/go local functions
 in Data.Set.Internal.fromList             termination create deferred
 in Data.Set.Internal.fromList             termination go     deferred
-in Data.Set.Internal.fromDistinctDescList termination create deferred
-in Data.Set.Internal.fromDistinctDescList termination go     deferred
+
+## fromDistinctAscList/fromDistinctDescList: v0.7 stack-based algorithm.
+## Auto-generated from Haskell. Order directives ensure correct emission.
+order Data.Set.Internal.Stack Data.Set.Internal.FromDistinctMonoState
+order Data.Set.Internal.FromDistinctMonoState Data.Set.Internal.foldl'Stack
+order Data.Set.Internal.foldl'Stack Data.Set.Internal.fromDistinctAscList_linkTop
+order Data.Set.Internal.fromDistinctAscList_linkTop Data.Set.Internal.fromDistinctAscList_linkAll
+order Data.Set.Internal.fromDistinctAscList_linkAll Data.Set.Internal.fromDistinctAscList
+order Data.Set.Internal.foldl'Stack Data.Set.Internal.fromDistinctDescList_linkTop
+order Data.Set.Internal.fromDistinctDescList_linkTop Data.Set.Internal.fromDistinctDescList_linkAll
+order Data.Set.Internal.fromDistinctDescList_linkAll Data.Set.Internal.fromDistinctDescList
+
+order Data.Set.Internal.combineEq Data.Set.Internal.fromAscList
+order Data.Set.Internal.combineEq Data.Set.Internal.fromDescList
+order Data.Set.Internal.fromDistinctAscList Data.Set.Internal.fromAscList
+order Data.Set.Internal.fromDistinctDescList Data.Set.Internal.fromDescList
+
+# New in v0.7
+skip Data.Set.Internal.IsList__Set_
+skip Data.Set.Internal.alterF
+skip Data.Set.Internal.alteredSet
+skip Data.Set.Internal.intersections
+skip Data.Set.Internal.Intersection
+skip Data.Set.Internal.getIntersection
+skip Data.Set.Internal.Semigroup__Intersection
+skip Data.Set.Internal.Lift__Set
+skip Data.Set.Internal.AlteredSet
+
+# Types from fromDistinctAscList rewrite (auto-generated)
 
 # Boring
 order Data.Set.Internal.Foldable__Set_ Data.Set.Internal.Monoid__MergeSet Data.Set.Internal.cartesianProduct

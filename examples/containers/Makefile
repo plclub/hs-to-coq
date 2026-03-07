@@ -30,17 +30,18 @@ MODULES = \
   Data/Set/Internal \
   Utils/Containers/Internal/BitUtil \
   Data/IntSet/Internal \
+  IntSetValidity \
   Data/IntSet/InternalWord \
   Data/IntMap/Internal \
   Data/Map/Internal \
-  IntSetValidity \
 
+# tasty-quickcheck/tasty-hunit now in cabal deps
 HS_SPEC_MODULES = \
   IntSetProperties
 
 # Non-standard file names
-SRC_FILE_IntSetProperties = containers/tests/intset-properties.hs
-SRC_FILE_Data/IntSet/InternalWord = containers/Data/IntSet/Internal.hs
+SRC_FILE_IntSetProperties = containers/containers-tests/tests/intset-properties.hs
+SRC_FILE_Data/IntSet/InternalWord = containers/containers/src/Data/IntSet/Internal.hs
 
 # Generated modules
 # generated directly from GHC/libraries/containers/tests
@@ -109,10 +110,9 @@ HS_TO_COQ_OPTS := \
   --iface-dir ../../base/ \
   --iface-dir $(OUT) \
   -N \
-  -i containers \
-  -i containers/tests \
-  -i containers/dist-install/build \
-  -I containers/include \
+  -i containers/containers/src \
+  -i containers/containers-tests/tests \
+  -I containers/containers/include \
 
 
 # KEEP THIS IN SYNC WITH THE NEXT RULE (there ought to be a better way)
@@ -124,8 +124,8 @@ $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 		     $(HS_TO_COQ_OPTS) \
 	             -o $(OUT) \
-	             $(wildcard containers/$*.hs) \
-		     $(wildcard containers/tests/$*.hs) \
+	             $(wildcard containers/containers/src/$*.hs) \
+		     $(wildcard containers/containers-tests/tests/$*.hs) \
 		     $(SRC_FILE_$*)
 	test -e $@
 
@@ -138,8 +138,8 @@ $(VFILES_HS_SPEC_GEN): $(HS_SPEC)/%.v : $$(wildcard module-edits/$$*/preamble.v)
 		     $(HS_TO_COQ_OPTS) \
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 	             -o $(HS_SPEC) \
-	             $(wildcard containers/$*.hs) \
-		     $(wildcard containers/tests/$*.hs) \
+	             $(wildcard containers/containers/src/$*.hs) \
+		     $(wildcard containers/containers-tests/tests/$*.hs) \
 		     $(SRC_FILE_$*)
 	test -e $@
 
@@ -155,13 +155,12 @@ $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preambl
 	       -o $(OUT) \
 	       -N \
 	       -p module-edits/$*/preamble.v \
-	       --ghc -icontainers \
-	       --ghc -icontainers/dist-install/build \
-	       -Icontainers/include \
+	       --ghc -icontainers/containers/src \
+	       -Icontainers/containers/include \
 	       drop-in/$*.hs
 
 clean:
-	# Clean build artifacts but keep .v source files (can't regenerate with GHC 9.10)
+	# Clean build artifacts but keep .v source files
 	cd $(OUT) 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
 	rm -f $(OUT)/Makefile $(OUT)/_CoqProject
 	cd theories 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true

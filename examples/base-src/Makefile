@@ -111,7 +111,7 @@ VFILES_DROPIN    = $(addprefix $(OUT)/,$(addsuffix .v,$(DROPIN)))
 
 VFILES   = $(VFILES_MAN) $(VFILES_GEN) $(VFILES_SPECIAL) $(VFILES_DROPIN) $(VFILES_RENAMED)
 
-all:  vfiles coq
+all:  vfiles coq base-thy
 
 filelist:
 	@ls -1 $(addprefix base/src/,$(addsuffix .hs,$(BASE_MODULES)))
@@ -175,6 +175,11 @@ $(OUT)/README.md:
 
 coq: $(OUT)/Makefile $(VFILES)
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
+
+BASE_THY=../../base-thy
+
+base-thy: coq
+	cd $(BASE_THY) && coq_makefile -f _CoqProject -o Makefile && $(MAKE) -f Makefile
 
 # Common options shared by all translation rules
 # NOTE: -i gen-files is NOT included here because it would cause GHC to

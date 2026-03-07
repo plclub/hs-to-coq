@@ -2,6 +2,7 @@ Require Import MapProofs.Common.
 Set Bullet Behavior "Strict Subproofs".
 Require Import MapProofs.Bounds.
 Require Import MapProofs.Tactics.
+Require Import MapProofs.LookupProofs.
 Require Import MapProofs.UnionIntersectDifferenceProofs.
 Require Import MapProofs.ToListProofs.
 Require Import Coq.Classes.Morphisms.
@@ -10,76 +11,6 @@ Section WF.
 Context {e : Type} {a : Type} {HEq : Eq_ e} {HOrd : Ord e} {HEqLaws : EqLaws e}  {HOrdLaws : OrdLaws e}.
 
 (** ** Verification of [submap] *)
-Lemma submap'_spec:
-  forall (m1: Map e a) (m2: Map e a) lb ub f,
-  Bounded m1 lb ub ->
-  Bounded m2 lb ub ->
-  submap' f m1 m2 = true <->
-  (forall i value, sem m1 i = Some value -> exists v, (sem m2 i = Some v /\ f value v = true)).
-Proof.
-  intros ????? HB1 HB2.
-  revert dependent m2.
-  induction HB1; intros; simpl; subst.
-  * intuition. discriminate H0.
-  * destruct m2 eqn:Hs0.
-    - rewrite <- Hs0 in *.
-      clear s e0 a0 m1 m3 Hs0.
-      eapply splitLookup_Desc; [solve_Bounded e|].
-      intros sr1 b sr2 HBsr1 HBsr2 Hb Hsem.
-      destruct HB2.
-      + simpl. split; intros. simpl in Hb. subst. discriminate H1. specialize (H1 x v).
-        assert (sem s1 x = None). { eapply sem_outside_above. apply HB1_1. unfold isUB. order e. }
-        rewrite H3 in H1. simpl in H1. rewrite Eq_Reflexive in H1. simpl in H1.
-        assert (exists v0 : a, None = Some v0 /\ f v v0 = true) by  (apply H1; reflexivity).
-        destruct H4. destruct H4. discriminate H4.
-      + destruct b. rewrite andb_true_iff. rewrite andb_true_iff. rewrite IHHB1_1 by eassumption.
-        rewrite IHHB1_2 by eassumption. split; intro.
-        -- destruct H6. destruct H7. intros i value Hi. rewrite Hsem. destruct (sem s1 i) eqn : ?.
-            ** apply H7 in Heqo. destruct Heqo. destruct H9. exists x1.
-               destruct (i == x) eqn : ?. solve_Bounds e. rewrite H9. simpl. simpl in Hi. split. reflexivity.
-              inversion Hi. subst. apply H10.
-            ** simpl in Hi. destruct (i == x) eqn : ?. simpl in Hi. exists a0. split.
-              eapply sem_resp_eq in Heqb. rewrite <- Hb in Heqb. assumption. inversion Hi; subst.
-              assumption. simpl in Hi. apply H8 in Hi. destruct Hi. exists x1.
-              assert (sem sr1 i = None). { eapply sem_outside_above. apply HBsr1.
-              destruct H9. apply (sem_inside HBsr2) in H9. destruct H9. solve_Bounds e. }
-              rewrite H10. simpl. apply H9.
-       -- split. specialize (H6 x v). assert (sem s1 x = None). { eapply sem_outside_above.
-          apply HB1_1. unfold isUB. order e. } rewrite H7 in H6. simpl in H6. rewrite Eq_Reflexive in H6.
-          simpl in H6.
-          assert (exists v1 : a, sem s0 x ||| SomeIf (_GHC.Base.==_ x x0) v0 ||| sem s3 x = Some v1
-          /\ f v v1 = true) by (apply H6; reflexivity). destruct H8. simpl in Hb. rewrite <- Hb in H8.
-          destruct H8. inversion H8; subst. assumption.
-          split.
-          ** intros. specialize (H6 i value). rewrite H7 in H6. simpl in H6.
-             assert (exists v : a, sem s0 i ||| SomeIf (_GHC.Base.==_ i x0) v0 ||| sem s3 i = Some v
-             /\ f value v = true) by (apply H6; reflexivity). destruct H8. destruct H8.
-            specialize (Hsem i). simpl in Hsem. rewrite H8 in Hsem. destruct (i==x) eqn : ?.
-            ++ solve_Bounds e.
-            ++ assert (sem sr2 i = None). { eapply (sem_inside HB1_1) in H7. destruct H7.
-              unfold isUB in H10. eapply (sem_outside_below). apply HBsr2. solve_Bounds e. }
-              rewrite H10 in Hsem. rewrite oro_None_r in Hsem. exists x1. split. symmetry.
-              apply Hsem. apply H9.
-          ** intros. specialize (H6 i value). rewrite H7 in H6.
-              assert (sem s1 i = None). eapply sem_outside_above. apply HB1_1. eapply (sem_inside HB1_2) in H7.
-              destruct H7. solve_Bounds e. rewrite H8 in H6. simpl in H6. destruct (i == x) eqn : ?.
-              ++ solve_Bounds e.
-              ++ simpl in H6. assert ( exists v : a, sem s0 i |||
-              SomeIf (_GHC.Base.==_ i x0) v0 ||| sem s3 i = Some v /\ f value v = true) by (apply H6; reflexivity).
-             destruct H9. specialize (Hsem i). simpl in Hsem. destruct H9. rewrite H9 in Hsem.
-              rewrite Heqb in Hsem. assert (sem sr1 i = None). { eapply (sem_inside HB1_2) in H7.
-              destruct H7. unfold isLB in H7. eapply sem_outside_above. apply HBsr1. solve_Bounds e. }
-              rewrite H11 in Hsem. simpl in Hsem. exists x1. split. symmetry. apply Hsem. apply H10.
-          -- split; intros. discriminate H6. specialize (H6 x). assert (sem s1 x = None). {
-              eapply sem_outside_above. apply HB1_1. unfold isUB.  order e. } rewrite H7 in H6. simpl in H6.
-              specialize (H6 v). rewrite Eq_Reflexive in H6. simpl in H6. destruct H6. reflexivity.
-              simpl in Hb. rewrite <- Hb in H6. destruct H6. discriminate H6.
-    - intuition.
-      + discriminate H1.
-      + subst. simpl in H1. specialize (H1 x v). assert (sem s1 x = None). { eapply sem_outside_above.
-        apply HB1_1. unfold isUB. order e. } rewrite H3 in H1. simpl in H1. rewrite Eq_Reflexive in H1.
-        simpl in H1. destruct H1. reflexivity. destruct H1. discriminate H1.
-Qed.
 
 Lemma submap_size :
   forall (m1: Map e a) (m2: Map e a) lb ub,
@@ -126,6 +57,124 @@ Proof.
       apply H4. solve_Bounds e. }
       rewrite H12 in H7. simpl in H7. exists x0. symmetry. apply H7. }
     lia.
+Qed.
+
+Lemma submap'_spec:
+  forall (m1: Map e a) (m2: Map e a) lb ub f,
+  Bounded m1 lb ub ->
+  Bounded m2 lb ub ->
+  submap' f m1 m2 = true <->
+  (forall i value, sem m1 i = Some value -> exists v, (sem m2 i = Some v /\ f value v = true)).
+Proof.
+  intros ????? HB1 HB2.
+  revert dependent m2.
+  induction HB1; intros; simpl; subst.
+  * intuition. discriminate H0.
+  * destruct m2 eqn:Hs0.
+    - rewrite <- Hs0 in *.
+      clear s e0 a0 m1 m3 Hs0.
+      (* v0.7: handle singleton optimization *)
+      match goal with | |- context [if ?c then _ else _] =>
+        destruct c eqn:Hsingleton end.
+      { (* Singleton case: sz = 1 *)
+        unfold op_zeze__, Eq_Integer___, op_zeze____ in Hsingleton.
+        apply Z.eqb_eq in Hsingleton.
+        postive_sizes.
+        assert (s1 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_1)); lia).
+        assert (s2 = Tip) as -> by (apply (proj1 (size_0_iff_tip HB1_2)); lia).
+        erewrite lookup_spec by eassumption.
+        simpl. setoid_rewrite oro_None_r.
+        destruct (sem m2 x) eqn:Hsem2x.
+        - split.
+          + intros Hf i value Hi.
+            destruct (i == x) eqn:Hix; simpl in Hi; [|discriminate Hi].
+            inversion Hi; subst; clear Hi.
+            exists a0. split; [erewrite sem_resp_eq; eassumption | assumption].
+          + intros Hall.
+            specialize (Hall x v). rewrite Eq_Reflexive in Hall. simpl in Hall.
+            destruct Hall as [v' [Hv' Hfv']]; [reflexivity|].
+            rewrite Hsem2x in Hv'. inversion Hv'; subst. assumption.
+        - split.
+          + intros; discriminate.
+          + intros Hall.
+            specialize (Hall x v). rewrite Eq_Reflexive in Hall. simpl in Hall.
+            destruct Hall as [v' [Hv' Hfv']]; [reflexivity|].
+            rewrite Hsem2x in Hv'. discriminate Hv'. }
+      (* Non-singleton case *)
+      eapply splitLookup_Desc; [solve_Bounded e|].
+      intros sr1 b sr2 HBsr1 HBsr2 Hb Hsem.
+      destruct HB2.
+      + simpl. simpl in Hb. subst. split; intros; [discriminate H1 |]. specialize (H1 x v).
+        assert (sem s1 x = None). { eapply sem_outside_above. apply HB1_1. unfold isUB. order e. }
+        rewrite H3 in H1. simpl in H1. rewrite Eq_Reflexive in H1. simpl in H1.
+        assert (exists v0 : a, None = Some v0 /\ f v v0 = true) by  (apply H1; reflexivity).
+        destruct H4. destruct H4. discriminate H4.
+      + destruct b.
+        (* v0.7 adds size checks; strip them to recover old proof shape *)
+        assert (Hsz1: submap' f s1 sr1 = true -> (size s1 GHC.Base.<= size sr1) = true). {
+          intro Hsub. unfold op_zlze__, Ord_Integer___, op_zlze____. apply Z.leb_le.
+          eapply submap_size; [exact HB1_1 | exact HBsr1 |].
+          intros ii vv Hii. rewrite IHHB1_1 in Hsub; [| exact HBsr1].
+          destruct (Hsub ii vv Hii) as [v1 [Hv1 _]]. exists v1. exact Hv1. }
+        assert (Hsz2: submap' f s2 sr2 = true -> (size s2 GHC.Base.<= size sr2) = true). {
+          intro Hsub. unfold op_zlze__, Ord_Integer___, op_zlze____. apply Z.leb_le.
+          eapply submap_size; [exact HB1_2 | exact HBsr2 |].
+          intros ii vv Hii. rewrite IHHB1_2 in Hsub; [| exact HBsr2].
+          destruct (Hsub ii vv Hii) as [v1 [Hv1 _]]. exists v1. exact Hv1. }
+        match goal with | |- ?lhs = true <-> _ =>
+          assert (Hstrip: lhs = true <->
+            (f v a0 && (submap' f s1 sr1 && submap' f s2 sr2))%bool = true) end.
+        { repeat rewrite andb_true_iff. split; [tauto|].
+          intros [Hfv [Hl Hr]].
+          exact (conj Hfv (conj (Hsz1 Hl) (conj (Hsz2 Hr) (conj Hl Hr)))). }
+        rewrite Hstrip. clear Hstrip Hsz1 Hsz2.
+        rewrite andb_true_iff. rewrite andb_true_iff. rewrite IHHB1_1 by eassumption.
+        rewrite IHHB1_2 by eassumption. split; intro.
+        -- destruct H6. destruct H7. intros i value Hi. rewrite Hsem. destruct (sem s1 i) eqn : ?.
+            ** apply H7 in Heqo. destruct Heqo. destruct H9. exists x1.
+               destruct (i == x) eqn : ?. solve_Bounds e. rewrite H9. simpl. simpl in Hi. split. reflexivity.
+              inversion Hi. subst. apply H10.
+            ** simpl in Hi. destruct (i == x) eqn : ?. simpl in Hi. exists a0. split.
+              eapply sem_resp_eq in Heqb. rewrite <- Hb in Heqb. assumption. inversion Hi; subst.
+              assumption. simpl in Hi. apply H8 in Hi. destruct Hi. exists x1.
+              assert (sem sr1 i = None). { eapply sem_outside_above. apply HBsr1.
+              destruct H9. apply (sem_inside HBsr2) in H9. destruct H9. solve_Bounds e. }
+              rewrite H10. simpl. apply H9.
+       -- split. specialize (H6 x v). assert (sem s1 x = None). { eapply sem_outside_above.
+          apply HB1_1. unfold isUB. order e. } rewrite H7 in H6. simpl in H6. rewrite Eq_Reflexive in H6.
+          simpl in H6.
+          assert (exists v1 : a, sem s0 x ||| SomeIf (_GHC.Base.==_ x x0) v0 ||| sem s3 x = Some v1
+          /\ f v v1 = true) by (apply H6; reflexivity). destruct H8. simpl in Hb. rewrite <- Hb in H8.
+          destruct H8. inversion H8; subst. assumption.
+          split.
+          ** intros. specialize (H6 i value). rewrite H7 in H6. simpl in H6.
+             assert (exists v : a, sem s0 i ||| SomeIf (_GHC.Base.==_ i x0) v0 ||| sem s3 i = Some v
+             /\ f value v = true) by (apply H6; reflexivity). destruct H8. destruct H8.
+            specialize (Hsem i). simpl in Hsem. rewrite H8 in Hsem. destruct (i==x) eqn : ?.
+            ++ solve_Bounds e.
+            ++ assert (sem sr2 i = None). { eapply (sem_inside HB1_1) in H7. destruct H7.
+              unfold isUB in H10. eapply (sem_outside_below). apply HBsr2. solve_Bounds e. }
+              rewrite H10 in Hsem. rewrite oro_None_r in Hsem. exists x1. split. symmetry.
+              apply Hsem. apply H9.
+          ** intros. specialize (H6 i value). rewrite H7 in H6.
+              assert (sem s1 i = None). eapply sem_outside_above. apply HB1_1. eapply (sem_inside HB1_2) in H7.
+              destruct H7. solve_Bounds e. rewrite H8 in H6. simpl in H6. destruct (i == x) eqn : ?.
+              ++ solve_Bounds e.
+              ++ simpl in H6. assert ( exists v : a, sem s0 i |||
+              SomeIf (_GHC.Base.==_ i x0) v0 ||| sem s3 i = Some v /\ f value v = true) by (apply H6; reflexivity).
+             destruct H9. specialize (Hsem i). simpl in Hsem. destruct H9. rewrite H9 in Hsem.
+              rewrite Heqb in Hsem. assert (sem sr1 i = None). { eapply (sem_inside HB1_2) in H7.
+              destruct H7. unfold isLB in H7. eapply sem_outside_above. apply HBsr1. solve_Bounds e. }
+              rewrite H11 in Hsem. simpl in Hsem. exists x1. split. symmetry. apply Hsem. apply H10.
+          -- split; intros. discriminate H6. specialize (H6 x). assert (sem s1 x = None). {
+              eapply sem_outside_above. apply HB1_1. unfold isUB.  order e. } rewrite H7 in H6. simpl in H6.
+              specialize (H6 v). rewrite Eq_Reflexive in H6. simpl in H6. destruct H6. reflexivity.
+              simpl in Hb. rewrite <- Hb in H6. destruct H6. discriminate H6.
+    - intuition.
+      + discriminate H1.
+      + subst. simpl in H1. specialize (H1 x v). assert (sem s1 x = None). { eapply sem_outside_above.
+        apply HB1_1. unfold isUB. order e. } rewrite H3 in H1. simpl in H1. rewrite Eq_Reflexive in H1.
+        simpl in H1. destruct H1. reflexivity. destruct H1. discriminate H1.
 Qed.
 
 Lemma isSubmapOfBy_spec:

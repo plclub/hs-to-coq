@@ -1,5 +1,5 @@
-Require Data.IntSet.Internal.
-Require Test.QuickCheck.Property.
+Require Import Data.IntSet.Internal.
+Require Import Test.QuickCheck.Property.
 Require IntSetProofs.
 
 Require String.

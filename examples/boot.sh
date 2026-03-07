@@ -126,8 +126,11 @@ coq make -C base-src coq
 coq make -C ../base-thy
 coq-test make -C base-tests
 
-# Containers: convenience copy in lib/ is stable (not regenerated).
-# Only build the Coq files.
+# Containers: regenerate lib/ from Haskell source, then build Coq files.
+# Note: several functions use 'redefine' edits to restore v0.6-compatible
+# definitions (e.g. fromDistinctAscList, split, splitMember) so that
+# existing proofs compile against the v0.7 library.
+make -C containers vfiles
 coq make -C containers
 (cd containers/theories; coq coq_makefile -f _CoqProject -o Makefile)
 coq make -C containers/theories

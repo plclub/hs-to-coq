@@ -55,12 +55,35 @@ obligations Data.Map.Internal.link termination_by_omega
 termination Data.Map.Internal.link2 {measure (Nat.add (map_size arg_0__) (map_size arg_1__))}
 obligations Data.Map.Internal.link2 termination_by_omega
 
-in Data.Map.Internal.fromDistinctAscList  termination create deferred
-in Data.Map.Internal.fromDistinctAscList  termination go     deferred
-in Data.Map.Internal.fromDistinctDescList termination create deferred
-in Data.Map.Internal.fromDistinctDescList termination go     deferred
+## fromList still has create/go local functions
 in Data.Map.Internal.fromList             termination create deferred
 in Data.Map.Internal.fromList             termination go     deferred
+
+## fromDistinctAscList/fromDistinctDescList rewritten in v0.7 (stack-based).
+## Auto-generate native v0.7 types and functions.
+order Data.Map.Internal.Stack Data.Map.Internal.FromDistinctMonoState
+order Data.Map.Internal.FromDistinctMonoState Data.Map.Internal.foldl'Stack
+order Data.Map.Internal.foldl'Stack Data.Map.Internal.fromDistinctAscList_linkTop
+order Data.Map.Internal.fromDistinctAscList_linkTop Data.Map.Internal.fromDistinctAscList_linkAll
+order Data.Map.Internal.fromDistinctAscList_linkAll Data.Map.Internal.fromDistinctAscList
+order Data.Map.Internal.foldl'Stack Data.Map.Internal.fromDistinctDescList_linkTop
+order Data.Map.Internal.fromDistinctDescList_linkTop Data.Map.Internal.fromDistinctDescList_linkAll
+order Data.Map.Internal.fromDistinctDescList_linkAll Data.Map.Internal.fromDistinctDescList
+
+order Data.Map.Internal.fromDistinctAscList Data.Map.Internal.fromAscList
+order Data.Map.Internal.fromDistinctAscList Data.Map.Internal.fromAscListWithKey
+order Data.Map.Internal.fromAscListWithKey Data.Map.Internal.fromAscListWith
+order Data.Map.Internal.fromDistinctDescList Data.Map.Internal.fromDescList
+order Data.Map.Internal.fromDistinctDescList Data.Map.Internal.fromDescListWithKey
+order Data.Map.Internal.fromDescListWithKey Data.Map.Internal.fromDescListWith
+
+## New in v0.7
+skip Data.Map.Internal.IsList__Map
+skip Data.Map.Internal.compose
+skip Data.Map.Internal.argSet
+skip Data.Map.Internal.fromArgSet
+skip Data.Map.Internal.Bifoldable__Map
+skip Data.Map.Internal.Lift__Map
 
 rename value Data.Map.Internal.WhenMatched = Data.Map.Internal.Mk_WhenMatched
 rename value Data.Map.Internal.TraceResult = Data.Map.Internal.Mk_TraceResult

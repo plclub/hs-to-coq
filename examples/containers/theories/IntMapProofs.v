@@ -649,6 +649,46 @@ Proof.
   nia.
 Qed.
 
+(** v0.7 removed the [nomatch] check from [lookup].
+    This lemma handles the [zero]-only branching pattern. *)
+Lemma zero_oro:
+  forall {a} i r (f1 f2 : N -> option a) r1 r2,
+  (0 < rBits r)%N ->
+  isSubrange r1 (halfRange r false) = true ->
+  isSubrange r2 (halfRange r true) = true ->
+  (inRange i r1 = false -> f1 i = None) ->
+  (inRange i r2 = false -> f2 i = None) ->
+  (if Data.IntSet.Internal.zero i (rMask r) then f1 i else f2 i) =
+  oro (f1 i) (f2 i).
+Proof.
+  intros a i r f1 f2 r1 r2 Hbits Hsub1 Hsub2 Hout1 Hout2.
+  assert (Hhl: inRange i (halfRange r false) = false -> f1 i = None).
+  { intro. apply Hout1. eapply inRange_isSubrange_false; eassumption. }
+  assert (Hhr: inRange i (halfRange r true) = false -> f2 i = None).
+  { intro. apply Hout2. eapply inRange_isSubrange_false; eassumption. }
+  clear Hout1 Hout2 Hsub1 Hsub2 r1 r2.
+  rewrite zero_spec; [|assumption].
+  destruct (inRange i r) eqn:HinR.
+  * destruct (N.testbit i (rBits r - 1)) eqn:Hbit; simpl negb.
+    -- assert (f1 i = None) as ->.
+       { apply Hhl.
+         pose proof (halfRange_inRange_testbit r i false Hbits HinR).
+         rewrite Hbit in H. simpl in H. exact H. }
+       rewrite oro_None_l. reflexivity.
+    -- assert (f2 i = None) as ->.
+       { apply Hhr.
+         pose proof (halfRange_inRange_testbit r i true Hbits HinR).
+         rewrite Hbit in H. simpl in H. exact H. }
+       rewrite oro_None_r. reflexivity.
+  * assert (f1 i = None) as ->.
+    { apply Hhl. eapply inRange_isSubrange_false.
+      apply isSubrange_halfRange. assumption. exact HinR. }
+    assert (f2 i = None) as ->.
+    { apply Hhr. eapply inRange_isSubrange_false.
+      apply isSubrange_halfRange. assumption. exact HinR. }
+    destruct (N.testbit i (rBits r - 1)); reflexivity.
+Qed.
+
 
 (** *** Verification of [equal] *)
 
@@ -727,15 +767,9 @@ Proof.
  * rewrite H4. clear H4.
    simpl lookup.
    rewrite IHHD1 IHHD2. clear IHHD1 IHHD2.
-
-   apply nomatch_zero; [auto|..]; intros.
-   + rewrite (Desc_outside HD1) ; last inRange_false.
-     rewrite (Desc_outside HD2) ; last inRange_false.
-     reflexivity.
-   + rewrite (Desc_outside HD2) ; last inRange_false.
-     rewrite oro_None_r. reflexivity.
-   + rewrite (Desc_outside HD1) ; last inRange_false.
-     rewrite oro_None_l. reflexivity.
+   eapply zero_oro; try eassumption.
+   + intro. eapply Desc_outside; eassumption.
+   + intro. eapply Desc_outside; eassumption.
 Qed.
 
 
@@ -1035,11 +1069,8 @@ Proof.
         ** destruct (k == k0) eqn: Hkk; rewrite Hkk in H3.
           ++ specialize (H i). assert (i =? k = true). admit. admit. (** mix of H5 Hkk Hik discriminate **)
           ++ discriminate.
-      - simpl. intros. destruct (nomatch k p msk) eqn: Hnm in H7; try discriminate.
-        destruct (zero k msk) eqn: Hz in H7.
-        ** admit.
-        ** admit.
-    + induction H0; try (simpl; discriminate). admit.
+      - simpl. admit.
+    + admit.
   * intros. induction H.
     + induction H0.
       - simpl. destruct (k == k0) eqn: Hkk.
@@ -1192,7 +1223,7 @@ Lemma link_Desc:
   Desc (link p1' s1 p2' s2) r f.
 Proof.
   intros; subst.
-  unfold link.
+  unfold link, linkWithMask.
   rewrite -> branchMask_spec. (* Uses the fact that IntSet.Internal.branchMask = branchMask *)
   rewrite mask_spec.
   rewrite -> zero_spec by (apply commonRangeDisj_rBits_pos; eapply Desc_rNonneg; eassumption).
