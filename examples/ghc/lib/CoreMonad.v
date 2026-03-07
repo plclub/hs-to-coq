@@ -19,6 +19,7 @@ Import String.StringSyntax.
 
 Require DynFlags.
 Require GHC.Base.
+Require Outputable.
 Require GHC.Char.
 Require GHC.Core.Opt.Stats.
 Require GHC.Core.Rules.
@@ -49,11 +50,11 @@ Inductive CoreM a : Type :=
 
 Arguments Mk_CoreM {_} _.
 
-Instance Default__FloatOutSwitches : HsToCoq.Err.Default FloatOutSwitches :=
+#[global] Instance Default__FloatOutSwitches : HsToCoq.Err.Default FloatOutSwitches :=
   HsToCoq.Err.Build_Default _ (Mk_FloatOutSwitches HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__CoreWriter : HsToCoq.Err.Default CoreWriter :=
+#[global] Instance Default__CoreWriter : HsToCoq.Err.Default CoreWriter :=
   HsToCoq.Err.Build_Default _ (Mk_CoreWriter HsToCoq.Err.default).
 
 #[global] Definition floatOutConstants (arg_0__ : FloatOutSwitches) :=

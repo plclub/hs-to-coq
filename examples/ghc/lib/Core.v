@@ -3637,6 +3637,7 @@ Axiom substTyUnchecked : Subst -> Type_ -> Type_.
 Axiom substCo : Subst -> Coercion -> Coercion.
 Axiom isEmptySubst : Subst -> bool.
 Axiom emptySubst : Subst.
+Axiom mkEmptySubst : InScopeSet -> Subst.
 
 Axiom extendLiftingContext : LiftingContext ->
                              TyCoVar -> Coercion -> LiftingContext.

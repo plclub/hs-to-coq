@@ -111,7 +111,11 @@ Axiom fiExpr : Platform.Platform ->
 #[global] Definition dropBoxFloats : DropBox -> RevFloatInBinds :=
   fun '(pair _ floats) => GHC.List.reverse floats.
 
-(* Skipping definition `FloatIn.floatIsCase' *)
+Definition floatIsCase : MkCore.FloatBind -> bool :=
+  fun fb => match fb with
+  | MkCore.FloatCase _ _ _ _ => true
+  | MkCore.FloatLet _ => false
+  end.
 
 #[global] Definition floatIsDupable
    : Platform.Platform -> MkCore.FloatBind -> bool :=

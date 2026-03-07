@@ -17,7 +17,6 @@ Require BasicTypes.
 Require Core.
 Require CoreUtils.
 Require GHC.Base.
-Require GHC.Core.TyCo.Subst.
 Require GHC.Types.Cpr.
 Require HsToCoq.Err.
 Require UnVarGraph.
@@ -30,7 +29,7 @@ Inductive EtaInfo : Type := | EI : list Core.Var -> Core.MCoercionR -> EtaInfo.
 Inductive Cost : Type := | IsCheap : Cost | IsExpensive : Cost.
 
 Inductive ArityOpts : Type :=
-  | ArityOpts (ao_ped_bot : bool) (ao_dicts_cheap : bool) : ArityOpts.
+  | Mk_ArityOpts (ao_ped_bot : bool) (ao_dicts_cheap : bool) : ArityOpts.
 
 #[global] Definition ATLamInfo :=
   (Cost * BasicTypes.OneShotInfo)%type%type.
@@ -50,18 +49,18 @@ Instance Default__Cost : HsToCoq.Err.Default Cost :=
   HsToCoq.Err.Build_Default _ IsCheap.
 
 Instance Default__ArityOpts : HsToCoq.Err.Default ArityOpts :=
-  HsToCoq.Err.Build_Default _ (ArityOpts HsToCoq.Err.default HsToCoq.Err.default).
+  HsToCoq.Err.Build_Default _ (Mk_ArityOpts HsToCoq.Err.default HsToCoq.Err.default).
 
 Instance Default__ArityEnv : HsToCoq.Err.Default ArityEnv :=
   HsToCoq.Err.Build_Default _ (AE HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
 
 #[global] Definition ao_dicts_cheap (arg_0__ : ArityOpts) :=
-  let 'ArityOpts _ ao_dicts_cheap := arg_0__ in
+  let 'Mk_ArityOpts _ ao_dicts_cheap := arg_0__ in
   ao_dicts_cheap.
 
 #[global] Definition ao_ped_bot (arg_0__ : ArityOpts) :=
-  let 'ArityOpts ao_ped_bot _ := arg_0__ in
+  let 'Mk_ArityOpts ao_ped_bot _ := arg_0__ in
   ao_ped_bot.
 
 #[global] Definition am_free_joins (arg_0__ : ArityEnv) :=
@@ -261,9 +260,9 @@ Axiom etaBodyForJoinPoint : nat ->
                             Core.CoreExpr -> (list Core.CoreBndr * Core.CoreExpr)%type.
 
 Axiom freshEtaId : nat ->
-                   GHC.Core.TyCo.Subst.Subst ->
+                   Core.Subst ->
                    Core.Scaled AxiomatizedTypes.Type_ ->
-                   (GHC.Core.TyCo.Subst.Subst * Core.Id)%type.
+                   (Core.Subst * Core.Id)%type.
 
 (* External variables:
      bool list nat op_zt__ option AxiomatizedTypes.Coercion AxiomatizedTypes.Type_
@@ -272,7 +271,7 @@ Axiom freshEtaId : nat ->
      Core.CoreBndr Core.CoreExpr Core.CoreRule Core.DataCon Core.Divergence
      Core.DmdSig Core.ForAllTyBinder Core.Id Core.IdEnv Core.InScopeSet
      Core.MCoercion Core.MCoercionR Core.Scaled Core.SubDemand Core.Var
-     CoreUtils.CheapAppFun GHC.Base.String GHC.Core.TyCo.Subst.Subst
+     CoreUtils.CheapAppFun GHC.Base.String Core.Subst
      GHC.Types.Cpr.CprSig HsToCoq.Err.Build_Default HsToCoq.Err.Default
      HsToCoq.Err.default UnVarGraph.UnVarSet Util.HasDebugCallStack
 *)

@@ -77,7 +77,7 @@ Parameter callArityBind1
                          (UnVarGraph.completeBipartiteGraph set1 set2)).
 
 #[global] Definition domRes : CallArityRes -> UnVarGraph.UnVarSet :=
-  fun '(pair _ ae) => Core.varEnvDomain ae.
+  fun '(pair _ ae) => UnVarGraph.domUFMUnVarSet ae.
 
 #[global] Definition lubArityEnv
    : Core.VarEnv BasicTypes.Arity ->
@@ -118,8 +118,8 @@ Fixpoint callArityAnal (arg_0__ : BasicTypes.Arity) (arg_1__ : Core.VarSet)
                                 e in
            pair ae (Core.Lam v e')
        | arity, int, Core.App e (Core.Mk_Type t) =>
-           Control.Arrow.second (fun e => Core.App e (Core.Mk_Type t)) (callArityAnal arity
-                                                                                      int e)
+           let 'pair ae e' := callArityAnal arity int e in
+           pair ae (Core.App e' (Core.Mk_Type t))
        | arity, int, Core.App e1 e2 =>
            let 'pair ae2 e2' := callArityAnal #0 int e2 in
            let ae2' :=
@@ -130,10 +130,10 @@ Fixpoint callArityAnal (arg_0__ : BasicTypes.Arity) (arg_1__ : Core.VarSet)
        | arity, int, Core.Case scrut bndr ty alts =>
            let 'pair scrut_ae scrut' := callArityAnal #0 int scrut in
            let go :=
-             fun '(Core.Alt dc bndrs e) =>
+             fun '(Core.Mk_Alt dc bndrs e) =>
                let 'pair ae e' := callArityAnal arity (Core.delVarSetList int (cons bndr
                                                                                     bndrs)) e in
-               pair ae (Core.Alt dc bndrs e') in
+               pair ae (Core.Mk_Alt dc bndrs e') in
            let 'pair alt_aes alts' := GHC.List.unzip (GHC.Base.map go alts) in
            let alt_ae := lubRess alt_aes in
            let final_ae := both scrut_ae alt_ae in
@@ -160,14 +160,15 @@ Fixpoint callArityAnal (arg_0__ : BasicTypes.Arity) (arg_1__ : Core.VarSet)
      | _, _, (Core.Mk_Type _ as e) => pair emptyArityRes e
      | _, _, (Core.Mk_Coercion _ as e) => pair emptyArityRes e
      | arity, int, Core.Cast e co =>
-         Control.Arrow.second (fun e => Core.Cast e co) (callArityAnal arity int e)
+         let 'pair ae e' := callArityAnal arity int e in
+         pair ae (Core.Cast e' co)
      | arity, int, (Core.Mk_Var v as e) =>
          if Core.elemVarSet v int : bool then pair (unitArityRes v arity) e else
          pair emptyArityRes e
      | arity, int, Core.Lam v e =>
          if negb (Core.isId v) : bool
-         then Control.Arrow.second (Core.Lam v) (callArityAnal arity (Core.delVarSet int
-                                                                                     v) e) else
+         then let 'pair ae e' := callArityAnal arity (Core.delVarSet int v) e in
+              pair ae (Core.Lam v e') else
          j_30__
      | _, _, _ => j_30__
      end.
@@ -373,7 +374,7 @@ Fixpoint callArityTopLvl (arg_0__ : list Core.Var) (arg_1__ : Core.VarSet)
      Core.delVarEnv Core.delVarSet Core.delVarSetList Core.elemVarSet
      Core.emptyVarEnv Core.emptyVarSet Core.extendVarSetList Core.isDeadEndDiv
      Core.isExportedId Core.isId Core.lookupVarEnv Core.mkVarEnv Core.mkVarSet
-     Core.plusVarEnv_C Core.splitDmdSig Core.unitVarEnv Core.varEnvDomain
+     Core.plusVarEnv_C Core.splitDmdSig Core.unitVarEnv UnVarGraph.domUFMUnVarSet
      CoreArity.typeArity CoreUtils.exprIsCheap CoreUtils.exprIsTrivial
      Data.Foldable.any Data.Foldable.foldl' Data.Foldable.foldr Data.Foldable.or
      Data.Tuple.fst Data.Tuple.snd GHC.Base.const GHC.Base.flip GHC.Base.map

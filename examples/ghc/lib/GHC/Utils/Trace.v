@@ -6,3 +6,6 @@ Definition pprTrace {a b : Type} : String -> b -> a -> a :=
 
 Definition pprTraceDebug {a b : Type} : String -> b -> a -> a :=
   fun _ _ x => x.
+
+Definition warnPprTrace {a b : Type} : bool -> String -> b -> a -> a :=
+  fun _ _ _ x => x.

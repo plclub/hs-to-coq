@@ -22,6 +22,7 @@ Require CoreUtils.
 Require Data.Foldable.
 Require Data.Functor.
 Require Data.Tuple.
+Require FastString.
 Require GHC.Base.
 Require GHC.Builtin.Types.Prim.
 Require GHC.Char.
@@ -49,7 +50,7 @@ Import GHC.Num.Notations.
 (* Converted type declarations: *)
 
 Inductive MkStringIds : Type :=
-  | MkStringIds (unpackCStringId : Core.Id) (unpackCStringUtf8Id : Core.Id)
+  | Mk_MkStringIds (unpackCStringId : Core.Id) (unpackCStringUtf8Id : Core.Id)
    : MkStringIds.
 
 Inductive FloatBind : Type :=
@@ -57,16 +58,16 @@ Inductive FloatBind : Type :=
   | FloatCase
    : Core.CoreExpr -> Core.Id -> Core.AltCon -> list Core.Var -> FloatBind.
 
-Instance Default__MkStringIds : HsToCoq.Err.Default MkStringIds :=
-  HsToCoq.Err.Build_Default _ (MkStringIds HsToCoq.Err.default
+#[global] Instance Default__MkStringIds : HsToCoq.Err.Default MkStringIds :=
+  HsToCoq.Err.Build_Default _ (Mk_MkStringIds HsToCoq.Err.default
                              HsToCoq.Err.default).
 
 #[global] Definition unpackCStringId (arg_0__ : MkStringIds) :=
-  let 'MkStringIds unpackCStringId _ := arg_0__ in
+  let 'Mk_MkStringIds unpackCStringId _ := arg_0__ in
   unpackCStringId.
 
 #[global] Definition unpackCStringUtf8Id (arg_0__ : MkStringIds) :=
-  let 'MkStringIds _ unpackCStringUtf8Id := arg_0__ in
+  let 'Mk_MkStringIds _ unpackCStringUtf8Id := arg_0__ in
   unpackCStringUtf8Id.
 
 (* Converted value declarations: *)
@@ -99,7 +100,7 @@ Axiom sortQuantVars : list Core.Var -> list Core.Var.
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | _, pair fun_ fun_ty, Core.Mk_Type ty =>
-        pair (Core.App fun_ (Core.Mk_Type ty)) ((@Core.piResultTy tt) fun_ty ty)
+        pair (Core.App fun_ (Core.Mk_Type ty)) ((@Core.piResultTy _) fun_ty ty)
     | _, pair fun_ fun_ty, Core.Mk_Coercion co =>
         pair (Core.App fun_ (Core.Mk_Coercion co)) (Core.funResultTy fun_ty)
     | d, pair fun_ fun_ty, arg =>
@@ -134,7 +135,7 @@ Axiom sortQuantVars : list Core.Var -> list Core.Var.
      AxiomatizedTypes.Type_ -> list Core.CoreAlt -> Core.CoreExpr :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
-    | scrut, Core.Scaled w scrut_ty, res_ty, alts =>
+    | scrut, Core.Mk_Scaled w scrut_ty, res_ty, alts =>
         Core.Case scrut (mkWildValBinder w scrut_ty) res_ty alts
     end.
 
@@ -142,8 +143,8 @@ Axiom sortQuantVars : list Core.Var -> list Core.Var.
    : Core.CoreExpr -> Core.CoreExpr -> Core.CoreExpr -> Core.CoreExpr :=
   fun guard then_expr else_expr =>
     mkWildCase guard (Core.linear TysWiredIn.boolTy) (CoreUtils.exprType then_expr)
-    (cons (Core.Alt (Core.DataAlt TysWiredIn.falseDataCon) nil else_expr) (cons
-           (Core.Alt (Core.DataAlt TysWiredIn.trueDataCon) nil then_expr) nil)).
+    (cons (Core.Mk_Alt (Core.DataAlt TysWiredIn.falseDataCon) nil else_expr) (cons
+           (Core.Mk_Alt (Core.DataAlt TysWiredIn.trueDataCon) nil then_expr) nil)).
 
 #[global] Definition castBottomExpr
    : Core.CoreExpr -> AxiomatizedTypes.Type_ -> Core.CoreExpr :=
@@ -163,18 +164,16 @@ Axiom sortQuantVars : list Core.Var -> list Core.Var.
     | _ => GHC.Err.patternFailure
     end.
 
-Axiom mkIntExpr : Platform.Platform -> GHC.Num.Integer.Integer -> Core.CoreExpr.
+Axiom mkIntExpr : Platform.Platform -> Z -> Core.CoreExpr.
 
-#[global] Definition mkUncheckedIntExpr
-   : GHC.Num.Integer.Integer -> Core.CoreExpr :=
+#[global] Definition mkUncheckedIntExpr : Z -> Core.CoreExpr :=
   fun i =>
     mkCoreConApps TysWiredIn.intDataCon (cons (Core.Lit (Literal.mkLitIntUnchecked
                                                          i)) nil).
 
 Axiom mkIntExprInt : Platform.Platform -> nat -> Core.CoreExpr.
 
-Axiom mkWordExpr : Platform.Platform ->
-                   GHC.Num.Integer.Integer -> Core.CoreExpr.
+Axiom mkWordExpr : Platform.Platform -> Z -> Core.CoreExpr.
 
 (* Skipping definition `MkCore.mkIntegerExpr' *)
 
@@ -194,31 +193,18 @@ Axiom mkWordExpr : Platform.Platform ->
 #[global] Definition getMkStringIds {m : Type -> Type} `{GHC.Base.Applicative m}
    : (Name.Name -> m Core.Id) -> m MkStringIds :=
   fun lookupM =>
-    Data.Functor.op_zlzdzg__ MkStringIds (lookupM PrelNames.unpackCStringName)
+    Data.Functor.op_zlzdzg__ Mk_MkStringIds (lookupM PrelNames.unpackCStringName)
     GHC.Base.<*>
     lookupM PrelNames.unpackCStringUtf8Name.
 
 #[global] Definition mkNilExpr : AxiomatizedTypes.Type_ -> Core.CoreExpr :=
   fun ty => mkCoreConApps TysWiredIn.nilDataCon (cons (Core.Mk_Type ty) nil).
 
-#[global] Definition mkStringExprFSWith
-   : MkStringIds -> GHC.Data.FastString.FastString -> Core.CoreExpr :=
-  fun ids str =>
-    let lit := Core.Lit (Literal.LitString (GHC.Data.FastString.bytesFS str)) in
-    let safeChar :=
-      fun c =>
-        andb (GHC.Base.ord c GHC.Base.>= #1) (GHC.Base.ord c GHC.Base.<= #127) in
-    let chars := GHC.Data.FastString.unpackFS str in
-    if GHC.Data.FastString.nullFS str : bool then mkNilExpr TysWiredIn.charTy else
-    if Data.Foldable.all safeChar chars : bool
-    then let unpack_id := unpackCStringId ids in
-         Core.App (Core.Mk_Var unpack_id) lit else
-    let unpack_utf8_id := unpackCStringUtf8Id ids in
-    Core.App (Core.Mk_Var unpack_utf8_id) lit.
+Axiom mkStringExprFSWith
+   : MkStringIds -> FastString.FastString -> Core.CoreExpr.
 
 #[global] Definition mkStringExprFSLookup {m} `{GHC.Base.Monad m}
-   : (Name.Name -> m Core.Id) ->
-     GHC.Data.FastString.FastString -> m Core.CoreExpr :=
+   : (Name.Name -> m Core.Id) -> FastString.FastString -> m Core.CoreExpr :=
   fun lookupM str =>
     getMkStringIds lookupM GHC.Base.>>=
     (fun mk => GHC.Base.pure (mkStringExprFSWith mk str)).
@@ -239,7 +225,7 @@ Axiom mkWordExpr : Platform.Platform ->
                                                           tys)) (Coq.Init.Datatypes.app (GHC.Base.map (Core.Mk_Type
                                                                                                        GHC.Base.∘
                                                                                                        (@Core.getRuntimeRep
-                                                                                                        tt)) tys)
+                                                                                                        _)) tys)
                                                                                         (Coq.Init.Datatypes.app
                                                                                          (GHC.Base.map Core.Mk_Type tys)
                                                                                          exps)).
@@ -267,32 +253,12 @@ Axiom mkWordExpr : Platform.Platform ->
      nat -> list AxiomatizedTypes.Type_ -> Core.CoreExpr -> Core.CoreExpr :=
   fun arity alt tys exp =>
     mkCoreConApps (TysWiredIn.sumDataCon alt arity) (Coq.Init.Datatypes.app
-                   (GHC.Base.map (Core.Mk_Type GHC.Base.∘ (@Core.getRuntimeRep tt)) tys)
+                   (GHC.Base.map (Core.Mk_Type GHC.Base.∘ (@Core.getRuntimeRep _)) tys)
                    (Coq.Init.Datatypes.app (GHC.Base.map Core.Mk_Type tys) (cons exp nil))).
 
-#[global] Definition chunkify {a : Type} : list a -> list (list a) :=
-  fun xs =>
-    let fix split arg_0__
-      := match arg_0__ with
-         | nil => nil
-         | xs =>
-             let 'pair as_ bs := GHC.List.splitAt Constants.mAX_TUPLE_SIZE xs in
-             cons as_ (split bs)
-         end in
-    let n_xs := Coq.Lists.List.length xs in
-    if n_xs GHC.Base.<= Constants.mAX_TUPLE_SIZE : bool then cons xs nil else
-    split xs.
+Axiom chunkify : forall {a : Type}, list a -> list (list a).
 
-Axiom chunkify : list Core.Id -> list (list Core.Id).
-
-#[global] Definition mkChunkified {a : Type} : (list a -> a) -> list a -> a :=
-  fun small_tuple as_ =>
-    let fix mk_big_tuple arg_0__
-      := match arg_0__ with
-         | cons as_ nil => small_tuple as_
-         | as_s => mk_big_tuple (chunkify (GHC.Base.map small_tuple as_s))
-         end in
-    mk_big_tuple (chunkify as_).
+Axiom mkChunkified : forall {a : Type}, (list a -> a) -> list a -> a.
 
 #[global] Definition mkBigCoreVarTupSolo : list Core.Id -> Core.CoreExpr :=
   fun arg_0__ =>
@@ -316,52 +282,20 @@ Axiom mkBigCoreTupTy : forall `{Util.HasDebugCallStack},
 #[global] Definition unitExpr : Core.CoreExpr :=
   Core.Mk_Var TysWiredIn.unitDataConId.
 
-#[global] Definition wrapBox : Core.CoreExpr -> Core.CoreExpr :=
-  fun e =>
-    let e_ty := CoreUtils.exprType e in
-    match TysWiredIn.boxingDataCon e_ty with
-    | TysWiredIn.BI_NoBoxNeeded => e
-    | TysWiredIn.BI_Box _ boxing_expr _ => Core.App boxing_expr e
-    | TysWiredIn.BI_NoBoxAvailable =>
-        Panic.pprPanic (GHC.Base.hs_string__ "wrapBox") (Panic.someSDoc)
-    end.
+Axiom wrapBox : Core.CoreExpr -> Core.CoreExpr.
 
-#[global] Definition boxTy `{Util.HasDebugCallStack}
-   : AxiomatizedTypes.Type_ -> AxiomatizedTypes.Type_ :=
-  fun ty =>
-    match TysWiredIn.boxingDataCon ty with
-    | TysWiredIn.BI_NoBoxNeeded => ty
-    | TysWiredIn.BI_Box _ _ box_ty => box_ty
-    | TysWiredIn.BI_NoBoxAvailable =>
-        Panic.pprPanic (GHC.Base.hs_string__ "boxTy") (Panic.someSDoc)
-    end.
+Axiom boxTy : forall `{Util.HasDebugCallStack},
+   AxiomatizedTypes.Type_ -> AxiomatizedTypes.Type_.
 
-#[global] Definition unwrapBox
+Axiom unwrapBox
    : UniqSupply.UniqSupply ->
      Core.Id ->
-     Core.CoreExpr -> (UniqSupply.UniqSupply * Core.Id * Core.CoreExpr)%type :=
-  fun us var body =>
-    let 'pair uniq us' := UniqSupply.takeUniqFromSupply us in
-    let var_ty := Id.idType var in
-    match TysWiredIn.boxingDataCon var_ty with
-    | TysWiredIn.BI_NoBoxNeeded => pair (pair us var) body
-    | TysWiredIn.BI_NoBoxAvailable =>
-        Panic.pprPanic (GHC.Base.hs_string__ "unwrapBox") (Panic.someSDoc)
-    | TysWiredIn.BI_Box box_con _ box_ty =>
-        let var' :=
-          Id.mkSysLocal (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "uc")) uniq
-          Core.ManyTy box_ty in
-        let body' :=
-          Core.Case (Core.Mk_Var var') var' (CoreUtils.exprType body) (cons (Core.Alt
-                                                                             (Core.DataAlt box_con) (cons var nil) body)
-                                                                            nil) in
-        pair (pair us' var') body'
-    end.
+     Core.CoreExpr -> (UniqSupply.UniqSupply * Core.Id * Core.CoreExpr)%type.
 
 #[global] Definition mkSmallTupleSelector1
    : list Core.Id -> Core.Id -> Core.Id -> Core.CoreExpr -> Core.CoreExpr :=
   fun vars the_var scrut_var scrut =>
-    Core.Case scrut scrut_var (Id.idType the_var) (cons (Core.Alt (Core.DataAlt
+    Core.Case scrut scrut_var (Id.idType the_var) (cons (Core.Mk_Alt (Core.DataAlt
                                                                    (TysWiredIn.tupleDataCon HsSyn.Boxed
                                                                     (Coq.Lists.List.length vars))) vars (Core.Mk_Var
                                                                                                          the_var)) nil).
@@ -375,29 +309,8 @@ Axiom mkBigCoreTupTy : forall `{Util.HasDebugCallStack},
         mkSmallTupleSelector1 vars the_var scrut_var scrut
     end.
 
-#[global] Definition mkBigTupleSelector
-   : list Core.Id -> Core.Id -> Core.Id -> Core.CoreExpr -> Core.CoreExpr :=
-  fun vars the_var scrut_var scrut =>
-    let fix mk_tup_sel arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | cons vars nil, the_var => mkSmallTupleSelector vars the_var scrut_var scrut
-         | vars_s, the_var =>
-             let tpl_tys :=
-               Coq.Lists.List.flat_map (fun gp =>
-                                          cons (TysWiredIn.mkBoxedTupleTy (GHC.Base.map Id.idType gp)) nil) vars_s in
-             let tpl_vs := Id.mkTemplateLocals tpl_tys in
-             match (let cont_5__ arg_6__ :=
-                        let 'pair tpl gp := arg_6__ in
-                        if Data.Foldable.elem the_var gp : bool then cons (pair tpl gp) nil else
-                        nil in
-                      Coq.Lists.List.flat_map cont_5__ (Util.zipEqual (GHC.Base.hs_string__
-                                                                       "mkBigTupleSelector") tpl_vs vars_s)) with
-             | cons (pair tpl_v group) nil =>
-                 mkSmallTupleSelector group the_var tpl_v (mk_tup_sel (chunkify tpl_vs) tpl_v)
-             | _ => GHC.Err.patternFailure
-             end
-         end in
-    mk_tup_sel (chunkify vars) the_var.
+Axiom mkBigTupleSelector
+   : list Core.Id -> Core.Id -> Core.Id -> Core.CoreExpr -> Core.CoreExpr.
 
 #[global] Definition mkBigTupleSelectorSolo
    : list Core.Id -> Core.Id -> Core.Id -> Core.CoreExpr -> Core.CoreExpr :=
@@ -413,67 +326,14 @@ Axiom mkBigCoreTupTy : forall `{Util.HasDebugCallStack},
     match arg_0__, arg_1__, arg_2__, arg_3__ with
     | cons var nil, body, _scrut_var, scrut => CoreUtils.bindNonRec var scrut body
     | vars, body, scrut_var, scrut =>
-        Core.Case scrut scrut_var (CoreUtils.exprType body) (cons (Core.Alt
+        Core.Case scrut scrut_var (CoreUtils.exprType body) (cons (Core.Mk_Alt
                                                                    (Core.DataAlt (TysWiredIn.tupleDataCon HsSyn.Boxed
                                                                                   (Coq.Lists.List.length vars))) vars
                                                                    body) nil)
     end.
 
-#[global] Definition mkBigTupleCase {m : Type -> Type} `{UniqSupply.MonadUnique
-  m}
-   : list Core.Id -> Core.CoreExpr -> Core.CoreExpr -> m Core.CoreExpr :=
-  fun vars body scrut =>
-    let new_var
-     : UniqSupply.UniqSupply ->
-       AxiomatizedTypes.Type_ -> (UniqSupply.UniqSupply * Core.Id)%type :=
-      fun us ty =>
-        let 'pair uniq us' := UniqSupply.takeUniqFromSupply us in
-        let id :=
-          Id.mkSysLocal (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "ds")) uniq
-          Core.ManyTy ty in
-        pair us' id in
-    let one_tuple_case :=
-      fun arg_3__ arg_4__ =>
-        match arg_3__, arg_4__ with
-        | chunk_vars, pair (pair us vs) body =>
-            let tup_ty := TysWiredIn.mkBoxedTupleTy (GHC.Base.map Id.idType chunk_vars) in
-            let 'pair us' scrut_var := new_var us tup_ty in
-            let body' :=
-              mkSmallTupleCase chunk_vars body scrut_var (Core.Mk_Var scrut_var) in
-            pair (pair us' (cons scrut_var vs)) body'
-        end in
-    let unwrap :=
-      fun arg_10__ arg_11__ =>
-        match arg_10__, arg_11__ with
-        | var, pair (pair us vars) body =>
-            let 'pair (pair us' var') body' := unwrapBox us var body in
-            pair (pair us' (cons var' vars)) body'
-        end in
-    let scrut_ty := CoreUtils.exprType scrut in
-    let mk_tuple_case
-     : UniqSupply.UniqSupply ->
-       list (list Core.Id) -> Core.CoreExpr -> Core.CoreExpr :=
-      fix mk_tuple_case (arg_16__ : UniqSupply.UniqSupply) (arg_17__
-                          : list (list Core.Id)) (arg_18__ : Core.CoreExpr) : Core.CoreExpr
-        := match arg_16__, arg_17__, arg_18__ with
-           | us, cons vars nil, body =>
-               let scrut_var :=
-                 match scrut with
-                 | Core.Mk_Var v => v
-                 | _ => Data.Tuple.snd (new_var us scrut_ty)
-                 end in
-               mkSmallTupleCase vars body scrut_var scrut
-           | us, vars_s, body =>
-               let 'pair (pair us' vars') body' := Data.Foldable.foldr one_tuple_case (pair
-                                                                                       (pair us nil) body) vars_s in
-               mk_tuple_case us' (chunkify vars') body'
-           end in
-    UniqSupply.getUniqueSupplyM GHC.Base.>>=
-    (fun us =>
-       let 'pair (pair wrapped_us wrapped_vars) wrapped_body := Data.Foldable.foldr
-                                                                  unwrap (pair (pair us nil) body) vars in
-       GHC.Base.return_ (mk_tuple_case wrapped_us (chunkify wrapped_vars)
-                                       wrapped_body)).
+Axiom mkBigTupleCase : forall {m : Type -> Type} `{UniqSupply.MonadUnique m},
+   list Core.Id -> Core.CoreExpr -> Core.CoreExpr -> m Core.CoreExpr.
 
 #[global] Definition wrapFloat : FloatBind -> Core.CoreExpr -> Core.CoreExpr :=
   fun arg_0__ arg_1__ =>
@@ -526,7 +386,7 @@ Axiom mkBigCoreTupTy : forall `{Util.HasDebugCallStack},
    : Core.Id -> AxiomatizedTypes.Type_ -> GHC.Base.String -> Core.CoreExpr :=
   fun err_id res_ty err_msg =>
     let err_string := Core.Lit (Literal.mkLitString err_msg) in
-    Core.mkApps (Core.Mk_Var err_id) (cons (Core.Mk_Type ((@Core.getRuntimeRep tt)
+    Core.mkApps (Core.Mk_Var err_id) (cons (Core.Mk_Type ((@Core.getRuntimeRep _)
                                                           res_ty)) (cons (Core.Mk_Type res_ty) (cons err_string nil))).
 
 Axiom aBSENT_CONSTRAINT_ERROR_ID : Core.Id.
@@ -589,7 +449,7 @@ Axiom err_nm : GHC.Base.String -> Unique.Unique -> Core.Id -> Name.Name.
   PrelNames.nonExhaustiveGuardsErrorIdKey nON_EXHAUSTIVE_GUARDS_ERROR_ID.
 
 #[global] Definition absentSumFieldErrorName : Name.Name :=
-  TysWiredIn.mkWiredInIdName PrelNames.gHC_PRIM_PANIC (GHC.Data.FastString.fsLit
+  TysWiredIn.mkWiredInIdName PrelNames.gHC_PRIM_PANIC (FastString.fsLit
                                                        (GHC.Base.hs_string__ "absentSumFieldError"))
   PrelNames.absentSumFieldErrorIdKey aBSENT_SUM_FIELD_ERROR_ID.
 
@@ -638,12 +498,12 @@ Axiom err_nm : GHC.Base.String -> Unique.Unique -> Core.Id -> Name.Name.
                                                                        nil)).
 
 #[global] Definition absentErrorName : Name.Name :=
-  TysWiredIn.mkWiredInIdName PrelNames.gHC_PRIM_PANIC (GHC.Data.FastString.fsLit
+  TysWiredIn.mkWiredInIdName PrelNames.gHC_PRIM_PANIC (FastString.fsLit
                                                        (GHC.Base.hs_string__ "absentError")) PrelNames.absentErrorIdKey
   aBSENT_ERROR_ID.
 
 #[global] Definition absentConstraintErrorName : Name.Name :=
-  TysWiredIn.mkWiredInIdName PrelNames.gHC_PRIM_PANIC (GHC.Data.FastString.fsLit
+  TysWiredIn.mkWiredInIdName PrelNames.gHC_PRIM_PANIC (FastString.fsLit
                                                        (GHC.Base.hs_string__ "absentConstraintError"))
   PrelNames.absentConstraintErrorIdKey aBSENT_CONSTRAINT_ERROR_ID.
 
@@ -674,7 +534,7 @@ Axiom mkRuntimeErrorId : BasicTypes.TypeOrConstraint -> Name.Name -> Core.Id.
     end.
 
 (* External variables:
-     None Some Type andb bool cons list nat negb nil op_zt__ option pair tt
+     None Some Type Z andb bool cons list nat negb nil op_zt__ option pair tt
      AxiomatizedTypes.Type_ BasicTypes.ConstraintLike BasicTypes.TypeLike
      BasicTypes.TypeOrConstraint Constants.mAX_TUPLE_SIZE Coq.Init.Datatypes.app
      Coq.Lists.List.flat_map Coq.Lists.List.length Core.Alt Core.AltCon Core.App
@@ -691,17 +551,15 @@ Axiom mkRuntimeErrorId : BasicTypes.TypeOrConstraint -> Name.Name -> Core.Id.
      Core.vanillaIdInfo CoreUtils.bindNonRec CoreUtils.exprType
      CoreUtils.mkSingleAltCase Data.Foldable.all Data.Foldable.elem
      Data.Foldable.foldl' Data.Foldable.foldr Data.Functor.op_zlzdzg__ Data.Tuple.fst
-     Data.Tuple.snd GHC.Base.Applicative GHC.Base.Monad GHC.Base.String GHC.Base.map
-     GHC.Base.op_z2218U__ GHC.Base.op_zgze__ GHC.Base.op_zgzgze__ GHC.Base.op_zlze__
-     GHC.Base.op_zlztzg__ GHC.Base.ord GHC.Base.pure GHC.Base.return_
-     GHC.Builtin.Types.Prim.addrPrimTy GHC.Builtin.Types.Prim.alphaTyVar
-     GHC.Builtin.Types.Prim.mkTemplateTyVars GHC.Builtin.Types.Prim.runtimeRep1Ty
-     GHC.Builtin.Types.Prim.runtimeRep1TyVar GHC.Char.Char
-     GHC.Core.TyCo.Compare.eqType GHC.Core.TyCo.FVs.noFreeVarsOfType
-     GHC.Data.FastString.FastString GHC.Data.FastString.bytesFS
-     GHC.Data.FastString.fsLit GHC.Data.FastString.nullFS
-     GHC.Data.FastString.unpackFS GHC.Err.patternFailure GHC.List.splitAt
-     GHC.Num.fromInteger GHC.Num.Integer.Integer GHC.Types.Cpr.botCpr
+     Data.Tuple.snd FastString.FastString FastString.bytesFS FastString.fsLit
+     FastString.nullFS FastString.unpackFS GHC.Base.Applicative GHC.Base.Monad
+     GHC.Base.String GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zgze__
+     GHC.Base.op_zgzgze__ GHC.Base.op_zlze__ GHC.Base.op_zlztzg__ GHC.Base.ord
+     GHC.Base.pure GHC.Base.return_ GHC.Builtin.Types.Prim.addrPrimTy
+     GHC.Builtin.Types.Prim.alphaTyVar GHC.Builtin.Types.Prim.mkTemplateTyVars
+     GHC.Builtin.Types.Prim.runtimeRep1Ty GHC.Builtin.Types.Prim.runtimeRep1TyVar
+     GHC.Char.Char GHC.Core.TyCo.Compare.eqType GHC.Core.TyCo.FVs.noFreeVarsOfType
+     GHC.Err.patternFailure GHC.List.splitAt GHC.Num.fromInteger GHC.Types.Cpr.botCpr
      GHC.Types.Cpr.mkCprSig HsSyn.Boxed HsSyn.Boxity HsSyn.Unboxed
      HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default Id.idType
      Id.mkLocalIdOrCoVar Id.mkSysLocal Id.mkTemplateLocals Id.mkVanillaGlobalWithInfo

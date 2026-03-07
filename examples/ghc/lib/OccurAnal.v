@@ -33,6 +33,7 @@ Require GHC.Utils.Trace.
 Require HsToCoq.Err.
 Require Id.
 Require Maybes.
+Require Module.
 Require Panic.
 Require PrelNames.
 Require UniqFM.
@@ -121,28 +122,34 @@ Arguments WTUD {_} _ _.
 
 Arguments WUD {_} _ _.
 
-Instance Default__OccEncl : HsToCoq.Err.Default OccEncl :=
+#[global] Instance Default__OccEncl : HsToCoq.Err.Default OccEncl :=
   HsToCoq.Err.Build_Default _ OccRhs.
 
-Instance Default__LocalOcc : HsToCoq.Err.Default LocalOcc :=
+#[global] Instance Default__LocalOcc : HsToCoq.Err.Default LocalOcc :=
   HsToCoq.Err.Build_Default _ (OneOccL HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
 
-Instance Default__UsageDetails : HsToCoq.Err.Default UsageDetails :=
+#[global] Instance Default__UsageDetails : HsToCoq.Err.Default UsageDetails :=
   HsToCoq.Err.Build_Default _ (UD HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__NodeDetails : HsToCoq.Err.Default NodeDetails :=
+#[global] Instance Default__TailUsageDetails : HsToCoq.Err.Default TailUsageDetails :=
+  HsToCoq.Err.Build_Default _ (TUD HsToCoq.Err.default HsToCoq.Err.default).
+
+#[global] Instance Default__WithTailUsageDetails {a} `{HsToCoq.Err.Default a} : HsToCoq.Err.Default (WithTailUsageDetails a) :=
+  HsToCoq.Err.Build_Default _ (WTUD HsToCoq.Err.default HsToCoq.Err.default).
+
+#[global] Instance Default__NodeDetails : HsToCoq.Err.Default NodeDetails :=
   HsToCoq.Err.Build_Default _ (ND HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
 
-Instance Default__OccEnv : HsToCoq.Err.Default OccEnv :=
+#[global] Instance Default__OccEnv : HsToCoq.Err.Default OccEnv :=
   HsToCoq.Err.Build_Default _ (Mk_OccEnv HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
 
-Instance Default__SimpleNodeDetails : HsToCoq.Err.Default SimpleNodeDetails :=
+#[global] Instance Default__SimpleNodeDetails : HsToCoq.Err.Default SimpleNodeDetails :=
   HsToCoq.Err.Build_Default _ (SND HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
 
@@ -279,7 +286,7 @@ Axiom occAnal : OccEnv -> Core.CoreExpr -> WithUsageDetails Core.CoreExpr.
 #[global] Definition occurAnalyseExpr : Core.CoreExpr -> Core.CoreExpr :=
   fun expr => let 'WUD _ expr' := occAnal initOccEnv expr in expr'.
 
-Axiom occurAnalysePgm : GHC.Unit.Types.Module ->
+Axiom occurAnalysePgm : Module.Module ->
                         (Core.Id -> bool) ->
                         (BasicTypes.Activation -> bool) ->
                         list Core.CoreRule -> Core.CoreProgram -> Core.CoreProgram.
@@ -457,7 +464,6 @@ Axiom occAnalBind : forall {r},
                  (occ_join_points env)) : bool
         then match thing_inside env with
              | WUD uds res => WUD (delBndrsFromUDs bndrs uds) res
-             | _ => j_8__
              end else
         j_8__
     end.
@@ -705,50 +711,7 @@ Fixpoint isOneShotFun (arg_0__ : Core.CoreExpr) : bool
   fun usage bndr =>
     let occ := lookupOccInfo usage bndr in setBinderOcc (markNonTail occ) bndr.
 
-Fixpoint occ_anal_lam_tail (arg_0__ : OccEnv) (arg_1__ : Core.CoreExpr)
-  : WithUsageDetails Core.CoreExpr
-  := match arg_0__, arg_1__ with
-     | env, (Core.Lam _ _ as expr) =>
-         let go
-          : OccEnv -> list Core.Var -> Core.CoreExpr -> WithUsageDetails Core.CoreExpr :=
-           fix go (arg_2__ : OccEnv) (arg_3__ : list Core.Var) (arg_4__ : Core.CoreExpr)
-             : WithUsageDetails Core.CoreExpr
-             := match arg_2__, arg_3__, arg_4__ with
-                | env, rev_bndrs, Core.Lam bndr body =>
-                    if Core.isTyVar bndr : bool then go env (cons bndr rev_bndrs) body else
-                    let 'pair env_one_shots' bndr' := (match occ_one_shots env with
-                                                         | nil => pair nil bndr
-                                                         | cons os oss => pair oss (Id.updOneShotInfo bndr os)
-                                                         end) in
-                    let env' :=
-                      let 'Mk_OccEnv occ_encl_15__ occ_one_shots_16__ occ_unf_act_17__
-                         occ_rule_act_18__ occ_bs_env_19__ occ_bs_rng_20__ occ_join_points_21__ := env in
-                      Mk_OccEnv OccVanilla env_one_shots' occ_unf_act_17__ occ_rule_act_18__
-                                occ_bs_env_19__ occ_bs_rng_20__ occ_join_points_21__ in
-                    go env' (cons bndr' rev_bndrs) body
-                | _, _, _ =>
-                    match arg_2__, arg_3__, arg_4__ with
-                    | env, rev_bndrs, body =>
-                        addInScope env rev_bndrs (fun env =>
-                                                    let 'WUD usage body' := occ_anal_lam_tail env body in
-                                                    let wrap_lam :=
-                                                      fun body bndr => Core.Lam (tagLamBinder usage bndr) body in
-                                                    WUD (addLamCoVarOccs usage rev_bndrs) (Data.Foldable.foldl' wrap_lam
-                                                                                           body' rev_bndrs))
-                    end
-                end in
-         go env nil expr
-     | env, Core.Cast expr co =>
-         let 'WUD usage expr' := occ_anal_lam_tail env expr in
-         let usage1 := addManyOccs usage (GHC.Core.TyCo.FVs.coVarsOfCo co) in
-         let usage2 :=
-           match expr with
-           | Core.Mk_Var _ => if isRhsEnv env : bool then markAllMany usage1 else usage1
-           | _ => usage1
-           end in
-         let usage3 := markAllNonTail usage2 in WUD usage3 (Core.Cast expr' co)
-     | env, expr => occAnal env expr
-     end.
+Axiom occ_anal_lam_tail : OccEnv -> Core.CoreExpr -> WithUsageDetails Core.CoreExpr.
 
 #[global] Definition occAnalLamTail
    : OccEnv -> Core.CoreExpr -> WithTailUsageDetails Core.CoreExpr :=
@@ -1027,7 +990,6 @@ Axiom cheapExprSize : Core.CoreExpr -> nat.
              | _ => BasicTypes.NoTailCallInfo
              end else
         BasicTypes.NoTailCallInfo
-    | _ => BasicTypes.NoTailCallInfo
     end.
 
 #[global] Definition okForJoinPoint
@@ -1185,18 +1147,7 @@ Axiom occAnalArgs : OccEnv ->
         env
     end.
 
-Fixpoint lookupBndrSwap (arg_0__ : OccEnv) (arg_1__ : Core.Id) : (Core.CoreExpr
-                                                                  *
-                                                                  Core.Id)%type
-  := match arg_0__, arg_1__ with
-     | (Mk_OccEnv _ _ _ _ bs_env _ _ as env), bndr =>
-         match Core.lookupVarEnv bs_env bndr with
-         | None => pair (Core.Mk_Var bndr) bndr
-         | Some (pair bndr1 mco) =>
-             let 'pair fun_ fun_id := lookupBndrSwap env bndr1 in
-             pair (CoreUtils.mkCastMCo fun_ mco) fun_id
-         end
-     end.
+Axiom lookupBndrSwap : OccEnv -> Core.Id -> (Core.CoreExpr * Core.Id)%type.
 
 #[global] Definition mkOneOcc
    : OccEnv ->
@@ -1254,7 +1205,6 @@ Fixpoint lookupBndrSwap (arg_0__ : OccEnv) (arg_1__ : Core.Id) : (Core.CoreExpr
                  match adjustNonRecRhs (Outputable.JoinPoint #1) (occAnalLamTail env arg) with
                  | WUD usage arg' =>
                      WUD usage (Core.mkApps (Core.Mk_Var fun_) (cons t1 (cons t2 (cons arg' nil))))
-                 | _ => j_20__
                  end
              | _ => j_20__
              end else
@@ -1424,12 +1374,12 @@ Fixpoint lookupBndrSwap (arg_0__ : OccEnv) (arg_1__ : Core.Id) : (Core.CoreExpr
      GHC.Base.return_ GHC.Core.Predicate.isDictId GHC.Core.TyCo.FVs.coVarsOfCo
      GHC.Core.TyCo.FVs.coVarsOfType GHC.Core.TyCo.FVs.tyCoVarsOfMCo GHC.Err.error
      GHC.List.takeWhile GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__
-     GHC.Types.Tickish.CoreTickish GHC.Unit.Types.Module GHC.Utils.Trace.warnPprTrace
+     GHC.Types.Tickish.CoreTickish GHC.Utils.Trace.warnPprTrace
      HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default Id.idCoreRules
      Id.idDemandInfo Id.idDmdSig Id.idInlineActivation Id.idJoinPointHood
      Id.idOccInfo Id.idType Id.idUnfolding Id.idUnique Id.isConLikeId Id.isJoinId
      Id.realIdUnfolding Id.setIdOccInfo Id.setIdSpecialisation Id.setIdUnfolding
-     Id.updOneShotInfo Id.zapIdOccInfo Id.zapLamIdInfo Maybes.orElse
+     Id.updOneShotInfo Id.zapIdOccInfo Id.zapLamIdInfo Maybes.orElse Module.Module
      Outputable.JoinPoint Outputable.JoinPointHood Outputable.NotJoinPoint
      Panic.assertPpr Panic.someSDoc PrelNames.runRWKey UniqFM.UniqFM
      UniqFM.disjointUFM UniqFM.intersectUFM_C UniqFM.isNullUFM UniqFM.mapMaybeUFM

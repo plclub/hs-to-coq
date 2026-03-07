@@ -13,3 +13,6 @@ Axiom tyCoVarsOfTypes : list AxiomatizedTypes.Type_ -> Core.TyCoVarSet.
 Axiom tyCoVarsOfCo : AxiomatizedTypes.Coercion -> Core.TyCoVarSet.
 Axiom occCheckExpand : list Core.Var -> AxiomatizedTypes.Type_ -> option AxiomatizedTypes.Type_.
 Axiom noFreeVarsOfType : AxiomatizedTypes.Type_ -> bool.
+Axiom coVarsOfCo : AxiomatizedTypes.Coercion -> Core.CoVarSet.
+Axiom coVarsOfType : AxiomatizedTypes.Type_ -> Core.CoVarSet.
+Axiom tyCoVarsOfMCo : Core.MCoercionN -> Core.TyCoVarSet.

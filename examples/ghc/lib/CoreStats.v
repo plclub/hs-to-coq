@@ -100,7 +100,7 @@ Axiom coStats : AxiomatizedTypes.Coercion -> CoreStats.
    : BasicTypes.TopLevelFlag -> CoreBind -> CoreStats :=
   fix exprStats (arg_0__ : CoreExpr) : CoreStats
     := let altStats (arg_0__ : CoreAlt) : CoreStats :=
-         let 'Alt _ bs r := arg_0__ in
+         let 'Mk_Alt _ bs r := arg_0__ in
          plusCS (altBndrStats bs) (exprStats r) in
        match arg_0__ with
        | Mk_Var _ => oneTM
@@ -130,7 +130,7 @@ Axiom coStats : AxiomatizedTypes.Coercion -> CoreStats.
 #[global] Definition exprStats : CoreExpr -> CoreStats :=
   fix exprStats (arg_0__ : CoreExpr) : CoreStats
     := let altStats (arg_0__ : CoreAlt) : CoreStats :=
-         let 'Alt _ bs r := arg_0__ in
+         let 'Mk_Alt _ bs r := arg_0__ in
          plusCS (altBndrStats bs) (exprStats r) in
        match arg_0__ with
        | Mk_Var _ => oneTM
@@ -159,7 +159,7 @@ Axiom coStats : AxiomatizedTypes.Coercion -> CoreStats.
   fun top_lvl v r => plusCS (letBndrStats top_lvl v) (exprStats r).
 
 #[global] Definition altStats : CoreAlt -> CoreStats :=
-  fun '(Alt _ bs r) => plusCS (altBndrStats bs) (exprStats r).
+  fun '(Mk_Alt _ bs r) => plusCS (altBndrStats bs) (exprStats r).
 
 #[global] Definition bndrSize : Var -> nat :=
   fun arg_0__ => 1.
@@ -170,7 +170,7 @@ Axiom coStats : AxiomatizedTypes.Coercion -> CoreStats.
 #[global] Definition bindSize : CoreBind -> nat :=
   fix exprSize (arg_0__ : CoreExpr) : nat
     := let altSize (arg_0__ : CoreAlt) : nat :=
-         let 'Alt _ bs e := arg_0__ in
+         let 'Mk_Alt _ bs e := arg_0__ in
          bndrsSize bs + exprSize e in
        match arg_0__ with
        | Mk_Var _ => 1
@@ -198,7 +198,7 @@ Axiom coStats : AxiomatizedTypes.Coercion -> CoreStats.
 #[global] Definition exprSize : CoreExpr -> nat :=
   fix exprSize (arg_0__ : CoreExpr) : nat
     := let altSize (arg_0__ : CoreAlt) : nat :=
-         let 'Alt _ bs e := arg_0__ in
+         let 'Mk_Alt _ bs e := arg_0__ in
          bndrsSize bs + exprSize e in
        match arg_0__ with
        | Mk_Var _ => 1
@@ -221,17 +221,13 @@ Axiom coStats : AxiomatizedTypes.Coercion -> CoreStats.
        end for exprSize.
 
 #[global] Definition tickSize : GHC.Types.Tickish.CoreTickish -> nat :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | GHC.Types.Tickish.ProfNote _ _ _ => 1
-    | _ => 1
-    end.
+  fun _ => 1.
 
 #[global] Definition pairSize : (Var * CoreExpr)%type -> nat :=
   fun '(pair b e) => bndrSize b + exprSize e.
 
 #[global] Definition altSize : CoreAlt -> nat :=
-  fun '(Alt _ bs e) => bndrsSize bs + exprSize e.
+  fun '(Mk_Alt _ bs e) => bndrsSize bs + exprSize e.
 
 (* External variables:
      Alt App Case Cast CoreAlt CoreBind CoreExpr Lam Let Lit Mk_Coercion Mk_Type

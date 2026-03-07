@@ -19,7 +19,6 @@ Require Core.
 Require CoreFVs.
 Require CoreMonad.
 Require GHC.Base.
-Require GHC.Core.TyCo.Subst.
 Require GHC.Types.Cpr.
 Require HsToCoq.Err.
 Require UniqSupply.
@@ -50,11 +49,11 @@ Inductive FloatSpec : Type :=
 Inductive LevelEnv : Type :=
   | LE (le_switches : CoreMonad.FloatOutSwitches) (le_ctxt_lvl : Level)
   (le_lvl_env : Core.VarEnv Level) (le_join_ceil : Level) (le_subst
-    : GHC.Core.TyCo.Subst.Subst) (le_env
+    : Core.Subst) (le_env
     : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
    : LevelEnv.
 
-Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
+#[global] Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
   HsToCoq.Err.Build_Default _ BndrLvl.
 
 #[global] Definition le_ctxt_lvl (arg_0__ : LevelEnv) :=
@@ -89,9 +88,9 @@ Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
 (* Skipping all instances of class `Outputable.Outputable', including
    `SetLevels.Outputable__Level' *)
 
-Instance Eq___Level : GHC.Base.Eq_ Level.
-Proof.
-Admitted.
+#[global] Instance Eq___LevelType : GHC.Base.Eq_ LevelType. Admitted.
+
+#[global] Instance Eq___Level : GHC.Base.Eq_ Level. Admitted.
 
 Axiom floatSpecLevel : FloatSpec -> Level.
 
@@ -256,7 +255,7 @@ Instance Default__Level : HsToCoq.Err.Default Level :=
      Core.InVar Core.OutId Core.OutVar Core.TaggedBind Core.TaggedBndr
      Core.TaggedExpr Core.TyCoVarSet Core.Var Core.VarEnv CoreFVs.CoreAltWithFVs
      CoreFVs.CoreBindWithFVs CoreFVs.CoreExprWithFVs CoreMonad.FloatOutSwitches
-     GHC.Base.Eq_ GHC.Core.TyCo.Subst.Subst GHC.Types.Cpr.CprSig
+     GHC.Base.Eq_ Core.Subst GHC.Types.Cpr.CprSig
      HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
      Outputable.JoinPointHood UniqSupply.UniqSM UniqSupply.UniqSupply
 *)

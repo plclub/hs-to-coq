@@ -22,7 +22,7 @@ Require Unique.
 
 (* Converted type declarations: *)
 
-Inductive Time : Type := | Time : nat -> Time.
+Inductive Time : Type := | Mk_Time : nat -> Time.
 
 Axiom ReduceFn : Type -> Type -> Type.
 
@@ -170,7 +170,9 @@ Axiom emptyG : forall {node : Type}, Graph node -> bool.
 
 Axiom reachableGraph : IntGraph -> IntMap.IntMap Data.IntSet.Internal.IntSet.
 
-Axiom scc : IntGraph -> list (Data.Graph.SCC Data.Graph.Vertex).
+Axiom Vertex : Type.
+Axiom SCC : Type -> Type.
+Axiom scc : IntGraph -> list (SCC Vertex).
 
 Axiom reachableGraphCyclic : IntGraph ->
                              IntMap.IntMap Data.IntSet.Internal.IntSet.

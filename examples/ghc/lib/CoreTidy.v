@@ -175,52 +175,8 @@ Infix "=:" := (_=:_) (at level 99).
     | pair _ var_env, v => Maybes.orElse (Core.lookupVarEnv var_env v) v
     end.
 
-#[global] Definition tidyBind
-   : Core.TidyEnv -> Core.CoreBind -> (Core.TidyEnv * Core.CoreBind)%type :=
-  fix tidyBind (arg_0__ : Core.TidyEnv) (arg_1__ : Core.CoreBind) : (Core.TidyEnv
-                                                                     *
-                                                                     Core.CoreBind)%type
-    := match arg_0__, arg_1__ with
-       | env, Core.NonRec bndr rhs =>
-           let cbv_bndr := (tidyCbvInfoLocal bndr rhs) in
-           let 'pair env' bndr' := tidyLetBndr env env cbv_bndr in
-           let tidy_rhs := (tidyExpr env' rhs) in pair env' (Core.NonRec bndr' tidy_rhs)
-       | env, Core.Rec prs =>
-           let 'pair _bndrs rhss := GHC.List.unzip prs in
-           let cbv_bndrs :=
-             GHC.Base.map ((fun '(pair bnd rhs) => tidyCbvInfoLocal bnd rhs)) prs in
-           let 'pair env' bndrs' := Data.Traversable.mapAccumL (tidyLetBndr
-                                                                HsToCoq.Err.default) env cbv_bndrs in
-           GHC.Base.map (tidyExpr env') rhss =:
-           (fun rhss' => pair env' (Core.Rec (GHC.List.zip bndrs' rhss')))
-       end
-  with tidyExpr (arg_0__ : Core.TidyEnv) (arg_1__ : Core.CoreExpr) : Core.CoreExpr
-    := let tidyAlt (arg_0__ : Core.TidyEnv) (arg_1__ : Core.CoreAlt)
-        : Core.CoreAlt :=
-         match arg_0__, arg_1__ with
-         | env, Core.Alt con vs rhs =>
-             tidyBndrs env vs =:
-             (fun '(pair env' vs) => (Core.Alt con vs (tidyExpr env' rhs)))
-         end in
-       match arg_0__, arg_1__ with
-       | env, Core.Mk_Var v => Core.Mk_Var (tidyVarOcc env v)
-       | env, Core.Mk_Type ty => Core.Mk_Type (GHC.Core.TyCo.Tidy.tidyType env ty)
-       | env, Core.Mk_Coercion co =>
-           Core.Mk_Coercion (GHC.Core.TyCo.Tidy.tidyCo env co)
-       | _, Core.Lit lit => Core.Lit lit
-       | env, Core.App f a => Core.App (tidyExpr env f) (tidyExpr env a)
-       | env, Core.Cast e co =>
-           Core.Cast (tidyExpr env e) (GHC.Core.TyCo.Tidy.tidyCo env co)
-       | env, Core.Let b e =>
-           tidyBind env b =: (fun '(pair env' b') => Core.Let b' (tidyExpr env' e))
-       | env, Core.Case e b ty alts =>
-           tidyBndr env b =:
-           (fun '(pair env' b) =>
-              Core.Case (tidyExpr env e) b (GHC.Core.TyCo.Tidy.tidyType env ty) (GHC.Base.map
-                                                                                 (tidyAlt env') alts))
-       | env, Core.Lam b e =>
-           tidyBndr env b =: (fun '(pair env' b) => Core.Lam b (tidyExpr env' e))
-       end for tidyBind.
+Axiom tidyBind
+   : Core.TidyEnv -> Core.CoreBind -> (Core.TidyEnv * Core.CoreBind)%type.
 
 #[global] Definition tidyCbvInfoTop `{Util.HasDebugCallStack}
    : NameSet.NameSet -> Core.Id -> Core.CoreExpr -> Core.Id :=
@@ -228,70 +184,20 @@ Infix "=:" := (_=:_) (at level 99).
     if NameSet.elemNameSet (Id.idName id) boot_exports : bool then id else
     computeCbvInfo id rhs.
 
-#[global] Definition tidyExpr
-   : Core.TidyEnv -> Core.CoreExpr -> Core.CoreExpr :=
-  fix tidyBind (arg_0__ : Core.TidyEnv) (arg_1__ : Core.CoreBind) : (Core.TidyEnv
-                                                                     *
-                                                                     Core.CoreBind)%type
-    := match arg_0__, arg_1__ with
-       | env, Core.NonRec bndr rhs =>
-           let cbv_bndr := (tidyCbvInfoLocal bndr rhs) in
-           let 'pair env' bndr' := tidyLetBndr env env cbv_bndr in
-           let tidy_rhs := (tidyExpr env' rhs) in pair env' (Core.NonRec bndr' tidy_rhs)
-       | env, Core.Rec prs =>
-           let 'pair _bndrs rhss := GHC.List.unzip prs in
-           let cbv_bndrs :=
-             GHC.Base.map ((fun '(pair bnd rhs) => tidyCbvInfoLocal bnd rhs)) prs in
-           let 'pair env' bndrs' := Data.Traversable.mapAccumL (tidyLetBndr
-                                                                HsToCoq.Err.default) env cbv_bndrs in
-           GHC.Base.map (tidyExpr env') rhss =:
-           (fun rhss' => pair env' (Core.Rec (GHC.List.zip bndrs' rhss')))
-       end
-  with tidyExpr (arg_0__ : Core.TidyEnv) (arg_1__ : Core.CoreExpr) : Core.CoreExpr
-    := let tidyAlt (arg_0__ : Core.TidyEnv) (arg_1__ : Core.CoreAlt)
-        : Core.CoreAlt :=
-         match arg_0__, arg_1__ with
-         | env, Core.Alt con vs rhs =>
-             tidyBndrs env vs =:
-             (fun '(pair env' vs) => (Core.Alt con vs (tidyExpr env' rhs)))
-         end in
-       match arg_0__, arg_1__ with
-       | env, Core.Mk_Var v => Core.Mk_Var (tidyVarOcc env v)
-       | env, Core.Mk_Type ty => Core.Mk_Type (GHC.Core.TyCo.Tidy.tidyType env ty)
-       | env, Core.Mk_Coercion co =>
-           Core.Mk_Coercion (GHC.Core.TyCo.Tidy.tidyCo env co)
-       | _, Core.Lit lit => Core.Lit lit
-       | env, Core.App f a => Core.App (tidyExpr env f) (tidyExpr env a)
-       | env, Core.Cast e co =>
-           Core.Cast (tidyExpr env e) (GHC.Core.TyCo.Tidy.tidyCo env co)
-       | env, Core.Let b e =>
-           tidyBind env b =: (fun '(pair env' b') => Core.Let b' (tidyExpr env' e))
-       | env, Core.Case e b ty alts =>
-           tidyBndr env b =:
-           (fun '(pair env' b) =>
-              Core.Case (tidyExpr env e) b (GHC.Core.TyCo.Tidy.tidyType env ty) (GHC.Base.map
-                                                                                 (tidyAlt env') alts))
-       | env, Core.Lam b e =>
-           tidyBndr env b =: (fun '(pair env' b) => Core.Lam b (tidyExpr env' e))
-       end for tidyExpr.
+Axiom tidyExpr
+   : Core.TidyEnv -> Core.CoreExpr -> Core.CoreExpr.
 
 #[global] Definition tidyAlt : Core.TidyEnv -> Core.CoreAlt -> Core.CoreAlt :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | env, Core.Alt con vs rhs =>
+    | env, Core.Mk_Alt con vs rhs =>
         tidyBndrs env vs =:
-        (fun '(pair env' vs) => (Core.Alt con vs (tidyExpr env' rhs)))
+        (fun '(pair env' vs) => (Core.Mk_Alt con vs (tidyExpr env' rhs)))
     end.
 
-#[global] Definition tidyTickish
+Axiom tidyTickish
    : Core.TidyEnv ->
-     GHC.Types.Tickish.CoreTickish -> GHC.Types.Tickish.CoreTickish :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | env, GHC.Types.Tickish.Breakpoint ext ix ids modl =>
-        GHC.Types.Tickish.Breakpoint ext ix (GHC.Base.map (tidyVarOcc env) ids) modl
-    | _, other_tickish => other_tickish
-    end.
+     GHC.Types.Tickish.CoreTickish -> GHC.Types.Tickish.CoreTickish.
 
 (* Skipping definition `CoreTidy.tidyRules' *)
 

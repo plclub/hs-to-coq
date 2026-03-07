@@ -28,7 +28,6 @@ Require Data.Traversable.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Core.Map.Expr.
-Require GHC.Core.TyCo.Subst.
 Require GHC.Err.
 Require Id.
 Require NestedRecursionHelpers.
@@ -38,7 +37,7 @@ Require Util.
 (* Converted type declarations: *)
 
 Inductive CSEnv : Type :=
-  | CS (cs_subst : GHC.Core.TyCo.Subst.Subst) (cs_map
+  | CS (cs_subst : Core.Subst) (cs_map
     : GHC.Core.Map.Expr.CoreMap Core.OutExpr) (cs_rec_map
     : GHC.Core.Map.Expr.CoreMap Core.OutExpr)
    : CSEnv.
@@ -60,7 +59,7 @@ Inductive CSEnv : Type :=
 Require NestedRecursionHelpers.
 
 (* default = emptyCSEnv *)
-Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default := CS CoreSubst.emptySubst TrieMap.emptyCoreMap TrieMap.emptyCoreMap |}.
+Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default := CS Core.emptySubst GHC.Core.Map.Expr.emptyCoreMap GHC.Core.Map.Expr.emptyCoreMap |}.
 
 (* Converted value declarations: *)
 
@@ -89,7 +88,7 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
     let identical_alt :=
       fun arg_0__ arg_1__ =>
         match arg_0__, arg_1__ with
-        | rhs1, Core.Alt _ _ rhs => GHC.Core.Map.Expr.eqCoreExpr rhs1 rhs
+        | rhs1, Core.Mk_Alt _ _ rhs => GHC.Core.Map.Expr.eqCoreExpr rhs1 rhs
         end in
     let find_bndr_free_alt
      : list Core.CoreAlt -> (option Core.CoreAlt * list Core.CoreAlt)%type :=
@@ -97,7 +96,7 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
                                                               list Core.CoreAlt)%type
         := match arg_4__ with
            | nil => pair None nil
-           | cons (Core.Alt _ bndrs _ as alt) alts =>
+           | cons (Core.Mk_Alt _ bndrs _ as alt) alts =>
                if Data.Foldable.null bndrs : bool then pair (Some alt) alts else
                let 'pair mb_bf alts := find_bndr_free_alt alts in
                pair mb_bf (cons alt alts)
@@ -105,19 +104,18 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
     match find_bndr_free_alt alts with
     | pair (Some alt1) rest_alts =>
         match alt1 with
-        | Core.Alt _ bndrs1 rhs1 =>
+        | Core.Mk_Alt _ bndrs1 rhs1 =>
             let filtered_alts := Util.filterOut (identical_alt rhs1) rest_alts in
             if negb (Util.equalLength rest_alts filtered_alts) : bool
             then Panic.assertPpr (Data.Foldable.null bndrs1) (Panic.someSDoc) (cons
-                                                                               (Core.Alt Core.DEFAULT nil rhs1)
+                                                                               (Core.Mk_Alt Core.DEFAULT nil rhs1)
                                                                                filtered_alts) else
             alts
-        | _ => alts
         end
     | _ => alts
     end.
 
-#[global] Definition csEnvSubst : CSEnv -> GHC.Core.TyCo.Subst.Subst :=
+#[global] Definition csEnvSubst : CSEnv -> Core.Subst :=
   cs_subst.
 
 #[global] Definition delayInlining
@@ -198,138 +196,14 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
     | CS sub _ _, x => CoreSubst.lookupIdSubst sub x
     end.
 
-#[global] Definition cseBind
+Axiom cseBind
    : BasicTypes.TopLevelFlag ->
-     CSEnv -> Core.CoreBind -> (CSEnv * Core.CoreBind)%type :=
-  fix cseExpr (arg_0__ : CSEnv) (arg_1__ : Core.InExpr) : Core.OutExpr
-    := let tryForCSE (env : CSEnv) (expr : Core.InExpr) : Core.OutExpr :=
-         Data.Tuple.snd (try_for_cse env expr) in
-       let cseCase (env : CSEnv)
-       (scrut : Core.InExpr)
-       (bndr : Core.InId)
-       (ty : Core.InType)
-       (alts : list Core.InAlt)
-        : Core.OutExpr :=
-         let bndr1 := Id.zapIdOccInfo bndr in
-         let 'pair env1 bndr2 := addBinder env bndr1 in
-         let 'pair cse_done scrut1 := try_for_cse env scrut in
-         let 'pair alt_env bndr3 := extendCSEnvWithBinding env1 bndr bndr2 scrut1
-                                      cse_done in
-         let con_target : Core.OutExpr := lookupSubst alt_env bndr in
-         let arg_tys : list Core.OutType := Core.tyConAppArgs (Id.idType bndr3) in
-         let cse_alt :=
-           fun arg_6__ =>
-             match arg_6__ with
-             | Core.Alt (Core.DataAlt con) args rhs =>
-                 let 'pair env' args' := addBinders alt_env args in
-                 let con_expr := CoreUtils.mkAltExpr (Core.DataAlt con) args' arg_tys in
-                 let new_env := extendCSEnv env' con_expr con_target in
-                 Core.Alt (Core.DataAlt con) args' (tryForCSE new_env rhs)
-             | Core.Alt con args rhs =>
-                 let 'pair env' args' := addBinders alt_env args in
-                 Core.Alt con args' (tryForCSE env' rhs)
-             end in
-         let ty' := GHC.Core.TyCo.Subst.substTyUnchecked (csEnvSubst env) ty in
-         Core.Case scrut1 bndr3 ty' (combineAlts (GHC.Base.map cse_alt alts)) in
-       match arg_0__, arg_1__ with
-       | env, Core.Mk_Type t =>
-           Core.Mk_Type (GHC.Core.TyCo.Subst.substTyUnchecked (csEnvSubst env) t)
-       | env, Core.Mk_Coercion c =>
-           Core.Mk_Coercion (GHC.Core.TyCo.Subst.substCo (csEnvSubst env) c)
-       | _, Core.Lit lit => Core.Lit lit
-       | env, Core.Mk_Var v => lookupSubst env v
-       | env, Core.App f a => Core.App (cseExpr env f) (tryForCSE env a)
-       | env, Core.Cast e co =>
-           Core.Cast (tryForCSE env e) (GHC.Core.TyCo.Subst.substCo (csEnvSubst env) co)
-       | env, Core.Lam b e =>
-           let 'pair env' b' := addBinder env b in
-           Core.Lam b' (cseExpr env' e)
-       | env, Core.Let bind e =>
-           let 'pair env' bind' := cseBind BasicTypes.NotTopLevel env bind in
-           Core.Let bind' (cseExpr env' e)
-       | env, Core.Case e bndr ty alts => cseCase env e bndr ty alts
-       end
-  with cseBind (arg_0__ : BasicTypes.TopLevelFlag) (arg_1__ : CSEnv) (arg_2__
-                 : Core.CoreBind) : (CSEnv * Core.CoreBind)%type
-    := let tryForCSE (env : CSEnv) (expr : Core.InExpr) : Core.OutExpr :=
-         Data.Tuple.snd (try_for_cse env expr) in
-       let cse_bind (arg_0__ : BasicTypes.TopLevelFlag)
-       (arg_1__ arg_2__ : CSEnv)
-       (arg_3__ : (Core.InId * Core.InExpr)%type)
-       (arg_4__ : Core.OutId)
-        : (CSEnv * (Core.OutId * Core.OutExpr)%type)%type :=
-         match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
-         | toplevel, env_rhs, env_body, pair in_id in_rhs, out_id =>
-             let 'pair cse_done out_rhs := try_for_cse env_rhs in_rhs in
-             let 'pair env_body' out_id' := extendCSEnvWithBinding env_body in_id out_id
-                                              out_rhs cse_done in
-             let out_id'' :=
-               if cse_done : bool
-               then Id.zapStableUnfolding (delayInlining toplevel out_id') else
-               out_id' in
-             if andb (BasicTypes.isTopLevel toplevel) (CoreUtils.exprIsTickedString
-                      in_rhs) : bool
-             then pair env_body' (pair out_id' in_rhs) else
-             match Id.idJoinPointHood out_id with
-             | Outputable.JoinPoint arity =>
-                 NestedRecursionHelpers.collectNBinders_k arity in_rhs (fun params in_body =>
-                                                             let 'pair env' params' := addBinders env_rhs params in
-                                                             let out_body := tryForCSE env' in_body in
-                                                             pair env_body (pair out_id (Core.mkLams params' out_body)))
-             | _ => pair env_body' (pair out_id'' out_rhs)
-             end
-         end in
-       match arg_0__, arg_1__, arg_2__ with
-       | toplevel, env, Core.NonRec b e =>
-           let 'pair env1 b1 := addBinder env b in
-           let 'pair env2 (pair b2 e2) := cse_bind toplevel env env1 (pair b e) b1 in
-           pair env2 (Core.NonRec b2 e2)
-       | toplevel, env, Core.Rec (cons (pair in_id rhs) nil) =>
-           let 'pair env1 (Data.Functor.Identity.Mk_Identity out_id) := addRecBinders env
-                                                                          (Data.Functor.Identity.Mk_Identity in_id) in
-           let rhs' := cseExpr env1 rhs in
-           let rhs'' := rhs' in
-           let ticks := rhs' in
-           let id_expr' := Core.varToCoreExpr out_id in
-           let zapped_id := Id.zapIdUsageInfo out_id in
-           if noCSE in_id : bool
-           then pair env1 (Core.Rec (cons (pair out_id rhs') nil)) else
-           match lookupCSRecEnv env out_id rhs'' with
-           | Some previous =>
-               let out_id' := delayInlining toplevel out_id in
-               let previous' := previous in
-               pair (extendCSSubst env1 in_id previous') (Core.NonRec out_id' previous')
-           | _ =>
-               pair (extendCSRecEnv env1 out_id rhs'' id_expr') (Core.Rec (cons (pair zapped_id
-                                                                                      rhs') nil))
-           end
-       | _, _, _ =>
-           match arg_0__, arg_1__, arg_2__ with
-           | toplevel, env, Core.Rec pairs =>
-               let do_one :=
-                 fun arg_3__ arg_4__ =>
-                   match arg_3__, arg_4__ with
-                   | env, pair pr b1 => cse_bind toplevel env env pr b1
-                   end in
-               let 'pair env1 bndrs1 := addRecBinders env (GHC.Base.map Data.Tuple.fst
-                                                           pairs) in
-               let 'pair env2 pairs' := NestedRecursionHelpers.zipMapAccumL do_one env1 pairs
-                                                                            bndrs1 in
-               pair env2 (Core.Rec pairs')
-           | _, _, _ => GHC.Err.patternFailure
-           end
-       end
-  with try_for_cse (env : CSEnv) (expr : Core.InExpr) : (bool * Core.OutExpr)%type
-    := let expr' := cseExpr env expr in
-       let expr'' := expr' in
-       let ticks := expr' in
-       match lookupCSEnv env expr'' with
-       | Some e => pair true e
-       | _ => pair false expr'
-       end for cseBind.
+     CSEnv -> Core.CoreBind -> (CSEnv * Core.CoreBind)%type.
+
+
 
 #[global] Definition emptyCSEnv : CSEnv :=
-  CS GHC.Core.TyCo.Subst.emptySubst GHC.Core.Map.Expr.emptyCoreMap
+  CS Core.emptySubst GHC.Core.Map.Expr.emptyCoreMap
      GHC.Core.Map.Expr.emptyCoreMap.
 
 #[global] Definition cseProgram : Core.CoreProgram -> Core.CoreProgram :=
@@ -337,134 +211,10 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
     Data.Tuple.snd (Data.Traversable.mapAccumL (cseBind BasicTypes.TopLevel)
                     emptyCSEnv binds).
 
-#[global] Definition try_for_cse
-   : CSEnv -> Core.InExpr -> (bool * Core.OutExpr)%type :=
-  fix cseExpr (arg_0__ : CSEnv) (arg_1__ : Core.InExpr) : Core.OutExpr
-    := let tryForCSE (env : CSEnv) (expr : Core.InExpr) : Core.OutExpr :=
-         Data.Tuple.snd (try_for_cse env expr) in
-       let cseCase (env : CSEnv)
-       (scrut : Core.InExpr)
-       (bndr : Core.InId)
-       (ty : Core.InType)
-       (alts : list Core.InAlt)
-        : Core.OutExpr :=
-         let bndr1 := Id.zapIdOccInfo bndr in
-         let 'pair env1 bndr2 := addBinder env bndr1 in
-         let 'pair cse_done scrut1 := try_for_cse env scrut in
-         let 'pair alt_env bndr3 := extendCSEnvWithBinding env1 bndr bndr2 scrut1
-                                      cse_done in
-         let con_target : Core.OutExpr := lookupSubst alt_env bndr in
-         let arg_tys : list Core.OutType := Core.tyConAppArgs (Id.idType bndr3) in
-         let cse_alt :=
-           fun arg_6__ =>
-             match arg_6__ with
-             | Core.Alt (Core.DataAlt con) args rhs =>
-                 let 'pair env' args' := addBinders alt_env args in
-                 let con_expr := CoreUtils.mkAltExpr (Core.DataAlt con) args' arg_tys in
-                 let new_env := extendCSEnv env' con_expr con_target in
-                 Core.Alt (Core.DataAlt con) args' (tryForCSE new_env rhs)
-             | Core.Alt con args rhs =>
-                 let 'pair env' args' := addBinders alt_env args in
-                 Core.Alt con args' (tryForCSE env' rhs)
-             end in
-         let ty' := GHC.Core.TyCo.Subst.substTyUnchecked (csEnvSubst env) ty in
-         Core.Case scrut1 bndr3 ty' (combineAlts (GHC.Base.map cse_alt alts)) in
-       match arg_0__, arg_1__ with
-       | env, Core.Mk_Type t =>
-           Core.Mk_Type (GHC.Core.TyCo.Subst.substTyUnchecked (csEnvSubst env) t)
-       | env, Core.Mk_Coercion c =>
-           Core.Mk_Coercion (GHC.Core.TyCo.Subst.substCo (csEnvSubst env) c)
-       | _, Core.Lit lit => Core.Lit lit
-       | env, Core.Mk_Var v => lookupSubst env v
-       | env, Core.App f a => Core.App (cseExpr env f) (tryForCSE env a)
-       | env, Core.Cast e co =>
-           Core.Cast (tryForCSE env e) (GHC.Core.TyCo.Subst.substCo (csEnvSubst env) co)
-       | env, Core.Lam b e =>
-           let 'pair env' b' := addBinder env b in
-           Core.Lam b' (cseExpr env' e)
-       | env, Core.Let bind e =>
-           let 'pair env' bind' := cseBind BasicTypes.NotTopLevel env bind in
-           Core.Let bind' (cseExpr env' e)
-       | env, Core.Case e bndr ty alts => cseCase env e bndr ty alts
-       end
-  with cseBind (arg_0__ : BasicTypes.TopLevelFlag) (arg_1__ : CSEnv) (arg_2__
-                 : Core.CoreBind) : (CSEnv * Core.CoreBind)%type
-    := let tryForCSE (env : CSEnv) (expr : Core.InExpr) : Core.OutExpr :=
-         Data.Tuple.snd (try_for_cse env expr) in
-       let cse_bind (arg_0__ : BasicTypes.TopLevelFlag)
-       (arg_1__ arg_2__ : CSEnv)
-       (arg_3__ : (Core.InId * Core.InExpr)%type)
-       (arg_4__ : Core.OutId)
-        : (CSEnv * (Core.OutId * Core.OutExpr)%type)%type :=
-         match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
-         | toplevel, env_rhs, env_body, pair in_id in_rhs, out_id =>
-             let 'pair cse_done out_rhs := try_for_cse env_rhs in_rhs in
-             let 'pair env_body' out_id' := extendCSEnvWithBinding env_body in_id out_id
-                                              out_rhs cse_done in
-             let out_id'' :=
-               if cse_done : bool
-               then Id.zapStableUnfolding (delayInlining toplevel out_id') else
-               out_id' in
-             if andb (BasicTypes.isTopLevel toplevel) (CoreUtils.exprIsTickedString
-                      in_rhs) : bool
-             then pair env_body' (pair out_id' in_rhs) else
-             match Id.idJoinPointHood out_id with
-             | Outputable.JoinPoint arity =>
-                 NestedRecursionHelpers.collectNBinders_k arity in_rhs (fun params in_body =>
-                                                             let 'pair env' params' := addBinders env_rhs params in
-                                                             let out_body := tryForCSE env' in_body in
-                                                             pair env_body (pair out_id (Core.mkLams params' out_body)))
-             | _ => pair env_body' (pair out_id'' out_rhs)
-             end
-         end in
-       match arg_0__, arg_1__, arg_2__ with
-       | toplevel, env, Core.NonRec b e =>
-           let 'pair env1 b1 := addBinder env b in
-           let 'pair env2 (pair b2 e2) := cse_bind toplevel env env1 (pair b e) b1 in
-           pair env2 (Core.NonRec b2 e2)
-       | toplevel, env, Core.Rec (cons (pair in_id rhs) nil) =>
-           let 'pair env1 (Data.Functor.Identity.Mk_Identity out_id) := addRecBinders env
-                                                                          (Data.Functor.Identity.Mk_Identity in_id) in
-           let rhs' := cseExpr env1 rhs in
-           let rhs'' := rhs' in
-           let ticks := rhs' in
-           let id_expr' := Core.varToCoreExpr out_id in
-           let zapped_id := Id.zapIdUsageInfo out_id in
-           if noCSE in_id : bool
-           then pair env1 (Core.Rec (cons (pair out_id rhs') nil)) else
-           match lookupCSRecEnv env out_id rhs'' with
-           | Some previous =>
-               let out_id' := delayInlining toplevel out_id in
-               let previous' := previous in
-               pair (extendCSSubst env1 in_id previous') (Core.NonRec out_id' previous')
-           | _ =>
-               pair (extendCSRecEnv env1 out_id rhs'' id_expr') (Core.Rec (cons (pair zapped_id
-                                                                                      rhs') nil))
-           end
-       | _, _, _ =>
-           match arg_0__, arg_1__, arg_2__ with
-           | toplevel, env, Core.Rec pairs =>
-               let do_one :=
-                 fun arg_3__ arg_4__ =>
-                   match arg_3__, arg_4__ with
-                   | env, pair pr b1 => cse_bind toplevel env env pr b1
-                   end in
-               let 'pair env1 bndrs1 := addRecBinders env (GHC.Base.map Data.Tuple.fst
-                                                           pairs) in
-               let 'pair env2 pairs' := NestedRecursionHelpers.zipMapAccumL do_one env1 pairs
-                                                                            bndrs1 in
-               pair env2 (Core.Rec pairs')
-           | _, _, _ => GHC.Err.patternFailure
-           end
-       end
-  with try_for_cse (env : CSEnv) (expr : Core.InExpr) : (bool * Core.OutExpr)%type
-    := let expr' := cseExpr env expr in
-       let expr'' := expr' in
-       let ticks := expr' in
-       match lookupCSEnv env expr'' with
-       | Some e => pair true e
-       | _ => pair false expr'
-       end for try_for_cse.
+Axiom try_for_cse
+   : CSEnv -> Core.InExpr -> (bool * Core.OutExpr)%type.
+
+
 
 #[global] Definition tryForCSE : CSEnv -> Core.InExpr -> Core.OutExpr :=
   fun env expr => Data.Tuple.snd (try_for_cse env expr).
@@ -498,139 +248,15 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
         end
     end.
 
-#[global] Definition cseExpr : CSEnv -> Core.InExpr -> Core.OutExpr :=
-  fix cseExpr (arg_0__ : CSEnv) (arg_1__ : Core.InExpr) : Core.OutExpr
-    := let tryForCSE (env : CSEnv) (expr : Core.InExpr) : Core.OutExpr :=
-         Data.Tuple.snd (try_for_cse env expr) in
-       let cseCase (env : CSEnv)
-       (scrut : Core.InExpr)
-       (bndr : Core.InId)
-       (ty : Core.InType)
-       (alts : list Core.InAlt)
-        : Core.OutExpr :=
-         let bndr1 := Id.zapIdOccInfo bndr in
-         let 'pair env1 bndr2 := addBinder env bndr1 in
-         let 'pair cse_done scrut1 := try_for_cse env scrut in
-         let 'pair alt_env bndr3 := extendCSEnvWithBinding env1 bndr bndr2 scrut1
-                                      cse_done in
-         let con_target : Core.OutExpr := lookupSubst alt_env bndr in
-         let arg_tys : list Core.OutType := Core.tyConAppArgs (Id.idType bndr3) in
-         let cse_alt :=
-           fun arg_6__ =>
-             match arg_6__ with
-             | Core.Alt (Core.DataAlt con) args rhs =>
-                 let 'pair env' args' := addBinders alt_env args in
-                 let con_expr := CoreUtils.mkAltExpr (Core.DataAlt con) args' arg_tys in
-                 let new_env := extendCSEnv env' con_expr con_target in
-                 Core.Alt (Core.DataAlt con) args' (tryForCSE new_env rhs)
-             | Core.Alt con args rhs =>
-                 let 'pair env' args' := addBinders alt_env args in
-                 Core.Alt con args' (tryForCSE env' rhs)
-             end in
-         let ty' := GHC.Core.TyCo.Subst.substTyUnchecked (csEnvSubst env) ty in
-         Core.Case scrut1 bndr3 ty' (combineAlts (GHC.Base.map cse_alt alts)) in
-       match arg_0__, arg_1__ with
-       | env, Core.Mk_Type t =>
-           Core.Mk_Type (GHC.Core.TyCo.Subst.substTyUnchecked (csEnvSubst env) t)
-       | env, Core.Mk_Coercion c =>
-           Core.Mk_Coercion (GHC.Core.TyCo.Subst.substCo (csEnvSubst env) c)
-       | _, Core.Lit lit => Core.Lit lit
-       | env, Core.Mk_Var v => lookupSubst env v
-       | env, Core.App f a => Core.App (cseExpr env f) (tryForCSE env a)
-       | env, Core.Cast e co =>
-           Core.Cast (tryForCSE env e) (GHC.Core.TyCo.Subst.substCo (csEnvSubst env) co)
-       | env, Core.Lam b e =>
-           let 'pair env' b' := addBinder env b in
-           Core.Lam b' (cseExpr env' e)
-       | env, Core.Let bind e =>
-           let 'pair env' bind' := cseBind BasicTypes.NotTopLevel env bind in
-           Core.Let bind' (cseExpr env' e)
-       | env, Core.Case e bndr ty alts => cseCase env e bndr ty alts
-       end
-  with cseBind (arg_0__ : BasicTypes.TopLevelFlag) (arg_1__ : CSEnv) (arg_2__
-                 : Core.CoreBind) : (CSEnv * Core.CoreBind)%type
-    := let tryForCSE (env : CSEnv) (expr : Core.InExpr) : Core.OutExpr :=
-         Data.Tuple.snd (try_for_cse env expr) in
-       let cse_bind (arg_0__ : BasicTypes.TopLevelFlag)
-       (arg_1__ arg_2__ : CSEnv)
-       (arg_3__ : (Core.InId * Core.InExpr)%type)
-       (arg_4__ : Core.OutId)
-        : (CSEnv * (Core.OutId * Core.OutExpr)%type)%type :=
-         match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
-         | toplevel, env_rhs, env_body, pair in_id in_rhs, out_id =>
-             let 'pair cse_done out_rhs := try_for_cse env_rhs in_rhs in
-             let 'pair env_body' out_id' := extendCSEnvWithBinding env_body in_id out_id
-                                              out_rhs cse_done in
-             let out_id'' :=
-               if cse_done : bool
-               then Id.zapStableUnfolding (delayInlining toplevel out_id') else
-               out_id' in
-             if andb (BasicTypes.isTopLevel toplevel) (CoreUtils.exprIsTickedString
-                      in_rhs) : bool
-             then pair env_body' (pair out_id' in_rhs) else
-             match Id.idJoinPointHood out_id with
-             | Outputable.JoinPoint arity =>
-                 NestedRecursionHelpers.collectNBinders_k arity in_rhs (fun params in_body =>
-                                                             let 'pair env' params' := addBinders env_rhs params in
-                                                             let out_body := tryForCSE env' in_body in
-                                                             pair env_body (pair out_id (Core.mkLams params' out_body)))
-             | _ => pair env_body' (pair out_id'' out_rhs)
-             end
-         end in
-       match arg_0__, arg_1__, arg_2__ with
-       | toplevel, env, Core.NonRec b e =>
-           let 'pair env1 b1 := addBinder env b in
-           let 'pair env2 (pair b2 e2) := cse_bind toplevel env env1 (pair b e) b1 in
-           pair env2 (Core.NonRec b2 e2)
-       | toplevel, env, Core.Rec (cons (pair in_id rhs) nil) =>
-           let 'pair env1 (Data.Functor.Identity.Mk_Identity out_id) := addRecBinders env
-                                                                          (Data.Functor.Identity.Mk_Identity in_id) in
-           let rhs' := cseExpr env1 rhs in
-           let rhs'' := rhs' in
-           let ticks := rhs' in
-           let id_expr' := Core.varToCoreExpr out_id in
-           let zapped_id := Id.zapIdUsageInfo out_id in
-           if noCSE in_id : bool
-           then pair env1 (Core.Rec (cons (pair out_id rhs') nil)) else
-           match lookupCSRecEnv env out_id rhs'' with
-           | Some previous =>
-               let out_id' := delayInlining toplevel out_id in
-               let previous' := previous in
-               pair (extendCSSubst env1 in_id previous') (Core.NonRec out_id' previous')
-           | _ =>
-               pair (extendCSRecEnv env1 out_id rhs'' id_expr') (Core.Rec (cons (pair zapped_id
-                                                                                      rhs') nil))
-           end
-       | _, _, _ =>
-           match arg_0__, arg_1__, arg_2__ with
-           | toplevel, env, Core.Rec pairs =>
-               let do_one :=
-                 fun arg_3__ arg_4__ =>
-                   match arg_3__, arg_4__ with
-                   | env, pair pr b1 => cse_bind toplevel env env pr b1
-                   end in
-               let 'pair env1 bndrs1 := addRecBinders env (GHC.Base.map Data.Tuple.fst
-                                                           pairs) in
-               let 'pair env2 pairs' := NestedRecursionHelpers.zipMapAccumL do_one env1 pairs
-                                                                            bndrs1 in
-               pair env2 (Core.Rec pairs')
-           | _, _, _ => GHC.Err.patternFailure
-           end
-       end
-  with try_for_cse (env : CSEnv) (expr : Core.InExpr) : (bool * Core.OutExpr)%type
-    := let expr' := cseExpr env expr in
-       let expr'' := expr' in
-       let ticks := expr' in
-       match lookupCSEnv env expr'' with
-       | Some e => pair true e
-       | _ => pair false expr'
-       end for cseExpr.
+Axiom cseExpr : CSEnv -> Core.InExpr -> Core.OutExpr.
+
+
 
 #[global] Definition cseOneExpr : Core.InExpr -> Core.OutExpr :=
   fun e =>
     let env :=
       let 'CS cs_subst_0__ cs_map_1__ cs_rec_map_2__ := emptyCSEnv in
-      CS (GHC.Core.TyCo.Subst.mkEmptySubst (Core.mkInScopeSet (CoreFVs.exprFreeVars
+      CS (Core.mkEmptySubst (Core.mkInScopeSet (CoreFVs.exprFreeVars
                                                                e))) cs_map_1__ cs_rec_map_2__ in
     cseExpr env e.
 
@@ -648,16 +274,16 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
     let cse_alt :=
       fun arg_6__ =>
         match arg_6__ with
-        | Core.Alt (Core.DataAlt con) args rhs =>
+        | Core.Mk_Alt(Core.DataAlt con) args rhs =>
             let 'pair env' args' := addBinders alt_env args in
             let con_expr := CoreUtils.mkAltExpr (Core.DataAlt con) args' arg_tys in
             let new_env := extendCSEnv env' con_expr con_target in
-            Core.Alt (Core.DataAlt con) args' (tryForCSE new_env rhs)
-        | Core.Alt con args rhs =>
+            Core.Mk_Alt(Core.DataAlt con) args' (tryForCSE new_env rhs)
+        | Core.Mk_Alt con args rhs =>
             let 'pair env' args' := addBinders alt_env args in
-            Core.Alt con args' (tryForCSE env' rhs)
+            Core.Mk_Alt con args' (tryForCSE env' rhs)
         end in
-    let ty' := GHC.Core.TyCo.Subst.substTyUnchecked (csEnvSubst env) ty in
+    let ty' := Core.substTyUnchecked (csEnvSubst env) ty in
     Core.Case scrut1 bndr3 ty' (combineAlts (GHC.Base.map cse_alt alts)).
 
 (* External variables:
@@ -665,7 +291,7 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
      BasicTypes.NotTopLevel BasicTypes.TopLevel BasicTypes.TopLevelFlag
      BasicTypes.activateAfterInitial BasicTypes.inlinePragmaSpec
      BasicTypes.isAlwaysActive BasicTypes.isTopLevel BasicTypes.noUserInlineSpec
-     Core.Alt Core.App Core.Case Core.Cast Core.CoreAlt Core.CoreBind Core.CoreExpr
+     Core.Mk_Alt Core.App Core.Case Core.Cast Core.CoreAlt Core.CoreBind Core.CoreExpr
      Core.CoreProgram Core.DEFAULT Core.DataAlt Core.Id Core.InAlt Core.InExpr
      Core.InId Core.InType Core.InVar Core.Lam Core.Let Core.Lit Core.Mk_Coercion
      Core.Mk_Type Core.Mk_Var Core.NonRec Core.OutAlt Core.OutExpr Core.OutId
@@ -678,9 +304,9 @@ Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default :=
      Data.Traversable.mapAccumL Data.Tuple.fst Data.Tuple.snd GHC.Base.map
      GHC.Core.Map.Expr.CoreMap GHC.Core.Map.Expr.emptyCoreMap
      GHC.Core.Map.Expr.eqCoreExpr GHC.Core.Map.Expr.extendCoreMap
-     GHC.Core.Map.Expr.lookupCoreMap GHC.Core.TyCo.Subst.Subst
-     GHC.Core.TyCo.Subst.emptySubst GHC.Core.TyCo.Subst.mkEmptySubst
-     GHC.Core.TyCo.Subst.substCo GHC.Core.TyCo.Subst.substTyUnchecked
+     GHC.Core.Map.Expr.lookupCoreMap Core.Subst
+     Core.emptySubst Core.mkEmptySubst
+     Core.substCo Core.substTyUnchecked
      GHC.Err.patternFailure Id.idHasRules Id.idInlineActivation Id.idInlinePragma
      Id.idJoinPointHood Id.idType Id.idUnfolding Id.isJoinId Id.setInlineActivation
      Id.zapIdOccInfo Id.zapIdUsageInfo Id.zapStableUnfolding

@@ -63,6 +63,8 @@ Arguments MM {_} {_} _ _.
 
 (* Midamble *)
 
+Axiom DeBruijn : Type -> Type.
+
 Instance Eq___DeBruijn__unit : GHC.Base.Eq_ (DeBruijn unit).
 Proof.
 Admitted.
@@ -411,7 +413,8 @@ Program Instance Foldable__MaybeMap {m : Type -> Type} `{TrieMap m}
              Foldable__MaybeMap_sum ;
            Data.Foldable.toList__ := fun {a : Type} => Foldable__MaybeMap_toList |}.
 
-(* Skipping instance `TrieMap.Functor__ListMap' of class `GHC.Base.Functor' *)
+#[global] Instance Functor__ListMap {m : Type -> Type} `{GHC.Base.Functor m}
+   : GHC.Base.Functor (ListMap m). Admitted.
 
 #[local] Definition TrieMap__ListMap_Key {m : Type -> Type} `{TrieMap m}
    : Type :=
@@ -431,6 +434,8 @@ Axiom xtList : forall {m : Type -> Type},
   fun {b : Type} => xtList (fun {b} => alterTM).
 
 Axiom TrieMap__ListMap_emptyTM : forall {m} {a} `{TrieMap m}, ListMap m a.
+
+Axiom ftList : forall {m} {a} `{TrieMap m}, (a -> bool) -> ListMap m a -> ListMap m a.
 
 #[local] Definition TrieMap__ListMap_filterTM {inst_m : Type -> Type} `{TrieMap
   inst_m}
@@ -595,94 +600,12 @@ Axiom lkG : forall {m} {a} `{TrieMap m} `{GHC.Base.Eq_ (Key m)},
 Axiom xtG : forall {m} {a} `{TrieMap m} `{GHC.Base.Eq_ (Key m)},
             Key m -> XT a -> GenMap m a -> GenMap m a.
 
-Instance TrieMap__GenMap {m} `{TrieMap m} `{GHC.Base.Eq_ (Key m)}
-   : TrieMap (GenMap m) :=
-  Build_TrieMap (GenMap m) (Key m) (fun {b} => xtG) (fun {a} => GenMap__EmptyMap)
-                (fun {a} {b} => fdG) (fun {a} => lkG) (fun {a} {b} => mapG).
-
-#[local] Definition Foldable__GenMap_foldMap {inst_m : Type -> Type}
-  `{GHC.Base.Eq_ (Key inst_m)} `{TrieMap inst_m}
-   : forall {m : Type},
-     forall {a : Type},
-     forall `{GHC.Base.Monoid m}, (a -> m) -> GenMap inst_m a -> m :=
-  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} => foldMapTM.
-
-#[local] Definition Foldable__GenMap_fold {inst_m : Type -> Type} `{GHC.Base.Eq_
-  (Key inst_m)} `{TrieMap inst_m}
-   : forall {m : Type}, forall `{GHC.Base.Monoid m}, GenMap inst_m m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} => Foldable__GenMap_foldMap GHC.Base.id.
-
-#[local] Definition Foldable__GenMap_foldl {inst_m : Type -> Type}
-  `{GHC.Base.Eq_ (Key inst_m)} `{TrieMap inst_m}
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> GenMap inst_m a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Data.SemigroupInternal.getDual
-                                      (Foldable__GenMap_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
-                                                                 (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
-                                                                  GHC.Base.flip f)) t)) z.
-
-#[local] Definition Foldable__GenMap_foldr {inst_m : Type -> Type}
-  `{GHC.Base.Eq_ (Key inst_m)} `{TrieMap inst_m}
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> GenMap inst_m a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__GenMap_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
-
-#[local] Definition Foldable__GenMap_length {inst_m : Type -> Type}
-  `{GHC.Base.Eq_ (Key inst_m)} `{TrieMap inst_m}
-   : forall {a : Type}, GenMap inst_m a -> GHC.Num.Int :=
-  fun {a : Type} =>
-    Foldable__GenMap_foldl (fun arg_0__ arg_1__ =>
-                              match arg_0__, arg_1__ with
-                              | c, _ => c GHC.Num.+ #1
-                              end) #0.
-
-#[local] Definition Foldable__GenMap_null {inst_m : Type -> Type} `{GHC.Base.Eq_
-  (Key inst_m)} `{TrieMap inst_m}
-   : forall {a : Type}, GenMap inst_m a -> bool :=
-  fun {a : Type} => Foldable__GenMap_foldr (fun arg_0__ arg_1__ => false) true.
-
-#[local] Definition Foldable__GenMap_product {inst_m : Type -> Type}
-  `{GHC.Base.Eq_ (Key inst_m)} `{TrieMap inst_m}
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GenMap inst_m a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__GenMap_foldMap Data.SemigroupInternal.Mk_Product).
-
-#[local] Definition Foldable__GenMap_sum {inst_m : Type -> Type} `{GHC.Base.Eq_
-  (Key inst_m)} `{TrieMap inst_m}
-   : forall {a : Type}, forall `{GHC.Num.Num a}, GenMap inst_m a -> a :=
-  fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__GenMap_foldMap Data.SemigroupInternal.Mk_Sum).
-
-#[local] Definition Foldable__GenMap_toList {inst_m : Type -> Type}
-  `{GHC.Base.Eq_ (Key inst_m)} `{TrieMap inst_m}
-   : forall {a : Type}, GenMap inst_m a -> list a :=
-  fun {a : Type} =>
-    fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__GenMap_foldr c n t)).
+#[global] Instance TrieMap__GenMap {m} `{TrieMap m} `{GHC.Base.Eq_ (Key m)}
+   : TrieMap (GenMap m). Admitted.
 
 #[global]
-Program Instance Foldable__GenMap {m : Type -> Type} `{GHC.Base.Eq_ (Key m)}
-  `{TrieMap m}
-   : Data.Foldable.Foldable (GenMap m) :=
-  fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
-             Foldable__GenMap_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
-             Foldable__GenMap_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__GenMap_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__GenMap_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__GenMap_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__GenMap_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
-             Foldable__GenMap_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__GenMap_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__GenMap_toList |}.
+Instance Foldable__GenMap {m : Type -> Type} `{TrieMap m} `{GHC.Base.Eq_ (Key m)}
+   : Data.Foldable.Foldable (GenMap m). Admitted.
 
 #[global] Definition insertTM {m : Type -> Type} {a : Type} `{TrieMap m}
    : Key m -> a -> m a -> m a :=
@@ -709,22 +632,11 @@ Notation "'_|>>_'" := (op_zbzgzg__).
 
 Infix "|>>" := (_|>>_) (at level 99).
 
-(* Skipping definition `TrieMap.ftList' *)
+Axiom ftG : forall {m} {a} `{TrieMap m},
+   (a -> bool) -> GenMap m a -> GenMap m a.
 
-#[global] Definition ftG {m} {a} `{TrieMap m}
-   : (a -> bool) -> GenMap m a -> GenMap m a :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | _, EmptyMap => EmptyMap
-    | f, (SingletonMap _ v as input) => if f v : bool then input else EmptyMap
-    | f, MultiMap m => MultiMap (filterTM f m)
-    end.
-
-Instance TrieMap__CoercionMapG : TrieMap CoercionMapG := TrieMap__GenMap.
-
-Instance TrieMap__TypeMapG : TrieMap TypeMapG := TrieMap__GenMap.
-
-Instance TrieMap__CoreMapG : TrieMap CoreMapG := TrieMap__GenMap.
+(* Skipped: TrieMap__CoercionMapG, TrieMap__TypeMapG, TrieMap__CoreMapG
+   — CoercionMapG/TypeMapG/CoreMapG types not defined *)
 
 Module Notations.
 Notation "'_TrieMap.|>_'" := (op_zbzg__).
