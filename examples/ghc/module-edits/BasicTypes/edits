@@ -49,3 +49,11 @@ redefine Definition BasicTypes.Arity     := nat.
 skip BasicTypes.pprAlternative
 skip BasicTypes.Default__OverlapFlag
 skip BasicTypes.Default__InlinePragma
+
+# GHC 9.10: unsupported class instances
+skip class Outputable.OutputableP
+
+# GHC 9.10: new imports from Language.Haskell.Syntax.*
+skip module Language.Haskell.Syntax.Basic
+skip module Language.Haskell.Syntax.Type
+skip module Language.Haskell.Syntax.Expr

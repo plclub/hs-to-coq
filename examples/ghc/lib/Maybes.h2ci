@@ -1,8 +1,8 @@
 constructorFields:
-  Maybes.Succeeded: NonRecordFields 1
   Maybes.Failed: NonRecordFields 1
+  Maybes.Succeeded: NonRecordFields 1
 constructorTypes:
-  Maybes.Succeeded: Qualified "Maybes" "MaybeErr"
   Maybes.Failed: Qualified "Maybes" "MaybeErr"
+  Maybes.Succeeded: Qualified "Maybes" "MaybeErr"
 constructors:
   Maybes.MaybeErr: '[Qualified "Maybes" "Succeeded",Qualified "Maybes" "Failed"]'

@@ -1,14 +1,16 @@
-constructors:
-  UnVarGraph.Gen: ! '[Qualified "UnVarGraph" "CBPG",Qualified "UnVarGraph" "CG"]'
-  UnVarGraph.UnVarGraph: ! '[Qualified "UnVarGraph" "Mk_UnVarGraph"]'
-  UnVarGraph.UnVarSet: ! '[Qualified "UnVarGraph" "Mk_UnVarSet"]'
 constructorFields:
   UnVarGraph.CBPG: NonRecordFields 2
-  UnVarGraph.Mk_UnVarGraph: NonRecordFields 1
   UnVarGraph.CG: NonRecordFields 1
+  UnVarGraph.Del: NonRecordFields 2
   UnVarGraph.Mk_UnVarSet: NonRecordFields 1
+  UnVarGraph.Union: NonRecordFields 2
 constructorTypes:
-  UnVarGraph.CBPG: Qualified "UnVarGraph" "Gen"
-  UnVarGraph.Mk_UnVarGraph: Qualified "UnVarGraph" "UnVarGraph"
-  UnVarGraph.CG: Qualified "UnVarGraph" "Gen"
+  UnVarGraph.CBPG: Qualified "UnVarGraph" "UnVarGraph"
+  UnVarGraph.CG: Qualified "UnVarGraph" "UnVarGraph"
+  UnVarGraph.Del: Qualified "UnVarGraph" "UnVarGraph"
   UnVarGraph.Mk_UnVarSet: Qualified "UnVarGraph" "UnVarSet"
+  UnVarGraph.Union: Qualified "UnVarGraph" "UnVarGraph"
+constructors:
+  UnVarGraph.UnVarGraph: '[Qualified "UnVarGraph" "CBPG",Qualified "UnVarGraph" "CG",Qualified
+    "UnVarGraph" "Union",Qualified "UnVarGraph" "Del"]'
+  UnVarGraph.UnVarSet: '[Qualified "UnVarGraph" "Mk_UnVarSet"]'

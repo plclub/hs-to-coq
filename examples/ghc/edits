@@ -1,4 +1,145 @@
 ####################################################
+# GHC 9.10 module name mappings
+# Map new GHC 9.10 module names to old Coq output names
+####################################################
+
+# UTILS
+rename module GHC.Utils.Misc Util
+rename module GHC.Types.SrcLoc SrcLoc
+rename module GHC.Types.Unique Unique
+rename module GHC.Types.Unique.Supply UniqSupply
+rename module Language.Haskell.Syntax.Basic HsSyn
+rename module GHC.Types.Basic BasicTypes
+rename module GHC.Driver.DynFlags DynFlags
+rename module GHC.Utils.Panic Panic
+rename module GHC.Types.Name.Occurrence OccName
+rename module GHC.Unit.Module Module
+
+# DATASTRUCTS
+rename module GHC.Data.Bag Bag
+rename module GHC.Data.EnumSet EnumSet
+rename module GHC.Data.BooleanFormula BooleanFormula
+rename module GHC.Types.Unique.FM UniqFM
+rename module GHC.Types.Unique.Set UniqSet
+rename module GHC.Data.OrdList OrdList
+rename module GHC.Data.FiniteMap FiniteMap
+rename module GHC.Data.List.SetOps ListSetOps
+rename module GHC.Data.Pair Pair
+rename module GHC.Data.Maybe Maybes
+rename module GHC.Utils.Monad MonadUtils
+
+# CORE_MODULES
+rename module GHC.Data.FastString.Env FastStringEnv
+rename module GHC.Settings.Constants Constants
+rename module GHC.Types.Id Id
+rename module GHC.Core.Subst CoreSubst
+rename module GHC.Builtin.Names PrelNames
+rename module GHC.Core.Utils CoreUtils
+rename module GHC.Types.Name Name
+rename module GHC.Types.Name.Env NameEnv
+rename module GHC.Types.Name.Set NameSet
+rename module GHC.Utils.FV FV
+rename module GHC.Types.Literal Literal
+rename module GHC.Types.FieldLabel FieldLabel
+rename module GHC.Core.ConLike ConLike
+rename module GHC.Core.FVs CoreFVs
+rename module GHC.Core.Opt.Exitify Exitify
+
+# EXTRAS
+rename module GHC.Data.TrieMap TrieMap
+rename module GHC.Core.Opt.CSE CSE
+rename module GHC.Core.Stats CoreStats
+rename module GHC.Data.Graph.UnVar UnVarGraph
+rename module GHC.Core.Opt.Arity CoreArity
+rename module GHC.Core.Tidy CoreTidy
+rename module GHC.Core.Opt.CallArity CallArity
+rename module GHC.Core.Coercion.Axiom CoAxiom
+rename module GHC.Builtin.Types TysWiredIn
+rename module GHC.Core.Make MkCore
+rename module GHC.Data.Graph.Directed Digraph
+rename module GHC.Core.Opt.SetLevels SetLevels
+rename module GHC.Core.Opt.Monad CoreMonad
+rename module GHC.Core.Opt.OccurAnal OccurAnal
+rename module GHC.Core.Opt.FloatIn FloatIn
+rename module GHC.Core.Opt.FloatOut FloatOut
+
+# External modules (skipped but referenced)
+rename module GHC.Utils.Outputable Outputable
+rename module GHC.Utils.Json Json
+rename module GHC.Utils.Binary Binary
+rename module GHC.Types.Unique.DSet UniqDSet
+rename module GHC.Types.Unique.DFM UniqDFM
+rename module GHC.Core.Ppr PprCore
+rename module GHC.Types.ForeignCall ForeignCall
+rename module GHC.Types.CostCentre CostCentre
+rename module GHC.Builtin.PrimOps PrimOp
+rename module GHC.Types.Id.Make MkId
+rename module GHC.Iface.Type IfaceType
+rename module GHC.Platform Platform
+rename module GHC.Types.Annotations Annotations
+rename module GHC.Types.RepType RepType
+rename module GHC.Core.Unify Unify
+rename module GHC.Tc.Utils.TcType TcType
+rename module GHC.Utils.Panic.Plain Panic.Plain
+
+# HasCallStack → unit (no debug call stack in Coq)
+# GHC 9.10 adds HasCallStack everywhere; map to unit so it's trivially satisfiable
+rename type GHC.Stack.Types.HasCallStack = GHC.Prim.HasCallStack
+rename type GHC.Internal.Stack.Types.HasCallStack = GHC.Prim.HasCallStack
+rename type GHC.Stack.Types.CallStack = GHC.Base.String
+rename type GHC.Internal.Stack.Types.CallStack = GHC.Base.String
+
+# Map Panic.Plain functions to Panic equivalents
+rename value GHC.Utils.Panic.Plain.panic = Panic.panic
+rename value GHC.Utils.Panic.Plain.assert = Panic.Plain.assert
+rewrite forall x y, Panic.Plain.assert x y = y
+rename module GHC.Prelude GhcPrelude
+rename module GHC.Utils.Encoding Encoding
+
+# GHC 9.10: global skip modules for unprocessed GHC packages
+skip module GHC.Data.FastString
+skip module GHC.Data.Strict
+skip module GHC.Prelude.Basic
+skip module GHC.Internal.Word
+skip module GHC.Internal.Ptr
+skip module GHC.Internal.Int
+skip module GHC.Internal.Unicode
+skip module GHC.Internal.IO.Exception
+skip module GHC.Internal.Fingerprint
+skip module GHC.Internal.Fingerprint.Type
+skip module GHC.Internal.System.IO.Error
+skip module GHC.Internal.Text.ParserCombinators.ReadP
+skip module GHC.Internal.Text.Read
+skip module GHC.Internal.Exception.Type
+skip module GHC.Utils.Exception
+skip module GHC.Utils.Word64
+skip module GHC.Utils.Constants
+skip module GHC.Utils.Logger
+skip module GHC.LanguageExtensions.Type
+skip module GHC.Driver.Flags
+skip module GHC.Platform.ArchOS
+skip module GHC.Platform.Profile
+skip module GHC.Platform.Ways
+skip module GHC.Settings
+skip module GHC.Unit.Types
+skip module GHC.Unit.Module.Name
+skip module GHC.Unit.Module.Location
+skip module GHC.Unit.Module.Env
+skip module Language.Haskell.Syntax.Module.Name
+skip module Language.Haskell.Syntax.Type
+skip module Language.Haskell.Syntax.Expr
+skip module Foreign.Storable
+skip module Data.List.NonEmpty
+skip module Data.IORef
+skip module Control.Monad.IO.Class
+skip module Control.DeepSeq
+
+# Sub-modules split from BasicTypes in GHC 9.10
+rename module GHC.Types.Fixity BasicTypes
+rename module GHC.Types.SourceText BasicTypes
+rename module GHC.Unit.Module.Warnings BasicTypes
+
+####################################################
 # Replace IntMap with Map
 ####################################################
 rename type Data.IntMap.Internal.IntMap = IntMap.IntMap
@@ -39,28 +180,28 @@ rename value Data.IntMap.Internal.lookup = IntMap.lookup
 ## the same implementation as VarSets. (Both are definitions
 ## in Coq.)
 
-rename type UniqDSet.UniqDSet = UniqSet.UniqSet
-rename value UniqDSet.unitUniqDSet = UniqSet.unitUniqSet
-rename value UniqDSet.unionManyUniqDSets = UniqSet.unionManyUniqSets 
-rename value UniqDSet.unionUniqDSets = UniqSet.unionUniqSets
-rename value UniqDSet.sizeUniqDSet = UniqSet.sizeUniqSet
-rename value UniqDSet.partitionUniqDSet = UniqSet.partitionUniqSet
-rename value UniqDSet.mkUniqDSet = UniqSet.mkUniqSet
-rename value UniqDSet.minusUniqDSet = UniqSet.minusUniqSet
-rename value UniqDSet.isEmptyUniqDSet = UniqSet.isEmptyUniqSet
-rename value UniqDSet.intersectUniqDSets = UniqSet.intersectUniqSets
-rename value UniqDSet.foldUniqDSet = UniqSet.nonDetFoldUniqSet
-rename value UniqDSet.filterUniqDSet = UniqSet.filterUniqSet
-rename value UniqDSet.addOneToUniqDSet = UniqSet.addOneToUniqSet
-rename value UniqDSet.addListToUniqDSet = UniqSet.addListToUniqSet
-rename value UniqDSet.emptyUniqDSet = UniqSet.emptyUniqSet
-rename value UniqDSet.delOneFromUniqDSet = UniqSet.delOneFromUniqSet
-rename value UniqDSet.delListFromUniqDSet = UniqSet.delListFromUniqSet
-rename value UniqDSet.elementOfUniqDSet = UniqSet.elementOfUniqSet
-rename value UniqDSet.uniqDSetMinusUniqSet = UniqSet.minusUniqSet
-rename value UniqDSet.uniqDSetIntersectUniqSet = UniqSet.intersectUniqSets
-rename value UniqDSet.uniqDSetToList = UniqSet.nonDetEltsUniqSet
-rename value UniqDSet.foldDVarSet = Core.nonDetFoldUniqSet
+rename type GHC.Types.Unique.DSet.UniqDSet = UniqSet.UniqSet
+rename value GHC.Types.Unique.DSet.unitUniqDSet = UniqSet.unitUniqSet
+rename value GHC.Types.Unique.DSet.unionManyUniqDSets = UniqSet.unionManyUniqSets
+rename value GHC.Types.Unique.DSet.unionUniqDSets = UniqSet.unionUniqSets
+rename value GHC.Types.Unique.DSet.sizeUniqDSet = UniqSet.sizeUniqSet
+rename value GHC.Types.Unique.DSet.partitionUniqDSet = UniqSet.partitionUniqSet
+rename value GHC.Types.Unique.DSet.mkUniqDSet = UniqSet.mkUniqSet
+rename value GHC.Types.Unique.DSet.minusUniqDSet = UniqSet.minusUniqSet
+rename value GHC.Types.Unique.DSet.isEmptyUniqDSet = UniqSet.isEmptyUniqSet
+rename value GHC.Types.Unique.DSet.intersectUniqDSets = UniqSet.intersectUniqSets
+rename value GHC.Types.Unique.DSet.foldUniqDSet = UniqSet.nonDetFoldUniqSet
+rename value GHC.Types.Unique.DSet.filterUniqDSet = UniqSet.filterUniqSet
+rename value GHC.Types.Unique.DSet.addOneToUniqDSet = UniqSet.addOneToUniqSet
+rename value GHC.Types.Unique.DSet.addListToUniqDSet = UniqSet.addListToUniqSet
+rename value GHC.Types.Unique.DSet.emptyUniqDSet = UniqSet.emptyUniqSet
+rename value GHC.Types.Unique.DSet.delOneFromUniqDSet = UniqSet.delOneFromUniqSet
+rename value GHC.Types.Unique.DSet.delListFromUniqDSet = UniqSet.delListFromUniqSet
+rename value GHC.Types.Unique.DSet.elementOfUniqDSet = UniqSet.elementOfUniqSet
+rename value GHC.Types.Unique.DSet.uniqDSetMinusUniqSet = UniqSet.minusUniqSet
+rename value GHC.Types.Unique.DSet.uniqDSetIntersectUniqSet = UniqSet.intersectUniqSets
+rename value GHC.Types.Unique.DSet.uniqDSetToList = UniqSet.nonDetEltsUniqSet
+rename value GHC.Types.Unique.DSet.foldDVarSet = Core.nonDetFoldUniqSet
 
 redefine Definition Core.disjointDVarSet := Core.disjointVarSet.
 redefine Definition Core.anyDVarSet      := Core.anyVarSet.
@@ -69,32 +210,32 @@ redefine Definition Core.allDVarSet      := Core.allVarSet.
 redefine Definition Core.dVarSetToVarSet : DVarSet -> VarSet := fun x => x.
 redefine Definition FV.fvDVarSet : FV.FV -> Core.DVarSet := FV.fvVarSet.
 
-rename type UniqDFM.UniqDFM = UniqFM.UniqFM
-rename value UniqDFM.unitUDFM = UniqFM.unitUFM
-rename value UniqDFM.addListToUDFM = UniqFM.addListToUFM
-rename value UniqDFM.addToUDFM = UniqFM.addToUFM 
-rename value UniqDFM.addToUDFM_C = UniqFM.addToUFM_C 
-rename value UniqDFM.allUDFM = UniqFM.allUFM 
-rename value UniqDFM.alterUDFM = UniqFM.alterUFM
-rename value UniqDFM.anyUDFM  = UniqFM.anyUFM 
-rename value UniqDFM.delFromUDFM = UniqFM.delFromUFM 
-rename value UniqDFM.delListFromUDFM = UniqFM.delListFromUFM 
-rename value UniqDFM.disjointUDFM = UniqFM.disjointUFM
-rename value UniqDFM.elemUDFM = UniqFM.elemUFM 
-rename value UniqDFM.eltsUDFM = UniqFM.eltsUFM 
-rename value UniqDFM.emptyUDFM = UniqFM.emptyUFM 
-rename value UniqDFM.filterUDFM = UniqFM.filterUFM
-rename value UniqDFM.foldUDFM  = UniqFM.nonDetFoldUFM 
-rename value UniqDFM.isNullUDFM = UniqFM.isNullUFM 
-rename value UniqDFM.listToUDFM  = UniqFM.listToUFM 
-rename value UniqDFM.lookupUDFM = UniqFM.lookupUFM
-rename value UniqDFM.mapUDFM = UniqFM.mapUFM 
-rename value UniqDFM.minusUDFM  = UniqFM.minusUFM 
-rename value UniqDFM.partitionUDFM = UniqFM.partitionUFM 
-rename value UniqDFM.plusUDFM = UniqFM.plusUFM
-rename value UniqDFM.plusUDFM_C = UniqFM.plusUFM_C 
+rename type GHC.Types.Unique.DFM.UniqDFM = UniqFM.UniqFM
+rename value GHC.Types.Unique.DFM.unitUDFM = UniqFM.unitUFM
+rename value GHC.Types.Unique.DFM.addListToUDFM = UniqFM.addListToUFM
+rename value GHC.Types.Unique.DFM.addToUDFM = UniqFM.addToUFM
+rename value GHC.Types.Unique.DFM.addToUDFM_C = UniqFM.addToUFM_C
+rename value GHC.Types.Unique.DFM.allUDFM = UniqFM.allUFM
+rename value GHC.Types.Unique.DFM.alterUDFM = UniqFM.alterUFM
+rename value GHC.Types.Unique.DFM.anyUDFM  = UniqFM.anyUFM
+rename value GHC.Types.Unique.DFM.delFromUDFM = UniqFM.delFromUFM
+rename value GHC.Types.Unique.DFM.delListFromUDFM = UniqFM.delListFromUFM
+rename value GHC.Types.Unique.DFM.disjointUDFM = UniqFM.disjointUFM
+rename value GHC.Types.Unique.DFM.elemUDFM = UniqFM.elemUFM
+rename value GHC.Types.Unique.DFM.eltsUDFM = UniqFM.eltsUFM
+rename value GHC.Types.Unique.DFM.emptyUDFM = UniqFM.emptyUFM
+rename value GHC.Types.Unique.DFM.filterUDFM = UniqFM.filterUFM
+rename value GHC.Types.Unique.DFM.foldUDFM  = UniqFM.nonDetFoldUFM
+rename value GHC.Types.Unique.DFM.isNullUDFM = UniqFM.isNullUFM
+rename value GHC.Types.Unique.DFM.listToUDFM  = UniqFM.listToUFM
+rename value GHC.Types.Unique.DFM.lookupUDFM = UniqFM.lookupUFM
+rename value GHC.Types.Unique.DFM.mapUDFM = UniqFM.mapUFM
+rename value GHC.Types.Unique.DFM.minusUDFM  = UniqFM.minusUFM
+rename value GHC.Types.Unique.DFM.partitionUDFM = UniqFM.partitionUFM
+rename value GHC.Types.Unique.DFM.plusUDFM = UniqFM.plusUFM
+rename value GHC.Types.Unique.DFM.plusUDFM_C = UniqFM.plusUFM_C
 rewrite forall x, UniqDFM.udfmToUfm x = x
-rename value UniqDFM.unitUFM = UniqDFM.unitUFM
+rename value GHC.Types.Unique.DFM.unitUFM = UniqDFM.unitUFM
 
 
 ####################################################
@@ -133,13 +274,13 @@ rename value GHC.List.head = GHC.Err.head
 # rewrite forall x, andb Util.debugIsOn x = false
 
 # don't try to format the error messages
-rename type Outputable.SDoc           = GHC.Base.String
-rename value Outputable.pprPanic      = Panic.panicStr
-rename value Outputable.<+>           = GHC.Base.mappend
-rename value Outputable.<>            = GHC.Base.mappend
-rename value Outputable.text          = Datatypes.id
-rename value Outputable.empty         = Panic.someSDoc
-rename value Outputable.comma         = Panic.someSDoc
+rename type GHC.Utils.Outputable.SDoc           = GHC.Base.String
+rename value GHC.Utils.Outputable.pprPanic      = Panic.panicStr
+rename value GHC.Utils.Outputable.<+>           = GHC.Base.mappend
+rename value GHC.Utils.Outputable.<>            = GHC.Base.mappend
+rename value GHC.Utils.Outputable.text          = Datatypes.id
+rename value GHC.Utils.Outputable.empty         = Panic.someSDoc
+rename value GHC.Utils.Outputable.comma         = Panic.someSDoc
 
 rewrite forall x, Outputable.ppr x         = Panic.someSDoc
 rewrite forall x, Outputable.ptext x       = Panic.someSDoc
@@ -149,8 +290,8 @@ rewrite forall x, Outputable.ftext x       = Panic.someSDoc
 rewrite forall x, Outputable.fsep x        = Panic.someSDoc
 rewrite forall x, Outputable.vcat x        = Panic.someSDoc
 
-rename value Outputable.vbar          = Panic.someSDoc
-rename value Outputable.warnPprTrace  = Panic.warnPprTrace
+rename value GHC.Utils.Outputable.vbar          = Panic.someSDoc
+rename value GHC.Utils.Outputable.warnPprTrace  = Panic.warnPprTrace
 
 rewrite forall x, Outputable.parens x = x
 rewrite forall x, Outputable.brackets x = x
@@ -171,53 +312,52 @@ skip class Binary.Binary
 skip class GHC.PackageDb.BinaryStringRep
 skip class GHC.PackageDb.DbUnitIdModuleRep
 
-# Punned
-rename value BasicTypes.EP   = BasicTypes.Mk_EP
-rename value BasicTypes.Fixity   = BasicTypes.Mk_Fixity
-rename value BasicTypes.InlinePragma = BasicTypes.Mk_InlinePragma
-rename value BasicTypes.OverlapFlag   = BasicTypes.Mk_OverlapFlag
-rename value BasicTypes.StringLiteral = BasicTypes.Mk_StringLiteral
-rename value BasicTypes.SourceText = BasicTypes.Mk_SourceText
-rename value BasicTypes.WarningTxt   = BasicTypes.Mk_WarningTxt
+# Punned constructors — LEFT side uses GHC 9.10 module names
+rename value GHC.Types.Basic.EP   = BasicTypes.Mk_EP
+rename value GHC.Types.Fixity.Fixity   = BasicTypes.Mk_Fixity
+rename value GHC.Types.Basic.InlinePragma = BasicTypes.Mk_InlinePragma
+rename value GHC.Types.Basic.OverlapFlag   = BasicTypes.Mk_OverlapFlag
+rename value GHC.Types.SourceText.StringLiteral = BasicTypes.Mk_StringLiteral
+rename value GHC.Types.SourceText.SourceText = BasicTypes.Mk_SourceText
+rename value GHC.Unit.Module.Warnings.WarningTxt   = BasicTypes.Mk_WarningTxt
 rename value CmmType.CmmType    = CmmType.Mk_CmmType
-rename value Pair.Pair = Pair.Mk_Pair
+rename value GHC.Data.Pair.Pair = Pair.Mk_Pair
 rename value SourceLoc.L = SourceLoc.Mk_L
-rename value DynFlags.PackageArg = DynFlags.Mk_PackageArg
-rename value DynFlags.Option = DynFlags.Mk_Option
-rename value DynFlags.ModRenaming = DynFlags.Mk_ModRenaming
-rename value DynFlags.FlushOut = DynFlags.Mk_FlushOut
-rename value DynFlags.LlvmTarget = DynFlags.Mk_LlvmTarget
-rename value DynFlags.FilesToClean = DynFlags.Mk_FilesToClean
-rename value Module.Module = Module.Mk_Module
-rename value Module.ModuleName = Module.Mk_ModuleName
-rename value Module.NDModule = Module.Mk_NDModule
-rename value Module.ModLocation = Module.Mk_ModLocation
-rename value Module.ModuleEnv = Module.Mk_ModuleEnv
-rename value Module.ComponentId = Module.Mk_ComponentId
-rename value Module.IndefUnitId = Module.Mk_IndefUnitId
-rename value Module.IndefModule = Module.Mk_IndefModule
-rename value OccName.OccName = OccName.Mk_OccName
-rename value Name.Name = Name.Mk_Name
-rename value Name.BuiltInSyntax = Name.Mk_BuiltInSyntax
-rename value FieldLabel.FieldLabel = FieldLabel.Mk_FieldLabel
-rename value UniqDFM.TaggedVal = UniqDFM.Mk_TaggedVal
-rename value UniqDFM.UniqDFM   = UniqDFM.Mk_UniqDFM
-rename value UniqSet.UniqSet   = UniqSet.Mk_UniqSet
-rename value EnumSet.EnumSet   = EnumSet.Mk_EnumSet
-rename value Module.InstalledUnitId   = Module.Mk_InstalledUnitId
-rename value Module.InstalledModule   = Module.Mk_InstalledModule
-rename value Module.InstalledModuleEnv   = Module.Mk_InstalledModuleEnv
-rename value Module.DefUnitId   = Module.Mk_DefUnitId
-rename value BooleanFormula.Clause   = BooleanFormula.Mk_Clause
+rename value GHC.Driver.DynFlags.PackageArg = DynFlags.Mk_PackageArg
+rename value GHC.Driver.DynFlags.Option = DynFlags.Mk_Option
+rename value GHC.Driver.DynFlags.ModRenaming = DynFlags.Mk_ModRenaming
+rename value GHC.Driver.DynFlags.FlushOut = DynFlags.Mk_FlushOut
+rename value GHC.Driver.DynFlags.LlvmTarget = DynFlags.Mk_LlvmTarget
+rename value GHC.Driver.DynFlags.FilesToClean = DynFlags.Mk_FilesToClean
+rename value GHC.Unit.Module.Module = Module.Mk_Module
+rename value GHC.Unit.Module.ModuleName = Module.Mk_ModuleName
+rename value GHC.Unit.Module.NDModule = Module.Mk_NDModule
+rename value GHC.Unit.Module.ModLocation = Module.Mk_ModLocation
+rename value GHC.Unit.Module.ModuleEnv = Module.Mk_ModuleEnv
+rename value GHC.Unit.Module.ComponentId = Module.Mk_ComponentId
+rename value GHC.Unit.Module.IndefUnitId = Module.Mk_IndefUnitId
+rename value GHC.Unit.Module.IndefModule = Module.Mk_IndefModule
+rename value GHC.Types.Name.Occurrence.OccName = OccName.Mk_OccName
+rename value GHC.Types.Name.Name = Name.Mk_Name
+rename value GHC.Types.Name.BuiltInSyntax = Name.Mk_BuiltInSyntax
+rename value GHC.Types.FieldLabel.FieldLabel = FieldLabel.Mk_FieldLabel
+rename value GHC.Types.Unique.DFM.TaggedVal = UniqDFM.Mk_TaggedVal
+rename value GHC.Types.Unique.DFM.UniqDFM   = UniqDFM.Mk_UniqDFM
+rename value GHC.Types.Unique.Set.UniqSet   = UniqSet.Mk_UniqSet
+rename value GHC.Data.EnumSet.EnumSet   = EnumSet.Mk_EnumSet
+rename value GHC.Unit.Module.InstalledUnitId   = Module.Mk_InstalledUnitId
+rename value GHC.Unit.Module.InstalledModule   = Module.Mk_InstalledModule
+rename value GHC.Unit.Module.InstalledModuleEnv   = Module.Mk_InstalledModuleEnv
+rename value GHC.Unit.Module.DefUnitId   = Module.Mk_DefUnitId
+rename value GHC.Data.BooleanFormula.Clause   = BooleanFormula.Mk_Clause
 rename value CoreType.CoAxiomRule   = CoreType.Mk_CoAxiomRule
 rename value CoreType.CoAxBranch   = CoreType.Mk_CoAxBranch
 rename value CoreType.BuiltInSynFamily   = CoreType.Mk_BuiltInSynFamily
 rename value CoreType.Branched   = CoreType.Mk_Branched
 rename value CoreType.Unbranched   = CoreType.Mk_Unbranched
-rename value State.State = State.Mk_State
 
 # These constructor are named after their argument, not their return type,
 # so use a different, non-confusing convention here
-rename value SrcLoc.RealSrcLoc  = SrcLoc.ARealSrcLoc
-rename value SrcLoc.RealSrcSpan = SrcLoc.ARealSrcSpan
-rename value SrcLoc.SrcLoc      = SrcLoc.ASrcLoc
+rename value GHC.Types.SrcLoc.RealSrcLoc  = SrcLoc.ARealSrcLoc
+rename value GHC.Types.SrcLoc.RealSrcSpan = SrcLoc.ARealSrcSpan
+rename value GHC.Types.SrcLoc.SrcLoc      = SrcLoc.ASrcLoc

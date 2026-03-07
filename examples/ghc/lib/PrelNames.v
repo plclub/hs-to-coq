@@ -18,11 +18,12 @@ Import String.StringSyntax.
 (* Converted imports: *)
 
 Require Coq.Init.Datatypes.
-Require FastString.
 Require GHC.Base.
+Require GHC.Builtin.Uniques.
+Require GHC.Data.List.Infinite.
 Require GHC.Enum.
 Require GHC.Num.
-Require Module.
+Require GHC.Types.Name.Reader.
 Require Name.
 Require OccName.
 Require SrcLoc.
@@ -33,3313 +34,3777 @@ Import GHC.Num.Notations.
 
 (* Converted value declarations: *)
 
-Definition int8X16PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #300.
+#[global] Definition int8X16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #300.
 
-Definition int16X8PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #301.
+#[global] Definition int16X8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #301.
 
-Definition int32X4PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #302.
+#[global] Definition int32X4PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #302.
 
-Definition int64X2PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #303.
+#[global] Definition int64X2PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #303.
 
-Definition int8X32PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #304.
+#[global] Definition int8X32PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #304.
 
-Definition int16X16PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #305.
+#[global] Definition int16X16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #305.
 
-Definition int32X8PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #306.
+#[global] Definition int32X8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #306.
 
-Definition int64X4PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #307.
+#[global] Definition int64X4PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #307.
 
-Definition int8X64PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #308.
+#[global] Definition int8X64PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #308.
 
-Definition int16X32PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #309.
+#[global] Definition int16X32PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #309.
 
-Definition int32X16PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #310.
+#[global] Definition int32X16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #310.
 
-Definition int64X8PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #311.
+#[global] Definition int64X8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #311.
 
-Definition word8X16PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #312.
+#[global] Definition word8X16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #312.
 
-Definition word16X8PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #313.
+#[global] Definition word16X8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #313.
 
-Definition word32X4PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #314.
+#[global] Definition word32X4PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #314.
 
-Definition word64X2PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #315.
+#[global] Definition word64X2PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #315.
 
-Definition word8X32PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #316.
+#[global] Definition word8X32PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #316.
 
-Definition word16X16PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #317.
+#[global] Definition word16X16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #317.
 
-Definition word32X8PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #318.
+#[global] Definition word32X8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #318.
 
-Definition word64X4PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #319.
+#[global] Definition word64X4PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #319.
 
-Definition word8X64PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #320.
+#[global] Definition word8X64PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #320.
 
-Definition word16X32PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #321.
+#[global] Definition word16X32PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #321.
 
-Definition word32X16PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #322.
+#[global] Definition word32X16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #322.
 
-Definition word64X8PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #323.
+#[global] Definition word64X8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #323.
 
-Definition floatX4PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #324.
+#[global] Definition floatX4PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #324.
 
-Definition doubleX2PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #325.
+#[global] Definition doubleX2PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #325.
 
-Definition floatX8PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #326.
+#[global] Definition floatX8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #326.
 
-Definition doubleX4PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #327.
+#[global] Definition doubleX4PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #327.
 
-Definition floatX16PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #328.
+#[global] Definition floatX16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #328.
 
-Definition doubleX8PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #329.
+#[global] Definition doubleX8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #329.
 
-Axiom allNameStrings : list GHC.Base.String.
+Axiom allNameStrings : GHC.Data.List.Infinite.Infinite GHC.Base.String.
 
-Definition itName : Unique.Unique -> SrcLoc.SrcSpan -> Name.Name :=
+#[global] Definition allNameStringList : list GHC.Base.String :=
+  GHC.Data.List.Infinite.toList allNameStrings.
+
+#[global] Definition itName : Unique.Unique -> SrcLoc.SrcSpan -> Name.Name :=
   fun uniq loc =>
-    Name.mkInternalName uniq (OccName.mkOccNameFS OccName.varName (FastString.fsLit
-                                                                   (GHC.Base.hs_string__ "it"))) loc.
+    Name.mkInternalName uniq (OccName.mkOccNameFS OccName.varName
+                              (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "it"))) loc.
 
-Definition unboundKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #158.
+#[global] Definition unboundKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #158.
 
-Definition mkUnboundName : OccName.OccName -> Name.Name :=
+#[global] Definition mkUnboundName : OccName.OccName -> Name.Name :=
   fun occ => Name.mkInternalName unboundKey occ SrcLoc.noSrcSpan.
 
-Definition isUnboundName : Name.Name -> bool :=
+#[global] Definition isUnboundName : Name.Name -> bool :=
   fun name => Unique.hasKey name unboundKey.
 
 Axiom basicKnownKeyNames : list Name.Name.
 
 Axiom genericTyConNames : list Name.Name.
 
-Definition mkBaseModule_ : Module.ModuleName -> Module.Module :=
-  fun m => Module.mkModule Module.baseUnitId m.
+#[global] Definition mkPrimModule
+   : GHC.Data.FastString.FastString -> GHC.Unit.Types.Module :=
+  fun m =>
+    GHC.Unit.Types.mkModule GHC.Unit.Types.primUnit
+    (Language.Haskell.Syntax.Module.Name.mkModuleNameFS m).
 
-Definition pRELUDE_NAME : Module.ModuleName :=
-  Module.mkModuleNameFS (FastString.fsLit (GHC.Base.hs_string__ "Prelude")).
+#[global] Definition gHC_PRIM : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "GHC.Prim")).
 
-Definition pRELUDE : Module.Module :=
+#[global] Definition gHC_PRIM_PANIC : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                           "GHC.Prim.Panic")).
+
+#[global] Definition gHC_TYPES : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "GHC.Types")).
+
+#[global] Definition gHC_MAGIC : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "GHC.Magic")).
+
+#[global] Definition gHC_MAGIC_DICT : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                           "GHC.Magic.Dict")).
+
+#[global] Definition gHC_CSTRING : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "GHC.CString")).
+
+#[global] Definition gHC_CLASSES : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "GHC.Classes")).
+
+#[global] Definition gHC_PRIMOPWRAPPERS : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                           "GHC.PrimopWrappers")).
+
+#[global] Definition gHC_INTERNAL_TUPLE : GHC.Unit.Types.Module :=
+  mkPrimModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "GHC.Tuple")).
+
+#[global] Definition mkBaseModule_
+   : Language.Haskell.Syntax.Module.Name.ModuleName -> GHC.Unit.Types.Module :=
+  fun m => GHC.Unit.Types.mkModule GHC.Unit.Types.baseUnit m.
+
+#[global] Definition pRELUDE_NAME
+   : Language.Haskell.Syntax.Module.Name.ModuleName :=
+  Language.Haskell.Syntax.Module.Name.mkModuleNameFS (GHC.Data.FastString.fsLit
+                                                      (GHC.Base.hs_string__ "Prelude")).
+
+#[global] Definition pRELUDE : GHC.Unit.Types.Module :=
   mkBaseModule_ pRELUDE_NAME.
 
-Definition mkPrimModule : FastString.FastString -> Module.Module :=
-  fun m => Module.mkModule Module.primUnitId (Module.mkModuleNameFS m).
-
-Definition gHC_PRIM : Module.Module :=
-  mkPrimModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Prim")).
-
-Definition gHC_TYPES : Module.Module :=
-  mkPrimModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Types")).
-
-Definition gHC_MAGIC : Module.Module :=
-  mkPrimModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Magic")).
-
-Definition gHC_CSTRING : Module.Module :=
-  mkPrimModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.CString")).
-
-Definition gHC_CLASSES : Module.Module :=
-  mkPrimModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Classes")).
-
-Definition mkBaseModule : FastString.FastString -> Module.Module :=
-  fun m => Module.mkModule Module.baseUnitId (Module.mkModuleNameFS m).
-
-Definition gHC_BASE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Base")).
-
-Definition gHC_ENUM : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Enum")).
-
-Definition gHC_GHCI : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.GHCi")).
-
-Definition gHC_SHOW : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Show")).
-
-Definition gHC_READ : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Read")).
-
-Definition gHC_NUM : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Num")).
-
-Axiom mkIntegerModule : FastString.FastString -> Module.Module.
-
-Definition gHC_INTEGER_TYPE : Module.Module :=
-  mkIntegerModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Integer.Type")).
-
-Definition gHC_NATURAL : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Natural")).
-
-Definition gHC_LIST : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.List")).
-
-Definition gHC_TUPLE : Module.Module :=
-  mkPrimModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Tuple")).
-
-Definition dATA_TUPLE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Tuple")).
-
-Definition dATA_EITHER : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Either")).
-
-Definition dATA_STRING : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.String")).
-
-Definition dATA_FOLDABLE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Foldable")).
-
-Definition dATA_TRAVERSABLE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Traversable")).
-
-Definition gHC_CONC : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Conc")).
-
-Definition gHC_IO : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.IO")).
-
-Definition gHC_IO_Exception : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.IO.Exception")).
-
-Definition gHC_ST : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.ST")).
-
-Definition gHC_ARR : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Arr")).
-
-Definition gHC_STABLE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Stable")).
-
-Definition gHC_PTR : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Ptr")).
-
-Definition gHC_ERR : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Err")).
-
-Definition gHC_REAL : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Real")).
-
-Definition gHC_FLOAT : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Float")).
-
-Definition gHC_TOP_HANDLER : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.TopHandler")).
-
-Definition sYSTEM_IO : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "System.IO")).
-
-Definition dYNAMIC : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Dynamic")).
-
-Definition tYPEABLE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Typeable")).
-
-Definition tYPEABLE_INTERNAL : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Typeable.Internal")).
-
-Definition gENERICS : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Data")).
-
-Definition rEAD_PREC : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__
-                                  "Text.ParserCombinators.ReadPrec")).
-
-Definition lEX : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Text.Read.Lex")).
-
-Definition gHC_INT : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Int")).
-
-Definition gHC_WORD : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Word")).
-
-Definition mONAD : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Control.Monad")).
-
-Definition mONAD_FIX : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Control.Monad.Fix")).
-
-Definition mONAD_ZIP : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Control.Monad.Zip")).
-
-Definition mONAD_FAIL : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Control.Monad.Fail")).
-
-Definition aRROW : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Control.Arrow")).
-
-Definition cONTROL_APPLICATIVE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Control.Applicative")).
-
-Definition gHC_DESUGAR : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Desugar")).
-
-Definition rANDOM : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "System.Random")).
-
-Definition gHC_EXTS : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Exts")).
-
-Definition cONTROL_EXCEPTION_BASE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Control.Exception.Base")).
-
-Definition gHC_GENERICS : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Generics")).
-
-Definition gHC_TYPELITS : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.TypeLits")).
-
-Definition gHC_TYPENATS : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.TypeNats")).
-
-Definition dATA_TYPE_EQUALITY : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Type.Equality")).
-
-Definition dATA_COERCE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Data.Coerce")).
-
-Definition dEBUG_TRACE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "Debug.Trace")).
-
-Definition gHC_PARR' : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.PArr")).
-
-Definition gHC_SRCLOC : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.SrcLoc")).
-
-Definition gHC_STACK : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Stack")).
-
-Definition gHC_STACK_TYPES : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Stack.Types")).
-
-Definition gHC_STATICPTR : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.StaticPtr")).
-
-Definition gHC_STATICPTR_INTERNAL : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.StaticPtr.Internal")).
-
-Definition gHC_FINGERPRINT_TYPE : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Fingerprint.Type")).
-
-Definition gHC_OVER_LABELS : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.OverloadedLabels")).
-
-Definition gHC_RECORDS : Module.Module :=
-  mkBaseModule (FastString.fsLit (GHC.Base.hs_string__ "GHC.Records")).
-
-Definition mAIN_NAME : Module.ModuleName :=
-  Module.mkModuleNameFS (FastString.fsLit (GHC.Base.hs_string__ "Main")).
-
-Definition mkMainModule_ : Module.ModuleName -> Module.Module :=
-  fun m => Module.mkModule Module.mainUnitId m.
-
-Definition mAIN : Module.Module :=
-  mkMainModule_ mAIN_NAME.
-
-Definition mkMainModule : FastString.FastString -> Module.Module :=
-  fun m => Module.mkModule Module.mainUnitId (Module.mkModuleNameFS m).
-
-Definition rOOT_MAIN : Module.Module :=
-  mkMainModule (FastString.fsLit (GHC.Base.hs_string__ ":Main")).
-
-Axiom mkInteractiveModule : nat -> Module.Module.
-
-Definition dATA_ARRAY_PARALLEL_NAME : Module.ModuleName :=
-  Module.mkModuleNameFS (FastString.fsLit (GHC.Base.hs_string__
-                                           "Data.Array.Parallel")).
-
-Definition dATA_ARRAY_PARALLEL_PRIM_NAME : Module.ModuleName :=
-  Module.mkModuleNameFS (FastString.fsLit (GHC.Base.hs_string__
-                                           "Data.Array.Parallel.Prim")).
-
-Definition mkThisGhcModule : FastString.FastString -> Module.Module :=
-  fun m => Module.mkModule Module.thisGhcUnitId (Module.mkModuleNameFS m).
-
-Definition mkThisGhcModule_ : Module.ModuleName -> Module.Module :=
-  fun m => Module.mkModule Module.thisGhcUnitId m.
+#[global] Definition mkBaseModule
+   : GHC.Data.FastString.FastString -> GHC.Unit.Types.Module :=
+  fun m => mkBaseModule_ (Language.Haskell.Syntax.Module.Name.mkModuleNameFS m).
+
+#[global] Definition dATA_LIST : GHC.Unit.Types.Module :=
+  mkBaseModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Data.List")).
+
+#[global] Definition cONTROL_MONAD_ZIP : GHC.Unit.Types.Module :=
+  mkBaseModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                           "Control.Monad.Zip")).
+
+#[global] Definition mkBignumModule
+   : GHC.Data.FastString.FastString -> GHC.Unit.Types.Module :=
+  fun m =>
+    GHC.Unit.Types.mkModule GHC.Unit.Types.bignumUnit
+    (Language.Haskell.Syntax.Module.Name.mkModuleNameFS m).
+
+#[global] Definition gHC_INTERNAL_NUM_INTEGER : GHC.Unit.Types.Module :=
+  mkBignumModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                             "GHC.Num.Integer")).
+
+#[global] Definition gHC_INTERNAL_NUM_NATURAL : GHC.Unit.Types.Module :=
+  mkBignumModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                             "GHC.Num.Natural")).
+
+#[global] Definition gHC_INTERNAL_NUM_BIGNAT : GHC.Unit.Types.Module :=
+  mkBignumModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                             "GHC.Num.BigNat")).
+
+#[global] Definition mkGhcInternalModule_
+   : Language.Haskell.Syntax.Module.Name.ModuleName -> GHC.Unit.Types.Module :=
+  fun m => GHC.Unit.Types.mkModule GHC.Unit.Types.ghcInternalUnit m.
+
+#[global] Definition mkGhcInternalModule
+   : GHC.Data.FastString.FastString -> GHC.Unit.Types.Module :=
+  fun m =>
+    mkGhcInternalModule_ (Language.Haskell.Syntax.Module.Name.mkModuleNameFS m).
+
+#[global] Definition gHC_INTERNAL_BASE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Base")).
+
+#[global] Definition gHC_INTERNAL_ENUM : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Enum")).
+
+#[global] Definition gHC_INTERNAL_GHCI : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.GHCi")).
+
+#[global] Definition gHC_INTERNAL_GHCI_HELPERS : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.GHCi.Helpers")).
+
+#[global] Definition gHC_INTERNAL_SHOW : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Show")).
+
+#[global] Definition gHC_INTERNAL_READ : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Read")).
+
+#[global] Definition gHC_INTERNAL_NUM : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Num")).
+
+#[global] Definition gHC_INTERNAL_MAYBE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Maybe")).
+
+#[global] Definition gHC_INTERNAL_LIST : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.List")).
+
+#[global] Definition gHC_INTERNAL_DATA_EITHER : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.Either")).
+
+#[global] Definition gHC_INTERNAL_DATA_STRING : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.String")).
+
+#[global] Definition gHC_INTERNAL_DATA_FOLDABLE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.Foldable")).
+
+#[global] Definition gHC_INTERNAL_DATA_TRAVERSABLE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.Traversable")).
+
+#[global] Definition gHC_INTERNAL_CONC : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.GHC.Conc")).
+
+#[global] Definition gHC_INTERNAL_IO : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.IO")).
+
+#[global] Definition gHC_INTERNAL_IO_Exception : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.IO.Exception")).
+
+#[global] Definition gHC_INTERNAL_ST : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.ST")).
+
+#[global] Definition gHC_INTERNAL_IX : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Ix")).
+
+#[global] Definition gHC_INTERNAL_STABLE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Stable")).
+
+#[global] Definition gHC_INTERNAL_PTR : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Ptr")).
+
+#[global] Definition gHC_INTERNAL_ERR : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Err")).
+
+#[global] Definition gHC_INTERNAL_REAL : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Real")).
+
+#[global] Definition gHC_INTERNAL_FLOAT : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Float")).
+
+#[global] Definition gHC_INTERNAL_TOP_HANDLER : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.TopHandler")).
+
+#[global] Definition gHC_INTERNAL_SYSTEM_IO : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.System.IO")).
+
+#[global] Definition gHC_INTERNAL_DYNAMIC : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.Dynamic")).
+
+#[global] Definition gHC_INTERNAL_TYPEABLE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.Typeable")).
+
+#[global] Definition gHC_INTERNAL_TYPEABLE_INTERNAL : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.Typeable.Internal")).
+
+#[global] Definition gHC_INTERNAL_DATA_DATA : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.Data")).
+
+#[global] Definition gHC_INTERNAL_READ_PREC : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Text.ParserCombinators.ReadPrec")).
+
+#[global] Definition gHC_INTERNAL_LEX : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Text.Read.Lex")).
+
+#[global] Definition gHC_INTERNAL_INT : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Int")).
+
+#[global] Definition gHC_INTERNAL_WORD : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Word")).
+
+#[global] Definition gHC_INTERNAL_MONAD : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Control.Monad")).
+
+#[global] Definition gHC_INTERNAL_MONAD_FIX : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Control.Monad.Fix")).
+
+#[global] Definition gHC_INTERNAL_MONAD_FAIL : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Control.Monad.Fail")).
+
+#[global] Definition gHC_INTERNAL_ARROW : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Control.Arrow")).
+
+#[global] Definition gHC_INTERNAL_DESUGAR : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Desugar")).
+
+#[global] Definition gHC_INTERNAL_RANDOM : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.System.Random")).
+
+#[global] Definition gHC_INTERNAL_EXTS : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Exts")).
+
+#[global] Definition gHC_INTERNAL_IS_LIST : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.IsList")).
+
+#[global] Definition gHC_INTERNAL_CONTROL_EXCEPTION_BASE
+   : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Control.Exception.Base")).
+
+#[global] Definition gHC_INTERNAL_EXCEPTION_CONTEXT : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Exception.Context")).
+
+#[global] Definition gHC_INTERNAL_GENERICS : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Generics")).
+
+#[global] Definition gHC_INTERNAL_TYPEERROR : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.TypeError")).
+
+#[global] Definition gHC_INTERNAL_TYPELITS : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.TypeLits")).
+
+#[global] Definition gHC_INTERNAL_TYPELITS_INTERNAL : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.TypeLits.Internal")).
+
+#[global] Definition gHC_INTERNAL_TYPENATS : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.TypeNats")).
+
+#[global] Definition gHC_INTERNAL_TYPENATS_INTERNAL : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.TypeNats.Internal")).
+
+#[global] Definition gHC_INTERNAL_DATA_COERCE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Data.Coerce")).
+
+#[global] Definition gHC_INTERNAL_DEBUG_TRACE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Debug.Trace")).
+
+#[global] Definition gHC_INTERNAL_UNSAFE_COERCE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Unsafe.Coerce")).
+
+#[global] Definition gHC_INTERNAL_FOREIGN_C_CONSTPTR : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Foreign.C.ConstPtr")).
+
+#[global] Definition gHC_INTERNAL_SRCLOC : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.SrcLoc")).
+
+#[global] Definition gHC_INTERNAL_STACK : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Stack")).
+
+#[global] Definition gHC_INTERNAL_STACK_TYPES : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Stack.Types")).
+
+#[global] Definition gHC_INTERNAL_STATICPTR : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.StaticPtr")).
+
+#[global] Definition gHC_INTERNAL_STATICPTR_INTERNAL : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.StaticPtr.Internal")).
+
+#[global] Definition gHC_INTERNAL_FINGERPRINT_TYPE : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Fingerprint.Type")).
+
+#[global] Definition gHC_INTERNAL_OVER_LABELS : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.OverloadedLabels")).
+
+#[global] Definition gHC_INTERNAL_RECORDS : GHC.Unit.Types.Module :=
+  mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "GHC.Internal.Records")).
+
+#[global] Definition mkExperimentalModule
+   : GHC.Data.FastString.FastString -> GHC.Unit.Types.Module :=
+  fun m =>
+    GHC.Unit.Types.mkModule GHC.Unit.Types.experimentalUnit
+    (Language.Haskell.Syntax.Module.Name.mkModuleNameFS m).
+
+#[global] Definition dATA_TUPLE_EXPERIMENTAL : GHC.Unit.Types.Module :=
+  mkExperimentalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                   "Data.Tuple.Experimental")).
+
+#[global] Definition dATA_SUM_EXPERIMENTAL : GHC.Unit.Types.Module :=
+  mkExperimentalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                   "Data.Sum.Experimental")).
+
+#[global] Definition mkMainModule
+   : GHC.Data.FastString.FastString -> GHC.Unit.Types.Module :=
+  fun m =>
+    GHC.Unit.Types.mkModule GHC.Unit.Types.mainUnit
+    (Language.Haskell.Syntax.Module.Name.mkModuleNameFS m).
+
+#[global] Definition rOOT_MAIN : GHC.Unit.Types.Module :=
+  mkMainModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ ":Main")).
+
+Axiom mkInteractiveModule : GHC.Base.String -> GHC.Unit.Types.Module.
+
+#[global] Definition mAIN_NAME
+   : Language.Haskell.Syntax.Module.Name.ModuleName :=
+  Language.Haskell.Syntax.Module.Name.mkModuleNameFS (GHC.Data.FastString.fsLit
+                                                      (GHC.Base.hs_string__ "Main")).
+
+#[global] Definition mkThisGhcModule_
+   : Language.Haskell.Syntax.Module.Name.ModuleName -> GHC.Unit.Types.Module :=
+  fun m => GHC.Unit.Types.mkModule GHC.Unit.Types.thisGhcUnit m.
+
+#[global] Definition mkThisGhcModule
+   : GHC.Data.FastString.FastString -> GHC.Unit.Types.Module :=
+  fun m =>
+    mkThisGhcModule_ (Language.Haskell.Syntax.Module.Name.mkModuleNameFS m).
+
+#[global] Definition mkMainModule_
+   : Language.Haskell.Syntax.Module.Name.ModuleName -> GHC.Unit.Types.Module :=
+  fun m => GHC.Unit.Types.mkModule GHC.Unit.Types.mainUnit m.
 
 Axiom RdrName : Type.
 
 Axiom main_RDR_Unqual : RdrName.
 
-Axiom forall_tv_RDR : RdrName.
+#[global] Definition eqClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #167.
 
-Axiom dot_tv_RDR : RdrName.
-
-Definition eqClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #167.
-
-Definition mk_known_key_name
+#[global] Definition mk_known_key_name
    : OccName.NameSpace ->
-     Module.Module -> FastString.FastString -> Unique.Unique -> Name.Name :=
+     GHC.Unit.Types.Module ->
+     GHC.Data.FastString.FastString -> Unique.Unique -> Name.Name :=
   fun space modu str unique =>
     Name.mkExternalName unique modu (OccName.mkOccNameFS space str)
     SrcLoc.noSrcSpan.
 
-Definition varQual
-   : Module.Module -> FastString.FastString -> Unique.Unique -> Name.Name :=
-  mk_known_key_name OccName.varName.
+#[global] Definition varQual
+   : GHC.Unit.Types.Module ->
+     GHC.Data.FastString.FastString -> Unique.Unique -> Name.Name :=
+  fun modu str unique => mk_known_key_name OccName.varName modu str unique.
 
-Definition eqName : Name.Name :=
-  varQual gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "==")) eqClassOpKey.
+#[global] Definition eqName : Name.Name :=
+  varQual gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "=="))
+  eqClassOpKey.
 
 Axiom nameRdrName : Name.Name -> RdrName.
 
-Definition eq_RDR : RdrName :=
+#[global] Definition eq_RDR : RdrName :=
   nameRdrName eqName.
 
-Definition geClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #168.
+#[global] Definition geClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #168.
 
-Definition geName : Name.Name :=
-  varQual gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ ">=")) geClassOpKey.
+#[global] Definition geName : Name.Name :=
+  varQual gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ ">="))
+  geClassOpKey.
 
-Definition ge_RDR : RdrName :=
+#[global] Definition ge_RDR : RdrName :=
   nameRdrName geName.
 
-Axiom varQual_RDR : Module.Module -> FastString.FastString -> RdrName.
+Axiom varQual_RDR : GHC.Unit.Types.Module ->
+                    GHC.Data.FastString.FastString -> RdrName.
 
-Definition le_RDR : RdrName :=
-  varQual_RDR gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "<=")).
+#[global] Definition le_RDR : RdrName :=
+  varQual_RDR gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "<=")).
 
-Definition lt_RDR : RdrName :=
-  varQual_RDR gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "<")).
+#[global] Definition lt_RDR : RdrName :=
+  varQual_RDR gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "<")).
 
-Definition gt_RDR : RdrName :=
-  varQual_RDR gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ ">")).
+#[global] Definition gt_RDR : RdrName :=
+  varQual_RDR gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ ">")).
 
-Definition compare_RDR : RdrName :=
-  varQual_RDR gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "compare")).
+#[global] Definition compare_RDR : RdrName :=
+  varQual_RDR gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                      "compare")).
 
-Axiom dataQual_RDR : Module.Module -> FastString.FastString -> RdrName.
+#[global] Definition dcQual
+   : GHC.Unit.Types.Module ->
+     GHC.Data.FastString.FastString -> Unique.Unique -> Name.Name :=
+  fun modu str unique => mk_known_key_name OccName.dataName modu str unique.
 
-Definition ltTag_RDR : RdrName :=
-  dataQual_RDR gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "LT")).
+#[global] Definition ordLTDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #27.
 
-Definition eqTag_RDR : RdrName :=
-  dataQual_RDR gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "EQ")).
+#[global] Definition ordLTDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "LT"))
+  ordLTDataConKey.
 
-Definition gtTag_RDR : RdrName :=
-  dataQual_RDR gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "GT")).
+#[global] Definition ltTag_RDR : RdrName :=
+  nameRdrName ordLTDataConName.
 
-Definition clsQual
-   : Module.Module -> FastString.FastString -> Unique.Unique -> Name.Name :=
-  mk_known_key_name OccName.clsName.
+#[global] Definition ordEQDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #28.
 
-Definition eqClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #3.
+#[global] Definition ordEQDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "EQ"))
+  ordEQDataConKey.
 
-Definition eqClassName : Name.Name :=
-  clsQual gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "Eq")) eqClassKey.
+#[global] Definition eqTag_RDR : RdrName :=
+  nameRdrName ordEQDataConName.
 
-Definition eqClass_RDR : RdrName :=
-  nameRdrName eqClassName.
+#[global] Definition ordGTDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #29.
 
-Definition numClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #11.
+#[global] Definition ordGTDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "GT"))
+  ordGTDataConKey.
 
-Definition numClassName : Name.Name :=
-  clsQual gHC_NUM (FastString.fsLit (GHC.Base.hs_string__ "Num")) numClassKey.
+#[global] Definition gtTag_RDR : RdrName :=
+  nameRdrName ordGTDataConName.
 
-Definition numClass_RDR : RdrName :=
-  nameRdrName numClassName.
+#[global] Definition mapIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #121.
 
-Definition ordClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #12.
+#[global] Definition mapName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "map")) mapIdKey.
 
-Definition ordClassName : Name.Name :=
-  clsQual gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "Ord")) ordClassKey.
+#[global] Definition map_RDR : RdrName :=
+  nameRdrName mapName.
 
-Definition ordClass_RDR : RdrName :=
-  nameRdrName ordClassName.
+#[global] Definition appendIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #4.
 
-Definition enumClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #2.
+#[global] Definition appendName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "++")) appendIdKey.
 
-Definition enumClassName : Name.Name :=
-  clsQual gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "Enum")) enumClassKey.
+#[global] Definition append_RDR : RdrName :=
+  nameRdrName appendName.
 
-Definition enumClass_RDR : RdrName :=
-  nameRdrName enumClassName.
+#[global] Definition foldrIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #6.
 
-Definition monadClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #8.
+#[global] Definition foldrName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "foldr")) foldrIdKey.
 
-Definition monadClassName : Name.Name :=
-  clsQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "Monad"))
-  monadClassKey.
-
-Definition monadClass_RDR : RdrName :=
-  nameRdrName monadClassName.
-
-Definition map_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "map")).
-
-Definition append_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "++")).
-
-Definition foldrIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #6.
-
-Definition foldrName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "foldr")) foldrIdKey.
-
-Definition foldr_RDR : RdrName :=
+#[global] Definition foldr_RDR : RdrName :=
   nameRdrName foldrName.
 
-Definition buildIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #4.
+#[global] Definition buildIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #5.
 
-Definition buildName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "build")) buildIdKey.
+#[global] Definition buildName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "build")) buildIdKey.
 
-Definition build_RDR : RdrName :=
+#[global] Definition build_RDR : RdrName :=
   nameRdrName buildName.
 
-Definition returnMClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #174.
+#[global] Definition returnMClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #174.
 
-Definition returnMName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "return"))
-  returnMClassOpKey.
+#[global] Definition returnMName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "return")) returnMClassOpKey.
 
-Definition returnM_RDR : RdrName :=
+#[global] Definition returnM_RDR : RdrName :=
   nameRdrName returnMName.
 
-Definition bindMClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #171.
+#[global] Definition bindMClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #171.
 
-Definition bindMName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ ">>="))
-  bindMClassOpKey.
+#[global] Definition bindMName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        ">>=")) bindMClassOpKey.
 
-Definition bindM_RDR : RdrName :=
+#[global] Definition bindM_RDR : RdrName :=
   nameRdrName bindMName.
 
-Definition failMClassOpKey_preMFP : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #170.
+#[global] Definition failMClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #176.
 
-Definition failMName_preMFP : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "fail"))
-  failMClassOpKey_preMFP.
+#[global] Definition failMName : Name.Name :=
+  varQual gHC_INTERNAL_MONAD_FAIL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                              "fail")) failMClassOpKey.
 
-Definition failM_RDR_preMFP : RdrName :=
-  nameRdrName failMName_preMFP.
-
-Definition failMClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #176.
-
-Definition failMName : Name.Name :=
-  varQual mONAD_FAIL (FastString.fsLit (GHC.Base.hs_string__ "fail"))
-  failMClassOpKey.
-
-Definition failM_RDR : RdrName :=
+#[global] Definition failM_RDR : RdrName :=
   nameRdrName failMName.
 
-Definition dcQual
-   : Module.Module -> FastString.FastString -> Unique.Unique -> Name.Name :=
-  mk_known_key_name OccName.dataName.
+#[global] Definition leftDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #25.
 
-Definition leftDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #25.
+#[global] Definition leftDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_DATA_EITHER (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                              "Left")) leftDataConKey.
 
-Definition leftDataConName : Name.Name :=
-  dcQual dATA_EITHER (FastString.fsLit (GHC.Base.hs_string__ "Left"))
-  leftDataConKey.
-
-Definition left_RDR : RdrName :=
+#[global] Definition left_RDR : RdrName :=
   nameRdrName leftDataConName.
 
-Definition rightDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #26.
+#[global] Definition rightDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #26.
 
-Definition rightDataConName : Name.Name :=
-  dcQual dATA_EITHER (FastString.fsLit (GHC.Base.hs_string__ "Right"))
-  rightDataConKey.
+#[global] Definition rightDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_DATA_EITHER (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                              "Right")) rightDataConKey.
 
-Definition right_RDR : RdrName :=
+#[global] Definition right_RDR : RdrName :=
   nameRdrName rightDataConName.
 
-Definition fromEnum_RDR : RdrName :=
-  varQual_RDR gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "fromEnum")).
+#[global] Definition fromEnum_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "fromEnum")).
 
-Definition toEnum_RDR : RdrName :=
-  varQual_RDR gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "toEnum")).
+#[global] Definition toEnum_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "toEnum")).
 
-Definition enumFromClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #163.
+#[global] Definition enumFromClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #163.
 
-Definition enumFromName : Name.Name :=
-  varQual gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "enumFrom"))
-  enumFromClassOpKey.
+#[global] Definition enumFromName : Name.Name :=
+  varQual gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "enumFrom")) enumFromClassOpKey.
 
-Definition enumFrom_RDR : RdrName :=
+#[global] Definition enumFrom_RDR : RdrName :=
   nameRdrName enumFromName.
 
-Definition enumFromToClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #165.
+#[global] Definition enumFromToClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #165.
 
-Definition enumFromToName : Name.Name :=
-  varQual gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "enumFromTo"))
-  enumFromToClassOpKey.
+#[global] Definition enumFromToName : Name.Name :=
+  varQual gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "enumFromTo")) enumFromToClassOpKey.
 
-Definition enumFromTo_RDR : RdrName :=
+#[global] Definition enumFromTo_RDR : RdrName :=
   nameRdrName enumFromToName.
 
-Definition enumFromThenClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #164.
+#[global] Definition enumFromThenClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #164.
 
-Definition enumFromThenName : Name.Name :=
-  varQual gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "enumFromThen"))
-  enumFromThenClassOpKey.
+#[global] Definition enumFromThenName : Name.Name :=
+  varQual gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "enumFromThen")) enumFromThenClassOpKey.
 
-Definition enumFromThen_RDR : RdrName :=
+#[global] Definition enumFromThen_RDR : RdrName :=
   nameRdrName enumFromThenName.
 
-Definition enumFromThenToClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #166.
+#[global] Definition enumFromThenToClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #166.
 
-Definition enumFromThenToName : Name.Name :=
-  varQual gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "enumFromThenTo"))
-  enumFromThenToClassOpKey.
+#[global] Definition enumFromThenToName : Name.Name :=
+  varQual gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "enumFromThenTo")) enumFromThenToClassOpKey.
 
-Definition enumFromThenTo_RDR : RdrName :=
+#[global] Definition enumFromThenTo_RDR : RdrName :=
   nameRdrName enumFromThenToName.
 
-Definition ratioDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #12.
+#[global] Definition times_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_NUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "*")).
 
-Definition ratioDataConName : Name.Name :=
-  dcQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ ":%")) ratioDataConKey.
+#[global] Definition plus_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_NUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "+")).
 
-Definition ratioDataCon_RDR : RdrName :=
-  nameRdrName ratioDataConName.
+#[global] Definition compose_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            ".")).
 
-Definition plusIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #66.
+#[global] Definition and_RDR : RdrName :=
+  varQual_RDR gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "&&")).
 
-Definition plusIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "plusInteger"))
-  plusIntegerIdKey.
+#[global] Definition not_RDR : RdrName :=
+  varQual_RDR gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                      "not")).
 
-Definition plusInteger_RDR : RdrName :=
-  nameRdrName plusIntegerName.
+#[global] Definition dataToTag_RDR : RdrName :=
+  varQual_RDR gHC_MAGIC (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                    "dataToTag#")).
 
-Definition timesIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #67.
+#[global] Definition succ_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "succ")).
 
-Definition timesIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "timesInteger")) timesIntegerIdKey.
+#[global] Definition pred_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "pred")).
 
-Definition timesInteger_RDR : RdrName :=
-  nameRdrName timesIntegerName.
+#[global] Definition minBound_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "minBound")).
 
-Definition ioDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #17.
+#[global] Definition maxBound_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "maxBound")).
 
-Definition ioDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "IO")) ioDataConKey.
+#[global] Definition range_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_IX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                          "range")).
 
-Definition ioDataCon_RDR : RdrName :=
-  nameRdrName ioDataConName.
+#[global] Definition inRange_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_IX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                          "inRange")).
 
-Definition eqStringIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #10.
+#[global] Definition index_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_IX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                          "index")).
 
-Definition eqStringName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "eqString"))
-  eqStringIdKey.
+#[global] Definition unsafeIndex_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_IX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                          "unsafeIndex")).
 
-Definition eqString_RDR : RdrName :=
-  nameRdrName eqStringName.
+#[global] Definition unsafeRangeSize_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_IX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                          "unsafeRangeSize")).
 
-Definition unpackCStringIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #20.
+#[global] Definition readList_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "readList")).
 
-Definition unpackCStringName : Name.Name :=
-  varQual gHC_CSTRING (FastString.fsLit (GHC.Base.hs_string__ "unpackCString#"))
-  unpackCStringIdKey.
+#[global] Definition readListDefault_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "readListDefault")).
 
-Definition unpackCString_RDR : RdrName :=
-  nameRdrName unpackCStringName.
+#[global] Definition readListPrec_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "readListPrec")).
 
-Definition unpackCStringFoldrIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #19.
+#[global] Definition readListPrecDefault_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "readListPrecDefault")).
 
-Definition unpackCStringFoldrName : Name.Name :=
-  varQual gHC_CSTRING (FastString.fsLit (GHC.Base.hs_string__
-                                         "unpackFoldrCString#")) unpackCStringFoldrIdKey.
+#[global] Definition readPrec_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "readPrec")).
 
-Definition unpackCStringFoldr_RDR : RdrName :=
-  nameRdrName unpackCStringFoldrName.
+#[global] Definition parens_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "parens")).
 
-Definition unpackCStringUtf8IdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #17.
+#[global] Definition choose_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "choose")).
 
-Definition unpackCStringUtf8Name : Name.Name :=
-  varQual gHC_CSTRING (FastString.fsLit (GHC.Base.hs_string__
-                                         "unpackCStringUtf8#")) unpackCStringUtf8IdKey.
+#[global] Definition lexP_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "lexP")).
 
-Definition unpackCStringUtf8_RDR : RdrName :=
-  nameRdrName unpackCStringUtf8Name.
+#[global] Definition expectP_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "expectP")).
 
-Definition newStablePtrIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #36.
+#[global] Definition readField_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "readField")).
 
-Definition newStablePtrName : Name.Name :=
-  varQual gHC_STABLE (FastString.fsLit (GHC.Base.hs_string__ "newStablePtr"))
-  newStablePtrIdKey.
+#[global] Definition readFieldHash_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "readFieldHash")).
 
-Definition newStablePtr_RDR : RdrName :=
-  nameRdrName newStablePtrName.
+#[global] Definition readSymField_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "readSymField")).
 
-Definition bindIOIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #34.
+Axiom dataQual_RDR : GHC.Unit.Types.Module ->
+                     GHC.Data.FastString.FastString -> RdrName.
+
+#[global] Definition punc_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_LEX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Punc")).
+
+#[global] Definition ident_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_LEX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Ident")).
+
+#[global] Definition symbol_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_LEX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Symbol")).
+
+#[global] Definition step_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ_PREC (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "step")).
+
+#[global] Definition alt_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ_PREC (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "+++")).
+
+#[global] Definition reset_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ_PREC (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "reset")).
+
+#[global] Definition prec_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ_PREC (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "prec")).
+
+#[global] Definition pfail_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_READ_PREC (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "pfail")).
+
+#[global] Definition showsPrec_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_SHOW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "showsPrec")).
+
+#[global] Definition shows_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_SHOW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "shows")).
+
+#[global] Definition showString_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_SHOW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "showString")).
+
+#[global] Definition showSpace_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_SHOW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "showSpace")).
+
+#[global] Definition showCommaSpace_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_SHOW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "showCommaSpace")).
+
+#[global] Definition showParen_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_SHOW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "showParen")).
+
+#[global] Definition error_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_ERR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "error")).
+
+#[global] Definition u1DataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "U1")).
+
+#[global] Definition par1DataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "Par1")).
+
+#[global] Definition rec1DataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "Rec1")).
+
+#[global] Definition k1DataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "K1")).
+
+#[global] Definition m1DataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "M1")).
+
+#[global] Definition l1DataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "L1")).
+
+#[global] Definition r1DataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "R1")).
+
+#[global] Definition prodDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ ":*:")).
+
+#[global] Definition comp1DataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "Comp1")).
+
+#[global] Definition fieldQual_RDR
+   : GHC.Unit.Types.Module ->
+     GHC.Data.FastString.FastString -> GHC.Data.FastString.FastString -> RdrName :=
+  fun mod_ con str =>
+    GHC.Types.Name.Reader.mkOrig mod_ (OccName.mkOccNameFS (OccName.fieldName con)
+                                       str).
 
-Definition bindIOName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "bindIO")) bindIOIdKey.
+#[global] Definition unPar1_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "Par1")) (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                                                                  "unPar1")).
+
+#[global] Definition unRec1_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "Rec1")) (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                                                                  "unRec1")).
+
+#[global] Definition unK1_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "K1")) (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                                                                "unK1")).
 
-Definition bindIO_RDR : RdrName :=
-  nameRdrName bindIOName.
+#[global] Definition unComp1_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "Comp1")) (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                                                                   "unComp1")).
 
-Definition returnIOIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #35.
+#[global] Definition from_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "from")).
 
-Definition returnIOName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "returnIO"))
-  returnIOIdKey.
+#[global] Definition from1_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "from1")).
 
-Definition returnIO_RDR : RdrName :=
-  nameRdrName returnIOName.
+#[global] Definition to_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "to")).
 
-Definition fromIntegerClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #160.
+#[global] Definition to1_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "to1")).
 
-Definition fromIntegerName : Name.Name :=
-  varQual gHC_NUM (FastString.fsLit (GHC.Base.hs_string__ "fromInteger"))
-  fromIntegerClassOpKey.
-
-Definition fromInteger_RDR : RdrName :=
-  nameRdrName fromIntegerName.
-
-Definition fromRationalClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #162.
-
-Definition fromRationalName : Name.Name :=
-  varQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "fromRational"))
-  fromRationalClassOpKey.
-
-Definition fromRational_RDR : RdrName :=
-  nameRdrName fromRationalName.
-
-Definition minusClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #161.
-
-Definition minusName : Name.Name :=
-  varQual gHC_NUM (FastString.fsLit (GHC.Base.hs_string__ "-")) minusClassOpKey.
-
-Definition minus_RDR : RdrName :=
-  nameRdrName minusName.
-
-Definition times_RDR : RdrName :=
-  varQual_RDR gHC_NUM (FastString.fsLit (GHC.Base.hs_string__ "*")).
-
-Definition plus_RDR : RdrName :=
-  varQual_RDR gHC_NUM (FastString.fsLit (GHC.Base.hs_string__ "+")).
-
-Definition toIntegerClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #192.
-
-Definition toIntegerName : Name.Name :=
-  varQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "toInteger"))
-  toIntegerClassOpKey.
-
-Definition toInteger_RDR : RdrName :=
-  nameRdrName toIntegerName.
-
-Definition toRationalClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #193.
-
-Definition toRationalName : Name.Name :=
-  varQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "toRational"))
-  toRationalClassOpKey.
-
-Definition toRational_RDR : RdrName :=
-  nameRdrName toRationalName.
-
-Definition fromIntegralIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #190.
-
-Definition fromIntegralName : Name.Name :=
-  varQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "fromIntegral"))
-  fromIntegralIdKey.
-
-Definition fromIntegral_RDR : RdrName :=
-  nameRdrName fromIntegralName.
-
-Axiom tcQual_RDR : Module.Module -> FastString.FastString -> RdrName.
-
-Definition stringTy_RDR : RdrName :=
-  tcQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "String")).
-
-Definition fromStringClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #186.
-
-Definition fromStringName : Name.Name :=
-  varQual dATA_STRING (FastString.fsLit (GHC.Base.hs_string__ "fromString"))
-  fromStringClassOpKey.
-
-Definition fromString_RDR : RdrName :=
-  nameRdrName fromStringName.
-
-Definition fromListClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #199.
-
-Definition fromListName : Name.Name :=
-  varQual gHC_EXTS (FastString.fsLit (GHC.Base.hs_string__ "fromList"))
-  fromListClassOpKey.
-
-Definition fromList_RDR : RdrName :=
-  nameRdrName fromListName.
-
-Definition fromListNClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #500.
-
-Definition fromListNName : Name.Name :=
-  varQual gHC_EXTS (FastString.fsLit (GHC.Base.hs_string__ "fromListN"))
-  fromListNClassOpKey.
-
-Definition fromListN_RDR : RdrName :=
-  nameRdrName fromListNName.
-
-Definition toListClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #501.
-
-Definition toListName : Name.Name :=
-  varQual gHC_EXTS (FastString.fsLit (GHC.Base.hs_string__ "toList"))
-  toListClassOpKey.
-
-Definition toList_RDR : RdrName :=
-  nameRdrName toListName.
-
-Definition compose_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ ".")).
-
-Definition and_RDR : RdrName :=
-  varQual_RDR gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "&&")).
-
-Definition not_RDR : RdrName :=
-  varQual_RDR gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "not")).
-
-Definition getTag_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "getTag")).
-
-Definition succ_RDR : RdrName :=
-  varQual_RDR gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "succ")).
-
-Definition pred_RDR : RdrName :=
-  varQual_RDR gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "pred")).
-
-Definition minBound_RDR : RdrName :=
-  varQual_RDR gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "minBound")).
-
-Definition maxBound_RDR : RdrName :=
-  varQual_RDR gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "maxBound")).
-
-Definition range_RDR : RdrName :=
-  varQual_RDR gHC_ARR (FastString.fsLit (GHC.Base.hs_string__ "range")).
-
-Definition inRange_RDR : RdrName :=
-  varQual_RDR gHC_ARR (FastString.fsLit (GHC.Base.hs_string__ "inRange")).
-
-Definition index_RDR : RdrName :=
-  varQual_RDR gHC_ARR (FastString.fsLit (GHC.Base.hs_string__ "index")).
-
-Definition unsafeIndex_RDR : RdrName :=
-  varQual_RDR gHC_ARR (FastString.fsLit (GHC.Base.hs_string__ "unsafeIndex")).
-
-Definition unsafeRangeSize_RDR : RdrName :=
-  varQual_RDR gHC_ARR (FastString.fsLit (GHC.Base.hs_string__ "unsafeRangeSize")).
-
-Definition readList_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "readList")).
-
-Definition readListDefault_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__
-                                          "readListDefault")).
-
-Definition readListPrec_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "readListPrec")).
-
-Definition readListPrecDefault_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__
-                                          "readListPrecDefault")).
-
-Definition readPrec_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "readPrec")).
-
-Definition parens_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "parens")).
-
-Definition choose_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "choose")).
-
-Definition lexP_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "lexP")).
-
-Definition expectP_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "expectP")).
-
-Definition readField_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "readField")).
-
-Definition readFieldHash_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "readFieldHash")).
-
-Definition readSymField_RDR : RdrName :=
-  varQual_RDR gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "readSymField")).
-
-Definition punc_RDR : RdrName :=
-  dataQual_RDR lEX (FastString.fsLit (GHC.Base.hs_string__ "Punc")).
-
-Definition ident_RDR : RdrName :=
-  dataQual_RDR lEX (FastString.fsLit (GHC.Base.hs_string__ "Ident")).
-
-Definition symbol_RDR : RdrName :=
-  dataQual_RDR lEX (FastString.fsLit (GHC.Base.hs_string__ "Symbol")).
-
-Definition step_RDR : RdrName :=
-  varQual_RDR rEAD_PREC (FastString.fsLit (GHC.Base.hs_string__ "step")).
-
-Definition alt_RDR : RdrName :=
-  varQual_RDR rEAD_PREC (FastString.fsLit (GHC.Base.hs_string__ "+++")).
-
-Definition reset_RDR : RdrName :=
-  varQual_RDR rEAD_PREC (FastString.fsLit (GHC.Base.hs_string__ "reset")).
-
-Definition prec_RDR : RdrName :=
-  varQual_RDR rEAD_PREC (FastString.fsLit (GHC.Base.hs_string__ "prec")).
-
-Definition pfail_RDR : RdrName :=
-  varQual_RDR rEAD_PREC (FastString.fsLit (GHC.Base.hs_string__ "pfail")).
-
-Definition showsPrec_RDR : RdrName :=
-  varQual_RDR gHC_SHOW (FastString.fsLit (GHC.Base.hs_string__ "showsPrec")).
-
-Definition shows_RDR : RdrName :=
-  varQual_RDR gHC_SHOW (FastString.fsLit (GHC.Base.hs_string__ "shows")).
-
-Definition showString_RDR : RdrName :=
-  varQual_RDR gHC_SHOW (FastString.fsLit (GHC.Base.hs_string__ "showString")).
-
-Definition showSpace_RDR : RdrName :=
-  varQual_RDR gHC_SHOW (FastString.fsLit (GHC.Base.hs_string__ "showSpace")).
-
-Definition showCommaSpace_RDR : RdrName :=
-  varQual_RDR gHC_SHOW (FastString.fsLit (GHC.Base.hs_string__ "showCommaSpace")).
-
-Definition showParen_RDR : RdrName :=
-  varQual_RDR gHC_SHOW (FastString.fsLit (GHC.Base.hs_string__ "showParen")).
-
-Definition undefined_RDR : RdrName :=
-  varQual_RDR gHC_ERR (FastString.fsLit (GHC.Base.hs_string__ "undefined")).
-
-Definition error_RDR : RdrName :=
-  varQual_RDR gHC_ERR (FastString.fsLit (GHC.Base.hs_string__ "error")).
-
-Definition u1DataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "U1")).
-
-Definition par1DataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Par1")).
-
-Definition rec1DataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Rec1")).
-
-Definition k1DataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "K1")).
-
-Definition m1DataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "M1")).
-
-Definition l1DataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "L1")).
-
-Definition r1DataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "R1")).
-
-Definition prodDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ ":*:")).
-
-Definition comp1DataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Comp1")).
-
-Definition unPar1_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "unPar1")).
-
-Definition unRec1_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "unRec1")).
-
-Definition unK1_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "unK1")).
-
-Definition unComp1_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "unComp1")).
-
-Definition from_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "from")).
-
-Definition from1_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "from1")).
-
-Definition to_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "to")).
-
-Definition to1_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "to1")).
-
-Definition datatypeName_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__
-                                              "datatypeName")).
-
-Definition moduleName_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "moduleName")).
-
-Definition packageName_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__
-                                              "packageName")).
-
-Definition isNewtypeName_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "isNewtype")).
-
-Definition selName_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "selName")).
-
-Definition conName_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "conName")).
-
-Definition conFixity_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "conFixity")).
-
-Definition conIsRecord_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__
-                                              "conIsRecord")).
-
-Definition prefixDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Prefix")).
-
-Definition infixDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Infix")).
-
-Definition leftAssocDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__
-                                               "LeftAssociative")).
-
-Definition rightAssocDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__
-                                               "RightAssociative")).
-
-Definition notAssocDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__
-                                               "NotAssociative")).
-
-Definition uAddrDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UAddr")).
-
-Definition uCharDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UChar")).
-
-Definition uDoubleDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UDouble")).
-
-Definition uFloatDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UFloat")).
-
-Definition uIntDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UInt")).
-
-Definition uWordDataCon_RDR : RdrName :=
-  dataQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UWord")).
-
-Definition uAddrHash_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "uAddr#")).
-
-Definition uCharHash_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "uChar#")).
-
-Definition uDoubleHash_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "uDouble#")).
-
-Definition uFloatHash_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "uFloat#")).
-
-Definition uIntHash_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "uInt#")).
-
-Definition uWordHash_RDR : RdrName :=
-  varQual_RDR gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "uWord#")).
-
-Definition fmap_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "fmap")).
-
-Definition replace_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "<$")).
-
-Definition pureAClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #752.
-
-Definition pureAName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "pure"))
-  pureAClassOpKey.
-
-Definition pure_RDR : RdrName :=
+#[global] Definition datatypeName_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "datatypeName")).
+
+#[global] Definition moduleName_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "moduleName")).
+
+#[global] Definition packageName_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "packageName")).
+
+#[global] Definition isNewtypeName_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "isNewtype")).
+
+#[global] Definition selName_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "selName")).
+
+#[global] Definition conName_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "conName")).
+
+#[global] Definition conFixity_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "conFixity")).
+
+#[global] Definition conIsRecord_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "conIsRecord")).
+
+#[global] Definition prefixDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "Prefix")).
+
+#[global] Definition infixDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "Infix")).
+
+#[global] Definition leftAssociativeDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #56.
+
+#[global] Definition leftAssociativeDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "LeftAssociative")) leftAssociativeDataConKey.
+
+#[global] Definition leftAssocDataCon_RDR : RdrName :=
+  nameRdrName leftAssociativeDataConName.
+
+#[global] Definition rightAssociativeDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #57.
+
+#[global] Definition rightAssociativeDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "RightAssociative")) rightAssociativeDataConKey.
+
+#[global] Definition rightAssocDataCon_RDR : RdrName :=
+  nameRdrName rightAssociativeDataConName.
+
+#[global] Definition notAssociativeDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #58.
+
+#[global] Definition notAssociativeDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "NotAssociative")) notAssociativeDataConKey.
+
+#[global] Definition notAssocDataCon_RDR : RdrName :=
+  nameRdrName notAssociativeDataConName.
+
+#[global] Definition uAddrDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "UAddr")).
+
+#[global] Definition uCharDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "UChar")).
+
+#[global] Definition uDoubleDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "UDouble")).
+
+#[global] Definition uFloatDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "UFloat")).
+
+#[global] Definition uIntDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "UInt")).
+
+#[global] Definition uWordDataCon_RDR : RdrName :=
+  dataQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "UWord")).
+
+#[global] Definition uAddrHash_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "UAddr")) (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                                                                   "uAddr#")).
+
+#[global] Definition uCharHash_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "UChar")) (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                                                                   "uChar#")).
+
+#[global] Definition uDoubleHash_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "UDouble")) (GHC.Data.FastString.fsLit
+                                                                          (GHC.Base.hs_string__ "uDouble#")).
+
+#[global] Definition uFloatHash_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "UFloat")) (GHC.Data.FastString.fsLit
+                                                                         (GHC.Base.hs_string__ "uFloat#")).
+
+#[global] Definition uIntHash_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "UInt")) (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                                                                  "uInt#")).
+
+#[global] Definition uWordHash_RDR : RdrName :=
+  fieldQual_RDR gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit
+                                       (GHC.Base.hs_string__ "UWord")) (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                                                                   "uWord#")).
+
+#[global] Definition fmapClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #173.
+
+#[global] Definition fmapName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "fmap")) fmapClassOpKey.
+
+#[global] Definition fmap_RDR : RdrName :=
+  nameRdrName fmapName.
+
+#[global] Definition replace_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "<$")).
+
+#[global] Definition pureAClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #752.
+
+#[global] Definition pureAName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "pure")) pureAClassOpKey.
+
+#[global] Definition pure_RDR : RdrName :=
   nameRdrName pureAName.
 
-Definition apAClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #751.
+#[global] Definition apAClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #751.
 
-Definition apAName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "<*>")) apAClassOpKey.
+#[global] Definition apAName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "<*>")) apAClassOpKey.
 
-Definition ap_RDR : RdrName :=
+#[global] Definition ap_RDR : RdrName :=
   nameRdrName apAName.
 
-Definition liftA2_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "liftA2")).
+#[global] Definition liftA2_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "liftA2")).
 
-Definition foldable_foldr_RDR : RdrName :=
-  varQual_RDR dATA_FOLDABLE (FastString.fsLit (GHC.Base.hs_string__ "foldr")).
+#[global] Definition foldable_foldr_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_DATA_FOLDABLE (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "foldr")).
 
-Definition foldMap_RDR : RdrName :=
-  varQual_RDR dATA_FOLDABLE (FastString.fsLit (GHC.Base.hs_string__ "foldMap")).
+#[global] Definition foldMap_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_DATA_FOLDABLE (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "foldMap")).
 
-Definition null_RDR : RdrName :=
-  varQual_RDR dATA_FOLDABLE (FastString.fsLit (GHC.Base.hs_string__ "null")).
+#[global] Definition null_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_DATA_FOLDABLE (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "null")).
 
-Definition all_RDR : RdrName :=
-  varQual_RDR dATA_FOLDABLE (FastString.fsLit (GHC.Base.hs_string__ "all")).
+#[global] Definition all_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_DATA_FOLDABLE (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "all")).
 
-Definition traverse_RDR : RdrName :=
-  varQual_RDR dATA_TRAVERSABLE (FastString.fsLit (GHC.Base.hs_string__
-                                                  "traverse")).
+#[global] Definition traverse_RDR : RdrName :=
+  varQual_RDR gHC_INTERNAL_DATA_TRAVERSABLE (GHC.Data.FastString.fsLit
+                                             (GHC.Base.hs_string__ "traverse")).
 
-Definition mempty_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "mempty")).
+#[global] Definition memptyClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #555.
 
-Definition mappend_RDR : RdrName :=
-  varQual_RDR gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "mappend")).
+#[global] Definition memptyName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "mempty")) memptyClassOpKey.
 
-Definition eqTyCon_RDR : RdrName :=
-  tcQual_RDR dATA_TYPE_EQUALITY (FastString.fsLit (GHC.Base.hs_string__ "~")).
+#[global] Definition mempty_RDR : RdrName :=
+  nameRdrName memptyName.
 
-Axiom clsQual_RDR : Module.Module -> FastString.FastString -> RdrName.
+#[global] Definition mappendClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #556.
 
-Definition wildCardKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #0.
+#[global] Definition mappendName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "mappend")) mappendClassOpKey.
 
-Definition wildCardName : Name.Name :=
-  Name.mkSystemVarName wildCardKey (FastString.fsLit (GHC.Base.hs_string__
-                                                      "wild")).
+#[global] Definition mappend_RDR : RdrName :=
+  nameRdrName mappendName.
 
-Definition runMainKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #102.
+Axiom tcQual_RDR : GHC.Unit.Types.Module ->
+                   GHC.Data.FastString.FastString -> RdrName.
 
-Definition runMainIOName : Name.Name :=
-  varQual gHC_TOP_HANDLER (FastString.fsLit (GHC.Base.hs_string__ "runMainIO"))
-  runMainKey.
+Axiom clsQual_RDR : GHC.Unit.Types.Module ->
+                    GHC.Data.FastString.FastString -> RdrName.
 
-Definition orderingTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #30.
+#[global] Definition wildCardKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #0.
 
-Definition tcQual
-   : Module.Module -> FastString.FastString -> Unique.Unique -> Name.Name :=
-  mk_known_key_name OccName.tcName.
+#[global] Definition wildCardName : Name.Name :=
+  Name.mkSystemVarName wildCardKey (GHC.Data.FastString.fsLit
+                                    (GHC.Base.hs_string__ "wild")).
 
-Definition orderingTyConName : Name.Name :=
-  tcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "Ordering"))
+#[global] Definition runMainKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #102.
+
+#[global] Definition runMainIOName : Name.Name :=
+  varQual gHC_INTERNAL_TOP_HANDLER (GHC.Data.FastString.fsLit
+                                    (GHC.Base.hs_string__ "runMainIO")) runMainKey.
+
+#[global] Definition runRWKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #107.
+
+#[global] Definition runRWName : Name.Name :=
+  varQual gHC_MAGIC (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "runRW#"))
+  runRWKey.
+
+#[global] Definition orderingTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #32.
+
+#[global] Definition tcQual
+   : GHC.Unit.Types.Module ->
+     GHC.Data.FastString.FastString -> Unique.Unique -> Name.Name :=
+  fun modu str unique => mk_known_key_name OccName.tcName modu str unique.
+
+#[global] Definition orderingTyConName : Name.Name :=
+  tcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Ordering"))
   orderingTyConKey.
 
-Definition ltDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #27.
+#[global] Definition specTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #185.
 
-Definition ltDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "LT")) ltDataConKey.
+#[global] Definition specTyConName : Name.Name :=
+  tcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "SPEC"))
+  specTyConKey.
 
-Definition eqDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #28.
+#[global] Definition eitherTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #84.
 
-Definition eqDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "EQ")) eqDataConKey.
+#[global] Definition eitherTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_DATA_EITHER (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                              "Either")) eitherTyConKey.
 
-Definition gtDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #29.
+#[global] Definition voidTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #85.
 
-Definition gtDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "GT")) gtDataConKey.
+#[global] Definition voidTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "Void")) voidTyConKey.
 
-Definition specTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #180.
+#[global] Definition v1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #135.
 
-Definition specTyConName : Name.Name :=
-  tcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "SPEC")) specTyConKey.
+#[global] Definition v1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "V1")) v1TyConKey.
 
-Definition eitherTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #84.
+#[global] Definition u1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #136.
 
-Definition eitherTyConName : Name.Name :=
-  tcQual dATA_EITHER (FastString.fsLit (GHC.Base.hs_string__ "Either"))
-  eitherTyConKey.
+#[global] Definition u1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "U1")) u1TyConKey.
 
-Definition v1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #135.
+#[global] Definition par1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #137.
 
-Definition v1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "V1")) v1TyConKey.
+#[global] Definition par1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "Par1")) par1TyConKey.
 
-Definition u1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #136.
+#[global] Definition rec1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #138.
 
-Definition u1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "U1")) u1TyConKey.
+#[global] Definition rec1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "Rec1")) rec1TyConKey.
 
-Definition par1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #137.
+#[global] Definition k1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #139.
 
-Definition par1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Par1"))
-  par1TyConKey.
+#[global] Definition k1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "K1")) k1TyConKey.
 
-Definition rec1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #138.
+#[global] Definition m1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #140.
 
-Definition rec1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Rec1"))
-  rec1TyConKey.
+#[global] Definition m1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "M1")) m1TyConKey.
 
-Definition k1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #139.
+#[global] Definition sumTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #141.
 
-Definition k1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "K1")) k1TyConKey.
+#[global] Definition sumTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           ":+:")) sumTyConKey.
 
-Definition m1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #140.
+#[global] Definition prodTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #142.
 
-Definition m1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "M1")) m1TyConKey.
+#[global] Definition prodTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           ":*:")) prodTyConKey.
 
-Definition sumTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #141.
+#[global] Definition compTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #143.
 
-Definition sumTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ ":+:")) sumTyConKey.
+#[global] Definition compTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           ":.:")) compTyConKey.
 
-Definition prodTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #142.
+#[global] Definition rTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #144.
 
-Definition prodTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ ":*:"))
-  prodTyConKey.
+#[global] Definition rTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "R")) rTyConKey.
 
-Definition compTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #143.
+#[global] Definition dTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #146.
 
-Definition compTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ ":.:"))
-  compTyConKey.
+#[global] Definition dTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "D")) dTyConKey.
 
-Definition rTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #144.
+#[global] Definition cTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #147.
 
-Definition rTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "R")) rTyConKey.
+#[global] Definition cTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "C")) cTyConKey.
 
-Definition dTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #146.
+#[global] Definition sTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #148.
 
-Definition dTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "D")) dTyConKey.
+#[global] Definition sTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "S")) sTyConKey.
 
-Definition cTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #147.
+#[global] Definition rec0TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #149.
 
-Definition cTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "C")) cTyConKey.
+#[global] Definition rec0TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "Rec0")) rec0TyConKey.
 
-Definition sTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #148.
+#[global] Definition d1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #151.
 
-Definition sTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "S")) sTyConKey.
+#[global] Definition d1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "D1")) d1TyConKey.
 
-Definition rec0TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #149.
+#[global] Definition c1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #152.
 
-Definition rec0TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Rec0"))
-  rec0TyConKey.
+#[global] Definition c1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "C1")) c1TyConKey.
 
-Definition d1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #151.
+#[global] Definition s1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #153.
 
-Definition d1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "D1")) d1TyConKey.
+#[global] Definition s1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "S1")) s1TyConKey.
 
-Definition c1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #152.
+#[global] Definition repTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #155.
 
-Definition c1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "C1")) c1TyConKey.
+#[global] Definition repTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "Rep")) repTyConKey.
 
-Definition s1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #153.
+#[global] Definition rep1TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #156.
 
-Definition s1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "S1")) s1TyConKey.
+#[global] Definition rep1TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "Rep1")) rep1TyConKey.
 
-Definition noSelTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #154.
+#[global] Definition uRecTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #157.
 
-Definition noSelTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "NoSelector"))
-  noSelTyConKey.
+#[global] Definition uRecTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "URec")) uRecTyConKey.
 
-Definition repTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #155.
+#[global] Definition uAddrTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #158.
 
-Definition repTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Rep")) repTyConKey.
+#[global] Definition uAddrTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "UAddr")) uAddrTyConKey.
 
-Definition rep1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #156.
+#[global] Definition uCharTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #159.
 
-Definition rep1TyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Rep1"))
-  rep1TyConKey.
+#[global] Definition uCharTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "UChar")) uCharTyConKey.
 
-Definition uRecTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #157.
+#[global] Definition uDoubleTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #160.
 
-Definition uRecTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "URec"))
-  uRecTyConKey.
+#[global] Definition uDoubleTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "UDouble")) uDoubleTyConKey.
 
-Definition uAddrTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #158.
+#[global] Definition uFloatTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #161.
 
-Definition uAddrTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UAddr"))
-  uAddrTyConKey.
+#[global] Definition uFloatTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "UFloat")) uFloatTyConKey.
 
-Definition uCharTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #159.
+#[global] Definition uIntTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #162.
 
-Definition uCharTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UChar"))
-  uCharTyConKey.
+#[global] Definition uIntTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "UInt")) uIntTyConKey.
 
-Definition uDoubleTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #160.
+#[global] Definition uWordTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #163.
 
-Definition uDoubleTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UDouble"))
-  uDoubleTyConKey.
+#[global] Definition uWordTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "UWord")) uWordTyConKey.
 
-Definition uFloatTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #161.
+#[global] Definition prefixIDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #54.
 
-Definition uFloatTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UFloat"))
-  uFloatTyConKey.
+#[global] Definition prefixIDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "PrefixI")) prefixIDataConKey.
 
-Definition uIntTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #162.
+#[global] Definition infixIDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #55.
 
-Definition uIntTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UInt"))
-  uIntTyConKey.
+#[global] Definition infixIDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "InfixI")) infixIDataConKey.
 
-Definition uWordTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #163.
+#[global] Definition sourceUnpackDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #59.
 
-Definition uWordTyConName : Name.Name :=
-  tcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "UWord"))
-  uWordTyConKey.
+#[global] Definition sourceUnpackDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "SourceUnpack")) sourceUnpackDataConKey.
 
-Definition prefixIDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #54.
+#[global] Definition sourceNoUnpackDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #60.
 
-Definition prefixIDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "PrefixI"))
-  prefixIDataConKey.
+#[global] Definition sourceNoUnpackDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "SourceNoUnpack")) sourceNoUnpackDataConKey.
 
-Definition infixIDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #55.
+#[global] Definition noSourceUnpackednessDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #61.
 
-Definition infixIDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "InfixI"))
-  infixIDataConKey.
+#[global] Definition noSourceUnpackednessDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "NoSourceUnpackedness")) noSourceUnpackednessDataConKey.
 
-Definition leftAssociativeDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #56.
+#[global] Definition sourceLazyDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #62.
 
-Definition leftAssociativeDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "LeftAssociative"))
-  leftAssociativeDataConKey.
+#[global] Definition sourceLazyDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "SourceLazy")) sourceLazyDataConKey.
 
-Definition rightAssociativeDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #57.
+#[global] Definition sourceStrictDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #63.
 
-Definition rightAssociativeDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "RightAssociative"))
-  rightAssociativeDataConKey.
+#[global] Definition sourceStrictDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "SourceStrict")) sourceStrictDataConKey.
 
-Definition notAssociativeDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #58.
+#[global] Definition noSourceStrictnessDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #64.
 
-Definition notAssociativeDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "NotAssociative"))
-  notAssociativeDataConKey.
+#[global] Definition noSourceStrictnessDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "NoSourceStrictness")) noSourceStrictnessDataConKey.
 
-Definition sourceUnpackDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #59.
+#[global] Definition decidedLazyDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #65.
 
-Definition sourceUnpackDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "SourceUnpack"))
-  sourceUnpackDataConKey.
+#[global] Definition decidedLazyDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "DecidedLazy")) decidedLazyDataConKey.
 
-Definition sourceNoUnpackDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #60.
+#[global] Definition decidedStrictDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #66.
 
-Definition sourceNoUnpackDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "SourceNoUnpack"))
-  sourceNoUnpackDataConKey.
+#[global] Definition decidedStrictDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "DecidedStrict")) decidedStrictDataConKey.
 
-Definition noSourceUnpackednessDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #61.
+#[global] Definition decidedUnpackDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #67.
 
-Definition noSourceUnpackednessDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__
-                                         "NoSourceUnpackedness")) noSourceUnpackednessDataConKey.
+#[global] Definition decidedUnpackDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "DecidedUnpack")) decidedUnpackDataConKey.
 
-Definition sourceLazyDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #62.
+#[global] Definition metaDataDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #68.
 
-Definition sourceLazyDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "SourceLazy"))
-  sourceLazyDataConKey.
+#[global] Definition metaDataDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "MetaData")) metaDataDataConKey.
 
-Definition sourceStrictDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #63.
+#[global] Definition metaConsDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #69.
 
-Definition sourceStrictDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "SourceStrict"))
-  sourceStrictDataConKey.
+#[global] Definition metaConsDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "MetaCons")) metaConsDataConKey.
 
-Definition noSourceStrictnessDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #64.
+#[global] Definition metaSelDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #70.
 
-Definition noSourceStrictnessDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__
-                                         "NoSourceStrictness")) noSourceStrictnessDataConKey.
+#[global] Definition metaSelDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "MetaSel")) metaSelDataConKey.
 
-Definition decidedLazyDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #65.
+#[global] Definition divIntIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #26.
 
-Definition decidedLazyDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "DecidedLazy"))
-  decidedLazyDataConKey.
-
-Definition decidedStrictDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #66.
-
-Definition decidedStrictDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "DecidedStrict"))
-  decidedStrictDataConKey.
-
-Definition decidedUnpackDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #67.
-
-Definition decidedUnpackDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "DecidedUnpack"))
-  decidedUnpackDataConKey.
-
-Definition metaDataDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #68.
-
-Definition metaDataDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "MetaData"))
-  metaDataDataConKey.
-
-Definition metaConsDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #69.
-
-Definition metaConsDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "MetaCons"))
-  metaConsDataConKey.
-
-Definition metaSelDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #70.
-
-Definition metaSelDataConName : Name.Name :=
-  dcQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "MetaSel"))
-  metaSelDataConKey.
-
-Definition divIntIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #23.
-
-Definition divIntName : Name.Name :=
-  varQual gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "divInt#"))
+#[global] Definition divIntName : Name.Name :=
+  varQual gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "divInt#"))
   divIntIdKey.
 
-Definition modIntIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #24.
+#[global] Definition modIntIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #27.
 
-Definition modIntName : Name.Name :=
-  varQual gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "modInt#"))
+#[global] Definition modIntName : Name.Name :=
+  varQual gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "modInt#"))
   modIntIdKey.
 
-Definition inlineIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #120.
+#[global] Definition cstringLengthIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #28.
 
-Definition inlineIdName : Name.Name :=
-  varQual gHC_MAGIC (FastString.fsLit (GHC.Base.hs_string__ "inline"))
+#[global] Definition cstringLengthName : Name.Name :=
+  varQual gHC_CSTRING (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "cstringLength#")) cstringLengthIdKey.
+
+#[global] Definition eqStringIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #10.
+
+#[global] Definition eqStringName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "eqString")) eqStringIdKey.
+
+#[global] Definition unpackCStringIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #21.
+
+#[global] Definition unpackCStringName : Name.Name :=
+  varQual gHC_CSTRING (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "unpackCString#")) unpackCStringIdKey.
+
+#[global] Definition unpackCStringAppendIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #22.
+
+#[global] Definition unpackCStringAppendName : Name.Name :=
+  varQual gHC_CSTRING (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "unpackAppendCString#")) unpackCStringAppendIdKey.
+
+#[global] Definition unpackCStringFoldrIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #23.
+
+#[global] Definition unpackCStringFoldrName : Name.Name :=
+  varQual gHC_CSTRING (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "unpackFoldrCString#")) unpackCStringFoldrIdKey.
+
+#[global] Definition unpackCStringUtf8IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #18.
+
+#[global] Definition unpackCStringUtf8Name : Name.Name :=
+  varQual gHC_CSTRING (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "unpackCStringUtf8#")) unpackCStringUtf8IdKey.
+
+#[global] Definition unpackCStringAppendUtf8IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #19.
+
+#[global] Definition unpackCStringAppendUtf8Name : Name.Name :=
+  varQual gHC_CSTRING (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "unpackAppendCStringUtf8#")) unpackCStringAppendUtf8IdKey.
+
+#[global] Definition unpackCStringFoldrUtf8IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #20.
+
+#[global] Definition unpackCStringFoldrUtf8Name : Name.Name :=
+  varQual gHC_CSTRING (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                  "unpackFoldrCStringUtf8#")) unpackCStringFoldrUtf8IdKey.
+
+#[global] Definition inlineIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #120.
+
+#[global] Definition inlineIdName : Name.Name :=
+  varQual gHC_MAGIC (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "inline"))
   inlineIdKey.
 
-Definition functorClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #10.
+#[global] Definition clsQual
+   : GHC.Unit.Types.Module ->
+     GHC.Data.FastString.FastString -> Unique.Unique -> Name.Name :=
+  fun modu str unique => mk_known_key_name OccName.clsName modu str unique.
 
-Definition functorClassName : Name.Name :=
-  clsQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "Functor"))
-  functorClassKey.
+#[global] Definition eqClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #3.
 
-Definition fmapClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #173.
+#[global] Definition eqClassName : Name.Name :=
+  clsQual gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Eq"))
+  eqClassKey.
 
-Definition fmapName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "fmap"))
-  fmapClassOpKey.
+#[global] Definition ordClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #12.
 
-Definition thenMClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #172.
+#[global] Definition ordClassName : Name.Name :=
+  clsQual gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Ord"))
+  ordClassKey.
 
-Definition thenMName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ ">>")) thenMClassOpKey.
+#[global] Definition functorClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #10.
 
-Definition monadFailClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #29.
+#[global] Definition functorClassName : Name.Name :=
+  clsQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Functor")) functorClassKey.
 
-Definition monadFailClassName : Name.Name :=
-  clsQual mONAD_FAIL (FastString.fsLit (GHC.Base.hs_string__ "MonadFail"))
-  monadFailClassKey.
+#[global] Definition monadClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #8.
 
-Definition applicativeClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #34.
+#[global] Definition monadClassName : Name.Name :=
+  clsQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Monad")) monadClassKey.
 
-Definition applicativeClassName : Name.Name :=
-  clsQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "Applicative"))
-  applicativeClassKey.
+#[global] Definition thenMClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #172.
 
-Definition thenAClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #753.
+#[global] Definition thenMName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        ">>")) thenMClassOpKey.
 
-Definition thenAName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "*>")) thenAClassOpKey.
+#[global] Definition monadFailClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #29.
 
-Definition foldableClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #35.
+#[global] Definition monadFailClassName : Name.Name :=
+  clsQual gHC_INTERNAL_MONAD_FAIL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                              "MonadFail")) monadFailClassKey.
 
-Definition foldableClassName : Name.Name :=
-  clsQual dATA_FOLDABLE (FastString.fsLit (GHC.Base.hs_string__ "Foldable"))
-  foldableClassKey.
+#[global] Definition applicativeClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #34.
 
-Definition traversableClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #36.
+#[global] Definition applicativeClassName : Name.Name :=
+  clsQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Applicative")) applicativeClassKey.
 
-Definition traversableClassName : Name.Name :=
-  clsQual dATA_TRAVERSABLE (FastString.fsLit (GHC.Base.hs_string__ "Traversable"))
-  traversableClassKey.
+#[global] Definition thenAClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #753.
 
-Definition semigroupClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #46.
+#[global] Definition thenAName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "*>")) thenAClassOpKey.
 
-Definition semigroupClassName : Name.Name :=
-  clsQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "Semigroup"))
-  semigroupClassKey.
+#[global] Definition foldableClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #35.
 
-Definition sappendClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #554.
+#[global] Definition foldableClassName : Name.Name :=
+  clsQual gHC_INTERNAL_DATA_FOLDABLE (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "Foldable")) foldableClassKey.
 
-Definition sappendName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "<>"))
-  sappendClassOpKey.
+#[global] Definition traversableClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #36.
 
-Definition monoidClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #47.
+#[global] Definition traversableClassName : Name.Name :=
+  clsQual gHC_INTERNAL_DATA_TRAVERSABLE (GHC.Data.FastString.fsLit
+                                         (GHC.Base.hs_string__ "Traversable")) traversableClassKey.
 
-Definition monoidClassName : Name.Name :=
-  clsQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "Monoid"))
-  monoidClassKey.
+#[global] Definition semigroupClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #47.
 
-Definition memptyClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #555.
+#[global] Definition semigroupClassName : Name.Name :=
+  clsQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Semigroup")) semigroupClassKey.
 
-Definition memptyName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "mempty"))
-  memptyClassOpKey.
+#[global] Definition sappendClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #554.
 
-Definition mappendClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #556.
+#[global] Definition sappendName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "<>")) sappendClassOpKey.
 
-Definition mappendName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "mappend"))
-  mappendClassOpKey.
+#[global] Definition monoidClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #48.
 
-Definition mconcatClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #557.
+#[global] Definition monoidClassName : Name.Name :=
+  clsQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Monoid")) monoidClassKey.
 
-Definition mconcatName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "mconcat"))
-  mconcatClassOpKey.
+#[global] Definition mconcatClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #557.
 
-Definition joinMIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #750.
+#[global] Definition mconcatName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "mconcat")) mconcatClassOpKey.
 
-Definition joinMName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "join")) joinMIdKey.
+#[global] Definition joinMIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #750.
 
-Definition alternativeClassKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #754.
+#[global] Definition joinMName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "join")) joinMIdKey.
 
-Definition alternativeClassName : Name.Name :=
-  clsQual mONAD (FastString.fsLit (GHC.Base.hs_string__ "Alternative"))
-  alternativeClassKey.
+#[global] Definition alternativeClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #754.
 
-Definition groupWithIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #122.
+#[global] Definition alternativeClassName : Name.Name :=
+  clsQual gHC_INTERNAL_MONAD (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "Alternative")) alternativeClassKey.
 
-Definition groupWithName : Name.Name :=
-  varQual gHC_EXTS (FastString.fsLit (GHC.Base.hs_string__ "groupWith"))
-  groupWithIdKey.
+#[global] Definition considerAccessibleIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #125.
 
-Definition otherwiseIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #43.
+#[global] Definition considerAccessibleName : Name.Name :=
+  varQual gHC_INTERNAL_EXTS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "considerAccessible")) considerAccessibleIdKey.
 
-Definition otherwiseIdName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "otherwise"))
-  otherwiseIdKey.
+#[global] Definition dollarIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #123.
 
-Definition augmentIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #2.
+#[global] Definition dollarName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "$"))
+  dollarIdKey.
 
-Definition augmentName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "augment"))
-  augmentIdKey.
+#[global] Definition otherwiseIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #43.
 
-Definition mapIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #121.
+#[global] Definition otherwiseIdName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "otherwise")) otherwiseIdKey.
 
-Definition mapName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "map")) mapIdKey.
+#[global] Definition augmentIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #3.
 
-Definition appendIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #3.
+#[global] Definition augmentName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "augment")) augmentIdKey.
 
-Definition appendName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "++")) appendIdKey.
+#[global] Definition assertIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #44.
 
-Definition assertIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #44.
+#[global] Definition assertName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "assert")) assertIdKey.
 
-Definition assertName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "assert")) assertIdKey.
+#[global] Definition fromStringClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #186.
 
-Definition breakpointIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #110.
+#[global] Definition fromStringName : Name.Name :=
+  varQual gHC_INTERNAL_DATA_STRING (GHC.Data.FastString.fsLit
+                                    (GHC.Base.hs_string__ "fromString")) fromStringClassOpKey.
 
-Definition breakpointName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "breakpoint"))
-  breakpointIdKey.
+#[global] Definition numClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #11.
 
-Definition breakpointCondIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #111.
+#[global] Definition numClassName : Name.Name :=
+  clsQual gHC_INTERNAL_NUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "Num")) numClassKey.
 
-Definition breakpointCondName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "breakpointCond"))
-  breakpointCondIdKey.
+#[global] Definition fromIntegerClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #160.
 
-Definition breakpointAutoIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #112.
+#[global] Definition fromIntegerName : Name.Name :=
+  varQual gHC_INTERNAL_NUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "fromInteger")) fromIntegerClassOpKey.
 
-Definition breakpointAutoName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "breakpointAuto"))
-  breakpointAutoIdKey.
+#[global] Definition minusClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #161.
 
-Definition opaqueTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #133.
+#[global] Definition minusName : Name.Name :=
+  varQual gHC_INTERNAL_NUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "-"))
+  minusClassOpKey.
 
-Definition opaqueTyConName : Name.Name :=
-  tcQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "Opaque"))
-  opaqueTyConKey.
+#[global] Definition negateClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #169.
 
-Definition breakpointJumpIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #113.
+#[global] Definition negateName : Name.Name :=
+  varQual gHC_INTERNAL_NUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "negate")) negateClassOpKey.
 
-Definition breakpointJumpName : Name.Name :=
-  Name.mkInternalName breakpointJumpIdKey (OccName.mkOccNameFS OccName.varName
-                                           (FastString.fsLit (GHC.Base.hs_string__ "breakpointJump"))) SrcLoc.noSrcSpan.
+#[global] Definition bnbVarQual
+   : GHC.Base.String -> Unique.Unique -> Name.Name :=
+  fun str key =>
+    varQual gHC_INTERNAL_NUM_BIGNAT (GHC.Data.FastString.fsLit str) key.
 
-Definition breakpointCondJumpIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #114.
+#[global] Definition bnnVarQual
+   : GHC.Base.String -> Unique.Unique -> Name.Name :=
+  fun str key =>
+    varQual gHC_INTERNAL_NUM_NATURAL (GHC.Data.FastString.fsLit str) key.
 
-Definition breakpointCondJumpName : Name.Name :=
-  Name.mkInternalName breakpointCondJumpIdKey (OccName.mkOccNameFS OccName.varName
-                                               (FastString.fsLit (GHC.Base.hs_string__ "breakpointCondJump")))
-  SrcLoc.noSrcSpan.
+#[global] Definition bniVarQual
+   : GHC.Base.String -> Unique.Unique -> Name.Name :=
+  fun str key =>
+    varQual gHC_INTERNAL_NUM_INTEGER (GHC.Data.FastString.fsLit str) key.
 
-Definition breakpointAutoJumpIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #115.
+#[global] Definition bignatEqIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #691.
 
-Definition breakpointAutoJumpName : Name.Name :=
-  Name.mkInternalName breakpointAutoJumpIdKey (OccName.mkOccNameFS OccName.varName
-                                               (FastString.fsLit (GHC.Base.hs_string__ "breakpointAutoJump")))
-  SrcLoc.noSrcSpan.
+#[global] Definition bignatEqName : Name.Name :=
+  bnbVarQual (GHC.Base.hs_string__ "bigNatEq#") bignatEqIdKey.
 
-Definition fstIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #41.
+#[global] Definition bignatCompareIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #692.
 
-Definition fstName : Name.Name :=
-  varQual dATA_TUPLE (FastString.fsLit (GHC.Base.hs_string__ "fst")) fstIdKey.
+#[global] Definition bignatCompareName : Name.Name :=
+  bnbVarQual (GHC.Base.hs_string__ "bigNatCompare") bignatCompareIdKey.
 
-Definition sndIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #42.
+#[global] Definition bignatCompareWordIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #693.
 
-Definition sndName : Name.Name :=
-  varQual dATA_TUPLE (FastString.fsLit (GHC.Base.hs_string__ "snd")) sndIdKey.
+#[global] Definition bignatCompareWordName : Name.Name :=
+  bnbVarQual (GHC.Base.hs_string__ "bigNatCompareWord#") bignatCompareWordIdKey.
 
-Definition negateClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #169.
+#[global] Definition naturalToWordIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #650.
 
-Definition negateName : Name.Name :=
-  varQual gHC_NUM (FastString.fsLit (GHC.Base.hs_string__ "negate"))
-  negateClassOpKey.
+#[global] Definition naturalToWordName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalToWord#") naturalToWordIdKey.
 
-Definition integerTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #22.
+#[global] Definition naturalPopCountIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #659.
 
-Definition integerTyConName : Name.Name :=
-  tcQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "Integer"))
-  integerTyConKey.
+#[global] Definition naturalPopCountName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalPopCount#") naturalPopCountIdKey.
 
-Axiom integerSDataConName : Name.Name.
+#[global] Definition naturalShiftRIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #660.
 
-Definition mkIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #60.
+#[global] Definition naturalShiftRName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalShiftR#") naturalShiftRIdKey.
 
-Definition mkIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "mkInteger"))
-  mkIntegerIdKey.
+#[global] Definition naturalShiftLIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #661.
 
-Definition integerToWord64IdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #64.
+#[global] Definition naturalShiftLName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalShiftL#") naturalShiftLIdKey.
 
-Definition integerToWord64Name : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "integerToWord64")) integerToWord64IdKey.
+#[global] Definition naturalAddIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #662.
 
-Definition integerToInt64IdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #65.
+#[global] Definition naturalAddName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalAdd") naturalAddIdKey.
 
-Definition integerToInt64Name : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "integerToInt64")) integerToInt64IdKey.
+#[global] Definition naturalSubIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #663.
 
-Definition word64ToIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #98.
+#[global] Definition naturalSubName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalSub") naturalSubIdKey.
 
-Definition word64ToIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "word64ToInteger")) word64ToIntegerIdKey.
+#[global] Definition naturalSubThrowIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #664.
 
-Definition int64ToIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #99.
+#[global] Definition naturalSubThrowName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalSubThrow") naturalSubThrowIdKey.
 
-Definition int64ToIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "int64ToInteger")) int64ToIntegerIdKey.
+#[global] Definition naturalSubUnsafeIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #665.
 
-Definition smallIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #61.
+#[global] Definition naturalSubUnsafeName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalSubUnsafe") naturalSubUnsafeIdKey.
 
-Definition smallIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "smallInteger")) smallIntegerIdKey.
+#[global] Definition naturalMulIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #666.
 
-Definition wordToIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #97.
+#[global] Definition naturalMulName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalMul") naturalMulIdKey.
 
-Definition wordToIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "wordToInteger")) wordToIntegerIdKey.
+#[global] Definition naturalQuotRemIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #669.
 
-Definition integerToWordIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #62.
+#[global] Definition naturalQuotRemName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalQuotRem#") naturalQuotRemIdKey.
 
-Definition integerToWordName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "integerToWord")) integerToWordIdKey.
+#[global] Definition naturalQuotIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #670.
 
-Definition integerToIntIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #63.
+#[global] Definition naturalQuotName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalQuot") naturalQuotIdKey.
 
-Definition integerToIntName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "integerToInt")) integerToIntIdKey.
+#[global] Definition naturalRemIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #671.
 
-Definition minusIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #68.
+#[global] Definition naturalRemName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalRem") naturalRemIdKey.
 
-Definition minusIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "minusInteger")) minusIntegerIdKey.
+#[global] Definition naturalAndIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #672.
 
-Definition negateIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #69.
+#[global] Definition naturalAndName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalAnd") naturalAndIdKey.
 
-Definition negateIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "negateInteger")) negateIntegerIdKey.
+#[global] Definition naturalAndNotIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #673.
 
-Definition eqIntegerPrimIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #70.
+#[global] Definition naturalAndNotName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalAndNot") naturalAndNotIdKey.
 
-Definition eqIntegerPrimName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "eqInteger#"))
-  eqIntegerPrimIdKey.
+#[global] Definition naturalOrIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #674.
 
-Definition neqIntegerPrimIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #71.
+#[global] Definition naturalOrName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalOr") naturalOrIdKey.
 
-Definition neqIntegerPrimName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "neqInteger#"))
-  neqIntegerPrimIdKey.
+#[global] Definition naturalXorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #675.
 
-Definition absIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #72.
+#[global] Definition naturalXorName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalXor") naturalXorIdKey.
 
-Definition absIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "absInteger"))
-  absIntegerIdKey.
+#[global] Definition naturalTestBitIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #676.
 
-Definition signumIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #73.
+#[global] Definition naturalTestBitName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalTestBit#") naturalTestBitIdKey.
 
-Definition signumIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "signumInteger")) signumIntegerIdKey.
+#[global] Definition naturalBitIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #677.
 
-Definition leIntegerPrimIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #74.
+#[global] Definition naturalBitName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalBit#") naturalBitIdKey.
 
-Definition leIntegerPrimName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "leInteger#"))
-  leIntegerPrimIdKey.
+#[global] Definition naturalGcdIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #678.
 
-Definition gtIntegerPrimIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #75.
+#[global] Definition naturalGcdName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalGcd") naturalGcdIdKey.
 
-Definition gtIntegerPrimName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "gtInteger#"))
-  gtIntegerPrimIdKey.
+#[global] Definition naturalLcmIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #679.
 
-Definition ltIntegerPrimIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #76.
+#[global] Definition naturalLcmName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalLcm") naturalLcmIdKey.
 
-Definition ltIntegerPrimName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "ltInteger#"))
-  ltIntegerPrimIdKey.
+#[global] Definition naturalLog2IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #680.
 
-Definition geIntegerPrimIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #77.
+#[global] Definition naturalLog2Name : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalLog2#") naturalLog2IdKey.
 
-Definition geIntegerPrimName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "geInteger#"))
-  geIntegerPrimIdKey.
+#[global] Definition naturalLogBaseWordIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #681.
 
-Definition compareIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #78.
+#[global] Definition naturalLogBaseWordName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalLogBaseWord#") naturalLogBaseWordIdKey.
 
-Definition compareIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "compareInteger")) compareIntegerIdKey.
+#[global] Definition naturalLogBaseIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #682.
 
-Definition quotRemIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #84.
+#[global] Definition naturalLogBaseName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalLogBase#") naturalLogBaseIdKey.
 
-Definition quotRemIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "quotRemInteger")) quotRemIntegerIdKey.
+#[global] Definition naturalPowModIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #683.
 
-Definition divModIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #83.
+#[global] Definition naturalPowModName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalPowMod") naturalPowModIdKey.
 
-Definition divModIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "divModInteger")) divModIntegerIdKey.
+#[global] Definition naturalSizeInBaseIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #684.
 
-Definition quotIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #79.
+#[global] Definition naturalSizeInBaseName : Name.Name :=
+  bnnVarQual (GHC.Base.hs_string__ "naturalSizeInBase#") naturalSizeInBaseIdKey.
 
-Definition quotIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "quotInteger"))
-  quotIntegerIdKey.
+#[global] Definition integerFromNaturalIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #600.
 
-Definition remIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #80.
+#[global] Definition integerFromNaturalName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerFromNatural") integerFromNaturalIdKey.
 
-Definition remIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "remInteger"))
-  remIntegerIdKey.
+#[global] Definition integerToNaturalClampIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #601.
 
-Definition divIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #81.
+#[global] Definition integerToNaturalClampName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerToNaturalClamp")
+  integerToNaturalClampIdKey.
 
-Definition divIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "divInteger"))
-  divIntegerIdKey.
+#[global] Definition integerToNaturalThrowIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #602.
 
-Definition modIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #82.
+#[global] Definition integerToNaturalThrowName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerToNaturalThrow")
+  integerToNaturalThrowIdKey.
 
-Definition modIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "modInteger"))
-  modIntegerIdKey.
+#[global] Definition integerToNaturalIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #603.
 
-Definition floatFromIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #85.
+#[global] Definition integerToNaturalName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerToNatural") integerToNaturalIdKey.
 
-Definition floatFromIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "floatFromInteger")) floatFromIntegerIdKey.
+#[global] Definition integerToWordIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #604.
 
-Definition doubleFromIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #86.
+#[global] Definition integerToWordName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerToWord#") integerToWordIdKey.
 
-Definition doubleFromIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "doubleFromInteger")) doubleFromIntegerIdKey.
+#[global] Definition integerToIntIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #605.
 
-Definition encodeFloatIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #87.
+#[global] Definition integerToIntName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerToInt#") integerToIntIdKey.
 
-Definition encodeFloatIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "encodeFloatInteger")) encodeFloatIntegerIdKey.
+#[global] Definition integerToWord64IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #606.
 
-Definition encodeDoubleIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #88.
+#[global] Definition integerToWord64Name : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerToWord64#") integerToWord64IdKey.
 
-Definition encodeDoubleIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "encodeDoubleInteger")) encodeDoubleIntegerIdKey.
+#[global] Definition integerToInt64IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #607.
 
-Definition decodeDoubleIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #100.
+#[global] Definition integerToInt64Name : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerToInt64#") integerToInt64IdKey.
 
-Definition decodeDoubleIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "decodeDoubleInteger")) decodeDoubleIntegerIdKey.
+#[global] Definition integerFromWordIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #642.
 
-Definition gcdIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #89.
+#[global] Definition integerFromWordName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerFromWord#") integerFromWordIdKey.
 
-Definition gcdIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "gcdInteger"))
-  gcdIntegerIdKey.
+#[global] Definition integerFromWord64IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #643.
 
-Definition lcmIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #90.
+#[global] Definition integerFromWord64Name : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerFromWord64#") integerFromWord64IdKey.
 
-Definition lcmIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "lcmInteger"))
-  lcmIntegerIdKey.
+#[global] Definition integerFromInt64IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #644.
 
-Definition andIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #91.
+#[global] Definition integerFromInt64Name : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerFromInt64#") integerFromInt64IdKey.
 
-Definition andIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "andInteger"))
-  andIntegerIdKey.
+#[global] Definition integerAddIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #608.
 
-Definition orIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #92.
+#[global] Definition integerAddName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerAdd") integerAddIdKey.
 
-Definition orIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "orInteger"))
-  orIntegerIdKey.
+#[global] Definition integerMulIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #609.
 
-Definition xorIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #93.
+#[global] Definition integerMulName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerMul") integerMulIdKey.
 
-Definition xorIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "xorInteger"))
-  xorIntegerIdKey.
+#[global] Definition integerSubIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #610.
 
-Definition complementIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #94.
+#[global] Definition integerSubName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerSub") integerSubIdKey.
 
-Definition complementIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "complementInteger")) complementIntegerIdKey.
+#[global] Definition integerNegateIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #611.
 
-Definition shiftLIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #95.
+#[global] Definition integerNegateName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerNegate") integerNegateIdKey.
 
-Definition shiftLIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "shiftLInteger")) shiftLIntegerIdKey.
+#[global] Definition integerAbsIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #618.
 
-Definition shiftRIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #96.
+#[global] Definition integerAbsName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerAbs") integerAbsIdKey.
 
-Definition shiftRIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                              "shiftRInteger")) shiftRIntegerIdKey.
+#[global] Definition integerPopCountIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #621.
 
-Definition bitIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #551.
+#[global] Definition integerPopCountName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerPopCount#") integerPopCountIdKey.
 
-Definition bitIntegerName : Name.Name :=
-  varQual gHC_INTEGER_TYPE (FastString.fsLit (GHC.Base.hs_string__ "bitInteger"))
-  bitIntegerIdKey.
+#[global] Definition integerQuotIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #622.
 
-Definition naturalTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #23.
+#[global] Definition integerQuotName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerQuot") integerQuotIdKey.
 
-Definition naturalTyConName : Name.Name :=
-  tcQual gHC_NATURAL (FastString.fsLit (GHC.Base.hs_string__ "Natural"))
-  naturalTyConKey.
+#[global] Definition integerRemIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #623.
 
-Definition naturalFromIntegerIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #562.
+#[global] Definition integerRemName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerRem") integerRemIdKey.
 
-Definition naturalFromIntegerName : Name.Name :=
-  varQual gHC_NATURAL (FastString.fsLit (GHC.Base.hs_string__
-                                         "naturalFromInteger")) naturalFromIntegerIdKey.
+#[global] Definition integerDivIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #624.
 
-Definition rationalTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #33.
+#[global] Definition integerDivName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerDiv") integerDivIdKey.
 
-Definition rationalTyConName : Name.Name :=
-  tcQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "Rational"))
-  rationalTyConKey.
+#[global] Definition integerModIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #625.
 
-Definition ratioTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #32.
+#[global] Definition integerModName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerMod") integerModIdKey.
 
-Definition ratioTyConName : Name.Name :=
-  tcQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "Ratio")) ratioTyConKey.
+#[global] Definition integerDivModIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #626.
 
-Definition realClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #14.
+#[global] Definition integerDivModName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerDivMod#") integerDivModIdKey.
 
-Definition realClassName : Name.Name :=
-  clsQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "Real")) realClassKey.
+#[global] Definition integerQuotRemIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #627.
 
-Definition integralClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #7.
+#[global] Definition integerQuotRemName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerQuotRem#") integerQuotRemIdKey.
 
-Definition integralClassName : Name.Name :=
-  clsQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "Integral"))
-  integralClassKey.
+#[global] Definition integerEncodeFloatIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #630.
 
-Definition realFracClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #16.
+#[global] Definition integerEncodeFloatName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerEncodeFloat#") integerEncodeFloatIdKey.
 
-Definition realFracClassName : Name.Name :=
-  clsQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "RealFrac"))
-  realFracClassKey.
+#[global] Definition integerEncodeDoubleIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #631.
 
-Definition fractionalClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #6.
+#[global] Definition integerEncodeDoubleName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerEncodeDouble#")
+  integerEncodeDoubleIdKey.
 
-Definition fractionalClassName : Name.Name :=
-  clsQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "Fractional"))
-  fractionalClassKey.
+#[global] Definition integerGcdIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #632.
 
-Definition realToFracIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #191.
+#[global] Definition integerGcdName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerGcd") integerGcdIdKey.
 
-Definition realToFracName : Name.Name :=
-  varQual gHC_REAL (FastString.fsLit (GHC.Base.hs_string__ "realToFrac"))
-  realToFracIdKey.
+#[global] Definition integerLcmIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #633.
 
-Definition floatingClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #5.
+#[global] Definition integerLcmName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerLcm") integerLcmIdKey.
 
-Definition floatingClassName : Name.Name :=
-  clsQual gHC_FLOAT (FastString.fsLit (GHC.Base.hs_string__ "Floating"))
-  floatingClassKey.
+#[global] Definition integerAndIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #634.
 
-Definition realFloatClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #15.
+#[global] Definition integerAndName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerAnd") integerAndIdKey.
 
-Definition realFloatClassName : Name.Name :=
-  clsQual gHC_FLOAT (FastString.fsLit (GHC.Base.hs_string__ "RealFloat"))
-  realFloatClassKey.
+#[global] Definition integerOrIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #635.
 
-Definition rationalToFloatIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #130.
+#[global] Definition integerOrName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerOr") integerOrIdKey.
 
-Definition rationalToFloatName : Name.Name :=
-  varQual gHC_FLOAT (FastString.fsLit (GHC.Base.hs_string__ "rationalToFloat"))
-  rationalToFloatIdKey.
+#[global] Definition integerXorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #636.
 
-Definition rationalToDoubleIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #131.
+#[global] Definition integerXorName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerXor") integerXorIdKey.
 
-Definition rationalToDoubleName : Name.Name :=
-  varQual gHC_FLOAT (FastString.fsLit (GHC.Base.hs_string__ "rationalToDouble"))
-  rationalToDoubleIdKey.
+#[global] Definition integerComplementIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #637.
 
-Definition ixClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #18.
+#[global] Definition integerComplementName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerComplement") integerComplementIdKey.
 
-Definition ixClassName : Name.Name :=
-  clsQual gHC_ARR (FastString.fsLit (GHC.Base.hs_string__ "Ix")) ixClassKey.
+#[global] Definition integerBitIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #638.
 
-Definition trModuleTyConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #42.
+#[global] Definition integerBitName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerBit#") integerBitIdKey.
 
-Definition trModuleTyConName : Name.Name :=
-  tcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "Module"))
+#[global] Definition integerTestBitIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #639.
+
+#[global] Definition integerTestBitName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerTestBit#") integerTestBitIdKey.
+
+#[global] Definition integerShiftLIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #640.
+
+#[global] Definition integerShiftLName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerShiftL#") integerShiftLIdKey.
+
+#[global] Definition integerShiftRIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #641.
+
+#[global] Definition integerShiftRName : Name.Name :=
+  bniVarQual (GHC.Base.hs_string__ "integerShiftR#") integerShiftRIdKey.
+
+#[global] Definition rationalTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #36.
+
+#[global] Definition rationalTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "Rational")) rationalTyConKey.
+
+#[global] Definition ratioTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #35.
+
+#[global] Definition ratioTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "Ratio")) ratioTyConKey.
+
+#[global] Definition ratioDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #11.
+
+#[global] Definition ratioDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ ":%"))
+  ratioDataConKey.
+
+#[global] Definition realClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #14.
+
+#[global] Definition realClassName : Name.Name :=
+  clsQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Real")) realClassKey.
+
+#[global] Definition integralClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #7.
+
+#[global] Definition integralClassName : Name.Name :=
+  clsQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Integral")) integralClassKey.
+
+#[global] Definition realFracClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #16.
+
+#[global] Definition realFracClassName : Name.Name :=
+  clsQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "RealFrac")) realFracClassKey.
+
+#[global] Definition fractionalClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #6.
+
+#[global] Definition fractionalClassName : Name.Name :=
+  clsQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Fractional")) fractionalClassKey.
+
+#[global] Definition fromRationalClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #162.
+
+#[global] Definition fromRationalName : Name.Name :=
+  varQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "fromRational")) fromRationalClassOpKey.
+
+#[global] Definition toIntegerClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #192.
+
+#[global] Definition toIntegerName : Name.Name :=
+  varQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "toInteger")) toIntegerClassOpKey.
+
+#[global] Definition toRationalClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #193.
+
+#[global] Definition toRationalName : Name.Name :=
+  varQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "toRational")) toRationalClassOpKey.
+
+#[global] Definition fromIntegralIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #190.
+
+#[global] Definition fromIntegralName : Name.Name :=
+  varQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "fromIntegral")) fromIntegralIdKey.
+
+#[global] Definition realToFracIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #191.
+
+#[global] Definition realToFracName : Name.Name :=
+  varQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "realToFrac")) realToFracIdKey.
+
+#[global] Definition mkRationalBase2IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #700.
+
+#[global] Definition mkRationalBase2Name : Name.Name :=
+  varQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "mkRationalBase2")) mkRationalBase2IdKey.
+
+#[global] Definition mkRationalBase10IdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #701 : Unique.Unique.
+
+#[global] Definition mkRationalBase10Name : Name.Name :=
+  varQual gHC_INTERNAL_REAL (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "mkRationalBase10")) mkRationalBase10IdKey.
+
+#[global] Definition floatingClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #5.
+
+#[global] Definition floatingClassName : Name.Name :=
+  clsQual gHC_INTERNAL_FLOAT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "Floating")) floatingClassKey.
+
+#[global] Definition realFloatClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #15.
+
+#[global] Definition realFloatClassName : Name.Name :=
+  clsQual gHC_INTERNAL_FLOAT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "RealFloat")) realFloatClassKey.
+
+#[global] Definition integerToFloatIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #128.
+
+#[global] Definition integerToFloatName : Name.Name :=
+  varQual gHC_INTERNAL_FLOAT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "integerToFloat#")) integerToFloatIdKey.
+
+#[global] Definition integerToDoubleIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #129.
+
+#[global] Definition integerToDoubleName : Name.Name :=
+  varQual gHC_INTERNAL_FLOAT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "integerToDouble#")) integerToDoubleIdKey.
+
+#[global] Definition naturalToFloatIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #130.
+
+#[global] Definition naturalToFloatName : Name.Name :=
+  varQual gHC_INTERNAL_FLOAT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "naturalToFloat#")) naturalToFloatIdKey.
+
+#[global] Definition naturalToDoubleIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #131.
+
+#[global] Definition naturalToDoubleName : Name.Name :=
+  varQual gHC_INTERNAL_FLOAT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "naturalToDouble#")) naturalToDoubleIdKey.
+
+#[global] Definition rationalToFloatIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #132.
+
+#[global] Definition rationalToFloatName : Name.Name :=
+  varQual gHC_INTERNAL_FLOAT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "rationalToFloat")) rationalToFloatIdKey.
+
+#[global] Definition rationalToDoubleIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #133.
+
+#[global] Definition rationalToDoubleName : Name.Name :=
+  varQual gHC_INTERNAL_FLOAT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "rationalToDouble")) rationalToDoubleIdKey.
+
+#[global] Definition ixClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #18.
+
+#[global] Definition ixClassName : Name.Name :=
+  clsQual gHC_INTERNAL_IX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Ix"))
+  ixClassKey.
+
+#[global] Definition trModuleTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #105.
+
+#[global] Definition trModuleTyConName : Name.Name :=
+  tcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Module"))
   trModuleTyConKey.
 
-Definition trModuleDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #43.
+#[global] Definition trModuleDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #43.
 
-Definition trModuleDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "Module"))
+#[global] Definition trModuleDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Module"))
   trModuleDataConKey.
 
-Definition trNameTyConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #44.
+#[global] Definition trNameTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #106.
 
-Definition trNameTyConName : Name.Name :=
-  tcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "TrName"))
+#[global] Definition trNameTyConName : Name.Name :=
+  tcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "TrName"))
   trNameTyConKey.
 
-Definition trNameSDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #45.
+#[global] Definition trNameSDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #45.
 
-Definition trNameSDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "TrNameS"))
+#[global] Definition trNameSDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "TrNameS"))
   trNameSDataConKey.
 
-Definition trNameDDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #46.
+#[global] Definition trNameDDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #46.
 
-Definition trNameDDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "TrNameD"))
+#[global] Definition trNameDDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "TrNameD"))
   trNameDDataConKey.
 
-Definition trTyConTyConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #40.
+#[global] Definition trTyConTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #104.
 
-Definition trTyConTyConName : Name.Name :=
-  tcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "TyCon"))
+#[global] Definition trTyConTyConName : Name.Name :=
+  tcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "TyCon"))
   trTyConTyConKey.
 
-Definition trTyConDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #41.
+#[global] Definition trTyConDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #41.
 
-Definition trTyConDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "TyCon"))
+#[global] Definition trTyConDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "TyCon"))
   trTyConDataConKey.
 
-Definition kindRepTyConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #48.
+#[global] Definition kindRepTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #107.
 
-Definition kindRepTyConName : Name.Name :=
-  tcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "KindRep"))
+#[global] Definition kindRepTyConName : Name.Name :=
+  tcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "KindRep"))
   kindRepTyConKey.
 
-Definition kindRepTyConAppDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #100.
+#[global] Definition kindRepTyConAppDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #106.
 
-Definition kindRepTyConAppDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "KindRepTyConApp"))
-  kindRepTyConAppDataConKey.
+#[global] Definition kindRepTyConAppDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                               "KindRepTyConApp")) kindRepTyConAppDataConKey.
 
-Definition kindRepVarDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #101.
+#[global] Definition kindRepVarDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #107.
 
-Definition kindRepVarDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "KindRepVar"))
+#[global] Definition kindRepVarDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "KindRepVar"))
   kindRepVarDataConKey.
 
-Definition kindRepAppDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #102.
+#[global] Definition kindRepAppDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #108.
 
-Definition kindRepAppDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "KindRepApp"))
+#[global] Definition kindRepAppDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "KindRepApp"))
   kindRepAppDataConKey.
 
-Definition kindRepFunDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #103.
+#[global] Definition kindRepFunDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #109.
 
-Definition kindRepFunDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "KindRepFun"))
+#[global] Definition kindRepFunDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "KindRepFun"))
   kindRepFunDataConKey.
 
-Definition kindRepTYPEDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #104.
+#[global] Definition kindRepTYPEDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #110.
 
-Definition kindRepTYPEDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "KindRepTYPE"))
-  kindRepTYPEDataConKey.
+#[global] Definition kindRepTYPEDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                               "KindRepTYPE")) kindRepTYPEDataConKey.
 
-Definition kindRepTypeLitSDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #105.
+#[global] Definition kindRepTypeLitSDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #111.
 
-Definition kindRepTypeLitSDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "KindRepTypeLitS"))
-  kindRepTypeLitSDataConKey.
+#[global] Definition kindRepTypeLitSDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                               "KindRepTypeLitS")) kindRepTypeLitSDataConKey.
 
-Definition kindRepTypeLitDDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #106.
+#[global] Definition kindRepTypeLitDDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #112.
 
-Definition kindRepTypeLitDDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "KindRepTypeLitD"))
-  kindRepTypeLitDDataConKey.
+#[global] Definition kindRepTypeLitDDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                               "KindRepTypeLitD")) kindRepTypeLitDDataConKey.
 
-Definition typeLitSortTyConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #49.
+#[global] Definition typeLitSortTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #108.
 
-Definition typeLitSortTyConName : Name.Name :=
-  tcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "TypeLitSort"))
-  typeLitSortTyConKey.
+#[global] Definition typeLitSortTyConName : Name.Name :=
+  tcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                               "TypeLitSort")) typeLitSortTyConKey.
 
-Definition typeLitSymbolDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #107.
+#[global] Definition typeLitSymbolDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #113.
 
-Definition typeLitSymbolDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "TypeLitSymbol"))
-  typeLitSymbolDataConKey.
+#[global] Definition typeLitSymbolDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                               "TypeLitSymbol")) typeLitSymbolDataConKey.
 
-Definition typeLitNatDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #108.
+#[global] Definition typeLitNatDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #114.
 
-Definition typeLitNatDataConName : Name.Name :=
-  dcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "TypeLitNat"))
+#[global] Definition typeLitNatDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "TypeLitNat"))
   typeLitNatDataConKey.
 
-Definition typeableClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #20.
+#[global] Definition typeLitCharDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #115.
 
-Definition typeableClassName : Name.Name :=
-  clsQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "Typeable"))
-  typeableClassKey.
+#[global] Definition typeLitCharDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                               "TypeLitChar")) typeLitCharDataConKey.
 
-Definition typeRepTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #187.
+#[global] Definition typeableClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #20.
 
-Definition typeRepTyConName : Name.Name :=
-  tcQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "TypeRep"))
-  typeRepTyConKey.
+#[global] Definition typeableClassName : Name.Name :=
+  clsQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "Typeable")) typeableClassKey.
 
-Definition someTypeRepTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #188.
+#[global] Definition typeRepTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #192.
 
-Definition someTypeRepTyConName : Name.Name :=
-  tcQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "SomeTypeRep"))
-  someTypeRepTyConKey.
+#[global] Definition typeRepTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                         (GHC.Base.hs_string__ "TypeRep")) typeRepTyConKey.
 
-Definition someTypeRepDataConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #189.
+#[global] Definition someTypeRepTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #193.
 
-Definition someTypeRepDataConName : Name.Name :=
-  dcQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "SomeTypeRep"))
-  someTypeRepDataConKey.
+#[global] Definition someTypeRepTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                         (GHC.Base.hs_string__ "SomeTypeRep")) someTypeRepTyConKey.
 
-Definition typeRepIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #509.
+#[global] Definition someTypeRepDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #194.
 
-Definition typeRepIdName : Name.Name :=
-  varQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "typeRep#"))
-  typeRepIdKey.
+#[global] Definition someTypeRepDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                         (GHC.Base.hs_string__ "SomeTypeRep")) someTypeRepDataConKey.
 
-Definition mkTrTypeKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #504.
+#[global] Definition typeRepIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #510.
 
-Definition mkTrTypeName : Name.Name :=
-  varQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "mkTrType"))
-  mkTrTypeKey.
+#[global] Definition typeRepIdName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "typeRep#")) typeRepIdKey.
 
-Definition mkTrConKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #505.
+#[global] Definition mkTrTypeKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #504.
 
-Definition mkTrConName : Name.Name :=
-  varQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "mkTrCon"))
-  mkTrConKey.
+#[global] Definition mkTrTypeName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "mkTrType")) mkTrTypeKey.
 
-Definition mkTrAppKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #506.
+#[global] Definition mkTrConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #505.
 
-Definition mkTrAppName : Name.Name :=
-  varQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "mkTrApp"))
-  mkTrAppKey.
+#[global] Definition mkTrConName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "mkTrCon")) mkTrConKey.
 
-Definition mkTrFunKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #510.
+#[global] Definition mkTrAppCheckedKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #506.
 
-Definition mkTrFunName : Name.Name :=
-  varQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__ "mkTrFun"))
-  mkTrFunKey.
+#[global] Definition mkTrAppCheckedName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "mkTrAppChecked")) mkTrAppCheckedKey.
 
-Definition typeNatTypeRepKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #507.
+#[global] Definition mkTrFunKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #511.
 
-Definition typeNatTypeRepName : Name.Name :=
-  varQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__
-                                               "typeNatTypeRep")) typeNatTypeRepKey.
+#[global] Definition mkTrFunName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "mkTrFun")) mkTrFunKey.
 
-Definition typeSymbolTypeRepKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #508.
+#[global] Definition typeNatTypeRepKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #507.
 
-Definition typeSymbolTypeRepName : Name.Name :=
-  varQual tYPEABLE_INTERNAL (FastString.fsLit (GHC.Base.hs_string__
-                                               "typeSymbolTypeRep")) typeSymbolTypeRepKey.
+#[global] Definition typeNatTypeRepName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "typeNatTypeRep")) typeNatTypeRepKey.
 
-Definition trGhcPrimModuleKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #47.
+#[global] Definition typeSymbolTypeRepKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #508.
 
-Definition trGhcPrimModuleName : Name.Name :=
-  varQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "tr$ModuleGHCPrim"))
-  trGhcPrimModuleKey.
+#[global] Definition typeSymbolTypeRepName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "typeSymbolTypeRep")) typeSymbolTypeRepKey.
 
-Definition starKindRepKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #520.
+#[global] Definition typeCharTypeRepKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #509.
 
-Definition starKindRepName : Name.Name :=
-  varQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "krep$*"))
+#[global] Definition typeCharTypeRepName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEABLE_INTERNAL (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "typeCharTypeRep")) typeCharTypeRepKey.
+
+#[global] Definition trGhcPrimModuleKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #47.
+
+#[global] Definition trGhcPrimModuleName : Name.Name :=
+  varQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                "tr$ModuleGHCPrim")) trGhcPrimModuleKey.
+
+#[global] Definition starKindRepKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #520.
+
+#[global] Definition starKindRepName : Name.Name :=
+  varQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "krep$*"))
   starKindRepKey.
 
-Definition starArrStarKindRepKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #521.
+#[global] Definition starArrStarKindRepKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #521.
 
-Definition starArrStarKindRepName : Name.Name :=
-  varQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "krep$*Arr*"))
-  starArrStarKindRepKey.
+#[global] Definition starArrStarKindRepName : Name.Name :=
+  varQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                "krep$*Arr*")) starArrStarKindRepKey.
 
-Definition starArrStarArrStarKindRepKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #522.
+#[global] Definition starArrStarArrStarKindRepKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #522.
 
-Definition starArrStarArrStarKindRepName : Name.Name :=
-  varQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "krep$*->*->*"))
-  starArrStarArrStarKindRepKey.
+#[global] Definition starArrStarArrStarKindRepName : Name.Name :=
+  varQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                "krep$*->*->*")) starArrStarArrStarKindRepKey.
 
-Definition errorMessageTypeErrorFamKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #176.
+#[global] Definition constraintKindRepKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #523.
 
-Definition errorMessageTypeErrorFamName : Name.Name :=
-  tcQual gHC_TYPELITS (FastString.fsLit (GHC.Base.hs_string__ "TypeError"))
-  errorMessageTypeErrorFamKey.
+#[global] Definition constraintKindRepName : Name.Name :=
+  varQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                "krep$Constraint")) constraintKindRepKey.
 
-Definition typeErrorTextDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #50.
+#[global] Definition withDictClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #21.
 
-Definition typeErrorTextDataConName : Name.Name :=
-  dcQual gHC_TYPELITS (FastString.fsLit (GHC.Base.hs_string__ "Text"))
-  typeErrorTextDataConKey.
+#[global] Definition withDictClassName : Name.Name :=
+  clsQual gHC_MAGIC_DICT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                     "WithDict")) withDictClassKey.
 
-Definition typeErrorAppendDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #51.
+#[global] Definition nonEmptyTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #86.
 
-Definition typeErrorAppendDataConName : Name.Name :=
-  dcQual gHC_TYPELITS (FastString.fsLit (GHC.Base.hs_string__ ":<>:"))
-  typeErrorAppendDataConKey.
+#[global] Definition nonEmptyTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "NonEmpty")) nonEmptyTyConKey.
 
-Definition typeErrorVAppendDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #52.
+#[global] Definition dataToTagClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #23.
 
-Definition typeErrorVAppendDataConName : Name.Name :=
-  dcQual gHC_TYPELITS (FastString.fsLit (GHC.Base.hs_string__ ":$$:"))
-  typeErrorVAppendDataConKey.
+#[global] Definition dataToTagClassName : Name.Name :=
+  clsQual gHC_MAGIC (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "DataToTag"))
+  dataToTagClassKey.
 
-Definition typeErrorShowTypeDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #53.
+#[global] Definition errorMessageTypeErrorFamKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #181.
 
-Definition typeErrorShowTypeDataConName : Name.Name :=
-  dcQual gHC_TYPELITS (FastString.fsLit (GHC.Base.hs_string__ "ShowType"))
-  typeErrorShowTypeDataConKey.
+#[global] Definition errorMessageTypeErrorFamName : Name.Name :=
+  tcQual gHC_INTERNAL_TYPEERROR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "TypeError")) errorMessageTypeErrorFamKey.
 
-Definition toDynIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #550.
+#[global] Definition typeErrorTextDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #50.
 
-Definition toDynName : Name.Name :=
-  varQual dYNAMIC (FastString.fsLit (GHC.Base.hs_string__ "toDyn")) toDynIdKey.
+#[global] Definition typeErrorTextDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_TYPEERROR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Text")) typeErrorTextDataConKey.
 
-Definition dataClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #9.
+#[global] Definition typeErrorAppendDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #51.
 
-Definition dataClassName : Name.Name :=
-  clsQual gENERICS (FastString.fsLit (GHC.Base.hs_string__ "Data")) dataClassKey.
+#[global] Definition typeErrorAppendDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_TYPEERROR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            ":<>:")) typeErrorAppendDataConKey.
 
-Definition assertErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #105.
+#[global] Definition typeErrorVAppendDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #52.
 
-Definition assertErrorName : Name.Name :=
-  varQual gHC_IO_Exception (FastString.fsLit (GHC.Base.hs_string__ "assertError"))
-  assertErrorIdKey.
+#[global] Definition typeErrorVAppendDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_TYPEERROR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            ":$$:")) typeErrorVAppendDataConKey.
 
-Definition traceKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #108.
+#[global] Definition typeErrorShowTypeDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #53.
 
-Definition traceName : Name.Name :=
-  varQual dEBUG_TRACE (FastString.fsLit (GHC.Base.hs_string__ "trace")) traceKey.
+#[global] Definition typeErrorShowTypeDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_TYPEERROR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "ShowType")) typeErrorShowTypeDataConKey.
 
-Definition boundedClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #1.
+#[global] Definition unsatisfiableClassNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #170.
 
-Definition boundedClassName : Name.Name :=
-  clsQual gHC_ENUM (FastString.fsLit (GHC.Base.hs_string__ "Bounded"))
-  boundedClassKey.
+#[global] Definition unsatisfiableClassName : Name.Name :=
+  clsQual gHC_INTERNAL_TYPEERROR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                             "Unsatisfiable")) unsatisfiableClassNameKey.
 
-Definition concatIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #31.
+#[global] Definition unsatisfiableIdNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #580.
 
-Definition concatName : Name.Name :=
-  varQual gHC_LIST (FastString.fsLit (GHC.Base.hs_string__ "concat")) concatIdKey.
+#[global] Definition unsatisfiableIdName : Name.Name :=
+  varQual gHC_INTERNAL_TYPEERROR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                             "unsatisfiable")) unsatisfiableIdNameKey.
 
-Definition filterIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #32.
+#[global] Definition unsafeEqualityProofIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #570.
 
-Definition filterName : Name.Name :=
-  varQual gHC_LIST (FastString.fsLit (GHC.Base.hs_string__ "filter")) filterIdKey.
+#[global] Definition unsafeEqualityProofName : Name.Name :=
+  varQual gHC_INTERNAL_UNSAFE_COERCE (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "unsafeEqualityProof")) unsafeEqualityProofIdKey.
 
-Definition zipIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #33.
+#[global] Definition unsafeEqualityTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #196.
 
-Definition zipName : Name.Name :=
-  varQual gHC_LIST (FastString.fsLit (GHC.Base.hs_string__ "zip")) zipIdKey.
+#[global] Definition unsafeEqualityTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_UNSAFE_COERCE (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "UnsafeEquality")) unsafeEqualityTyConKey.
 
-Definition isListClassKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #198.
+#[global] Definition unsafeReflDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #116.
 
-Definition isListClassName : Name.Name :=
-  clsQual gHC_EXTS (FastString.fsLit (GHC.Base.hs_string__ "IsList"))
-  isListClassKey.
+#[global] Definition unsafeReflDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_UNSAFE_COERCE (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "UnsafeRefl")) unsafeReflDataConKey.
 
-Definition showClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #17.
+#[global] Definition unsafeCoercePrimIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #571.
 
-Definition showClassName : Name.Name :=
-  clsQual gHC_SHOW (FastString.fsLit (GHC.Base.hs_string__ "Show")) showClassKey.
+#[global] Definition unsafeCoercePrimName : Name.Name :=
+  varQual gHC_INTERNAL_UNSAFE_COERCE (GHC.Data.FastString.fsLit
+                                      (GHC.Base.hs_string__ "unsafeCoerce#")) unsafeCoercePrimIdKey.
 
-Definition readClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #13.
+#[global] Definition toDynIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #530.
 
-Definition readClassName : Name.Name :=
-  clsQual gHC_READ (FastString.fsLit (GHC.Base.hs_string__ "Read")) readClassKey.
+#[global] Definition toDynName : Name.Name :=
+  varQual gHC_INTERNAL_DYNAMIC (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "toDyn")) toDynIdKey.
 
-Definition genClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #37.
+#[global] Definition dataClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #9.
 
-Definition genClassName : Name.Name :=
-  clsQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Generic"))
-  genClassKey.
+#[global] Definition dataClassName : Name.Name :=
+  clsQual gHC_INTERNAL_DATA_DATA (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                             "Data")) dataClassKey.
 
-Definition gen1ClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #38.
+#[global] Definition assertErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #105.
 
-Definition gen1ClassName : Name.Name :=
-  clsQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Generic1"))
-  gen1ClassKey.
+#[global] Definition assertErrorName : Name.Name :=
+  varQual gHC_INTERNAL_IO_Exception (GHC.Data.FastString.fsLit
+                                     (GHC.Base.hs_string__ "assertError")) assertErrorIdKey.
 
-Definition datatypeClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #39.
+#[global] Definition traceKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #108.
 
-Definition datatypeClassName : Name.Name :=
-  clsQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Datatype"))
-  datatypeClassKey.
+#[global] Definition traceName : Name.Name :=
+  varQual gHC_INTERNAL_DEBUG_TRACE (GHC.Data.FastString.fsLit
+                                    (GHC.Base.hs_string__ "trace")) traceKey.
 
-Definition constructorClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #40.
+#[global] Definition enumClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #2.
 
-Definition constructorClassName : Name.Name :=
-  clsQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Constructor"))
-  constructorClassKey.
+#[global] Definition enumClassName : Name.Name :=
+  clsQual gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Enum")) enumClassKey.
 
-Definition selectorClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #41.
+#[global] Definition boundedClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #1.
 
-Definition selectorClassName : Name.Name :=
-  clsQual gHC_GENERICS (FastString.fsLit (GHC.Base.hs_string__ "Selector"))
-  selectorClassKey.
+#[global] Definition boundedClassName : Name.Name :=
+  clsQual gHC_INTERNAL_ENUM (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Bounded")) boundedClassKey.
 
-Definition genericClassNames : list Name.Name :=
+#[global] Definition concatIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #31.
+
+#[global] Definition concatName : Name.Name :=
+  varQual gHC_INTERNAL_LIST (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "concat")) concatIdKey.
+
+#[global] Definition filterIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #32.
+
+#[global] Definition filterName : Name.Name :=
+  varQual gHC_INTERNAL_LIST (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "filter")) filterIdKey.
+
+#[global] Definition zipIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #33.
+
+#[global] Definition zipName : Name.Name :=
+  varQual gHC_INTERNAL_LIST (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "zip")) zipIdKey.
+
+#[global] Definition isListClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #198.
+
+#[global] Definition isListClassName : Name.Name :=
+  clsQual gHC_INTERNAL_IS_LIST (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "IsList")) isListClassKey.
+
+#[global] Definition fromListClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #199.
+
+#[global] Definition fromListName : Name.Name :=
+  varQual gHC_INTERNAL_IS_LIST (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "fromList")) fromListClassOpKey.
+
+#[global] Definition fromListNClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #500.
+
+#[global] Definition fromListNName : Name.Name :=
+  varQual gHC_INTERNAL_IS_LIST (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "fromListN")) fromListNClassOpKey.
+
+#[global] Definition toListClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #501.
+
+#[global] Definition toListName : Name.Name :=
+  varQual gHC_INTERNAL_IS_LIST (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "toList")) toListClassOpKey.
+
+#[global] Definition getFieldClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #572.
+
+#[global] Definition getFieldName : Name.Name :=
+  varQual gHC_INTERNAL_RECORDS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "getField")) getFieldClassOpKey.
+
+#[global] Definition setFieldClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #573.
+
+#[global] Definition setFieldName : Name.Name :=
+  varQual gHC_INTERNAL_RECORDS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "setField")) setFieldClassOpKey.
+
+#[global] Definition showClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #17.
+
+#[global] Definition showClassName : Name.Name :=
+  clsQual gHC_INTERNAL_SHOW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Show")) showClassKey.
+
+#[global] Definition readClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #13.
+
+#[global] Definition readClassName : Name.Name :=
+  clsQual gHC_INTERNAL_READ (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "Read")) readClassKey.
+
+#[global] Definition genClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #37.
+
+#[global] Definition genClassName : Name.Name :=
+  clsQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Generic")) genClassKey.
+
+#[global] Definition gen1ClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #38.
+
+#[global] Definition gen1ClassName : Name.Name :=
+  clsQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Generic1")) gen1ClassKey.
+
+#[global] Definition datatypeClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #39.
+
+#[global] Definition datatypeClassName : Name.Name :=
+  clsQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Datatype")) datatypeClassKey.
+
+#[global] Definition constructorClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #40.
+
+#[global] Definition constructorClassName : Name.Name :=
+  clsQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Constructor")) constructorClassKey.
+
+#[global] Definition selectorClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #41.
+
+#[global] Definition selectorClassName : Name.Name :=
+  clsQual gHC_INTERNAL_GENERICS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "Selector")) selectorClassKey.
+
+#[global] Definition genericClassNames : list Name.Name :=
   cons genClassName (cons gen1ClassName nil).
 
-Definition ghciIoClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #44.
+#[global] Definition ghciIoClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #45.
 
-Definition ghciIoClassName : Name.Name :=
-  clsQual gHC_GHCI (FastString.fsLit (GHC.Base.hs_string__ "GHCiSandboxIO"))
-  ghciIoClassKey.
+#[global] Definition ghciIoClassName : Name.Name :=
+  clsQual gHC_INTERNAL_GHCI (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "GHCiSandboxIO")) ghciIoClassKey.
 
-Definition ghciStepIoMClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #197.
+#[global] Definition ghciStepIoMClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #197.
 
-Definition ghciStepIoMName : Name.Name :=
-  varQual gHC_GHCI (FastString.fsLit (GHC.Base.hs_string__ "ghciStepIO"))
-  ghciStepIoMClassOpKey.
+#[global] Definition ghciStepIoMName : Name.Name :=
+  varQual gHC_INTERNAL_GHCI (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "ghciStepIO")) ghciStepIoMClassOpKey.
 
-Definition ioTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #57.
+#[global] Definition ioTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #57.
 
-Definition ioTyConName : Name.Name :=
-  tcQual gHC_TYPES (FastString.fsLit (GHC.Base.hs_string__ "IO")) ioTyConKey.
+#[global] Definition ioTyConName : Name.Name :=
+  tcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "IO"))
+  ioTyConKey.
 
-Definition thenIOIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #103.
+#[global] Definition ioDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #16.
 
-Definition thenIOName : Name.Name :=
-  varQual gHC_BASE (FastString.fsLit (GHC.Base.hs_string__ "thenIO")) thenIOIdKey.
+#[global] Definition ioDataConName : Name.Name :=
+  dcQual gHC_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "IO"))
+  ioDataConKey.
 
-Definition failIOIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #38.
+#[global] Definition thenIOIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #103.
 
-Definition failIOName : Name.Name :=
-  varQual gHC_IO (FastString.fsLit (GHC.Base.hs_string__ "failIO")) failIOIdKey.
+#[global] Definition thenIOName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "thenIO")) thenIOIdKey.
 
-Definition printIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #37.
+#[global] Definition bindIOIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #34.
 
-Definition printName : Name.Name :=
-  varQual sYSTEM_IO (FastString.fsLit (GHC.Base.hs_string__ "print")) printIdKey.
+#[global] Definition bindIOName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "bindIO")) bindIOIdKey.
 
-Definition int8TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #16.
+#[global] Definition returnIOIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #35.
 
-Definition int8TyConName : Name.Name :=
-  tcQual gHC_INT (FastString.fsLit (GHC.Base.hs_string__ "Int8")) int8TyConKey.
+#[global] Definition returnIOName : Name.Name :=
+  varQual gHC_INTERNAL_BASE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "returnIO")) returnIOIdKey.
 
-Definition int16TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #17.
+#[global] Definition failIOIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #38.
 
-Definition int16TyConName : Name.Name :=
-  tcQual gHC_INT (FastString.fsLit (GHC.Base.hs_string__ "Int16")) int16TyConKey.
+#[global] Definition failIOName : Name.Name :=
+  varQual gHC_INTERNAL_IO (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                      "failIO")) failIOIdKey.
 
-Definition int32TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #19.
+#[global] Definition printIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #37.
 
-Definition int32TyConName : Name.Name :=
-  tcQual gHC_INT (FastString.fsLit (GHC.Base.hs_string__ "Int32")) int32TyConKey.
+#[global] Definition printName : Name.Name :=
+  varQual gHC_INTERNAL_SYSTEM_IO (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                             "print")) printIdKey.
 
-Definition int64TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #21.
+#[global] Definition int8TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #17.
 
-Definition int64TyConName : Name.Name :=
-  tcQual gHC_INT (FastString.fsLit (GHC.Base.hs_string__ "Int64")) int64TyConKey.
+#[global] Definition int8TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_INT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                      "Int8")) int8TyConKey.
 
-Definition word16TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #62.
+#[global] Definition int16TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #19.
 
-Definition word16TyConName : Name.Name :=
-  tcQual gHC_WORD (FastString.fsLit (GHC.Base.hs_string__ "Word16"))
-  word16TyConKey.
+#[global] Definition int16TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_INT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                      "Int16")) int16TyConKey.
 
-Definition word32TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #64.
+#[global] Definition int32TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #21.
 
-Definition word32TyConName : Name.Name :=
-  tcQual gHC_WORD (FastString.fsLit (GHC.Base.hs_string__ "Word32"))
-  word32TyConKey.
+#[global] Definition int32TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_INT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                      "Int32")) int32TyConKey.
 
-Definition word64TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #66.
+#[global] Definition int64TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #23.
 
-Definition word64TyConName : Name.Name :=
-  tcQual gHC_WORD (FastString.fsLit (GHC.Base.hs_string__ "Word64"))
-  word64TyConKey.
+#[global] Definition int64TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_INT (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                      "Int64")) int64TyConKey.
 
-Definition ptrTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #75.
+#[global] Definition word8TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #62.
 
-Definition ptrTyConName : Name.Name :=
-  tcQual gHC_PTR (FastString.fsLit (GHC.Base.hs_string__ "Ptr")) ptrTyConKey.
+#[global] Definition word8TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_WORD (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "Word8")) word8TyConKey.
 
-Definition funPtrTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #76.
+#[global] Definition word16TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #64.
 
-Definition funPtrTyConName : Name.Name :=
-  tcQual gHC_PTR (FastString.fsLit (GHC.Base.hs_string__ "FunPtr"))
-  funPtrTyConKey.
+#[global] Definition word16TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_WORD (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "Word16")) word16TyConKey.
 
-Definition stablePtrTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #36.
+#[global] Definition word32TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #66.
 
-Definition stablePtrTyConName : Name.Name :=
-  tcQual gHC_STABLE (FastString.fsLit (GHC.Base.hs_string__ "StablePtr"))
-  stablePtrTyConKey.
+#[global] Definition word32TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_WORD (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "Word32")) word32TyConKey.
 
-Definition monadFixClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #28.
+#[global] Definition word64TyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #68.
 
-Definition monadFixClassName : Name.Name :=
-  clsQual mONAD_FIX (FastString.fsLit (GHC.Base.hs_string__ "MonadFix"))
-  monadFixClassKey.
+#[global] Definition word64TyConName : Name.Name :=
+  tcQual gHC_INTERNAL_WORD (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                       "Word64")) word64TyConKey.
 
-Definition mfixIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #175.
+#[global] Definition ptrTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #77.
 
-Definition mfixName : Name.Name :=
-  varQual mONAD_FIX (FastString.fsLit (GHC.Base.hs_string__ "mfix")) mfixIdKey.
+#[global] Definition ptrTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_PTR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Ptr"))
+  ptrTyConKey.
 
-Definition arrAIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #180.
+#[global] Definition funPtrTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #78.
 
-Definition arrAName : Name.Name :=
-  varQual aRROW (FastString.fsLit (GHC.Base.hs_string__ "arr")) arrAIdKey.
+#[global] Definition funPtrTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_PTR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                      "FunPtr")) funPtrTyConKey.
 
-Definition composeAIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #181.
+#[global] Definition stablePtrTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #39.
 
-Definition composeAName : Name.Name :=
-  varQual gHC_DESUGAR (FastString.fsLit (GHC.Base.hs_string__ ">>>"))
-  composeAIdKey.
+#[global] Definition stablePtrTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_STABLE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "StablePtr")) stablePtrTyConKey.
 
-Definition firstAIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #182.
+#[global] Definition newStablePtrIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #36.
 
-Definition firstAName : Name.Name :=
-  varQual aRROW (FastString.fsLit (GHC.Base.hs_string__ "first")) firstAIdKey.
+#[global] Definition newStablePtrName : Name.Name :=
+  varQual gHC_INTERNAL_STABLE (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                          "newStablePtr")) newStablePtrIdKey.
 
-Definition appAIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #183.
+#[global] Definition monadFixClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #28.
 
-Definition appAName : Name.Name :=
-  varQual aRROW (FastString.fsLit (GHC.Base.hs_string__ "app")) appAIdKey.
+#[global] Definition monadFixClassName : Name.Name :=
+  clsQual gHC_INTERNAL_MONAD_FIX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                             "MonadFix")) monadFixClassKey.
 
-Definition choiceAIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #184.
+#[global] Definition mfixIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #175.
 
-Definition choiceAName : Name.Name :=
-  varQual aRROW (FastString.fsLit (GHC.Base.hs_string__ "|||")) choiceAIdKey.
+#[global] Definition mfixName : Name.Name :=
+  varQual gHC_INTERNAL_MONAD_FIX (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                             "mfix")) mfixIdKey.
 
-Definition loopAIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #185.
+#[global] Definition arrAIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #180.
 
-Definition loopAName : Name.Name :=
-  varQual aRROW (FastString.fsLit (GHC.Base.hs_string__ "loop")) loopAIdKey.
+#[global] Definition arrAName : Name.Name :=
+  varQual gHC_INTERNAL_ARROW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "arr")) arrAIdKey.
 
-Definition guardMIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #194.
+#[global] Definition composeAIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #181.
 
-Definition guardMName : Name.Name :=
-  varQual mONAD (FastString.fsLit (GHC.Base.hs_string__ "guard")) guardMIdKey.
+#[global] Definition composeAName : Name.Name :=
+  varQual gHC_INTERNAL_DESUGAR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           ">>>")) composeAIdKey.
 
-Definition liftMIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #195.
+#[global] Definition firstAIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #182.
 
-Definition liftMName : Name.Name :=
-  varQual mONAD (FastString.fsLit (GHC.Base.hs_string__ "liftM")) liftMIdKey.
+#[global] Definition firstAName : Name.Name :=
+  varQual gHC_INTERNAL_ARROW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "first")) firstAIdKey.
 
-Definition mzipIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #196.
+#[global] Definition appAIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #183.
 
-Definition mzipName : Name.Name :=
-  varQual mONAD_ZIP (FastString.fsLit (GHC.Base.hs_string__ "mzip")) mzipIdKey.
+#[global] Definition appAName : Name.Name :=
+  varQual gHC_INTERNAL_ARROW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "app")) appAIdKey.
 
-Definition toAnnotationWrapperIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #187.
+#[global] Definition choiceAIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #184.
 
-Definition toAnnotationWrapperName : Name.Name :=
-  varQual gHC_DESUGAR (FastString.fsLit (GHC.Base.hs_string__
-                                         "toAnnotationWrapper")) toAnnotationWrapperIdKey.
+#[global] Definition choiceAName : Name.Name :=
+  varQual gHC_INTERNAL_ARROW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "|||")) choiceAIdKey.
 
-Definition monadPlusClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #30.
+#[global] Definition loopAIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #185.
 
-Definition monadPlusClassName : Name.Name :=
-  clsQual mONAD (FastString.fsLit (GHC.Base.hs_string__ "MonadPlus"))
-  monadPlusClassKey.
+#[global] Definition loopAName : Name.Name :=
+  varQual gHC_INTERNAL_ARROW (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "loop")) loopAIdKey.
 
-Definition randomClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #31.
+#[global] Definition guardMIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #194.
 
-Definition randomClassName : Name.Name :=
-  clsQual rANDOM (FastString.fsLit (GHC.Base.hs_string__ "Random"))
-  randomClassKey.
+#[global] Definition guardMName : Name.Name :=
+  varQual gHC_INTERNAL_MONAD (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "guard")) guardMIdKey.
 
-Definition randomGenClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #32.
+#[global] Definition liftMIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #195.
 
-Definition randomGenClassName : Name.Name :=
-  clsQual rANDOM (FastString.fsLit (GHC.Base.hs_string__ "RandomGen"))
-  randomGenClassKey.
+#[global] Definition liftMName : Name.Name :=
+  varQual gHC_INTERNAL_MONAD (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "liftM")) liftMIdKey.
 
-Definition isStringClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #33.
+#[global] Definition mzipIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #196.
 
-Definition isStringClassName : Name.Name :=
-  clsQual dATA_STRING (FastString.fsLit (GHC.Base.hs_string__ "IsString"))
-  isStringClassKey.
+#[global] Definition mzipName : Name.Name :=
+  varQual cONTROL_MONAD_ZIP (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                        "mzip")) mzipIdKey.
 
-Definition knownNatClassNameKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #42.
+#[global] Definition toAnnotationWrapperIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #187.
 
-Definition knownNatClassName : Name.Name :=
-  clsQual gHC_TYPENATS (FastString.fsLit (GHC.Base.hs_string__ "KnownNat"))
-  knownNatClassNameKey.
+#[global] Definition toAnnotationWrapperName : Name.Name :=
+  varQual gHC_INTERNAL_DESUGAR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "toAnnotationWrapper")) toAnnotationWrapperIdKey.
 
-Definition knownSymbolClassNameKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #43.
+#[global] Definition monadPlusClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #30.
 
-Definition knownSymbolClassName : Name.Name :=
-  clsQual gHC_TYPELITS (FastString.fsLit (GHC.Base.hs_string__ "KnownSymbol"))
-  knownSymbolClassNameKey.
+#[global] Definition monadPlusClassName : Name.Name :=
+  clsQual gHC_INTERNAL_MONAD (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                         "MonadPlus")) monadPlusClassKey.
 
-Definition isLabelClassNameKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #45.
+#[global] Definition isStringClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #33.
 
-Definition isLabelClassName : Name.Name :=
-  clsQual gHC_OVER_LABELS (FastString.fsLit (GHC.Base.hs_string__ "IsLabel"))
-  isLabelClassNameKey.
+#[global] Definition isStringClassName : Name.Name :=
+  clsQual gHC_INTERNAL_DATA_STRING (GHC.Data.FastString.fsLit
+                                    (GHC.Base.hs_string__ "IsString")) isStringClassKey.
 
-Definition ipClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #48.
+#[global] Definition knownNatClassNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #42.
 
-Definition ipClassName : Name.Name :=
-  clsQual gHC_CLASSES (FastString.fsLit (GHC.Base.hs_string__ "IP")) ipClassKey.
+#[global] Definition knownNatClassName : Name.Name :=
+  clsQual gHC_INTERNAL_TYPENATS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "KnownNat")) knownNatClassNameKey.
 
-Definition hasFieldClassNameKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #49.
+#[global] Definition knownSymbolClassNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #43.
 
-Definition hasFieldClassName : Name.Name :=
-  clsQual gHC_RECORDS (FastString.fsLit (GHC.Base.hs_string__ "HasField"))
-  hasFieldClassNameKey.
+#[global] Definition knownSymbolClassName : Name.Name :=
+  clsQual gHC_INTERNAL_TYPELITS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "KnownSymbol")) knownSymbolClassNameKey.
 
-Definition callStackTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #186.
+#[global] Definition knownCharClassNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #44.
 
-Definition callStackTyConName : Name.Name :=
-  tcQual gHC_STACK_TYPES (FastString.fsLit (GHC.Base.hs_string__ "CallStack"))
-  callStackTyConKey.
+#[global] Definition knownCharClassName : Name.Name :=
+  clsQual gHC_INTERNAL_TYPELITS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "KnownChar")) knownCharClassNameKey.
 
-Definition emptyCallStackKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #558.
+#[global] Definition fromLabelClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #177.
 
-Definition emptyCallStackName : Name.Name :=
-  varQual gHC_STACK_TYPES (FastString.fsLit (GHC.Base.hs_string__
-                                             "emptyCallStack")) emptyCallStackKey.
+#[global] Definition fromLabelClassOpName : Name.Name :=
+  varQual gHC_INTERNAL_OVER_LABELS (GHC.Data.FastString.fsLit
+                                    (GHC.Base.hs_string__ "fromLabel")) fromLabelClassOpKey.
 
-Definition pushCallStackKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #559.
+#[global] Definition ipClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #49.
 
-Definition pushCallStackName : Name.Name :=
-  varQual gHC_STACK_TYPES (FastString.fsLit (GHC.Base.hs_string__
-                                             "pushCallStack")) pushCallStackKey.
+#[global] Definition ipClassName : Name.Name :=
+  clsQual gHC_CLASSES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "IP"))
+  ipClassKey.
 
-Definition srcLocDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #37.
+#[global] Definition hasFieldClassNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #50.
 
-Definition srcLocDataConName : Name.Name :=
-  dcQual gHC_STACK_TYPES (FastString.fsLit (GHC.Base.hs_string__ "SrcLoc"))
-  srcLocDataConKey.
+#[global] Definition hasFieldClassName : Name.Name :=
+  clsQual gHC_INTERNAL_RECORDS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                           "HasField")) hasFieldClassNameKey.
 
-Definition pLUGINS : Module.Module :=
-  mkThisGhcModule (FastString.fsLit (GHC.Base.hs_string__ "Plugins")).
+#[global] Definition exceptionContextTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #420.
 
-Definition pluginTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #102.
+#[global] Definition exceptionContextTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_EXCEPTION_CONTEXT (GHC.Data.FastString.fsLit
+                                         (GHC.Base.hs_string__ "ExceptionContext")) exceptionContextTyConKey.
 
-Definition pluginTyConName : Name.Name :=
-  tcQual pLUGINS (FastString.fsLit (GHC.Base.hs_string__ "Plugin"))
+#[global] Definition emptyExceptionContextKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #562.
+
+#[global] Definition emptyExceptionContextName : Name.Name :=
+  varQual gHC_INTERNAL_EXCEPTION_CONTEXT (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "emptyExceptionContext")) emptyExceptionContextKey.
+
+#[global] Definition callStackTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #191.
+
+#[global] Definition callStackTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_STACK_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                              "CallStack")) callStackTyConKey.
+
+#[global] Definition emptyCallStackKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #558.
+
+#[global] Definition emptyCallStackName : Name.Name :=
+  varQual gHC_INTERNAL_STACK_TYPES (GHC.Data.FastString.fsLit
+                                    (GHC.Base.hs_string__ "emptyCallStack")) emptyCallStackKey.
+
+#[global] Definition pushCallStackKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #559.
+
+#[global] Definition pushCallStackName : Name.Name :=
+  varQual gHC_INTERNAL_STACK_TYPES (GHC.Data.FastString.fsLit
+                                    (GHC.Base.hs_string__ "pushCallStack")) pushCallStackKey.
+
+#[global] Definition srcLocDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #37.
+
+#[global] Definition srcLocDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_STACK_TYPES (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                              "SrcLoc")) srcLocDataConKey.
+
+#[global] Definition pLUGINS : GHC.Unit.Types.Module :=
+  mkThisGhcModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                              "GHC.Driver.Plugins")).
+
+#[global] Definition pluginTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #102.
+
+#[global] Definition pluginTyConName : Name.Name :=
+  tcQual pLUGINS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "Plugin"))
   pluginTyConKey.
 
-Definition frontendPluginTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #103.
+#[global] Definition frontendPluginTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #103.
 
-Definition frontendPluginTyConName : Name.Name :=
-  tcQual pLUGINS (FastString.fsLit (GHC.Base.hs_string__ "FrontendPlugin"))
-  frontendPluginTyConKey.
+#[global] Definition frontendPluginTyConName : Name.Name :=
+  tcQual pLUGINS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                             "FrontendPlugin")) frontendPluginTyConKey.
 
-Definition makeStaticKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #561.
+#[global] Definition makeStaticKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #561.
 
-Definition makeStaticName : Name.Name :=
-  varQual gHC_STATICPTR_INTERNAL (FastString.fsLit (GHC.Base.hs_string__
-                                                    "makeStatic")) makeStaticKey.
+#[global] Definition makeStaticName : Name.Name :=
+  varQual gHC_INTERNAL_STATICPTR_INTERNAL (GHC.Data.FastString.fsLit
+                                           (GHC.Base.hs_string__ "makeStatic")) makeStaticKey.
 
-Definition staticPtrInfoTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #185.
+#[global] Definition staticPtrInfoTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #190.
 
-Definition staticPtrInfoTyConName : Name.Name :=
-  tcQual gHC_STATICPTR (FastString.fsLit (GHC.Base.hs_string__ "StaticPtrInfo"))
-  staticPtrInfoTyConKey.
+#[global] Definition staticPtrInfoTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_STATICPTR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "StaticPtrInfo")) staticPtrInfoTyConKey.
 
-Definition staticPtrInfoDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #34.
+#[global] Definition staticPtrInfoDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #34.
 
-Definition staticPtrInfoDataConName : Name.Name :=
-  dcQual gHC_STATICPTR (FastString.fsLit (GHC.Base.hs_string__ "StaticPtrInfo"))
-  staticPtrInfoDataConKey.
+#[global] Definition staticPtrInfoDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_STATICPTR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "StaticPtrInfo")) staticPtrInfoDataConKey.
 
-Definition staticPtrTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #184.
+#[global] Definition staticPtrTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #189.
 
-Definition staticPtrTyConName : Name.Name :=
-  tcQual gHC_STATICPTR (FastString.fsLit (GHC.Base.hs_string__ "StaticPtr"))
-  staticPtrTyConKey.
+#[global] Definition staticPtrTyConName : Name.Name :=
+  tcQual gHC_INTERNAL_STATICPTR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "StaticPtr")) staticPtrTyConKey.
 
-Definition staticPtrDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #33.
+#[global] Definition staticPtrDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #33.
 
-Definition staticPtrDataConName : Name.Name :=
-  dcQual gHC_STATICPTR (FastString.fsLit (GHC.Base.hs_string__ "StaticPtr"))
-  staticPtrDataConKey.
+#[global] Definition staticPtrDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_STATICPTR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                            "StaticPtr")) staticPtrDataConKey.
 
-Definition fromStaticPtrClassOpKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #560.
+#[global] Definition fromStaticPtrClassOpKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #560.
 
-Definition fromStaticPtrName : Name.Name :=
-  varQual gHC_STATICPTR (FastString.fsLit (GHC.Base.hs_string__ "fromStaticPtr"))
-  fromStaticPtrClassOpKey.
+#[global] Definition fromStaticPtrName : Name.Name :=
+  varQual gHC_INTERNAL_STATICPTR (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                             "fromStaticPtr")) fromStaticPtrClassOpKey.
 
-Definition fingerprintDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #35.
+#[global] Definition fingerprintDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #35.
 
-Definition fingerprintDataConName : Name.Name :=
-  dcQual gHC_FINGERPRINT_TYPE (FastString.fsLit (GHC.Base.hs_string__
-                                                 "Fingerprint")) fingerprintDataConKey.
+#[global] Definition fingerprintDataConName : Name.Name :=
+  dcQual gHC_INTERNAL_FINGERPRINT_TYPE (GHC.Data.FastString.fsLit
+                                        (GHC.Base.hs_string__ "Fingerprint")) fingerprintDataConKey.
 
-Definition eqTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #38.
+#[global] Definition constPtrTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #417.
 
-Definition eqTyConName : Name.Name :=
-  tcQual dATA_TYPE_EQUALITY (FastString.fsLit (GHC.Base.hs_string__ "~"))
-  eqTyConKey.
+#[global] Definition constPtrConName : Name.Name :=
+  tcQual gHC_INTERNAL_FOREIGN_C_CONSTPTR (GHC.Data.FastString.fsLit
+                                          (GHC.Base.hs_string__ "ConstPtr")) constPtrTyConKey.
 
-Definition typeable1ClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #21.
+#[global] Definition jsvalTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #418.
 
-Definition typeable2ClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #22.
+#[global] Definition jsvalTyConName : Name.Name :=
+  tcQual (mkGhcInternalModule (GHC.Data.FastString.fsLit (GHC.Base.hs_string__
+                                                          "GHC.Internal.Wasm.Prim.Types"))) (GHC.Data.FastString.fsLit
+                                                                                             (GHC.Base.hs_string__
+                                                                                              "JSVal")) jsvalTyConKey.
 
-Definition typeable3ClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #23.
+#[global] Definition randomClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #31.
 
-Definition typeable4ClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #24.
+#[global] Definition randomGenClassKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeClassUnique #32.
 
-Definition typeable5ClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #25.
+#[global] Definition addrPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #1.
 
-Definition typeable6ClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #26.
+#[global] Definition arrayPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #3.
 
-Definition typeable7ClassKey : Unique.Unique :=
-  Unique.mkPreludeClassUnique #27.
+#[global] Definition boolTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #4.
 
-Definition addrPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #1.
+#[global] Definition byteArrayPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #5.
 
-Definition arrayPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #3.
+#[global] Definition stringTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #6.
 
-Definition boolTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #4.
+#[global] Definition charPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #7.
 
-Definition byteArrayPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #5.
+#[global] Definition charTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #8.
 
-Definition charPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #7.
+#[global] Definition doublePrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #9.
 
-Definition charTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #8.
+#[global] Definition doubleTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #10.
 
-Definition doublePrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #9.
+#[global] Definition floatPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #11.
 
-Definition doubleTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #10.
+#[global] Definition floatTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #12.
 
-Definition floatPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #11.
+#[global] Definition fUNTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #13.
 
-Definition floatTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #12.
+#[global] Definition intPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #14.
 
-Definition funTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #13.
+#[global] Definition intTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #15.
 
-Definition intPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #14.
+#[global] Definition int8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #16.
 
-Definition intTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #15.
+#[global] Definition int16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #18.
 
-Definition int32PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #18.
+#[global] Definition int32PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #20.
 
-Definition int64PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #20.
+#[global] Definition int64PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #22.
 
-Definition listTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #24.
+#[global] Definition integerTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #24.
 
-Definition foreignObjPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #25.
+#[global] Definition naturalTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #25.
 
-Definition maybeTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #26.
+#[global] Definition listTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #26.
 
-Definition weakPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #27.
+#[global] Definition foreignObjPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #27.
 
-Definition mutableArrayPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #28.
+#[global] Definition maybeTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #28.
 
-Definition mutableByteArrayPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #29.
+#[global] Definition weakPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #29.
 
-Definition mVarPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #31.
+#[global] Definition mutableArrayPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #30.
 
-Definition realWorldTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #34.
+#[global] Definition mutableByteArrayPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #31.
 
-Definition stablePtrPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #35.
+#[global] Definition mVarPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #33.
 
-Definition heqTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #39.
+#[global] Definition ioPortPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #34.
 
-Definition arrayArrayPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #40.
+#[global] Definition realWorldTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #37.
 
-Definition mutableArrayArrayPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #41.
+#[global] Definition stablePtrPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #38.
 
-Definition statePrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #50.
+#[global] Definition eqTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #40.
 
-Definition stableNamePrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #51.
+#[global] Definition heqTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #41.
 
-Definition stableNameTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #52.
+#[global] Definition ctArrowTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #42.
 
-Definition eqPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #53.
+#[global] Definition ccArrowTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #43.
 
-Definition eqReprPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #54.
+#[global] Definition tcArrowTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #44.
 
-Definition eqPhantPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #55.
+#[global] Definition statePrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #50.
 
-Definition mutVarPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #56.
+#[global] Definition stableNamePrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #51.
 
-Definition voidPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #58.
+#[global] Definition stableNameTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #52.
 
-Definition wordPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #59.
+#[global] Definition eqPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #53.
 
-Definition wordTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #60.
+#[global] Definition eqReprPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #54.
 
-Definition word8TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #61.
+#[global] Definition eqPhantPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #55.
 
-Definition word32PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #63.
+#[global] Definition mutVarPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #56.
 
-Definition word64PrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #65.
+#[global] Definition wordPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #59.
 
-Definition liftedConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #67.
+#[global] Definition wordTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #60.
 
-Definition unliftedConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #68.
+#[global] Definition word8PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #61.
 
-Definition anyBoxConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #69.
+#[global] Definition word16PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #63.
 
-Definition kindConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #70.
+#[global] Definition word32PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #65.
 
-Definition boxityConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #71.
+#[global] Definition word64PrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #67.
 
-Definition typeConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #72.
+#[global] Definition kindConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #72.
 
-Definition threadIdPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #73.
+#[global] Definition boxityConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #73.
 
-Definition bcoPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #74.
+#[global] Definition typeConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #74.
 
-Definition tVarPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #77.
+#[global] Definition threadIdPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #75.
 
-Definition compactPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #78.
+#[global] Definition bcoPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #76.
 
-Definition parrTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #82.
+#[global] Definition tVarPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #79.
 
-Definition objectTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #83.
+#[global] Definition compactPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #80.
 
-Definition liftedTypeKindTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #87.
+#[global] Definition stackSnapshotPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #81.
 
-Definition tYPETyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #88.
+#[global] Definition promptTagPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #82.
 
-Definition constraintKindTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #92.
+#[global] Definition dictTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #87.
 
-Definition starKindTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #93.
+#[global] Definition liftedTypeKindTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #88.
 
-Definition unicodeStarKindTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #94.
+#[global] Definition unliftedTypeKindTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #89.
 
-Definition runtimeRepTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #95.
+#[global] Definition tYPETyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #91.
 
-Definition vecCountTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #96.
+#[global] Definition cONSTRAINTTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #92.
 
-Definition vecElemTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #97.
+#[global] Definition constraintKindTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #93.
 
-Definition unknownTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #129.
+#[global] Definition levityTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #94.
 
-Definition unknown1TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #130.
+#[global] Definition runtimeRepTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #95.
 
-Definition unknown2TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #131.
+#[global] Definition vecCountTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #96.
 
-Definition unknown3TyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #132.
+#[global] Definition vecElemTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #97.
 
-Definition typeNatKindConNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #164.
+#[global] Definition liftedRepTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #98.
 
-Definition typeSymbolKindConNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #165.
+#[global] Definition unliftedRepTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #99.
 
-Definition typeNatAddTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #166.
+#[global] Definition zeroBitRepTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #100.
 
-Definition typeNatMulTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #167.
+#[global] Definition zeroBitTypeTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #101.
 
-Definition typeNatExpTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #168.
+#[global] Definition anyTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #171.
 
-Definition typeNatLeqTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #169.
+#[global] Definition zonkAnyTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #172.
 
-Definition typeNatSubTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #170.
+#[global] Definition coercibleTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #183.
 
-Definition typeSymbolCmpTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #171.
+#[global] Definition proxyPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #184.
 
-Definition typeNatCmpTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #172.
+#[global] Definition smallArrayPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #187.
 
-Definition typeNatDivTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #173.
+#[global] Definition smallMutableArrayPrimTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #188.
 
-Definition typeNatModTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #174.
+#[global] Definition typeSymbolAppendFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #195.
 
-Definition typeNatLogTyFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #175.
+#[global] Definition multiplicityTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #197.
 
-Definition ntTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #177.
+#[global] Definition unrestrictedFunTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #198.
 
-Definition coercibleTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #178.
+#[global] Definition multMulTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #199.
 
-Definition proxyPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #179.
+#[global] Definition typeSymbolKindConNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #400.
 
-Definition anyTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #181.
+#[global] Definition typeCharKindConNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #401.
 
-Definition smallArrayPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #182.
+#[global] Definition typeNatAddTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #402.
 
-Definition smallMutableArrayPrimTyConKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #183.
+#[global] Definition typeNatMulTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #403.
 
-Definition typeSymbolAppendFamNameKey : Unique.Unique :=
-  Unique.mkPreludeTyConUnique #190.
+#[global] Definition typeNatExpTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #404.
 
-Definition charDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #1.
+#[global] Definition typeNatSubTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #405.
 
-Definition consDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #2.
+#[global] Definition typeSymbolCmpTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #406.
 
-Definition doubleDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #3.
+#[global] Definition typeNatCmpTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #407.
 
-Definition falseDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #4.
+#[global] Definition typeCharCmpTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #408.
 
-Definition floatDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #5.
+#[global] Definition typeLeqCharTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #409.
 
-Definition intDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #6.
+#[global] Definition typeNatDivTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #410.
 
-Definition integerSDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #7.
+#[global] Definition typeNatModTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #411.
 
-Definition nothingDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #8.
+#[global] Definition typeNatLogTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #412.
 
-Definition justDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #9.
+#[global] Definition typeConsSymbolTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #413.
 
-Definition nilDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #11.
+#[global] Definition typeUnconsSymbolTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #414.
 
-Definition word8DataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #13.
+#[global] Definition typeCharToNatTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #415.
 
-Definition stableNameDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #14.
+#[global] Definition typeNatToCharTyFamNameKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeTyConUnique #416.
 
-Definition trueDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #15.
+#[global] Definition charDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #1.
 
-Definition wordDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #16.
+#[global] Definition consDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #2.
 
-Definition integerDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #18.
+#[global] Definition doubleDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #3.
 
-Definition heqDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #19.
+#[global] Definition falseDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #4.
 
-Definition crossDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #20.
+#[global] Definition floatDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #5.
 
-Definition inlDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #21.
+#[global] Definition intDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #6.
 
-Definition inrDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #22.
+#[global] Definition nothingDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #7.
 
-Definition genUnitDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #23.
+#[global] Definition justDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #8.
 
-Definition parrDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #24.
+#[global] Definition eqDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #9.
 
-Definition coercibleDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #32.
+#[global] Definition nilDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #10.
 
-Definition vecRepDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #71.
+#[global] Definition word8DataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #12.
 
-Definition tupleRepDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #72.
+#[global] Definition stableNameDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #13.
 
-Definition sumRepDataConKey : Unique.Unique :=
-  Unique.mkPreludeDataConUnique #73.
+#[global] Definition trueDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #14.
 
-Definition vecCountDataConKeys : list Unique.Unique :=
-  GHC.Base.map Unique.mkPreludeDataConUnique (GHC.Enum.enumFromTo #83 #88).
+#[global] Definition wordDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #15.
 
-Definition vecElemDataConKeys : list Unique.Unique :=
-  GHC.Base.map Unique.mkPreludeDataConUnique (GHC.Enum.enumFromTo #89 #98).
+#[global] Definition heqDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #18.
 
-Definition absentErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #1.
+#[global] Definition crossDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #20.
 
-Definition errorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #5.
+#[global] Definition inlDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #21.
 
-Definition recSelErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #7.
+#[global] Definition inrDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #22.
 
-Definition seqIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #8.
+#[global] Definition genUnitDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #23.
 
-Definition irrefutPatErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #9.
+#[global] Definition mkDictDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #30.
 
-Definition noMethodBindingErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #11.
+#[global] Definition coercibleDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #32.
 
-Definition nonExhaustiveGuardsErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #12.
+#[global] Definition vecRepDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #71.
 
-Definition runtimeErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #13.
+#[global] Definition tupleRepDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #72.
 
-Definition patErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #14.
+#[global] Definition sumRepDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #73.
 
-Definition realWorldPrimIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #15.
+#[global] Definition boxedRepDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #74.
 
-Definition recConErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #16.
+#[global] Definition boxedRepDataConTyConKey : Unique.Unique :=
+  boxedRepDataConKey.
 
-Definition unpackCStringAppendIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #18.
+#[global] Definition tupleRepDataConTyConKey : Unique.Unique :=
+  tupleRepDataConKey.
 
-Definition voidPrimIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #21.
+(* Skipping definition `PrelNames.runtimeRepSimpleDataConKeys' *)
 
-Definition typeErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #22.
+#[global] Definition liftedDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #88.
 
-Definition absentSumFieldErrorIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #25.
+#[global] Definition unliftedDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #89.
 
-Definition unsafeCoerceIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #30.
+#[global] Definition vecCountDataConKeys : list Unique.Unique :=
+  GHC.Base.map GHC.Builtin.Uniques.mkPreludeDataConUnique (GHC.Enum.enumFromTo #90
+                                                                               #95).
 
-Definition nullAddrIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #39.
+#[global] Definition vecElemDataConKeys : list Unique.Unique :=
+  GHC.Base.map GHC.Builtin.Uniques.mkPreludeDataConUnique (GHC.Enum.enumFromTo #96
+                                                                               #105).
 
-Definition voidArgIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #40.
+#[global] Definition oneDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #117.
 
-Definition rootMainKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #101.
+#[global] Definition manyDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #118.
 
-Definition lazyIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #104.
+#[global] Definition integerISDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #120.
 
-Definition oneShotKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #106.
+#[global] Definition integerINDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #121.
 
-Definition runRWKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #107.
+#[global] Definition integerIPDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #122.
 
-Definition dollarIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #123.
+#[global] Definition naturalNSDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #123.
 
-Definition coercionTokenIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #124.
+#[global] Definition naturalNBDataConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeDataConUnique #124.
 
-Definition noinlineIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #125.
+#[global] Definition absentErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #1.
 
-Definition unmarshalObjectIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #150.
+#[global] Definition absentConstraintErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #2.
 
-Definition marshalObjectIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #151.
+#[global] Definition recSelErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #7.
 
-Definition marshalStringIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #152.
+#[global] Definition seqIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #8.
 
-Definition unmarshalStringIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #153.
+#[global] Definition absentSumFieldErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #9.
 
-Definition checkDotnetResNameIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #154.
+#[global] Definition noMethodBindingErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #11.
 
-Definition undefinedKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #155.
+#[global] Definition nonExhaustiveGuardsErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #12.
 
-Definition magicDictKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #156.
+#[global] Definition impossibleErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #13.
 
-Definition coerceKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #157.
+#[global] Definition impossibleConstraintErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #14.
 
-Definition proxyHashKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #502.
+#[global] Definition patErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #15.
 
-Definition mkTyConKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #503.
+#[global] Definition realWorldPrimIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #16.
 
-Definition trTYPEKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #511.
+#[global] Definition recConErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #17.
 
-Definition trTYPE'PtrRepLiftedKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #512.
+#[global] Definition voidPrimIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #24.
 
-Definition trRuntimeRepKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #513.
+#[global] Definition typeErrorIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #25.
 
-Definition tr'PtrRepLiftedKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #514.
+#[global] Definition nullAddrIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #39.
 
-Definition heqSCSelIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #552.
+#[global] Definition voidArgIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #40.
 
-Definition coercibleSCSelIdKey : Unique.Unique :=
-  Unique.mkPreludeMiscIdUnique #553.
+#[global] Definition leftSectionKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #45.
 
-Definition fractionalClassKeys : list Unique.Unique :=
+#[global] Definition rightSectionKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #46.
+
+#[global] Definition rootMainKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #101.
+
+#[global] Definition lazyIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #104.
+
+#[global] Definition oneShotKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #106.
+
+#[global] Definition nospecIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #109.
+
+#[global] Definition coercionTokenIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #124.
+
+#[global] Definition noinlineIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #126.
+
+#[global] Definition noinlineConstraintIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #127.
+
+#[global] Definition coerceKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #157.
+
+#[global] Definition proxyHashKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #502.
+
+#[global] Definition mkTyConKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #503.
+
+#[global] Definition eqSCSelIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #551.
+
+#[global] Definition heqSCSelIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #552.
+
+#[global] Definition coercibleSCSelIdKey : Unique.Unique :=
+  GHC.Builtin.Uniques.mkPreludeMiscIdUnique #553.
+
+#[global] Definition fractionalClassKeys : list Unique.Unique :=
   cons fractionalClassKey (cons floatingClassKey (cons realFracClassKey (cons
                                                         realFloatClassKey nil))).
 
-Definition numericClassKeys : list Unique.Unique :=
+#[global] Definition numericClassKeys : list Unique.Unique :=
   Coq.Init.Datatypes.app (cons numClassKey (cons realClassKey (cons
                                                   integralClassKey nil))) fractionalClassKeys.
 
-Definition derivableClassKeys : list Unique.Unique :=
+#[global] Definition derivableClassKeys : list Unique.Unique :=
   cons eqClassKey (cons ordClassKey (cons enumClassKey (cons ixClassKey (cons
                                                               boundedClassKey (cons showClassKey (cons readClassKey
                                                                                                        nil)))))).
 
-Definition standardClassKeys : list Unique.Unique :=
+#[global] Definition standardClassKeys : list Unique.Unique :=
   Coq.Init.Datatypes.app derivableClassKeys (Coq.Init.Datatypes.app
                           numericClassKeys (cons randomClassKey (cons randomGenClassKey (cons
                                                                        functorClassKey (cons monadClassKey (cons
@@ -3357,24 +3822,29 @@ Definition standardClassKeys : list Unique.Unique :=
                                                                                                       alternativeClassKey
                                                                                                       nil)))))))))))))).
 
-Definition interactiveClassNames : list Name.Name :=
+#[global] Definition interactiveClassNames : list Name.Name :=
   cons showClassName (cons eqClassName (cons ordClassName (cons foldableClassName
                                                                 (cons traversableClassName nil)))).
 
-Definition interactiveClassKeys : list Unique.Unique :=
+#[global] Definition interactiveClassKeys : list Unique.Unique :=
   GHC.Base.map Unique.getUnique interactiveClassNames.
 
-Axiom pretendNameIsInScope : Name.Name -> bool.
-
 (* External variables:
-     Type bool cons list nat nil Coq.Init.Datatypes.app FastString.FastString
-     FastString.fsLit GHC.Base.String GHC.Base.map GHC.Enum.enumFromTo
-     GHC.Num.fromInteger Module.Module Module.ModuleName Module.baseUnitId
-     Module.mainUnitId Module.mkModule Module.mkModuleNameFS Module.primUnitId
-     Module.thisGhcUnitId Name.Name Name.mkExternalName Name.mkInternalName
-     Name.mkSystemVarName OccName.NameSpace OccName.OccName OccName.clsName
-     OccName.dataName OccName.mkOccNameFS OccName.tcName OccName.varName
-     SrcLoc.SrcSpan SrcLoc.noSrcSpan Unique.Unique Unique.getUnique Unique.hasKey
-     Unique.mkPreludeClassUnique Unique.mkPreludeDataConUnique
-     Unique.mkPreludeMiscIdUnique Unique.mkPreludeTyConUnique
+     Type bool cons list nil Coq.Init.Datatypes.app GHC.Base.String GHC.Base.map
+     GHC.Builtin.Uniques.mkPreludeClassUnique
+     GHC.Builtin.Uniques.mkPreludeDataConUnique
+     GHC.Builtin.Uniques.mkPreludeMiscIdUnique
+     GHC.Builtin.Uniques.mkPreludeTyConUnique GHC.Data.FastString.FastString
+     GHC.Data.FastString.fsLit GHC.Data.List.Infinite.Infinite
+     GHC.Data.List.Infinite.toList GHC.Enum.enumFromTo GHC.Num.fromInteger
+     GHC.Types.Name.Reader.mkOrig GHC.Unit.Types.Module GHC.Unit.Types.baseUnit
+     GHC.Unit.Types.bignumUnit GHC.Unit.Types.experimentalUnit
+     GHC.Unit.Types.ghcInternalUnit GHC.Unit.Types.mainUnit GHC.Unit.Types.mkModule
+     GHC.Unit.Types.primUnit GHC.Unit.Types.thisGhcUnit
+     Language.Haskell.Syntax.Module.Name.ModuleName
+     Language.Haskell.Syntax.Module.Name.mkModuleNameFS Name.Name Name.mkExternalName
+     Name.mkInternalName Name.mkSystemVarName OccName.NameSpace OccName.OccName
+     OccName.clsName OccName.dataName OccName.fieldName OccName.mkOccNameFS
+     OccName.tcName OccName.varName SrcLoc.SrcSpan SrcLoc.noSrcSpan Unique.Unique
+     Unique.getUnique Unique.hasKey
 *)

@@ -1,0 +1,153 @@
+-- Simplified OrdList without UnboxedTuples/UnboxedSums for hs-to-coq
+-- Based on GHC 9.10 GHC.Data.OrdList
+module GHC.Data.OrdList (
+        OrdList,
+        nilOL, isNilOL, unitOL, appOL, consOL, snocOL, concatOL, lastOL,
+        headOL,
+        mapOL, fromOL, toOL, foldrOL, foldlOL,
+        reverseOL, strictlyEqOL, strictlyOrdOL
+) where
+
+import Prelude
+import qualified Data.Semigroup as Semigroup
+
+infixl 5  `appOL`
+infixl 5  `snocOL`
+infixr 5  `consOL`
+
+data OrdList a
+  = None
+  | One a
+  | Cons a (OrdList a)
+  | Snoc (OrdList a) a
+  | Two (OrdList a) -- Invariant: non-empty
+        (OrdList a) -- Invariant: non-empty
+
+instance Semigroup (OrdList a) where
+  (<>) = appOL
+
+instance Monoid (OrdList a) where
+  mempty = nilOL
+  mappend = (Semigroup.<>)
+  mconcat = concatOL
+
+instance Foldable OrdList where
+  foldr   = foldrOL
+  foldl'  = foldlOL
+  null    = isNilOL
+  length  = lengthOL
+
+instance Functor OrdList where
+  fmap = mapOL
+
+instance Traversable OrdList where
+  traverse f xs = toOL <$> traverse f (fromOL xs)
+
+nilOL    :: OrdList a
+isNilOL  :: OrdList a -> Bool
+
+unitOL   :: a           -> OrdList a
+snocOL   :: OrdList a   -> a         -> OrdList a
+consOL   :: a           -> OrdList a -> OrdList a
+appOL    :: OrdList a   -> OrdList a -> OrdList a
+concatOL :: [OrdList a] -> OrdList a
+headOL   :: OrdList a   -> a
+lastOL   :: OrdList a   -> a
+lengthOL :: OrdList a   -> Int
+
+nilOL        = None
+unitOL as    = One as
+snocOL as   b    = Snoc as b
+consOL a    bs   = Cons a bs
+concatOL aas = foldr appOL None aas
+
+headOL None        = error "headOL"
+headOL (One a)     = a
+headOL (Cons a _)  = a
+headOL (Snoc as _) = headOL as
+headOL (Two as _)  = headOL as
+
+lastOL None        = error "lastOL"
+lastOL (One a)     = a
+lastOL (Cons _ as) = lastOL as
+lastOL (Snoc _ a)  = a
+lastOL (Two _ as)  = lastOL as
+
+lengthOL None        = 0
+lengthOL (One _)     = 1
+lengthOL (Cons _ as) = 1 + length as
+lengthOL (Snoc as _) = 1 + length as
+lengthOL (Two as bs) = length as + length bs
+
+isNilOL None = True
+isNilOL _    = False
+
+None  `appOL` b     = b
+a     `appOL` None  = a
+One a `appOL` b     = Cons a b
+a     `appOL` One b = Snoc a b
+a     `appOL` b     = Two a b
+
+fromOL :: OrdList a -> [a]
+fromOL a = go a []
+  where go None       acc = acc
+        go (One a)    acc = a : acc
+        go (Cons a b) acc = a : go b acc
+        go (Snoc a b) acc = go a (b:acc)
+        go (Two a b)  acc = go a (go b acc)
+
+toOL :: [a] -> OrdList a
+toOL [] = None
+toOL [x] = One x
+toOL (x : xs) = Cons x (toOL xs)
+
+mapOL :: (a -> b) -> OrdList a -> OrdList b
+mapOL _ None        = None
+mapOL f (One x)     = One (f x)
+mapOL f (Cons x xs) = Cons (f x) (mapOL f xs)
+mapOL f (Snoc xs x) = Snoc (mapOL f xs) (f x)
+mapOL f (Two b1 b2) = Two (mapOL f b1) (mapOL f b2)
+
+foldrOL :: (a->b->b) -> b -> OrdList a -> b
+foldrOL _ z None        = z
+foldrOL k z (One x)     = k x z
+foldrOL k z (Cons x xs) = k x (foldrOL k z xs)
+foldrOL k z (Snoc xs x) = foldrOL k (k x z) xs
+foldrOL k z (Two b1 b2) = foldrOL k (foldrOL k z b2) b1
+
+foldlOL :: (b->a->b) -> b -> OrdList a -> b
+foldlOL _ z None        = z
+foldlOL k z (One x)     = k z x
+foldlOL k z (Cons x xs) = let z' = (k z x) in foldlOL k z' xs
+foldlOL k z (Snoc xs x) = let z' = (foldlOL k z xs) in k z' x
+foldlOL k z (Two b1 b2) = let z' = (foldlOL k z b1) in foldlOL k z' b2
+
+reverseOL :: OrdList a -> OrdList a
+reverseOL None = None
+reverseOL (One x) = One x
+reverseOL (Cons a b) = Snoc (reverseOL b) a
+reverseOL (Snoc a b) = Cons b (reverseOL a)
+reverseOL (Two a b)  = Two (reverseOL b) (reverseOL a)
+
+strictlyEqOL :: Eq a => OrdList a -> OrdList a -> Bool
+strictlyEqOL None         None       = True
+strictlyEqOL (One x)     (One y)     = x == y
+strictlyEqOL (Cons a as) (Cons b bs) = a == b && as `strictlyEqOL` bs
+strictlyEqOL (Snoc as a) (Snoc bs b) = a == b && as `strictlyEqOL` bs
+strictlyEqOL (Two a1 a2) (Two b1 b2) = a1 `strictlyEqOL` b1 && a2 `strictlyEqOL` b2
+strictlyEqOL _            _          = False
+
+strictlyOrdOL :: Ord a => OrdList a -> OrdList a -> Ordering
+strictlyOrdOL None         None       = EQ
+strictlyOrdOL None         _          = LT
+strictlyOrdOL (One x)     (One y)     = compare x y
+strictlyOrdOL (One _)      _          = LT
+strictlyOrdOL (Cons a as) (Cons b bs) =
+  compare a b `mappend` strictlyOrdOL as bs
+strictlyOrdOL (Cons _ _)   _          = LT
+strictlyOrdOL (Snoc as a) (Snoc bs b) =
+  compare a b `mappend` strictlyOrdOL as bs
+strictlyOrdOL (Snoc _ _)   _          = LT
+strictlyOrdOL (Two a1 a2) (Two b1 b2) =
+  (strictlyOrdOL a1 b1) `mappend` (strictlyOrdOL a2 b2)
+strictlyOrdOL (Two _ _)    _          = LT

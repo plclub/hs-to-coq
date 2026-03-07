@@ -42,6 +42,21 @@ skip Module.pprModuleName
 skip Module.pprPackagePrefix
 skip Module.pprModule
 
+# GHC 9.10: types moved to GHC.Unit.Types
+skip module GHC.Unit.Types
+skip module Language.Haskell.Syntax.Module.Name
+skip module GHC.Unit.Module.Location
+skip module GHC.Unit.Module.Env
+skip Module.moduleStableString
+skip Module.moduleIsDefinite
+skip Module.stableModuleCmp
+skip Module.getModuleInstantiation
+skip Module.getUnitInstantiations
+skip Module.uninstantiateInstantiatedUnit
+skip Module.uninstantiateInstantiatedModule
+skip Module.mkHoleModule
+skip Module.isHoleModule
+
 # (should be) in midamble
 skip Module.moduleNameSlashes
 skip Module.mkModuleName

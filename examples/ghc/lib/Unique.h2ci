@@ -1,14 +1,14 @@
-superclassCount:
-  Unique.Uniquable: '0'
-classTypes:
-  Unique.Uniquable: fromList []
-constructors:
-  Unique.Unique: ! '[Qualified "Unique" "MkUnique"]'
-constructorFields:
-  Unique.MkUnique: NonRecordFields 1
 classDefns:
   Unique.Uniquable: ClassDefinition (Qualified "Unique" "Uniquable") [Typed Ungeneralizable
     Explicit (Ident (Bare "a") :| []) (Qualid (Bare "Type"))] Nothing [(Qualified
     "Unique" "getUnique",Arrow (Qualid (Bare "a")) (Qualid (Qualified "Unique" "Unique")))]
+classTypes:
+  Unique.Uniquable: fromList []
+constructorFields:
+  Unique.MkUnique: NonRecordFields 1
 constructorTypes:
   Unique.MkUnique: Qualified "Unique" "Unique"
+constructors:
+  Unique.Unique: '[Qualified "Unique" "MkUnique"]'
+superclassCount:
+  Unique.Uniquable: '0'

@@ -12,7 +12,20 @@ axiomatize definition Util.debugIsOn
 axiomatize definition Util.makeRelativeTo
 axiomatize definition Util.looksLikePackageName
 
-redefine Definition Util.HasDebugCallStack := unit.
+# HasCallStack is now a trivial typeclass in GHC.Prim
+skip Util.HasDebugCallStack
+# GHC 9.10: these functions use HasCallStack + panic, need Default or skip
+set type Util.expectOnly : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> (list a) -> a
+skip Util.expectNonEmpty
+set type Util.expectNonEmptyPanic : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> a
+set type Util.changeLast : forall {a} `{HsToCoq.Err.Default a}, list a -> a -> list a
+
+# GHC 9.10: structural recursion issue + dependency
+skip Util.isSortedBy
+skip Util.mergeListsBy
+
+# GHC 9.10: uses unboxed primops (+#, I#)
+skip Util.splitAtList
 
 ## TODO (axiomatize this in base)
 rewrite forall x, GHC.Unicode.toUpper x = x
@@ -33,25 +46,35 @@ in Util.transitiveClosure termination go deferred
 
 skip module Data.Char
 skip module GHC.Ptr
-skip module GHC.IO.Encoding.Types 
+skip module GHC.IO.Encoding.Types
 skip module GHC.Exts
 skip module GHC.IO.Encoding
 skip module GHC.IO.Exception
 skip module GHC.IO.Handle
 skip module GHC.IO.Handle.Types
 skip module GHC.IO.Unsafe
-skip module GHC.IORef 
+skip module GHC.IORef
 skip module GHC.Read
 skip module GHC.Real
 skip module System.Directory
 skip module System.FilePath.Posix
 skip module System.IO.Error
 skip module Text.ParserCombinators.ReadP
-skip module Text.Read 
-skip module Data.IORef 
-skip module Data.Time.Clock.Internal.UTCTime 
+skip module Text.Read
+skip module Data.IORef
+skip module Data.Time.Clock.Internal.UTCTime
 skip module GHC.Conc.Sync
 skip module Exception
+# GHC 9.10 new imports
+skip module Control.Monad.IO.Class
+skip module GHC.Internal.Fingerprint
+skip module GHC.Internal.Fingerprint.Type
+skip module GHC.Internal.IO.Exception
+skip module GHC.Internal.Int
+skip module GHC.Internal.System.IO.Error
+skip module GHC.Internal.Text.ParserCombinators.ReadP
+skip module GHC.Utils.Constants
+skip module GHC.Utils.Exception
 
 ## Generics
 skip Util.abstractConstr

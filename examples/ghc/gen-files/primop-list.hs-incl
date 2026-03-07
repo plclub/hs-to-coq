@@ -5,17 +5,176 @@
    , CharLtOp
    , CharLeOp
    , OrdOp
+   , Int8ToIntOp
+   , IntToInt8Op
+   , Int8NegOp
+   , Int8AddOp
+   , Int8SubOp
+   , Int8MulOp
+   , Int8QuotOp
+   , Int8RemOp
+   , Int8QuotRemOp
+   , Int8SllOp
+   , Int8SraOp
+   , Int8SrlOp
+   , Int8ToWord8Op
+   , Int8EqOp
+   , Int8GeOp
+   , Int8GtOp
+   , Int8LeOp
+   , Int8LtOp
+   , Int8NeOp
+   , Word8ToWordOp
+   , WordToWord8Op
+   , Word8AddOp
+   , Word8SubOp
+   , Word8MulOp
+   , Word8QuotOp
+   , Word8RemOp
+   , Word8QuotRemOp
+   , Word8AndOp
+   , Word8OrOp
+   , Word8XorOp
+   , Word8NotOp
+   , Word8SllOp
+   , Word8SrlOp
+   , Word8ToInt8Op
+   , Word8EqOp
+   , Word8GeOp
+   , Word8GtOp
+   , Word8LeOp
+   , Word8LtOp
+   , Word8NeOp
+   , Int16ToIntOp
+   , IntToInt16Op
+   , Int16NegOp
+   , Int16AddOp
+   , Int16SubOp
+   , Int16MulOp
+   , Int16QuotOp
+   , Int16RemOp
+   , Int16QuotRemOp
+   , Int16SllOp
+   , Int16SraOp
+   , Int16SrlOp
+   , Int16ToWord16Op
+   , Int16EqOp
+   , Int16GeOp
+   , Int16GtOp
+   , Int16LeOp
+   , Int16LtOp
+   , Int16NeOp
+   , Word16ToWordOp
+   , WordToWord16Op
+   , Word16AddOp
+   , Word16SubOp
+   , Word16MulOp
+   , Word16QuotOp
+   , Word16RemOp
+   , Word16QuotRemOp
+   , Word16AndOp
+   , Word16OrOp
+   , Word16XorOp
+   , Word16NotOp
+   , Word16SllOp
+   , Word16SrlOp
+   , Word16ToInt16Op
+   , Word16EqOp
+   , Word16GeOp
+   , Word16GtOp
+   , Word16LeOp
+   , Word16LtOp
+   , Word16NeOp
+   , Int32ToIntOp
+   , IntToInt32Op
+   , Int32NegOp
+   , Int32AddOp
+   , Int32SubOp
+   , Int32MulOp
+   , Int32QuotOp
+   , Int32RemOp
+   , Int32QuotRemOp
+   , Int32SllOp
+   , Int32SraOp
+   , Int32SrlOp
+   , Int32ToWord32Op
+   , Int32EqOp
+   , Int32GeOp
+   , Int32GtOp
+   , Int32LeOp
+   , Int32LtOp
+   , Int32NeOp
+   , Word32ToWordOp
+   , WordToWord32Op
+   , Word32AddOp
+   , Word32SubOp
+   , Word32MulOp
+   , Word32QuotOp
+   , Word32RemOp
+   , Word32QuotRemOp
+   , Word32AndOp
+   , Word32OrOp
+   , Word32XorOp
+   , Word32NotOp
+   , Word32SllOp
+   , Word32SrlOp
+   , Word32ToInt32Op
+   , Word32EqOp
+   , Word32GeOp
+   , Word32GtOp
+   , Word32LeOp
+   , Word32LtOp
+   , Word32NeOp
+   , Int64ToIntOp
+   , IntToInt64Op
+   , Int64NegOp
+   , Int64AddOp
+   , Int64SubOp
+   , Int64MulOp
+   , Int64QuotOp
+   , Int64RemOp
+   , Int64SllOp
+   , Int64SraOp
+   , Int64SrlOp
+   , Int64ToWord64Op
+   , Int64EqOp
+   , Int64GeOp
+   , Int64GtOp
+   , Int64LeOp
+   , Int64LtOp
+   , Int64NeOp
+   , Word64ToWordOp
+   , WordToWord64Op
+   , Word64AddOp
+   , Word64SubOp
+   , Word64MulOp
+   , Word64QuotOp
+   , Word64RemOp
+   , Word64AndOp
+   , Word64OrOp
+   , Word64XorOp
+   , Word64NotOp
+   , Word64SllOp
+   , Word64SrlOp
+   , Word64ToInt64Op
+   , Word64EqOp
+   , Word64GeOp
+   , Word64GtOp
+   , Word64LeOp
+   , Word64LtOp
+   , Word64NeOp
    , IntAddOp
    , IntSubOp
    , IntMulOp
+   , IntMul2Op
    , IntMulMayOfloOp
    , IntQuotOp
    , IntRemOp
    , IntQuotRemOp
-   , AndIOp
-   , OrIOp
-   , XorIOp
-   , NotIOp
+   , IntAndOp
+   , IntOrOp
+   , IntXorOp
+   , IntNotOp
    , IntNegOp
    , IntAddCOp
    , IntSubCOp
@@ -26,15 +185,16 @@
    , IntLtOp
    , IntLeOp
    , ChrOp
-   , Int2WordOp
-   , Int2FloatOp
-   , Int2DoubleOp
-   , Word2FloatOp
-   , Word2DoubleOp
-   , ISllOp
-   , ISraOp
-   , ISrlOp
+   , IntToWordOp
+   , IntToFloatOp
+   , IntToDoubleOp
+   , WordToFloatOp
+   , WordToDoubleOp
+   , IntSllOp
+   , IntSraOp
+   , IntSrlOp
    , WordAddOp
+   , WordAddCOp
    , WordSubCOp
    , WordAdd2Op
    , WordSubOp
@@ -44,13 +204,13 @@
    , WordRemOp
    , WordQuotRemOp
    , WordQuotRem2Op
-   , AndOp
-   , OrOp
-   , XorOp
-   , NotOp
-   , SllOp
-   , SrlOp
-   , Word2IntOp
+   , WordAndOp
+   , WordOrOp
+   , WordXorOp
+   , WordNotOp
+   , WordSllOp
+   , WordSrlOp
+   , WordToIntOp
    , WordGtOp
    , WordGeOp
    , WordEqOp
@@ -86,6 +246,11 @@
    , BSwap32Op
    , BSwap64Op
    , BSwapOp
+   , BRev8Op
+   , BRev16Op
+   , BRev32Op
+   , BRev64Op
+   , BRevOp
    , Narrow8IntOp
    , Narrow16IntOp
    , Narrow32IntOp
@@ -104,10 +269,12 @@
    , DoubleDivOp
    , DoubleNegOp
    , DoubleFabsOp
-   , Double2IntOp
-   , Double2FloatOp
+   , DoubleToIntOp
+   , DoubleToFloatOp
    , DoubleExpOp
+   , DoubleExpM1Op
    , DoubleLogOp
+   , DoubleLog1POp
    , DoubleSqrtOp
    , DoubleSinOp
    , DoubleCosOp
@@ -118,9 +285,14 @@
    , DoubleSinhOp
    , DoubleCoshOp
    , DoubleTanhOp
+   , DoubleAsinhOp
+   , DoubleAcoshOp
+   , DoubleAtanhOp
    , DoublePowerOp
    , DoubleDecode_2IntOp
    , DoubleDecode_Int64Op
+   , CastDoubleToWord64Op
+   , CastWord64ToDoubleOp
    , FloatGtOp
    , FloatGeOp
    , FloatEqOp
@@ -133,9 +305,11 @@
    , FloatDivOp
    , FloatNegOp
    , FloatFabsOp
-   , Float2IntOp
+   , FloatToIntOp
    , FloatExpOp
+   , FloatExpM1Op
    , FloatLogOp
+   , FloatLog1POp
    , FloatSqrtOp
    , FloatSinOp
    , FloatCosOp
@@ -146,11 +320,23 @@
    , FloatSinhOp
    , FloatCoshOp
    , FloatTanhOp
+   , FloatAsinhOp
+   , FloatAcoshOp
+   , FloatAtanhOp
    , FloatPowerOp
-   , Float2DoubleOp
+   , FloatToDoubleOp
    , FloatDecode_IntOp
+   , CastFloatToWord32Op
+   , CastWord32ToFloatOp
+   , FloatFMAdd
+   , FloatFMSub
+   , FloatFNMAdd
+   , FloatFNMSub
+   , DoubleFMAdd
+   , DoubleFMSub
+   , DoubleFNMAdd
+   , DoubleFNMSub
    , NewArrayOp
-   , SameMutableArrayOp
    , ReadArrayOp
    , WriteArrayOp
    , SizeofArrayOp
@@ -166,11 +352,12 @@
    , ThawArrayOp
    , CasArrayOp
    , NewSmallArrayOp
-   , SameSmallMutableArrayOp
+   , ShrinkSmallMutableArrayOp_Char
    , ReadSmallArrayOp
    , WriteSmallArrayOp
    , SizeofSmallArrayOp
    , SizeofSmallMutableArrayOp
+   , GetSizeofSmallMutableArrayOp
    , IndexSmallArrayOp
    , UnsafeFreezeSmallArrayOp
    , UnsafeThawSmallArrayOp
@@ -187,10 +374,11 @@
    , MutableByteArrayIsPinnedOp
    , ByteArrayIsPinnedOp
    , ByteArrayContents_Char
-   , SameMutableByteArrayOp
+   , MutableByteArrayContents_Char
    , ShrinkMutableByteArrayOp_Char
    , ResizeMutableByteArrayOp_Char
    , UnsafeFreezeByteArrayOp
+   , UnsafeThawByteArrayOp
    , SizeofByteArrayOp
    , SizeofMutableByteArrayOp
    , GetSizeofMutableByteArrayOp
@@ -203,13 +391,27 @@
    , IndexByteArrayOp_Double
    , IndexByteArrayOp_StablePtr
    , IndexByteArrayOp_Int8
-   , IndexByteArrayOp_Int16
-   , IndexByteArrayOp_Int32
-   , IndexByteArrayOp_Int64
    , IndexByteArrayOp_Word8
+   , IndexByteArrayOp_Int16
    , IndexByteArrayOp_Word16
+   , IndexByteArrayOp_Int32
    , IndexByteArrayOp_Word32
+   , IndexByteArrayOp_Int64
    , IndexByteArrayOp_Word64
+   , IndexByteArrayOp_Word8AsChar
+   , IndexByteArrayOp_Word8AsWideChar
+   , IndexByteArrayOp_Word8AsInt
+   , IndexByteArrayOp_Word8AsWord
+   , IndexByteArrayOp_Word8AsAddr
+   , IndexByteArrayOp_Word8AsFloat
+   , IndexByteArrayOp_Word8AsDouble
+   , IndexByteArrayOp_Word8AsStablePtr
+   , IndexByteArrayOp_Word8AsInt16
+   , IndexByteArrayOp_Word8AsWord16
+   , IndexByteArrayOp_Word8AsInt32
+   , IndexByteArrayOp_Word8AsWord32
+   , IndexByteArrayOp_Word8AsInt64
+   , IndexByteArrayOp_Word8AsWord64
    , ReadByteArrayOp_Char
    , ReadByteArrayOp_WideChar
    , ReadByteArrayOp_Int
@@ -219,13 +421,27 @@
    , ReadByteArrayOp_Double
    , ReadByteArrayOp_StablePtr
    , ReadByteArrayOp_Int8
-   , ReadByteArrayOp_Int16
-   , ReadByteArrayOp_Int32
-   , ReadByteArrayOp_Int64
    , ReadByteArrayOp_Word8
+   , ReadByteArrayOp_Int16
    , ReadByteArrayOp_Word16
+   , ReadByteArrayOp_Int32
    , ReadByteArrayOp_Word32
+   , ReadByteArrayOp_Int64
    , ReadByteArrayOp_Word64
+   , ReadByteArrayOp_Word8AsChar
+   , ReadByteArrayOp_Word8AsWideChar
+   , ReadByteArrayOp_Word8AsInt
+   , ReadByteArrayOp_Word8AsWord
+   , ReadByteArrayOp_Word8AsAddr
+   , ReadByteArrayOp_Word8AsFloat
+   , ReadByteArrayOp_Word8AsDouble
+   , ReadByteArrayOp_Word8AsStablePtr
+   , ReadByteArrayOp_Word8AsInt16
+   , ReadByteArrayOp_Word8AsWord16
+   , ReadByteArrayOp_Word8AsInt32
+   , ReadByteArrayOp_Word8AsWord32
+   , ReadByteArrayOp_Word8AsInt64
+   , ReadByteArrayOp_Word8AsWord64
    , WriteByteArrayOp_Char
    , WriteByteArrayOp_WideChar
    , WriteByteArrayOp_Int
@@ -235,51 +451,56 @@
    , WriteByteArrayOp_Double
    , WriteByteArrayOp_StablePtr
    , WriteByteArrayOp_Int8
-   , WriteByteArrayOp_Int16
-   , WriteByteArrayOp_Int32
-   , WriteByteArrayOp_Int64
    , WriteByteArrayOp_Word8
+   , WriteByteArrayOp_Int16
    , WriteByteArrayOp_Word16
+   , WriteByteArrayOp_Int32
    , WriteByteArrayOp_Word32
+   , WriteByteArrayOp_Int64
    , WriteByteArrayOp_Word64
+   , WriteByteArrayOp_Word8AsChar
+   , WriteByteArrayOp_Word8AsWideChar
+   , WriteByteArrayOp_Word8AsInt
+   , WriteByteArrayOp_Word8AsWord
+   , WriteByteArrayOp_Word8AsAddr
+   , WriteByteArrayOp_Word8AsFloat
+   , WriteByteArrayOp_Word8AsDouble
+   , WriteByteArrayOp_Word8AsStablePtr
+   , WriteByteArrayOp_Word8AsInt16
+   , WriteByteArrayOp_Word8AsWord16
+   , WriteByteArrayOp_Word8AsInt32
+   , WriteByteArrayOp_Word8AsWord32
+   , WriteByteArrayOp_Word8AsInt64
+   , WriteByteArrayOp_Word8AsWord64
    , CompareByteArraysOp
    , CopyByteArrayOp
    , CopyMutableByteArrayOp
+   , CopyMutableByteArrayNonOverlappingOp
    , CopyByteArrayToAddrOp
    , CopyMutableByteArrayToAddrOp
    , CopyAddrToByteArrayOp
+   , CopyAddrToAddrOp
+   , CopyAddrToAddrNonOverlappingOp
    , SetByteArrayOp
+   , SetAddrRangeOp
    , AtomicReadByteArrayOp_Int
    , AtomicWriteByteArrayOp_Int
    , CasByteArrayOp_Int
+   , CasByteArrayOp_Int8
+   , CasByteArrayOp_Int16
+   , CasByteArrayOp_Int32
+   , CasByteArrayOp_Int64
    , FetchAddByteArrayOp_Int
    , FetchSubByteArrayOp_Int
    , FetchAndByteArrayOp_Int
    , FetchNandByteArrayOp_Int
    , FetchOrByteArrayOp_Int
    , FetchXorByteArrayOp_Int
-   , NewArrayArrayOp
-   , SameMutableArrayArrayOp
-   , UnsafeFreezeArrayArrayOp
-   , SizeofArrayArrayOp
-   , SizeofMutableArrayArrayOp
-   , IndexArrayArrayOp_ByteArray
-   , IndexArrayArrayOp_ArrayArray
-   , ReadArrayArrayOp_ByteArray
-   , ReadArrayArrayOp_MutableByteArray
-   , ReadArrayArrayOp_ArrayArray
-   , ReadArrayArrayOp_MutableArrayArray
-   , WriteArrayArrayOp_ByteArray
-   , WriteArrayArrayOp_MutableByteArray
-   , WriteArrayArrayOp_ArrayArray
-   , WriteArrayArrayOp_MutableArrayArray
-   , CopyArrayArrayOp
-   , CopyMutableArrayArrayOp
    , AddrAddOp
    , AddrSubOp
    , AddrRemOp
-   , Addr2IntOp
-   , Int2AddrOp
+   , AddrToIntOp
+   , IntToAddrOp
    , AddrGtOp
    , AddrGeOp
    , AddrEqOp
@@ -295,13 +516,27 @@
    , IndexOffAddrOp_Double
    , IndexOffAddrOp_StablePtr
    , IndexOffAddrOp_Int8
-   , IndexOffAddrOp_Int16
-   , IndexOffAddrOp_Int32
-   , IndexOffAddrOp_Int64
    , IndexOffAddrOp_Word8
+   , IndexOffAddrOp_Int16
    , IndexOffAddrOp_Word16
+   , IndexOffAddrOp_Int32
    , IndexOffAddrOp_Word32
+   , IndexOffAddrOp_Int64
    , IndexOffAddrOp_Word64
+   , IndexOffAddrOp_Word8AsChar
+   , IndexOffAddrOp_Word8AsWideChar
+   , IndexOffAddrOp_Word8AsInt
+   , IndexOffAddrOp_Word8AsWord
+   , IndexOffAddrOp_Word8AsAddr
+   , IndexOffAddrOp_Word8AsFloat
+   , IndexOffAddrOp_Word8AsDouble
+   , IndexOffAddrOp_Word8AsStablePtr
+   , IndexOffAddrOp_Word8AsInt16
+   , IndexOffAddrOp_Word8AsWord16
+   , IndexOffAddrOp_Word8AsInt32
+   , IndexOffAddrOp_Word8AsWord32
+   , IndexOffAddrOp_Word8AsInt64
+   , IndexOffAddrOp_Word8AsWord64
    , ReadOffAddrOp_Char
    , ReadOffAddrOp_WideChar
    , ReadOffAddrOp_Int
@@ -311,13 +546,27 @@
    , ReadOffAddrOp_Double
    , ReadOffAddrOp_StablePtr
    , ReadOffAddrOp_Int8
-   , ReadOffAddrOp_Int16
-   , ReadOffAddrOp_Int32
-   , ReadOffAddrOp_Int64
    , ReadOffAddrOp_Word8
+   , ReadOffAddrOp_Int16
    , ReadOffAddrOp_Word16
+   , ReadOffAddrOp_Int32
    , ReadOffAddrOp_Word32
+   , ReadOffAddrOp_Int64
    , ReadOffAddrOp_Word64
+   , ReadOffAddrOp_Word8AsChar
+   , ReadOffAddrOp_Word8AsWideChar
+   , ReadOffAddrOp_Word8AsInt
+   , ReadOffAddrOp_Word8AsWord
+   , ReadOffAddrOp_Word8AsAddr
+   , ReadOffAddrOp_Word8AsFloat
+   , ReadOffAddrOp_Word8AsDouble
+   , ReadOffAddrOp_Word8AsStablePtr
+   , ReadOffAddrOp_Word8AsInt16
+   , ReadOffAddrOp_Word8AsWord16
+   , ReadOffAddrOp_Word8AsInt32
+   , ReadOffAddrOp_Word8AsWord32
+   , ReadOffAddrOp_Word8AsInt64
+   , ReadOffAddrOp_Word8AsWord64
    , WriteOffAddrOp_Char
    , WriteOffAddrOp_WideChar
    , WriteOffAddrOp_Int
@@ -327,36 +576,71 @@
    , WriteOffAddrOp_Double
    , WriteOffAddrOp_StablePtr
    , WriteOffAddrOp_Int8
-   , WriteOffAddrOp_Int16
-   , WriteOffAddrOp_Int32
-   , WriteOffAddrOp_Int64
    , WriteOffAddrOp_Word8
+   , WriteOffAddrOp_Int16
    , WriteOffAddrOp_Word16
+   , WriteOffAddrOp_Int32
    , WriteOffAddrOp_Word32
+   , WriteOffAddrOp_Int64
    , WriteOffAddrOp_Word64
+   , WriteOffAddrOp_Word8AsChar
+   , WriteOffAddrOp_Word8AsWideChar
+   , WriteOffAddrOp_Word8AsInt
+   , WriteOffAddrOp_Word8AsWord
+   , WriteOffAddrOp_Word8AsAddr
+   , WriteOffAddrOp_Word8AsFloat
+   , WriteOffAddrOp_Word8AsDouble
+   , WriteOffAddrOp_Word8AsStablePtr
+   , WriteOffAddrOp_Word8AsInt16
+   , WriteOffAddrOp_Word8AsWord16
+   , WriteOffAddrOp_Word8AsInt32
+   , WriteOffAddrOp_Word8AsWord32
+   , WriteOffAddrOp_Word8AsInt64
+   , WriteOffAddrOp_Word8AsWord64
+   , InterlockedExchange_Addr
+   , InterlockedExchange_Word
+   , CasAddrOp_Addr
+   , CasAddrOp_Word
+   , CasAddrOp_Word8
+   , CasAddrOp_Word16
+   , CasAddrOp_Word32
+   , CasAddrOp_Word64
+   , FetchAddAddrOp_Word
+   , FetchSubAddrOp_Word
+   , FetchAndAddrOp_Word
+   , FetchNandAddrOp_Word
+   , FetchOrAddrOp_Word
+   , FetchXorAddrOp_Word
+   , AtomicReadAddrOp_Word
+   , AtomicWriteAddrOp_Word
    , NewMutVarOp
    , ReadMutVarOp
    , WriteMutVarOp
-   , SameMutVarOp
-   , AtomicModifyMutVarOp
+   , AtomicSwapMutVarOp
+   , AtomicModifyMutVar2Op
+   , AtomicModifyMutVar_Op
    , CasMutVarOp
    , CatchOp
    , RaiseOp
+   , RaiseUnderflowOp
+   , RaiseOverflowOp
+   , RaiseDivZeroOp
    , RaiseIOOp
    , MaskAsyncExceptionsOp
    , MaskUninterruptibleOp
    , UnmaskAsyncExceptionsOp
    , MaskStatus
+   , NewPromptTagOp
+   , PromptOp
+   , Control0Op
    , AtomicallyOp
    , RetryOp
    , CatchRetryOp
    , CatchSTMOp
-   , Check
    , NewTVarOp
    , ReadTVarOp
    , ReadTVarIOOp
    , WriteTVarOp
-   , SameTVarOp
    , NewMVarOp
    , TakeMVarOp
    , TryTakeMVarOp
@@ -364,8 +648,10 @@
    , TryPutMVarOp
    , ReadMVarOp
    , TryReadMVarOp
-   , SameMVarOp
    , IsEmptyMVarOp
+   , NewIOPortOp
+   , ReadIOPortOp
+   , WriteIOPortOp
    , DelayOp
    , WaitReadOp
    , WaitWriteOp
@@ -377,7 +663,9 @@
    , LabelThreadOp
    , IsCurrentThreadBoundOp
    , NoDuplicateOp
+   , GetThreadLabelOp
    , ThreadStatusOp
+   , ListThreadsOp
    , MkWeakOp
    , MkWeakNoFinalizerOp
    , AddCFinalizerToWeakOp
@@ -388,7 +676,6 @@
    , DeRefStablePtrOp
    , EqStablePtrOp
    , MakeStableNameOp
-   , EqStableNameOp
    , StableNameToIntOp
    , CompactNewOp
    , CompactResizeOp
@@ -407,19 +694,25 @@
    , SeqOp
    , GetSparkOp
    , NumSparks
-   , DataToTagOp
+   , KeepAliveOp
+   , DataToTagSmallOp
+   , DataToTagLargeOp
    , TagToEnumOp
    , AddrToAnyOp
    , AnyToAddrOp
    , MkApUpd0_Op
    , NewBCOOp
    , UnpackClosureOp
+   , ClosureSizeOp
    , GetApStackValOp
    , GetCCSOfOp
    , GetCurrentCCSOp
    , ClearCCSOp
+   , WhereFromOp
    , TraceEventOp
+   , TraceEventBinaryOp
    , TraceMarkerOp
+   , SetThreadAllocationCounter
    , (VecBroadcastOp IntVec 16 W8)
    , (VecBroadcastOp IntVec 8 W16)
    , (VecBroadcastOp IntVec 4 W32)

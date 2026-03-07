@@ -1,1 +1,1 @@
-lib/UniqSupply.v: ../../base/GHC/Base.h2ci
+lib/UniqSupply.v: ../../base/Control/Monad/Fail.h2ci ../../base/GHC/Base.h2ci

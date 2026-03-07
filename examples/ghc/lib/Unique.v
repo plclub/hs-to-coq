@@ -12,12 +12,9 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require BasicTypes.
-Require BinNat.
 Require BinNums.
 Require Coq.ZArith.BinInt.
 Require Data.Bits.
-Require FastString.
 Require GHC.Base.
 Require GHC.Char.
 Require GHC.Num.
@@ -26,16 +23,16 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Unique : Type := | MkUnique : BinNums.N -> Unique.
+Inductive Unique : Type := | MkUnique : GHC.Internal.Word.Word64 -> Unique.
 
 Record Uniquable__Dict (a : Type) := Uniquable__Dict_Build {
   getUnique__ : a -> Unique }.
 
-Definition Uniquable (a : Type) :=
+#[global] Definition Uniquable (a : Type) :=
   forall r__, (Uniquable__Dict a -> r__) -> r__.
 Existing Class Uniquable.
 
-Definition getUnique `{g__0__ : Uniquable a} : a -> Unique :=
+#[global] Definition getUnique `{g__0__ : Uniquable a} : a -> Unique :=
   g__0__ _ (getUnique__ a).
 
 (* Midamble *)
@@ -49,42 +46,56 @@ Program Instance Uniquable__Word : Uniquable GHC.Num.Word :=
 
 (* Converted value declarations: *)
 
-Definition mkUniqueGrimily : BinNums.N -> Unique :=
-  MkUnique.
+#[global] Definition mkUniqueIntGrimily : BinNums.N -> Unique :=
+  MkUnique GHC.Base.∘ GHC.Utils.Word64.intToWord64.
 
-Local Definition Uniquable__FastString_getUnique
-   : FastString.FastString -> Unique :=
-  fun fs => mkUniqueGrimily (FastString.uniqueOfFS fs).
+#[local] Definition Uniquable__FastString_getUnique
+   : GHC.Data.FastString.FastString -> Unique :=
+  fun fs => mkUniqueIntGrimily (GHC.Data.FastString.uniqueOfFS fs).
 
-Program Instance Uniquable__FastString : Uniquable FastString.FastString :=
+#[global]
+Program Instance Uniquable__FastString
+   : Uniquable GHC.Data.FastString.FastString :=
   fun _ k__ => k__ {| getUnique__ := Uniquable__FastString_getUnique |}.
 
-Local Definition Uniquable__N_getUnique : BinNums.N -> Unique :=
-  fun i => mkUniqueGrimily i.
+#[local] Definition Uniquable__N_getUnique : BinNums.N -> Unique :=
+  fun i => mkUniqueIntGrimily i.
 
+#[global]
 Program Instance Uniquable__N : Uniquable BinNums.N :=
   fun _ k__ => k__ {| getUnique__ := Uniquable__N_getUnique |}.
 
-Definition eqUnique : Unique -> Unique -> bool :=
+#[local] Definition Uniquable__ModuleName_getUnique
+   : Language.Haskell.Syntax.Module.Name.ModuleName -> Unique :=
+  fun '(Language.Haskell.Syntax.Module.Name.ModuleName nm) => getUnique nm.
+
+#[global]
+Program Instance Uniquable__ModuleName
+   : Uniquable Language.Haskell.Syntax.Module.Name.ModuleName :=
+  fun _ k__ => k__ {| getUnique__ := Uniquable__ModuleName_getUnique |}.
+
+#[global] Definition eqUnique : Unique -> Unique -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | MkUnique u1, MkUnique u2 => u1 GHC.Base.== u2
     end.
 
-Local Definition Eq___Unique_op_zeze__ : Unique -> Unique -> bool :=
+#[local] Definition Eq___Unique_op_zeze__ : Unique -> Unique -> bool :=
   fun a b => eqUnique a b.
 
-Local Definition Eq___Unique_op_zsze__ : Unique -> Unique -> bool :=
+#[local] Definition Eq___Unique_op_zsze__ : Unique -> Unique -> bool :=
   fun a b => negb (eqUnique a b).
 
+#[global]
 Program Instance Eq___Unique : GHC.Base.Eq_ Unique :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Unique_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Unique_op_zsze__ |}.
 
-Local Definition Uniquable__Unique_getUnique : Unique -> Unique :=
+#[local] Definition Uniquable__Unique_getUnique : Unique -> Unique :=
   fun u => u.
 
+#[global]
 Program Instance Uniquable__Unique : Uniquable Unique :=
   fun _ k__ => k__ {| getUnique__ := Uniquable__Unique_getUnique |}.
 
@@ -94,54 +105,76 @@ Program Instance Uniquable__Unique : Uniquable Unique :=
 (* Skipping all instances of class `GHC.Show.Show', including
    `Unique.Show__Unique' *)
 
-Definition uNIQUE_BITS : GHC.Num.Int :=
+#[global] Definition uNIQUE_BITS : GHC.Num.Int :=
   #56.
 
-Definition getKey : Unique -> BinNums.N :=
+#[global] Definition mkUniqueGrimily : GHC.Internal.Word.Word64 -> Unique :=
+  MkUnique.
+
+#[global] Definition getKey : Unique -> GHC.Internal.Word.Word64 :=
   fun '(MkUnique x) => x.
 
-Definition incrUnique : Unique -> Unique :=
+#[global] Definition incrUnique : Unique -> Unique :=
   fun '(MkUnique i) => MkUnique (i GHC.Num.+ #1).
 
-Definition stepUnique : Unique -> BinNums.N -> Unique :=
+#[global] Definition stepUnique
+   : Unique -> GHC.Internal.Word.Word64 -> Unique :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | MkUnique i, n => MkUnique (i GHC.Num.+ n)
     end.
 
-Definition uniqueMask : GHC.Num.Int :=
+#[global] Definition uniqueMask : GHC.Num.Int :=
   Data.Bits.shiftL #1 uNIQUE_BITS GHC.Num.- #1.
 
-Definition mkUnique : GHC.Char.Char -> GHC.Num.Word -> Unique :=
+#[global] Definition mkUnique : GHC.Char.Char -> GHC.Num.Word -> Unique :=
   fun c i =>
     let bits := Coq.ZArith.BinInt.Z.land (Coq.ZArith.BinInt.Z.of_N i) uniqueMask in
     let tag := Data.Bits.shiftL (GHC.Base.ord c) uNIQUE_BITS in
     MkUnique (Coq.ZArith.BinInt.Z.to_N (Coq.ZArith.BinInt.Z.lor tag bits)).
 
-Definition deriveUnique : Unique -> BinNums.N -> Unique :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | MkUnique i, delta => mkUnique (GHC.Char.hs_char__ "X") (i GHC.Num.+ delta)
-    end.
+#[global] Definition mkLocalUnique : GHC.Internal.Word.Word64 -> Unique :=
+  fun i => mkUnique (GHC.Char.hs_char__ "X") i.
+
+#[global] Definition minLocalUnique : Unique :=
+  mkLocalUnique #0.
+
+#[global] Definition maxLocalUnique : Unique :=
+  mkLocalUnique uniqueMask.
 
 (* Skipping definition `Unique.newTagUnique' *)
 
-Definition unpkUnique : Unique -> GHC.Char.Char * GHC.Num.Int :=
+#[global] Definition mkTag : GHC.Char.Char -> GHC.Internal.Word.Word64 :=
+  fun c =>
+    GHC.Prelude.Basic.shiftL (GHC.Utils.Word64.intToWord64 (GHC.Base.ord c))
+                             uNIQUE_BITS.
+
+#[global] Definition mkUniqueInt : GHC.Char.Char -> BinNums.N -> Unique :=
+  fun c i => mkUnique c (GHC.Utils.Word64.intToWord64 i).
+
+#[global] Definition unpkUnique : Unique -> GHC.Char.Char * GHC.Num.Int :=
   fun '(MkUnique u) =>
     let i := Coq.ZArith.BinInt.Z.land (Coq.ZArith.BinInt.Z.of_N u) uniqueMask in
     let tag :=
       GHC.Char.chr (Data.Bits.shiftR (Coq.ZArith.BinInt.Z.of_N u) uNIQUE_BITS) in
     pair tag i.
 
-Definition isValidKnownKeyUnique : Unique -> bool :=
+#[global] Definition isValidKnownKeyUnique : Unique -> bool :=
   fun u =>
     let 'pair c x := unpkUnique u in
-    andb (GHC.Base.ord c GHC.Base.< #255) (x GHC.Base.<= (Data.Bits.shiftL #1 #22)).
+    andb (GHC.Base.ord c GHC.Base.< #255) (x GHC.Base.<=
+          (GHC.Prelude.Basic.shiftL #1 #22)).
 
-Definition hasKey {a : Type} `{Uniquable a} : a -> Unique -> bool :=
+#[global] Definition hasKey {a : Type} `{Uniquable a} : a -> Unique -> bool :=
   fun x k => getUnique x GHC.Base.== k.
 
-Definition nonDetCmpUnique : Unique -> Unique -> comparison :=
+#[global] Definition ltUnique : Unique -> Unique -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | MkUnique u1, MkUnique u2 => u1 GHC.Base.< u2
+    end.
+
+#[global] Definition nonDetCmpUnique : Unique -> Unique -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | MkUnique u1, MkUnique u2 =>
@@ -154,101 +187,23 @@ Definition nonDetCmpUnique : Unique -> Unique -> comparison :=
 
 (* Skipping definition `Unique.showUnique' *)
 
-(* Skipping definition `Unique.finish_show' *)
-
 (* Skipping definition `Unique.pprUniqueAlways' *)
 
-(* Skipping definition `Unique.iToBase62' *)
+(* Skipping definition `Unique.w64ToBase62' *)
 
-Definition mkAlphaTyVarUnique : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "1") i.
-
-Definition mkCoVarUnique : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "g") i.
-
-Definition mkPreludeClassUnique : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "2") i.
-
-Definition mkPreludeTyConUnique : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "3") (#2 GHC.Num.* i).
-
-Definition tyConRepNameUnique : Unique -> Unique :=
-  fun u => incrUnique u.
-
-Definition mkPreludeDataConUnique : BasicTypes.Arity -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "6") (#3 GHC.Num.* BinNat.N.of_nat i).
-
-Definition dataConWorkerUnique : Unique -> Unique :=
-  fun u => incrUnique u.
-
-Definition dataConRepNameUnique : Unique -> Unique :=
-  fun u => stepUnique u #2.
-
-Definition mkPrimOpIdUnique : BinNums.N -> Unique :=
-  fun op => mkUnique (GHC.Char.hs_char__ "9") op.
-
-Definition mkPreludeMiscIdUnique : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "0") i.
-
-Definition mkPArrDataConUnique : BinNums.N -> Unique :=
-  fun a => mkUnique (GHC.Char.hs_char__ ":") (#2 GHC.Num.* a).
-
-Definition initTyVarUnique : Unique :=
-  mkUnique (GHC.Char.hs_char__ "t") #0.
-
-Definition mkBuiltinUnique : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "B") i.
-
-Definition mkPseudoUniqueD : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "D") i.
-
-Definition mkPseudoUniqueE : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "E") i.
-
-Definition mkPseudoUniqueH : BinNums.N -> Unique :=
-  fun i => mkUnique (GHC.Char.hs_char__ "H") i.
-
-Definition mkRegSingleUnique : BinNums.N -> Unique :=
-  mkUnique (GHC.Char.hs_char__ "R").
-
-Definition mkRegSubUnique : BinNums.N -> Unique :=
-  mkUnique (GHC.Char.hs_char__ "S").
-
-Definition mkRegPairUnique : BinNums.N -> Unique :=
-  mkUnique (GHC.Char.hs_char__ "P").
-
-Definition mkRegClassUnique : BinNums.N -> Unique :=
-  mkUnique (GHC.Char.hs_char__ "L").
-
-Definition mkCostCentreUnique : BinNums.N -> Unique :=
-  mkUnique (GHC.Char.hs_char__ "C").
-
-Definition mkVarOccUnique : FastString.FastString -> Unique :=
-  fun fs => mkUnique (GHC.Char.hs_char__ "i") (FastString.uniqueOfFS fs).
-
-Definition mkDataOccUnique : FastString.FastString -> Unique :=
-  fun fs => mkUnique (GHC.Char.hs_char__ "d") (FastString.uniqueOfFS fs).
-
-Definition mkTvOccUnique : FastString.FastString -> Unique :=
-  fun fs => mkUnique (GHC.Char.hs_char__ "v") (FastString.uniqueOfFS fs).
-
-Definition mkTcOccUnique : FastString.FastString -> Unique :=
-  fun fs => mkUnique (GHC.Char.hs_char__ "c") (FastString.uniqueOfFS fs).
-
-Definition initExitJoinUnique : Unique :=
-  mkUnique (GHC.Char.hs_char__ "s") #0.
-
-Definition getWordKey : Unique -> GHC.Num.Word :=
+#[global] Definition getWordKey : Unique -> GHC.Num.Word :=
   getKey.
 
 Axiom isLocalUnique : Unique -> bool.
 
 (* External variables:
-     Eq Gt Lt Type andb bool comparison negb op_zt__ pair BasicTypes.Arity
-     BinNat.N.of_nat BinNums.N Coq.ZArith.BinInt.Z.land Coq.ZArith.BinInt.Z.lor
-     Coq.ZArith.BinInt.Z.of_N Coq.ZArith.BinInt.Z.to_N Data.Bits.shiftL
-     Data.Bits.shiftR FastString.FastString FastString.uniqueOfFS GHC.Base.Eq_
-     GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zl__ GHC.Base.op_zlze__
-     GHC.Base.op_zsze____ GHC.Base.ord GHC.Char.Char GHC.Char.chr GHC.Num.Int
-     GHC.Num.Word GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__
+     Eq Gt Lt Type andb bool comparison negb op_zt__ pair BinNums.N
+     Coq.ZArith.BinInt.Z.land Coq.ZArith.BinInt.Z.lor Coq.ZArith.BinInt.Z.of_N
+     Coq.ZArith.BinInt.Z.to_N Data.Bits.shiftL Data.Bits.shiftR GHC.Base.Eq_
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zl__
+     GHC.Base.op_zlze__ GHC.Base.op_zsze____ GHC.Base.ord GHC.Char.Char GHC.Char.chr
+     GHC.Data.FastString.FastString GHC.Data.FastString.uniqueOfFS
+     GHC.Internal.Word.Word64 GHC.Num.Int GHC.Num.Word GHC.Num.fromInteger
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prelude.Basic.shiftL
+     GHC.Utils.Word64.intToWord64 Language.Haskell.Syntax.Module.Name.ModuleName
 *)

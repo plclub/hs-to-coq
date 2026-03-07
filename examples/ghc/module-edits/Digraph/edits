@@ -4,7 +4,7 @@ skip module Data.Graph
 skip module Data.Tree
 skip module GHC.ST
 
-rename value Digraph.Edge = Digraph.Mk_Edge
+rename value GHC.Data.Graph.Directed.Edge = Digraph.Mk_Edge
 
 redefine Axiom Digraph.Set_ : Type -> Type.
 redefine Axiom Digraph.ReduceFn : Type -> (Type -> Type).

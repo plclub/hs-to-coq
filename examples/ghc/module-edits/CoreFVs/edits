@@ -1,6 +1,6 @@
 
 # Make it easier for Coq to see termination
-rename value Util.mapAndUnzip = NestedRecursionHelpers.mapAndUnzipFix 
+rename value GHC.Utils.Misc.mapAndUnzip = NestedRecursionHelpers.mapAndUnzipFix 
 
 #
 # TODO: we don't try to translate the orphNames functions

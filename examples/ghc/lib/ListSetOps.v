@@ -15,11 +15,15 @@ Require Coq.Program.Wf.
 Require Coq.Init.Datatypes.
 Require Coq.Lists.List.
 Require Data.Foldable.
+Require Data.Ord.
 Require Data.Set.Internal.
 Require Data.Traversable.
+Require Data.Tuple.
 Require GHC.Base.
 Require GHC.List.
 Require GHC.Num.
+Require GHC.Prim.
+Require GHC.Utils.Trace.
 Require HsToCoq.Err.
 Require Panic.
 Require Util.
@@ -28,26 +32,64 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Definition Assoc a b :=
+#[global] Definition Assoc a b :=
   (list (a * b)%type)%type.
 
 (* Converted value declarations: *)
 
 (* Skipping definition `ListSetOps.getNth' *)
 
-Definition unionLists {a} `{GHC.Base.Eq_ a} : list a -> list a -> list a :=
+#[global] Definition unionListsOrd {a : Type} `{Util.HasDebugCallStack}
+  `{Outputable.Outputable a} `{GHC.Base.Ord a}
+   : list a -> list a -> list a :=
   fun xs ys =>
-    Panic.warnPprTrace (orb (Util.lengthExceeds xs #100) (Util.lengthExceeds ys
-                             #100)) (GHC.Base.hs_string__ "ghc/compiler/utils/ListSetOps.hs") #53
-                       (Panic.someSDoc) (Coq.Init.Datatypes.app (Coq.Lists.List.flat_map (fun x =>
-                                                                                            if Util.isn'tIn
-                                                                                               (GHC.Base.hs_string__
-                                                                                                "unionLists") x
-                                                                                               ys : bool
-                                                                                            then cons x nil else
-                                                                                            nil) xs) ys).
+    let set_ys := Data.Set.Internal.fromList ys in
+    Coq.Init.Datatypes.app (GHC.List.filter (fun e =>
+                                               negb (Data.Set.Internal.member e set_ys)) xs) ys.
 
-Definition minusList {a : Type} `{GHC.Base.Ord a}
+#[global] Definition isIn {a : Type} `{GHC.Base.Eq_ a}
+   : GHC.Base.String -> a -> list a -> bool :=
+  fun _msg x ys => Data.Foldable.elem x ys.
+
+#[global] Definition isn'tIn {a : Type} `{GHC.Base.Eq_ a}
+   : GHC.Base.String -> a -> list a -> bool :=
+  fun _msg x ys => Data.Foldable.notElem x ys.
+
+#[global] Definition unionLists {a} `{GHC.Base.Eq_ a}
+   : list a -> list a -> list a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | xs, nil => xs
+    | nil, ys => ys
+    | cons x nil, ys =>
+        if isIn (GHC.Base.hs_string__ "unionLists") x ys : bool then ys else
+        cons x ys
+    | _, _ =>
+        match arg_0__, arg_1__ with
+        | xs, cons y nil =>
+            if isIn (GHC.Base.hs_string__ "unionLists") y xs : bool then xs else
+            cons y xs
+        | _, _ =>
+            match arg_0__, arg_1__ with
+            | xs, ys =>
+                GHC.Utils.Trace.warnPprTrace (orb (Util.lengthExceeds xs #100)
+                                                  (Util.lengthExceeds ys #100)) (GHC.Base.hs_string__ "unionLists")
+                                             (Panic.someSDoc) (Coq.Init.Datatypes.app (Coq.Lists.List.flat_map (fun x =>
+                                                                                                                  if isn'tIn
+                                                                                                                     (GHC.Base.hs_string__
+                                                                                                                      "unionLists")
+                                                                                                                     x
+                                                                                                                     ys : bool
+                                                                                                                  then cons
+                                                                                                                       x
+                                                                                                                       nil else
+                                                                                                                  nil)
+                                                                                                               xs) ys)
+            end
+        end
+    end.
+
+#[global] Definition minusList {a : Type} `{GHC.Base.Ord a}
    : list a -> list a -> list a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -56,10 +98,10 @@ Definition minusList {a : Type} `{GHC.Base.Ord a}
     | _, _ =>
         match arg_0__, arg_1__ with
         | xs, nil => xs
-        | xs, cons y nil => GHC.List.filter (fun arg_2__ => arg_2__ GHC.Base./= y) xs
+        | xs, cons y nil => GHC.List.filter (GHC.Prim.rightSection _GHC.Base./=_ y) xs
         | xs, ys =>
             let yss := Data.Set.Internal.fromList ys in
-            GHC.List.filter (fun arg_5__ => Data.Set.Internal.notMember arg_5__ yss) xs
+            GHC.List.filter (GHC.Prim.rightSection Data.Set.Internal.notMember yss) xs
         end
     end.
 
@@ -72,23 +114,23 @@ Fixpoint assocDefaultUsing {a : Type} {b : Type} (arg_0__ : a -> a -> bool)
          assocDefaultUsing eq deflt rest key
      end.
 
-Definition assoc {a} {b} `{GHC.Base.Eq_ a} `{HsToCoq.Err.Default b}
+#[global] Definition assoc {a} {b} `{GHC.Base.Eq_ a} `{HsToCoq.Err.Default b}
    : GHC.Base.String -> Assoc a b -> a -> b :=
   fun crash_msg list key =>
     assocDefaultUsing _GHC.Base.==_ (Panic.panic (Coq.Init.Datatypes.app
                                                   (GHC.Base.hs_string__ "Failed in assoc: ") crash_msg)) list key.
 
-Definition assocDefault {a : Type} {b : Type} `{GHC.Base.Eq_ a}
+#[global] Definition assocDefault {a : Type} {b : Type} `{GHC.Base.Eq_ a}
    : b -> Assoc a b -> a -> b :=
   fun deflt list key => assocDefaultUsing _GHC.Base.==_ deflt list key.
 
-Definition assocUsing {a} {b} `{HsToCoq.Err.Default b}
+#[global] Definition assocUsing {a} {b} `{HsToCoq.Err.Default b}
    : (a -> a -> bool) -> GHC.Base.String -> Assoc a b -> a -> b :=
   fun eq crash_msg list key =>
     assocDefaultUsing eq (Panic.panic (Coq.Init.Datatypes.app (GHC.Base.hs_string__
                                                                "Failed in assoc: ") crash_msg)) list key.
 
-Definition assocMaybe {a : Type} {b : Type} `{GHC.Base.Eq_ a}
+#[global] Definition assocMaybe {a : Type} {b : Type} `{GHC.Base.Eq_ a}
    : Assoc a b -> a -> option b :=
   fun alist key =>
     let fix lookup arg_0__
@@ -101,9 +143,9 @@ Definition assocMaybe {a : Type} {b : Type} `{GHC.Base.Eq_ a}
          end in
     lookup alist.
 
-Definition hasNoDups {a : Type} `{GHC.Base.Eq_ a} : list a -> bool :=
+#[global] Definition hasNoDups {a : Type} `{GHC.Base.Eq_ a} : list a -> bool :=
   fun xs =>
-    let is_elem := Util.isIn (GHC.Base.hs_string__ "hasNoDups") in
+    let is_elem := isIn (GHC.Base.hs_string__ "hasNoDups") in
     let fix f arg_1__ arg_2__
       := match arg_1__, arg_2__ with
          | _, nil => true
@@ -117,7 +159,7 @@ Definition hasNoDups {a : Type} `{GHC.Base.Eq_ a} : list a -> bool :=
 Axiom equivClasses : forall {a : Type},
                      (a -> a -> comparison) -> list a -> list (GHC.Base.NonEmpty a).
 
-Definition removeDups {a : Type}
+#[global] Definition removeDups {a : Type}
    : (a -> a -> comparison) ->
      list a -> (list a * list (GHC.Base.NonEmpty a))%type :=
   fun arg_0__ arg_1__ =>
@@ -133,19 +175,29 @@ Definition removeDups {a : Type}
             | dups_so_far, GHC.Base.NEcons x nil => pair dups_so_far x
             | dups_so_far, (GHC.Base.NEcons x _ as dups) => pair (cons dups dups_so_far) x
             end in
-        let 'pair dups xs' := (Data.Traversable.mapAccumR collect_dups nil (equivClasses
-                                                                            cmp xs)) in
+        let 'pair dups xs' := Data.Traversable.mapAccumR collect_dups nil (equivClasses
+                                                                           cmp xs) in
         pair xs' dups
     end.
+
+#[global] Definition removeDupsOn {b : Type} {a : Type} `{GHC.Base.Ord b}
+   : (a -> b) -> list a -> (list a * list (GHC.Base.NonEmpty a))%type :=
+  fun f x => removeDups (Data.Ord.comparing f) x.
+
+#[global] Definition nubOrdBy {a : Type}
+   : (a -> a -> comparison) -> list a -> list a :=
+  fun cmp xs => Data.Tuple.fst (removeDups cmp xs).
 
 (* Skipping definition `ListSetOps.findDupsEq' *)
 
 (* External variables:
-     None Some Type bool comparison cons false list nil op_zt__ option orb pair true
-     Coq.Init.Datatypes.app Coq.Lists.List.flat_map Data.Foldable.elem
-     Data.Set.Internal.fromList Data.Set.Internal.notMember
-     Data.Traversable.mapAccumR GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty
-     GHC.Base.Ord GHC.Base.String GHC.Base.op_zeze__ GHC.Base.op_zsze__
-     GHC.List.filter GHC.Num.fromInteger HsToCoq.Err.Default Panic.panic
-     Panic.someSDoc Panic.warnPprTrace Util.isIn Util.isn'tIn Util.lengthExceeds
+     None Some Type bool comparison cons false list negb nil op_zt__ option orb pair
+     true Coq.Init.Datatypes.app Coq.Lists.List.flat_map Data.Foldable.elem
+     Data.Foldable.notElem Data.Ord.comparing Data.Set.Internal.fromList
+     Data.Set.Internal.member Data.Set.Internal.notMember Data.Traversable.mapAccumR
+     Data.Tuple.fst GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord
+     GHC.Base.String GHC.Base.op_zeze__ GHC.Base.op_zsze__ GHC.List.filter
+     GHC.Num.fromInteger GHC.Prim.rightSection GHC.Utils.Trace.warnPprTrace
+     HsToCoq.Err.Default Outputable.Outputable Panic.panic Panic.someSDoc
+     Util.HasDebugCallStack Util.lengthExceeds
 *)

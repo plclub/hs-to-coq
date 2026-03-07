@@ -32,9 +32,17 @@ Axiom mAX_REDUCTION_DEPTH : nat.
 
 Axiom mAX_SOLVER_ITERATIONS : nat.
 
+Axiom mAX_QC_FUEL : nat.
+
+Axiom mAX_WANTEDS_FUEL : nat.
+
+Axiom mAX_GIVENS_FUEL : nat.
+
 Axiom wORD64_SIZE : nat.
 
 Axiom fLOAT_SIZE : nat.
+
+Axiom dOUBLE_SIZE : nat.
 
 Axiom tARGET_MAX_CHAR : nat.
 

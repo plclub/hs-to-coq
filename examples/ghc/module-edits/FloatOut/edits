@@ -1,7 +1,7 @@
 rewrite forall t e, CoreUtils.mkTick t e = e
 rewrite forall t e, CoreUtils.tickHNFArgs t e = e
 
-rename value SetLevels.Level = SetLevels.Mk_Level
+rename value GHC.Core.Opt.SetLevels.Level = SetLevels.Mk_Level
 
 # needs IntMap.splitLookup
 #

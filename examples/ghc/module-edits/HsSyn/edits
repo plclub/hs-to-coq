@@ -1,0 +1,14 @@
+# GHC 9.10: Language.Haskell.Syntax.Basic
+# Types moved here from BasicTypes
+skip module Data.Data
+skip module Control.DeepSeq
+skip module GHC.Data.FastString
+
+# Skip types we don't need
+skip HsSyn.FieldLabelString
+skip HsSyn.Role
+skip HsSyn.SrcStrictness
+skip HsSyn.SrcUnpackedness
+skip HsSyn.SumWidth
+
+rename type GHC.Num.Int = nat

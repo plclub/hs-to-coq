@@ -12,11 +12,11 @@ simple class TrieMap.TrieMap
 ################################################################################
 ## Renaming constructors
 
-rename value TrieMap.LooseTypeMap = TrieMap.Mk_LooseTypeMap
-rename value TrieMap.TypeMap      = TrieMap.Mk_TypeMap
-rename value TrieMap.CoercionMap  = TrieMap.Mk_CoercionMap
-rename value TrieMap.CoercionMapX = TrieMap.Mk_CoercionMapX
-rename value TrieMap.CoreMap      = TrieMap.Mk_CoreMap
+rename value GHC.Data.TrieMap.LooseTypeMap = TrieMap.Mk_LooseTypeMap
+rename value GHC.Data.TrieMap.TypeMap      = TrieMap.Mk_TypeMap
+rename value GHC.Data.TrieMap.CoercionMap  = TrieMap.Mk_CoercionMap
+rename value GHC.Data.TrieMap.CoercionMapX = TrieMap.Mk_CoercionMapX
+rename value GHC.Data.TrieMap.CoreMap      = TrieMap.Mk_CoreMap
 
 ################################################################################
 ## Ordering constraints and type class resolution
@@ -203,6 +203,10 @@ skip TrieMap.Eq___DeBruijn__unit
 # Skipping until `TyCoRep.TyLit` is a thing
 skip TrieMap.lkTyLit
 skip TrieMap.xtTyLit
+
+# GHC 9.10: uses unknown constructor LM
+skip TrieMap.ftList
+skip TrieMap.Functor__ListMap
 
 ################################################################################
 ## Interop and base types

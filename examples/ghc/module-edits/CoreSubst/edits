@@ -6,6 +6,12 @@ import module Core
 # requires mkTyVarTy and mkCoVarCo
 skip CoreSubst.lookupTCvSubst
 
+# GHC 9.10: uses mapAccumL with Traversable constraint
+skip CoreSubst.substBndrs
+
+# GHC 9.10: types moved to GHC.Core.TyCo.Subst
+skip module GHC.Core.TyCo.Subst
+
 # ruleInfo substitution function (but unused)
 axiomatize definition CoreSubst.substSpec 
 

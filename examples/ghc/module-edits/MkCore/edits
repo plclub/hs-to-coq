@@ -18,6 +18,11 @@ axiomatize definition MkCore.tYPE_ERROR_ID
 axiomatize definition MkCore.aBSENT_SUM_FIELD_ERROR_ID
 axiomatize definition MkCore.aBSENT_ERROR_ID
 
+# GHC 9.10: recursion through non-lambda value
+axiomatize definition MkCore.iMPOSSIBLE_ERROR_ID
+axiomatize definition MkCore.iMPOSSIBLE_CONSTRAINT_ERROR_ID
+axiomatize definition MkCore.aBSENT_CONSTRAINT_ERROR_ID
+
 # partial pattern match in do 
 skip MkCore.mkBuildExpr
 
@@ -29,7 +34,7 @@ axiomatize definition MkCore.runtimeErrorTy
 
 ##
 add MkCore Axiom MkCore.chunkify : list Core.Id -> list (list Core.Id).
-rename value HsUtils.chunkify = MkCore.chunkify
+rename value GHC.Hs.Utils.chunkify = MkCore.chunkify
 
 in MkCore.mkTupleSelector termination mk_tup_sel    deferred
 in MkCore.mkTupleCase     termination mk_tuple_case deferred

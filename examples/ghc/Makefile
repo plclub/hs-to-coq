@@ -14,6 +14,7 @@ HANDMOD = \
   AxiomatizedTypes \
   NestedRecursionHelpers \
   IntMap \
+  State \
   # Used by CSE
   # TysWiredIn \
 
@@ -34,7 +35,7 @@ EXTRA_CORE = Json \
   IfaceType \
   PrelNames \
   TysWiredIn \
-  CoAxiom 
+  CoAxiom
 
 
 UTILS = \
@@ -42,6 +43,7 @@ UTILS = \
   SrcLoc \
   Unique \
   UniqSupply \
+  HsSyn \
   BasicTypes \
   DynFlags \
   Panic \
@@ -58,12 +60,10 @@ DATASTRUCTS = \
   FiniteMap \
   ListSetOps \
   Pair \
-  State \
   Maybes \
   MonadUtils \
 
 # Generated modules
-# generated directly from ghc/compiler/*/
 # These are general purpose utility modules
 MODULES = \
   $(UTILS) \
@@ -134,6 +134,93 @@ CORETYPE = \
 BROKEN_MODULES = \
 
 
+####################################################
+# GHC 9.10 source path mappings
+# Maps old module names to GHC 9.10 compiler paths
+####################################################
+
+SRCPATH = ghc/compiler
+
+# UTILS
+SRC_Util        = $(SRCPATH)/GHC/Utils/Misc.hs
+SRC_SrcLoc      = $(SRCPATH)/GHC/Types/SrcLoc.hs
+SRC_Unique      = $(SRCPATH)/GHC/Types/Unique.hs
+SRC_UniqSupply  = $(SRCPATH)/GHC/Types/Unique/Supply.hs
+SRC_HsSyn       = $(SRCPATH)/Language/Haskell/Syntax/Basic.hs
+SRC_BasicTypes  = $(SRCPATH)/GHC/Types/Basic.hs
+SRC_DynFlags    = $(SRCPATH)/GHC/Driver/DynFlags.hs
+SRC_Panic       = $(SRCPATH)/GHC/Utils/Panic.hs
+SRC_OccName     = $(SRCPATH)/GHC/Types/Name/Occurrence.hs
+SRC_Module      = $(SRCPATH)/GHC/Unit/Module.hs
+
+# DATASTRUCTS
+SRC_Bag         = $(SRCPATH)/GHC/Data/Bag.hs
+SRC_EnumSet     = $(SRCPATH)/GHC/Data/EnumSet.hs
+SRC_BooleanFormula = $(SRCPATH)/GHC/Data/BooleanFormula.hs
+SRC_UniqFM      = $(SRCPATH)/GHC/Types/Unique/FM.hs
+SRC_UniqSet     = $(SRCPATH)/GHC/Types/Unique/Set.hs
+SRC_OrdList     = ghc-head/OrdList.hs
+SRC_FiniteMap   = $(SRCPATH)/GHC/Data/FiniteMap.hs
+SRC_ListSetOps  = $(SRCPATH)/GHC/Data/List/SetOps.hs
+SRC_Pair        = $(SRCPATH)/GHC/Data/Pair.hs
+SRC_Maybes      = $(SRCPATH)/GHC/Data/Maybe.hs
+SRC_MonadUtils  = $(SRCPATH)/GHC/Utils/Monad.hs
+
+# CORESYN (mutually dependent modules -> Core.v)
+SRC_IdInfo      = $(SRCPATH)/GHC/Types/Id/Info.hs
+SRC_Class       = $(SRCPATH)/GHC/Core/Class.hs
+SRC_TyCon       = $(SRCPATH)/GHC/Core/TyCon.hs
+SRC_DataCon     = $(SRCPATH)/GHC/Core/DataCon.hs
+SRC_PatSyn      = $(SRCPATH)/GHC/Core/PatSyn.hs
+SRC_Var         = $(SRCPATH)/GHC/Types/Var.hs
+SRC_VarSet      = $(SRCPATH)/GHC/Types/Var/Set.hs
+SRC_VarEnv      = $(SRCPATH)/GHC/Types/Var/Env.hs
+SRC_CoreSyn     = $(SRCPATH)/GHC/Core.hs
+SRC_Demand      = $(SRCPATH)/GHC/Types/Demand.hs
+SRC_Type        = $(SRCPATH)/GHC/Core/Type.hs
+SRC_TyCoRep     = $(SRCPATH)/GHC/Core/TyCo/Rep.hs
+SRC_Coercion    = $(SRCPATH)/GHC/Core/Coercion.hs
+
+# CORE_MODULES
+SRC_FastStringEnv = $(SRCPATH)/GHC/Data/FastString/Env.hs
+SRC_Constants   = $(SRCPATH)/GHC/Settings/Constants.hs
+SRC_Id          = $(SRCPATH)/GHC/Types/Id.hs
+SRC_CoreSubst   = $(SRCPATH)/GHC/Core/Subst.hs
+SRC_PrelNames   = $(SRCPATH)/GHC/Builtin/Names.hs
+SRC_CoreUtils   = $(SRCPATH)/GHC/Core/Utils.hs
+SRC_Name        = $(SRCPATH)/GHC/Types/Name.hs
+SRC_NameEnv     = $(SRCPATH)/GHC/Types/Name/Env.hs
+SRC_NameSet     = $(SRCPATH)/GHC/Types/Name/Set.hs
+SRC_FV          = $(SRCPATH)/GHC/Utils/FV.hs
+SRC_Literal     = $(SRCPATH)/GHC/Types/Literal.hs
+SRC_FieldLabel  = $(SRCPATH)/GHC/Types/FieldLabel.hs
+SRC_ConLike     = $(SRCPATH)/GHC/Core/ConLike.hs
+SRC_CoreFVs     = $(SRCPATH)/GHC/Core/FVs.hs
+SRC_Exitify     = $(SRCPATH)/GHC/Core/Opt/Exitify.hs
+
+# EXTRAS
+SRC_TrieMap     = $(SRCPATH)/GHC/Data/TrieMap.hs
+SRC_CSE         = $(SRCPATH)/GHC/Core/Opt/CSE.hs
+SRC_CoreStats   = $(SRCPATH)/GHC/Core/Stats.hs
+SRC_UnVarGraph  = $(SRCPATH)/GHC/Data/Graph/UnVar.hs
+SRC_CoreArity   = $(SRCPATH)/GHC/Core/Opt/Arity.hs
+SRC_CoreTidy    = $(SRCPATH)/GHC/Core/Tidy.hs
+SRC_CallArity   = $(SRCPATH)/GHC/Core/Opt/CallArity.hs
+SRC_CoAxiom     = $(SRCPATH)/GHC/Core/Coercion/Axiom.hs
+SRC_TysWiredIn  = $(SRCPATH)/GHC/Builtin/Types.hs
+SRC_MkCore      = $(SRCPATH)/GHC/Core/Make.hs
+SRC_Digraph     = $(SRCPATH)/GHC/Data/Graph/Directed.hs
+SRC_SetLevels   = $(SRCPATH)/GHC/Core/Opt/SetLevels.hs
+SRC_CoreMonad   = $(SRCPATH)/GHC/Core/Opt/Monad.hs
+SRC_OccurAnal   = $(SRCPATH)/GHC/Core/Opt/OccurAnal.hs
+SRC_FloatIn     = $(SRCPATH)/GHC/Core/Opt/FloatIn.hs
+SRC_FloatOut    = $(SRCPATH)/GHC/Core/Opt/FloatOut.hs
+
+# Helper function: get source path for a module name
+# Usage: $(call ghc_src,ModuleName)
+ghc_src = $(SRC_$(1))
+
+####################################################
 
 VFILES_GEN       = $(addsuffix .v,$(MODULES))
 VFILES_MAN       = $(addsuffix .v,$(HANDMOD))
@@ -156,12 +243,8 @@ OUTFILES_TYPE      = $(addprefix $(OUT)/,$(VFILES_TYPE))
 
 OUTFILES   = $(OUTFILES_GEN) $(OUTFILES_MAN) $(OUTFILES_DROPIN) $(OUTFILES_CORE) $(OUTFILES_CORESYN)
 
-
-HSFILES     = $(addsuffix .hs,$(MODULES) $(CORESYN) $(CORE_MODULES)) 
-HSFILESPATH = $(addprefix ghc/compiler/*/,$(HSFILES)) 
-
-SMALLCORE = $(addsuffix .hs,$(CORESYN))
-SMALLPATH  = $(addprefix ghc/compiler/*/,$(SMALLCORE)) 
+# Build list of source .hs files using path mappings
+HSFILES     = $(foreach m,$(MODULES) $(CORESYN) $(CORE_MODULES),$(SRC_$(m)))
 
 EDITPATHS = $(addprefix module-edits/,$(MODULES) $(CORESYN) $(CORE_MODULES))
 EDITFILES = edits $(CORE_EDITS) $(addsuffix /edits,$(EDITPATHS)) $(addsuffix /*.v, $(EDITPATHS))
@@ -174,7 +257,7 @@ core: $(OUT)/README.md coq
 
 
 filelist:
-	@ls -1 $(HSFILESPATH)
+	@for f in $(HSFILES); do echo $$f; done
 
 
 editlist:
@@ -200,7 +283,7 @@ edittable:
 	@echo "rewrite"
 	@cat $(EDITFILES) 2>/dev/null | grep "rewrite" | grep -v "#" | wc -l
 	@echo "redefine"
-	@cat $(EDITFILES) 2>/dev/null | grep "redefine" | grep -v "#" | grep -v "Axiom" 
+	@cat $(EDITFILES) 2>/dev/null | grep "redefine" | grep -v "#" | grep -v "Axiom"
 	@echo "rename type"
 	@cat $(EDITFILES) 2>/dev/null | grep "rename type" | grep -v "#" | wc -l
 	@echo "rename value"
@@ -214,55 +297,13 @@ edittable:
 	@echo "TOTAL"
 	@cat $(EDITFILES) 2>/dev/null | grep -v "#" --include "*edits" | wc -l
 
-ghc.all.pdf: Makefile
-	find ghc/compiler -name \*.hs | xargs graphmod --no-cluster --prune-edges -r Outputable -r GhcPrelude | dot -Tpdf -o ghc.all.pdf
-
-
-ghc.core.pdf: Makefile
-	@ls -1 $(HSFILESPATH) | xargs	graphmod -i ghc/compiler/coreSyn -i ghc/compiler/basicTypes -i ghc/compiler/types -i ghc/compiler/utils -i ghc/compiler/simplCore -i ghc/compiler/main --no-cluster --prune-edges | dot -Tpdf -o ghc.core.pdf
-
-# ghcrec.dot: Makefile
-#	@ls -1 $(SMALLPATH) | xargs	graphmod -s 2 -i ghc/compiler/coreSyn -i ghc/compiler/basicTypes -i ghc/compiler/types -i ghc/compiler/utils -i ghc/compiler/simplCore -i ghc/compiler/main --prune-edges -r BooleanFormula -r Outputable -r Util -r DynFlags -r Module -r FiniteMap -r MonadUtils -r GhcPrelude -r FastString -r StringBuffer -r Lexeme -r UniqSupply -r BasicTypes -r CmdLineParser -r Packages -r Platform -r Binary -r UniqDSet -r OccName -r Digraph -r ErrUtils -r Panic -r Bag -r CoreStats -r SrcLoc -r Maybes -r Unique -r ListSetOps -r FastStringEnv -r UniqFM -r InteractiveEvalTypes -r OrdList -r DriverPhases -r Exception -r Pair -r UniqDFM -r UniqSet -r Constants > ghcrec.dot
-
-ghcrec.pdf: ghcrec.dot
-	dot -Tpdf -o ghcrec.pdf ghcrec.dot
-
-
-cloc_table_hs: 
-	echo UTIL 
-	cloc --by-file $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(UTILS))) 
-	echo DATASTRUCTS
-	cloc --by-file $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(DATASTRUCTS))) 
-	echo CORESYN
-	cloc --by-file $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(CORESYN))) 
-	echo CORE_MODULES
-	cloc --by-file $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(CORE_MODULES)))
-	echo TOTAL
-	cloc $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(MODULES) $(CORESYN) $(CORE_MODULES))) 
-
-
-cloc_table_v: 
-	echo MANUAL
-	cloc --by-file $(addsuffix .v, $(addprefix manual/,$(HANDMOD)))
-	echo UTIL 
-	cloc --by-file $(addsuffix .v,$(addprefix lib/,$(UTILS)))
-	echo DATASTRUCTS
-	cloc --by-file $(addsuffix .v,$(addprefix lib/,$(DATASTRUCTS)))
-	echo CORESYN
-	cloc --by-file lib/Core.v 
-	echo CORE_MODULES
-	cloc --by-file $(addsuffix .v,$(addprefix lib/,$(CORE_MODULES)))
-	echo TOTAL
-	cloc $(addsuffix .v,$(addprefix lib/,$(MODULES) $(CORE_MODULES))) lib/Core.v $(addsuffix .v, $(addprefix manual/,$(HANDMOD)))
-
-
 
 # This target is also used as a dependecy to ensure that $(OUT) exists.
 $(OUT)/README.md:
 	mkdir -p $(OUT)
 	mkdir -p deps
 	> $@
-	echo 'This directory contains a Coq’ified version of parts of GHC' >> $@
+	echo 'This directory contains a Coq'\''ified version of parts of GHC' >> $@
 	echo 'Do not edit files here! Instead, look in `examples/ghc`.' >> $@
 
 $(OUT)/edits:
@@ -290,10 +331,13 @@ HS_TO_COQ_GHC_OPTS=\
      --ghc-tree ghc \
      -i gen-files \
      -I gen-files \
-     -I ghc/includes \
+     -I ghc/rts/include \
+     -I ghc/rts/include/stg \
+     -I ghc/rts/include/rts/storage \
      -I ghc/compiler \
      --ghc -DSTAGE=2 \
      --ghc -package=ghc-boot-th \
+     --ghc -package=ghc \
      --ghc -XNoImplicitPrelude \
      -e ../../base/edits \
      -e ../containers/edits \
@@ -319,7 +363,7 @@ $(OUTFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildca
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
 		     $(HS_TO_COQ_GHC_OPTS) \
                      -o $(OUT) \
-		     $(word 1,$(wildcard ghc-head/$*.hs ghc/compiler/*/$*.hs))
+		     $(SRC_$*)
 	test -e $@
 
 $(OUTFILES_CORE): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits $(CORE_EDITS)
@@ -329,7 +373,7 @@ $(OUTFILES_CORE): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildc
 		     $(HS_TO_COQ_GHC_OPTS) \
                      -e $(CORE_EDITS) \
                      -o $(OUT) \
-		     $(word 1,$(wildcard ghc-head/$*.hs ghc/compiler/*/$*.hs))
+		     $(SRC_$*)
 	test -e $@
 
 CORESYN_PRE = $(wildcard $(addprefix module-edits/, $(addsuffix /preamble.v, $(CORESYN))))
@@ -344,7 +388,7 @@ $(OUTFILES_CORESYN) : edits $(CORE_EDITS) $(CORESYN_PRE) $(CORESYN_MID) $(wildca
 	             $(addprefix -e , $(wildcard $(addprefix module-edits/, $(addsuffix /edits, $(CORESYN))))) \
                 -e $(CORE_EDITS) \
                 -o $(OUT) \
-		     $(addprefix ghc/compiler/*/, $(addsuffix .hs, $(CORESYN)))
+		     $(foreach m,$(CORESYN),$(SRC_$(m)))
 	test -e $@
 	rm -f CoreSyn_preamble.v CoreSyn_midamble.v
 
@@ -354,7 +398,7 @@ $(OUTFILES_TYPE) : edits $(CORE_EDITS) $$(wildcard module-edits/Type/preamble.v)
 	             $(addprefix --midamble , $(wildcard module-edits/Type/midamble.v)) \
 		     $(HS_TO_COQ_GHC_OPTS) \
             -o Type_.v \
-		     $(word 1,$(wildcard ghc-head/Type.hs ghc/compiler/*/Type.hs))
+		     $(SRC_Type)
 	test -e $@
 
 $(OUTFILES_CONSTR) : edits $(CORE_EDITS) module-edits/Constructors/preamble.v  module-edits/Constructors/midamble.v module-edits/Constructors/edits
@@ -364,7 +408,7 @@ $(OUTFILES_CONSTR) : edits $(CORE_EDITS) module-edits/Constructors/preamble.v  m
 		     $(HS_TO_COQ_GHC_OPTS) \
                      -e $(CORE_EDITS) \
                      -o $(OUT) \
-		     $(addprefix ghc/compiler/*/, $(addsuffix .hs, $(CONSTRUCTORS)))
+		     $(foreach m,$(CONSTRUCTORS),$(SRC_$(m)))
 	test -e $@
 
 
@@ -375,7 +419,7 @@ $(OUTFILES_CORETYPE) : edits core-edits module-edits/CoreType/preamble.v  module
 		     $(HS_TO_COQ_GHC_OPTS) \
                      -e core-edits \
                      -o $(OUT) \
-		     $(addprefix ghc/compiler/*/, $(addsuffix .hs, $(CORETYPE)))
+		     $(foreach m,$(CORETYPE),$(SRC_$(m)))
 	test -e $@
 
 $(OUTFILES_MAN): $(OUT)/%.v : manual/%.v

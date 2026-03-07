@@ -12,12 +12,17 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
+Require Data.IntSet.Internal.
+Require Data.Map.Internal.
+Require Data.Set.Internal.
 Require GHC.Base.
+Require HsToCoq.Err.
+Require IntMap.
 Require Unique.
 
 (* Converted type declarations: *)
 
-Axiom Set_ : Type -> Type.
+Inductive Time : Type := | Time : nat -> Time.
 
 Axiom ReduceFn : Type -> Type -> Type.
 
@@ -26,12 +31,18 @@ Inductive Node key payload : Type :=
     : list key)
    : Node key payload.
 
-Definition WorkItem key payload :=
+#[global] Definition WorkItem key payload :=
   (Node key payload * list payload)%type%type.
 
 Axiom IntGraph : Type.
 
 Axiom Graph : Type -> Type.
+
+Inductive EdgeType : Type :=
+  | Forward : EdgeType
+  | Cross : EdgeType
+  | Backward : EdgeType
+  | SelfLoop : EdgeType.
 
 Inductive Edge node : Type := | Mk_Edge : node -> node -> Edge node.
 
@@ -39,19 +50,31 @@ Arguments DigraphNode {_} {_} _ _ _.
 
 Arguments Mk_Edge {_} _ _.
 
-Definition node_dependencies {key} {payload} (arg_0__ : Node key payload) :=
+Instance Default__EdgeType : HsToCoq.Err.Default EdgeType :=
+  HsToCoq.Err.Build_Default _ Forward.
+
+#[global] Definition node_dependencies {key} {payload} (arg_0__
+    : Node key payload) :=
   let 'DigraphNode _ _ node_dependencies := arg_0__ in
   node_dependencies.
 
-Definition node_key {key} {payload} (arg_0__ : Node key payload) :=
+#[global] Definition node_key {key} {payload} (arg_0__ : Node key payload) :=
   let 'DigraphNode _ node_key _ := arg_0__ in
   node_key.
 
-Definition node_payload {key} {payload} (arg_0__ : Node key payload) :=
+#[global] Definition node_payload {key} {payload} (arg_0__
+    : Node key payload) :=
   let 'DigraphNode node_payload _ _ := arg_0__ in
   node_payload.
 
 (* Converted value declarations: *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Digraph.Outputable__Time' *)
+
+Instance Functor__Node : forall {key}, GHC.Base.Functor (Node key).
+Proof.
+Admitted.
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `Digraph.Outputable__Node' *)
@@ -61,6 +84,9 @@ Definition node_payload {key} {payload} (arg_0__ : Node key payload) :=
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `Digraph.Outputable__Edge' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Digraph.Outputable__EdgeType' *)
 
 Axiom emptyGraph : forall {a}, Graph a.
 
@@ -102,11 +128,29 @@ Axiom findCycle : forall {payload : Type},
 
 Axiom topologicalSortG : forall {node : Type}, Graph node -> list node.
 
-Axiom dfsTopSortG : forall {node : Type}, Graph node -> list (list node).
-
 Axiom reachableG : forall {node : Type}, Graph node -> node -> list node.
 
+Axiom outgoingG : forall {node : Type}, Graph node -> node -> list node.
+
 Axiom reachablesG : forall {node : Type}, Graph node -> list node -> list node.
+
+Axiom allReachable : forall {key : Type},
+                     forall {node : Type},
+                     forall `{GHC.Base.Ord key},
+                     Graph node ->
+                     (node -> key) -> Data.Map.Internal.Map key (Data.Set.Internal.Set_ key).
+
+Axiom allReachableCyclic : forall {key : Type},
+                           forall {node : Type},
+                           forall `{GHC.Base.Ord key},
+                           Graph node ->
+                           (node -> key) -> Data.Map.Internal.Map key (Data.Set.Internal.Set_ key).
+
+Axiom all_reachable : forall {key} {node},
+                      forall `{GHC.Base.Ord key},
+                      (IntGraph -> IntMap.IntMap Data.IntSet.Internal.IntSet) ->
+                      Graph node ->
+                      (node -> key) -> Data.Map.Internal.Map key (Data.Set.Internal.Set_ key).
 
 Axiom hasVertexG : forall {node : Type}, Graph node -> node -> bool.
 
@@ -116,17 +160,7 @@ Axiom edgesG : forall {node : Type}, Graph node -> list (Edge node).
 
 Axiom transposeG : forall {node : Type}, Graph node -> Graph node.
 
-Axiom outdegreeG : forall {node : Type}, Graph node -> node -> option nat.
-
-Axiom indegreeG : forall {node : Type}, Graph node -> node -> option nat.
-
-(* Skipping definition `Digraph.degreeG' *)
-
-(* Skipping definition `Digraph.vertexGroupsG' *)
-
 Axiom emptyG : forall {node : Type}, Graph node -> bool.
-
-Axiom componentsG : forall {node : Type}, Graph node -> list (list node).
 
 (* Skipping definition `Digraph.graphEmpty' *)
 
@@ -134,20 +168,27 @@ Axiom componentsG : forall {node : Type}, Graph node -> list (list node).
 
 (* Skipping definition `Digraph.reachable' *)
 
-(* Skipping definition `Digraph.mkEmpty' *)
+Axiom reachableGraph : IntGraph -> IntMap.IntMap Data.IntSet.Internal.IntSet.
 
-(* Skipping definition `Digraph.contains' *)
+Axiom scc : IntGraph -> list (Data.Graph.SCC Data.Graph.Vertex).
 
-(* Skipping definition `Digraph.include' *)
+Axiom reachableGraphCyclic : IntGraph ->
+                             IntMap.IntMap Data.IntSet.Internal.IntSet.
 
-(* Skipping definition `Digraph.vertexGroups' *)
+Axiom classifyEdges : forall {key : Type},
+                      forall `{Unique.Uniquable key},
+                      key ->
+                      (key -> list key) ->
+                      list (key * key)%type -> list ((key * key)%type * EdgeType)%type.
 
-(* Skipping definition `Digraph.noOutEdges' *)
-
-(* Skipping definition `Digraph.vertexGroupsS' *)
-
-(* Skipping definition `Digraph.vertexReady' *)
+Axiom graphFromVerticesAndAdjacency : forall {key : Type},
+                                      forall {payload : Type},
+                                      forall `{GHC.Base.Ord key},
+                                      list (Node key payload) -> list (key * key)%type -> Graph (Node key payload).
 
 (* External variables:
-     Type bool list nat op_zt__ option GHC.Base.Ord Unique.Uniquable
+     Type bool list nat op_zt__ option Data.Graph.SCC Data.Graph.Vertex
+     Data.IntSet.Internal.IntSet Data.Map.Internal.Map Data.Set.Internal.Set_
+     GHC.Base.Functor GHC.Base.Ord HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     IntMap.IntMap Unique.Uniquable
 *)

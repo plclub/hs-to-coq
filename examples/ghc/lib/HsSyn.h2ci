@@ -1,0 +1,8 @@
+constructorFields:
+  HsSyn.Boxed: NonRecordFields 0
+  HsSyn.Unboxed: NonRecordFields 0
+constructorTypes:
+  HsSyn.Boxed: Qualified "HsSyn" "Boxity"
+  HsSyn.Unboxed: Qualified "HsSyn" "Boxity"
+constructors:
+  HsSyn.Boxity: '[Qualified "HsSyn" "Boxed",Qualified "HsSyn" "Unboxed"]'

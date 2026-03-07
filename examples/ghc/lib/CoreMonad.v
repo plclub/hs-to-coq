@@ -17,13 +17,14 @@ Import String.StringSyntax.
 
 (* Converted imports: *)
 
-Require BasicTypes.
-Require Core.
-Require Data.Map.Internal.
 Require DynFlags.
-Require FastString.
 Require GHC.Base.
-Require GHC.Err.
+Require GHC.Char.
+Require GHC.Core.Opt.Stats.
+Require GHC.Core.Rules.
+Require GHC.Runtime.Context.
+Require GHC.Unit.External.
+Require GHC.Unit.Module.ModGuts.
 Require HsToCoq.Err.
 Require Module.
 Require SrcLoc.
@@ -31,100 +32,22 @@ Require UniqSupply.
 
 (* Converted type declarations: *)
 
-Inductive Tick : Type :=
-  | PreInlineUnconditionally : Core.Id -> Tick
-  | PostInlineUnconditionally : Core.Id -> Tick
-  | UnfoldingDone : Core.Id -> Tick
-  | RuleFired : FastString.FastString -> Tick
-  | LetFloatFromLet : Tick
-  | EtaExpansion : Core.Id -> Tick
-  | EtaReduction : Core.Id -> Tick
-  | BetaReduction : Core.Id -> Tick
-  | CaseOfCase : Core.Id -> Tick
-  | KnownBranch : Core.Id -> Tick
-  | CaseMerge : Core.Id -> Tick
-  | AltMerge : Core.Id -> Tick
-  | CaseElim : Core.Id -> Tick
-  | CaseIdentity : Core.Id -> Tick
-  | FillInCaseDefault : Core.Id -> Tick
-  | BottomFound : Tick
-  | SimplifierDone : Tick.
-
-Definition TickCounts :=
-  (Data.Map.Internal.Map Tick nat)%type.
-
-Inductive SimplMode : Type :=
-  | Mk_SimplMode (sm_names : list GHC.Base.String) (sm_phase
-    : BasicTypes.CompilerPhase) (sm_dflags : DynFlags.DynFlags) (sm_rules : bool)
-  (sm_inline : bool) (sm_case_case : bool) (sm_eta_expand : bool)
-   : SimplMode.
-
-Inductive SimplCount : Type :=
-  | VerySimplCount : nat -> SimplCount
-  | Mk_SimplCount (ticks : nat) (details : TickCounts) (n_log : nat) (log1
-    : list Tick) (log2 : list Tick)
-   : SimplCount.
-
-Axiom PluginPass : Type.
-
 Inductive FloatOutSwitches : Type :=
   | Mk_FloatOutSwitches (floatOutLambdas : option nat) (floatOutConstants : bool)
   (floatOutOverSatApps : bool) (floatToTopLevelOnly : bool)
    : FloatOutSwitches.
 
 Inductive CoreWriter : Type :=
-  | Mk_CoreWriter (cw_simpl_count : SimplCount) : CoreWriter.
-
-Inductive CoreToDo : Type :=
-  | CoreDoSimplify : nat -> SimplMode -> CoreToDo
-  | CoreDoPluginPass : GHC.Base.String -> PluginPass -> CoreToDo
-  | CoreDoFloatInwards : CoreToDo
-  | CoreDoFloatOutwards : FloatOutSwitches -> CoreToDo
-  | CoreLiberateCase : CoreToDo
-  | CoreDoPrintCore : CoreToDo
-  | CoreDoStaticArgs : CoreToDo
-  | CoreDoCallArity : CoreToDo
-  | CoreDoExitify : CoreToDo
-  | CoreDoStrictness : CoreToDo
-  | CoreDoWorkerWrapper : CoreToDo
-  | CoreDoSpecialising : CoreToDo
-  | CoreDoSpecConstr : CoreToDo
-  | CoreCSE : CoreToDo
-  | CoreDoRuleCheck : BasicTypes.CompilerPhase -> GHC.Base.String -> CoreToDo
-  | CoreDoVectorisation : CoreToDo
-  | CoreDoNothing : CoreToDo
-  | CoreDoPasses : list CoreToDo -> CoreToDo
-  | CoreDesugar : CoreToDo
-  | CoreDesugarOpt : CoreToDo
-  | CoreTidy : CoreToDo
-  | CorePrep : CoreToDo
-  | CoreOccurAnal : CoreToDo.
-
-Inductive CoreState : Type :=
-  | Mk_CoreState (cs_uniq_supply : UniqSupply.UniqSupply) : CoreState.
+  | Mk_CoreWriter (cw_simpl_count : GHC.Core.Opt.Stats.SimplCount) : CoreWriter.
 
 Axiom CoreReader : Type.
 
 Axiom CoreIOEnv : Type -> Type.
 
 Inductive CoreM a : Type :=
-  | Mk_CoreM (unCoreM : CoreState -> CoreIOEnv (a * CoreState * CoreWriter)%type)
-   : CoreM a.
+  | Mk_CoreM (unCoreM : CoreIOEnv (a * CoreWriter)%type) : CoreM a.
 
 Arguments Mk_CoreM {_} _.
-
-Instance Default__Tick : HsToCoq.Err.Default Tick :=
-  HsToCoq.Err.Build_Default _ LetFloatFromLet.
-
-Instance Default__SimplMode : HsToCoq.Err.Default SimplMode :=
-  HsToCoq.Err.Build_Default _ (Mk_SimplMode HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default).
-
-Instance Default__SimplCount : HsToCoq.Err.Default SimplCount :=
-  HsToCoq.Err.Build_Default _ (Mk_SimplCount HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default).
 
 Instance Default__FloatOutSwitches : HsToCoq.Err.Default FloatOutSwitches :=
   HsToCoq.Err.Build_Default _ (Mk_FloatOutSwitches HsToCoq.Err.default
@@ -133,133 +56,38 @@ Instance Default__FloatOutSwitches : HsToCoq.Err.Default FloatOutSwitches :=
 Instance Default__CoreWriter : HsToCoq.Err.Default CoreWriter :=
   HsToCoq.Err.Build_Default _ (Mk_CoreWriter HsToCoq.Err.default).
 
-Instance Default__CoreToDo : HsToCoq.Err.Default CoreToDo :=
-  HsToCoq.Err.Build_Default _ CoreDoFloatInwards.
-
-Instance Default__CoreState : HsToCoq.Err.Default CoreState :=
-  HsToCoq.Err.Build_Default _ (Mk_CoreState HsToCoq.Err.default).
-
-Definition sm_case_case (arg_0__ : SimplMode) :=
-  let 'Mk_SimplMode _ _ _ _ _ sm_case_case _ := arg_0__ in
-  sm_case_case.
-
-Definition sm_dflags (arg_0__ : SimplMode) :=
-  let 'Mk_SimplMode _ _ sm_dflags _ _ _ _ := arg_0__ in
-  sm_dflags.
-
-Definition sm_eta_expand (arg_0__ : SimplMode) :=
-  let 'Mk_SimplMode _ _ _ _ _ _ sm_eta_expand := arg_0__ in
-  sm_eta_expand.
-
-Definition sm_inline (arg_0__ : SimplMode) :=
-  let 'Mk_SimplMode _ _ _ _ sm_inline _ _ := arg_0__ in
-  sm_inline.
-
-Definition sm_names (arg_0__ : SimplMode) :=
-  let 'Mk_SimplMode sm_names _ _ _ _ _ _ := arg_0__ in
-  sm_names.
-
-Definition sm_phase (arg_0__ : SimplMode) :=
-  let 'Mk_SimplMode _ sm_phase _ _ _ _ _ := arg_0__ in
-  sm_phase.
-
-Definition sm_rules (arg_0__ : SimplMode) :=
-  let 'Mk_SimplMode _ _ _ sm_rules _ _ _ := arg_0__ in
-  sm_rules.
-
-Definition details (arg_0__ : SimplCount) :=
-  match arg_0__ with
-  | VerySimplCount _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `details' has no match in constructor `VerySimplCount' of type `SimplCount'")
-  | Mk_SimplCount _ details _ _ _ => details
-  end.
-
-Definition log1 (arg_0__ : SimplCount) :=
-  match arg_0__ with
-  | VerySimplCount _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `log1' has no match in constructor `VerySimplCount' of type `SimplCount'")
-  | Mk_SimplCount _ _ _ log1 _ => log1
-  end.
-
-Definition log2 (arg_0__ : SimplCount) :=
-  match arg_0__ with
-  | VerySimplCount _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `log2' has no match in constructor `VerySimplCount' of type `SimplCount'")
-  | Mk_SimplCount _ _ _ _ log2 => log2
-  end.
-
-Definition n_log (arg_0__ : SimplCount) :=
-  match arg_0__ with
-  | VerySimplCount _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `n_log' has no match in constructor `VerySimplCount' of type `SimplCount'")
-  | Mk_SimplCount _ _ n_log _ _ => n_log
-  end.
-
-Definition ticks (arg_0__ : SimplCount) :=
-  match arg_0__ with
-  | VerySimplCount _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `ticks' has no match in constructor `VerySimplCount' of type `SimplCount'")
-  | Mk_SimplCount ticks _ _ _ _ => ticks
-  end.
-
-Definition floatOutConstants (arg_0__ : FloatOutSwitches) :=
+#[global] Definition floatOutConstants (arg_0__ : FloatOutSwitches) :=
   let 'Mk_FloatOutSwitches _ floatOutConstants _ _ := arg_0__ in
   floatOutConstants.
 
-Definition floatOutLambdas (arg_0__ : FloatOutSwitches) :=
+#[global] Definition floatOutLambdas (arg_0__ : FloatOutSwitches) :=
   let 'Mk_FloatOutSwitches floatOutLambdas _ _ _ := arg_0__ in
   floatOutLambdas.
 
-Definition floatOutOverSatApps (arg_0__ : FloatOutSwitches) :=
+#[global] Definition floatOutOverSatApps (arg_0__ : FloatOutSwitches) :=
   let 'Mk_FloatOutSwitches _ _ floatOutOverSatApps _ := arg_0__ in
   floatOutOverSatApps.
 
-Definition floatToTopLevelOnly (arg_0__ : FloatOutSwitches) :=
+#[global] Definition floatToTopLevelOnly (arg_0__ : FloatOutSwitches) :=
   let 'Mk_FloatOutSwitches _ _ _ floatToTopLevelOnly := arg_0__ in
   floatToTopLevelOnly.
 
-Definition cw_simpl_count (arg_0__ : CoreWriter) :=
+#[global] Definition cw_simpl_count (arg_0__ : CoreWriter) :=
   let 'Mk_CoreWriter cw_simpl_count := arg_0__ in
   cw_simpl_count.
 
-Definition cs_uniq_supply (arg_0__ : CoreState) :=
-  let 'Mk_CoreState cs_uniq_supply := arg_0__ in
-  cs_uniq_supply.
-
-Definition unCoreM {a} (arg_0__ : CoreM a) :=
+#[global] Definition unCoreM {a} (arg_0__ : CoreM a) :=
   let 'Mk_CoreM unCoreM := arg_0__ in
   unCoreM.
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `Outputable.Outputable', including
-   `CoreMonad.Outputable__CoreToDo' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `CoreMonad.Outputable__SimplMode' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `CoreMonad.Outputable__FloatOutSwitches' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `CoreMonad.Outputable__Tick' *)
-
-Instance Eq___Tick : GHC.Base.Eq_ Tick.
-Proof.
-Admitted.
-
-Instance Ord__Tick : GHC.Base.Ord Tick.
-Proof.
-Admitted.
-
 Instance Functor__CoreM : GHC.Base.Functor CoreM.
 Proof.
 Admitted.
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `CoreMonad.Outputable__FloatOutSwitches' *)
 
 Instance Applicative__CoreM : GHC.Base.Applicative CoreM.
 Proof.
@@ -290,67 +118,17 @@ Instance HasModule__CoreM : Module.HasModule CoreM.
 Proof.
 Admitted.
 
-(* Skipping all instances of class `HscTypes.MonadThings', including
-   `CoreMonad.MonadThings__CoreM' *)
-
-Axiom pprPassDetails : CoreToDo -> GHC.Base.String.
-
 Axiom pprFloatOutSwitches : FloatOutSwitches -> GHC.Base.String.
 
-Axiom runWhen : bool -> CoreToDo -> CoreToDo.
-
-Axiom runMaybe : forall {a : Type}, option a -> (a -> CoreToDo) -> CoreToDo.
-
-(* Skipping definition `CoreMonad.bindsOnlyPass' *)
-
-Axiom getVerboseSimplStats : (bool -> GHC.Base.String) -> GHC.Base.String.
-
-Axiom simplCountN : SimplCount -> nat.
-
-Axiom zeroSimplCount : DynFlags.DynFlags -> SimplCount.
-
-Axiom isZeroSimplCount : SimplCount -> bool.
-
-Axiom hasDetailedCounts : SimplCount -> bool.
-
-Axiom doFreeSimplTick : Tick -> SimplCount -> SimplCount.
-
-Axiom doSimplTick : DynFlags.DynFlags -> Tick -> SimplCount -> SimplCount.
-
-Axiom addTick : TickCounts -> Tick -> TickCounts.
-
-Axiom plusSimplCount : SimplCount -> SimplCount -> SimplCount.
-
-Axiom pprSimplCount : SimplCount -> GHC.Base.String.
-
-Axiom pprTickCounts : Data.Map.Internal.Map Tick nat -> GHC.Base.String.
-
-Axiom pprTickGroup : list (Tick * nat)%type -> GHC.Base.String.
-
-Axiom tickToTag : Tick -> nat.
-
-Axiom tickString : Tick -> GHC.Base.String.
-
-Axiom pprTickCts : Tick -> GHC.Base.String.
-
-Axiom cmpTick : Tick -> Tick -> comparison.
-
-Axiom cmpEqTick : Tick -> Tick -> comparison.
-
-Axiom emptyWriter : DynFlags.DynFlags -> CoreWriter.
+Axiom emptyWriter : bool -> CoreWriter.
 
 Axiom plusWriter : CoreWriter -> CoreWriter -> CoreWriter.
 
 (* Skipping definition `CoreMonad.runCoreM' *)
 
-Axiom nop : forall {a},
-            CoreState -> a -> CoreIOEnv (a * CoreState * CoreWriter)%type.
+Axiom nop : forall {a}, a -> CoreIOEnv (a * CoreWriter)%type.
 
 Axiom read : forall {a}, (CoreReader -> a) -> CoreM a.
-
-Axiom getS : forall {a}, (CoreState -> a) -> CoreM a.
-
-Axiom modifyS : (CoreState -> CoreState) -> CoreM unit.
 
 Axiom write : CoreWriter -> CoreM unit.
 
@@ -360,21 +138,31 @@ Axiom liftIOEnv : forall {a}, CoreIOEnv a -> CoreM a.
 
 (* Skipping definition `CoreMonad.getHscEnv' *)
 
-Axiom getRuleBase : CoreM Core.RuleBase.
+Axiom getHomeRuleBase : CoreM GHC.Core.Rules.RuleBase.
 
-Axiom getVisibleOrphanMods : CoreM Module.ModuleSet.
+Axiom initRuleEnv : GHC.Unit.Module.ModGuts.ModGuts ->
+                    CoreM GHC.Core.Rules.RuleEnv.
 
-(* Skipping definition `CoreMonad.getPrintUnqualified' *)
+Axiom getExternalRuleBase : CoreM GHC.Core.Rules.RuleBase.
+
+Axiom getNamePprCtx : CoreM Outputable.NamePprCtx.
 
 Axiom getSrcSpanM : CoreM SrcLoc.SrcSpan.
 
-Axiom addSimplCount : SimplCount -> CoreM unit.
+Axiom addSimplCount : GHC.Core.Opt.Stats.SimplCount -> CoreM unit.
 
-(* Skipping definition `CoreMonad.getOrigNameCache' *)
+Axiom getUniqTag : CoreM GHC.Char.Char.
+
+Axiom mapDynFlagsCoreM : forall {a : Type},
+                         (DynFlags.DynFlags -> DynFlags.DynFlags) -> CoreM a -> CoreM a.
+
+Axiom dropSimplCount : forall {a : Type}, CoreM a -> CoreM a.
+
+Axiom getInteractiveContext : CoreM GHC.Runtime.Context.InteractiveContext.
 
 (* Skipping definition `CoreMonad.getPackageFamInstEnv' *)
 
-Axiom reinitializeGlobals : CoreM unit.
+Axiom get_eps : CoreM GHC.Unit.External.ExternalPackageState.
 
 (* Skipping definition `CoreMonad.getAnnotations' *)
 
@@ -386,11 +174,7 @@ Axiom putMsgS : GHC.Base.String -> CoreM unit.
 
 Axiom putMsg : GHC.Base.String -> CoreM unit.
 
-Axiom errorMsgS : GHC.Base.String -> CoreM unit.
-
 Axiom errorMsg : GHC.Base.String -> CoreM unit.
-
-Axiom warnMsg : GHC.Base.String -> CoreM unit.
 
 Axiom fatalErrorMsgS : GHC.Base.String -> CoreM unit.
 
@@ -400,17 +184,12 @@ Axiom debugTraceMsgS : GHC.Base.String -> CoreM unit.
 
 Axiom debugTraceMsg : GHC.Base.String -> CoreM unit.
 
-Axiom dumpIfSet_dyn : DynFlags.DumpFlag ->
-                      GHC.Base.String -> GHC.Base.String -> CoreM unit.
-
-(* Skipping definition `CoreMonad.thNameToGhcName' *)
-
 (* External variables:
-     Type bool comparison list nat op_zt__ option unit BasicTypes.CompilerPhase
-     Core.Id Core.RuleBase Data.Map.Internal.Map DynFlags.DumpFlag DynFlags.DynFlags
-     DynFlags.HasDynFlags FastString.FastString GHC.Base.Applicative GHC.Base.Eq_
-     GHC.Base.Functor GHC.Base.Monad GHC.Base.Ord GHC.Base.String GHC.Err.error
+     Type bool nat op_zt__ option unit DynFlags.DynFlags DynFlags.HasDynFlags
+     GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monad GHC.Base.String
+     GHC.Char.Char GHC.Core.Opt.Stats.SimplCount GHC.Core.Rules.RuleBase
+     GHC.Core.Rules.RuleEnv GHC.Runtime.Context.InteractiveContext
+     GHC.Unit.External.ExternalPackageState GHC.Unit.Module.ModGuts.ModGuts
      HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
-     Module.HasModule Module.ModuleSet SrcLoc.SrcSpan UniqSupply.MonadUnique
-     UniqSupply.UniqSupply
+     Module.HasModule Outputable.NamePprCtx SrcLoc.SrcSpan UniqSupply.MonadUnique
 *)

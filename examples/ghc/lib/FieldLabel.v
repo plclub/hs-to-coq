@@ -12,77 +12,97 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require Data.Foldable.
-Require Data.Traversable.
-Require FastString.
 Require FastStringEnv.
-Require GHC.Base.
+Require HsSyn.
+Require HsToCoq.Err.
 Require Name.
 Require OccName.
+Require Unique.
 
 (* Converted type declarations: *)
 
-Definition FieldLabelString :=
-  FastString.FastString%type.
+Inductive FieldSelectors : Type :=
+  | FieldSelectors : FieldSelectors
+  | NoFieldSelectors : FieldSelectors.
 
-Inductive FieldLbl a : Type :=
-  | Mk_FieldLabel (flLabel : FieldLabelString) (flIsOverloaded : bool) (flSelector
-    : a)
-   : FieldLbl a.
+Inductive DuplicateRecordFields : Type :=
+  | DuplicateRecordFields : DuplicateRecordFields
+  | NoDuplicateRecordFields : DuplicateRecordFields.
 
-Definition FieldLabel :=
-  (FieldLbl Name.Name)%type.
+Inductive FieldLabel : Type :=
+  | Mk_FieldLabel (flHasDuplicateRecordFields : DuplicateRecordFields)
+  (flHasFieldSelector : FieldSelectors) (flSelector : Name.Name)
+   : FieldLabel.
 
-Definition FieldLabelEnv :=
+#[global] Definition FieldLabelEnv :=
   (FastStringEnv.DFastStringEnv FieldLabel)%type.
 
-Arguments Mk_FieldLabel {_} _ _ _.
+Instance Default__FieldSelectors : HsToCoq.Err.Default FieldSelectors :=
+  HsToCoq.Err.Build_Default _ FieldSelectors.
 
-Definition flIsOverloaded {a} (arg_0__ : FieldLbl a) :=
-  let 'Mk_FieldLabel _ flIsOverloaded _ := arg_0__ in
-  flIsOverloaded.
+Instance Default__DuplicateRecordFields
+   : HsToCoq.Err.Default DuplicateRecordFields :=
+  HsToCoq.Err.Build_Default _ DuplicateRecordFields.
 
-Definition flLabel {a} (arg_0__ : FieldLbl a) :=
-  let 'Mk_FieldLabel flLabel _ _ := arg_0__ in
-  flLabel.
+Instance Default__FieldLabel : HsToCoq.Err.Default FieldLabel :=
+  HsToCoq.Err.Build_Default _ (Mk_FieldLabel HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default).
 
-Definition flSelector {a} (arg_0__ : FieldLbl a) :=
+#[global] Definition flHasDuplicateRecordFields (arg_0__ : FieldLabel) :=
+  let 'Mk_FieldLabel flHasDuplicateRecordFields _ _ := arg_0__ in
+  flHasDuplicateRecordFields.
+
+#[global] Definition flHasFieldSelector (arg_0__ : FieldLabel) :=
+  let 'Mk_FieldLabel _ flHasFieldSelector _ := arg_0__ in
+  flHasFieldSelector.
+
+#[global] Definition flSelector (arg_0__ : FieldLabel) :=
   let 'Mk_FieldLabel _ _ flSelector := arg_0__ in
   flSelector.
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `Data.Data.Data', including
-   `FieldLabel.Data__FieldLbl' *)
-
-Instance Eq___FieldLbl
-   : forall {a}, forall `{GHC.Base.Eq_ a}, GHC.Base.Eq_ (FieldLbl a).
-Proof.
-Admitted.
-
-Instance Functor__FieldLbl : GHC.Base.Functor FieldLbl.
-Proof.
-Admitted.
-
-Instance Foldable__FieldLbl : Data.Foldable.Foldable FieldLbl.
-Proof.
-Admitted.
-
-Instance Traversable__FieldLbl : Data.Traversable.Traversable FieldLbl.
+Instance HasOccName__FieldLabel : OccName.HasOccName FieldLabel.
 Proof.
 Admitted.
 
 (* Skipping all instances of class `Outputable.Outputable', including
-   `FieldLabel.Outputable__FieldLbl' *)
+   `FieldLabel.Outputable__FieldLabel' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `FieldLabel.Outputable__FieldLabelString' *)
+
+Instance Uniquable__FieldLabelString : Unique.Uniquable HsSyn.FieldLabelString.
+Proof.
+Admitted.
 
 (* Skipping all instances of class `Binary.Binary', including
-   `FieldLabel.Binary__FieldLbl' *)
+   `FieldLabel.Binary__DuplicateRecordFields' *)
 
-Axiom mkFieldLabelOccs : FieldLabelString ->
-                         OccName.OccName -> bool -> FieldLbl OccName.OccName.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `FieldLabel.Outputable__DuplicateRecordFields' *)
+
+(* Skipping all instances of class `Control.DeepSeq.NFData', including
+   `FieldLabel.NFData__DuplicateRecordFields' *)
+
+(* Skipping all instances of class `Binary.Binary', including
+   `FieldLabel.Binary__FieldSelectors' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `FieldLabel.Outputable__FieldSelectors' *)
+
+(* Skipping all instances of class `Control.DeepSeq.NFData', including
+   `FieldLabel.NFData__FieldSelectors' *)
+
+(* Skipping all instances of class `Binary.Binary', including
+   `FieldLabel.Binary__FieldLabel' *)
+
+Axiom flLabel : FieldLabel -> HsSyn.FieldLabelString.
+
+Axiom flIsOverloaded : FieldLabel -> bool.
 
 (* External variables:
-     bool Data.Foldable.Foldable Data.Traversable.Traversable FastString.FastString
-     FastStringEnv.DFastStringEnv GHC.Base.Eq_ GHC.Base.Functor Name.Name
-     OccName.OccName
+     bool FastStringEnv.DFastStringEnv HsSyn.FieldLabelString
+     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default Name.Name
+     OccName.HasOccName Unique.Uniquable
 *)

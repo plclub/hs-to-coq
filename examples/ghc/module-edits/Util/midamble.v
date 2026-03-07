@@ -1,2 +1,1 @@
-Existing Class HasDebugCallStack.
-Instance Util_HasDebugCallStack : HasDebugCallStack := tt.
+(* HasDebugCallStack is no longer needed - HasCallStack constraint is stripped *)

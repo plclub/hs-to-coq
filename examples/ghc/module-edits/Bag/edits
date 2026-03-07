@@ -1,3 +1,6 @@
 rename type GHC.Num.Int = nat
 
+skip module GHC.Internal.IsList
+skip Bag.IsList__Bag
+
 in Bag.lengthBag rewrite forall xs, Data.Foldable.length xs = BinInt.Z.to_nat (Data.Foldable.length xs) 

@@ -1,1 +1,8 @@
-{}
+constructorFields:
+  NameSet.NonCaffySet: RecordFields [Qualified "NameSet" "ncs_nameSet"]
+constructorTypes:
+  NameSet.NonCaffySet: Qualified "NameSet" "NonCaffySet"
+constructors:
+  NameSet.NonCaffySet: '[Qualified "NameSet" "NonCaffySet"]'
+recordFieldTypes:
+  NameSet.ncs_nameSet: Qualified "NameSet" "NonCaffySet"

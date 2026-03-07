@@ -1,9 +1,9 @@
-rename value CoreMonad.SimplMode = CoreMonad.Mk_SimplMode
-rename value CoreMonad.SimplCount = CoreMonad.Mk_SimplCount
-rename value CoreMonad.FloatOutSwitches = CoreMonad.Mk_FloatOutSwitches
-rename value CoreMonad.CoreWriter = CoreMonad.Mk_CoreWriter
-rename value CoreMonad.CoreState = CoreMonad.Mk_CoreState
-rename value CoreMonad.CoreM = CoreMonad.Mk_CoreM
+rename value GHC.Core.Opt.Monad.SimplMode = CoreMonad.Mk_SimplMode
+rename value GHC.Core.Opt.Monad.SimplCount = CoreMonad.Mk_SimplCount
+rename value GHC.Core.Opt.Monad.FloatOutSwitches = CoreMonad.Mk_FloatOutSwitches
+rename value GHC.Core.Opt.Monad.CoreWriter = CoreMonad.Mk_CoreWriter
+rename value GHC.Core.Opt.Monad.CoreState = CoreMonad.Mk_CoreState
+rename value GHC.Core.Opt.Monad.CoreM = CoreMonad.Mk_CoreM
 
-rename value SetLevels.Level = SetLevels.Mk_Level
+rename value GHC.Core.Opt.SetLevels.Level = SetLevels.Mk_Level
 

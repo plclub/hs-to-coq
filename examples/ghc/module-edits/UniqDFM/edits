@@ -24,7 +24,7 @@ redefine Local Definition UniqDFM.Functor__UniqDFM_fmap : forall {a} {b},
                ((fun b1 => b1) a2)
       end.
 
-rename value Unique.getKey = Unique.getWordKey
+rename value GHC.Types.Unique.getKey = Unique.getWordKey
 
 skip module Coq.ZArith.BinInt.Z
 

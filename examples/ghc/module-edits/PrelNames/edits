@@ -20,9 +20,9 @@ axiomatize definition PrelNames.allNameStrings
 # but maybe we'd rather skip the definitions
 #
 add PrelNames Axiom PrelNames.RdrName : Type.
-rename type RdrName.RdrName = PrelNames.RdrName 
+rename type GHC.Types.Name.Reader.RdrName = PrelNames.RdrName 
 add PrelNames Axiom PrelNames.nameRdrName : Name.Name -> PrelNames.RdrName.
-rename value RdrName.nameRdrName = PrelNames.nameRdrName 
+rename value GHC.Types.Name.Reader.nameRdrName = PrelNames.nameRdrName 
 
 axiomatize definition PrelNames.mkInteractiveModule
 axiomatize definition PrelNames.mkIntegerModule

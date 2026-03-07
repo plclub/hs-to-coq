@@ -23,6 +23,7 @@ in Unique.mkPreludeDataConUnique rewrite forall , i = (BinNat.N.of_nat i)
 # chars
 skip Unique.finish_show
 skip Unique.iToBase62
+skip Unique.w64ToBase62
 skip Unique.showUnique
 
 # outputtable

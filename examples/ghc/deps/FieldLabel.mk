@@ -1,1 +1,1 @@
-lib/FieldLabel.v: ../../base/Data/Foldable.h2ci ../../base/Data/Traversable.h2ci ../../base/GHC/Base.h2ci
+lib/FieldLabel.v: lib/OccName.h2ci lib/Unique.h2ci

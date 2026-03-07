@@ -15,6 +15,7 @@ Require Coq.Program.Wf.
 Require Control.Monad.Trans.Maybe.
 Require Coq.Init.Datatypes.
 Require Data.Either.
+Require Data.Foldable.
 Require Data.Maybe.
 Require GHC.Base.
 Require GHC.Err.
@@ -48,8 +49,8 @@ Arguments Failed {_} {_} _.
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
-      | z, Succeeded a1 => Succeeded ((fun b1 => z) a1)
-      | z, Failed a1 => Failed ((fun b1 => b1) a1)
+      | z, Succeeded a1 => Succeeded z
+      | z, Failed a1 => Failed a1
       end.
 
 #[global]
@@ -88,7 +89,8 @@ Program Instance Functor__MaybeErr {err : Type}
      forall {b : Type},
      MaybeErr inst_err a -> MaybeErr inst_err b -> MaybeErr inst_err b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__MaybeErr_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__MaybeErr_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
 #[local] Definition Applicative__MaybeErr_pure {inst_err : Type}
    : forall {a : Type}, a -> MaybeErr inst_err a :=
@@ -141,6 +143,17 @@ Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
 
 (* Skipping definition `Maybes.firstJusts' *)
 
+#[global] Definition firstJustsM {m : Type -> Type} {f : Type -> Type} {a
+   : Type} `{GHC.Base.Monad m} `{Data.Foldable.Foldable f}
+   : f (m (option a)) -> m (option a) :=
+  let go {m} {a} `{GHC.Base.Monad m} : option a -> m (option a) -> m (option a) :=
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | None, action => action
+      | (Some _ as result), _action => GHC.Base.return_ result
+      end in
+  Data.Foldable.foldlM go None.
+
 #[global] Definition expectJust {a} `{HsToCoq.Err.Default a}
    : GHC.Base.String -> option a -> a :=
   fun arg_0__ arg_1__ =>
@@ -153,11 +166,7 @@ Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
 #[global] Definition whenIsJust {m : Type -> Type} {a : Type} `{GHC.Base.Monad
   m}
    : option a -> (a -> m unit) -> m unit :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Some x, f => f x
-    | None, _ => GHC.Base.return_ tt
-    end.
+  Data.Foldable.for__.
 
 #[global] Definition orElse {a : Type} : option a -> a -> a :=
   GHC.Base.flip Data.Maybe.fromMaybe.
@@ -186,13 +195,13 @@ Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
   fun e => Failed e.
 
 (* External variables:
-     None Some Type bool false option true tt unit Control.Monad.Trans.Maybe.MaybeT
+     None Some Type bool false option true unit Control.Monad.Trans.Maybe.MaybeT
      Control.Monad.Trans.Maybe.Mk_MaybeT Coq.Init.Datatypes.app Data.Either.Either
-     Data.Either.Left Data.Either.Right Data.Maybe.fromMaybe GHC.Base.Applicative
-     GHC.Base.Functor GHC.Base.Monad GHC.Base.String GHC.Base.flip GHC.Base.fmap
-     GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__ GHC.Base.liftM
-     GHC.Base.op_zgzg____ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__
-     GHC.Base.op_zlzd____ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
-     GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ GHC.Err.error
-     HsToCoq.Err.Default
+     Data.Either.Left Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldlM
+     Data.Foldable.for__ Data.Maybe.fromMaybe GHC.Base.Applicative GHC.Base.Functor
+     GHC.Base.Monad GHC.Base.String GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__
+     GHC.Base.id GHC.Base.liftA2__ GHC.Base.liftM GHC.Base.op_zgzg____
+     GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
+     GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__
+     GHC.Base.return_ GHC.Base.return___ GHC.Err.error HsToCoq.Err.Default
 *)

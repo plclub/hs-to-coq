@@ -4,7 +4,7 @@ axiomatize module TysWiredIn
 skip AxiomatizedTypes.liftedTypeKind
 skip AxiomatizedTypes.constraintKind
 
-rename type RdrName.RdrName = PrelNames.RdrName
+rename type GHC.Types.Name.Reader.RdrName = PrelNames.RdrName
 
 
 # these use GHC.Arr.Array type

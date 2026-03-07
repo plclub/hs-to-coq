@@ -1,32 +1,38 @@
-superclassCount:
-  OccName.HasOccName: '0'
-classTypes:
-  OccName.HasOccName: fromList []
-constructors:
-  OccName.NameSpace: ! '[Qualified "OccName" "VarName",Qualified "OccName" "DataName",Qualified
-    "OccName" "TvName",Qualified "OccName" "TcClsName"]'
-  OccName.OccName: ! '[Qualified "OccName" "Mk_OccName"]'
-  OccName.OccEnv: ! '[Qualified "OccName" "A"]'
-constructorFields:
-  OccName.Mk_OccName: RecordFields [Qualified "OccName" "occNameSpace",Qualified "OccName"
-    "occNameFS"]
-  OccName.A: NonRecordFields 1
-  OccName.TcClsName: NonRecordFields 0
-  OccName.TvName: NonRecordFields 0
-  OccName.VarName: NonRecordFields 0
-  OccName.DataName: NonRecordFields 0
-recordFieldTypes:
-  OccName.occNameFS: Qualified "OccName" "OccName"
-  OccName.occNameSpace: Qualified "OccName" "OccName"
 classDefns:
   OccName.HasOccName: ClassDefinition (Qualified "OccName" "HasOccName") [Typed Ungeneralizable
     Explicit (Ident (Bare "name") :| []) (Qualid (Bare "Type"))] Nothing [(Qualified
     "OccName" "occName",Arrow (Qualid (Bare "name")) (Qualid (Qualified "OccName"
     "OccName")))]
+classTypes:
+  OccName.HasOccName: fromList []
+constructorFields:
+  OccName.DataName: NonRecordFields 0
+  OccName.FldName: RecordFields [Qualified "OccName" "fldParent"]
+  OccName.MkOccEnv: NonRecordFields 1
+  OccName.Mk_OccName: RecordFields [Qualified "OccName" "occNameSpace",Qualified "OccName"
+    "occNameFS"]
+  OccName.OccSet: NonRecordFields 1
+  OccName.TcClsName: NonRecordFields 0
+  OccName.TvName: NonRecordFields 0
+  OccName.VarName: NonRecordFields 0
 constructorTypes:
+  OccName.DataName: Qualified "OccName" "NameSpace"
+  OccName.FldName: Qualified "OccName" "NameSpace"
+  OccName.MkOccEnv: Qualified "OccName" "OccEnv"
   OccName.Mk_OccName: Qualified "OccName" "OccName"
-  OccName.A: Qualified "OccName" "OccEnv"
+  OccName.OccSet: Qualified "OccName" "OccSet"
   OccName.TcClsName: Qualified "OccName" "NameSpace"
   OccName.TvName: Qualified "OccName" "NameSpace"
   OccName.VarName: Qualified "OccName" "NameSpace"
-  OccName.DataName: Qualified "OccName" "NameSpace"
+constructors:
+  OccName.NameSpace: '[Qualified "OccName" "VarName",Qualified "OccName" "FldName",Qualified
+    "OccName" "DataName",Qualified "OccName" "TvName",Qualified "OccName" "TcClsName"]'
+  OccName.OccEnv: '[Qualified "OccName" "MkOccEnv"]'
+  OccName.OccName: '[Qualified "OccName" "Mk_OccName"]'
+  OccName.OccSet: '[Qualified "OccName" "OccSet"]'
+recordFieldTypes:
+  OccName.fldParent: Qualified "OccName" "NameSpace"
+  OccName.occNameFS: Qualified "OccName" "OccName"
+  OccName.occNameSpace: Qualified "OccName" "OccName"
+superclassCount:
+  OccName.HasOccName: '0'

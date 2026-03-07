@@ -12,139 +12,187 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require Coq.Init.Datatypes.
 Require Coq.Lists.List.
 Require Data.Foldable.
 Require Data.OldList.
 Require GHC.Base.
+Require HsToCoq.Err.
 Require Name.
 Require OccName.
+Require OrdList.
 Require UniqSet.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Definition NameSet :=
+#[global] Definition NameSet :=
   (UniqSet.UniqSet Name.Name)%type.
 
-Definition Uses :=
+Inductive NonCaffySet : Type :=
+  | NonCaffySet (ncs_nameSet : NameSet) : NonCaffySet.
+
+#[global] Definition Uses :=
   NameSet%type.
 
-Definition FreeVars :=
+#[global] Definition FreeVars :=
   NameSet%type.
 
-Definition Defs :=
+#[global] Definition Defs :=
   NameSet%type.
 
-Definition DefUse :=
+#[global] Definition DefUse :=
   (option Defs * Uses)%type%type.
 
-Definition DefUses :=
-  (list DefUse)%type.
+#[global] Definition DefUses :=
+  (OrdList.OrdList DefUse)%type.
+
+Instance Default__NonCaffySet : HsToCoq.Err.Default NonCaffySet :=
+  HsToCoq.Err.Build_Default _ (NonCaffySet HsToCoq.Err.default).
+
+#[global] Definition ncs_nameSet (arg_0__ : NonCaffySet) :=
+  let 'NonCaffySet ncs_nameSet := arg_0__ in
+  ncs_nameSet.
 
 (* Converted value declarations: *)
 
-Definition isEmptyNameSet : NameSet -> bool :=
+#[local] Definition Semigroup__NonCaffySet_op_zlzlzgzg__
+   : NonCaffySet -> NonCaffySet -> NonCaffySet :=
+  fun arg_0__ arg_1__ =>
+    NonCaffySet (_GHC.Base.<<>>_ (ncs_nameSet arg_0__) (ncs_nameSet arg_1__)).
+
+#[global]
+Program Instance Semigroup__NonCaffySet : GHC.Base.Semigroup NonCaffySet :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__NonCaffySet_op_zlzlzgzg__ |}.
+
+#[local] Definition Monoid__NonCaffySet_mappend
+   : NonCaffySet -> NonCaffySet -> NonCaffySet :=
+  fun arg_0__ arg_1__ =>
+    NonCaffySet (GHC.Base.mappend (ncs_nameSet arg_0__) (ncs_nameSet arg_1__)).
+
+#[local] Definition Monoid__NonCaffySet_mconcat
+   : list NonCaffySet -> NonCaffySet :=
+  fun arg_0__ => NonCaffySet (GHC.Base.mconcat arg_0__).
+
+#[local] Definition Monoid__NonCaffySet_mempty : NonCaffySet :=
+  NonCaffySet GHC.Base.mempty.
+
+#[global]
+Program Instance Monoid__NonCaffySet : GHC.Base.Monoid NonCaffySet :=
+  fun _ k__ =>
+    k__ {| GHC.Base.mappend__ := Monoid__NonCaffySet_mappend ;
+           GHC.Base.mconcat__ := Monoid__NonCaffySet_mconcat ;
+           GHC.Base.mempty__ := Monoid__NonCaffySet_mempty |}.
+
+#[global] Definition isEmptyNameSet : NameSet -> bool :=
   UniqSet.isEmptyUniqSet.
 
-Definition emptyNameSet : NameSet :=
+#[global] Definition emptyNameSet : NameSet :=
   UniqSet.emptyUniqSet.
 
-Definition unitNameSet : Name.Name -> NameSet :=
+#[global] Definition unitNameSet : Name.Name -> NameSet :=
   UniqSet.unitUniqSet.
 
-Definition mkNameSet : list Name.Name -> NameSet :=
+#[global] Definition mkNameSet : list Name.Name -> NameSet :=
   UniqSet.mkUniqSet.
 
-Definition extendNameSetList : NameSet -> list Name.Name -> NameSet :=
+#[global] Definition extendNameSetList : NameSet -> list Name.Name -> NameSet :=
   UniqSet.addListToUniqSet.
 
-Definition extendNameSet : NameSet -> Name.Name -> NameSet :=
+#[global] Definition extendNameSet : NameSet -> Name.Name -> NameSet :=
   UniqSet.addOneToUniqSet.
 
-Definition unionNameSet : NameSet -> NameSet -> NameSet :=
+#[global] Definition unionNameSet : NameSet -> NameSet -> NameSet :=
   UniqSet.unionUniqSets.
 
-Definition unionNameSets : list NameSet -> NameSet :=
+#[global] Definition unionNameSets : list NameSet -> NameSet :=
   UniqSet.unionManyUniqSets.
 
-Definition minusNameSet : NameSet -> NameSet -> NameSet :=
+#[global] Definition minusNameSet : NameSet -> NameSet -> NameSet :=
   UniqSet.minusUniqSet.
 
-Definition elemNameSet : Name.Name -> NameSet -> bool :=
+#[global] Definition elemNameSet : Name.Name -> NameSet -> bool :=
   UniqSet.elementOfUniqSet.
 
-Definition delFromNameSet : NameSet -> Name.Name -> NameSet :=
+#[global] Definition delFromNameSet : NameSet -> Name.Name -> NameSet :=
   UniqSet.delOneFromUniqSet.
 
-Definition filterNameSet : (Name.Name -> bool) -> NameSet -> NameSet :=
+#[global] Definition filterNameSet
+   : (Name.Name -> bool) -> NameSet -> NameSet :=
   UniqSet.filterUniqSet.
 
-Definition intersectNameSet : NameSet -> NameSet -> NameSet :=
+#[global] Definition intersectNameSet : NameSet -> NameSet -> NameSet :=
   UniqSet.intersectUniqSets.
 
-Definition delListFromNameSet : NameSet -> list Name.Name -> NameSet :=
-  fun set ns => Data.Foldable.foldl delFromNameSet set ns.
+#[global] Definition disjointNameSet : NameSet -> NameSet -> bool :=
+  UniqSet.disjointUniqSets.
 
-Definition intersectsNameSet : NameSet -> NameSet -> bool :=
-  fun s1 s2 => negb (isEmptyNameSet (intersectNameSet s1 s2)).
+#[global] Definition delListFromNameSet
+   : NameSet -> list Name.Name -> NameSet :=
+  fun set ns => Data.Foldable.foldl' delFromNameSet set ns.
 
-Definition nameSetAny : (Name.Name -> bool) -> NameSet -> bool :=
+#[global] Definition intersectsNameSet : NameSet -> NameSet -> bool :=
+  fun s1 s2 => negb (disjointNameSet s1 s2).
+
+#[global] Definition nameSetAny : (Name.Name -> bool) -> NameSet -> bool :=
   UniqSet.uniqSetAny.
 
-Definition nameSetAll : (Name.Name -> bool) -> NameSet -> bool :=
+#[global] Definition nameSetAll : (Name.Name -> bool) -> NameSet -> bool :=
   UniqSet.uniqSetAll.
 
-Definition nameSetElemsStable : NameSet -> list Name.Name :=
+#[global] Definition nameSetElemsStable : NameSet -> list Name.Name :=
   fun ns => Data.OldList.sortBy Name.stableNameCmp (UniqSet.nonDetEltsUniqSet ns).
 
-Definition isEmptyFVs : NameSet -> bool :=
+#[global] Definition isEmptyFVs : NameSet -> bool :=
   isEmptyNameSet.
 
-Definition emptyFVs : FreeVars :=
+#[global] Definition emptyFVs : FreeVars :=
   emptyNameSet.
 
-Definition plusFVs : list FreeVars -> FreeVars :=
+#[global] Definition plusFVs : list FreeVars -> FreeVars :=
   unionNameSets.
 
-Definition plusFV : FreeVars -> FreeVars -> FreeVars :=
+#[global] Definition plusFV : FreeVars -> FreeVars -> FreeVars :=
   unionNameSet.
 
-Definition mkFVs : list Name.Name -> FreeVars :=
+#[global] Definition mkFVs : list Name.Name -> FreeVars :=
   mkNameSet.
 
-Definition addOneFV : FreeVars -> Name.Name -> FreeVars :=
+#[global] Definition addOneFV : FreeVars -> Name.Name -> FreeVars :=
   extendNameSet.
 
-Definition unitFV : Name.Name -> FreeVars :=
+#[global] Definition unitFV : Name.Name -> FreeVars :=
   unitNameSet.
 
-Definition delFV : Name.Name -> FreeVars -> FreeVars :=
+#[global] Definition delFV : Name.Name -> FreeVars -> FreeVars :=
   fun n s => delFromNameSet s n.
 
-Definition delFVs : list Name.Name -> FreeVars -> FreeVars :=
+#[global] Definition delFVs : list Name.Name -> FreeVars -> FreeVars :=
   fun ns s => delListFromNameSet s ns.
 
-Definition intersectFVs : FreeVars -> FreeVars -> FreeVars :=
+#[global] Definition intersectFVs : FreeVars -> FreeVars -> FreeVars :=
   intersectNameSet.
 
-Definition emptyDUs : DefUses :=
-  nil.
+#[global] Definition intersectsFVs : FreeVars -> FreeVars -> bool :=
+  intersectsNameSet.
 
-Definition usesOnly : Uses -> DefUses :=
-  fun uses => cons (pair None uses) nil.
+#[global] Definition emptyDUs : DefUses :=
+  OrdList.nilOL.
 
-Definition mkDUs : list (Defs * Uses)%type -> DefUses :=
+#[global] Definition usesOnly : Uses -> DefUses :=
+  fun uses => OrdList.unitOL (pair None uses).
+
+#[global] Definition mkDUs : list (Defs * Uses)%type -> DefUses :=
   fun pairs =>
-    let cont_0__ arg_1__ :=
-      let 'pair defs uses := arg_1__ in
-      cons (pair (Some defs) uses) nil in
-    Coq.Lists.List.flat_map cont_0__ pairs.
+    OrdList.toOL (let cont_0__ arg_1__ :=
+                    let 'pair defs uses := arg_1__ in
+                    cons (pair (Some defs) uses) nil in
+                  Coq.Lists.List.flat_map cont_0__ pairs).
 
-Definition plusDU : DefUses -> DefUses -> DefUses :=
-  Coq.Init.Datatypes.app.
+#[global] Definition plusDU : DefUses -> DefUses -> DefUses :=
+  OrdList.appOL.
 
-Definition duDefs : DefUses -> Defs :=
+#[global] Definition duDefs : DefUses -> Defs :=
   fun dus =>
     let get :=
       fun arg_0__ arg_1__ =>
@@ -154,7 +202,7 @@ Definition duDefs : DefUses -> Defs :=
         end in
     Data.Foldable.foldr get emptyNameSet dus.
 
-Definition allUses : DefUses -> Uses :=
+#[global] Definition allUses : DefUses -> Uses :=
   fun dus =>
     let get :=
       fun arg_0__ arg_1__ =>
@@ -163,7 +211,7 @@ Definition allUses : DefUses -> Uses :=
         end in
     Data.Foldable.foldr get emptyNameSet dus.
 
-Definition duUses : DefUses -> Uses :=
+#[global] Definition duUses : DefUses -> Uses :=
   fun dus =>
     let get :=
       fun arg_0__ arg_1__ =>
@@ -174,7 +222,7 @@ Definition duUses : DefUses -> Uses :=
         end in
     Data.Foldable.foldr get emptyNameSet dus.
 
-Definition findUses : DefUses -> Uses -> Uses :=
+#[global] Definition findUses : DefUses -> Uses -> Uses :=
   fun dus uses =>
     let get :=
       fun arg_0__ arg_1__ =>
@@ -190,11 +238,16 @@ Definition findUses : DefUses -> Uses -> Uses :=
     Data.Foldable.foldr get uses dus.
 
 (* External variables:
-     None Some bool cons list negb nil op_zt__ option orb pair Coq.Init.Datatypes.app
-     Coq.Lists.List.flat_map Data.Foldable.foldl Data.Foldable.foldr
-     Data.OldList.sortBy GHC.Base.op_z2218U__ Name.Name Name.nameOccName
-     Name.stableNameCmp OccName.startsWithUnderscore UniqSet.UniqSet
-     UniqSet.addListToUniqSet UniqSet.addOneToUniqSet UniqSet.delOneFromUniqSet
+     None Some bool cons list negb nil op_zt__ option orb pair
+     Coq.Lists.List.flat_map Data.Foldable.foldl' Data.Foldable.foldr
+     Data.OldList.sortBy GHC.Base.Monoid GHC.Base.Semigroup GHC.Base.mappend
+     GHC.Base.mappend__ GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty
+     GHC.Base.mempty__ GHC.Base.op_z2218U__ GHC.Base.op_zlzlzgzg__
+     GHC.Base.op_zlzlzgzg____ HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default Name.Name Name.nameOccName Name.stableNameCmp
+     OccName.startsWithUnderscore OrdList.OrdList OrdList.appOL OrdList.nilOL
+     OrdList.toOL OrdList.unitOL UniqSet.UniqSet UniqSet.addListToUniqSet
+     UniqSet.addOneToUniqSet UniqSet.delOneFromUniqSet UniqSet.disjointUniqSets
      UniqSet.elementOfUniqSet UniqSet.emptyUniqSet UniqSet.filterUniqSet
      UniqSet.intersectUniqSets UniqSet.isEmptyUniqSet UniqSet.minusUniqSet
      UniqSet.mkUniqSet UniqSet.nonDetEltsUniqSet UniqSet.unionManyUniqSets

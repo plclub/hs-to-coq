@@ -12,42 +12,42 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require FastString.
 Require UniqFM.
 
 (* Converted type declarations: *)
 
-Definition FastStringEnv :=
-  UniqFM.UniqFM%type.
+#[global] Definition FastStringEnv :=
+  (UniqFM.UniqFM GHC.Data.FastString.FastString)%type.
 
-Definition DFastStringEnv :=
-  UniqFM.UniqFM%type.
+#[global] Definition DFastStringEnv :=
+  (UniqFM.UniqFM GHC.Data.FastString.FastString)%type.
 
 (* Converted value declarations: *)
 
 Axiom emptyFsEnv : forall {a : Type}, FastStringEnv a.
 
 Axiom unitFsEnv : forall {a : Type},
-                  FastString.FastString -> a -> FastStringEnv a.
+                  GHC.Data.FastString.FastString -> a -> FastStringEnv a.
 
 Axiom extendFsEnv : forall {a : Type},
-                    FastStringEnv a -> FastString.FastString -> a -> FastStringEnv a.
+                    FastStringEnv a -> GHC.Data.FastString.FastString -> a -> FastStringEnv a.
 
 Axiom extendFsEnvList : forall {a : Type},
-                        FastStringEnv a -> list (FastString.FastString * a)%type -> FastStringEnv a.
+                        FastStringEnv a ->
+                        list (GHC.Data.FastString.FastString * a)%type -> FastStringEnv a.
 
 Axiom lookupFsEnv : forall {a : Type},
-                    FastStringEnv a -> FastString.FastString -> option a.
+                    FastStringEnv a -> GHC.Data.FastString.FastString -> option a.
 
 Axiom alterFsEnv : forall {a : Type},
                    (option a -> option a) ->
-                   FastStringEnv a -> FastString.FastString -> FastStringEnv a.
+                   FastStringEnv a -> GHC.Data.FastString.FastString -> FastStringEnv a.
 
 Axiom mkFsEnv : forall {a : Type},
-                list (FastString.FastString * a)%type -> FastStringEnv a.
+                list (GHC.Data.FastString.FastString * a)%type -> FastStringEnv a.
 
 Axiom elemFsEnv : forall {a : Type},
-                  FastString.FastString -> FastStringEnv a -> bool.
+                  GHC.Data.FastString.FastString -> FastStringEnv a -> bool.
 
 Axiom plusFsEnv : forall {a : Type},
                   FastStringEnv a -> FastStringEnv a -> FastStringEnv a.
@@ -57,7 +57,7 @@ Axiom plusFsEnv_C : forall {a : Type},
 
 Axiom extendFsEnv_C : forall {a : Type},
                       (a -> a -> a) ->
-                      FastStringEnv a -> FastString.FastString -> a -> FastStringEnv a.
+                      FastStringEnv a -> GHC.Data.FastString.FastString -> a -> FastStringEnv a.
 
 Axiom mapFsEnv : forall {elt1 : Type},
                  forall {elt2 : Type},
@@ -66,34 +66,46 @@ Axiom mapFsEnv : forall {elt1 : Type},
 Axiom extendFsEnv_Acc : forall {a : Type},
                         forall {b : Type},
                         (a -> b -> b) ->
-                        (a -> b) -> FastStringEnv b -> FastString.FastString -> a -> FastStringEnv b.
+                        (a -> b) ->
+                        FastStringEnv b -> GHC.Data.FastString.FastString -> a -> FastStringEnv b.
 
 Axiom extendFsEnvList_C : forall {a : Type},
                           (a -> a -> a) ->
-                          FastStringEnv a -> list (FastString.FastString * a)%type -> FastStringEnv a.
+                          FastStringEnv a ->
+                          list (GHC.Data.FastString.FastString * a)%type -> FastStringEnv a.
 
 Axiom delFromFsEnv : forall {a : Type},
-                     FastStringEnv a -> FastString.FastString -> FastStringEnv a.
+                     FastStringEnv a -> GHC.Data.FastString.FastString -> FastStringEnv a.
 
 Axiom delListFromFsEnv : forall {a : Type},
-                         FastStringEnv a -> list FastString.FastString -> FastStringEnv a.
+                         FastStringEnv a -> list GHC.Data.FastString.FastString -> FastStringEnv a.
 
 Axiom filterFsEnv : forall {elt : Type},
                     (elt -> bool) -> FastStringEnv elt -> FastStringEnv elt.
 
+Axiom mapMaybeFsEnv : forall {elt1 : Type},
+                      forall {elt2 : Type},
+                      (elt1 -> option elt2) -> FastStringEnv elt1 -> FastStringEnv elt2.
+
 Axiom lookupFsEnv_NF : forall {a : Type},
-                       FastStringEnv a -> FastString.FastString -> a.
+                       FastStringEnv a -> GHC.Data.FastString.FastString -> a.
+
+Axiom strictMapFsEnv : forall {a : Type},
+                       forall {b : Type}, (a -> b) -> FastStringEnv a -> FastStringEnv b.
+
+Axiom nonDetFoldFsEnv : forall {a : Type},
+                        forall {b : Type}, (a -> b -> b) -> b -> FastStringEnv a -> b.
 
 Axiom emptyDFsEnv : forall {a : Type}, DFastStringEnv a.
 
 Axiom dFsEnvElts : forall {a : Type}, DFastStringEnv a -> list a.
 
 Axiom mkDFsEnv : forall {a : Type},
-                 list (FastString.FastString * a)%type -> DFastStringEnv a.
+                 list (GHC.Data.FastString.FastString * a)%type -> DFastStringEnv a.
 
 Axiom lookupDFsEnv : forall {a : Type},
-                     DFastStringEnv a -> FastString.FastString -> option a.
+                     DFastStringEnv a -> GHC.Data.FastString.FastString -> option a.
 
 (* External variables:
-     Type bool list op_zt__ option FastString.FastString UniqFM.UniqFM
+     Type bool list op_zt__ option GHC.Data.FastString.FastString UniqFM.UniqFM
 *)

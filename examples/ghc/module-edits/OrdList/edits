@@ -1,8 +1,14 @@
 # partial
 skip OrdList.lastOL
+skip OrdList.headOL
 
 order OrdList.Semigroup__OrdList OrdList.Monoid__OrdList_mappend
 order OrdList.Semigroup__OrdList OrdList.Monoid__OrdList_mconcat
 
 order OrdList.Functor__OrdList  OrdList.Traversable__OrdList
 order OrdList.Foldable__OrdList OrdList.Traversable__OrdList
+
+# GHC 9.10: simplified version without NonEmpty/Many constructor
+skip module GHC.Utils.Misc
+skip module GHC.Utils.Outputable
+skip module GHC.Utils.Panic

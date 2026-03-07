@@ -24,7 +24,7 @@ order UniqFM.Semigroup__UniqFM UniqFM.Monoid__UniqFM_mconcat
 add UniqFM Instance Unpeel_UniqFM ele : HsToCoq.Unpeel.Unpeel (UniqFM ele) (IntMap.IntMap ele) :=
   HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | UFM y => y end) UFM.
 
-rename value Unique.getKey = Unique.getWordKey
+rename value GHC.Types.Unique.getKey = Unique.getWordKey
 
 skip module Coq.ZArith.BinInt.Z
 

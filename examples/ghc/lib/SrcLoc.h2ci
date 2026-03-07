@@ -1,30 +1,80 @@
-constructors:
-  SrcLoc.GenLocated: ! '[Qualified "SrcLoc" "L"]'
-  SrcLoc.RealSrcLoc: ! '[Qualified "SrcLoc" "ASrcLoc"]'
-  SrcLoc.SrcSpan: ! '[Qualified "SrcLoc" "ARealSrcSpan",Qualified "SrcLoc" "UnhelpfulSpan"]'
-  SrcLoc.SrcLoc: ! '[Qualified "SrcLoc" "ARealSrcLoc",Qualified "SrcLoc" "UnhelpfulLoc"]'
-  SrcLoc.RealSrcSpan: ! '[Qualified "SrcLoc" "RealSrcSpan''"]'
 constructorFields:
-  SrcLoc.UnhelpfulSpan: NonRecordFields 1
-  SrcLoc.ARealSrcLoc: NonRecordFields 1
-  SrcLoc.ARealSrcSpan: NonRecordFields 1
-  SrcLoc.UnhelpfulLoc: NonRecordFields 1
+  SrcLoc.ARealSrcLoc: NonRecordFields 2
+  SrcLoc.ARealSrcSpan: NonRecordFields 2
   SrcLoc.ASrcLoc: NonRecordFields 3
+  SrcLoc.BufPos: RecordFields [Qualified "SrcLoc" "bufPos"]
+  SrcLoc.BufSpan: RecordFields [Qualified "SrcLoc" "bufSpanStart",Qualified "SrcLoc"
+    "bufSpanEnd"]
+  SrcLoc.DifferentLine: RecordFields [Qualified "SrcLoc" "deltaLine",Qualified "SrcLoc"
+    "deltaColumn"]
+  SrcLoc.EpaDelta: NonRecordFields 2
+  SrcLoc.EpaSpan: NonRecordFields 1
+  SrcLoc.L: NonRecordFields 2
+  SrcLoc.NoComments: NonRecordFields 0
+  SrcLoc.PsLoc: RecordFields [Qualified "SrcLoc" "psRealLoc",Qualified "SrcLoc" "psBufPos"]
+  SrcLoc.PsSpan: RecordFields [Qualified "SrcLoc" "psRealSpan",Qualified "SrcLoc"
+    "psBufSpan"]
   SrcLoc.RealSrcSpan': RecordFields [Qualified "SrcLoc" "srcSpanFile",Qualified "SrcLoc"
     "srcSpanSLine",Qualified "SrcLoc" "srcSpanSCol",Qualified "SrcLoc" "srcSpanELine",Qualified
     "SrcLoc" "srcSpanECol"]
-  SrcLoc.L: NonRecordFields 2
-recordFieldTypes:
-  SrcLoc.srcSpanFile: Qualified "SrcLoc" "RealSrcSpan"
-  SrcLoc.srcSpanSLine: Qualified "SrcLoc" "RealSrcSpan"
-  SrcLoc.srcSpanELine: Qualified "SrcLoc" "RealSrcSpan"
-  SrcLoc.srcSpanECol: Qualified "SrcLoc" "RealSrcSpan"
-  SrcLoc.srcSpanSCol: Qualified "SrcLoc" "RealSrcSpan"
+  SrcLoc.SameLine: RecordFields [Qualified "SrcLoc" "deltaColumn"]
+  SrcLoc.UnhelpfulGenerated: NonRecordFields 0
+  SrcLoc.UnhelpfulInteractive: NonRecordFields 0
+  SrcLoc.UnhelpfulLoc: NonRecordFields 1
+  SrcLoc.UnhelpfulNoLocationInfo: NonRecordFields 0
+  SrcLoc.UnhelpfulOther: NonRecordFields 1
+  SrcLoc.UnhelpfulSpan: NonRecordFields 1
+  SrcLoc.UnhelpfulWiredIn: NonRecordFields 0
 constructorTypes:
-  SrcLoc.UnhelpfulSpan: Qualified "SrcLoc" "SrcSpan"
   SrcLoc.ARealSrcLoc: Qualified "SrcLoc" "SrcLoc"
   SrcLoc.ARealSrcSpan: Qualified "SrcLoc" "SrcSpan"
-  SrcLoc.UnhelpfulLoc: Qualified "SrcLoc" "SrcLoc"
   SrcLoc.ASrcLoc: Qualified "SrcLoc" "RealSrcLoc"
-  SrcLoc.RealSrcSpan': Qualified "SrcLoc" "RealSrcSpan"
+  SrcLoc.BufPos: Qualified "SrcLoc" "BufPos"
+  SrcLoc.BufSpan: Qualified "SrcLoc" "BufSpan"
+  SrcLoc.DifferentLine: Qualified "SrcLoc" "DeltaPos"
+  SrcLoc.EpaDelta: Qualified "SrcLoc" "EpaLocation'"
+  SrcLoc.EpaSpan: Qualified "SrcLoc" "EpaLocation'"
   SrcLoc.L: Qualified "SrcLoc" "GenLocated"
+  SrcLoc.NoComments: Qualified "SrcLoc" "NoComments"
+  SrcLoc.PsLoc: Qualified "SrcLoc" "PsLoc"
+  SrcLoc.PsSpan: Qualified "SrcLoc" "PsSpan"
+  SrcLoc.RealSrcSpan': Qualified "SrcLoc" "RealSrcSpan"
+  SrcLoc.SameLine: Qualified "SrcLoc" "DeltaPos"
+  SrcLoc.UnhelpfulGenerated: Qualified "SrcLoc" "UnhelpfulSpanReason"
+  SrcLoc.UnhelpfulInteractive: Qualified "SrcLoc" "UnhelpfulSpanReason"
+  SrcLoc.UnhelpfulLoc: Qualified "SrcLoc" "SrcLoc"
+  SrcLoc.UnhelpfulNoLocationInfo: Qualified "SrcLoc" "UnhelpfulSpanReason"
+  SrcLoc.UnhelpfulOther: Qualified "SrcLoc" "UnhelpfulSpanReason"
+  SrcLoc.UnhelpfulSpan: Qualified "SrcLoc" "SrcSpan"
+  SrcLoc.UnhelpfulWiredIn: Qualified "SrcLoc" "UnhelpfulSpanReason"
+constructors:
+  SrcLoc.BufPos: '[Qualified "SrcLoc" "BufPos"]'
+  SrcLoc.BufSpan: '[Qualified "SrcLoc" "BufSpan"]'
+  SrcLoc.DeltaPos: '[Qualified "SrcLoc" "SameLine",Qualified "SrcLoc" "DifferentLine"]'
+  SrcLoc.EpaLocation': '[Qualified "SrcLoc" "EpaSpan",Qualified "SrcLoc" "EpaDelta"]'
+  SrcLoc.GenLocated: '[Qualified "SrcLoc" "L"]'
+  SrcLoc.NoComments: '[Qualified "SrcLoc" "NoComments"]'
+  SrcLoc.PsLoc: '[Qualified "SrcLoc" "PsLoc"]'
+  SrcLoc.PsSpan: '[Qualified "SrcLoc" "PsSpan"]'
+  SrcLoc.RealSrcLoc: '[Qualified "SrcLoc" "ASrcLoc"]'
+  SrcLoc.RealSrcSpan: '[Qualified "SrcLoc" "RealSrcSpan''"]'
+  SrcLoc.SrcLoc: '[Qualified "SrcLoc" "ARealSrcLoc",Qualified "SrcLoc" "UnhelpfulLoc"]'
+  SrcLoc.SrcSpan: '[Qualified "SrcLoc" "ARealSrcSpan",Qualified "SrcLoc" "UnhelpfulSpan"]'
+  SrcLoc.UnhelpfulSpanReason: '[Qualified "SrcLoc" "UnhelpfulNoLocationInfo",Qualified
+    "SrcLoc" "UnhelpfulWiredIn",Qualified "SrcLoc" "UnhelpfulInteractive",Qualified
+    "SrcLoc" "UnhelpfulGenerated",Qualified "SrcLoc" "UnhelpfulOther"]'
+recordFieldTypes:
+  SrcLoc.bufPos: Qualified "SrcLoc" "BufPos"
+  SrcLoc.bufSpanEnd: Qualified "SrcLoc" "BufSpan"
+  SrcLoc.bufSpanStart: Qualified "SrcLoc" "BufSpan"
+  SrcLoc.deltaColumn: Qualified "SrcLoc" "DeltaPos"
+  SrcLoc.deltaLine: Qualified "SrcLoc" "DeltaPos"
+  SrcLoc.psBufPos: Qualified "SrcLoc" "PsLoc"
+  SrcLoc.psBufSpan: Qualified "SrcLoc" "PsSpan"
+  SrcLoc.psRealLoc: Qualified "SrcLoc" "PsLoc"
+  SrcLoc.psRealSpan: Qualified "SrcLoc" "PsSpan"
+  SrcLoc.srcSpanECol: Qualified "SrcLoc" "RealSrcSpan"
+  SrcLoc.srcSpanELine: Qualified "SrcLoc" "RealSrcSpan"
+  SrcLoc.srcSpanFile: Qualified "SrcLoc" "RealSrcSpan"
+  SrcLoc.srcSpanSCol: Qualified "SrcLoc" "RealSrcSpan"
+  SrcLoc.srcSpanSLine: Qualified "SrcLoc" "RealSrcSpan"

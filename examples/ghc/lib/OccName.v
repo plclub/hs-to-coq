@@ -14,10 +14,16 @@ Require Coq.Program.Wf.
 
 Require Coq.Init.Datatypes.
 Require Data.Foldable.
-Require FastString.
+Require Data.Maybe.
+Require Datatypes.
+Require FastStringEnv.
 Require GHC.Base.
+Require GHC.Builtin.Uniques.
+Require GHC.Err.
 Require GHC.Num.
+Require GHC.Utils.Lexeme.
 Require HsToCoq.Err.
+Require Panic.
 Require UniqFM.
 Require UniqSet.
 Require Unique.
@@ -27,44 +33,65 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Definition TidyOccEnv :=
-  (UniqFM.UniqFM GHC.Num.Int)%type.
-
-Inductive OccEnv a : Type := | A : (UniqFM.UniqFM a) -> OccEnv a.
+#[global] Definition TidyOccEnv :=
+  (UniqFM.UniqFM GHC.Data.FastString.FastString GHC.Num.Int)%type.
 
 Inductive NameSpace : Type :=
   | VarName : NameSpace
+  | FldName (fldParent : GHC.Data.FastString.FastString) : NameSpace
   | DataName : NameSpace
   | TvName : NameSpace
   | TcClsName : NameSpace.
 
+Inductive OccEnv a : Type :=
+  | MkOccEnv
+   : (FastStringEnv.FastStringEnv (UniqFM.UniqFM NameSpace a)) -> OccEnv a.
+
 Inductive OccName : Type :=
-  | Mk_OccName (occNameSpace : NameSpace) (occNameFS : FastString.FastString)
+  | Mk_OccName (occNameSpace : NameSpace) (occNameFS
+    : GHC.Data.FastString.FastString)
    : OccName.
 
-Definition OccSet :=
-  (UniqSet.UniqSet OccName)%type.
+Inductive OccSet : Type :=
+  | OccSet : (FastStringEnv.FastStringEnv (UniqSet.UniqSet NameSpace)) -> OccSet.
 
 Record HasOccName__Dict (name : Type) := HasOccName__Dict_Build {
   occName__ : name -> OccName }.
 
-Definition HasOccName (name : Type) :=
+#[global] Definition HasOccName (name : Type) :=
   forall r__, (HasOccName__Dict name -> r__) -> r__.
 Existing Class HasOccName.
 
-Definition occName `{g__0__ : HasOccName name} : name -> OccName :=
+#[global] Definition occName `{g__0__ : HasOccName name} : name -> OccName :=
   g__0__ _ (occName__ name).
 
-Arguments A {_} _.
+Arguments MkOccEnv {_} _.
 
 Instance Default__NameSpace : HsToCoq.Err.Default NameSpace :=
   HsToCoq.Err.Build_Default _ VarName.
 
-Definition occNameFS (arg_0__ : OccName) :=
+#[global] Definition fldParent (arg_0__ : NameSpace) :=
+  match arg_0__ with
+  | VarName =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `fldParent' has no match in constructor `VarName' of type `NameSpace'")
+  | FldName fldParent => fldParent
+  | DataName =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `fldParent' has no match in constructor `DataName' of type `NameSpace'")
+  | TvName =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `fldParent' has no match in constructor `TvName' of type `NameSpace'")
+  | TcClsName =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `fldParent' has no match in constructor `TcClsName' of type `NameSpace'")
+  end.
+
+#[global] Definition occNameFS (arg_0__ : OccName) :=
   let 'Mk_OccName _ occNameFS := arg_0__ in
   occNameFS.
 
-Definition occNameSpace (arg_0__ : OccName) :=
+#[global] Definition occNameSpace (arg_0__ : OccName) :=
   let 'Mk_OccName occNameSpace _ := arg_0__ in
   occNameSpace.
 
@@ -77,25 +104,31 @@ Instance Default__OccName : Default OccName :=
 
 (* Converted value declarations: *)
 
-Local Definition Eq___NameSpace_op_zeze__ : NameSpace -> NameSpace -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | VarName, VarName => true
-    | DataName, DataName => true
-    | TvName, TvName => true
-    | TcClsName, TcClsName => true
-    | _, _ => false
-    end.
+#[local] Definition Functor__OccEnv_fmap
+   : forall {a : Type}, forall {b : Type}, (a -> b) -> OccEnv a -> OccEnv b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, MkOccEnv a1 => MkOccEnv (GHC.Base.fmap (fun b1 => GHC.Base.fmap f b1) a1)
+      end.
 
-Local Definition Eq___NameSpace_op_zsze__ : NameSpace -> NameSpace -> bool :=
-  fun x y => negb (Eq___NameSpace_op_zeze__ x y).
+#[local] Definition Functor__OccEnv_op_zlzd__
+   : forall {a : Type}, forall {b : Type}, a -> OccEnv b -> OccEnv a :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | z, MkOccEnv a1 =>
+          MkOccEnv (GHC.Base.fmap (fun b1 => GHC.Base.op_zlzd__ z b1) a1)
+      end.
 
-Program Instance Eq___NameSpace : GHC.Base.Eq_ NameSpace :=
+#[global]
+Program Instance Functor__OccEnv : GHC.Base.Functor OccEnv :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___NameSpace_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___NameSpace_op_zsze__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__OccEnv_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__OccEnv_op_zlzd__ |}.
 
-Local Definition Ord__NameSpace_compare
+#[local] Definition Ord__NameSpace_compare
    : NameSpace -> NameSpace -> comparison :=
   fun x y =>
     match x, y with
@@ -111,34 +144,25 @@ Local Definition Ord__NameSpace_compare
     | TcClsName, TcClsName => Eq
     end.
 
-Local Definition Ord__NameSpace_op_zl__ : NameSpace -> NameSpace -> bool :=
-  fun x y => match Ord__NameSpace_compare x y with | Lt => true | _ => false end.
+#[local] Definition Ord__NameSpace_op_zl__ : NameSpace -> NameSpace -> bool :=
+  fun x y => Ord__NameSpace_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__NameSpace_op_zlze__ : NameSpace -> NameSpace -> bool :=
-  fun x y =>
-    match Ord__NameSpace_compare x y with
-    | Lt => true
-    | Eq => true
-    | _ => false
-    end.
+#[local] Definition Ord__NameSpace_op_zlze__ : NameSpace -> NameSpace -> bool :=
+  fun x y => Ord__NameSpace_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__NameSpace_op_zg__ : NameSpace -> NameSpace -> bool :=
-  fun x y => match Ord__NameSpace_compare x y with | Gt => true | _ => false end.
+#[local] Definition Ord__NameSpace_op_zg__ : NameSpace -> NameSpace -> bool :=
+  fun x y => Ord__NameSpace_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__NameSpace_op_zgze__ : NameSpace -> NameSpace -> bool :=
-  fun x y =>
-    match Ord__NameSpace_compare x y with
-    | Gt => true
-    | Eq => true
-    | _ => false
-    end.
+#[local] Definition Ord__NameSpace_op_zgze__ : NameSpace -> NameSpace -> bool :=
+  fun x y => Ord__NameSpace_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__NameSpace_max : NameSpace -> NameSpace -> NameSpace :=
+#[local] Definition Ord__NameSpace_max : NameSpace -> NameSpace -> NameSpace :=
   fun x y => if Ord__NameSpace_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__NameSpace_min : NameSpace -> NameSpace -> NameSpace :=
+#[local] Definition Ord__NameSpace_min : NameSpace -> NameSpace -> NameSpace :=
   fun x y => if Ord__NameSpace_op_zlze__ x y : bool then x else y.
 
+#[global]
 Program Instance Ord__NameSpace : GHC.Base.Ord NameSpace :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__NameSpace_op_zl__ ;
@@ -149,49 +173,67 @@ Program Instance Ord__NameSpace : GHC.Base.Ord NameSpace :=
            GHC.Base.max__ := Ord__NameSpace_max ;
            GHC.Base.min__ := Ord__NameSpace_min |}.
 
-(* Skipping all instances of class `Data.Data.Data', including
-   `OccName.Data__OccEnv' *)
+#[local] Definition Uniquable__NameSpace_getUnique
+   : NameSpace -> Unique.Unique :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | FldName fs => GHC.Builtin.Uniques.mkFldNSUnique fs
+    | VarName => GHC.Builtin.Uniques.varNSUnique
+    | DataName => GHC.Builtin.Uniques.dataNSUnique
+    | TvName => GHC.Builtin.Uniques.tvNSUnique
+    | TcClsName => GHC.Builtin.Uniques.tcNSUnique
+    end.
 
-Local Definition Eq___OccName_op_zeze__ : OccName -> OccName -> bool :=
+#[global]
+Program Instance Uniquable__NameSpace : Unique.Uniquable NameSpace :=
+  fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__NameSpace_getUnique |}.
+
+(* Skipping all instances of class `Control.DeepSeq.NFData', including
+   `OccName.NFData__NameSpace' *)
+
+#[local] Definition Eq___OccName_op_zeze__ : OccName -> OccName -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_OccName sp1 s1, Mk_OccName sp2 s2 =>
         andb (s1 GHC.Base.== s2) (sp1 GHC.Base.== sp2)
     end.
 
-Local Definition Eq___OccName_op_zsze__ : OccName -> OccName -> bool :=
+#[local] Definition Eq___OccName_op_zsze__ : OccName -> OccName -> bool :=
   fun x y => negb (Eq___OccName_op_zeze__ x y).
 
+#[global]
 Program Instance Eq___OccName : GHC.Base.Eq_ OccName :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___OccName_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___OccName_op_zsze__ |}.
 
-Local Definition Ord__OccName_compare : OccName -> OccName -> comparison :=
+#[local] Definition Ord__OccName_compare : OccName -> OccName -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_OccName sp1 s1, Mk_OccName sp2 s2 =>
-        Util.thenCmp (GHC.Base.compare s1 s2) (GHC.Base.compare sp1 sp2)
+        GHC.Data.FastString.lexicalCompareFS s1 s2 GHC.Base.<<>>
+        GHC.Base.compare sp1 sp2
     end.
 
-Local Definition Ord__OccName_op_zl__ : OccName -> OccName -> bool :=
+#[local] Definition Ord__OccName_op_zl__ : OccName -> OccName -> bool :=
   fun x y => Ord__OccName_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__OccName_op_zlze__ : OccName -> OccName -> bool :=
+#[local] Definition Ord__OccName_op_zlze__ : OccName -> OccName -> bool :=
   fun x y => Ord__OccName_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__OccName_op_zg__ : OccName -> OccName -> bool :=
+#[local] Definition Ord__OccName_op_zg__ : OccName -> OccName -> bool :=
   fun x y => Ord__OccName_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__OccName_op_zgze__ : OccName -> OccName -> bool :=
+#[local] Definition Ord__OccName_op_zgze__ : OccName -> OccName -> bool :=
   fun x y => Ord__OccName_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__OccName_max : OccName -> OccName -> OccName :=
+#[local] Definition Ord__OccName_max : OccName -> OccName -> OccName :=
   fun x y => if Ord__OccName_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__OccName_min : OccName -> OccName -> OccName :=
+#[local] Definition Ord__OccName_min : OccName -> OccName -> OccName :=
   fun x y => if Ord__OccName_op_zlze__ x y : bool then x else y.
 
+#[global]
 Program Instance Ord__OccName : GHC.Base.Ord OccName :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__OccName_op_zl__ ;
@@ -202,12 +244,13 @@ Program Instance Ord__OccName : GHC.Base.Ord OccName :=
            GHC.Base.max__ := Ord__OccName_max ;
            GHC.Base.min__ := Ord__OccName_min |}.
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `OccName.Data__OccName' *)
 
-Local Definition HasOccName__OccName_occName : OccName -> OccName :=
+#[local] Definition HasOccName__OccName_occName : OccName -> OccName :=
   GHC.Base.id.
 
+#[global]
 Program Instance HasOccName__OccName : HasOccName OccName :=
   fun _ k__ => k__ {| occName__ := HasOccName__OccName_occName |}.
 
@@ -220,20 +263,11 @@ Program Instance HasOccName__OccName : HasOccName OccName :=
 (* Skipping all instances of class `Outputable.OutputableBndr', including
    `OccName.OutputableBndr__OccName' *)
 
-Local Definition Uniquable__OccName_getUnique : OccName -> Unique.Unique :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | Mk_OccName VarName fs => Unique.mkVarOccUnique fs
-    | Mk_OccName DataName fs => Unique.mkDataOccUnique fs
-    | Mk_OccName TvName fs => Unique.mkTvOccUnique fs
-    | Mk_OccName TcClsName fs => Unique.mkTcOccUnique fs
-    end.
-
-Program Instance Uniquable__OccName : Unique.Uniquable OccName :=
-  fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__OccName_getUnique |}.
-
 (* Skipping all instances of class `Outputable.Outputable', including
    `OccName.Outputable__OccEnv' *)
+
+(* Skipping all instances of class `Control.DeepSeq.NFData', including
+   `OccName.NFData__OccEnv' *)
 
 (* Skipping all instances of class `Binary.Binary', including
    `OccName.Binary__NameSpace' *)
@@ -241,51 +275,67 @@ Program Instance Uniquable__OccName : Unique.Uniquable OccName :=
 (* Skipping all instances of class `Binary.Binary', including
    `OccName.Binary__OccName' *)
 
-Definition tcName : NameSpace :=
+#[global] Definition tcName : NameSpace :=
   TcClsName.
 
-Definition clsName : NameSpace :=
+#[global] Definition clsName : NameSpace :=
   TcClsName.
 
-Definition tcClsName : NameSpace :=
+#[global] Definition tcClsName : NameSpace :=
   TcClsName.
 
-Definition dataName : NameSpace :=
+#[global] Definition dataName : NameSpace :=
   DataName.
 
-Definition srcDataName : NameSpace :=
+#[global] Definition srcDataName : NameSpace :=
   DataName.
 
-Definition tvName : NameSpace :=
+#[global] Definition tvName : NameSpace :=
   TvName.
 
-Definition varName : NameSpace :=
+#[global] Definition varName : NameSpace :=
   VarName.
 
-Definition isDataConNameSpace : NameSpace -> bool :=
+#[global] Definition fieldName : GHC.Data.FastString.FastString -> NameSpace :=
+  FldName.
+
+#[global] Definition isDataConNameSpace : NameSpace -> bool :=
   fun arg_0__ => match arg_0__ with | DataName => true | _ => false end.
 
-Definition isTcClsNameSpace : NameSpace -> bool :=
+#[global] Definition isTcClsNameSpace : NameSpace -> bool :=
   fun arg_0__ => match arg_0__ with | TcClsName => true | _ => false end.
 
-Definition isTvNameSpace : NameSpace -> bool :=
+#[global] Definition isTvNameSpace : NameSpace -> bool :=
   fun arg_0__ => match arg_0__ with | TvName => true | _ => false end.
 
-Definition isVarNameSpace : NameSpace -> bool :=
+#[global] Definition isVarNameSpace : NameSpace -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | TvName => true
     | VarName => true
+    | FldName _ => true
     | _ => false
     end.
 
-Definition isValNameSpace : NameSpace -> bool :=
+#[global] Definition isTermVarOrFieldNameSpace : NameSpace -> bool :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | VarName => true
+    | FldName _ => true
+    | _ => false
+    end.
+
+#[global] Definition isValNameSpace : NameSpace -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | DataName => true
     | VarName => true
+    | FldName _ => true
     | _ => false
     end.
+
+#[global] Definition isFieldNameSpace : NameSpace -> bool :=
+  fun arg_0__ => match arg_0__ with | FldName _ => true | _ => false end.
 
 (* Skipping definition `OccName.pprNameSpace' *)
 
@@ -293,266 +343,483 @@ Definition isValNameSpace : NameSpace -> bool :=
 
 (* Skipping definition `OccName.pprNameSpaceBrief' *)
 
-Definition demoteNameSpace : NameSpace -> option NameSpace :=
+#[global] Definition demoteNameSpace : NameSpace -> option NameSpace :=
   fun arg_0__ =>
     match arg_0__ with
     | VarName => None
     | DataName => None
     | TvName => None
     | TcClsName => Some DataName
+    | FldName _ => None
+    end.
+
+#[global] Definition demoteTvNameSpace : NameSpace -> option NameSpace :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | TvName => Some VarName
+    | VarName => None
+    | DataName => None
+    | TcClsName => None
+    | FldName _ => None
+    end.
+
+#[global] Definition promoteNameSpace : NameSpace -> option NameSpace :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | DataName => Some TcClsName
+    | VarName => Some TvName
+    | TcClsName => None
+    | TvName => None
+    | FldName _ => None
     end.
 
 (* Skipping definition `OccName.pprOccName' *)
 
-Definition mkOccName : NameSpace -> GHC.Base.String -> OccName :=
-  fun occ_sp str => Mk_OccName occ_sp (FastString.mkFastString str).
+#[global] Definition occNameMangledFS
+   : OccName -> GHC.Data.FastString.FastString :=
+  fun '(Mk_OccName ns fs) =>
+    match ns with
+    | FldName con =>
+        GHC.Data.FastString.concatFS (cons (GHC.Data.FastString.fsLit
+                                            (GHC.Base.hs_string__ "$fld:")) (cons con (cons (GHC.Base.hs_string__ ":")
+                                                                                            (cons fs nil))))
+    | _ => fs
+    end.
 
-Definition mkOccNameFS : NameSpace -> FastString.FastString -> OccName :=
+#[global] Definition mkOccName : NameSpace -> GHC.Base.String -> OccName :=
+  fun occ_sp str => Mk_OccName occ_sp (GHC.Data.FastString.mkFastString str).
+
+#[global] Definition mkOccNameFS
+   : NameSpace -> GHC.Data.FastString.FastString -> OccName :=
   fun occ_sp fs => Mk_OccName occ_sp fs.
 
-Definition mkVarOcc : GHC.Base.String -> OccName :=
+#[global] Definition mkVarOcc : GHC.Base.String -> OccName :=
   fun s => mkOccName varName s.
 
-Definition mkVarOccFS : FastString.FastString -> OccName :=
+#[global] Definition mkVarOccFS : GHC.Data.FastString.FastString -> OccName :=
   fun fs => mkOccNameFS varName fs.
 
-Definition mkDataOcc : GHC.Base.String -> OccName :=
+#[global] Definition mkRecFieldOcc
+   : GHC.Data.FastString.FastString -> GHC.Base.String -> OccName :=
+  fun dc => mkOccName (fieldName dc).
+
+#[global] Definition mkRecFieldOccFS
+   : GHC.Data.FastString.FastString ->
+     GHC.Data.FastString.FastString -> OccName :=
+  fun dc => mkOccNameFS (fieldName dc).
+
+#[global] Definition varToRecFieldOcc `{Util.HasDebugCallStack}
+   : GHC.Data.FastString.FastString -> OccName -> OccName :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | dc, Mk_OccName ns s =>
+        let makes_sense :=
+          match ns with
+          | VarName => true
+          | FldName _ => true
+          | _ => false
+          end in
+        mkRecFieldOccFS dc s
+    end.
+
+#[global] Definition recFieldToVarOcc `{Util.HasDebugCallStack}
+   : OccName -> OccName :=
+  fun '(Mk_OccName _ns s) => mkVarOccFS s.
+
+#[global] Definition mkDataOcc : GHC.Base.String -> OccName :=
   mkOccName dataName.
 
-Definition mkDataOccFS : FastString.FastString -> OccName :=
+#[global] Definition mkDataOccFS : GHC.Data.FastString.FastString -> OccName :=
   mkOccNameFS dataName.
 
-Definition mkTyVarOcc : GHC.Base.String -> OccName :=
+#[global] Definition mkTyVarOcc : GHC.Base.String -> OccName :=
   mkOccName tvName.
 
-Definition mkTyVarOccFS : FastString.FastString -> OccName :=
+#[global] Definition mkTyVarOccFS : GHC.Data.FastString.FastString -> OccName :=
   fun fs => mkOccNameFS tvName fs.
 
-Definition mkTcOcc : GHC.Base.String -> OccName :=
+#[global] Definition mkTcOcc : GHC.Base.String -> OccName :=
   mkOccName tcName.
 
-Definition mkTcOccFS : FastString.FastString -> OccName :=
+#[global] Definition mkTcOccFS : GHC.Data.FastString.FastString -> OccName :=
   mkOccNameFS tcName.
 
-Definition mkClsOcc : GHC.Base.String -> OccName :=
+#[global] Definition mkClsOcc : GHC.Base.String -> OccName :=
   mkOccName clsName.
 
-Definition mkClsOccFS : FastString.FastString -> OccName :=
+#[global] Definition mkClsOccFS : GHC.Data.FastString.FastString -> OccName :=
   mkOccNameFS clsName.
 
-Definition demoteOccName : OccName -> option OccName :=
+#[global] Definition demoteOccName : OccName -> option OccName :=
   fun '(Mk_OccName space name) =>
     demoteNameSpace space GHC.Base.>>=
     (fun space' => GHC.Base.return_ (Mk_OccName space' name)).
 
-Definition otherNameSpace : NameSpace -> NameSpace :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | VarName => DataName
-    | DataName => VarName
-    | TvName => TcClsName
-    | TcClsName => TvName
-    end.
+#[global] Definition demoteOccTvName : OccName -> option OccName :=
+  fun '(Mk_OccName space name) =>
+    demoteTvNameSpace space GHC.Base.>>=
+    (fun space' => GHC.Base.return_ (Mk_OccName space' name)).
 
-Definition nameSpacesRelated : NameSpace -> NameSpace -> bool :=
-  fun ns1 ns2 => orb (ns1 GHC.Base.== ns2) (otherNameSpace ns1 GHC.Base.== ns2).
+#[global] Definition promoteOccName : OccName -> option OccName :=
+  fun '(Mk_OccName space name) =>
+    promoteNameSpace space GHC.Base.>>=
+    (fun promoted_space =>
+       let tyop :=
+         andb (isTvNameSpace promoted_space) (GHC.Utils.Lexeme.isLexVarSym name) in
+       let space' := if tyop : bool then tcClsName else promoted_space in
+       GHC.Base.return_ (Mk_OccName space' name)).
 
-Definition emptyOccEnv {a : Type} : OccEnv a :=
-  A UniqFM.emptyUFM.
+#[global] Definition emptyOccEnv {a : Type} : OccEnv a :=
+  MkOccEnv FastStringEnv.emptyFsEnv.
 
-Definition unitOccSet : OccName -> OccSet :=
-  UniqSet.unitUniqSet.
+#[global] Definition unitOccSet : OccName -> OccSet :=
+  fun '(Mk_OccName ns s) =>
+    OccSet (FastStringEnv.unitFsEnv s (UniqSet.unitUniqSet ns)).
 
-Definition unitOccEnv {a : Type} : OccName -> a -> OccEnv a :=
-  fun x y => A (UniqFM.unitUFM x y).
-
-Definition mkOccSet : list OccName -> OccSet :=
-  UniqSet.mkUniqSet.
-
-Definition mkOccEnv_C {a : Type}
-   : (a -> a -> a) -> list (OccName * a)%type -> OccEnv a :=
-  fun comb l => A (UniqFM.addListToUFM_C comb UniqFM.emptyUFM l).
-
-Definition mkOccEnv {a : Type} : list (OccName * a)%type -> OccEnv a :=
-  fun l => A (UniqFM.listToUFM l).
-
-Definition lookupOccEnv {a : Type} : OccEnv a -> OccName -> option a :=
+#[global] Definition unitOccEnv {a : Type} : OccName -> a -> OccEnv a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | A x, y => UniqFM.lookupUFM x y
+    | Mk_OccName ns s, a =>
+        MkOccEnv (FastStringEnv.unitFsEnv s (UniqFM.unitUFM ns a))
     end.
 
-Definition initTidyOccEnv : list OccName -> TidyOccEnv :=
-  let add :=
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | env, Mk_OccName _ fs => UniqFM.addToUFM env fs #1
-      end in
-  Data.Foldable.foldl add UniqFM.emptyUFM.
-
-Definition foldOccEnv {a : Type} {b : Type}
-   : (a -> b -> b) -> b -> OccEnv a -> b :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | a, b, A c => UniqFM.foldUFM a b c
-    end.
-
-Definition filterOccSet : (OccName -> bool) -> OccSet -> OccSet :=
-  UniqSet.filterUniqSet.
-
-Definition extendOccSetList : OccSet -> list OccName -> OccSet :=
-  UniqSet.addListToUniqSet.
-
-Definition extendOccSet : OccSet -> OccName -> OccSet :=
-  UniqSet.addOneToUniqSet.
-
-Definition extendOccEnv_C {a : Type}
-   : (a -> a -> a) -> OccEnv a -> OccName -> a -> OccEnv a :=
+#[global] Definition extendOccEnv_Acc {a : Type} {b : Type}
+   : (a -> b -> b) -> (a -> b) -> OccEnv b -> OccName -> a -> OccEnv b :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
-    | f, A x, y, z => A (UniqFM.addToUFM_C f x y z)
+    | f, g, MkOccEnv env, Mk_OccName ns s =>
+        let g' := fun a => UniqFM.unitUFM ns (g a) in
+        let f' : a -> UniqFM.UniqFM NameSpace b -> UniqFM.UniqFM NameSpace b :=
+          fun a bs =>
+            UniqFM.alterUFM (Some GHC.Base.∘
+                             (fun arg_5__ => match arg_5__ with | None => g a | Some b => f a b end)) bs
+            ns in
+        MkOccEnv GHC.Base.∘ FastStringEnv.extendFsEnv_Acc f' g' env s
     end.
 
-Definition extendOccEnv_Acc {a : Type} {b : Type}
-   : (a -> b -> b) -> (a -> b) -> OccEnv b -> OccName -> a -> OccEnv b :=
-  fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ =>
-    match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
-    | f, g, A x, y, z => A (UniqFM.addToUFM_Acc f g x y z)
-    end.
-
-Definition extendOccEnvList {a : Type}
+#[global] Definition extendOccEnvList {a : Type}
    : OccEnv a -> list (OccName * a)%type -> OccEnv a :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | A x, l => A (UniqFM.addListToUFM x l)
-    end.
+  Data.Foldable.foldl' (fun arg_0__ arg_1__ =>
+                          match arg_0__, arg_1__ with
+                          | env, pair occ a => extendOccEnv env occ a
+                          end).
 
-Definition extendOccEnv {a : Type} : OccEnv a -> OccName -> a -> OccEnv a :=
+#[global] Definition extendOccEnv {a : Type}
+   : OccEnv a -> OccName -> a -> OccEnv a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | A x, y, z => A (UniqFM.addToUFM x y z)
+    | MkOccEnv as_, Mk_OccName ns s, a =>
+        MkOccEnv (FastStringEnv.extendFsEnv_C UniqFM.plusUFM as_ s (UniqFM.unitUFM ns
+                                               a))
     end.
 
-Definition elemOccEnv {a : Type} : OccName -> OccEnv a -> bool :=
+#[global] Definition emptyOccSet : OccSet :=
+  OccSet FastStringEnv.emptyFsEnv.
+
+#[global] Definition extendOccSet : OccSet -> OccName -> OccSet :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | x, A y => UniqFM.elemUFM x y
+    | OccSet occs, Mk_OccName ns s =>
+        OccSet (FastStringEnv.extendFsEnv occs s (UniqSet.unitUniqSet ns))
     end.
 
-Definition occEnvElts {a : Type} : OccEnv a -> list a :=
-  fun '(A x) => UniqFM.eltsUFM x.
+#[global] Definition extendOccSetList : OccSet -> list OccName -> OccSet :=
+  Data.Foldable.foldl' extendOccSet.
 
-Definition plusOccEnv {a : Type} : OccEnv a -> OccEnv a -> OccEnv a :=
+#[global] Definition mkOccSet : list OccName -> OccSet :=
+  extendOccSetList emptyOccSet.
+
+#[global] Definition mkOccEnv_C {a : Type}
+   : (a -> a -> a) -> list (OccName * a)%type -> OccEnv a :=
+  fun f elts =>
+    let g :=
+      fun arg_0__ arg_1__ =>
+        match arg_0__, arg_1__ with
+        | env, pair (Mk_OccName ns s) a =>
+            FastStringEnv.extendFsEnv_C (UniqFM.plusUFM_C (GHC.Base.flip f)) env s
+            (UniqFM.unitUFM ns a)
+        end in
+    MkOccEnv (Data.Foldable.foldl' g FastStringEnv.emptyFsEnv elts).
+
+#[global] Definition mkOccEnv {a : Type}
+   : list (OccName * a)%type -> OccEnv a :=
+  extendOccEnvList emptyOccEnv.
+
+#[global] Definition lookupOccEnv {a : Type}
+   : OccEnv a -> OccName -> option a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | A x, A y => A (UniqFM.plusUFM x y)
+    | MkOccEnv as_, Mk_OccName ns s =>
+        FastStringEnv.lookupFsEnv as_ s GHC.Base.>>= (fun m => UniqFM.lookupUFM m ns)
     end.
 
-Definition plusOccEnv_C {a : Type}
-   : (a -> a -> a) -> OccEnv a -> OccEnv a -> OccEnv a :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | f, A x, A y => A (UniqFM.plusUFM_C f x y)
-    end.
-
-Definition mapOccEnv {a : Type} {b : Type} : (a -> b) -> OccEnv a -> OccEnv b :=
+#[global] Definition lookupOccEnv_AllNameSpaces {a : Type}
+   : OccEnv a -> OccName -> list a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | f, A x => A (UniqFM.mapUFM f x)
+    | MkOccEnv as_, Mk_OccName _ s =>
+        match FastStringEnv.lookupFsEnv as_ s with
+        | None => nil
+        | Some r => UniqFM.nonDetEltsUFM r
+        end
     end.
 
-Definition delFromOccEnv {a : Type} : OccEnv a -> OccName -> OccEnv a :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | A x, y => A (UniqFM.delFromUFM x y)
-    end.
-
-Definition delListFromOccEnv {a : Type}
-   : OccEnv a -> list OccName -> OccEnv a :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | A x, y => A (UniqFM.delListFromUFM x y)
-    end.
-
-Definition filterOccEnv {elt : Type}
-   : (elt -> bool) -> OccEnv elt -> OccEnv elt :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | x, A y => A (UniqFM.filterUFM x y)
-    end.
-
-Definition alterOccEnv {elt : Type}
-   : (option elt -> option elt) -> OccEnv elt -> OccName -> OccEnv elt :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | fn, A y, k => A (UniqFM.alterUFM fn y k)
-    end.
-
-(* Skipping definition `OccName.pprOccEnv' *)
-
-Definition emptyOccSet : OccSet :=
-  UniqSet.emptyUniqSet.
-
-Definition unionOccSets : OccSet -> OccSet -> OccSet :=
-  UniqSet.unionUniqSets.
-
-Definition unionManyOccSets : list OccSet -> OccSet :=
-  UniqSet.unionManyUniqSets.
-
-Definition minusOccSet : OccSet -> OccSet -> OccSet :=
-  UniqSet.minusUniqSet.
-
-Definition elemOccSet : OccName -> OccSet -> bool :=
-  UniqSet.elementOfUniqSet.
-
-Definition isEmptyOccSet : OccSet -> bool :=
-  UniqSet.isEmptyUniqSet.
-
-Definition intersectOccSet : OccSet -> OccSet -> OccSet :=
-  UniqSet.intersectUniqSets.
-
-Definition intersectsOccSet : OccSet -> OccSet -> bool :=
-  fun s1 s2 => negb (isEmptyOccSet (intersectOccSet s1 s2)).
-
-Definition occNameString : OccName -> GHC.Base.String :=
-  fun '(Mk_OccName _ s) => FastString.unpackFS s.
-
-Definition setOccNameSpace : NameSpace -> OccName -> OccName :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | sp, Mk_OccName _ occ => Mk_OccName sp occ
-    end.
-
-Definition isVarOcc : OccName -> bool :=
+#[global] Definition isVarOcc : OccName -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | Mk_OccName VarName _ => true
     | _ => false
     end.
 
-Definition isTvOcc : OccName -> bool :=
+#[global] Definition lookupFieldsOccEnv {a : Type}
+   : OccEnv a -> GHC.Data.FastString.FastString -> list a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | MkOccEnv as_, fld =>
+        let filter_flds :=
+          UniqFM.filterUFM_Directly (fun arg_2__ arg_3__ =>
+                                       match arg_2__, arg_3__ with
+                                       | uniq, _ => GHC.Builtin.Uniques.isFldNSUnique uniq
+                                       end) in
+        match FastStringEnv.lookupFsEnv as_ fld with
+        | None => nil
+        | Some flds => UniqFM.nonDetEltsUFM (filter_flds flds)
+        end
+    end.
+
+#[global] Definition lookupOccEnv_WithFields {a : Type}
+   : OccEnv a -> OccName -> list a :=
+  fun env occ =>
+    let fieldGREs :=
+      if isVarOcc occ : bool then lookupFieldsOccEnv env (occNameFS occ) else
+      nil in
+    match lookupOccEnv env occ with
+    | None => fieldGREs
+    | Some gre => cons gre fieldGREs
+    end.
+
+#[global] Definition elemOccEnv {a : Type} : OccName -> OccEnv a -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_OccName ns s, MkOccEnv as_ =>
+        match FastStringEnv.lookupFsEnv as_ s with
+        | None => false
+        | Some m => UniqFM.elemUFM ns m
+        end
+    end.
+
+#[global] Definition nonDetFoldOccEnv {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> OccEnv a -> b :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, b0, MkOccEnv as_ =>
+        FastStringEnv.nonDetFoldFsEnv (GHC.Base.flip (UniqFM.nonDetFoldUFM f)) b0 as_
+    end.
+
+#[global] Definition nonDetOccEnvElts {a : Type} : OccEnv a -> list a :=
+  nonDetFoldOccEnv cons nil.
+
+#[global] Definition plusOccEnv {a : Type} : OccEnv a -> OccEnv a -> OccEnv a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | MkOccEnv env1, MkOccEnv env2 =>
+        MkOccEnv (FastStringEnv.plusFsEnv_C UniqFM.plusUFM env1 env2)
+    end.
+
+#[global] Definition plusOccEnv_C {a : Type}
+   : (a -> a -> a) -> OccEnv a -> OccEnv a -> OccEnv a :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, MkOccEnv env1, MkOccEnv env2 =>
+        MkOccEnv (FastStringEnv.plusFsEnv_C (UniqFM.plusUFM_C f) env1 env2)
+    end.
+
+#[global] Definition mapOccEnv {a : Type} {b : Type}
+   : (a -> b) -> OccEnv a -> OccEnv b :=
+  GHC.Base.fmap.
+
+#[global] Definition mapMaybeOccEnv {a : Type} {b : Type}
+   : (a -> option b) -> OccEnv a -> OccEnv b :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | f, MkOccEnv env =>
+        let g :=
+          fun as_ =>
+            let 'm' := UniqFM.mapMaybeUFM f as_ in
+            if UniqFM.isNullUFM m' : bool then None else
+            Some m' in
+        MkOccEnv (UniqFM.mapMaybeUFM g env)
+    end.
+
+#[global] Definition delFromOccEnv {a : Type}
+   : OccEnv a -> OccName -> OccEnv a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | MkOccEnv env1, Mk_OccName ns s =>
+        let f
+         : option (UniqFM.UniqFM NameSpace a) -> option (UniqFM.UniqFM NameSpace a) :=
+          fun arg_2__ =>
+            match arg_2__ with
+            | None => None
+            | Some m =>
+                let 'm' := UniqFM.delFromUFM m ns in
+                if UniqFM.isNullUFM m' : bool then None else
+                Some m'
+            end in
+        MkOccEnv (FastStringEnv.alterFsEnv f env1 s)
+    end.
+
+#[global] Definition delListFromOccEnv {a : Type}
+   : OccEnv a -> list OccName -> OccEnv a :=
+  Data.Foldable.foldl' delFromOccEnv.
+
+#[global] Definition filterOccEnv {a : Type}
+   : (a -> bool) -> OccEnv a -> OccEnv a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | f, MkOccEnv env =>
+        let g : UniqFM.UniqFM NameSpace a -> option (UniqFM.UniqFM NameSpace a) :=
+          fun ms =>
+            let 'm' := UniqFM.filterUFM f ms in
+            if UniqFM.isNullUFM m' : bool then None else
+            Some m' in
+        MkOccEnv (FastStringEnv.mapMaybeFsEnv g env)
+    end.
+
+#[global] Definition alterOccEnv {a : Type}
+   : (option a -> option a) -> OccEnv a -> OccName -> OccEnv a :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, MkOccEnv env, Mk_OccName ns s =>
+        let g
+         : option (UniqFM.UniqFM NameSpace a) -> option (UniqFM.UniqFM NameSpace a) :=
+          fun arg_3__ =>
+            match arg_3__ with
+            | None => GHC.Base.fmap (UniqFM.unitUFM ns) (f None)
+            | Some m =>
+                let 'm' := UniqFM.alterUFM f m ns in
+                if UniqFM.isNullUFM m' : bool then None else
+                Some m'
+            end in
+        MkOccEnv (FastStringEnv.alterFsEnv g env s)
+    end.
+
+#[global] Definition intersectOccEnv_C {a : Type} {b : Type} {c : Type}
+   : (a -> b -> c) -> OccEnv a -> OccEnv b -> OccEnv c :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, MkOccEnv as_, MkOccEnv bs =>
+        MkOccEnv (UniqFM.intersectUFM_C (UniqFM.intersectUFM_C f) as_ bs)
+    end.
+
+#[global] Definition minusOccEnv_C_Ns {a : Type} {b : Type}
+   : (UniqFM.UniqFM NameSpace a ->
+      UniqFM.UniqFM NameSpace b -> UniqFM.UniqFM NameSpace a) ->
+     OccEnv a -> OccEnv b -> OccEnv a :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, MkOccEnv as_, MkOccEnv bs =>
+        let g
+         : UniqFM.UniqFM NameSpace a ->
+           UniqFM.UniqFM NameSpace b -> option (UniqFM.UniqFM NameSpace a) :=
+          fun as_ bs =>
+            let m := f as_ bs in if UniqFM.isNullUFM m : bool then None else Some m in
+        MkOccEnv (UniqFM.minusUFM_C g as_ bs)
+    end.
+
+#[global] Definition minusOccEnv {a : Type} {b : Type}
+   : OccEnv a -> OccEnv b -> OccEnv a :=
+  minusOccEnv_C_Ns UniqFM.minusUFM.
+
+#[global] Definition minusOccEnv_C {a : Type} {b : Type}
+   : (a -> b -> option a) -> OccEnv a -> OccEnv b -> OccEnv a :=
+  fun f => minusOccEnv_C_Ns (UniqFM.minusUFM_C f).
+
+(* Skipping definition `OccName.pprOccEnv' *)
+
+#[global] Definition strictMapOccEnv {a : Type} {b : Type}
+   : (a -> b) -> OccEnv a -> OccEnv b :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | f, MkOccEnv as_ =>
+        MkOccEnv (FastStringEnv.strictMapFsEnv (UniqFM.strictMapUFM f) as_)
+    end.
+
+#[global] Definition forceOccEnv {a : Type} : (a -> unit) -> OccEnv a -> unit :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | nf, MkOccEnv fs => UniqFM.seqEltsUFM (UniqFM.seqEltsUFM nf) fs
+    end.
+
+#[global] Definition unionOccSets : OccSet -> OccSet -> OccSet :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | OccSet xs, OccSet ys =>
+        OccSet (FastStringEnv.plusFsEnv_C UniqSet.unionUniqSets xs ys)
+    end.
+
+#[global] Definition unionManyOccSets : list OccSet -> OccSet :=
+  Data.Foldable.foldl' unionOccSets emptyOccSet.
+
+#[global] Definition elemOccSet : OccName -> OccSet -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | Mk_OccName ns s, OccSet occs =>
+        Data.Maybe.maybe false (UniqSet.elementOfUniqSet ns) (FastStringEnv.lookupFsEnv
+                                                              occs s)
+    end.
+
+#[global] Definition isEmptyOccSet : OccSet -> bool :=
+  fun '(OccSet occs) => UniqFM.isNullUFM occs.
+
+#[global] Definition occNameString : OccName -> GHC.Base.String :=
+  fun '(Mk_OccName _ s) => GHC.Data.FastString.unpackFS s.
+
+#[global] Definition setOccNameSpace : NameSpace -> OccName -> OccName :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | sp, Mk_OccName _ occ => Mk_OccName sp occ
+    end.
+
+#[global] Definition isTvOcc : OccName -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | Mk_OccName TvName _ => true
     | _ => false
     end.
 
-Definition isTcOcc : OccName -> bool :=
+#[global] Definition isTcOcc : OccName -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | Mk_OccName TcClsName _ => true
     | _ => false
     end.
 
-Definition isValOcc : OccName -> bool :=
+#[global] Definition isFieldOcc : OccName -> bool :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Mk_OccName (FldName _) _ => true
+    | _ => false
+    end.
+
+#[global] Definition fieldOcc_maybe
+   : OccName -> option GHC.Data.FastString.FastString :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Mk_OccName (FldName con) _ => Some con
+    | _ => None
+    end.
+
+#[global] Definition isValOcc : OccName -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | Mk_OccName VarName _ => true
     | Mk_OccName DataName _ => true
+    | Mk_OccName (FldName _) _ => true
     | _ => false
     end.
 
-Definition isDataOcc : OccName -> bool :=
+#[global] Definition isDataOcc : OccName -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | Mk_OccName DataName _ => true
@@ -567,11 +834,16 @@ Axiom isSymOcc : OccName -> bool.
 
 Axiom startsWithUnderscore : OccName -> bool.
 
-Definition mk_deriv
+#[global] Definition isUnderscore : OccName -> bool :=
+  fun occ =>
+    occNameFS occ GHC.Base.== GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "_").
+
+#[global] Definition mk_deriv
    : NameSpace ->
-     FastString.FastString -> list FastString.FastString -> OccName :=
+     GHC.Data.FastString.FastString ->
+     list GHC.Data.FastString.FastString -> OccName :=
   fun occ_sp sys_prefix str =>
-    mkOccNameFS occ_sp (FastString.concatFS (cons sys_prefix str)).
+    mkOccNameFS occ_sp (GHC.Data.FastString.concatFS (cons sys_prefix str)).
 
 Axiom isDerivedOccName : OccName -> bool.
 
@@ -579,123 +851,84 @@ Axiom isDefaultMethodOcc : OccName -> bool.
 
 Axiom isTypeableBindOcc : OccName -> bool.
 
-Definition mk_simple_deriv
-   : NameSpace -> FastString.FastString -> OccName -> OccName :=
+#[global] Definition mk_simple_deriv
+   : NameSpace -> GHC.Data.FastString.FastString -> OccName -> OccName :=
   fun sp px occ => mk_deriv sp px (cons (occNameFS occ) nil).
 
-Definition mkDataConWrapperOcc : OccName -> OccName :=
+#[global] Definition mkDataConWrapperOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$W").
 
-Definition mkWorkerOcc : OccName -> OccName :=
+#[global] Definition mkWorkerOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$w").
 
-Definition mkMatcherOcc : OccName -> OccName :=
+#[global] Definition mkMatcherOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$m").
 
-Definition mkBuilderOcc : OccName -> OccName :=
+#[global] Definition mkBuilderOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$b").
 
-Definition mkDefaultMethodOcc : OccName -> OccName :=
+#[global] Definition mkDefaultMethodOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$dm").
 
-Definition mkClassOpAuxOcc : OccName -> OccName :=
+#[global] Definition mkClassOpAuxOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$c").
 
-Definition mkDictOcc : OccName -> OccName :=
+#[global] Definition mkDictOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$d").
 
-Definition mkIPOcc : OccName -> OccName :=
+#[global] Definition mkIPOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$i").
 
-Definition mkSpecOcc : OccName -> OccName :=
+#[global] Definition mkSpecOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$s").
 
-Definition mkForeignExportOcc : OccName -> OccName :=
+#[global] Definition mkForeignExportOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$f").
 
-Definition mkRepEqOcc : OccName -> OccName :=
+#[global] Definition mkRepEqOcc : OccName -> OccName :=
   mk_simple_deriv tvName (GHC.Base.hs_string__ "$r").
 
-Definition mkClassDataConOcc : OccName -> OccName :=
+#[global] Definition mkClassDataConOcc : OccName -> OccName :=
   mk_simple_deriv dataName (GHC.Base.hs_string__ "C:").
 
-Definition mkNewTyCoOcc : OccName -> OccName :=
+#[global] Definition mkNewTyCoOcc : OccName -> OccName :=
   mk_simple_deriv tcName (GHC.Base.hs_string__ "N:").
 
-Definition mkInstTyCoOcc : OccName -> OccName :=
+#[global] Definition mkInstTyCoOcc : OccName -> OccName :=
   mk_simple_deriv tcName (GHC.Base.hs_string__ "D:").
 
-Definition mkEqPredCoOcc : OccName -> OccName :=
+#[global] Definition mkEqPredCoOcc : OccName -> OccName :=
   mk_simple_deriv tcName (GHC.Base.hs_string__ "$co").
 
-Definition mkCon2TagOcc : OccName -> OccName :=
+#[global] Definition mkCon2TagOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$con2tag_").
 
-Definition mkTag2ConOcc : OccName -> OccName :=
+#[global] Definition mkTag2ConOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$tag2con_").
 
-Definition mkMaxTagOcc : OccName -> OccName :=
+#[global] Definition mkMaxTagOcc : OccName -> OccName :=
   mk_simple_deriv varName (GHC.Base.hs_string__ "$maxtag_").
 
-Definition mkTyConRepOcc : OccName -> OccName :=
+#[global] Definition mkDataTOcc : OccName -> OccName :=
+  mk_simple_deriv varName (GHC.Base.hs_string__ "$t").
+
+#[global] Definition mkDataCOcc : OccName -> OccName :=
+  mk_simple_deriv varName (GHC.Base.hs_string__ "$c").
+
+#[global] Definition mkTyConRepOcc : OccName -> OccName :=
   fun occ =>
     let prefix :=
       if isDataOcc occ : bool then GHC.Base.hs_string__ "$tc'" else
       GHC.Base.hs_string__ "$tc" in
     mk_simple_deriv varName prefix occ.
 
-Definition mkGenR : OccName -> OccName :=
+#[global] Definition mkGenR : OccName -> OccName :=
   mk_simple_deriv tcName (GHC.Base.hs_string__ "Rep_").
 
-Definition mkGen1R : OccName -> OccName :=
+#[global] Definition mkGen1R : OccName -> OccName :=
   mk_simple_deriv tcName (GHC.Base.hs_string__ "Rep1_").
 
-Definition mk_simple_deriv_with
-   : NameSpace ->
-     FastString.FastString -> option GHC.Base.String -> OccName -> OccName :=
-  fun arg_0__ arg_1__ arg_2__ arg_3__ =>
-    match arg_0__, arg_1__, arg_2__, arg_3__ with
-    | sp, px, None, occ => mk_deriv sp px (cons (occNameFS occ) nil)
-    | sp, px, Some with_, occ =>
-        mk_deriv sp px (cons (FastString.fsLit with_) (cons (FastString.fsLit
-                                                             (GHC.Base.hs_string__ "_")) (cons (occNameFS occ) nil)))
-    end.
-
-Definition mkVectOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with varName (GHC.Base.hs_string__ "$v").
-
-Definition mkVectTyConOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with tcName (GHC.Base.hs_string__ "V:").
-
-Definition mkVectDataConOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with dataName (GHC.Base.hs_string__ "VD:").
-
-Definition mkVectIsoOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with varName (GHC.Base.hs_string__ "$vi").
-
-Definition mkPADFunOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with varName (GHC.Base.hs_string__ "$pa").
-
-Definition mkPReprTyConOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with tcName (GHC.Base.hs_string__ "VR:").
-
-Definition mkPDataTyConOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with tcName (GHC.Base.hs_string__ "VP:").
-
-Definition mkPDatasTyConOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with tcName (GHC.Base.hs_string__ "VPs:").
-
-Definition mkPDataDataConOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with dataName (GHC.Base.hs_string__ "VPD:").
-
-Definition mkPDatasDataConOcc : option GHC.Base.String -> OccName -> OccName :=
-  mk_simple_deriv_with dataName (GHC.Base.hs_string__ "VPDs:").
-
-Definition mkRecFldSelOcc : GHC.Base.String -> OccName :=
-  fun s =>
-    mk_deriv varName (GHC.Base.hs_string__ "$sel") (cons (FastString.fsLit s) nil).
-
-Definition mkDataConWorkerOcc : OccName -> OccName :=
+#[global] Definition mkDataConWorkerOcc : OccName -> OccName :=
   fun datacon_occ => setOccNameSpace varName datacon_occ.
 
 Axiom mkSuperDictAuxOcc : GHC.Num.Int -> OccName -> OccName.
@@ -706,39 +939,42 @@ Axiom mkLocalOcc : Unique.Unique -> OccName -> OccName.
 
 Axiom chooseUniqueOcc : NameSpace -> GHC.Base.String -> OccSet -> OccName.
 
-Definition mkInstTyTcOcc : GHC.Base.String -> OccSet -> OccName :=
+#[global] Definition mkInstTyTcOcc : GHC.Base.String -> OccSet -> OccName :=
   fun str =>
     chooseUniqueOcc tcName (cons (GHC.Char.hs_char__ "R") (cons (GHC.Char.hs_char__
                                                                  ":") str)).
 
-Definition mkDFunOcc : GHC.Base.String -> bool -> OccSet -> OccName :=
+#[global] Definition mkDFunOcc : GHC.Base.String -> bool -> OccSet -> OccName :=
   fun info_str is_boot set =>
     let prefix :=
       if is_boot : bool then GHC.Base.hs_string__ "$fx" else
       GHC.Base.hs_string__ "$f" in
     chooseUniqueOcc VarName (Coq.Init.Datatypes.app prefix info_str) set.
 
-Definition mkDataTOcc : OccName -> OccSet -> OccName :=
-  fun occ =>
-    chooseUniqueOcc VarName (Coq.Init.Datatypes.app (GHC.Base.hs_string__ "$t")
-                                                    (occNameString occ)).
-
-Definition mkDataCOcc : OccName -> OccSet -> OccName :=
-  fun occ =>
-    chooseUniqueOcc VarName (Coq.Init.Datatypes.app (GHC.Base.hs_string__ "$c")
-                                                    (occNameString occ)).
-
-Definition mkMethodOcc : OccName -> OccName :=
+#[global] Definition mkMethodOcc : OccName -> OccName :=
   fun arg_0__ =>
     match arg_0__ with
     | (Mk_OccName VarName _ as occ) => occ
     | occ => mk_simple_deriv varName (GHC.Base.hs_string__ "$m") occ
     end.
 
-Definition emptyTidyOccEnv : TidyOccEnv :=
+#[global] Definition emptyTidyOccEnv : TidyOccEnv :=
   UniqFM.emptyUFM.
 
-Definition avoidClashesOccEnv : TidyOccEnv -> list OccName -> TidyOccEnv :=
+#[global] Definition initTidyOccEnv : list OccName -> TidyOccEnv :=
+  let add :=
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | env, Mk_OccName _ fs => UniqFM.addToUFM env fs #1
+      end in
+  Data.Foldable.foldl' add UniqFM.emptyUFM.
+
+#[global] Definition delTidyOccEnvList
+   : TidyOccEnv -> list GHC.Data.FastString.FastString -> TidyOccEnv :=
+  UniqFM.delListFromUFM.
+
+#[global] Definition avoidClashesOccEnv
+   : TidyOccEnv -> list OccName -> TidyOccEnv :=
   fun env occs =>
     let fix go arg_0__ arg_1__ arg_2__
       := match arg_0__, arg_1__, arg_2__ with
@@ -753,25 +989,47 @@ Definition avoidClashesOccEnv : TidyOccEnv -> list OccName -> TidyOccEnv :=
 
 Axiom tidyOccName : TidyOccEnv -> OccName -> (TidyOccEnv * OccName)%type.
 
+#[global] Definition mainOcc : OccName :=
+  mkVarOccFS (GHC.Data.FastString.fsLit (GHC.Base.hs_string__ "main")).
+
+#[global] Definition ppMainFn : OccName -> GHC.Base.String :=
+  fun main_occ =>
+    if main_occ GHC.Base.== mainOcc : bool
+    then GHC.Base.mappend (Datatypes.id (GHC.Base.hs_string__ "IO action"))
+                          (Outputable.quotes (Panic.someSDoc)) else
+    GHC.Base.mappend (Datatypes.id (GHC.Base.hs_string__ "main IO action"))
+                     (Outputable.quotes (Panic.someSDoc)).
+
 (* External variables:
-     Eq Gt Lt None Some Type andb bool comparison cons false list negb nil op_zt__
-     option orb true tt Coq.Init.Datatypes.app Data.Foldable.foldl
-     FastString.FastString FastString.concatFS FastString.fsLit
-     FastString.mkFastString FastString.unpackFS GHC.Base.Eq_ GHC.Base.Ord
-     GHC.Base.String GHC.Base.compare GHC.Base.compare__ GHC.Base.id GHC.Base.max__
-     GHC.Base.min__ GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg____
-     GHC.Base.op_zgze____ GHC.Base.op_zgzgze__ GHC.Base.op_zl____
-     GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.return_
-     GHC.Num.Int GHC.Num.fromInteger HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     UniqFM.UniqFM UniqFM.addListToUFM UniqFM.addListToUFM_C UniqFM.addToUFM
-     UniqFM.addToUFM_Acc UniqFM.addToUFM_C UniqFM.alterUFM UniqFM.delFromUFM
-     UniqFM.delListFromUFM UniqFM.elemUFM UniqFM.eltsUFM UniqFM.emptyUFM
-     UniqFM.filterUFM UniqFM.foldUFM UniqFM.listToUFM UniqFM.lookupUFM UniqFM.mapUFM
-     UniqFM.plusUFM UniqFM.plusUFM_C UniqFM.unitUFM UniqSet.UniqSet
-     UniqSet.addListToUniqSet UniqSet.addOneToUniqSet UniqSet.elementOfUniqSet
-     UniqSet.emptyUniqSet UniqSet.filterUniqSet UniqSet.intersectUniqSets
-     UniqSet.isEmptyUniqSet UniqSet.minusUniqSet UniqSet.mkUniqSet
-     UniqSet.unionManyUniqSets UniqSet.unionUniqSets UniqSet.unitUniqSet
-     Unique.Uniquable Unique.Unique Unique.getUnique__ Unique.mkDataOccUnique
-     Unique.mkTcOccUnique Unique.mkTvOccUnique Unique.mkVarOccUnique Util.thenCmp
+     Eq Gt Lt None Some Type andb bool comparison cons extendOccEnv false list negb
+     nil op_zt__ option pair true tt unit Coq.Init.Datatypes.app Data.Foldable.foldl'
+     Data.Maybe.maybe Datatypes.id FastStringEnv.FastStringEnv
+     FastStringEnv.alterFsEnv FastStringEnv.emptyFsEnv FastStringEnv.extendFsEnv
+     FastStringEnv.extendFsEnv_Acc FastStringEnv.extendFsEnv_C
+     FastStringEnv.lookupFsEnv FastStringEnv.mapMaybeFsEnv
+     FastStringEnv.nonDetFoldFsEnv FastStringEnv.plusFsEnv_C
+     FastStringEnv.strictMapFsEnv FastStringEnv.unitFsEnv GHC.Base.Eq_
+     GHC.Base.Functor GHC.Base.Ord GHC.Base.String GHC.Base.compare
+     GHC.Base.compare__ GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__ GHC.Base.id
+     GHC.Base.mappend GHC.Base.max__ GHC.Base.min__ GHC.Base.op_z2218U__
+     GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg____ GHC.Base.op_zgze____
+     GHC.Base.op_zgzgze__ GHC.Base.op_zl____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
+     GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zsze__
+     GHC.Base.op_zsze____ GHC.Base.return_ GHC.Builtin.Uniques.dataNSUnique
+     GHC.Builtin.Uniques.isFldNSUnique GHC.Builtin.Uniques.mkFldNSUnique
+     GHC.Builtin.Uniques.tcNSUnique GHC.Builtin.Uniques.tvNSUnique
+     GHC.Builtin.Uniques.varNSUnique GHC.Data.FastString.FastString
+     GHC.Data.FastString.concatFS GHC.Data.FastString.fsLit
+     GHC.Data.FastString.lexicalCompareFS GHC.Data.FastString.mkFastString
+     GHC.Data.FastString.unpackFS GHC.Err.error GHC.Num.Int GHC.Num.fromInteger
+     GHC.Utils.Lexeme.isLexVarSym HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     Outputable.quotes Panic.someSDoc UniqFM.UniqFM UniqFM.addToUFM UniqFM.alterUFM
+     UniqFM.delFromUFM UniqFM.delListFromUFM UniqFM.elemUFM UniqFM.emptyUFM
+     UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.intersectUFM_C
+     UniqFM.isNullUFM UniqFM.lookupUFM UniqFM.mapMaybeUFM UniqFM.minusUFM
+     UniqFM.minusUFM_C UniqFM.nonDetEltsUFM UniqFM.nonDetFoldUFM UniqFM.plusUFM
+     UniqFM.plusUFM_C UniqFM.seqEltsUFM UniqFM.strictMapUFM UniqFM.unitUFM
+     UniqSet.UniqSet UniqSet.elementOfUniqSet UniqSet.unionUniqSets
+     UniqSet.unitUniqSet Unique.Uniquable Unique.Unique Unique.getUnique__
+     Util.HasDebugCallStack
 *)
