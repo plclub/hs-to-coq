@@ -7,7 +7,7 @@ Arguments Changed {_} _ _.
 Require GHC.Err.
 Require Data.IntMap.Internal.
 
-Instance Default__UniqFM {key} {ele} : Err.Default (UniqFM key ele) :=
+#[global] Instance Default__UniqFM {key} {ele} : Err.Default (UniqFM key ele) :=
   Err.Build_Default _ (UFM Data.IntMap.Internal.empty).
 
 (* Functor/Semigroup/Monoid instances for UniqFM *)

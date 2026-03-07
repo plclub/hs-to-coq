@@ -1,216 +1,121 @@
-Set Warnings "-notation-overridden".
-Set Warnings "-masking-absolute-name".
+(* IntMap — thin wrapper around Data.IntMap.Internal for examples/ghc
+
+   We define IntMap a := Data.IntMap.Internal.IntMap a (a plain type alias)
+   and delegate each operation transparently. *)
 
 Require Import GHC.Base.
-Require Data.IntSet.Internal. 
-Require Import Data.Map.Internal.
-Require Import GHC.Num.
-Require Import Coq.Classes.Morphisms.
-Import GHC.Num.Notations.
+Require Data.IntSet.Internal.
+Require Data.IntMap.Internal.
 
-From Coq Require Import ssreflect ssrbool.
+Definition IntMap (a : Type) : Type := Data.IntMap.Internal.IntMap a.
 
-Require Proofs.GHC.Base.
+Definition empty {a : Type} : IntMap a :=
+  Data.IntMap.Internal.empty.
 
-Require Import MapProofs.
+Definition singleton {a : Type} : Word -> a -> IntMap a :=
+  Data.IntMap.Internal.singleton.
 
-Definition IntMap := WFMap Word.
+Definition null {a : Type} : IntMap a -> bool :=
+  Data.IntMap.Internal.null.
 
-Global Instance Eq_IntMap {A} `{ Base.Eq_ A} : Base.Eq_ (IntMap A) :=
-  Eq_Map_WF.
+Definition keys {a : Type} : IntMap a -> list Word :=
+  Data.IntMap.Internal.keys.
 
-Ltac prove_WF :=
-  match goal with
-  | [ |- WF (proj1_sig ?x) ] =>
-    match goal with
-    | [ x : IntMap _ |- _] =>
-      destruct x; assumption
-    end
-  end.
+Definition keysSet {a : Type} (m : IntMap a) : Data.IntSet.Internal.IntSet :=
+  Data.IntSet.Internal.fromList (keys m).
 
+Definition elems {a : Type} : IntMap a -> list a :=
+  Data.IntMap.Internal.elems.
 
-Section IntMap.
+Definition member {a : Type} : Word -> IntMap a -> bool :=
+  Data.IntMap.Internal.member.
 
-  Context {A B C: Type}.
-  
-  Program Definition empty : IntMap A := empty.
-  Next Obligation. apply empty_WF. Defined.
+Definition size {a : Type} (m : IntMap a) : nat :=
+  N.to_nat (Data.IntMap.Internal.size m).
 
-  Program Definition singleton : Word -> A -> IntMap A := singleton.
-  Next Obligation. apply singleton_WF. Defined.
+Definition insert {a : Type} : Word -> a -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.insert.
 
-  Program Definition null : IntMap A -> bool := null.
+Definition insertWith {a : Type} : (a -> a -> a) -> Word -> a -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.insertWith.
 
-  Program Definition keys : IntMap A -> list Word := keys.
+Definition delete {a : Type} : Word -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.delete.
 
-  Definition keysSet (m : IntMap A) : Data.IntSet.Internal.IntSet :=
-    Data.IntSet.Internal.fromList (keys m).
+Definition alter {a : Type} : (option a -> option a) -> Word -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.alter.
 
-  Program Definition elems : IntMap A -> list A := elems.
+Definition adjust {a : Type} : (a -> a) -> Word -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.adjust.
 
-  Program Definition member : Word -> IntMap A -> bool := member.
+Definition map {a b : Type} : (a -> b) -> IntMap a -> IntMap b :=
+  Data.IntMap.Internal.map.
 
-  Program Definition size : IntMap A -> nat := map_size.
+Definition mapWithKey {a b : Type} : (Word -> a -> b) -> IntMap a -> IntMap b :=
+  Data.IntMap.Internal.mapWithKey.
 
-  Program Definition insert : Word -> A -> IntMap A -> IntMap A := insert.
-  Next Obligation. apply insert_WF; prove_WF. Defined.
+Definition filter {a : Type} : (a -> bool) -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.filter.
 
-  Program Definition insertWith : (A -> A -> A) -> Word -> A -> IntMap A -> IntMap A :=
-    insertWith.
-  Next Obligation. apply insertWith_WF; prove_WF. Defined.
+Definition filterWithKey {a : Type} : (Word -> a -> bool) -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.filterWithKey.
 
-  Program Definition delete : Word -> IntMap A -> IntMap A := delete.
-  Next Obligation. apply delete_WF; prove_WF. Defined.
+Definition union {a : Type} : IntMap a -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.union.
 
-  Program Definition alter : (option A -> option A) -> Word -> IntMap A -> IntMap A :=
-    alter.
-  Next Obligation. apply alter_WF. prove_WF. Defined.
+Definition unionWith {a : Type} : (a -> a -> a) -> IntMap a -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.unionWith.
 
-  Program Definition adjust : (A -> A) -> Word -> IntMap A -> IntMap A := adjust.
-  Next Obligation. apply adjust_WF. prove_WF. Defined.
+Definition intersection {a b : Type} : IntMap a -> IntMap b -> IntMap a :=
+  Data.IntMap.Internal.intersection.
 
-  Program Definition map : (A -> B) -> IntMap A -> IntMap B := map.
-  Next Obligation. apply map_WF. prove_WF. Defined.
+Definition intersectionWith {a b c : Type} : (a -> b -> c) -> IntMap a -> IntMap b -> IntMap c :=
+  Data.IntMap.Internal.intersectionWith.
 
-  Program Definition mapWithKey : (Word -> A -> B) -> IntMap A -> IntMap B :=
-    mapWithKey.
-  Next Obligation.
-    apply mapWithKey_WF.
-    - intros i j H. f_equal.
-      apply /Base.Eq_eq =>//.
-    - prove_WF.
-  Defined.
+Definition difference {a b : Type} : IntMap a -> IntMap b -> IntMap a :=
+  Data.IntMap.Internal.difference.
 
-  Program Definition filter : (A -> bool) -> IntMap A -> IntMap A := filter.
-  Next Obligation. apply filter_WF. destruct x0. assumption. Defined.
+Definition partition {a : Type} : (a -> bool) -> IntMap a -> IntMap a * IntMap a :=
+  Data.IntMap.Internal.partition.
 
-  Program Definition filterWithKey : (Word -> A -> bool) -> IntMap A -> IntMap A :=
-    filterWithKey.
-  Next Obligation.
-    apply filterWithKey_WF.
-    - intros i j H. f_equal. apply /Base.Eq_eq =>//.
-    - destruct x0; assumption.
-  Defined.
+Definition toList {a : Type} : IntMap a -> list (Word * a) :=
+  Data.IntMap.Internal.toList.
 
-  Program Definition union : IntMap A -> IntMap A -> IntMap A := union.
-  Next Obligation.
-    eapply Desc'_WF.
-    destruct x; destruct x0.
-    eapply union_Desc; try eassumption.
-  Defined.
+Definition toAscList {a : Type} : IntMap a -> list (Word * a) :=
+  Data.IntMap.Internal.toAscList.
 
-  Program Definition unionWith : (A -> A -> A) -> IntMap A -> IntMap A -> IntMap A :=
-    unionWith.
-  Next Obligation.
-    eapply Desc'_WF.
-    destruct x0; destruct x1.
-    eapply unionWith_Desc; try eassumption.
-  Defined.
+Definition fromList {a : Type} : list (Word * a) -> IntMap a :=
+  Data.IntMap.Internal.fromList.
 
-  Program Definition intersection : IntMap A -> IntMap B -> IntMap A :=
-    intersection.
-  Next Obligation.
-    eapply Desc'_WF.
-    destruct x; destruct x0.
-    apply intersection_Desc; try eassumption.
-  Defined.
-  
-  Program Definition intersectionWith : (A -> B -> C) ->
-                                        IntMap A -> IntMap B -> IntMap C :=
-    intersectionWith.
-  Next Obligation.
-    eapply Desc'_WF.
-    destruct x0; destruct x1.
-    apply intersectionWith_Desc; try eassumption.
-  Defined.    
+Definition foldr {a b : Type} : (a -> b -> b) -> b -> IntMap a -> b :=
+  Data.IntMap.Internal.foldr.
 
-  Program Definition difference : IntMap A -> IntMap B -> IntMap A := difference.
-  Next Obligation.
-    destruct x; destruct x0. simpl.
-    eapply Desc'_WF.
-    eapply difference_Desc; try eassumption.
-    intros. apply showDesc'; split.
-    - assumption.
-    - apply H2.
-  Defined.
+Definition foldlWithKey' {a b : Type} : (b -> Word -> a -> b) -> b -> IntMap a -> b :=
+  Data.IntMap.Internal.foldlWithKey'.
 
-  Program Definition partition : (A -> bool) -> IntMap A -> IntMap A * IntMap A :=
-    partition.
-  Next Obligation.
-    destruct x0; simpl.
-    eapply Desc'_WF.
-    eapply partition_spec; try eassumption.
-    intros. destruct H. eassumption.
-  Defined.
-  Next Obligation.
-    destruct x0; simpl.
-    eapply Desc'_WF.
-    eapply partition_spec; try eassumption.
-    intros. destruct H. eassumption.
-  Defined.
+Definition foldrWithKey {a b : Type} : (Word -> a -> b -> b) -> b -> IntMap a -> b :=
+  Data.IntMap.Internal.foldrWithKey.
 
-  Program Definition toList : IntMap A -> list (Word * A) := toList.
+Definition findWithDefault {a : Type} : a -> Word -> IntMap a -> a :=
+  Data.IntMap.Internal.findWithDefault.
 
-  Program Definition foldr : (A -> B -> B) -> B -> IntMap A -> B := foldr.
+Definition lookup {a : Type} : Word -> IntMap a -> option a :=
+  Data.IntMap.Internal.lookup.
 
-  Program Definition foldrWithKey : (Word -> A -> B -> B) -> B -> IntMap A -> B :=
-    foldrWithKey.
+Definition mapKeys {a : Type} : (Word -> Word) -> IntMap a -> IntMap a :=
+  Data.IntMap.Internal.mapKeys.
 
-  Program Definition findWithDefault : A -> Word -> IntMap A -> A := findWithDefault.
+Definition isSubmapOfBy {a b : Type} : (a -> b -> bool) -> IntMap a -> IntMap b -> bool :=
+  Data.IntMap.Internal.isSubmapOfBy.
 
-  Program Definition lookup : Word -> IntMap A -> option A := lookup.
+Definition unionsWith {a : Type} : (a -> a -> a) -> list (IntMap a) -> IntMap a :=
+  Data.IntMap.Internal.unionsWith.
 
-End IntMap.
+Definition mergeWithKey {a b c : Type}
+  : (Word -> a -> b -> option c) -> (IntMap a -> IntMap c) -> (IntMap b -> IntMap c)
+    -> IntMap a -> IntMap b -> IntMap c :=
+  Data.IntMap.Internal.mergeWithKey.
 
-
-(** These should be in [containers]. *)
-
-Lemma list_KeyIn : forall {A B} `{Base.EqLaws A} `{Base.EqLaws B}
-                     (l1 l2 : list (A * B)) k v,
-    l1 == l2 ->
-    Key_In k v l1 ->
-    (exists v', v == v' /\ Key_In k v' l2).
-Proof.
-  intros. generalize dependent l2. induction l1.
-  - inversion H4. 
-  - destruct a; simpl in H4. destruct H4.
-    + destruct H3; subst. intros. destruct l2.
-      * inversion H4.
-      * destruct p. exists b. split.
-        -- move: H4. cbn. move /andP =>[Hh ?].
-           move /andP in Hh. tauto.
-        -- constructor. move: H4. cbn. move /andP =>[Hh ?].
-           move /andP in Hh. intuition.
-           apply Base.Eq_trans with (y:=a); [symmetry |]; assumption.
-    + intros. destruct l2.
-      * inversion H4.
-      * destruct p. cbn in H4. move /andP in H4.
-        destruct H4. specialize (IHl1 H3 l2 H5).
-        destruct IHl1 as [v' IHl]. exists v'. intuition.
-        simpl. right. assumption.
-Qed.
- 
-Lemma Eq_membership : forall {A} `{ Base.EqLaws A} (s1 s2: IntMap A),
-    s1 == s2 -> (forall k, member k s1 == member k s2).
-Proof.    
-  intros A ?? s1 s2. destruct s1; destruct s2; simpl.
-  unfold member, "==". simpl. cbn. unfold Internal.Eq___Map_op_zeze__.
-  move /andP. intros Heq. destruct Heq as [Hs Hl].
-  rewrite !toAscList_spec in Hl. intro k.
-  destruct (Internal.member k x) eqn:Hkx.
-  - rewrite Hkx.
-    eapply member_spec in Hkx; [| eassumption].
-    destruct Hkx as [v Hkx].
-    apply eqb_true_iff. symmetry.
-    eapply toList_sem in Hkx; [| eassumption].
-    apply (list_KeyIn _ _ _ _ Hl) in Hkx. destruct Hkx as [v' Hkv'].
-    eapply member_spec; [eassumption|]. exists v'.
-    eapply toList_sem; [eassumption|]. tauto.
-  - rewrite Hkx. apply not_true_iff_false in Hkx.
-    erewrite member_spec in Hkx; [|eassumption].
-    apply eqb_true_iff. symmetry. apply not_true_iff_false.
-    intro. apply Hkx. eapply member_spec in H1; [|eassumption].
-    destruct H1 as [v Hkv]. eapply toList_sem in Hkv; [|eassumption].
-    eapply list_KeyIn in Hkv; [| symmetry; eassumption].
-    destruct Hkv as [v' [??]]. exists v'. eapply toList_sem; eassumption.
-Qed.    
+Definition mapMaybeWithKey {a b : Type}
+  : (Word -> a -> option b) -> IntMap a -> IntMap b :=
+  Data.IntMap.Internal.mapMaybeWithKey.

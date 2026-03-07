@@ -39,10 +39,10 @@ Existing Class Uniquable.
 
 (* Midamble *)
 
-Instance Default__Name : HsToCoq.Err.Default Unique
+#[global] Instance Default__Unique : HsToCoq.Err.Default Unique
   := HsToCoq.Err.Build_Default _ (MkUnique HsToCoq.Err.default).
 
-Program Instance Uniquable__Word : Uniquable GHC.Num.Word :=
+#[global] Program Instance Uniquable__Word : Uniquable GHC.Num.Word :=
   fun _ k => k {| getUnique__ x := MkUnique x |}.
 
 
@@ -187,6 +187,8 @@ Program Instance Uniquable__Unique : Uniquable Unique :=
   getKey.
 
 Axiom isLocalUnique : Unique -> bool.
+
+Axiom initExitJoinUnique : Unique.
 
 (* External variables:
      Eq Gt Lt Type bool comparison negb op_zt__ pair BinNums.N

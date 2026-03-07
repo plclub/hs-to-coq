@@ -22,11 +22,11 @@ Require Unique.
 (* Converted type declarations: *)
 
 Inductive FieldSelectors : Type :=
-  | FieldSelectors : FieldSelectors
+  | Mk_FieldSelectors : FieldSelectors
   | NoFieldSelectors : FieldSelectors.
 
 Inductive DuplicateRecordFields : Type :=
-  | DuplicateRecordFields : DuplicateRecordFields
+  | Mk_DuplicateRecordFields : DuplicateRecordFields
   | NoDuplicateRecordFields : DuplicateRecordFields.
 
 Inductive FieldLabel : Type :=
@@ -38,11 +38,11 @@ Inductive FieldLabel : Type :=
   (FastStringEnv.DFastStringEnv FieldLabel)%type.
 
 Instance Default__FieldSelectors : HsToCoq.Err.Default FieldSelectors :=
-  HsToCoq.Err.Build_Default _ FieldSelectors.
+  HsToCoq.Err.Build_Default _ Mk_FieldSelectors.
 
 Instance Default__DuplicateRecordFields
    : HsToCoq.Err.Default DuplicateRecordFields :=
-  HsToCoq.Err.Build_Default _ DuplicateRecordFields.
+  HsToCoq.Err.Build_Default _ Mk_DuplicateRecordFields.
 
 Instance Default__FieldLabel : HsToCoq.Err.Default FieldLabel :=
   HsToCoq.Err.Build_Default _ (Mk_FieldLabel HsToCoq.Err.default

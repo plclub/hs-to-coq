@@ -97,7 +97,7 @@ Instance Default__NameSpace : HsToCoq.Err.Default NameSpace :=
 Require Import HsToCoq.Err.
 Require Import Coq.NArith.BinNat.
 
-Instance Default__OccName : Default OccName :=
+#[global] Instance Default__OccName : Default OccName :=
     Build_Default _ (Mk_OccName default default).
 
 (* GHC 9.10: FldName constructor added - need manual Eq instance *)

@@ -14,7 +14,6 @@ Require Coq.Program.Wf.
 
 Require Coq.Lists.List.
 Require Data.Foldable.
-Require Data.OldList.
 Require GHC.Base.
 Require HsToCoq.Err.
 Require Name.
@@ -29,7 +28,7 @@ Import GHC.Base.Notations.
   (UniqSet.UniqSet Name.Name)%type.
 
 Inductive NonCaffySet : Type :=
-  | NonCaffySet (ncs_nameSet : NameSet) : NonCaffySet.
+  | Mk_NonCaffySet (ncs_nameSet : NameSet) : NonCaffySet.
 
 #[global] Definition Uses :=
   NameSet%type.
@@ -47,42 +46,14 @@ Inductive NonCaffySet : Type :=
   (OrdList.OrdList DefUse)%type.
 
 Instance Default__NonCaffySet : HsToCoq.Err.Default NonCaffySet :=
-  HsToCoq.Err.Build_Default _ (NonCaffySet HsToCoq.Err.default).
-
-#[global] Definition ncs_nameSet (arg_0__ : NonCaffySet) :=
-  let 'NonCaffySet ncs_nameSet := arg_0__ in
-  ncs_nameSet.
+  HsToCoq.Err.Build_Default _ (Mk_NonCaffySet HsToCoq.Err.default).
 
 (* Converted value declarations: *)
 
-#[local] Definition Semigroup__NonCaffySet_op_zlzlzgzg__
-   : NonCaffySet -> NonCaffySet -> NonCaffySet :=
-  fun arg_0__ arg_1__ =>
-    NonCaffySet (_GHC.Base.<<>>_ (ncs_nameSet arg_0__) (ncs_nameSet arg_1__)).
+(* Skipping instance `NameSet.Semigroup__NonCaffySet' of class
+   `GHC.Base.Semigroup' *)
 
-#[global]
-Program Instance Semigroup__NonCaffySet : GHC.Base.Semigroup NonCaffySet :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__NonCaffySet_op_zlzlzgzg__ |}.
-
-#[local] Definition Monoid__NonCaffySet_mappend
-   : NonCaffySet -> NonCaffySet -> NonCaffySet :=
-  fun arg_0__ arg_1__ =>
-    NonCaffySet (GHC.Base.mappend (ncs_nameSet arg_0__) (ncs_nameSet arg_1__)).
-
-#[local] Definition Monoid__NonCaffySet_mconcat
-   : list NonCaffySet -> NonCaffySet :=
-  fun arg_0__ => NonCaffySet (GHC.Base.mconcat arg_0__).
-
-#[local] Definition Monoid__NonCaffySet_mempty : NonCaffySet :=
-  NonCaffySet GHC.Base.mempty.
-
-#[global]
-Program Instance Monoid__NonCaffySet : GHC.Base.Monoid NonCaffySet :=
-  fun _ k__ =>
-    k__ {| GHC.Base.mappend__ := Monoid__NonCaffySet_mappend ;
-           GHC.Base.mconcat__ := Monoid__NonCaffySet_mconcat ;
-           GHC.Base.mempty__ := Monoid__NonCaffySet_mempty |}.
+(* Skipping instance `NameSet.Monoid__NonCaffySet' of class `GHC.Base.Monoid' *)
 
 #[global] Definition isEmptyNameSet : NameSet -> bool :=
   UniqSet.isEmptyUniqSet.
@@ -140,8 +111,7 @@ Program Instance Monoid__NonCaffySet : GHC.Base.Monoid NonCaffySet :=
 #[global] Definition nameSetAll : (Name.Name -> bool) -> NameSet -> bool :=
   UniqSet.uniqSetAll.
 
-#[global] Definition nameSetElemsStable : NameSet -> list Name.Name :=
-  fun ns => Data.OldList.sortBy Name.stableNameCmp (UniqSet.nonDetEltsUniqSet ns).
+(* Skipping definition `NameSet.nameSetElemsStable' *)
 
 #[global] Definition isEmptyFVs : NameSet -> bool :=
   isEmptyNameSet.
@@ -240,16 +210,13 @@ Program Instance Monoid__NonCaffySet : GHC.Base.Monoid NonCaffySet :=
 (* External variables:
      None Some bool cons list negb nil op_zt__ option orb pair
      Coq.Lists.List.flat_map Data.Foldable.foldl' Data.Foldable.foldr
-     Data.OldList.sortBy GHC.Base.Monoid GHC.Base.Semigroup GHC.Base.mappend
-     GHC.Base.mappend__ GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty
-     GHC.Base.mempty__ GHC.Base.op_z2218U__ GHC.Base.op_zlzlzgzg__
-     GHC.Base.op_zlzlzgzg____ HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     HsToCoq.Err.default Name.Name Name.nameOccName Name.stableNameCmp
-     OccName.startsWithUnderscore OrdList.OrdList OrdList.appOL OrdList.nilOL
-     OrdList.toOL OrdList.unitOL UniqSet.UniqSet UniqSet.addListToUniqSet
-     UniqSet.addOneToUniqSet UniqSet.delOneFromUniqSet UniqSet.disjointUniqSets
-     UniqSet.elementOfUniqSet UniqSet.emptyUniqSet UniqSet.filterUniqSet
-     UniqSet.intersectUniqSets UniqSet.isEmptyUniqSet UniqSet.minusUniqSet
-     UniqSet.mkUniqSet UniqSet.nonDetEltsUniqSet UniqSet.unionManyUniqSets
-     UniqSet.unionUniqSets UniqSet.uniqSetAll UniqSet.uniqSetAny UniqSet.unitUniqSet
+     GHC.Base.op_z2218U__ HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default Name.Name Name.nameOccName OccName.startsWithUnderscore
+     OrdList.OrdList OrdList.appOL OrdList.nilOL OrdList.toOL OrdList.unitOL
+     UniqSet.UniqSet UniqSet.addListToUniqSet UniqSet.addOneToUniqSet
+     UniqSet.delOneFromUniqSet UniqSet.disjointUniqSets UniqSet.elementOfUniqSet
+     UniqSet.emptyUniqSet UniqSet.filterUniqSet UniqSet.intersectUniqSets
+     UniqSet.isEmptyUniqSet UniqSet.minusUniqSet UniqSet.mkUniqSet
+     UniqSet.unionManyUniqSets UniqSet.unionUniqSets UniqSet.uniqSetAll
+     UniqSet.uniqSetAny UniqSet.unitUniqSet
 *)

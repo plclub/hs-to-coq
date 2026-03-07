@@ -1,10 +1,21 @@
 # GHC 9.10: skip unsupported modules
 skip module GHC.Builtin.Uniques
-skip module GHC.Types.TyThing
 skip module GHC.Unit.Home
 
 skip Name.mkWiredInName
 skip Name.wiredInNameTyThing_maybe
+
+# GHC 9.10: skip functions using TysWiredIn/GHC.Builtin.Uniques
+# to break circular dependency Name -> TysWiredIn -> Core -> Name
+skip module GHC.Builtin.Types
+skip Name.namePun_maybe
+skip Name.isTupleTyConName
+skip Name.isSumTyConName
+skip Name.isUnboxedTupleDataConLikeName
+skip Name.isDynLinkName
+skip Name.nameIsFromExternalPackage
+skip Name.stableNameCmp
+skip module GHC.Platform.ArchOS
 
 #
 # cannot process error message when this fails
@@ -29,6 +40,11 @@ skip Name.pprInternal
 skip Name.ppr_z_occ_name
 skip Name.pprExternal
 skip Name.pprName
+skip Name.pprFullName
+skip Name.pprTickyName
+skip Name.pprNameUnqualified
+skip Name.nameSortStableString
+skip Name.nameStableString
 skip Name.Default__Name
 
 ##

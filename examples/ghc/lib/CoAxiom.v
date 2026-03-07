@@ -15,6 +15,7 @@ Require Coq.Program.Wf.
 Require AxiomatizedTypes.
 Require BasicTypes.
 Require Core.
+Require FastString.
 Require GHC.Base.
 Require HsSyn.
 Require Name.
@@ -162,7 +163,7 @@ Axiom coAxBranchIncomps : AxiomatizedTypes.CoAxBranch ->
 
 Axiom placeHolderIncomps : list AxiomatizedTypes.CoAxBranch.
 
-Axiom fsFromRole : HsSyn.Role -> GHC.Data.FastString.FastString.
+Axiom fsFromRole : HsSyn.Role -> FastString.FastString.
 
 Axiom trivialBuiltInFamily : AxiomatizedTypes.BuiltInSynFamily.
 
@@ -172,6 +173,6 @@ Axiom trivialBuiltInFamily : AxiomatizedTypes.BuiltInSynFamily.
      AxiomatizedTypes.BuiltInSynFamily AxiomatizedTypes.CoAxBranch
      AxiomatizedTypes.CoAxiom AxiomatizedTypes.CoAxiomRule AxiomatizedTypes.Type_
      AxiomatizedTypes.Unbranched BasicTypes.Arity Core.CoVar Core.TyCon Core.TyVar
-     GHC.Base.Eq_ GHC.Base.Ord GHC.Data.FastString.FastString HsSyn.Role Name.Name
+     FastString.FastString GHC.Base.Eq_ GHC.Base.Ord HsSyn.Role Name.Name
      Name.NamedThing Pair.Pair SrcLoc.SrcSpan Unique.Uniquable
 *)

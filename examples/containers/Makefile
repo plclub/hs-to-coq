@@ -165,6 +165,7 @@ clean:
 	rm -f $(OUT)/Makefile $(OUT)/_CoqProject
 	cd theories 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
 	rm -f theories/Makefile
+	cd $(HS_SPEC) 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
 	rm -f counts.pdf *.aux *.log
 
 distclean:

@@ -5,10 +5,9 @@ skip module Control.DeepSeq
 skip module GHC.Data.FastString
 
 # Skip types we don't need
-skip HsSyn.FieldLabelString
-skip HsSyn.Role
-skip HsSyn.SrcStrictness
-skip HsSyn.SrcUnpackedness
 skip HsSyn.SumWidth
+
+# FieldLabelString is a newtype around FastString — defined in midamble
+skip HsSyn.FieldLabelString
 
 rename type GHC.Num.Int = nat

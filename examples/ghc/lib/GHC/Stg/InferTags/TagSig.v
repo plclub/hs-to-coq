@@ -1,0 +1,1 @@
+../../../../manual/GHC/Stg/InferTags/TagSig.v

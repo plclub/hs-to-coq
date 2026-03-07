@@ -65,7 +65,7 @@ Arguments Or {_} _.
 Arguments Parens {_} _.
 
 Import GHC.Err.
-Instance Default_BooleanFormula {a} : Err.Default (BooleanFormula a) :=
+#[global] Instance Default_BooleanFormula {a} : Err.Default (BooleanFormula a) :=
   Err.Build_Default _ (And nil).
 
 Local Fixpoint size {a} (bf: BooleanFormula a) : nat :=

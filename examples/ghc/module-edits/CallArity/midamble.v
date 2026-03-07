@@ -1,4 +1,4 @@
-Instance Default_CallArityRes : HsToCoq.Err.Default CallArityRes := 
+#[global] Instance Default_CallArityRes : HsToCoq.Err.Default CallArityRes :=
 HsToCoq.Err.Build_Default _ (HsToCoq.Err.default, HsToCoq.Err.default).
 
 

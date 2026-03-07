@@ -9,6 +9,7 @@ Axiom TyThing            : Type.
 
 Definition Kind          : Type := Type_.
 Definition PredType      : Type := Type_.
+Definition RuntimeRepType : Type := Type_.
 
 Axiom BranchFlag         : Type.
 Axiom CoAxiom            : BranchFlag -> Type.

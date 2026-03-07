@@ -1,6 +1,6 @@
-Instance Default_UnVarSet : HsToCoq.Err.Default UnVarSet :=
+#[global] Instance Default_UnVarSet : HsToCoq.Err.Default UnVarSet :=
   HsToCoq.Err.Build_Default _ (Mk_UnVarSet HsToCoq.Err.default).
-Instance Default_UnVarGraph : HsToCoq.Err.Default UnVarGraph :=
+#[global] Instance Default_UnVarGraph : HsToCoq.Err.Default UnVarGraph :=
   HsToCoq.Err.Build_Default _ (Mk_UnVarGraph HsToCoq.Err.default).
 
 

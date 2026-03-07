@@ -12,9 +12,7 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require Data.Tuple.
 Require GHC.Base.
-Require GHC.Types.Unique.Map.
 Require Name.
 Require UniqDFM.
 Require UniqFM.
@@ -72,9 +70,7 @@ Import GHC.Base.Notations.
    : (a -> Name.Name) -> list a -> NameEnv a :=
   fun f => mkNameEnv GHC.Base.∘ GHC.Base.map (fun a => pair (f a) a).
 
-#[global] Definition fromUniqMap {a : Type}
-   : GHC.Types.Unique.Map.UniqMap Name.Name a -> NameEnv a :=
-  UniqFM.mapUFM Data.Tuple.snd GHC.Base.∘ GHC.Types.Unique.Map.getUniqMap.
+(* Skipping definition `NameEnv.fromUniqMap' *)
 
 #[global] Definition elemNameEnv {a : Type} : Name.Name -> NameEnv a -> bool :=
   fun x y => UniqFM.elemUFM x y.
@@ -187,8 +183,7 @@ Import GHC.Base.Notations.
    : (a -> a -> a) -> DNameEnv a -> Name.Name -> a -> DNameEnv a :=
   UniqFM.addToUFM_C.
 
-#[global] Definition eltsDNameEnv {a : Type} : DNameEnv a -> list a :=
-  UniqFM.eltsUFM.
+(* Skipping definition `NameEnv.eltsDNameEnv' *)
 
 #[global] Definition foldDNameEnv {a : Type} {b : Type}
    : (a -> b -> b) -> b -> DNameEnv a -> b :=
@@ -203,15 +198,13 @@ Import GHC.Base.Notations.
   UniqDFM.nonDetStrictFoldUDFM.
 
 (* External variables:
-     Type bool false list op_zt__ option orb pair unit Data.Tuple.snd GHC.Base.map
-     GHC.Base.op_z2218U__ GHC.Types.Unique.Map.UniqMap
-     GHC.Types.Unique.Map.getUniqMap Name.Name UniqDFM.adjustUDFM
-     UniqDFM.nonDetStrictFoldUDFM UniqFM.UniqFM UniqFM.addListToUFM
-     UniqFM.addListToUFM_C UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C
-     UniqFM.alterUFM UniqFM.delFromUFM UniqFM.delListFromUFM UniqFM.disjointUFM
-     UniqFM.elemUFM UniqFM.eltsUFM UniqFM.emptyUFM UniqFM.filterUFM UniqFM.isNullUFM
-     UniqFM.listToUFM UniqFM.lookupUFM UniqFM.mapMaybeUFM UniqFM.mapUFM
-     UniqFM.nonDetEltsUFM UniqFM.nonDetFoldUFM UniqFM.plusUFM UniqFM.plusUFMList
-     UniqFM.plusUFMListWith UniqFM.plusUFM_C UniqFM.plusUFM_CD UniqFM.plusUFM_CD2
-     UniqFM.seqEltsUFM UniqFM.unitUFM
+     Type bool false list op_zt__ option orb pair unit GHC.Base.map
+     GHC.Base.op_z2218U__ Name.Name UniqDFM.adjustUDFM UniqDFM.nonDetStrictFoldUDFM
+     UniqFM.UniqFM UniqFM.addListToUFM UniqFM.addListToUFM_C UniqFM.addToUFM
+     UniqFM.addToUFM_Acc UniqFM.addToUFM_C UniqFM.alterUFM UniqFM.delFromUFM
+     UniqFM.delListFromUFM UniqFM.disjointUFM UniqFM.elemUFM UniqFM.emptyUFM
+     UniqFM.filterUFM UniqFM.isNullUFM UniqFM.listToUFM UniqFM.lookupUFM
+     UniqFM.mapMaybeUFM UniqFM.mapUFM UniqFM.nonDetEltsUFM UniqFM.nonDetFoldUFM
+     UniqFM.plusUFM UniqFM.plusUFMList UniqFM.plusUFMListWith UniqFM.plusUFM_C
+     UniqFM.plusUFM_CD UniqFM.plusUFM_CD2 UniqFM.seqEltsUFM UniqFM.unitUFM
 *)

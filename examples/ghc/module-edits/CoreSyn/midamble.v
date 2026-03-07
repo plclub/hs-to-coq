@@ -52,31 +52,31 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
 
 (* ---------------------------------- *)
 
-Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
+#[global] Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
   HsToCoq.Err.Build_Default _ (Mk_Var HsToCoq.Err.default).
 
-Instance Default__Tickish {a} : HsToCoq.Err.Default (Tickish a) :=
+#[global] Instance Default__Tickish {a} : HsToCoq.Err.Default (Tickish a) :=
   HsToCoq.Err.Build_Default _ (Breakpoint HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
+#[global] Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
   HsToCoq.Err.Build_Default _ (TB HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
+#[global] Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
   HsToCoq.Err.Build_Default _ (AnnVar HsToCoq.Err.default). 
 
-Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
+#[global] Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
   HsToCoq.Err.Build_Default _ (AnnRec HsToCoq.Err.default). 
 
-Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
+#[global] Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
   HsToCoq.Err.Build_Default _ (Rec HsToCoq.Err.default). 
 
-Instance Default__CoreVect : HsToCoq.Err.Default CoreVect :=
+#[global] Instance Default__CoreVect : HsToCoq.Err.Default CoreVect :=
   HsToCoq.Err.Build_Default _ (Vect HsToCoq.Err.default HsToCoq.Err.default). 
 
-Instance Default__CoreRule : HsToCoq.Err.Default CoreRule :=
+#[global] Instance Default__CoreRule : HsToCoq.Err.Default CoreRule :=
   HsToCoq.Err.Build_Default _ (BuiltinRule HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv :=
+#[global] Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv :=
   HsToCoq.Err.Build_Default _ (Mk_RuleEnv HsToCoq.Err.default HsToCoq.Err.default).
 
 
