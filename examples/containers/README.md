@@ -61,27 +61,21 @@ source requires the `hs-to-coq` tool (see [build instructions](../../README.md))
 make -C examples/containers vfiles
 ```
 
-### `redefine` edits and proof compatibility
+### Native v0.7 definitions with rewritten proofs
 
 Several containers v0.7 functions have implementations that differ from v0.6 in
-ways that break the existing proof scripts. The `module-edits/` for these
-modules use `redefine` directives to substitute v0.6-compatible definitions in
-the generated `.v` files. This means the Coq code does not exactly match the
-upstream Haskell for these functions:
+ways that required rewriting proof scripts. All now use the native v0.7
+auto-generated definitions (no `redefine` edits):
 
-- **IntSet**: `split`, `splitMember` — v0.7 uses `nomatch`/`bin`; redefined to
-  use `match_`/`union` (v0.6 logic) so IntSet proof scripts compile.
+- **IntSet**: `split`, `splitMember` — v0.7 uses `nomatch`/`bin` instead of
+  `match_`/`union`. The proofs use a strengthened `splitGo_Desc0` lemma
+  (providing `Desc0` with range info) that enables `bin_Desc0` for the smart
+  constructor, then wrap to `splitGo_Sem` for the public API.
 - **Set**: `fromDistinctAscList`, `fromDistinctDescList`, `fromAscList`,
-  `fromDescList` — these now use the **native v0.7 stack-based algorithm**
-  (auto-generated from Haskell). The proofs in `SetProofs.v` were rewritten
-  to use structural induction on the `Stack`/`FromDistinctMonoState` types.
+  `fromDescList` — native v0.7 stack-based algorithm. Proofs use structural
+  induction on the `Stack`/`FromDistinctMonoState` types.
 - **Map**: `fromDistinctAscList`, `fromDistinctDescList`, `fromAscList`,
   `fromDescList`, `fromAscListWithKey`, `fromDescListWithKey`,
-  `fromAscListWith`, `fromDescListWith` — these now use the **native v0.7
-  stack-based algorithm** (auto-generated from Haskell). The proofs in
-  `MapProofs/FromListProofs.v` were rewritten using `stack_sem_rev` (for
-  ascending) and `sem_for_lists (rev xs)` (for descending) to handle the
-  non-commutativity of Map's `|||` (oro) operator.
-
-The redefined functions are semantically equivalent to the v0.7 originals but
-use the v0.6 implementation structure that the proofs were written against.
+  `fromAscListWith`, `fromDescListWith` — native v0.7 stack-based algorithm.
+  Proofs use `stack_sem_rev` (ascending) and `sem_for_lists (rev xs)`
+  (descending) to handle Map's non-commutative `|||` (oro) operator.

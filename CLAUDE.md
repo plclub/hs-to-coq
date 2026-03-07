@@ -153,7 +153,7 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 - **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
 
 ### Containers submodule
-Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. Some v0.7 functions use `redefine` edits to restore v0.6-compatible definitions so existing proofs compile (IntSet `split`/`splitMember`). Both Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList` now use native v0.7 stack-based definitions with rewritten proofs. Map `fromList` proofs are `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing issue).
+Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList` all use native v0.7 definitions with rewritten proofs. Map `fromList` proofs are `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing issue).
 
 ### Coq 8.20 compatibility
 - `Program Instance` needs `#[global]` prefix for cross-module visibility
