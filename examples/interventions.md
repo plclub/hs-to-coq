@@ -34,7 +34,11 @@
 - `lib/GHC/SmallStep.v`: `Require Omega` → `Require Import Lia`; `Omega.omega` → `lia`
 - `module-edits/GHC/SmallStep/midamble.v`: same Omega→Lia fix
 - Cannot regenerate from source: `ghc-core-smallstep` submodule uses pre-GHC 9.10 module names
-- Blocked by missing `Id.mkSysLocalOrCoVar` (renamed in GHC 9.10)
+- `Id.mkSysLocalOrCoVar` → `Id.mkSysLocal` + added `Mult` argument (`HsToCoq.Err.default`)
+- `Unique.mkBuiltinUnique` → `GHC.Builtin.Uniques.mkBuiltinUnique` (module moved in GHC 9.10)
+- `CoreSubst.substExpr Panic.someSDoc` → `CoreSubst.substExpr` (SDoc parameter removed in GHC 9.10)
+- Alt patterns: `pair (pair altcon pats) rhs` → `Core.Mk_Alt altcon pats rhs` (Alt is now inductive, not tuple)
+- Removed `Require Panic.` (no longer used)
 
 ### ghc/lib/Literal.v
 - Added `#[global]` to `Default__LitNumType` and `Default__Literal` instances (needed for cross-module visibility in Coq 8.20)
@@ -60,9 +64,9 @@
 - Added post-generation sed to strip MonadTrans quantified superclass constraint
 
 ## Summary of Results
-- **22 examples fully compile** (base, base-thy, containers lib+theories, ghc lib+theories, transformers, graph/lib, bag, compiler, coinduction, dlist, intervals, successors, rle, quicksort, lambda, simple, resources)
+- **23 examples fully compile** (base, base-thy, containers lib+theories, ghc lib+theories, transformers, graph/lib, core-semantics, bag, compiler, coinduction, dlist, intervals, successors, rle, quicksort, lambda, simple, resources)
 - **1 partial**: graph/theories (8/11, 3 need coq-equations)
 - **1 partial**: shuffle/lib (2/5, missing Random Int instance)
-- **3 blocked**: wc (needs coq-itree), core-semantics (GHC 9.10 API changes), shuffle/theories
+- **2 blocked**: wc (needs coq-itree), shuffle/theories
 - **3 N/A**: tip, locks, base-src (no buildable .v files in git)
 - **Translation reproducibility**: base, containers, ghc all regenerate to match committed copies exactly

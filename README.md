@@ -174,7 +174,7 @@ base → base-thy → containers/lib → containers/theories
 | `wc/theories` | Proofs | **BLOCKED** | 0/2 .v | Depends on wc/lib |
 | `shuffle/lib` | Generated lib | **PARTIAL** | 2/5 .v | Needs `Random Int` instance |
 | `shuffle/theories` | Proofs | **BLOCKED** | 0/1 .v | Depends on shuffle/lib |
-| `core-semantics/lib` | Generated lib | **BLOCKED** | 0/1 .v | Source not updated for GHC 9.10 |
+| `core-semantics/lib` | Generated lib | **PASS** | 1/1 .v | Manually updated for GHC 9.10 |
 | **Document-only** | | | | |
 | `resources/` | Standalone | **PASS** | 1/1 .v | Uses MathComp ssreflect |
 | `tip/` | Benchmark framework | N/A | 0 .v in git | Needs `benchmarks` submodule |
