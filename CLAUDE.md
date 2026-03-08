@@ -45,8 +45,11 @@ make -C examples/containers/lib      # just the generated library
 make -C examples/containers/theories # just the proofs (depends on lib)
 
 # Build GHC core example (depends on base, base-thy, containers)
-cd examples/ghc/lib && coq_makefile -f _CoqProject -o Makefile && make -j
-cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j
+make -C examples/ghc clean && make -C examples/ghc  # regenerate lib/*.v and compile
+cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j  # theories
+
+# Regenerate GHC lib/*.v from GHC 9.10 source (needs ghc submodule + xutils-dev for lndir)
+make -C examples/ghc clean && make -C examples/ghc
 ```
 
 Use relative path instead of absolute path when `cd` to a directory.
@@ -103,7 +106,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the full chain: `base` → `base-thy` → `examples/containers/lib` → `examples/containers/theories` → `examples/ghc/lib` → `examples/ghc/theories`. Each needs `make clean && make -j`.
 
 ### Axiomatized lib functions
-When lib/*.v functions are `Axiom` (e.g., `substExpr`, `cseExpr`), all theories/*.v proofs that unfold them (`done.`, `simpl`, `rewrite /func`) must be `Admitted`. Check with `grep "^Axiom" lib/Module.v` before attempting computation-based proofs.
+When lib/*.v functions are `Axiom`, theories/*.v proofs that unfold them must be `Admitted`. Check with `grep "^Axiom" lib/Module.v` before attempting computation-based proofs. See "GHC example" section for the full list of axiomatized functions.
 
 ## Test Structure
 
@@ -182,7 +185,12 @@ Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories
 - `Id.idJoinPointHood`: skipped (uses `Outputable.JoinPointHood`). Axioms/lemmas referencing it must be Admitted or removed.
 
 ### Containers submodule
-Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList` all use native v0.7 definitions with rewritten proofs. Map `fromList` proofs are `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing issue). `hs-spec/IntSetProperties.v` is auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps). The manual `Test/QuickCheck/Property.v` provides z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
+Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI.
+- Makefile `clean` preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything.
+- IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList`: native v0.7 definitions with rewritten proofs.
+- Map `fromList` proofs: `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing).
+- `hs-spec/IntSetProperties.v`: auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps).
+- `manual/Test/QuickCheck/Property.v`: z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
 
 ### Coq 8.20 compatibility
 - `#[global]` required: `Program Instance` and `Program Definition` need `#[global]` prefix. Locality goes before `Program` (i.e., `#[global] Program Definition`).
