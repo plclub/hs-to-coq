@@ -156,6 +156,7 @@ base → base-thy → containers/lib → containers/theories
 | `graph/lib` | Generated lib + proofs | **PASS** | 6/6 .v | Omega→Lia fixed |
 | `graph/theories` | Proofs | **PARTIAL** | 8/11 .v | 3 files need `coq-equations` |
 | **hs-to-coq generation examples** | | | | |
+| `bag/` | Hand-written proofs | **PASS** | 8/8 .v | Multiset from GHC |
 | `compiler/` | Generate + verify | **PASS** | 8/8 .v | Hutton's razor |
 | `coinduction/` | Generate + verify | **PASS** | 2/2 .v | Infinite data structures |
 | `dlist/` | Generate + verify | **PASS** | 2/2 .v | Difference lists |

@@ -42,9 +42,27 @@
 ### resources/list_monad.v
 - `From Coq Require Import ssrnat seq` → `From mathcomp Require Import ssreflect ssrnat seq` (MathComp 2.x)
 
+## Phase 2: Translation Reproducibility
+
+### base-src edits (op_zlzt__)
+- Moved `op_zlzt__` from manual base/GHC/Base.v edit to `add GHC.Base Definition` in module-edits/GHC/Base/edits
+- Removed `<*` and `GHC.Base.<*` notations (unused, and GHC.Base.<* is ambiguous with Coq's `<` operator)
+
+### src/lib/HsToCoq/Coq/Gallina/Util.hs
+- Added `<*` to `isAmbiguousCoqOp` in `qualidHasValidCoqOp` — `GHC.Base.<*` parses as `GHC.Base.<` followed by `*`
+- Now renders as `op_zlzt__` instead of `<*` notation
+
+### examples/ghc/Makefile
+- Moved Literal.v `#[global]` sed from OUTFILES_GEN to OUTFILES_CORE rule (Literal is in CORE_MODULES, not MODULES)
+- Updated README.md generation to match committed version
+
+### examples/transformers/Makefile
+- Added post-generation sed to strip MonadTrans quantified superclass constraint
+
 ## Summary of Results
-- **21 examples fully compile** (base, base-thy, containers lib+theories, ghc lib+theories, transformers, graph/lib, compiler, coinduction, dlist, intervals, successors, rle, quicksort, lambda, simple, resources)
+- **22 examples fully compile** (base, base-thy, containers lib+theories, ghc lib+theories, transformers, graph/lib, bag, compiler, coinduction, dlist, intervals, successors, rle, quicksort, lambda, simple, resources)
 - **1 partial**: graph/theories (8/11, 3 need coq-equations)
 - **1 partial**: shuffle/lib (2/5, missing Random Int instance)
 - **3 blocked**: wc (needs coq-itree), core-semantics (GHC 9.10 API changes), shuffle/theories
 - **3 N/A**: tip, locks, base-src (no buildable .v files in git)
+- **Translation reproducibility**: base, containers, ghc all regenerate to match committed copies exactly
