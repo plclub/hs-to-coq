@@ -160,7 +160,7 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
 
 ### GHC example (examples/ghc/)
-Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories/*.v files compile (many proofs Admitted). Key GHC 9.10 changes affecting theories:
+Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories/*.v files compile (many proofs Admitted). `make clean && make` regenerates lib/ from scratch (removes entire lib/ dir, then rebuilds via hs-to-coq + lndir for manual files). Theories built separately: `cd theories && coq_makefile -f _CoqProject -o Makefile && make -j`. Key GHC 9.10 changes affecting theories:
 - `Alt` type: tuple → `Mk_Alt` constructor. Intro patterns change from `[[dc pats] rhs]` to `[dc pats rhs]`.
 - `Mk_Id` has 7 fields (added `varMult : Mult` as 4th field). Pattern matches need extra wildcard.
 - `realUnique` type: `N` → `Unique`. Breaks proofs using `N.eqb_neq`, `N.compare_refl`.
@@ -172,6 +172,14 @@ Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories
 - `Var` has single constructor (`Mk_Id` only, no `TyVar`).
 - `cse_bind` has 5 args (added `env_rhs` parameter).
 - Makefile uses explicit GHC 9.10 path mappings (e.g., `SRCPATH_Var = ghc/compiler/GHC/Types/Var.hs`).
+- `manual/` files (~60) are symlinked into `lib/` via `lndir`. Edit `manual/*.v` directly (not `lib/*.v` symlinks).
+- `manual/AxiomatizedTypes.v`: All instances must be `#[global]` — downstream modules need Default/Eq/Ord resolution.
+- `axiomatize module OccurAnal`: Fully axiomatized. Needs `preamble.v` (Require Import Outputable, String scope) and `midamble.v` (Default instances for types defined after auto-generated defaults).
+- Midamble placement: inserted AFTER type declarations AND auto-generated Default instances, but BEFORE value declarations. Can't provide instances needed by auto-generated Defaults — use `skip` + midamble instead.
+- Makefile sed post-processing: BasicTypes (`#[global]` Default instances), UniqFM (phantom kind params), Core.v (mutual type ball fixes). Check Makefile when adding new post-processing.
+- `Subst` type axiomatized (in `GHC.Core.TyCo.Subst`): theories can't pattern-match `Mk_Subst`. Use `getSubstInScopeVars` accessor or Admit.
+- `exitifyRec`, `floatExpr`/`floatBind`/`floatRhs`, `fiExpr`/`fiBinds`/`fiRhs`: all axiomatized. Proofs using `cbv beta delta [func]` must be Admitted.
+- `Id.idJoinPointHood`: skipped (uses `Outputable.JoinPointHood`). Axioms/lemmas referencing it must be Admitted or removed.
 
 ### Containers submodule
 Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList` all use native v0.7 definitions with rewritten proofs. Map `fromList` proofs are `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing issue). `hs-spec/IntSetProperties.v` is auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps). The manual `Test/QuickCheck/Property.v` provides z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
