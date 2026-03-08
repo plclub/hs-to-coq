@@ -1,8 +1,7 @@
 (* Disable notation conflict warnings *)
 Set Warnings "-notation-overridden".
 
-From mathcomp.ssreflect
-Require Import ssreflect ssrnat prime ssrbool.
+From Coq Require Import ssreflect ssrbool.
 
 Require Import Name.
 Require Import Id.

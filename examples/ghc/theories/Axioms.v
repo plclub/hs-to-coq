@@ -3,8 +3,7 @@ Set Warnings "-notation-overridden".
 
 (* This file gathers and explains axioms about the GHC development. *)
 
-From mathcomp.ssreflect
-Require Import ssreflect ssrnat prime ssrbool.
+From Coq Require Import ssreflect ssrbool.
 
 
 

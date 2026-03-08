@@ -2,8 +2,7 @@
 Set Warnings "-notation-overridden".
 
 
-From mathcomp.ssreflect
-Require Import ssreflect ssrnat prime ssrbool eqtype.
+From Coq Require Import ssreflect ssrbool.
 
 
 Require Import GHC.Base.
