@@ -34,7 +34,7 @@ Ltac solve_shuffleLength_start halve length_halve solve1 solve2 :=
 Ltac solve_shuffleLength_half1 arg_0__ def_length1 :=
   rewrite def_length1; simpl;
   destruct arg_0__ as [|head0 tail0]; simpl; try easy;
-  apply Lt.lt_n_S, PeanoNat.Nat.lt_div2;
+  apply -> PeanoNat.Nat.succ_lt_mono; apply PeanoNat.Nat.lt_div2;
   destruct tail0; simpl; [|apply PeanoNat.Nat.lt_0_succ];
   match goal with H : forall x, (cons x nil) <> (cons ?h nil) |- _ => specialize (H h) end;
   contradiction.

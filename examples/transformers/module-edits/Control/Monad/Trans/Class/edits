@@ -1,0 +1,3 @@
+# GHC 9.10: MonadTrans has quantified superclass constraint
+# (forall m. Monad m => Monad (t m)) which Coq can't handle.
+# Let hs-to-coq generate it, then fix via preamble.

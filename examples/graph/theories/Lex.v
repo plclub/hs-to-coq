@@ -3,7 +3,7 @@ Require Import Relation_Operators.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Wellfounded.Lexicographic_Product.
 Require Import Coq.Classes.RelationClasses.
-Require Import Omega.
+Require Import Lia.
 
 
 Definition compose A (R S : relation A) : relation A :=
@@ -58,8 +58,8 @@ Definition f_nat_lt {a} (f: a -> nat) x y := f x < f y.
 Lemma f_nat_lt_acc: forall {a} (f: a -> nat) x n, f x <= n -> Acc (f_nat_lt f) x.
 Proof.
   intros. generalize dependent x. induction n; auto.
-  - intros. apply Acc_intro. intros. unfold f_nat_lt in *. omega.
-  - unfold f_nat_lt in *. intros. apply Acc_intro. intros. apply IHn. omega.
+  - intros. apply Acc_intro. intros. unfold f_nat_lt in *. lia.
+  - unfold f_nat_lt in *. intros. apply Acc_intro. intros. apply IHn. lia.
 Qed.
 
 Lemma f_nat_lt_wf: forall {a} (f: a -> nat), well_founded (f_nat_lt f).

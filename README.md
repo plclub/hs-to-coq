@@ -121,31 +121,93 @@ See the [manual](https://hs-to-coq.readthedocs.io/en/latest/) for documentation
 for the edits files.
 
 
-# Other directories
+# Examples Status
 
-* The `examples/` directories contains a number of example translation and
-  verification projects, including
+All examples target **Coq 8.20** and **GHC 9.10.3**. The table below shows the
+build status of every example directory.
 
-  * [intervals](examples/intervals) A simple example described in this
-    [blog post](https://www.joachim-breitner.de/blog/734-Finding_bugs_in_Haskell_code_by_proving_it).
+## Dependency Chain
 
-  * [containers](examples/containers) Modules from the `containers` library (v0.7),
-	including `Data.Set` and `Data.IntSet`, with verified proofs
-  * [ghc](examples/ghc) GHC core language modules translated from GHC 9.10.3,
-    with well-scopedness and optimization proofs
-  * [bag](examples/bag) Multiset implementation from GHC's implemention
-  * [successors](examples/successors) Successors Monad
-  * [compiler](examples/compiler) Hutton's razor
-  * [quicksort](examples/quicksort) Quicksort
-  * [rle](examples/rle) Run-length encoding
-  * [coinduction](examples/coinduction) Translating infinite data structures
-  * [dlist](examples/dlist) Difference lists
-  * [lambda](examples/lambda) Lambda calculus
-  * [simple](examples/simple) Simple example
-  * [base-src](examples/base-src) The sources of the `base/` directory
-  * [tests](examples/tests) Simple unit-tests
-  * [base-tests](examples/base-tests) Unit-tests that require `base/`
+```
+base → base-thy → containers/lib → containers/theories
+                 → transformers/lib
+                 → ghc/lib → ghc/theories
+                           → core-semantics/lib
+                 → graph/lib → graph/theories (needs coq-equations)
+                 → wc/lib (needs coq-itree)
+                 → shuffle/lib (depends on transformers)
+                 → compiler, rle, quicksort, dlist, coinduction,
+                   intervals, successors, lambda, simple
+```
 
+## Build Status
+
+| Example | Type | Status | Files | Notes |
+|---------|------|--------|-------|-------|
+| **Core libraries** | | | | |
+| `base/` | Generated lib | **PASS** | 54/54 .v | GHC 9.10 base library |
+| `base-thy/` | Hand-written proofs | **PASS** | 15/15 .v | Lawful instances |
+| **Major verified examples** | | | | |
+| `containers/lib` | Generated lib | **PASS** | 47/47 .v | Containers v0.7 |
+| `containers/theories` | Proofs | **PASS** | 34/34 .v | Verified Set/IntSet/Map |
+| `ghc/lib` | Generated lib | **PASS** | 99/99 .v | GHC 9.10.3 core |
+| `ghc/theories` | Proofs | **PASS** | 28/28 .v | Many proofs Admitted |
+| `transformers/lib` | Generated lib | **PASS** | 14/14 .v | Regenerated for GHC 9.10 |
+| `graph/lib` | Generated lib + proofs | **PASS** | 6/6 .v | Omega→Lia fixed |
+| `graph/theories` | Proofs | **PARTIAL** | 8/11 .v | 3 files need `coq-equations` |
+| **hs-to-coq generation examples** | | | | |
+| `compiler/` | Generate + verify | **PASS** | 8/8 .v | Hutton's razor |
+| `coinduction/` | Generate + verify | **PASS** | 2/2 .v | Infinite data structures |
+| `dlist/` | Generate + verify | **PASS** | 2/2 .v | Difference lists |
+| `intervals/` | Generate + verify | **PASS** | 4/4 .v | Interval library |
+| `successors/` | Generate + verify | **PASS** | 2/2 .v | Successors Monad |
+| `rle/` | Generate + verify | **PASS** | 2/2 .v | Run-length encoding |
+| `quicksort/` | Generate + verify | **PASS** | 3/3 .v | Quicksort |
+| `lambda/` | Generate + verify | **PASS** | 2/2 .v | Lambda calculus |
+| `simple/` | Generate + verify | **PASS** | 1/1 .v | Simple example |
+| **Test suites** | | | | |
+| `tests/` | Unit tests | **PASS** | 43 pass, 4 known-fail | Translation + type-check |
+| `base-tests/` | Integration tests | **PASS** | 18 pass, 3 known-fail | Requires `base/` |
+| **Examples with external dependencies** | | | | |
+| `wc/lib` | Generated lib | **BLOCKED** | 0/14 .v | Needs `coq-itree` package |
+| `wc/theories` | Proofs | **BLOCKED** | 0/2 .v | Depends on wc/lib |
+| `shuffle/lib` | Generated lib | **PARTIAL** | 2/5 .v | Needs `Random Int` instance |
+| `shuffle/theories` | Proofs | **BLOCKED** | 0/1 .v | Depends on shuffle/lib |
+| `core-semantics/lib` | Generated lib | **BLOCKED** | 0/1 .v | Source not updated for GHC 9.10 |
+| **Document-only** | | | | |
+| `resources/` | Standalone | **PASS** | 1/1 .v | Uses MathComp ssreflect |
+| `tip/` | Benchmark framework | N/A | 0 .v in git | Needs `benchmarks` submodule |
+| `locks/` | Skeleton | N/A | 0 .v files | _CoqProject only, no sources |
+| `base-src/` | Generation source | N/A | — | Source for regenerating `base/` |
+
+## Build Commands
+
+```bash
+# Build everything that works
+make                                    # base + base-thy + containers + ghc
+
+# Individual examples (generate + compile)
+make -C examples/compiler
+make -C examples/dlist
+make -C examples/rle
+make -C examples/quicksort
+make -C examples/coinduction
+make -C examples/intervals
+make -C examples/successors
+make -C examples/lambda
+make -C examples/simple
+
+# Graph (lib compiles, theories needs coq-equations for 3 proof files)
+cd examples/graph/lib && coq_makefile -f _CoqProject -o Makefile && make -j
+cd examples/graph/theories && coq_makefile -f _CoqProject -o Makefile && make -j
+
+# Transformers
+cd examples/transformers && make
+
+# Tests
+make -C examples/tests
+make -C examples/base-tests
+```
 
   Some examples use git submodules, so run
 

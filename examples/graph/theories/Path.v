@@ -6,7 +6,7 @@ Require Import Helper.
 Require Import Wellfounded.
 Require Import Coq.Lists.ListDec.
 Require Import Coq.NArith.BinNat.
-Require Import Omega.
+Require Import Lia.
 Require Import Crush.
 Require Import WeightedGraphs.
 Import GHC.Num.Notations.
@@ -86,7 +86,7 @@ Lemma path_no_dups: forall g u v l,
     - exists l. solve_assume.
     - rewrite no_no_dup in n. destruct_all. subst. 
       apply path_remove_cycle in H. specialize (H0 (x0 ++ x :: x2)). destruct H0 as [l].
-      repeat(rewrite app_length; simpl). omega. apply H. exists l. destruct_all; solve_assume.
+      repeat(rewrite app_length; simpl). lia. apply H. exists l. destruct_all; solve_assume.
       apply H2 in H3. apply in_app_or in H3. destruct H3. solve_in. simpl in H3; solve_in.
       apply N.eq_dec.
 Qed.
@@ -169,7 +169,7 @@ Lemma paths_of_length_appear: forall g u v n l,
 Proof.
   intros. generalize dependent v. revert u. revert n. induction l; simpl in *; intros; destruct_all.
   - subst. inversion H.
-  - destruct n. omega. assert (length l = n) by omega. clear H0. remember n as n'. inversion H.  subst.
+  - destruct n. lia. assert (length l = n) by lia. clear H0. remember n as n'. inversion H.  subst.
     simpl. destruct (N.eq_dec a0 a0). rewrite H5. left. reflexivity. contradiction. subst.
     simpl. destruct (length l) eqn : L. destruct l. inversion H6. simpl in L. inversion L.
     assert (forall a v'' l', In a l' ->
@@ -257,9 +257,9 @@ Proof.
     destruct_all.
     specialize (H (length x)).
     assert (paths_of_length g u v (length x) = nil). apply H.
-    apply in_seq. simpl. split. omega. unfold natNodes. rewrite noNodes_def. unfold nodeList in H1.
+    apply in_seq. simpl. split. lia. unfold natNodes. rewrite noNodes_def. unfold nodeList in H1.
     unfold ulabNodes in H1. rewrite map_length in H1.
-    assert (forall n m, n <= m -> n < m + 1). intros. omega. apply H2. assumption.
+    assert (forall n m, n <= m -> n < m + 1). intros. lia. apply H2. assumption.
     pose proof (paths_of_length_def g u v (length x) x). 
     destruct H3. rewrite H2 in H4. simpl in H4. apply H4. solve_assume.
   - rewrite distance_list_none. intros. destruct (paths_of_length g u v x) eqn : P.
@@ -271,7 +271,7 @@ Qed.
 
 (*Helper lemma for some case*)
 Lemma distance_list_some: forall l g u v n,
-  StronglySorted Nat.le l ->
+  StronglySorted le l ->
   distance_list l g u v = Some n ->
   In n l /\ paths_of_length g u v n <> nil /\ (forall x p, In x l -> path' g u v p -> length p = x -> n <= length p).
 Proof.
@@ -285,7 +285,7 @@ Proof.
     + eapply H2. apply H5. assumption. reflexivity.
     + assumption.
     + inversion H0; subst. solve_assume. solve_in. rewrite P. intro. inversion H1.
-      subst. simpl in H1. destruct H1. subst. omega. rewrite Forall_forall in H4.
+      subst. simpl in H1. destruct H1. subst. lia. rewrite Forall_forall in H4.
       apply H4. assumption.
 Qed.
 
@@ -295,12 +295,12 @@ Definition shortest_path g u v l :=
 
 (*One final lemma, that [seq] is [StronglySorted]*)
 Lemma seq_sorted: forall n m,
-  StronglySorted Nat.le (seq n m).
+  StronglySorted le (seq n m).
 Proof.
   intros. revert n. induction m.
   - simpl. constructor.
   - simpl. constructor. apply IHm. rewrite Forall_forall. intros.
-    rewrite in_seq in H. destruct H. assert (forall a b, S a <= b -> a <= b). intros. omega.
+    rewrite in_seq in H. destruct H. assert (forall a b, S a <= b -> a <= b). intros. lia.
     apply H1. assumption.
 Qed. 
 
@@ -313,8 +313,8 @@ Proof.
     + pose proof (paths_of_length_def g u v n l). destruct H2. clear H3. rewrite P in H2. simpl in H2.
       assert (path' g u v l /\ length l = n). apply H2. left. reflexivity. clear H2.
       destruct_all. exists l. split. unfold shortest_path. split. assumption. intros.
-      intro. eapply H1 in H5. omega. assert (In (length l') (seq 0 (natNodes g + 1))).
-      rewrite in_seq. rewrite in_seq in H. omega. apply H6. reflexivity. assumption.
+      intro. eapply H1 in H5. lia. assert (In (length l') (seq 0 (natNodes g + 1))).
+      rewrite in_seq. rewrite in_seq in H. lia. apply H6. reflexivity. assumption.
   - apply seq_sorted.
 Qed. 
 
@@ -344,7 +344,7 @@ Lemma shortest_path_distance: forall g u v l n,
   length l = n.
 Proof.
   intros. apply distance_some in H. destruct_all. unfold shortest_path in *.
-  destruct_all. subst. assert (forall n m, n < m \/ m < n \/ n = m) by (intros; omega).
+  destruct_all. subst. assert (forall n m, n < m \/ m < n \/ n = m) by (intros; lia).
   specialize (H1 (length l) (length x)). destruct H1. apply H3 in H1. contradiction.
   destruct H1. apply H2 in H1. contradiction. assumption.
 Qed.
@@ -355,7 +355,7 @@ Lemma distance_refl: forall g v,
   shortest_path g v v (v :: nil).
 Proof.
   intros. unfold shortest_path. split. constructor. assumption.
-  intros. simpl in H0. assert (length l' = 0) by omega. destruct l'.
+  intros. simpl in H0. assert (length l' = 0) by lia. destruct l'.
   intro. inversion H2. inversion H1.
 Qed. 
 
@@ -568,7 +568,7 @@ Proof.
       destruct (find_weight g n0 n) eqn : W.
       * destruct (path_cost g (n0 :: l)) eqn : P.
         -- specialize (H (n0 :: l)). assert (exists u v : Node, Wpath g u v (n0 :: l) b1).
-           apply H. simpl. omega. apply P. destruct_all. exists x. exists n. inversion H0; subst. eapply wp_step.
+           apply H. simpl. lia. apply P. destruct_all. exists x. exists n. inversion H0; subst. eapply wp_step.
            apply H1. rewrite edge_weight_in. apply hd_path in H1. subst. apply W.
         -- inversion H0.
       * inversion H0.
@@ -629,7 +629,7 @@ Lemma some_none_eq: forall (n : b),
   None == Some n = false.
 Proof.
   intros. unfold "==". unfold op_zeze____. unfold Eq___option.
-  unfold Base.Eq___option_op_zeze__. reflexivity.
+  simpl. reflexivity.
 Qed.
 
 Lemma path_cost_app: forall l l' a n,
@@ -686,7 +686,7 @@ Proof.
         (exists m p : b,
         path_cost g ((n1 :: l) ++ a0 :: nil) == Some m = true /\ path_cost g (a0 :: l') == Some p = true
          /\ b1 == _+_ m p = true)).
-        apply H. simpl. omega. rewrite P. rewrite Base.simpl_option_some_eq. destruct HEqLaw; apply Eq_refl.
+        apply H. simpl. lia. rewrite P. rewrite Base.simpl_option_some_eq. destruct HEqLaw; apply Eq_refl.
          destruct H2 as [m]. destruct H2 as [p]. destruct_all.
         exists (b0 + m). exists p. split. replace (((n0 :: n1 :: l) ++ a0 :: nil)) with
         (n0 :: (n1 :: l ++ a0 :: nil)) by reflexivity. remember (n1 :: l ++ a0 :: nil) as l0.
@@ -847,7 +847,7 @@ Lemma path_no_dups_strong: forall u v l,
         * exists (x ++ u :: nil). split. assumption. split. assumption. split. intros.
           assumption. unfold le_weight. right. destruct (eq_weight_equiv) as [E1 E2 E3]. apply E1.
         * specialize (H0 (x ++ u :: nil)). destruct H0 as [l]. 
-          repeat(rewrite app_length). simpl. omega. assumption. 
+          repeat(rewrite app_length). simpl. lia. assumption. 
           exists l. destruct_all. repeat(split; try(assumption)). intros.
           apply H3 in H5. apply in_app_or in H5. destruct H5; simpl in H5. apply in_or_app.
           left. assumption. destruct H5; subst. apply in_or_app. right. solve_in. destruct H5.
@@ -928,7 +928,7 @@ Lemma path_no_dups_strong: forall u v l,
               destruct (eq_weight_equiv) as [E1 E2 E3]. apply E1.
           -- specialize (H0 (v :: x0 )). destruct H0 as [l]. 
              repeat(rewrite app_length). simpl.
-             assert (forall m n, Nat.lt (S(n))  (S(m + S(n)))). intros. unfold Nat.lt. omega.
+             assert (forall m n, lt (S(n))  (S(m + S(n)))). intros. lia.
              apply H0. assumption. 
             exists l. destruct_all. repeat(split; try(assumption)). intros.
             apply H3 in H5. simpl in H5. apply in_or_app. destruct H5. subst. right. left. reflexivity.
@@ -966,7 +966,7 @@ Lemma path_no_dups_strong: forall u v l,
       * exists l. simplify'. unfold le_weight. right. destruct (eq_weight_equiv) as [E1 E2 E3]; apply E1.
   - rewrite no_no_dup in n. destruct_all. subst. assert (A:= H). 
       apply path_remove_cycle in H. specialize (H0 (x0 ++ x :: x2)). destruct H0 as [l].
-      repeat(rewrite app_length; simpl). omega. apply H. exists l. simplify'. apply H2 in H3.
+      repeat(rewrite app_length; simpl). lia. apply H. exists l. simplify'. apply H2 in H3.
       apply in_app_or in H3. destruct H3. apply in_or_app. left. assumption. simpl in H3.
       destruct H3. subst. solve_in. solve_in. eapply le_weight_trans. apply H4.
       unfold le_weight. unfold lt_weight. unfold lt_weight_b. unfold eq_weight. unfold eq_weight_b.
@@ -1020,7 +1020,7 @@ Qed.
 
 Lemma shortest_path_leq_n: forall u v l,
   path' g u v l ->
-  exists l', path' g u v l' /\ Nat.le (length l') (length (nodeList g)) /\ le_weight l' l.
+  exists l', path' g u v l' /\ le (length l') (length (nodeList g)) /\ le_weight l' l.
 Proof.
   intros. apply path_no_dups_strong in H. destruct_all.
   assert (forall a, In a x -> In a (nodeList g)). intros. apply (path_in_graph _ _ _ a0) in H.
@@ -1118,10 +1118,10 @@ Proof.
   rewrite H. clear H. split; intros.
   - intro. pose proof (shortest_path_leq_n _ _ _ H0). destruct H1. destruct H1.
     destruct H2.  assert (In (length x) (List.seq 0 (natNodes g + 1))). apply in_seq.
-    split. omega. simpl. unfold Nat.le in H2.  unfold natNodes. rewrite noNodes_def.
-    unfold nodeList in H2. unfold ulabNodes in H2. rewrite map_length in H2. 
-    assert (forall n m, Nat.le n m -> Nat.lt n (m + 1)). intros. unfold Nat.lt.
-    unfold Nat.le in H4. omega. apply H4. apply H2. apply H in H4.
+    split. lia. simpl. unfold natNodes. rewrite noNodes_def.
+    unfold nodeList in H2. unfold ulabNodes in H2. rewrite map_length in H2.
+    assert (Haux: forall n m, Peano.le n m -> Peano.lt n (m + 1)) by (intros; lia).
+    apply Haux. apply H2. apply H in H4.
     unfold min_weight_size_n in H4. rewrite min_list_empty in H4.
     pose proof (paths_of_length_appear g u v (length x) x). 
     rewrite H4 in H5. simpl in H5. apply H5. split. assumption. reflexivity.
@@ -1209,10 +1209,11 @@ Proof.
       * inversion H0. }
   apply H0 in H. clear H0. destruct_all. split. assumption.
   intros. pose proof (shortest_path_leq_n _ _ _ H1). destruct_all. eapply le_weight_trans.
-  2 : { apply H4. } eapply H0. 3 : { reflexivity. } rewrite in_seq. split. omega.
-  simpl. assert (forall n m, Nat.le n m -> Nat.lt n (m+1)). intros. unfold Nat.lt.
-  unfold Nat.le in H5. omega. apply H5. unfold natNodes. rewrite noNodes_def.
-  unfold nodeList in H3. unfold ulabNodes in H3. rewrite map_length in H3. apply H3.
+  2 : { apply H4. } eapply H0. 3 : { reflexivity. } rewrite in_seq. split. lia.
+  simpl. unfold natNodes. rewrite noNodes_def.
+  unfold nodeList in H3. unfold ulabNodes in H3. rewrite map_length in H3.
+  assert (Haux: forall n m, Peano.le n m -> Peano.lt n (m + 1)) by (intros; lia).
+  apply Haux. apply H3.
   assumption.
 Qed.
 

@@ -56,10 +56,10 @@ Inductive Literal : Type :=
    : FastString.FastString ->
      (option nat) -> BasicTypes.FunctionOrData -> Literal.
 
-Instance Default__LitNumType : HsToCoq.Err.Default LitNumType :=
+#[global] Instance Default__LitNumType : HsToCoq.Err.Default LitNumType :=
   HsToCoq.Err.Build_Default _ LitNumBigNat.
 
-Instance Default__Literal : HsToCoq.Err.Default Literal :=
+#[global] Instance Default__Literal : HsToCoq.Err.Default Literal :=
   HsToCoq.Err.Build_Default _ LitNullAddr.
 
 (* Converted value declarations: *)

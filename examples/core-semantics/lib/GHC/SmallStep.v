@@ -81,11 +81,11 @@ Instance Default_StackElem : HsToCoq.Err.Default StackElem :=
 
 (* ----------- termination metric for step function --------------- *)
 
-Require Omega.
+Require Import Lia.
 
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;lia.
 
 Ltac solve_step_obligations :=
   repeat split; intros; try discriminate; termination_by_omega.
@@ -107,7 +107,7 @@ Defined.
 Next Obligation.
   match goal with [a : Core.Expr _ , h : Core.isTypeArg a = true |- _ ] => 
                  destruct a; simpl in h; try discriminate end;
-  simpl; replace (BinPos.Pos.to_nat 1) with 1; try Omega.omega; reflexivity.
+  simpl; replace (BinPos.Pos.to_nat 1) with 1; try lia; reflexivity.
 Defined.
 Next Obligation.
   repeat split; intros; intro h0; inversion h0.
