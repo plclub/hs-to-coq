@@ -166,7 +166,9 @@ jobs:
           git status
           git diff-index --cached --quiet HEAD -- examples/containers/lib
       - name: Translating GHC core
-        run: make -C examples/ghc vfiles
+        run: |
+          make -C examples/ghc clean
+          make -C examples/ghc vfiles
       - name: Comparing convenience copy of GHC
         run: |
           git add examples/ghc/lib
