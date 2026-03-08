@@ -3,6 +3,7 @@
 
 # Stack
 .stack-work
+stack.yaml.lock
 
 # cabal
 dist-newstyle
@@ -23,7 +24,9 @@ Makefile.coq.conf
 Makefile.bak
 Makefile.conf
 .Makefile.d
+.Makefile.coq.d
 .lia.cache
+.nia.cache
 Makefile
 .CoqMakefile.d
 CoqMakefile.conf
@@ -54,6 +57,7 @@ ghc-head
 *.crashcoqide
 *.DS_Store
 
-# Claude related
+# Local tool config
 .claude
+.mcp.json
 
