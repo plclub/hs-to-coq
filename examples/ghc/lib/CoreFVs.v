@@ -12,8 +12,6 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require AxiomatizedTypes.
-Require CoAxiom.
 Require Core.
 Require Data.Foldable.
 Require Data.Tuple.
@@ -21,15 +19,12 @@ Require FV.
 Require GHC.Base.
 Require GHC.Core.TyCo.FVs.
 Require GHC.List.
-Require GHC.Types.Tickish.
 Require HsToCoq.Err.
 Require Id.
 Require Lists.List.
 Require Maybes.
-Require Name.
 Require NameSet.
 Require NestedRecursionHelpers.
-Require TysWiredIn.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
@@ -105,7 +100,8 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
          (FV.unionFV (expr_fvs expr) (GHC.Core.TyCo.FVs.tyCoFVsOfCo co)) fv_cand in_scope
          acc
      | Core.Case scrut bndr ty alts, fv_cand, in_scope, acc =>
-         let alt_fvs := fun '(Core.Mk_Alt _ bndrs rhs) => addBndrs bndrs (expr_fvs rhs) in
+         let alt_fvs :=
+           fun '(Core.Mk_Alt _ bndrs rhs) => addBndrs bndrs (expr_fvs rhs) in
          (FV.unionFV (FV.unionFV (expr_fvs scrut) (GHC.Core.TyCo.FVs.tyCoFVsOfType ty))
                      (addBndr bndr (FV.unionsFV (Lists.List.map alt_fvs alts)))) fv_cand in_scope acc
      | Core.Let (Core.NonRec bndr rhs) body, fv_cand, in_scope, acc =>
@@ -202,7 +198,7 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
 #[global] Definition exprs_fvs : list Core.CoreExpr -> FV.FV :=
   fun exprs => FV.mapUnionFV expr_fvs exprs.
 
-Axiom tickish_fvs : GHC.Types.Tickish.CoreTickish -> FV.FV.
+(* Skipping definition `CoreFVs.tickish_fvs' *)
 
 (* Skipping definition `CoreFVs.exprOrphNames' *)
 
@@ -217,16 +213,11 @@ Axiom tickish_fvs : GHC.Types.Tickish.CoreTickish -> FV.FV.
   fun f =>
     Data.Foldable.foldr (NameSet.unionNameSet GHC.Base.∘ f) NameSet.emptyNameSet.
 
-Axiom orphNamesOfTypes : list AxiomatizedTypes.Type_ -> NameSet.NameSet.
+(* Skipping definition `CoreFVs.orphNamesOfTypes' *)
 
-Axiom orphNamesOfCo : AxiomatizedTypes.Coercion -> NameSet.NameSet.
+(* Skipping definition `CoreFVs.orphNamesOfMCo' *)
 
-#[global] Definition orphNamesOfMCo : Core.MCoercion -> NameSet.NameSet :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | Core.MRefl => NameSet.emptyNameSet
-    | Core.MCo co => orphNamesOfCo co
-    end.
+(* Skipping definition `CoreFVs.orphNamesOfCo' *)
 
 (* Skipping definition `CoreFVs.orphNamesOfProv' *)
 
@@ -238,15 +229,9 @@ Axiom orphNamesOfCo : AxiomatizedTypes.Coercion -> NameSet.NameSet.
 
 (* Skipping definition `CoreFVs.orphNamesOfCoAxBranch' *)
 
-#[global] Definition orphNamesOfAxiomLHS {br : AxiomatizedTypes.BranchFlag}
-   : AxiomatizedTypes.CoAxiom br -> NameSet.NameSet :=
-  fun axiom =>
-    NameSet.extendNameSet (orphNamesOfTypes (Data.Foldable.concatMap
-                                             CoAxiom.coAxBranchLHS (CoAxiom.fromBranches (CoAxiom.coAxiomBranches
-                                                                                          axiom)))) (Name.getName
-                           (CoAxiom.coAxiomTyCon axiom)).
+(* Skipping definition `CoreFVs.orphNamesOfAxiomLHS' *)
 
-Axiom orph_names_of_fun_ty_con : Core.Mult -> NameSet.NameSet.
+(* Skipping definition `CoreFVs.orph_names_of_fun_ty_con' *)
 
 #[global] Definition ruleFVs : RuleFVsFrom -> Core.CoreRule -> FV.FV :=
   fun arg_0__ arg_1__ =>
@@ -286,7 +271,7 @@ Axiom orph_names_of_fun_ty_con : Core.Mult -> NameSet.NameSet.
 #[global] Definition rulesFreeVars : list Core.CoreRule -> Core.VarSet :=
   fun rules => FV.fvVarSet (rulesFVs BothSides rules).
 
-Axiom mkRuleInfo : list Core.CoreRule -> Core.RuleInfo.
+(* Skipping definition `CoreFVs.mkRuleInfo' *)
 
 #[global] Definition freeVarsOf : CoreExprWithFVs -> Core.DIdSet :=
   fun '(pair fvs _) => fvs.
@@ -467,28 +452,23 @@ Axiom mkRuleInfo : list Core.CoreRule -> Core.RuleInfo.
        end for freeVars.
 
 (* External variables:
-     None Some bool cons list nil op_zt__ option orphNamesOfCo orphNamesOfTypes pair
-     snd AxiomatizedTypes.BranchFlag AxiomatizedTypes.CoAxiom CoAxiom.coAxBranchLHS
-     CoAxiom.coAxiomBranches CoAxiom.coAxiomTyCon CoAxiom.fromBranches Core.Alt
-     Core.AnnAlt Core.AnnApp Core.AnnBind Core.AnnCase Core.AnnCast Core.AnnCoercion
-     Core.AnnExpr Core.AnnExpr' Core.AnnLam Core.AnnLet Core.AnnLit Core.AnnNonRec
-     Core.AnnRec Core.AnnType Core.AnnVar Core.App Core.BuiltinRule Core.Case
-     Core.Cast Core.CoreBind Core.CoreBndr Core.CoreExpr Core.CoreRule Core.DIdSet
+     None Some bool cons list nil op_zt__ option pair snd Core.AnnAlt Core.AnnApp
+     Core.AnnBind Core.AnnCase Core.AnnCast Core.AnnCoercion Core.AnnExpr
+     Core.AnnExpr' Core.AnnLam Core.AnnLet Core.AnnLit Core.AnnNonRec Core.AnnRec
+     Core.AnnType Core.AnnVar Core.App Core.BuiltinRule Core.Case Core.Cast
+     Core.CoreBind Core.CoreBndr Core.CoreExpr Core.CoreRule Core.DIdSet
      Core.DTyCoVarSet Core.DVarSet Core.Id Core.IdSet Core.Lam Core.Let Core.Lit
-     Core.MCo Core.MCoercion Core.MRefl Core.ManyTy Core.Mk_Coercion Core.Mk_Type
-     Core.Mk_Var Core.Mult Core.NonRec Core.Rec Core.Rule Core.RuleInfo
-     Core.TyCoVarSet Core.Unfolding Core.Var Core.VarSet Core.delDVarSet
-     Core.emptyDVarSet Core.isId Core.isLocalId Core.isLocalVar Core.unionDVarSet
-     Core.unionDVarSets Core.unitDVarSet Core.varMult Core.varMultMaybe Core.varType
-     Data.Foldable.concatMap Data.Foldable.foldr Data.Tuple.fst FV.FV
+     Core.Mk_Alt Core.Mk_AnnAlt Core.Mk_Coercion Core.Mk_Type Core.Mk_Var Core.NonRec
+     Core.Rec Core.Rule Core.TyCoVarSet Core.Unfolding Core.Var Core.VarSet
+     Core.delDVarSet Core.emptyDVarSet Core.isId Core.isLocalId Core.isLocalVar
+     Core.unionDVarSet Core.unionDVarSets Core.unitDVarSet Core.varMult
+     Core.varMultMaybe Core.varType Data.Foldable.foldr Data.Tuple.fst FV.FV
      FV.InterestingVarFun FV.delFV FV.emptyFV FV.filterFV FV.fvDVarSet FV.fvVarList
-     FV.fvVarSet FV.mapUnionFV FV.mkFVs FV.unionFV FV.unionsFV FV.unitFV GHC.Base.map
+     FV.fvVarSet FV.mapUnionFV FV.unionFV FV.unionsFV FV.unitFV GHC.Base.map
      GHC.Base.op_z2218U__ GHC.Core.TyCo.FVs.tyCoFVsOfCo
      GHC.Core.TyCo.FVs.tyCoFVsOfType GHC.Core.TyCo.FVs.tyCoVarsOfCoDSet
      GHC.Core.TyCo.FVs.tyCoVarsOfTypeDSet GHC.List.unzip GHC.List.zip
-     GHC.Types.Tickish.Breakpoint GHC.Types.Tickish.CoreTickish
      HsToCoq.Err.Build_Default HsToCoq.Err.Default Id.idType Id.realIdUnfolding
-     Lists.List.map Maybes.orElse Name.getName NameSet.NameSet NameSet.emptyNameSet
-     NameSet.extendNameSet NameSet.unionNameSet NameSet.unitNameSet
-     NestedRecursionHelpers.mapAndUnzipFix TysWiredIn.unrestrictedFunTyConName
+     Lists.List.map Maybes.orElse NameSet.NameSet NameSet.emptyNameSet
+     NameSet.unionNameSet NestedRecursionHelpers.mapAndUnzipFix
 *)

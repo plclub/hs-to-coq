@@ -408,7 +408,7 @@ Program Instance NamedThing__Located {e : Type} `{NamedThing e}
   fun '(Mk_Name n_sort_0__ n_occ_1__ n_uniq_2__ n_loc_3__) =>
     Mk_Name Internal n_occ_1__ n_uniq_2__ n_loc_3__.
 
-Axiom stableNameCmp : Name -> Name -> comparison.
+(* Skipping definition `Name.stableNameCmp' *)
 
 (* Skipping definition `Name.pprName' *)
 

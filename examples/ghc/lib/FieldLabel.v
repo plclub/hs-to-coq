@@ -60,6 +60,17 @@ Instance Default__FieldLabel : HsToCoq.Err.Default FieldLabel :=
   let 'Mk_FieldLabel _ _ flSelector := arg_0__ in
   flSelector.
 
+(* Midamble *)
+
+Require Import HsToCoq.Err.
+
+#[global] Instance Default__FieldSelectors_G : Default FieldSelectors :=
+  Build_Default _ Mk_FieldSelectors.
+#[global] Instance Default__DuplicateRecordFields_G : Default DuplicateRecordFields :=
+  Build_Default _ Mk_DuplicateRecordFields.
+#[global] Instance Default__FieldLabel_G : Default FieldLabel :=
+  Build_Default _ (Mk_FieldLabel default default default).
+
 (* Converted value declarations: *)
 
 Instance HasOccName__FieldLabel : OccName.HasOccName FieldLabel.

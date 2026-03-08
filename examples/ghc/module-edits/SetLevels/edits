@@ -23,3 +23,8 @@ in SetLevels.lvlApp termination left_ deferred
 
 
 skip SetLevels.Default__LevelEnv
+
+# GHC 9.10: uses Outputable.JoinPointHood (Outputable module skipped)
+skip SetLevels.lvlRhs
+skip SetLevels.lvlFloatRhs
+skip SetLevels.newLvlVar

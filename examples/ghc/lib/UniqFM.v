@@ -18,19 +18,19 @@ Require Coq.Program.Wf.
 Require BinNat.
 Require Data.Foldable.
 Require Data.IntMap.Internal.
-Require GHC.Base.
-Require Data.IntMap.Internal.
-Require Data.IntMap.Internal.
 Require Data.IntSet.Internal.
+Require GHC.Base.
+Require GHC.Data.Word64Map.Internal.
 Require GHC.Prim.
 Require HsToCoq.Unpeel.
+Require IntMap.
 Require Unique.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
 Inductive UniqFM (key : Type) (ele : Type) : Type :=
-  | UFM : Data.IntMap.Internal.IntMap ele -> UniqFM key ele.
+  | UFM : GHC.Data.Word64Map.Internal.Word64Map ele -> UniqFM key ele.
 
 Inductive NonDetUniqFM (key : Type) (ele : Type) : Type :=
   | Mk_NonDetUniqFM (getNonDet : UniqFM key ele) : NonDetUniqFM key ele.
@@ -51,7 +51,7 @@ Arguments Changed {_} _ _.
 Require GHC.Err.
 Require Data.IntMap.Internal.
 
-Instance Default__UniqFM {key} {ele} : Err.Default (UniqFM key ele) :=
+#[global] Instance Default__UniqFM {key} {ele} : Err.Default (UniqFM key ele) :=
   Err.Build_Default _ (UFM Data.IntMap.Internal.empty).
 
 (* Functor/Semigroup/Monoid instances for UniqFM *)
@@ -136,8 +136,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
 #[global] Definition unitUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
    : key -> elt -> UniqFM key elt :=
   fun k v =>
-    UFM (Data.IntMap.Internal.singleton (Unique.getWordKey (Unique.getUnique
-                                                                   k)) v).
+    UFM (Data.IntMap.Internal.singleton (Unique.getWordKey (Unique.getUnique k)) v).
 
 #[global] Definition unitDirectlyUFM {elt : Type} {key : Type}
    : Unique.Unique -> elt -> UniqFM key elt :=
@@ -148,8 +147,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | UFM m, k, v =>
-        UFM (Data.IntMap.Internal.insert (Unique.getWordKey (Unique.getUnique k))
-             v m)
+        UFM (Data.IntMap.Internal.insert (Unique.getWordKey (Unique.getUnique k)) v m)
     end.
 
 #[global] Definition zipToUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
@@ -173,8 +171,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
    : UniqFM key elt -> Unique.Unique -> elt -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | UFM m, u, v =>
-        UFM (Data.IntMap.Internal.insert (Unique.getWordKey u) v m)
+    | UFM m, u, v => UFM (Data.IntMap.Internal.insert (Unique.getWordKey u) v m)
     end.
 
 #[global] Definition listToUFM_Directly {elt : Type} {key : Type}
@@ -195,7 +192,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
     match arg_0__, arg_1__, arg_2__, arg_3__ with
     | f, UFM m, k, v =>
         UFM (Data.IntMap.Internal.insertWith (GHC.Base.flip f) (Unique.getWordKey
-                                                                       (Unique.getUnique k)) v m)
+                                                                (Unique.getUnique k)) v m)
     end.
 
 #[global] Definition listToUFM_C {key : Type} {elt : Type} `{Unique.Uniquable
@@ -240,8 +237,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | f, UFM m, k =>
-        UFM (Data.IntMap.Internal.alter f (Unique.getWordKey (Unique.getUnique
-                                                                     k)) m)
+        UFM (Data.IntMap.Internal.alter f (Unique.getWordKey (Unique.getUnique k)) m)
     end.
 
 #[global] Definition alterUFM_Directly {elt : Type} {key : Type}
@@ -249,8 +245,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
      UniqFM key elt -> Unique.Unique -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | f, UFM m, k =>
-        UFM (Data.IntMap.Internal.alter f (Unique.getWordKey k) m)
+    | f, UFM m, k => UFM (Data.IntMap.Internal.alter f (Unique.getWordKey k) m)
     end.
 
 #[global] Definition addListToUFM_C {key : Type} {elt : Type} `{Unique.Uniquable
@@ -268,16 +263,14 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | f, UFM m, k =>
-        UFM (Data.IntMap.Internal.adjust f (Unique.getWordKey (Unique.getUnique
-                                                                      k)) m)
+        UFM (Data.IntMap.Internal.adjust f (Unique.getWordKey (Unique.getUnique k)) m)
     end.
 
 #[global] Definition adjustUFM_Directly {elt : Type} {key : Type}
    : (elt -> elt) -> UniqFM key elt -> Unique.Unique -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | f, UFM m, u =>
-        UFM (Data.IntMap.Internal.adjust f (Unique.getWordKey u) m)
+    | f, UFM m, u => UFM (Data.IntMap.Internal.adjust f (Unique.getWordKey u) m)
     end.
 
 #[global] Definition delFromUFM {key : Type} {elt : Type} `{Unique.Uniquable
@@ -286,8 +279,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | UFM m, k =>
-        UFM (Data.IntMap.Internal.delete (Unique.getWordKey (Unique.getUnique k))
-             m)
+        UFM (Data.IntMap.Internal.delete (Unique.getWordKey (Unique.getUnique k)) m)
     end.
 
 #[global] Definition delListFromUFM {key : Type} {elt : Type} `{Unique.Uniquable
@@ -327,15 +319,11 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
     | f, UFM xm, dx, UFM ym, dy =>
-        UFM (Data.IntMap.Internal.mergeWithKey (fun arg_5__
-                                                              arg_6__
-                                                              arg_7__ =>
-                                                                match arg_5__, arg_6__, arg_7__ with
-                                                                | _, x, y => Some (f x y)
-                                                                end) (Data.IntMap.Internal.map (fun x =>
-                                                                                                                f x dy))
-                                                             (Data.IntMap.Internal.map (fun y => f dx y))
-                                                             xm ym)
+        UFM (Data.IntMap.Internal.mergeWithKey (fun arg_5__ arg_6__ arg_7__ =>
+                                                  match arg_5__, arg_6__, arg_7__ with
+                                                  | _, x, y => Some (f x y)
+                                                  end) (Data.IntMap.Internal.map (fun x => f x dy))
+                                               (Data.IntMap.Internal.map (fun y => f dx y)) xm ym)
     end.
 
 #[global] Definition plusUFM_CD2 {elta : Type} {eltb : Type} {eltc
@@ -345,18 +333,11 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | f, UFM xm, UFM ym =>
-        UFM (Data.IntMap.Internal.mergeWithKey (fun arg_3__
-                                                              arg_4__
-                                                              arg_5__ =>
-                                                                match arg_3__, arg_4__, arg_5__ with
-                                                                | _, x, y => Some (f (Some x) (Some y))
-                                                                end) (Data.IntMap.Internal.map (fun x =>
-                                                                                                                f (Some
-                                                                                                                   x)
-                                                                                                                  None))
-                                                             (Data.IntMap.Internal.map (fun y =>
-                                                                                                        f None (Some
-                                                                                                           y))) xm ym)
+        UFM (Data.IntMap.Internal.mergeWithKey (fun arg_3__ arg_4__ arg_5__ =>
+                                                  match arg_3__, arg_4__, arg_5__ with
+                                                  | _, x, y => Some (f (Some x) (Some y))
+                                                  end) (Data.IntMap.Internal.map (fun x => f (Some x) None))
+                                               (Data.IntMap.Internal.map (fun y => f None (Some y))) xm ym)
     end.
 
 (* Skipping definition `UniqFM.mergeUFM' *)
@@ -368,9 +349,9 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
     match arg_0__, arg_1__, arg_2__ with
     | f, UFM xm, UFM ym =>
         UFM (Data.IntMap.Internal.mergeWithKey (fun arg_3__ arg_4__ arg_5__ =>
-                                                         match arg_3__, arg_4__, arg_5__ with
-                                                         | _, x, y => f x y
-                                                         end) GHC.Base.id GHC.Base.id xm ym)
+                                                  match arg_3__, arg_4__, arg_5__ with
+                                                  | _, x, y => f x y
+                                                  end) GHC.Base.id GHC.Base.id xm ym)
     end.
 
 #[global] Definition plusUFMList {key : Type} {elt : Type}
@@ -378,18 +359,18 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   Data.Foldable.foldl' plusUFM emptyUFM.
 
 #[global] Definition ufmToIntMap {key : Type} {elt : Type}
-   : UniqFM key elt -> Data.IntMap.Internal.IntMap elt :=
+   : UniqFM key elt -> IntMap.IntMap elt :=
   fun '(UFM m) => m.
 
 #[global] Definition unsafeIntMapToUFM {elt : Type} {key : Type}
-   : Data.IntMap.Internal.IntMap elt -> UniqFM key elt :=
+   : IntMap.IntMap elt -> UniqFM key elt :=
   UFM.
 
 #[global] Definition plusUFMListWith {elt : Type} {key : Type}
    : (elt -> elt -> elt) -> list (UniqFM key elt) -> UniqFM key elt :=
   fun f xs =>
-    unsafeIntMapToUFM (Data.IntMap.Internal.unionsWith f (GHC.Base.map
-                                                               ufmToIntMap xs)).
+    unsafeIntMapToUFM (Data.IntMap.Internal.unionsWith f (GHC.Base.map ufmToIntMap
+                                                        xs)).
 
 #[global] Definition sequenceUFMList {key : Type} {elt : Type}
    : list (UniqFM key elt) -> UniqFM key (list elt) :=
@@ -467,7 +448,8 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
     | f, UFM m => UFM (Data.IntMap.Internal.map f m)
     end.
 
-#[global] Definition mapMaybeUFM {elt1 : Type} {elt2 : Type} {key : Type}
+#[global] Definition mapMaybeUFM {elt1 : Type} {elt2 : Type} {key
+   : Type}
    : (elt1 -> option elt2) -> UniqFM key elt1 -> UniqFM key elt2 :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -481,17 +463,17 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, UFM m =>
-        UFM (Data.IntMap.Internal.mapMaybeWithKey (f GHC.Base.∘
-                                                          Unique.mkUniqueGrimily) m)
+        UFM (Data.IntMap.Internal.mapMaybeWithKey (f GHC.Base.∘ Unique.mkUniqueGrimily)
+             m)
     end.
 
-#[global] Definition mapUFM_Directly {elt1 : Type} {elt2 : Type} {key : Type}
+#[global] Definition mapUFM_Directly {elt1 : Type} {elt2 : Type} {key
+   : Type}
    : (Unique.Unique -> elt1 -> elt2) -> UniqFM key elt1 -> UniqFM key elt2 :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | f, UFM m =>
-        UFM (Data.IntMap.Internal.mapWithKey (f GHC.Base.∘
-                                                     Unique.mkUniqueGrimily) m)
+        UFM (Data.IntMap.Internal.mapWithKey (f GHC.Base.∘ Unique.mkUniqueGrimily) m)
     end.
 
 #[global] Definition strictMapUFM {a : Type} {b : Type} {k2 : Type}
@@ -513,8 +495,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | p, UFM m =>
-        UFM (Data.IntMap.Internal.filterWithKey (p GHC.Base.∘
-                                                        Unique.mkUniqueGrimily) m)
+        UFM (Data.IntMap.Internal.filterWithKey (p GHC.Base.∘ Unique.mkUniqueGrimily) m)
     end.
 
 #[global] Definition partitionUFM {elt : Type} {key : Type}
@@ -566,8 +547,8 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | UFM m, v, k =>
-        Data.IntMap.Internal.findWithDefault v (Unique.getWordKey
-                                                       (Unique.getUnique k)) m
+        Data.IntMap.Internal.findWithDefault v (Unique.getWordKey (Unique.getUnique k))
+        m
     end.
 
 #[global] Definition lookupWithDefaultUFM_Directly {key : Type} {elt
@@ -575,8 +556,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
    : UniqFM key elt -> elt -> Unique.Unique -> elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | UFM m, v, u =>
-        Data.IntMap.Internal.findWithDefault v (Unique.getWordKey u) m
+    | UFM m, v, u => Data.IntMap.Internal.findWithDefault v (Unique.getWordKey u) m
     end.
 
 #[global] Definition ufmToSet_Directly {key : Type} {elt : Type}
@@ -610,7 +590,8 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
   fun '(UFM m) =>
     GHC.Base.map Unique.mkUniqueGrimily (Data.IntMap.Internal.keys m).
 
-#[global] Definition nonDetStrictFoldUFM {elt : Type} {a : Type} {key : Type}
+#[global] Definition nonDetStrictFoldUFM {elt : Type} {a : Type} {key
+   : Type}
    : (elt -> a -> a) -> a -> UniqFM key elt -> a :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
@@ -634,7 +615,7 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
     match arg_0__, arg_1__, arg_2__ with
     | k, z, UFM m =>
         Data.IntMap.Internal.foldlWithKey' (fun z' i x =>
-                                                     k (Unique.mkUniqueGrimily i) x z') z m
+                                              k (Unique.mkUniqueGrimily i) x z') z m
     end.
 
 #[global] Definition nonDetUFMToList {key : Type} {elt : Type}
@@ -668,16 +649,13 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
 (* Skipping definition `UniqFM.pluralUFM' *)
 
 Instance Unpeel_UniqFM key ele
-   : HsToCoq.Unpeel.Unpeel (UniqFM key ele) (Data.IntMap.Internal.IntMap
+   : HsToCoq.Unpeel.Unpeel (UniqFM key ele) (GHC.Data.Word64Map.Internal.Word64Map
                             ele) :=
   HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(UFM y) => y) UFM.
 
 (* External variables:
      None Some Type andb bool cons false list mergeUFM nat nil op_zt__ option orb
      pair true tt unit BinNat.N.to_nat Data.Foldable.foldl' Data.Foldable.foldr
-     Data.IntMap.Internal.size GHC.Base.Eq_ GHC.Base.Monad GHC.Base.String
-     GHC.Base.flip GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
-     GHC.Base.op_zgzgze__ GHC.Base.return_ Data.IntMap.Internal.IntMap
      Data.IntMap.Internal.adjust Data.IntMap.Internal.alter
      Data.IntMap.Internal.delete Data.IntMap.Internal.difference
      Data.IntMap.Internal.differenceWith Data.IntMap.Internal.disjoint
@@ -690,15 +668,16 @@ Instance Unpeel_UniqFM key ele
      Data.IntMap.Internal.intersectionWith Data.IntMap.Internal.keys
      Data.IntMap.Internal.keysSet Data.IntMap.Internal.lookup
      Data.IntMap.Internal.map Data.IntMap.Internal.mapMaybe
-     Data.IntMap.Internal.mapMaybeWithKey
-     Data.IntMap.Internal.mapWithKey Data.IntMap.Internal.member
-     Data.IntMap.Internal.mergeWithKey Data.IntMap.Internal.null
-     Data.IntMap.Internal.partition Data.IntMap.Internal.singleton
+     Data.IntMap.Internal.mapMaybeWithKey Data.IntMap.Internal.mapWithKey
+     Data.IntMap.Internal.member Data.IntMap.Internal.mergeWithKey
+     Data.IntMap.Internal.null Data.IntMap.Internal.partition
+     Data.IntMap.Internal.singleton Data.IntMap.Internal.size
      Data.IntMap.Internal.toList Data.IntMap.Internal.union
      Data.IntMap.Internal.unionWith Data.IntMap.Internal.unionsWith
-     Data.IntMap.Internal.map
-     Data.IntMap.Internal.mergeWithKey
-     Data.IntSet.Internal.IntSet GHC.Prim.seq HsToCoq.Unpeel.Build_Unpeel
-     HsToCoq.Unpeel.Unpeel Unique.Uniquable Unique.Unique Unique.getUnique
-     Unique.getWordKey Unique.mkUniqueGrimily
+     Data.IntSet.Internal.IntSet GHC.Base.Eq_ GHC.Base.Monad GHC.Base.String
+     GHC.Base.flip GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
+     GHC.Base.op_zgzgze__ GHC.Base.return_ GHC.Data.Word64Map.Internal.Word64Map
+     GHC.Prim.seq HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel IntMap.IntMap
+     Unique.Uniquable Unique.Unique Unique.getUnique Unique.getWordKey
+     Unique.mkUniqueGrimily
 *)

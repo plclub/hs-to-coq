@@ -34,93 +34,93 @@ Axiom DataConBoxer       : Type.
 
 (* -------------------- assumed default instances ------------------- *)
 
-Instance Default__Coercion
+#[global] Instance Default__Coercion
    : HsToCoq.Err.Default Coercion.
 Admitted.
 
-Instance Default__Type_
+#[global] Instance Default__Type_
    : HsToCoq.Err.Default Type_.
 Admitted.
 
-Instance Default__ThetaType
+#[global] Instance Default__ThetaType
    : HsToCoq.Err.Default ThetaType.
 Admitted.
 
 
-Instance Default__TyBinder
+#[global] Instance Default__TyBinder
    : HsToCoq.Err.Default TyBinder.
 Admitted.
 
-Instance Default__TyThing
+#[global] Instance Default__TyThing
    : HsToCoq.Err.Default TyThing.
 Admitted.
 
-Instance Default__CoAxiom
+#[global] Instance Default__CoAxiom
    : forall {a}, HsToCoq.Err.Default (CoAxiom a).
 Admitted.
 
 
-Instance Default__BuiltInSynFamily
+#[global] Instance Default__BuiltInSynFamily
    : HsToCoq.Err.Default BuiltInSynFamily.
 Admitted.
 
 
-Instance Default__TcTyVarDetails
+#[global] Instance Default__TcTyVarDetails
    : HsToCoq.Err.Default TcTyVarDetails.
 Admitted.
 
-Instance Default__Role
+#[global] Instance Default__Role
    : HsToCoq.Err.Default Role.
 Admitted.
 
 
-Instance Default__BranchIndex
+#[global] Instance Default__BranchIndex
    : HsToCoq.Err.Default BranchIndex.
 Admitted.
 
-Instance Default__CoAxiomRule
+#[global] Instance Default__CoAxiomRule
    : HsToCoq.Err.Default CoAxiomRule.
 Admitted.
 
-Instance Default__CoAxiomBranch
+#[global] Instance Default__CoAxiomBranch
    : HsToCoq.Err.Default CoAxBranch.
 Admitted.
 
 
-Instance Default__CostCentre
+#[global] Instance Default__CostCentre
    : HsToCoq.Err.Default CostCentre.
 Admitted.
 
-Instance Default__DataConBoxer
+#[global] Instance Default__DataConBoxer
    : HsToCoq.Err.Default DataConBoxer.
 Admitted.
 
 
-Instance Default__PrimOp
+#[global] Instance Default__PrimOp
    : HsToCoq.Err.Default PrimOp.
 Admitted.
-Instance Default__ForeignCall
+#[global] Instance Default__ForeignCall
    : HsToCoq.Err.Default ForeignCall.
 Admitted.
-Instance Default__CType
+#[global] Instance Default__CType
    : HsToCoq.Err.Default CType.
 Admitted.
 
 
 (* ---------------- Eq -------------- *)
 
-Instance Eq___CoAxiomRule
+#[global] Instance Eq___CoAxiomRule
    : GHC.Base.Eq_ CoAxiomRule.
 Admitted.
 
-Instance Eq___Role
+#[global] Instance Eq___Role
    : GHC.Base.Eq_ Role.
 Admitted.
 
-Instance Eq___CostCentre
+#[global] Instance Eq___CostCentre
    : GHC.Base.Eq_ CostCentre.
 Admitted.
 
-Instance Ord___CostCentre
+#[global] Instance Ord___CostCentre
    : GHC.Base.Ord CostCentre.
 Admitted.

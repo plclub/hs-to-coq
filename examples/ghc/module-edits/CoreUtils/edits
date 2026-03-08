@@ -66,8 +66,8 @@ in CoreUtils.stripTicksE set type      go_a : Core.Alt b        -> Core.Alt b
 
 in CoreUtils.stripTicksT inline mutual go_b
 in CoreUtils.stripTicksT inline mutual go_a
-in CoreUtils.stripTicksT set type      go_b : (b * Core.Expr b) -> OrdList.OrdList (Core.Tickish Core.Id)
-in CoreUtils.stripTicksT set type      go_a : Core.Alt b        -> OrdList.OrdList (Core.Tickish Core.Id)
+in CoreUtils.stripTicksT set type      go_b : (b * Core.Expr b) -> OrdList.OrdList GHC.Types.Tickish.CoreTickish
+in CoreUtils.stripTicksT set type      go_a : Core.Alt b        -> OrdList.OrdList GHC.Types.Tickish.CoreTickish
 
 ############################################################
 ## skipped methods (I'm not sure why these are skipped)
@@ -101,3 +101,25 @@ axiomatize definition CoreUtils.expr_ok
 axiomatize definition CoreUtils.exprOkForSideEffects
 axiomatize definition CoreUtils.exprOkForSpeculation
 axiomatize definition CoreUtils.bindNonRec
+
+# GHC 9.10: let fix structural termination issues
+axiomatize definition CoreUtils.trivial_expr_fold
+axiomatize definition CoreUtils.isUnsafeEqualityCase
+axiomatize definition CoreUtils.exprIsExpandable
+axiomatize definition CoreUtils.exprIsCheap
+axiomatize definition CoreUtils.exprIsCheapX
+
+# GHC 9.10: uses GHC.Types.Tickish.TickishPass which doesn't exist
+skip CoreUtils.etaExpansionTick
+
+# GHC 9.10: let fix structural termination
+axiomatize definition CoreUtils.exprIsHNFlike
+
+# GHC 9.10: CoreTickish is axiomatized, can't pattern match
+skip CoreUtils.eqTickish
+
+# GHC 9.10: uses GHC.Core.Reduction which is axiomatized
+skip CoreUtils.normSplitTyConApp_maybe
+
+# GHC 9.10: uses Outputable.colon
+skip CoreUtils.dumpIdInfoOfProgram

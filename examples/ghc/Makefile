@@ -9,14 +9,55 @@ CORE_EDITS=axiomatize-types.edits
 # see [notes.md] for discussion of issues
 
 # Handwritten modules (usually by modification of generated version)
+# Handwritten modules and axiomatized stubs for GHC 9.10 dependencies
 HANDMOD = \
   FastString \
   AxiomatizedTypes \
   NestedRecursionHelpers \
   IntMap \
   State \
-  # Used by CSE
-  # TysWiredIn \
+  ConLike \
+  Outputable \
+  ClassSpec \
+  ConIds \
+  Platform \
+  TcType \
+  UniqDFM \
+  UniqDSet \
+  PrimOp \
+  RepType \
+  Data/ByteString/Internal/Type \
+  GHC/Builtin/Types/Prim \
+  GHC/Builtin/Uniques \
+  GHC/Core/FamInstEnv \
+  GHC/Core/Map/Expr \
+  GHC/Core/Map/Type \
+  GHC/Core/Multiplicity \
+  GHC/Core/Opt/Stats \
+  GHC/Core/Predicate \
+  GHC/Core/Reduction \
+  GHC/Core/Rules \
+  GHC/Core/Rules/Config \
+  GHC/Core/TyCo/Compare \
+  GHC/Core/TyCo/FVs \
+  GHC/Core/TyCo/Subst \
+  GHC/Core/TyCo/Tidy \
+  GHC/Core/TyCon/RecWalk \
+  GHC/Data/List/Infinite \
+  GHC/Data/Word64Map/Internal \
+  GHC/Data/Word64Map/Strict/Internal \
+  GHC/Data/Word64Set/Internal \
+  GHC/Runtime/Context \
+  GHC/Stg/InferTags/TagSig \
+  GHC/StgToCmm/Types \
+  GHC/Types/Cpr \
+  GHC/Types/GREInfo \
+  GHC/Types/Tickish \
+  GHC/Types/TyThing \
+  GHC/Unit/External \
+  GHC/Unit/Module/ModGuts \
+  GHC/Utils/Monad/State/Strict \
+  GHC/Utils/Trace
 
 
 # generated from drop-in/
@@ -113,7 +154,6 @@ CORE_MODULES = \
   FV \
   Literal \
   FieldLabel \
-  ConLike \
   CoreFVs \
   Exitify \
 
@@ -132,7 +172,6 @@ CORETYPE = \
 # These modules translate, but do not compile, at the moment and
 # should not be processed by coq
 BROKEN_MODULES = \
-  IntMap \
 
 
 ####################################################
@@ -366,6 +405,26 @@ $(OUTFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildca
                      -o $(OUT) \
 		     $(SRC_$*)
 	test -e $@
+	@# GHC 9.10: fix phantom kind parameters in UniqFM.
+	@# Remove {k : Type}/{k1 : Type}/{k2 : Type} kind params and
+	@# replace {key : k}/{key1 : k1}/{key2 : k2}/{k2 : k1} with {... : Type}.
+	@if [ "$*" = "UniqFM" ]; then \
+	  sed -i \
+	    -e 's/{k : Type} //g' \
+	    -e 's/{k1 : Type} //g' \
+	    -e 's/{k2 : Type} //g' \
+	    $@; \
+	  sed -i -e ':a' -e 'N' -e '$$!ba' \
+	    -e 's/{key\(\s*\):\s*k}/{key\1: Type}/g' \
+	    -e 's/{key1\(\s*\):\s*k1}/{key1\1: Type}/g' \
+	    -e 's/{key2\(\s*\):\s*k2}/{key2\1: Type}/g' \
+	    -e 's/{k2\(\s*\):\s*k1}/{k2\1: Type}/g' \
+	    $@; \
+	fi
+	@# GHC 9.10: make all Default instances in BasicTypes global so downstream modules can resolve them.
+	@if [ "$*" = "BasicTypes" ]; then \
+	  sed -i 's/^Instance Default__/#[global] Instance Default__/' $@; \
+	fi
 
 $(OUTFILES_CORE): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits $(CORE_EDITS)
 	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
@@ -391,6 +450,41 @@ $(OUTFILES_CORESYN) : edits $(CORE_EDITS) $(CORESYN_PRE) $(CORESYN_MID) $(wildca
                 -o $(OUT) \
 		     $(foreach m,$(CORESYN),$(SRC_$(m)))
 	test -e $@
+	@# GHC 9.10: Remove circular deps and fix Omega→Lia in Core.v
+	sed -i \
+	  -e '/^Require ConLike\.$$/d' \
+	  -e '/^Require TysWiredIn\.$$/d' \
+	  -e '/^Require UnVarGraph\.$$/d' \
+	  -e 's/^Require Import Omega\.$$/Require Import Lia./' \
+	  -e 's/ConLike\.ConLike/ConLike/g' \
+	  -e 's/ConLike\.RealDataCon/RealDataCon/g' \
+	  -e 's/ConLike\.PatSynCon/PatSynCon/g' \
+	  -e '/^Require Import/!s/^Require \([A-Z]\)/Require Import \1/' \
+	  -e '/^Inductive InScopeSet.*VarSet -> nat/d' \
+	  $@
+	@# GHC 9.10: Insert ConLike into the mutual type block (after PatSyn)
+	sed -i '/^   : PatSyn$$/a with ConLike : Type :=\n  | RealDataCon : DataCon -> ConLike\n  | PatSynCon : PatSyn -> ConLike' $@
+	@# Insert type definitions and Admitted Default instances before Arguments
+	@# (needed by partial record accessors; some types only defined in commented-out block)
+	sed -i '/^Arguments Bndr/i \
+Definition RuleBase := (NameEnv.NameEnv (list CoreRule))%type.\n\
+Axiom RuleEnv : Type.\n\
+\#[global] Instance Default__TyFamEqnValidityInfo : HsToCoq.Err.Default TyFamEqnValidityInfo. Admitted.\n\
+\#[global] Instance Default__AlgTyConRhs : HsToCoq.Err.Default AlgTyConRhs. Admitted.\n\
+\#[global] Instance Default__TyConDetails : HsToCoq.Err.Default TyConDetails. Admitted.\n\
+\#[global] Instance Default__TyCon : HsToCoq.Err.Default TyCon. Admitted.\n\
+\#[global] Instance Default__DmdType : HsToCoq.Err.Default DmdType. Admitted.\n\
+\#[global] Instance Default__IdInfo : HsToCoq.Err.Default IdInfo. Admitted.\n\
+\#[global] Instance Default__Var : HsToCoq.Err.Default Var. Admitted.\n\
+\#[global] Instance Default__DataCon : HsToCoq.Err.Default DataCon. Admitted.\n\
+\#[global] Instance Default__CoreRule : HsToCoq.Err.Default CoreRule. Admitted.\n\
+\#[global] Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv. Admitted.\n' $@
+	@# GHC 9.10: Eq___AltCon not auto-generated; inject after Eq___DataCon closing
+	sed -i '/Eq___DataCon_op_zsze__.*|}\./a \
+\n\#[local] Definition Eq___AltCon_op_zeze__ : AltCon -> AltCon -> bool :=\n  fun a b => match a, b with\n    | DataAlt dc1, DataAlt dc2 => dc1 GHC.Base.== dc2\n    | LitAlt l1, LitAlt l2 => l1 GHC.Base.== l2\n    | DEFAULT, DEFAULT => true\n    | _, _ => false\n  end.\n\n\#[local] Definition Eq___AltCon_op_zsze__ : AltCon -> AltCon -> bool :=\n  fun a b => negb (Eq___AltCon_op_zeze__ a b).\n\n\#[global]\nProgram Instance Eq___AltCon : GHC.Base.Eq_ AltCon :=\n  fun _ k__ =>\n    k__ {| GHC.Base.op_zeze____ := Eq___AltCon_op_zeze__ ;\n           GHC.Base.op_zsze____ := Eq___AltCon_op_zsze__ |}.' $@
+	@# GHC 9.10: Var has single constructor Mk_Id — remove redundant wildcard branches
+	@# Match when Mk_Id has 7 args (all positions filled, whether _ or named)
+	sed -i '/| Mk_Id [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* =>/{n;/| _ =>/d}' $@
 	rm -f CoreSyn_preamble.v CoreSyn_midamble.v
 
 $(OUTFILES_TYPE) : edits $(CORE_EDITS) $$(wildcard module-edits/Type/preamble.v) $$(wildcard module-edits/Type/midamble.v)  $$(wildcard module-edits/Type/edits)

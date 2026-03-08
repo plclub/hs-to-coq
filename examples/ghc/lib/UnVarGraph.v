@@ -14,8 +14,8 @@ Require Coq.Program.Wf.
 
 Require Core.
 Require Data.Foldable.
+Require Data.IntSet.Internal.
 Require GHC.Base.
-Require GHC.Data.Word64Set.Internal.
 Require GHC.Num.
 Require UniqFM.
 Require Unique.
@@ -23,7 +23,7 @@ Require Unique.
 (* Converted type declarations: *)
 
 Inductive UnVarSet : Type :=
-  | Mk_UnVarSet : GHC.Data.Word64Set.Internal.Word64Set -> UnVarSet.
+  | Mk_UnVarSet : Data.IntSet.Internal.IntSet -> UnVarSet.
 
 Inductive UnVarGraph : Type :=
   | CBPG : UnVarSet -> UnVarSet -> UnVarGraph
@@ -36,10 +36,9 @@ Inductive UnVarGraph : Type :=
 #[global] Instance Default_UnVarSet : HsToCoq.Err.Default UnVarSet :=
   HsToCoq.Err.Build_Default _ (Mk_UnVarSet HsToCoq.Err.default).
 #[global] Instance Default_UnVarGraph : HsToCoq.Err.Default UnVarGraph :=
-  HsToCoq.Err.Build_Default _ (CG HsToCoq.Err.default).
+  HsToCoq.Err.Build_Default _ (CG (Mk_UnVarSet HsToCoq.Err.default)).
 
-
-#[global] Instance Unpeel_UnVarSet : HsToCoq.Unpeel.Unpeel UnVarSet Data.IntSet.Internal.IntSet :=
+Instance Unpeel_UnVarSet : HsToCoq.Unpeel.Unpeel UnVarSet Data.IntSet.Internal.IntSet :=
   HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | Mk_UnVarSet y => y end) Mk_UnVarSet.
 
 (* Converted value declarations: *)
@@ -50,59 +49,57 @@ Inductive UnVarGraph : Type :=
 (* Skipping all instances of class `Outputable.Outputable', including
    `UnVarGraph.Outputable__UnVarGraph' *)
 
-#[global] Definition k : Core.Var -> GHC.Num.Word :=
+#[global] Definition unVarKey : Core.Var -> GHC.Num.Word :=
   fun v => Unique.getWordKey (Unique.getUnique v).
 
-#[global] Definition domUFMUnVarSet {key : Type} {elt : Type}
-   : UniqFM.UniqFM key elt -> UnVarSet :=
-  fun ae => Mk_UnVarSet (UniqFM.ufmToSet_Directly ae).
+Axiom domUFMUnVarSet : forall {key : Type},
+                       forall {elt : Type}, UniqFM.UniqFM key elt -> UnVarSet.
 
 #[global] Definition emptyUnVarSet : UnVarSet :=
-  Mk_UnVarSet GHC.Data.Word64Set.Internal.empty.
+  Mk_UnVarSet Data.IntSet.Internal.empty.
 
 #[global] Definition elemUnVarSet : Core.Var -> UnVarSet -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | v, Mk_UnVarSet s => GHC.Data.Word64Set.Internal.member (k v) s
+    | v, Mk_UnVarSet s => Data.IntSet.Internal.member (unVarKey v) s
     end.
 
 #[global] Definition isEmptyUnVarSet : UnVarSet -> bool :=
-  fun '(Mk_UnVarSet s) => GHC.Data.Word64Set.Internal.null s.
+  fun '(Mk_UnVarSet s) => Data.IntSet.Internal.null s.
 
 #[global] Definition delUnVarSet : UnVarSet -> Core.Var -> UnVarSet :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | Mk_UnVarSet s, v => Mk_UnVarSet (GHC.Data.Word64Set.Internal.delete (k v) s)
+    | Mk_UnVarSet s, v => Mk_UnVarSet (Data.IntSet.Internal.delete (unVarKey v) s)
     end.
 
 #[global] Definition minusUnVarSet : UnVarSet -> UnVarSet -> UnVarSet :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UnVarSet s, Mk_UnVarSet s' =>
-        Mk_UnVarSet (GHC.Data.Word64Set.Internal.difference s s')
+        Mk_UnVarSet (Data.IntSet.Internal.difference s s')
     end.
 
 #[global] Definition mkUnVarSet : list Core.Var -> UnVarSet :=
   fun vs =>
-    Mk_UnVarSet (GHC.Data.Word64Set.Internal.fromList (GHC.Base.map k vs)).
+    Mk_UnVarSet (Data.IntSet.Internal.fromList (GHC.Base.map unVarKey vs)).
 
 #[global] Definition delUnVarSetList : UnVarSet -> list Core.Var -> UnVarSet :=
   fun s vs => minusUnVarSet s (mkUnVarSet vs).
 
-#[global] Definition sizeUnVarSet : UnVarSet -> nat :=
-  fun '(Mk_UnVarSet s) => BinNat.N.to_nat (GHC.Data.Word64Set.Internal.size s).
+Axiom sizeUnVarSet : UnVarSet -> nat.
 
 #[global] Definition extendUnVarSet : Core.Var -> UnVarSet -> UnVarSet :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | v, Mk_UnVarSet s => Mk_UnVarSet (GHC.Data.Word64Set.Internal.insert (k v) s)
+    | v, Mk_UnVarSet s => Mk_UnVarSet (Data.IntSet.Internal.insert (unVarKey v) s)
     end.
 
 #[global] Definition unionUnVarSet : UnVarSet -> UnVarSet -> UnVarSet :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Mk_UnVarSet set1, Mk_UnVarSet set2 =>
-        Mk_UnVarSet (GHC.Data.Word64Set.Internal.union set1 set2)
+        Mk_UnVarSet (Data.IntSet.Internal.union set1 set2)
     end.
 
 #[global] Definition extendUnVarSetList
@@ -193,11 +190,10 @@ Inductive UnVarGraph : Type :=
 
 (* External variables:
      Type andb bool cons false list nat nil orb Core.Var Data.Foldable.foldl'
-     GHC.Base.flip GHC.Base.map GHC.Data.Word64Set.Internal.Word64Set
-     GHC.Data.Word64Set.Internal.delete GHC.Data.Word64Set.Internal.difference
-     GHC.Data.Word64Set.Internal.empty GHC.Data.Word64Set.Internal.fromList
-     GHC.Data.Word64Set.Internal.insert GHC.Data.Word64Set.Internal.member
-     GHC.Data.Word64Set.Internal.null GHC.Data.Word64Set.Internal.size
-     GHC.Data.Word64Set.Internal.union GHC.Num.Word UniqFM.UniqFM
-     UniqFM.ufmToSet_Directly Unique.getUnique Unique.getWordKey
+     Data.IntSet.Internal.IntSet Data.IntSet.Internal.delete
+     Data.IntSet.Internal.difference Data.IntSet.Internal.empty
+     Data.IntSet.Internal.fromList Data.IntSet.Internal.insert
+     Data.IntSet.Internal.member Data.IntSet.Internal.null Data.IntSet.Internal.union
+     GHC.Base.flip GHC.Base.map GHC.Num.Word UniqFM.UniqFM Unique.getUnique
+     Unique.getWordKey
 *)

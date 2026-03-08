@@ -13,7 +13,8 @@ axiomatize definition FloatOut.partitionByLevel
 #
 # inline mutual FloatOut.floatRhs
 # inline mutual FloatOut.floatBody
-# axiomatize definition FloatOut.floatBind
+axiomatize definition FloatOut.floatRhs
+axiomatize definition FloatOut.floatBind
 axiomatize definition FloatOut.floatExpr
 
 # needs IO monad

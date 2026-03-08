@@ -22,14 +22,12 @@ Require Data.Maybe.
 Require Datatypes.
 Require FastString.
 Require GHC.Base.
-Require GHC.Builtin.Uniques.
 Require GHC.Core.Multiplicity.
 Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Stg.InferTags.TagSig.
 Require GHC.StgToCmm.Types.
 Require GHC.Types.Cpr.
-Require GHC.Utils.Trace.
 Require Maybes.
 Require Module.
 Require Name.
@@ -43,6 +41,23 @@ Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
 (* No type declarations to convert. *)
+
+(* Midamble *)
+
+(* GHC 9.10: Panic.panic needs Default instances for IdDetails *)
+Import Core.
+
+(* GHC 9.10: some functions use GHC.Utils.Trace for debug tracing *)
+Require Import GHC.Utils.Trace.
+
+(* GHC 9.10: idJoinArity is used by Exitify but needs Outputable.JoinPointHood.
+   We provide it directly here since JoinArity = nat *)
+Definition idJoinArity : Core.JoinId -> BasicTypes.JoinArity :=
+  fun id =>
+    match Core.idDetails id with
+    | Core.Mk_JoinId arity _ => arity
+    | _ => Panic.panic (GHC.Base.hs_string__ "idJoinArity")
+    end.
 
 (* Converted value declarations: *)
 
@@ -139,13 +154,9 @@ Import GHC.Num.Notations.
    : Name.Name -> Core.Mult -> AxiomatizedTypes.Type_ -> Core.Id :=
   fun name w ty => mkLocalIdWithInfo name w (ty) Core.vanillaIdInfo.
 
-Axiom mkLocalCoVar : Name.Name -> AxiomatizedTypes.Type_ -> Core.Id.
+(* Skipping definition `Id.mkLocalCoVar' *)
 
-#[global] Definition mkLocalIdOrCoVar `{Util.HasDebugCallStack}
-   : Name.Name -> Core.Mult -> AxiomatizedTypes.Type_ -> Core.Id :=
-  fun name w ty =>
-    if Core.isCoVarType ty : bool then mkLocalCoVar name ty else
-    mkLocalId name w ty.
+(* Skipping definition `Id.mkLocalIdOrCoVar' *)
 
 #[global] Definition mkExportedLocalId
    : Core.IdDetails -> Name.Name -> AxiomatizedTypes.Type_ -> Core.Id :=
@@ -165,10 +176,7 @@ Axiom mkLocalCoVar : Name.Name -> AxiomatizedTypes.Type_ -> Core.Id.
      Unique.Unique -> Core.Mult -> AxiomatizedTypes.Type_ -> Core.Id :=
   fun fs uniq w ty => mkLocalId (Name.mkSystemVarName uniq fs) w ty.
 
-#[global] Definition mkSysLocalOrCoVar
-   : FastString.FastString ->
-     Unique.Unique -> Core.Mult -> AxiomatizedTypes.Type_ -> Core.Id :=
-  fun fs uniq w ty => mkLocalIdOrCoVar (Name.mkSystemVarName uniq fs) w ty.
+(* Skipping definition `Id.mkSysLocalOrCoVar' *)
 
 #[global] Definition mkSysLocalM {m : Type -> Type} `{UniqSupply.MonadUnique m}
    : FastString.FastString -> Core.Mult -> AxiomatizedTypes.Type_ -> m Core.Id :=
@@ -176,12 +184,7 @@ Axiom mkLocalCoVar : Name.Name -> AxiomatizedTypes.Type_ -> Core.Id.
     UniqSupply.getUniqueM GHC.Base.>>=
     (fun uniq => GHC.Base.return_ (mkSysLocal fs uniq w ty)).
 
-#[global] Definition mkSysLocalOrCoVarM {m : Type -> Type}
-  `{UniqSupply.MonadUnique m}
-   : FastString.FastString -> Core.Mult -> AxiomatizedTypes.Type_ -> m Core.Id :=
-  fun fs w ty =>
-    UniqSupply.getUniqueM GHC.Base.>>=
-    (fun uniq => GHC.Base.return_ (mkSysLocalOrCoVar fs uniq w ty)).
+(* Skipping definition `Id.mkSysLocalOrCoVarM' *)
 
 #[global] Definition mkUserLocal
    : OccName.OccName ->
@@ -189,29 +192,14 @@ Axiom mkLocalCoVar : Name.Name -> AxiomatizedTypes.Type_ -> Core.Id.
      Core.Mult -> AxiomatizedTypes.Type_ -> SrcLoc.SrcSpan -> Core.Id :=
   fun occ uniq w ty loc => mkLocalId (Name.mkInternalName uniq occ loc) w ty.
 
-#[global] Definition mkUserLocalOrCoVar
-   : OccName.OccName ->
-     Unique.Unique ->
-     Core.Mult -> AxiomatizedTypes.Type_ -> SrcLoc.SrcSpan -> Core.Id :=
-  fun occ uniq w ty loc =>
-    mkLocalIdOrCoVar (Name.mkInternalName uniq occ loc) w ty.
+(* Skipping definition `Id.mkUserLocalOrCoVar' *)
 
-#[global] Definition mkWorkerId
-   : Unique.Unique -> Core.Id -> AxiomatizedTypes.Type_ -> Core.Id :=
-  fun uniq unwrkr ty =>
-    mkLocalId (Name.mkDerivedInternalName OccName.mkWorkerOcc uniq (Name.getName
-                                                                    unwrkr)) Core.ManyTy ty.
+Axiom mkWorkerId : Unique.Unique ->
+                   Core.Id -> AxiomatizedTypes.Type_ -> Core.Id.
 
 Axiom mkTemplateLocal : nat -> AxiomatizedTypes.Type_ -> Core.Id.
 
-#[global] Definition mkScaledTemplateLocal
-   : nat -> Core.Scaled AxiomatizedTypes.Type_ -> Core.Id :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | i, Core.Mk_Scaled w ty =>
-        mkSysLocalOrCoVar (FastString.fsLit (GHC.Base.hs_string__ "v"))
-        (GHC.Builtin.Uniques.mkBuiltinUnique i) w ty
-    end.
+(* Skipping definition `Id.mkScaledTemplateLocal' *)
 
 Axiom mkTemplateLocals : list AxiomatizedTypes.Type_ -> list Core.Id.
 
@@ -364,14 +352,7 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
          end else
     false.
 
-#[global] Definition idJoinPointHood : Core.Var -> Outputable.JoinPointHood :=
-  fun id =>
-    if Core.isId id : bool
-    then match Core.idDetails id with
-         | Core.Mk_JoinId arity _marks => Outputable.JoinPoint arity
-         | _ => Outputable.NotJoinPoint
-         end else
-    Outputable.NotJoinPoint.
+(* Skipping definition `Id.idJoinPointHood' *)
 
 #[global] Definition idDataCon : Core.Id -> Core.DataCon :=
   fun id =>
@@ -413,37 +394,9 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
     if Core.isId bndr : bool then BasicTypes.isDeadOcc (idOccInfo bndr) else
     false.
 
-#[global] Definition idJoinArity : Core.JoinId -> BasicTypes.JoinArity :=
-  fun id =>
-    match idJoinPointHood id with
-    | Outputable.JoinPoint ar => ar
-    | Outputable.NotJoinPoint =>
-        Panic.pprPanic (GHC.Base.hs_string__ "idJoinArity") (Panic.someSDoc)
-    end.
+(* Skipping definition `Id.idJoinArity' *)
 
-#[global] Definition idCbvMarks_maybe
-   : Core.Id -> option (list BasicTypes.CbvMark) :=
-  fun id =>
-    match Core.idDetails id with
-    | Core.WorkerLikeId marks => Some marks
-    | Core.Mk_JoinId _arity marks => marks
-    | _ => None
-    end.
-
-#[global] Definition asJoinId
-   : Core.Id -> BasicTypes.JoinArity -> Core.JoinId :=
-  fun id arity =>
-    let is_vanilla_or_join :=
-      fun id =>
-        match Core.idDetails id with
-        | Core.VanillaId => true
-        | Core.WorkerLikeId _ =>
-            GHC.Utils.Trace.pprTraceDebug (GHC.Base.hs_string__
-                                           "asJoinId (call by value function)") (Panic.someSDoc) true
-        | Core.Mk_JoinId _ _ => true
-        | _ => false
-        end in
-    Core.setIdDetails id (Core.Mk_JoinId arity (idCbvMarks_maybe id)).
+Axiom asJoinId : Core.Id -> BasicTypes.JoinArity -> Core.JoinId.
 
 #[global] Definition zapInfo
    : (Core.IdInfo -> option Core.IdInfo) -> Core.Id -> Core.Id :=
@@ -467,13 +420,7 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
                                                                          newIdDetails)) else
     jid.
 
-#[global] Definition asJoinId_maybe
-   : Core.Id -> Outputable.JoinPointHood -> Core.Id :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | id, Outputable.JoinPoint arity => asJoinId id arity
-    | id, Outputable.NotJoinPoint => zapJoinId id
-    end.
+(* Skipping definition `Id.asJoinId_maybe' *)
 
 #[global] Definition idArity : Core.Id -> BasicTypes.Arity :=
   fun id => Core.arityInfo (Core.idInfo id).
@@ -581,8 +528,16 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
                                                                                  Panic.someSDoc) id
     end.
 
-#[global] Definition idCbvMarkArity : Core.Id -> BasicTypes.Arity :=
-  fun fn => Data.Maybe.maybe #0 (@Coq.Lists.List.length _) (idCbvMarks_maybe fn).
+#[global] Definition idCbvMarks_maybe
+   : Core.Id -> option (list BasicTypes.CbvMark) :=
+  fun id =>
+    match Core.idDetails id with
+    | Core.WorkerLikeId marks => Some marks
+    | Core.Mk_JoinId _arity marks => marks
+    | _ => None
+    end.
+
+Axiom idCbvMarkArity : Core.Id -> BasicTypes.Arity.
 
 #[global] Definition asNonWorkerLikeId : Core.Id -> Core.Id :=
   fun id =>
@@ -761,7 +716,7 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
     setIdCbvMarks (modifyIdInfo transfer new_id) new_cbv_marks.
 
 (* External variables:
-     None Some Type andb bool false list mkLocalCoVar nat negb nil option orb true
+     None Some Type andb bool false list nat negb nil option orb true
      AxiomatizedTypes.ForeignCall AxiomatizedTypes.Kind AxiomatizedTypes.PrimOp
      AxiomatizedTypes.Type_ BasicTypes.Activation BasicTypes.Arity BasicTypes.CbvMark
      BasicTypes.InlinePragma BasicTypes.JoinArity BasicTypes.MarkedCbv
@@ -771,16 +726,15 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
      BasicTypes.isAlwaysActive BasicTypes.isConLike BasicTypes.isDeadOcc
      BasicTypes.isMarkedCbv BasicTypes.noOccInfo BasicTypes.setInlinePragmaActivation
      BasicTypes.zapOccTailCallInfo Coq.Init.Datatypes.app Coq.Lists.List.firstn
-     Coq.Lists.List.length Coq.Lists.List.repeat Core.CafInfo Core.Class
-     Core.ClassOpId Core.CoreRule Core.DataCon Core.DataConWorkId Core.DataConWrapId
-     Core.Demand Core.DmdSig Core.FCallId Core.Id Core.IdDetails Core.IdInfo
-     Core.IdUnfoldingFun Core.JoinId Core.ManyTy Core.Mk_DFunId Core.Mk_JoinId
-     Core.Mult Core.NoUnfolding Core.PrimOpId Core.RecSelData Core.RecSelId
-     Core.RecSelParent Core.RecSelPatSyn Core.RuleInfo Core.Scaled Core.Unfolding
-     Core.VanillaId Core.Var Core.WorkerLikeId Core.arityInfo Core.cafInfo
-     Core.callArityInfo Core.cprSigInfo Core.demandInfo Core.dmdSigInfo
-     Core.floatifyDemandInfo Core.hasSomeUnfolding Core.idDetails Core.idInfo
-     Core.inlinePragInfo Core.isCoVarType Core.isCompulsoryUnfolding
+     Coq.Lists.List.repeat Core.CafInfo Core.Class Core.ClassOpId Core.CoreRule
+     Core.DataCon Core.DataConWorkId Core.DataConWrapId Core.Demand Core.DmdSig
+     Core.FCallId Core.Id Core.IdDetails Core.IdInfo Core.IdUnfoldingFun Core.JoinId
+     Core.Mk_DFunId Core.Mk_JoinId Core.Mk_Scaled Core.Mult Core.NoUnfolding
+     Core.PrimOpId Core.RecSelData Core.RecSelId Core.RecSelParent Core.RecSelPatSyn
+     Core.RuleInfo Core.Scaled Core.Unfolding Core.VanillaId Core.Var
+     Core.WorkerLikeId Core.arityInfo Core.cafInfo Core.callArityInfo Core.cprSigInfo
+     Core.demandInfo Core.dmdSigInfo Core.floatifyDemandInfo Core.hasSomeUnfolding
+     Core.idDetails Core.idInfo Core.inlinePragInfo Core.isCompulsoryUnfolding
      Core.isDeadEndSig Core.isEmptyRuleInfo Core.isEvaldUnfolding Core.isId
      Core.isLocalId Core.isStableUnfolding Core.isStrUsedDmd Core.isStrictType
      Core.isUnboxedSumDataCon Core.isUnboxedTupleDataCon Core.lazySetIdInfo
@@ -794,19 +748,16 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
      Core.setVarUnique Core.tagSig Core.unfoldingInfo Core.vanillaIdInfo Core.varMult
      Core.varName Core.varType Core.varUnique Core.zapFragileInfo Core.zapLamInfo
      Core.zapTailCallInfo Core.zapUsageEnvInfo Core.zapUsageInfo Core.zapUsedOnceInfo
-     Data.Foldable.any Data.Maybe.fromMaybe Data.Maybe.mapMaybe Data.Maybe.maybe
-     Datatypes.id FastString.FastString FastString.fsLit GHC.Base.mappend
-     GHC.Base.op_z2218U__ GHC.Base.op_zgzgze__ GHC.Base.return_
-     GHC.Builtin.Uniques.mkBuiltinUnique GHC.Core.Multiplicity.mkMultMul
-     GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.rightSection GHC.Prim.seq
-     GHC.Stg.InferTags.TagSig.TagSig GHC.StgToCmm.Types.LambdaFormInfo
-     GHC.Types.Cpr.CprSig GHC.Types.Cpr.prependArgsCprSig GHC.Utils.Trace.pprTrace
-     GHC.Utils.Trace.pprTraceDebug Maybes.orElse Module.Module Name.Name Name.getName
-     Name.isInternalName Name.localiseName Name.mkDerivedInternalName
+     Data.Foldable.any Data.Maybe.fromMaybe Data.Maybe.mapMaybe Datatypes.id
+     FastString.FastString GHC.Base.mappend GHC.Base.op_z2218U__ GHC.Base.op_zgzgze__
+     GHC.Base.return_ GHC.Core.Multiplicity.mkMultMul GHC.Num.op_zp__
+     GHC.Prim.rightSection GHC.Prim.seq GHC.Stg.InferTags.TagSig.TagSig
+     GHC.StgToCmm.Types.LambdaFormInfo GHC.Types.Cpr.CprSig
+     GHC.Types.Cpr.prependArgsCprSig GHC.Utils.Trace.pprTrace Maybes.orElse
+     Module.Module Name.Name Name.isInternalName Name.localiseName
      Name.mkInternalName Name.mkSystemVarName Name.nameIsLocalOrFrom
-     Name.nameNameSpace OccName.OccName OccName.isFieldNameSpace OccName.mkWorkerOcc
-     Outputable.JoinPoint Outputable.JoinPointHood Outputable.NotJoinPoint
-     Panic.assertPpr Panic.panic Panic.pprPanic Panic.someSDoc SrcLoc.SrcSpan
-     UniqSupply.MonadUnique UniqSupply.getUniqueM Unique.Unique
-     Util.HasDebugCallStack Util.count Util.dropWhileEndLE
+     Name.nameNameSpace OccName.OccName OccName.isFieldNameSpace Panic.assertPpr
+     Panic.panic Panic.pprPanic Panic.someSDoc SrcLoc.SrcSpan UniqSupply.MonadUnique
+     UniqSupply.getUniqueM Unique.Unique Util.HasDebugCallStack Util.count
+     Util.dropWhileEndLE
 *)

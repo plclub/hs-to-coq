@@ -1,25 +1,25 @@
 (* ------------- CoreSyn midamble.v ------------ *)
 Require Import Coq.ZArith.ZArith.
-Require Import Omega.
+Require Import Lia.
 
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;lia.
 
-Ltac intro_split := 
+Ltac intro_split :=
   try intros [? [? [? ?]]];
   try intros [? [? ?]];
   try intros [? ?].
-  
-Ltac distinguish3 := 
+
+Ltac distinguish3 :=
   split; intros; unfold not;  intro_split; discriminate.
 
-Ltac solve_collectAnnArgsTicks :=   
+Ltac solve_collectAnnArgsTicks :=
   Tactics.program_simpl;
   try solve [distinguish3];
   try solve [repeat match goal with [ f : AnnExpr _ _ |- _ ] => destruct f end;
              Tactics.program_simpl;
-             omega].
+             lia].
 
 (* This function is needed to show the termination of collectAnnArgs, 
    collectAnnArgsTicks. *)
@@ -29,13 +29,13 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
   | AnnLit _ => 0
   | AnnLam _ (_ , bdy) => S (size_AnnExpr' bdy)
   | AnnApp (_,e1) (_, e2) => S (size_AnnExpr' e1 + size_AnnExpr' e2)
-  | AnnCase (_,scrut) bndr _ alts => 
-    S (size_AnnExpr' scrut + 
-       List.fold_right plus 0 
+  | AnnCase (_,scrut) bndr _ alts =>
+    S (size_AnnExpr' scrut +
+       List.fold_right plus 0
                           (List.map (fun p =>
-                                       match p with 
-                                         | (_,_,(_,e)) => size_AnnExpr' e
-                                    end) 
+                                       match p with
+                                         | Mk_AnnAlt _ _ (_,e) => size_AnnExpr' e
+                                    end)
                                     alts))
   | AnnLet (AnnNonRec v (_,rhs)) (_,body) => 
         S (size_AnnExpr' rhs + size_AnnExpr' body)
@@ -55,8 +55,7 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
 #[global] Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
   HsToCoq.Err.Build_Default _ (Mk_Var HsToCoq.Err.default).
 
-#[global] Instance Default__Tickish {a} : HsToCoq.Err.Default (Tickish a) :=
-  HsToCoq.Err.Build_Default _ (Breakpoint HsToCoq.Err.default HsToCoq.Err.default).
+(* Default__Tickish removed: Tickish is now GHC.Types.Tickish.CoreTickish (axiomatized) *)
 
 #[global] Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
   HsToCoq.Err.Build_Default _ (TB HsToCoq.Err.default HsToCoq.Err.default).
@@ -70,17 +69,41 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
 #[global] Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
   HsToCoq.Err.Build_Default _ (Rec HsToCoq.Err.default). 
 
-#[global] Instance Default__CoreVect : HsToCoq.Err.Default CoreVect :=
-  HsToCoq.Err.Build_Default _ (Vect HsToCoq.Err.default HsToCoq.Err.default). 
+(* Default__CoreVect removed: CoreVect doesn't exist in GHC 9.10 *)
 
-#[global] Instance Default__CoreRule : HsToCoq.Err.Default CoreRule :=
-  HsToCoq.Err.Build_Default _ (BuiltinRule HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
-
-#[global] Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv :=
-  HsToCoq.Err.Build_Default _ (Mk_RuleEnv HsToCoq.Err.default HsToCoq.Err.default).
+(* Default__CoreRule and Default__RuleEnv injected by sed before record accessors *)
 
 
 (* ---------------------------------- *)
+
+(* collectBinders and collectNBinders — no longer auto-generated in GHC 9.10 *)
+
+Definition collectBinders {b : Type} : Expr b -> (list b * Expr b)%type :=
+  let fix go (bs : list b) (e : Expr b) : (list b * Expr b) :=
+    match e with
+    | Lam b body => go (cons b bs) body
+    | _ => pair (GHC.List.reverse bs) e
+    end in
+  fun e => go nil e.
+
+Definition collectNBinders {b : Type}
+  : nat -> Expr b -> (list b * Expr b)%type :=
+  fun orig_n orig_expr =>
+    let fix go (n : nat) (bs : list b) (expr : Expr b) : (list b * Expr b) :=
+      match n, bs, expr with
+      | O, _, _ => pair (GHC.List.reverse bs) expr
+      | S m, _, Lam b body => go m (cons b bs) body
+      | _, _, _ => Panic.panicStr (GHC.Base.hs_string__ "collectNBinders") Panic.someSDoc
+      end in
+    go orig_n nil orig_expr.
+
+Definition collectArgs {b : Type} : Expr b -> (Expr b * list (Expr b))%type :=
+  let fix go (e : Expr b) (args : list (Expr b)) : (Expr b * list (Expr b)) :=
+    match e with
+    | App f a => go f (cons a args)
+    | _ => pair e args
+    end in
+  fun e => go e nil.
 
 (* See comments in CoreSyn/edits file. We can't use termination edits for collect. *)
 

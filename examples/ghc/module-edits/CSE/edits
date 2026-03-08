@@ -1,19 +1,6 @@
-
-# remove reasoning about ticks
-#
-rewrite forall xs e, CoreUtils.stripTicksE xs e = e
-rewrite forall xs e, CoreUtils.stripTicksT xs e = e
-rewrite forall ts e, CoreUtils.mkTicks ts e = e
-
-inline mutual CSE.cse_bind
-inline mutual CSE.tryForCSE
-inline mutual CSE.cseCase
-
-# Justified by NestedRecursionHelpers.zipMapAccumL_is_mapAccumL_zip
-in CSE.cseBind rewrite forall f s xs1 xs2, Data.Traversable.mapAccumL f s (GHC.List.zip xs1 xs2) = NestedRecursionHelpers.zipMapAccumL f s xs1 xs2
-
-# Justified by NestedRecursionHelpers.collectNBinders_k_is_collectNBinders
-in CSE.cse_bind rewrite forall arity in_rhs params in_body k, match Core.collectNBinders arity in_rhs with | pair params in_body => k end = NestedRecursionHelpers.collectNBinders_k arity in_rhs (fun params in_body => k)
+# GHC 9.10: axiomatize entire module — too many dependencies on missing types
+# (Outputable.JoinPointHood, BasicTypes.activateAfterInitial, etc.)
+axiomatize module CSE
 
 skip CSE.Default__CSEnv
 

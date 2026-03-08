@@ -17,6 +17,7 @@ Require BasicTypes.
 Require Core.
 Require CoreUtils.
 Require GHC.Base.
+Require GHC.Core.TyCo.Subst.
 Require GHC.Types.Cpr.
 Require HsToCoq.Err.
 Require UnVarGraph.
@@ -49,7 +50,8 @@ Instance Default__Cost : HsToCoq.Err.Default Cost :=
   HsToCoq.Err.Build_Default _ IsCheap.
 
 Instance Default__ArityOpts : HsToCoq.Err.Default ArityOpts :=
-  HsToCoq.Err.Build_Default _ (Mk_ArityOpts HsToCoq.Err.default HsToCoq.Err.default).
+  HsToCoq.Err.Build_Default _ (Mk_ArityOpts HsToCoq.Err.default
+                             HsToCoq.Err.default).
 
 Instance Default__ArityEnv : HsToCoq.Err.Default ArityEnv :=
   HsToCoq.Err.Build_Default _ (AE HsToCoq.Err.default HsToCoq.Err.default
@@ -260,9 +262,9 @@ Axiom etaBodyForJoinPoint : nat ->
                             Core.CoreExpr -> (list Core.CoreBndr * Core.CoreExpr)%type.
 
 Axiom freshEtaId : nat ->
-                   Core.Subst ->
+                   GHC.Core.TyCo.Subst.Subst ->
                    Core.Scaled AxiomatizedTypes.Type_ ->
-                   (Core.Subst * Core.Id)%type.
+                   (GHC.Core.TyCo.Subst.Subst * Core.Id)%type.
 
 (* External variables:
      bool list nat op_zt__ option AxiomatizedTypes.Coercion AxiomatizedTypes.Type_
@@ -271,7 +273,7 @@ Axiom freshEtaId : nat ->
      Core.CoreBndr Core.CoreExpr Core.CoreRule Core.DataCon Core.Divergence
      Core.DmdSig Core.ForAllTyBinder Core.Id Core.IdEnv Core.InScopeSet
      Core.MCoercion Core.MCoercionR Core.Scaled Core.SubDemand Core.Var
-     CoreUtils.CheapAppFun GHC.Base.String Core.Subst
+     CoreUtils.CheapAppFun GHC.Base.String GHC.Core.TyCo.Subst.Subst
      GHC.Types.Cpr.CprSig HsToCoq.Err.Build_Default HsToCoq.Err.Default
      HsToCoq.Err.default UnVarGraph.UnVarSet Util.HasDebugCallStack
 *)

@@ -170,9 +170,7 @@ Axiom emptyG : forall {node : Type}, Graph node -> bool.
 
 Axiom reachableGraph : IntGraph -> IntMap.IntMap Data.IntSet.Internal.IntSet.
 
-Axiom Vertex : Type.
-Axiom SCC : Type -> Type.
-Axiom scc : IntGraph -> list (SCC Vertex).
+(* Skipping definition `Digraph.scc' *)
 
 Axiom reachableGraphCyclic : IntGraph ->
                              IntMap.IntMap Data.IntSet.Internal.IntSet.
@@ -189,8 +187,7 @@ Axiom graphFromVerticesAndAdjacency : forall {key : Type},
                                       list (Node key payload) -> list (key * key)%type -> Graph (Node key payload).
 
 (* External variables:
-     Type bool list nat op_zt__ option Data.Graph.SCC Data.Graph.Vertex
-     Data.IntSet.Internal.IntSet Data.Map.Internal.Map Data.Set.Internal.Set_
-     GHC.Base.Functor GHC.Base.Ord HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     IntMap.IntMap Unique.Uniquable
+     Type bool list nat op_zt__ option Data.IntSet.Internal.IntSet
+     Data.Map.Internal.Map Data.Set.Internal.Set_ GHC.Base.Functor GHC.Base.Ord
+     HsToCoq.Err.Build_Default HsToCoq.Err.Default IntMap.IntMap Unique.Uniquable
 *)

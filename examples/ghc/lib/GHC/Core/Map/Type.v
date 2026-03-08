@@ -1,3 +1,1 @@
-(* Stub module for GHC.Core.Map.Type *)
-
-Axiom TypeMap : Type -> Type.
+../../../../manual/GHC/Core/Map/Type.v

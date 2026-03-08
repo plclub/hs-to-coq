@@ -63,11 +63,37 @@ Arguments MM {_} {_} _ _.
 
 (* Midamble *)
 
-Axiom DeBruijn : Type -> Type.
+(* GHC 9.10: GenMap is axiomatized — provide Functor instance via Admitted *)
+#[global] Instance Functor__GenMap {m : Type -> Type} `{GHC.Base.Functor m}
+  : GHC.Base.Functor (GenMap m). Admitted.
 
-Instance Eq___DeBruijn__unit : GHC.Base.Eq_ (DeBruijn unit).
-Proof.
-Admitted.
+(* GHC 9.10: MapX types moved to GHC.Core.Map modules — axiomatize here *)
+Axiom TypeMapX     : Type -> Type.
+Axiom CoreMapX     : Type -> Type.
+Axiom CoercionMapX : Type -> Type.
+
+Definition CoreMapG     : Type -> Type := GenMap CoreMapX.
+Definition TypeMapG     : Type -> Type := GenMap TypeMapX.
+Definition CoercionMapG : Type -> Type := GenMap CoercionMapX.
+
+(* Functor instances for MapX types (prerequisite for TrieMap) *)
+#[global] Instance Functor__CoreMapX : GHC.Base.Functor CoreMapX. Admitted.
+#[global] Instance Functor__TypeMapX : GHC.Base.Functor TypeMapX. Admitted.
+#[global] Instance Functor__CoercionMapX : GHC.Base.Functor CoercionMapX. Admitted.
+
+(* TrieMap instances for MapX types *)
+#[global] Instance TrieMap__CoreMapX : TrieMap CoreMapX. Admitted.
+#[global] Instance TrieMap__TypeMapX : TrieMap TypeMapX. Admitted.
+#[global] Instance TrieMap__CoercionMapX : TrieMap CoercionMapX. Admitted.
+
+(* Eq instances for Key types *)
+#[global] Instance Eq__Key_CoreMapX : GHC.Base.Eq_ (Key CoreMapX). Admitted.
+#[global] Instance Eq__Key_TypeMapX : GHC.Base.Eq_ (Key TypeMapX). Admitted.
+#[global] Instance Eq__Key_CoercionMapX : GHC.Base.Eq_ (Key CoercionMapX). Admitted.
+
+(* TrieMap instances for GenMap — generic instance for any m with TrieMap + Eq (Key m) *)
+#[global] Instance TrieMap__GenMap {m} `{TrieMap m} `{GHC.Base.Eq_ (Key m)}
+  : TrieMap (GenMap m). Admitted.
 
 (* Converted value declarations: *)
 
@@ -413,8 +439,10 @@ Program Instance Foldable__MaybeMap {m : Type -> Type} `{TrieMap m}
              Foldable__MaybeMap_sum ;
            Data.Foldable.toList__ := fun {a : Type} => Foldable__MaybeMap_toList |}.
 
-#[global] Instance Functor__ListMap {m : Type -> Type} `{GHC.Base.Functor m}
-   : GHC.Base.Functor (ListMap m). Admitted.
+Instance Functor__ListMap
+   : forall {m}, forall `{GHC.Base.Functor m}, GHC.Base.Functor (ListMap m).
+Proof.
+Admitted.
 
 #[local] Definition TrieMap__ListMap_Key {m : Type -> Type} `{TrieMap m}
    : Type :=
@@ -435,7 +463,8 @@ Axiom xtList : forall {m : Type -> Type},
 
 Axiom TrieMap__ListMap_emptyTM : forall {m} {a} `{TrieMap m}, ListMap m a.
 
-Axiom ftList : forall {m} {a} `{TrieMap m}, (a -> bool) -> ListMap m a -> ListMap m a.
+Axiom ftList : forall {m} {a},
+               forall `{TrieMap m}, (a -> bool) -> ListMap m a -> ListMap m a.
 
 #[local] Definition TrieMap__ListMap_filterTM {inst_m : Type -> Type} `{TrieMap
   inst_m}
@@ -563,49 +592,12 @@ Program Instance Foldable__ListMap {m : Type -> Type} `{TrieMap m}
 (* Skipping all instances of class `Outputable.Outputable', including
    `TrieMap.Outputable__GenMap' *)
 
-Axiom mapG : forall {m : Type -> Type},
-             forall {a : Type},
-             forall {b : Type},
-             forall `{GHC.Base.Functor m}, (a -> b) -> GenMap m a -> GenMap m b.
+(* Skipping instance `TrieMap.Functor__GenMap' of class `GHC.Base.Functor' *)
 
-#[local] Definition Functor__GenMap_fmap {inst_m : Type -> Type}
-  `{GHC.Base.Functor inst_m}
-   : forall {a : Type},
-     forall {b : Type}, (a -> b) -> GenMap inst_m a -> GenMap inst_m b :=
-  fun {a : Type} {b : Type} => mapG.
+(* Skipping instance `TrieMap.TrieMap__GenMap' of class `TrieMap.TrieMap' *)
 
-#[local] Definition Functor__GenMap_op_zlzd__ {inst_m : Type -> Type}
-  `{GHC.Base.Functor inst_m}
-   : forall {a : Type},
-     forall {b : Type}, a -> GenMap inst_m b -> GenMap inst_m a :=
-  fun {a : Type} {b : Type} => Functor__GenMap_fmap GHC.Base.∘ GHC.Base.const.
-
-#[global]
-Program Instance Functor__GenMap {m : Type -> Type} `{GHC.Base.Functor m}
-   : GHC.Base.Functor (GenMap m) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__GenMap_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
-             Functor__GenMap_op_zlzd__ |}.
-
-Axiom GenMap__EmptyMap : forall {m} {a}, GenMap m a.
-
-Axiom fdG : forall {m : Type -> Type},
-            forall {a : Type},
-            forall {b : Type}, forall `{TrieMap m}, (a -> b -> b) -> GenMap m a -> b -> b.
-
-Axiom lkG : forall {m} {a} `{TrieMap m} `{GHC.Base.Eq_ (Key m)},
-            Key m -> GenMap m a -> option a.
-
-Axiom xtG : forall {m} {a} `{TrieMap m} `{GHC.Base.Eq_ (Key m)},
-            Key m -> XT a -> GenMap m a -> GenMap m a.
-
-#[global] Instance TrieMap__GenMap {m} `{TrieMap m} `{GHC.Base.Eq_ (Key m)}
-   : TrieMap (GenMap m). Admitted.
-
-#[global]
-Instance Foldable__GenMap {m : Type -> Type} `{TrieMap m} `{GHC.Base.Eq_ (Key m)}
-   : Data.Foldable.Foldable (GenMap m). Admitted.
+(* Skipping instance `TrieMap.Foldable__GenMap' of class
+   `Data.Foldable.Foldable' *)
 
 #[global] Definition insertTM {m : Type -> Type} {a : Type} `{TrieMap m}
    : Key m -> a -> m a -> m a :=
@@ -632,11 +624,25 @@ Notation "'_|>>_'" := (op_zbzgzg__).
 
 Infix "|>>" := (_|>>_) (at level 99).
 
-Axiom ftG : forall {m} {a} `{TrieMap m},
-   (a -> bool) -> GenMap m a -> GenMap m a.
+Axiom lkG : forall {m} {a} `{TrieMap m} `{GHC.Base.Eq_ (Key m)},
+            Key m -> GenMap m a -> option a.
 
-(* Skipped: TrieMap__CoercionMapG, TrieMap__TypeMapG, TrieMap__CoreMapG
-   — CoercionMapG/TypeMapG/CoreMapG types not defined *)
+Axiom xtG : forall {m} {a} `{TrieMap m} `{GHC.Base.Eq_ (Key m)},
+            Key m -> XT a -> GenMap m a -> GenMap m a.
+
+Axiom mapG : forall {m : Type -> Type},
+             forall {a : Type},
+             forall {b : Type},
+             forall `{GHC.Base.Functor m}, (a -> b) -> GenMap m a -> GenMap m b.
+
+Axiom fdG : forall {m : Type -> Type},
+            forall {a : Type},
+            forall {b : Type}, forall `{TrieMap m}, (a -> b -> b) -> GenMap m a -> b -> b.
+
+Axiom ftG : forall {m} {a},
+            forall `{TrieMap m}, (a -> bool) -> GenMap m a -> GenMap m a.
+
+Axiom GenMap__EmptyMap : forall {m} {a}, GenMap m a.
 
 Module Notations.
 Notation "'_TrieMap.|>_'" := (op_zbzg__).
@@ -648,8 +654,7 @@ Infix "TrieMap.|>>" := (_|>>_) (at level 99).
 End Notations.
 
 (* External variables:
-     Build_TrieMap CoercionMapG CoreMapG EmptyMap Key MultiMap None SingletonMap Some
-     Type TypeMapG bool false ftList list option true Coq.Program.Basics.compose
+     Key None Some Type bool false list option true Coq.Program.Basics.compose
      Data.Foldable.Foldable Data.Foldable.foldMap__ Data.Foldable.fold__
      Data.Foldable.foldl__ Data.Foldable.foldr__ Data.Foldable.length__
      Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__

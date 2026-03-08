@@ -16,10 +16,8 @@ Require AxiomatizedTypes.
 Require BasicTypes.
 Require Core.
 Require FastString.
-Require Import GHC.Base.
+Require GHC.Base.
 Require GHC.Core.Map.Type.
-Require Import GHC.Err.
-Require Import HsToCoq.Err.
 Require HsSyn.
 Require Module.
 Require Name.
@@ -42,10 +40,6 @@ Arguments BI_NoBoxNeeded {_}.
 Arguments BI_NoBoxAvailable {_}.
 
 Arguments BI_Box {_} _ _ _.
-
-Axiom bi_boxed_type : forall {b}, BoxingInfo b -> AxiomatizedTypes.Type_.
-Axiom bi_data_con : forall {b}, BoxingInfo b -> Core.DataCon.
-Axiom bi_inst_con : forall {b}, BoxingInfo b -> Core.Expr b.
 
 (* Converted value declarations: *)
 
@@ -282,7 +276,7 @@ Axiom isPromotedPairType : AxiomatizedTypes.Type_ ->
 
 (* Skipping definition `TysWiredIn.unboxedTupleArr' *)
 
-Axiom cTupleArr : list (Core.TyCon * Core.DataCon * list Core.Id)%type.
+(* Skipping definition `TysWiredIn.cTupleArr' *)
 
 Axiom unboxedTupleSumKind : Core.TyCon ->
                             list AxiomatizedTypes.Type_ -> AxiomatizedTypes.Kind.
@@ -291,8 +285,7 @@ Axiom unboxedTupleKind : list AxiomatizedTypes.Type_ -> AxiomatizedTypes.Kind.
 
 Axiom mk_tuple : HsSyn.Boxity -> nat -> (Core.TyCon * Core.DataCon)%type.
 
-Axiom mk_ctuple : BasicTypes.Arity ->
-                  (Core.TyCon * Core.DataCon * list Core.Id)%type.
+(* Skipping definition `TysWiredIn.mk_ctuple' *)
 
 Axiom unitTyCon : Core.TyCon.
 
@@ -668,11 +661,10 @@ Axiom pretendNameIsInScope : Name.Name -> bool.
 (* External variables:
      Type bool list nat op_zt__ option AxiomatizedTypes.CType AxiomatizedTypes.Kind
      AxiomatizedTypes.PredType AxiomatizedTypes.ThetaType AxiomatizedTypes.Type_
-     BasicTypes.Arity BasicTypes.ConTagZ BasicTypes.TupleSort Core.Class Core.DataCon
-     Core.Expr Core.Id Core.PromDataConInfo Core.RuntimeRepType Core.Scaled
-     Core.TyCoVar Core.TyCon Core.TyVar FastString.FastString GHC.Base.String
-     GHC.Core.Map.Type.TypeMap GHC.Err.error GHC.Internal.Arr.Array HsSyn.Boxity
-     HsSyn.ConTag Module.Module Name.BuiltInSyntax Name.Name OccName.NameSpace
-     OccName.OccName PrelNames.RdrName TcType.ConcreteTyVars UniqSet.UniqSet
-     Unique.Unique
+     BasicTypes.Arity BasicTypes.TupleSort Core.Class Core.DataCon Core.Expr Core.Id
+     Core.PromDataConInfo Core.RuntimeRepType Core.Scaled Core.TyCoVar Core.TyCon
+     Core.TyVar FastString.FastString GHC.Base.String GHC.Core.Map.Type.TypeMap
+     HsSyn.Boxity HsSyn.ConTag Module.Module Name.BuiltInSyntax Name.Name
+     OccName.NameSpace OccName.OccName PrelNames.RdrName TcType.ConcreteTyVars
+     UniqSet.UniqSet Unique.Unique
 *)

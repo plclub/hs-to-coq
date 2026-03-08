@@ -2,21 +2,21 @@ constructorFields:
   CoreArity.AE: RecordFields [Qualified "CoreArity" "am_opts",Qualified "CoreArity"
     "am_sigs",Qualified "CoreArity" "am_free_joins"]
   CoreArity.AT: NonRecordFields 2
-  CoreArity.ArityOpts: RecordFields [Qualified "CoreArity" "ao_ped_bot",Qualified
-    "CoreArity" "ao_dicts_cheap"]
   CoreArity.EI: NonRecordFields 2
   CoreArity.IsCheap: NonRecordFields 0
   CoreArity.IsExpensive: NonRecordFields 0
+  CoreArity.Mk_ArityOpts: RecordFields [Qualified "CoreArity" "ao_ped_bot",Qualified
+    "CoreArity" "ao_dicts_cheap"]
 constructorTypes:
   CoreArity.AE: Qualified "CoreArity" "ArityEnv"
   CoreArity.AT: Qualified "CoreArity" "ArityType"
-  CoreArity.ArityOpts: Qualified "CoreArity" "ArityOpts"
   CoreArity.EI: Qualified "CoreArity" "EtaInfo"
   CoreArity.IsCheap: Qualified "CoreArity" "Cost"
   CoreArity.IsExpensive: Qualified "CoreArity" "Cost"
+  CoreArity.Mk_ArityOpts: Qualified "CoreArity" "ArityOpts"
 constructors:
   CoreArity.ArityEnv: '[Qualified "CoreArity" "AE"]'
-  CoreArity.ArityOpts: '[Qualified "CoreArity" "ArityOpts"]'
+  CoreArity.ArityOpts: '[Qualified "CoreArity" "Mk_ArityOpts"]'
   CoreArity.ArityType: '[Qualified "CoreArity" "AT"]'
   CoreArity.Cost: '[Qualified "CoreArity" "IsCheap",Qualified "CoreArity" "IsExpensive"]'
   CoreArity.EtaInfo: '[Qualified "CoreArity" "EI"]'

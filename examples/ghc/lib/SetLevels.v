@@ -19,6 +19,7 @@ Require Core.
 Require CoreFVs.
 Require CoreMonad.
 Require GHC.Base.
+Require GHC.Core.TyCo.Subst.
 Require GHC.Types.Cpr.
 Require HsToCoq.Err.
 Require UniqSupply.
@@ -49,11 +50,11 @@ Inductive FloatSpec : Type :=
 Inductive LevelEnv : Type :=
   | LE (le_switches : CoreMonad.FloatOutSwitches) (le_ctxt_lvl : Level)
   (le_lvl_env : Core.VarEnv Level) (le_join_ceil : Level) (le_subst
-    : Core.Subst) (le_env
+    : GHC.Core.TyCo.Subst.Subst) (le_env
     : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
    : LevelEnv.
 
-#[global] Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
+Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
   HsToCoq.Err.Build_Default _ BndrLvl.
 
 #[global] Definition le_ctxt_lvl (arg_0__ : LevelEnv) :=
@@ -80,6 +81,22 @@ Inductive LevelEnv : Type :=
   let 'LE le_switches _ _ _ _ _ := arg_0__ in
   le_switches.
 
+(* Midamble *)
+
+(* GHC 9.10: Eq instances needed by FloatOut.v *)
+Definition Eq__LevelType_op_zeze (a b : LevelType) : bool :=
+  match a, b with
+  | BndrLvl, BndrLvl => true
+  | JoinCeilLvl, JoinCeilLvl => true
+  | _, _ => false
+  end.
+
+#[global]
+Instance Eq__LevelType : GHC.Base.Eq_ LevelType :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq__LevelType_op_zeze ;
+           GHC.Base.op_zsze____ := fun a b => negb (Eq__LevelType_op_zeze a b) |}.
+
 (* Converted value declarations: *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
@@ -88,9 +105,9 @@ Inductive LevelEnv : Type :=
 (* Skipping all instances of class `Outputable.Outputable', including
    `SetLevels.Outputable__Level' *)
 
-#[global] Instance Eq___LevelType : GHC.Base.Eq_ LevelType. Admitted.
-
-#[global] Instance Eq___Level : GHC.Base.Eq_ Level. Admitted.
+Instance Eq___Level : GHC.Base.Eq_ Level.
+Proof.
+Admitted.
 
 Axiom floatSpecLevel : FloatSpec -> Level.
 
@@ -154,18 +171,9 @@ Axiom lvlBind : LevelEnv ->
 
 Axiom profitableFloat : LevelEnv -> Level -> bool.
 
-Axiom lvlRhs : LevelEnv ->
-               BasicTypes.RecFlag ->
-               bool ->
-               Outputable.JoinPointHood -> CoreFVs.CoreExprWithFVs -> LvlM LevelledExpr.
+(* Skipping definition `SetLevels.lvlRhs' *)
 
-Axiom lvlFloatRhs : list Core.OutVar ->
-                    Level ->
-                    LevelEnv ->
-                    BasicTypes.RecFlag ->
-                    bool ->
-                    Outputable.JoinPointHood ->
-                    CoreFVs.CoreExprWithFVs -> LvlM (Core.Expr LevelledBndr).
+(* Skipping definition `SetLevels.lvlFloatRhs' *)
 
 Axiom substAndLvlBndrs : BasicTypes.RecFlag ->
                          LevelEnv -> Level -> list Core.InVar -> (LevelEnv * list LevelledBndr)%type.
@@ -232,8 +240,7 @@ Axiom newPolyBndrs : Level ->
                      LevelEnv ->
                      list Core.OutVar -> list Core.InId -> LvlM (LevelEnv * list Core.OutId)%type.
 
-Axiom newLvlVar : LevelledExpr ->
-                  Outputable.JoinPointHood -> bool -> LvlM Core.Id.
+(* Skipping definition `SetLevels.newLvlVar' *)
 
 Axiom cloneCaseBndrs : LevelEnv ->
                        Level -> list Core.Var -> LvlM (LevelEnv * list Core.Var)%type.
@@ -255,7 +262,7 @@ Instance Default__Level : HsToCoq.Err.Default Level :=
      Core.InVar Core.OutId Core.OutVar Core.TaggedBind Core.TaggedBndr
      Core.TaggedExpr Core.TyCoVarSet Core.Var Core.VarEnv CoreFVs.CoreAltWithFVs
      CoreFVs.CoreBindWithFVs CoreFVs.CoreExprWithFVs CoreMonad.FloatOutSwitches
-     GHC.Base.Eq_ Core.Subst GHC.Types.Cpr.CprSig
+     GHC.Base.Eq_ GHC.Core.TyCo.Subst.Subst GHC.Types.Cpr.CprSig
      HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
-     Outputable.JoinPointHood UniqSupply.UniqSM UniqSupply.UniqSupply
+     UniqSupply.UniqSM UniqSupply.UniqSupply
 *)

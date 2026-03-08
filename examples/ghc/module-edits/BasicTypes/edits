@@ -26,19 +26,9 @@ skip BasicTypes.Ord__TyPrec
 ##########
 
 #
-order BasicTypes.Eq___FractionalLit   BasicTypes.Ord__FractionalLit_compare  BasicTypes.Ord__FractionalLit_min
-order BasicTypes.Eq___FixityDirection BasicTypes.Eq___Fixity_op_zeze__
-order BasicTypes.Eq___IntWithInf      BasicTypes.Ord__IntWithInf
-order BasicTypes.Eq___FunctionOrData  BasicTypes.Ord__FunctionOrData
-order BasicTypes.Eq___IntegralLit     BasicTypes.Ord__IntegralLit
-order BasicTypes.Eq___OverlapMode     BasicTypes.Eq___OverlapFlag_op_zeze__
-order BasicTypes.Eq___Activation      BasicTypes.Eq___InlinePragma_op_zeze__
-order BasicTypes.Eq___InlineSpec      BasicTypes.Eq___InlinePragma_op_zeze__
-order BasicTypes.Eq___SourceText      BasicTypes.Eq___Activation_op_zeze__
-order BasicTypes.Eq___SourceText      BasicTypes.Eq___WarningTxt_op_zeze__
-order BasicTypes.Eq___SourceText      BasicTypes.Eq___OverlapMode_op_zeze__
-order BasicTypes.Eq___TailCallInfo    BasicTypes.Eq___OccInfo_op_zeze__
-order BasicTypes.Eq___StringLiteral   BasicTypes.Eq___WarningTxt_op_zeze__
+# GHC 9.10: hs-to-coq does not generate derived Eq instances from
+# "deriving Eq". The needed Eq instances are provided via midamble.v.
+# Remove order directives for non-existent generated Eq instances.
 
 # fIRST_TAG uses ConTag = nat, but #1 needs Num nat
 redefine Definition BasicTypes.fIRST_TAG : HsSyn.ConTag := 1%nat.
@@ -87,3 +77,4 @@ skip BasicTypes.doExpansionOrigin
 # Coq 8.20: type/constructor name clashes
 rename value GHC.Types.Basic.DoPmc = BasicTypes.Mk_DoPmc
 rename value GHC.Types.Basic.Alignment = BasicTypes.Mk_Alignment
+

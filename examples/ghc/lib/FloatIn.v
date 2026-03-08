@@ -52,10 +52,10 @@ Inductive FloatInBind : Type :=
 
 (* Midamble *)
 
-Instance Default_FloatBind : HsToCoq.Err.Default MkCore.FloatBind.
+#[global] Instance Default_FloatBind : HsToCoq.Err.Default MkCore.FloatBind.
 Admitted.
 
-Instance Default_FloatInBind : HsToCoq.Err.Default FloatInBind :=
+#[global] Instance Default_FloatInBind : HsToCoq.Err.Default FloatInBind :=
   HsToCoq.Err.Build_Default _ (FB HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
 (* Converted value declarations: *)
@@ -68,16 +68,8 @@ Instance Default_FloatInBind : HsToCoq.Err.Default FloatInBind :=
 Axiom fiExpr : Platform.Platform ->
                RevFloatInBinds -> CoreFVs.CoreExprWithFVs -> Core.CoreExpr.
 
-#[global] Definition fiRhs
-   : Platform.Platform ->
-     RevFloatInBinds -> Core.CoreBndr -> CoreFVs.CoreExprWithFVs -> Core.CoreExpr :=
-  fun platform to_drop bndr rhs =>
-    match Id.idJoinPointHood bndr with
-    | Outputable.JoinPoint join_arity =>
-        let 'pair bndrs body := Core.collectNAnnBndrs join_arity rhs in
-        Core.mkLams bndrs (fiExpr platform to_drop body)
-    | _ => fiExpr platform to_drop rhs
-    end.
+Axiom fiRhs : Platform.Platform ->
+              RevFloatInBinds -> Core.CoreBndr -> CoreFVs.CoreExprWithFVs -> Core.CoreExpr.
 
 #[global] Definition fbFVs : FloatInBind -> Core.DVarSet :=
   fun '(FB _ fvs _) => fvs.
@@ -111,11 +103,7 @@ Axiom fiExpr : Platform.Platform ->
 #[global] Definition dropBoxFloats : DropBox -> RevFloatInBinds :=
   fun '(pair _ floats) => GHC.List.reverse floats.
 
-Definition floatIsCase : MkCore.FloatBind -> bool :=
-  fun fb => match fb with
-  | MkCore.FloatCase _ _ _ _ => true
-  | MkCore.FloatLet _ => false
-  end.
+Axiom floatIsCase : MkCore.FloatBind -> bool.
 
 #[global] Definition floatIsDupable
    : Platform.Platform -> MkCore.FloatBind -> bool :=
@@ -260,21 +248,20 @@ Fixpoint wrapFloats (arg_0__ : RevFloatInBinds) (arg_1__ : Core.CoreExpr)
      end.
 
 (* External variables:
-     andb bool cons false floatIsCase list negb nil op_zt__ orb pair true
-     BasicTypes.NonRecursive BasicTypes.RecFlag BasicTypes.Recursive BasicTypes.isRec
-     Coq.Lists.List.flat_map Coq.Lists.List.length Core.AnnLam Core.AnnNonRec
-     Core.AnnRec Core.CoreBndr Core.CoreExpr Core.DIdSet Core.DVarSet Core.Id
-     Core.NonRec Core.Rec Core.Var Core.collectAnnBndrs Core.collectNAnnBndrs
-     Core.deAnnotate' Core.definitelyUnliftedType Core.delDVarSet
-     Core.intersectsDVarSet Core.isId Core.isTyVar Core.mapUnionDVarSet
-     Core.mkDVarSet Core.mkLams Core.unionDVarSet Core.unionDVarSets Core.unitDVarSet
-     CoreArity.isOneShotBndr CoreFVs.CoreBindWithFVs CoreFVs.CoreExprWithFVs
-     CoreFVs.CoreExprWithFVs' CoreFVs.bndrRuleAndUnfoldingVarsDSet CoreFVs.freeVarsOf
-     CoreUtils.exprIsDupable CoreUtils.exprIsHNF CoreUtils.exprIsTrivial
-     Data.Foldable.all Data.Foldable.any Data.Foldable.null Data.Tuple.snd
-     GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
-     GHC.Base.op_zg__ GHC.Err.patternFailure GHC.List.reverse GHC.List.unzip
-     GHC.Num.fromInteger Id.idJoinPointHood Id.idType Id.isJoinId MkCore.FloatBind
-     MkCore.FloatCase MkCore.FloatLet MkCore.wrapFloat Outputable.JoinPoint
-     Platform.Platform Util.count Util.zipEqual Util.zipWithEqual
+     andb bool cons false list negb nil op_zt__ orb pair true BasicTypes.NonRecursive
+     BasicTypes.RecFlag BasicTypes.Recursive BasicTypes.isRec Coq.Lists.List.flat_map
+     Coq.Lists.List.length Core.AnnLam Core.AnnNonRec Core.AnnRec Core.CoreBndr
+     Core.CoreExpr Core.DIdSet Core.DVarSet Core.Id Core.NonRec Core.Rec Core.Var
+     Core.collectAnnBndrs Core.deAnnotate' Core.definitelyUnliftedType
+     Core.delDVarSet Core.intersectsDVarSet Core.isId Core.isTyVar
+     Core.mapUnionDVarSet Core.mkDVarSet Core.unionDVarSet Core.unionDVarSets
+     Core.unitDVarSet CoreArity.isOneShotBndr CoreFVs.CoreBindWithFVs
+     CoreFVs.CoreExprWithFVs CoreFVs.CoreExprWithFVs'
+     CoreFVs.bndrRuleAndUnfoldingVarsDSet CoreFVs.freeVarsOf CoreUtils.exprIsDupable
+     CoreUtils.exprIsHNF CoreUtils.exprIsTrivial Data.Foldable.all Data.Foldable.any
+     Data.Foldable.null Data.Tuple.snd GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__
+     GHC.Base.op_zeze__ GHC.Base.op_zg__ GHC.Err.patternFailure GHC.List.reverse
+     GHC.List.unzip GHC.Num.fromInteger Id.idType Id.isJoinId MkCore.FloatBind
+     MkCore.FloatCase MkCore.FloatLet MkCore.wrapFloat Platform.Platform Util.count
+     Util.zipEqual Util.zipWithEqual
 *)

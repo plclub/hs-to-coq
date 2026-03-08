@@ -1,8 +1,0 @@
-constructorFields:
-  ConLike.PatSynCon: NonRecordFields 1
-  ConLike.RealDataCon: NonRecordFields 1
-constructorTypes:
-  ConLike.PatSynCon: Qualified "ConLike" "ConLike"
-  ConLike.RealDataCon: Qualified "ConLike" "ConLike"
-constructors:
-  ConLike.ConLike: '[Qualified "ConLike" "RealDataCon",Qualified "ConLike" "PatSynCon"]'

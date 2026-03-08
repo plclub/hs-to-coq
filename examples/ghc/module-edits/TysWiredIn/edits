@@ -4,6 +4,11 @@ axiomatize module TysWiredIn
 skip AxiomatizedTypes.liftedTypeKind
 skip AxiomatizedTypes.constraintKind
 
+# GHC 9.10: BoxingInfo partial record selectors fail (no string interpretation for error)
+skip TysWiredIn.bi_boxed_type
+skip TysWiredIn.bi_data_con
+skip TysWiredIn.bi_inst_con
+
 rename type GHC.Types.Name.Reader.RdrName = PrelNames.RdrName
 
 
@@ -14,4 +19,6 @@ skip TysWiredIn.boxedTupleArr
 skip TysWiredIn.unboxedTupleArr
 skip TysWiredIn.unboxedSumArr
 skip TysWiredIn.mk_sum
+skip TysWiredIn.cTupleArr
+skip TysWiredIn.mk_ctuple
 

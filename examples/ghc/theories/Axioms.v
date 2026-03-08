@@ -83,9 +83,9 @@ Definition isLocalUnique  (u : Unique.Unique) : bool :=
      negb (List.elem c &"B0123456789:kmnrz").
 *)
 
-(** [initExitJoinUnique] better be a local unique *)
-Axiom isLocalUnique_initExitJoinUnique:
-  Unique.isLocalUnique Unique.initExitJoinUnique = true.
+(* GHC 9.10: initExitJoinUnique moved to GHC.Builtin.Uniques (not translated) *)
+(* Axiom isLocalUnique_initExitJoinUnique:
+  Unique.isLocalUnique Unique.initExitJoinUnique = true. *)
 
 
 
@@ -119,10 +119,10 @@ Axiom isLocalId_uniqAway:
 
 
 
-(* GHC 9.10: isJoinId_maybe replaced by idJoinPointHood *)
-Axiom idJoinPointHood_uniqAway:
+(* GHC 9.10: Id.idJoinPointHood is skipped (uses Outputable.JoinPointHood) *)
+(* Axiom idJoinPointHood_uniqAway:
   forall s v,
-  Id.idJoinPointHood (uniqAway s v) = Id.idJoinPointHood v.
+  Id.idJoinPointHood (uniqAway s v) = Id.idJoinPointHood v. *)
 
 Lemma isLocalUnique_uniqAway:
   forall iss v,
@@ -173,15 +173,15 @@ Qed.
   
 (**** *)
 
-(* GHC 9.10: isJoinId_maybe replaced by idJoinPointHood *)
-Axiom idJoinPointHood_setIdOccInfo:
+(* GHC 9.10: Id.idJoinPointHood is skipped (uses Outputable.JoinPointHood) *)
+(* Axiom idJoinPointHood_setIdOccInfo:
   forall v occ_info,
-  Id.idJoinPointHood (setIdOccInfo v occ_info) = Id.idJoinPointHood v.
+  Id.idJoinPointHood (setIdOccInfo v occ_info) = Id.idJoinPointHood v. *)
 
-Axiom idJoinPointHood_asJoinId:
+(* Axiom idJoinPointHood_asJoinId:
   forall v a,
   isLocalId v ->
-  Id.idJoinPointHood (asJoinId v a) = Outputable.JoinPoint a.  
+  Id.idJoinPointHood (asJoinId v a) = Outputable.JoinPoint a. *)  
 
 
   

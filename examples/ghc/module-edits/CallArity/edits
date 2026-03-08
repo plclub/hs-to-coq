@@ -1,22 +1,2 @@
-
-
-
-# ANTALSZ: example of mutual recursion
-in CallArity.callArityAnal rewrite forall, CallArity.callArityBind = CallArity.callArityBind1
-
-
-# ANTALSZ: even if we get mutrec working for callArityAnal, 
-# we will still have this issue
-# if we try to use structural recursion for fix_
-# Error: Anomaly "Evar ?X650 was not declared."
-# Please report at http://coq.inria.fr/bugs/.
-# skip CallArity.callArityBind
-# I've tracked it down to the recursive call fix_ ann_binds'
-#
-#
-in CallArity.callArityBind termination fix_ deferred
-
-
-
-
-
+# GHC 9.10: axiomatize — mutual recursion and missing types
+axiomatize module CallArity

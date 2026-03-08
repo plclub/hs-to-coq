@@ -1,2 +1,1 @@
-(* Stub module for GHC.Runtime.Context *)
-Axiom InteractiveContext : Type.
+../../../manual/GHC/Runtime/Context.v

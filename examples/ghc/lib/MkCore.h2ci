@@ -1,15 +1,15 @@
 constructorFields:
   MkCore.FloatCase: NonRecordFields 4
   MkCore.FloatLet: NonRecordFields 1
-  MkCore.MkStringIds: RecordFields [Qualified "MkCore" "unpackCStringId",Qualified
+  MkCore.Mk_MkStringIds: RecordFields [Qualified "MkCore" "unpackCStringId",Qualified
     "MkCore" "unpackCStringUtf8Id"]
 constructorTypes:
   MkCore.FloatCase: Qualified "MkCore" "FloatBind"
   MkCore.FloatLet: Qualified "MkCore" "FloatBind"
-  MkCore.MkStringIds: Qualified "MkCore" "MkStringIds"
+  MkCore.Mk_MkStringIds: Qualified "MkCore" "MkStringIds"
 constructors:
   MkCore.FloatBind: '[Qualified "MkCore" "FloatLet",Qualified "MkCore" "FloatCase"]'
-  MkCore.MkStringIds: '[Qualified "MkCore" "MkStringIds"]'
+  MkCore.MkStringIds: '[Qualified "MkCore" "Mk_MkStringIds"]'
 recordFieldTypes:
   MkCore.unpackCStringId: Qualified "MkCore" "MkStringIds"
   MkCore.unpackCStringUtf8Id: Qualified "MkCore" "MkStringIds"

@@ -8,8 +8,6 @@ constructorFields:
   Core.AlgTyCon: RecordFields [Qualified "Core" "tyConCType",Qualified "Core" "algTcGadtSyntax",Qualified
     "Core" "algTcStupidTheta",Qualified "Core" "algTcRhs",Qualified "Core" "algTcFields",Qualified
     "Core" "algTcFlavour"]
-  Core.Alt: NonRecordFields 3
-  Core.AnnAlt: NonRecordFields 3
   Core.AnnApp: NonRecordFields 2
   Core.AnnCase: NonRecordFields 4
   Core.AnnCast: NonRecordFields 2
@@ -24,7 +22,6 @@ constructorFields:
   Core.Anon: NonRecordFields 2
   Core.AnonTCB: NonRecordFields 0
   Core.App: NonRecordFields 2
-  Core.BitField: NonRecordFields 1
   Core.Bndr: NonRecordFields 2
   Core.BotDmd: NonRecordFields 0
   Core.BoxedRep: NonRecordFields 1
@@ -32,7 +29,6 @@ constructorFields:
   Core.BuiltinRule: RecordFields [Qualified "Core" "ru_name",Qualified "Core" "ru_fn",Qualified
     "Core" "ru_nargs",Qualified "Core" "ru_try"]
   Core.Call: NonRecordFields 2
-  Core.Card: NonRecordFields 1
   Core.Case: NonRecordFields 4
   Core.Cast: NonRecordFields 2
   Core.CharTyLit: NonRecordFields 1
@@ -55,7 +51,6 @@ constructorFields:
   Core.DataTyCon: RecordFields [Qualified "Core" "data_cons",Qualified "Core" "data_cons_size",Qualified
     "Core" "is_enum",Qualified "Core" "is_type_data",Qualified "Core" "data_fixed_lev"]
   Core.Diverges: NonRecordFields 0
-  Core.DmdSig: NonRecordFields 1
   Core.DoubleElemRep: NonRecordFields 0
   Core.DoubleRep: NonRecordFields 0
   Core.Dunno: NonRecordFields 0
@@ -113,11 +108,16 @@ constructorFields:
     "Core" "psFieldLabels",Qualified "Core" "psUnivTyVars",Qualified "Core" "psReqTheta",Qualified
     "Core" "psExTyVars",Qualified "Core" "psProvTheta",Qualified "Core" "psResultTy",Qualified
     "Core" "psMatcher",Qualified "Core" "psBuilder"]
+  Core.Mk_Alt: NonRecordFields 3
+  Core.Mk_AnnAlt: NonRecordFields 3
+  Core.Mk_BitField: NonRecordFields 1
+  Core.Mk_Card: NonRecordFields 1
   Core.Mk_Class: RecordFields [Qualified "Core" "classTyCon",Qualified "Core" "className",Qualified
     "Core" "classKey",Qualified "Core" "classTyVars",Qualified "Core" "classFunDeps",Qualified
     "Core" "classBody"]
   Core.Mk_Coercion: NonRecordFields 1
   Core.Mk_DFunId: NonRecordFields 1
+  Core.Mk_DmdSig: NonRecordFields 1
   Core.Mk_DmdType: RecordFields [Qualified "Core" "dt_env",Qualified "Core" "dt_args"]
   Core.Mk_EqSpec: NonRecordFields 2
   Core.Mk_HsSrcBang: NonRecordFields 3
@@ -132,10 +132,19 @@ constructorFields:
   Core.Mk_JoinId: NonRecordFields 2
   Core.Mk_KillFlags: RecordFields [Qualified "Core" "kf_abs",Qualified "Core" "kf_used_once",Qualified
     "Core" "kf_called_once"]
+  Core.Mk_Scaled: NonRecordFields 2
+  Core.Mk_TyCoFolder: RecordFields [Qualified "Core" "tcf_view",Qualified "Core" "tcf_tyvar",Qualified
+    "Core" "tcf_covar",Qualified "Core" "tcf_hole",Qualified "Core" "tcf_tycobinder"]
   Core.Mk_TyCoMapper: RecordFields [Qualified "Core" "tcm_tyvar",Qualified "Core"
     "tcm_covar",Qualified "Core" "tcm_hole",Qualified "Core" "tcm_tycobinder",Qualified
     "Core" "tcm_tycon"]
+  Core.Mk_TyCon: RecordFields [Qualified "Core" "tyConUnique",Qualified "Core" "tyConName",Qualified
+    "Core" "tyConBinders",Qualified "Core" "tyConResKind",Qualified "Core" "tyConHasClosedResKind",Qualified
+    "Core" "tyConTyVars",Qualified "Core" "tyConKind",Qualified "Core" "tyConArity",Qualified
+    "Core" "tyConNullaryTy",Qualified "Core" "tyConRoles",Qualified "Core" "tyConDetails"]
   Core.Mk_Type: NonRecordFields 1
+  Core.Mk_UnfoldingCache: RecordFields [Qualified "Core" "uf_is_value",Qualified "Core"
+    "uf_is_conlike",Qualified "Core" "uf_is_work_free",Qualified "Core" "uf_expandable"]
   Core.Mk_Var: NonRecordFields 1
   Core.NS_Abort: NonRecordFields 0
   Core.NS_Done: NonRecordFields 0
@@ -181,7 +190,6 @@ constructorFields:
     "Core" "ru_args",Qualified "Core" "ru_rhs",Qualified "Core" "ru_auto",Qualified
     "Core" "ru_origin",Qualified "Core" "ru_orphan",Qualified "Core" "ru_local"]
   Core.RuntimeRep: NonRecordFields 1
-  Core.Scaled: NonRecordFields 2
   Core.SelArg: NonRecordFields 0
   Core.SelForAll: NonRecordFields 0
   Core.SelFun: NonRecordFields 1
@@ -202,20 +210,12 @@ constructorFields:
   Core.TsProd: NonRecordFields 1
   Core.TsUnk: NonRecordFields 0
   Core.TupleTyCon: RecordFields [Qualified "Core" "data_con",Qualified "Core" "tup_sort"]
-  Core.TyCoFolder: RecordFields [Qualified "Core" "tcf_view",Qualified "Core" "tcf_tyvar",Qualified
-    "Core" "tcf_covar",Qualified "Core" "tcf_hole",Qualified "Core" "tcf_tycobinder"]
-  Core.TyCon: RecordFields [Qualified "Core" "tyConUnique",Qualified "Core" "tyConName",Qualified
-    "Core" "tyConBinders",Qualified "Core" "tyConResKind",Qualified "Core" "tyConHasClosedResKind",Qualified
-    "Core" "tyConTyVars",Qualified "Core" "tyConKind",Qualified "Core" "tyConArity",Qualified
-    "Core" "tyConNullaryTy",Qualified "Core" "tyConRoles",Qualified "Core" "tyConDetails"]
   Core.UnboxedSumTyCon: NonRecordFields 0
   Core.UnfIfGoodArgs: RecordFields [Qualified "Core" "ug_args",Qualified "Core" "ug_size",Qualified
     "Core" "ug_res"]
   Core.UnfNever: NonRecordFields 0
   Core.UnfWhen: RecordFields [Qualified "Core" "ug_arity",Qualified "Core" "ug_unsat_ok",Qualified
     "Core" "ug_boring_ok"]
-  Core.UnfoldingCache: RecordFields [Qualified "Core" "uf_is_value",Qualified "Core"
-    "uf_is_conlike",Qualified "Core" "uf_is_work_free",Qualified "Core" "uf_expandable"]
   Core.VI: RecordFields [Qualified "Core" "vi_loc",Qualified "Core" "vi_qtvs",Qualified
     "Core" "vi_non_user_tvs",Qualified "Core" "vi_pats",Qualified "Core" "vi_rhs"]
   Core.VanillaAlgTyCon: NonRecordFields 1
@@ -242,8 +242,6 @@ constructorTypes:
   Core.AbstractTyCon: Qualified "Core" "AlgTyConRhs"
   Core.AddrRep: Qualified "Core" "PrimRep"
   Core.AlgTyCon: Qualified "Core" "TyConDetails"
-  Core.Alt: Qualified "Core" "Alt"
-  Core.AnnAlt: Qualified "Core" "AnnAlt"
   Core.AnnApp: Qualified "Core" "AnnExpr'"
   Core.AnnCase: Qualified "Core" "AnnExpr'"
   Core.AnnCast: Qualified "Core" "AnnExpr'"
@@ -258,14 +256,12 @@ constructorTypes:
   Core.Anon: Qualified "Core" "PiTyBinder"
   Core.AnonTCB: Qualified "Core" "TyConBndrVis"
   Core.App: Qualified "Core" "Expr"
-  Core.BitField: Qualified "Core" "BitField"
   Core.Bndr: Qualified "Core" "VarBndr"
   Core.BotDmd: Qualified "Core" "Demand"
   Core.BoxedRep: Qualified "Core" "PrimRep"
   Core.BuiltInSynFamTyCon: Qualified "Core" "FamTyConFlav"
   Core.BuiltinRule: Qualified "Core" "CoreRule"
   Core.Call: Qualified "Core" "SubDemand"
-  Core.Card: Qualified "Core" "Card"
   Core.Case: Qualified "Core" "Expr"
   Core.Cast: Qualified "Core" "Expr"
   Core.CharTyLit: Qualified "Core" "TyLit"
@@ -284,7 +280,6 @@ constructorTypes:
   Core.DataFamilyTyCon: Qualified "Core" "FamTyConFlav"
   Core.DataTyCon: Qualified "Core" "AlgTyConRhs"
   Core.Diverges: Qualified "Core" "Divergence"
-  Core.DmdSig: Qualified "Core" "DmdSig"
   Core.DoubleElemRep: Qualified "Core" "PrimElemRep"
   Core.DoubleRep: Qualified "Core" "PrimRep"
   Core.Dunno: Qualified "Core" "Divergence"
@@ -330,9 +325,14 @@ constructorTypes:
   Core.MayHaveCafRefs: Qualified "Core" "CafInfo"
   Core.MkData: Qualified "Core" "DataCon"
   Core.MkPatSyn: Qualified "Core" "PatSyn"
+  Core.Mk_Alt: Qualified "Core" "Alt"
+  Core.Mk_AnnAlt: Qualified "Core" "AnnAlt"
+  Core.Mk_BitField: Qualified "Core" "BitField"
+  Core.Mk_Card: Qualified "Core" "Card"
   Core.Mk_Class: Qualified "Core" "Class"
   Core.Mk_Coercion: Qualified "Core" "Expr"
   Core.Mk_DFunId: Qualified "Core" "IdDetails"
+  Core.Mk_DmdSig: Qualified "Core" "DmdSig"
   Core.Mk_DmdType: Qualified "Core" "DmdType"
   Core.Mk_EqSpec: Qualified "Core" "EqSpec"
   Core.Mk_HsSrcBang: Qualified "Core" "HsSrcBang"
@@ -341,8 +341,12 @@ constructorTypes:
   Core.Mk_IsOrphan: Qualified "Core" "IsOrphan"
   Core.Mk_JoinId: Qualified "Core" "IdDetails"
   Core.Mk_KillFlags: Qualified "Core" "KillFlags"
+  Core.Mk_Scaled: Qualified "Core" "Scaled"
+  Core.Mk_TyCoFolder: Qualified "Core" "TyCoFolder"
   Core.Mk_TyCoMapper: Qualified "Core" "TyCoMapper"
+  Core.Mk_TyCon: Qualified "Core" "TyCon"
   Core.Mk_Type: Qualified "Core" "Expr"
+  Core.Mk_UnfoldingCache: Qualified "Core" "UnfoldingCache"
   Core.Mk_Var: Qualified "Core" "Expr"
   Core.NS_Abort: Qualified "Core" "NormaliseStepResult"
   Core.NS_Done: Qualified "Core" "NormaliseStepResult"
@@ -381,7 +385,6 @@ constructorTypes:
   Core.Required: Qualified "Core" "ForAllTyFlag"
   Core.Rule: Qualified "Core" "CoreRule"
   Core.RuntimeRep: Qualified "Core" "PromDataConInfo"
-  Core.Scaled: Qualified "Core" "Scaled"
   Core.SelArg: Qualified "Core" "FunSel"
   Core.SelForAll: Qualified "Core" "CoSel"
   Core.SelFun: Qualified "Core" "CoSel"
@@ -400,13 +403,10 @@ constructorTypes:
   Core.TsProd: Qualified "Core" "TypeShape"
   Core.TsUnk: Qualified "Core" "TypeShape"
   Core.TupleTyCon: Qualified "Core" "AlgTyConRhs"
-  Core.TyCoFolder: Qualified "Core" "TyCoFolder"
-  Core.TyCon: Qualified "Core" "TyCon"
   Core.UnboxedSumTyCon: Qualified "Core" "AlgTyConFlav"
   Core.UnfIfGoodArgs: Qualified "Core" "UnfoldingGuidance"
   Core.UnfNever: Qualified "Core" "UnfoldingGuidance"
   Core.UnfWhen: Qualified "Core" "UnfoldingGuidance"
-  Core.UnfoldingCache: Qualified "Core" "UnfoldingCache"
   Core.VI: Qualified "Core" "TyFamEqnValidityInfo"
   Core.VanillaAlgTyCon: Qualified "Core" "AlgTyConFlav"
   Core.VanillaId: Qualified "Core" "IdDetails"
@@ -429,19 +429,19 @@ constructors:
     "Core" "ClassTyCon",Qualified "Core" "DataFamInstTyCon"]'
   Core.AlgTyConRhs: '[Qualified "Core" "AbstractTyCon",Qualified "Core" "DataTyCon",Qualified
     "Core" "TupleTyCon",Qualified "Core" "SumTyCon",Qualified "Core" "NewTyCon"]'
-  Core.Alt: '[Qualified "Core" "Alt"]'
+  Core.Alt: '[Qualified "Core" "Mk_Alt"]'
   Core.AltCon: '[Qualified "Core" "DataAlt",Qualified "Core" "LitAlt",Qualified "Core"
     "DEFAULT"]'
-  Core.AnnAlt: '[Qualified "Core" "AnnAlt"]'
+  Core.AnnAlt: '[Qualified "Core" "Mk_AnnAlt"]'
   Core.AnnBind: '[Qualified "Core" "AnnNonRec",Qualified "Core" "AnnRec"]'
   Core.AnnExpr': '[Qualified "Core" "AnnVar",Qualified "Core" "AnnLit",Qualified "Core"
     "AnnLam",Qualified "Core" "AnnApp",Qualified "Core" "AnnCase",Qualified "Core"
     "AnnLet",Qualified "Core" "AnnCast",Qualified "Core" "AnnType",Qualified "Core"
     "AnnCoercion"]'
   Core.Bind: '[Qualified "Core" "NonRec",Qualified "Core" "Rec"]'
-  Core.BitField: '[Qualified "Core" "BitField"]'
+  Core.BitField: '[Qualified "Core" "Mk_BitField"]'
   Core.CafInfo: '[Qualified "Core" "MayHaveCafRefs",Qualified "Core" "NoCafRefs"]'
-  Core.Card: '[Qualified "Core" "Card"]'
+  Core.Card: '[Qualified "Core" "Mk_Card"]'
   Core.Class: '[Qualified "Core" "Mk_Class"]'
   Core.ClassATItem: '[Qualified "Core" "ATI"]'
   Core.ClassBody: '[Qualified "Core" "AbstractClass",Qualified "Core" "ConcreteClass"]'
@@ -455,7 +455,7 @@ constructors:
   Core.Divergence: '[Qualified "Core" "Diverges",Qualified "Core" "ExnOrDiv",Qualified
     "Core" "Dunno"]'
   Core.DmdEnv: '[Qualified "Core" "DE"]'
-  Core.DmdSig: '[Qualified "Core" "DmdSig"]'
+  Core.DmdSig: '[Qualified "Core" "Mk_DmdSig"]'
   Core.DmdType: '[Qualified "Core" "Mk_DmdType"]'
   Core.EqSpec: '[Qualified "Core" "Mk_EqSpec"]'
   Core.ExpandSynResult: '[Qualified "Core" "NoExpansion",Qualified "Core" "ExpandsSyn"]'
@@ -507,16 +507,16 @@ constructors:
     "Core" "VecCount",Qualified "Core" "VecElem",Qualified "Core" "Levity"]'
   Core.RecSelParent: '[Qualified "Core" "RecSelData",Qualified "Core" "RecSelPatSyn"]'
   Core.RnEnv2: '[Qualified "Core" "RV2"]'
-  Core.Scaled: '[Qualified "Core" "Scaled"]'
+  Core.Scaled: '[Qualified "Core" "Mk_Scaled"]'
   Core.Specificity: '[Qualified "Core" "InferredSpec",Qualified "Core" "SpecifiedSpec"]'
   Core.StrictnessMark: '[Qualified "Core" "MarkedStrict",Qualified "Core" "NotMarkedStrict"]'
   Core.SubDemand: '[Qualified "Core" "Poly",Qualified "Core" "Call",Qualified "Core"
     "Prod"]'
   Core.TaggedBndr: '[Qualified "Core" "TB"]'
   Core.TickBoxOp: '[Qualified "Core" "TickBox"]'
-  Core.TyCoFolder: '[Qualified "Core" "TyCoFolder"]'
+  Core.TyCoFolder: '[Qualified "Core" "Mk_TyCoFolder"]'
   Core.TyCoMapper: '[Qualified "Core" "Mk_TyCoMapper"]'
-  Core.TyCon: '[Qualified "Core" "TyCon"]'
+  Core.TyCon: '[Qualified "Core" "Mk_TyCon"]'
   Core.TyConBndrVis: '[Qualified "Core" "NamedTCB",Qualified "Core" "AnonTCB"]'
   Core.TyConDetails: '[Qualified "Core" "AlgTyCon",Qualified "Core" "SynonymTyCon",Qualified
     "Core" "FamilyTyCon",Qualified "Core" "PrimTyCon",Qualified "Core" "PromotedDataCon",Qualified
@@ -527,7 +527,7 @@ constructors:
   Core.TypeShape: '[Qualified "Core" "TsFun",Qualified "Core" "TsProd",Qualified "Core"
     "TsUnk"]'
   Core.Unfolding: '[Qualified "Core" "NoUnfolding"]'
-  Core.UnfoldingCache: '[Qualified "Core" "UnfoldingCache"]'
+  Core.UnfoldingCache: '[Qualified "Core" "Mk_UnfoldingCache"]'
   Core.UnfoldingGuidance: '[Qualified "Core" "UnfWhen",Qualified "Core" "UnfIfGoodArgs",Qualified
     "Core" "UnfNever"]'
   Core.UnivCoProvenance: '[Qualified "Core" "PhantomProv",Qualified "Core" "ProofIrrelProv",Qualified

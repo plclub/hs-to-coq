@@ -19,7 +19,6 @@ Import String.StringSyntax.
 
 Require DynFlags.
 Require GHC.Base.
-Require Outputable.
 Require GHC.Char.
 Require GHC.Core.Opt.Stats.
 Require GHC.Core.Rules.
@@ -50,11 +49,11 @@ Inductive CoreM a : Type :=
 
 Arguments Mk_CoreM {_} _.
 
-#[global] Instance Default__FloatOutSwitches : HsToCoq.Err.Default FloatOutSwitches :=
+Instance Default__FloatOutSwitches : HsToCoq.Err.Default FloatOutSwitches :=
   HsToCoq.Err.Build_Default _ (Mk_FloatOutSwitches HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-#[global] Instance Default__CoreWriter : HsToCoq.Err.Default CoreWriter :=
+Instance Default__CoreWriter : HsToCoq.Err.Default CoreWriter :=
   HsToCoq.Err.Build_Default _ (Mk_CoreWriter HsToCoq.Err.default).
 
 #[global] Definition floatOutConstants (arg_0__ : FloatOutSwitches) :=
@@ -146,7 +145,7 @@ Axiom initRuleEnv : GHC.Unit.Module.ModGuts.ModGuts ->
 
 Axiom getExternalRuleBase : CoreM GHC.Core.Rules.RuleBase.
 
-Axiom getNamePprCtx : CoreM Outputable.NamePprCtx.
+(* Skipping definition `CoreMonad.getNamePprCtx' *)
 
 Axiom getSrcSpanM : CoreM SrcLoc.SrcSpan.
 
@@ -192,5 +191,5 @@ Axiom debugTraceMsg : GHC.Base.String -> CoreM unit.
      GHC.Core.Rules.RuleEnv GHC.Runtime.Context.InteractiveContext
      GHC.Unit.External.ExternalPackageState GHC.Unit.Module.ModGuts.ModGuts
      HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
-     Module.HasModule Outputable.NamePprCtx SrcLoc.SrcSpan UniqSupply.MonadUnique
+     Module.HasModule SrcLoc.SrcSpan UniqSupply.MonadUnique
 *)

@@ -63,6 +63,13 @@ rename module GHC.Core.Opt.OccurAnal OccurAnal
 rename module GHC.Core.Opt.FloatIn FloatIn
 rename module GHC.Core.Opt.FloatOut FloatOut
 
+# GHC 9.10: Word64Map/Set → IntMap/IntSet (Word64 is mapped to N)
+rename module GHC.Data.Word64Map.Internal Data.IntMap.Internal
+rename module GHC.Data.Word64Map.Strict.Internal Data.IntMap.Internal
+rename module GHC.Data.Word64Set.Internal Data.IntSet.Internal
+rename type GHC.Data.Word64Map.Internal.Word64Map = Data.IntMap.Internal.IntMap
+rename type GHC.Data.Word64Set.Internal.Word64Set = Data.IntSet.Internal.IntSet
+
 # External modules (skipped but referenced)
 rename module GHC.Utils.Outputable Outputable
 rename module GHC.Utils.Json Json
@@ -98,6 +105,14 @@ rename module GHC.Utils.Encoding Encoding
 
 # GHC 9.10: IsList.toList on NonEmpty converts to list
 rewrite forall x, GHC.Internal.IsList.toList x = match x with | GHC.Base.NEcons a as_ => cons a as_ end
+
+# GHC 9.10: ConLike is inlined into Core.v mutual block via sed
+skip module GHC.Core.ConLike
+
+# GHC 9.10: Alt/AnnAlt/Scaled constructors — hs-to-coq generates type name, need constructor name
+rename value GHC.Core.Alt = Core.Mk_Alt
+rename value GHC.Core.AnnAlt = Core.Mk_AnnAlt
+rename value GHC.Core.TyCo.Rep.Scaled = Core.Mk_Scaled
 
 # GHC 9.10: global skip modules for unprocessed GHC packages
 skip module GHC.Data.FastString
@@ -318,6 +333,9 @@ rename type GHC.Integer.Type.Integer = GHC.Num.Integer
 
 # partial functions
 rename value GHC.List.head = GHC.Err.head
+rename value GHC.Prelude.Basic.head = GHC.Err.head
+rename value GHC.Prelude.Basic.shiftL = Data.Bits.shiftL
+rename value GHC.Prelude.Basic.shiftR = Data.Bits.shiftR
 
 # we're not debugging
 # rewrite forall x, andb Util.debugIsOn x = false

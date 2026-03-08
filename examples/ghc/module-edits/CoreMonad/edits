@@ -37,7 +37,8 @@ skip CoreMonad.liftIOWithCount
 skip CoreMonad.thNameToGhcName
 
 skip CoreMonad.msg
-skip CoreMonad.getPrintUnqualified 
+skip CoreMonad.getPrintUnqualified
+skip CoreMonad.getNamePprCtx
 skip CoreMonad.getPackageFamInstEnv
 skip CoreMonad.getOrigNameCache 
 skip CoreMonad.getHscEnv

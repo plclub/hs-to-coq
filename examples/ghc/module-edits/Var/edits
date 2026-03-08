@@ -73,6 +73,21 @@ skip equation Core.idDetails other
 skip Core.dcr_wrap_id
 skip Core.id_info
 
+# GHC 9.10: Var has single constructor Mk_Id, so varMultMaybe always returns Some
+redefine Definition Core.varMultMaybe : Var -> option Mult :=
+  fun v => Some (Core.varMult v).
+
+# GHC 9.10: uses pattern synonym Specified (not a real constructor)
+axiomatize definition Core.coreTyLamForAllTyFlag
+
+# GHC 9.10: uses TysWiredIn.manyDataConTy which is not available
+axiomatize definition Core.mkGlobalVar
+axiomatize definition Core.mkExportedLocalVar
+
+# GHC 9.10: redundant patterns (Var/Id have single constructor Mk_Id)
+axiomatize definition Core.updateIdTypeAndMult
+axiomatize definition Core.updateIdTypeAndMultM
+
 # ppr
 skip Core.ppr_id_scope
 skip Core.ppr_debug

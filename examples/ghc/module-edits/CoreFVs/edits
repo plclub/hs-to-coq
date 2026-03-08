@@ -1,4 +1,8 @@
 
+
+# GHC 9.10: CoreTickish is axiomatized, can't pattern match
+skip CoreFVs.tickish_fvs
+
 # Make it easier for Coq to see termination
 rename value GHC.Utils.Misc.mapAndUnzip = NestedRecursionHelpers.mapAndUnzipFix 
 
@@ -8,6 +12,12 @@ rename value GHC.Utils.Misc.mapAndUnzip = NestedRecursionHelpers.mapAndUnzipFix
 #
 skip CoreFVs.orphNamesOfFamInst  # needs FamInstEnv
 skip CoreFVs.orphNamesOfCoCon
+skip CoreFVs.orphNamesOfMCo
+skip CoreFVs.orphNamesOfAxiomLHS
+skip CoreFVs.orph_names_of_fun_ty_con
+
+# GHC 9.10: RuleInfo is axiomatized as Prop, can't use as constructor
+skip CoreFVs.mkRuleInfo
 skip CoreFVs.orphNamesOfCoAxBranch
 skip CoreFVs.orphNamesOfType
 skip CoreFVs.orphNamesOfProv

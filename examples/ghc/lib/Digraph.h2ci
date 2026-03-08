@@ -5,22 +5,22 @@ constructorFields:
     "Digraph" "node_key",Qualified "Digraph" "node_dependencies"]
   Digraph.Forward: NonRecordFields 0
   Digraph.Mk_Edge: NonRecordFields 2
+  Digraph.Mk_Time: NonRecordFields 1
   Digraph.SelfLoop: NonRecordFields 0
-  Digraph.Time: NonRecordFields 1
 constructorTypes:
   Digraph.Backward: Qualified "Digraph" "EdgeType"
   Digraph.Cross: Qualified "Digraph" "EdgeType"
   Digraph.DigraphNode: Qualified "Digraph" "Node"
   Digraph.Forward: Qualified "Digraph" "EdgeType"
   Digraph.Mk_Edge: Qualified "Digraph" "Edge"
+  Digraph.Mk_Time: Qualified "Digraph" "Time"
   Digraph.SelfLoop: Qualified "Digraph" "EdgeType"
-  Digraph.Time: Qualified "Digraph" "Time"
 constructors:
   Digraph.Edge: '[Qualified "Digraph" "Mk_Edge"]'
   Digraph.EdgeType: '[Qualified "Digraph" "Forward",Qualified "Digraph" "Cross",Qualified
     "Digraph" "Backward",Qualified "Digraph" "SelfLoop"]'
   Digraph.Node: '[Qualified "Digraph" "DigraphNode"]'
-  Digraph.Time: '[Qualified "Digraph" "Time"]'
+  Digraph.Time: '[Qualified "Digraph" "Mk_Time"]'
 recordFieldTypes:
   Digraph.node_dependencies: Qualified "Digraph" "Node"
   Digraph.node_key: Qualified "Digraph" "Node"

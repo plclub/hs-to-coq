@@ -14,12 +14,9 @@ Require Coq.Program.Wf.
 
 Require Bag.
 Require Coq.Init.Datatypes.
-Require Coq.Lists.List.
 Require Core.
 Require CoreUtils.
 Require Data.Foldable.
-Require Data.OldList.
-Require Data.Tuple.
 Require GHC.Base.
 Require GHC.List.
 Require GHC.Num.
@@ -52,7 +49,7 @@ Inductive FloatBinds : Type :=
 
 (* Midamble *)
 
-Instance Default_FloatStats : HsToCoq.Err.Default FloatStats := 
+#[global] Instance Default_FloatStats : HsToCoq.Err.Default FloatStats :=
   HsToCoq.Err.Build_Default _ (FlS HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
 
@@ -86,8 +83,57 @@ Instance Default_FloatStats : HsToCoq.Err.Default FloatStats :=
     Panic.assertPpr (Bag.isEmptyBag (flattenMajor defs)) (Panic.someSDoc)
     (Panic.assertPpr (Bag.isEmptyBag ceils) (Panic.someSDoc) tops).
 
-#[global] Definition emptyFloats : FloatBinds :=
-  FB Bag.emptyBag Bag.emptyBag IntMap.empty.
+Axiom floatBind : SetLevels.LevelledBind ->
+                  (FloatStats * FloatBinds * list Core.CoreBind)%type.
+
+#[global] Definition floatTopBind
+   : SetLevels.LevelledBind -> (FloatStats * Bag.Bag Core.CoreBind)%type :=
+  fun bind =>
+    let 'pair (pair fs floats) bind' := (floatBind bind) in
+    let float_bag := flattenTopFloats floats in
+    match bind' with
+    | cons (Core.Rec prs) nil =>
+        pair fs (Bag.unitBag (Core.Rec (addTopFloatPairs float_bag prs)))
+    | cons (Core.NonRec b e) nil =>
+        pair fs (Bag.snocBag float_bag (Core.NonRec b e))
+    | _ => Panic.pprPanic (GHC.Base.hs_string__ "floatTopBind") (Panic.someSDoc)
+    end.
+
+#[global] Definition splitRecFloats
+   : Bag.Bag MkCore.FloatBind ->
+     (list (Core.Id * Core.CoreExpr)%type * list (Core.Id * Core.CoreExpr)%type *
+      Bag.Bag MkCore.FloatBind)%type :=
+  fun fs =>
+    let fix go arg_0__ arg_1__ arg_2__
+      := match arg_0__, arg_1__, arg_2__ with
+         | ul_prs, prs, cons (MkCore.FloatLet (Core.NonRec b r)) fs =>
+             if andb (Core.isUnliftedType (Id.idType b)) (negb (Id.isJoinId b)) : bool
+             then go (cons (pair b r) ul_prs) prs fs else
+             go ul_prs (cons (pair b r) prs) fs
+         | _, _, _ =>
+             match arg_0__, arg_1__, arg_2__ with
+             | ul_prs, prs, cons (MkCore.FloatLet (Core.Rec prs')) fs =>
+                 go ul_prs (Coq.Init.Datatypes.app prs' prs) fs
+             | ul_prs, prs, fs =>
+                 pair (pair (GHC.List.reverse ul_prs) prs) (Bag.listToBag fs)
+             end
+         end in
+    go nil nil (Bag.bagToList fs).
+
+#[global] Definition install
+   : Bag.Bag MkCore.FloatBind -> Core.CoreExpr -> Core.CoreExpr :=
+  fun defn_groups expr => Data.Foldable.foldr MkCore.wrapFloat expr defn_groups.
+
+#[global] Definition installUnderLambdas
+   : Bag.Bag MkCore.FloatBind -> Core.CoreExpr -> Core.CoreExpr :=
+  fun floats e =>
+    let fix go arg_0__
+      := match arg_0__ with
+         | Core.Lam b e => Core.Lam b (go e)
+         | e => install floats e
+         end in
+    if Bag.isEmptyBag floats : bool then e else
+    go e.
 
 #[global] Definition add_stats : FloatStats -> FloatStats -> FloatStats :=
   fun arg_0__ arg_1__ =>
@@ -95,6 +141,9 @@ Instance Default_FloatStats : HsToCoq.Err.Default FloatStats :=
     | FlS a1 b1 c1, FlS a2 b2 c2 =>
         FlS (a1 GHC.Num.+ a2) (b1 GHC.Num.+ b2) (c1 GHC.Num.+ c2)
     end.
+
+#[global] Definition emptyFloats : FloatBinds :=
+  FB Bag.emptyBag Bag.emptyBag IntMap.empty.
 
 #[global] Definition plusMinor : MinorEnv -> MinorEnv -> MinorEnv :=
   IntMap.unionWith Bag.unionBags.
@@ -122,21 +171,6 @@ Fixpoint floatList {a} {b} (arg_0__ : (a -> (FloatStats * FloatBinds * b)%type))
          pair (pair (add_stats fs_a fs_as) (plusFloats binds_a binds_as)) (cons b bs)
      end.
 
-#[global] Definition install
-   : Bag.Bag MkCore.FloatBind -> Core.CoreExpr -> Core.CoreExpr :=
-  fun defn_groups expr => Data.Foldable.foldr MkCore.wrapFloat expr defn_groups.
-
-#[global] Definition partitionAtJoinCeiling
-   : FloatBinds -> (FloatBinds * Bag.Bag MkCore.FloatBind)%type :=
-  fun '(FB tops ceils defs) => pair (FB tops Bag.emptyBag defs) ceils.
-
-#[global] Definition atJoinCeiling
-   : (FloatStats * FloatBinds * Core.CoreExpr)%type ->
-     (FloatStats * FloatBinds * Core.CoreExpr)%type :=
-  fun '(pair (pair fs floats) expr') =>
-    let 'pair floats' ceils := partitionAtJoinCeiling floats in
-    pair (pair fs floats') (install ceils expr').
-
 Axiom floatExpr : SetLevels.LevelledExpr ->
                   (FloatStats * FloatBinds * Core.CoreExpr)%type.
 
@@ -151,130 +185,8 @@ Axiom partitionByLevel : SetLevels.Level ->
     let 'pair floats' heres := (partitionByLevel lvl floats) in
     pair (pair fsa floats') (install heres arg').
 
-#[global] Definition floatRhs
-   : Core.CoreBndr ->
-     SetLevels.LevelledExpr -> (FloatStats * FloatBinds * Core.CoreExpr)%type :=
-  fun bndr rhs =>
-    let fix try_collect arg_0__ arg_1__ arg_2__
-      := match arg_0__, arg_1__, arg_2__ with
-         | num_3__, expr, acc =>
-             if num_3__ GHC.Base.== #0 : bool
-             then Some (pair (GHC.List.reverse acc) expr) else
-             match arg_0__, arg_1__, arg_2__ with
-             | n, Core.Lam b e, acc => try_collect (n GHC.Num.- #1) e (cons b acc)
-             | _, _, _ => None
-             end
-         end in
-    let j_17__ := atJoinCeiling (floatExpr rhs) in
-    match Id.idJoinPointHood bndr with
-    | Outputable.JoinPoint join_arity =>
-        match try_collect join_arity rhs nil with
-        | Some (pair bndrs body) =>
-            match bndrs with
-            | nil => floatExpr rhs
-            | cons (Core.TB _ lam_spec) _ =>
-                let lvl := SetLevels.floatSpecLevel lam_spec in
-                let 'pair (pair fs floats) body' := floatBody lvl body in
-                pair (pair fs floats) (Core.mkLams (let cont_11__ arg_12__ :=
-                                                      let 'Core.TB b _ := arg_12__ in
-                                                      cons b nil in
-                                                    Coq.Lists.List.flat_map cont_11__ bndrs) body')
-            end
-        | _ => j_17__
-        end
-    | _ => j_17__
-    end.
-
-#[global] Definition installUnderLambdas
-   : Bag.Bag MkCore.FloatBind -> Core.CoreExpr -> Core.CoreExpr :=
-  fun floats e =>
-    let fix go arg_0__
-      := match arg_0__ with
-         | Core.Lam b e => Core.Lam b (go e)
-         | e => install floats e
-         end in
-    if Bag.isEmptyBag floats : bool then e else
-    go e.
-
-#[global] Definition splitRecFloats
-   : Bag.Bag MkCore.FloatBind ->
-     (list (Core.Id * Core.CoreExpr)%type * list (Core.Id * Core.CoreExpr)%type *
-      Bag.Bag MkCore.FloatBind)%type :=
-  fun fs =>
-    let fix go arg_0__ arg_1__ arg_2__
-      := match arg_0__, arg_1__, arg_2__ with
-         | ul_prs, prs, cons (MkCore.FloatLet (Core.NonRec b r)) fs =>
-             if andb (Core.isUnliftedType (Id.idType b)) (negb (Id.isJoinId b)) : bool
-             then go (cons (pair b r) ul_prs) prs fs else
-             go ul_prs (cons (pair b r) prs) fs
-         | _, _, _ =>
-             match arg_0__, arg_1__, arg_2__ with
-             | ul_prs, prs, cons (MkCore.FloatLet (Core.Rec prs')) fs =>
-                 go ul_prs (Coq.Init.Datatypes.app prs' prs) fs
-             | ul_prs, prs, fs =>
-                 pair (pair (GHC.List.reverse ul_prs) prs) (Bag.listToBag fs)
-             end
-         end in
-    go nil nil (Bag.bagToList fs).
-
-#[global] Definition floatBind
-   : SetLevels.LevelledBind ->
-     (FloatStats * FloatBinds * list Core.CoreBind)%type :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | Core.NonRec (Core.TB var _) rhs =>
-        let 'pair (pair fs rhs_floats) rhs' := (floatRhs var rhs) in
-        pair (pair fs rhs_floats) (cons (Core.NonRec var rhs') nil)
-    | Core.Rec pairs =>
-        let do_pair
-         : (SetLevels.LevelledBndr * SetLevels.LevelledExpr)%type ->
-           (FloatStats * FloatBinds *
-            (list (Core.Id * Core.CoreExpr)%type *
-             list (Core.Id * Core.CoreExpr)%type)%type)%type :=
-          fun '(pair (Core.TB name spec) rhs) =>
-            let dest_lvl := SetLevels.floatSpecLevel spec in
-            if SetLevels.isTopLvl dest_lvl : bool
-            then let 'pair (pair fs rhs_floats) rhs' := (floatRhs name rhs) in
-                 pair (pair fs emptyFloats) (pair nil (addTopFloatPairs (flattenTopFloats
-                                                                         rhs_floats) (cons (pair name rhs') nil))) else
-            let 'pair (pair fs rhs_floats) rhs' := (floatRhs name rhs) in
-            let 'pair rhs_floats' heres := (partitionByLevel dest_lvl rhs_floats) in
-            let 'pair (pair ul_pairs pairs) case_heres := (splitRecFloats heres) in
-            let pairs' := cons (pair name (installUnderLambdas case_heres rhs')) pairs in
-            pair (pair fs rhs_floats') (pair ul_pairs pairs') in
-        let 'pair (pair fs rhs_floats) new_pairs := floatList do_pair pairs in
-        let 'pair new_ul_pairss new_other_pairss := GHC.List.unzip new_pairs in
-        let 'pair new_join_pairs new_l_pairs := Data.OldList.partition (Id.isJoinId
-                                                                        GHC.Base.∘
-                                                                        Data.Tuple.fst) (Data.Foldable.concat
-                                                                                         new_other_pairss) in
-        let new_rec_binds :=
-          if Data.Foldable.null new_join_pairs : bool
-          then cons (Core.Rec new_l_pairs) nil else
-          if Data.Foldable.null new_l_pairs : bool
-          then cons (Core.Rec new_join_pairs) nil else
-          cons (Core.Rec new_l_pairs) (cons (Core.Rec new_join_pairs) nil) in
-        let new_non_rec_binds :=
-          let cont_29__ arg_30__ :=
-            let 'pair b e := arg_30__ in
-            cons (Core.NonRec b e) nil in
-          Coq.Lists.List.flat_map cont_29__ (Data.Foldable.concat new_ul_pairss) in
-        pair (pair fs rhs_floats) (Coq.Init.Datatypes.app new_non_rec_binds
-                                                          new_rec_binds)
-    end.
-
-#[global] Definition floatTopBind
-   : SetLevels.LevelledBind -> (FloatStats * Bag.Bag Core.CoreBind)%type :=
-  fun bind =>
-    let 'pair (pair fs floats) bind' := (floatBind bind) in
-    let float_bag := flattenTopFloats floats in
-    match bind' with
-    | cons (Core.Rec prs) nil =>
-        pair fs (Bag.unitBag (Core.Rec (addTopFloatPairs float_bag prs)))
-    | cons (Core.NonRec b e) nil =>
-        pair fs (Bag.snocBag float_bag (Core.NonRec b e))
-    | _ => Panic.pprPanic (GHC.Base.hs_string__ "floatTopBind") (Panic.someSDoc)
-    end.
+Axiom floatRhs : Core.CoreBndr ->
+                 SetLevels.LevelledExpr -> (FloatStats * FloatBinds * Core.CoreExpr)%type.
 
 #[global] Definition get_stats : FloatStats -> (nat * nat * nat)%type :=
   fun '(FlS a b c) => pair (pair a b) c.
@@ -317,6 +229,17 @@ Axiom partitionByLevel : SetLevels.Level ->
                                                               floats))
     end.
 
+#[global] Definition partitionAtJoinCeiling
+   : FloatBinds -> (FloatBinds * Bag.Bag MkCore.FloatBind)%type :=
+  fun '(FB tops ceils defs) => pair (FB tops Bag.emptyBag defs) ceils.
+
+#[global] Definition atJoinCeiling
+   : (FloatStats * FloatBinds * Core.CoreExpr)%type ->
+     (FloatStats * FloatBinds * Core.CoreExpr)%type :=
+  fun '(pair (pair fs floats) expr') =>
+    let 'pair floats' ceils := partitionAtJoinCeiling floats in
+    pair (pair fs floats') (install ceils expr').
+
 #[global] Definition wrapTick
    : GHC.Types.Tickish.CoreTickish -> FloatBinds -> FloatBinds :=
   fun arg_0__ arg_1__ =>
@@ -341,19 +264,15 @@ Axiom partitionByLevel : SetLevels.Level ->
     end.
 
 (* External variables:
-     None Some andb bool cons list nat negb nil op_zt__ pair Bag.Bag Bag.bagToList
-     Bag.emptyBag Bag.isEmptyBag Bag.lengthBag Bag.listToBag Bag.mapBag Bag.snocBag
-     Bag.unionBags Bag.unitBag Coq.Init.Datatypes.app Coq.Lists.List.flat_map
-     Core.AltCon Core.CoreBind Core.CoreBndr Core.CoreExpr Core.Id Core.Lam
-     Core.NonRec Core.Rec Core.TB Core.Var Core.isUnliftedType Core.mkLams
-     CoreUtils.exprIsHNF Data.Foldable.concat Data.Foldable.foldr Data.Foldable.null
-     Data.OldList.partition Data.Tuple.fst GHC.Base.op_z2218U__ GHC.Base.op_zeze__
-     GHC.List.reverse GHC.List.unzip GHC.Num.fromInteger GHC.Num.op_zm__
-     GHC.Num.op_zp__ GHC.Types.Tickish.CoreTickish Id.idJoinPointHood Id.idType
-     Id.isJoinId IntMap.IntMap IntMap.empty IntMap.foldr IntMap.map IntMap.singleton
-     IntMap.unionWith MkCore.FloatBind MkCore.FloatCase MkCore.FloatLet
-     MkCore.wrapFloat Outputable.JoinPoint Panic.assertPpr Panic.pprPanic
+     andb bool cons list nat negb nil op_zt__ pair Bag.Bag Bag.bagToList Bag.emptyBag
+     Bag.isEmptyBag Bag.lengthBag Bag.listToBag Bag.mapBag Bag.snocBag Bag.unionBags
+     Bag.unitBag Coq.Init.Datatypes.app Core.AltCon Core.CoreBind Core.CoreBndr
+     Core.CoreExpr Core.Id Core.Lam Core.NonRec Core.Rec Core.Var Core.isUnliftedType
+     CoreUtils.exprIsHNF Data.Foldable.foldr GHC.Base.op_z2218U__ GHC.Base.op_zeze__
+     GHC.List.reverse GHC.Num.fromInteger GHC.Num.op_zp__
+     GHC.Types.Tickish.CoreTickish Id.idType Id.isJoinId IntMap.IntMap IntMap.empty
+     IntMap.foldr IntMap.map IntMap.singleton IntMap.unionWith MkCore.FloatBind
+     MkCore.FloatCase MkCore.FloatLet MkCore.wrapFloat Panic.assertPpr Panic.pprPanic
      Panic.someSDoc SetLevels.JoinCeilLvl SetLevels.Level SetLevels.LevelledBind
-     SetLevels.LevelledBndr SetLevels.LevelledExpr SetLevels.Mk_Level
-     SetLevels.floatSpecLevel SetLevels.isTopLvl Util.mapSnd
+     SetLevels.LevelledExpr SetLevels.Mk_Level SetLevels.isTopLvl Util.mapSnd
 *)

@@ -56,7 +56,7 @@ Arguments USM {_} _.
 
 (* Midamble *)
 
-Instance Default__UniqSupply
+#[global] Instance Default__UniqSupply
    : HsToCoq.Err.Default UniqSupply.
 Admitted.
 

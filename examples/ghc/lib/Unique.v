@@ -188,8 +188,6 @@ Program Instance Uniquable__Unique : Uniquable Unique :=
 
 Axiom isLocalUnique : Unique -> bool.
 
-Axiom initExitJoinUnique : Unique.
-
 (* External variables:
      Eq Gt Lt Type bool comparison negb op_zt__ pair BinNums.N
      Coq.ZArith.BinInt.Z.land Coq.ZArith.BinInt.Z.lor Coq.ZArith.BinInt.Z.of_N

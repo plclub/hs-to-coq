@@ -220,8 +220,7 @@ Axiom coStats : AxiomatizedTypes.Coercion -> CoreStats.
        | Rec prs => sum (map pairSize prs)
        end for exprSize.
 
-#[global] Definition tickSize : GHC.Types.Tickish.CoreTickish -> nat :=
-  fun _ => 1.
+Axiom tickSize : GHC.Types.Tickish.CoreTickish -> nat.
 
 #[global] Definition pairSize : (Var * CoreExpr)%type -> nat :=
   fun '(pair b e) => bndrSize b + exprSize e.
@@ -230,10 +229,10 @@ Axiom coStats : AxiomatizedTypes.Coercion -> CoreStats.
   fun '(Mk_Alt _ bs e) => bndrsSize bs + exprSize e.
 
 (* External variables:
-     Alt App Case Cast CoreAlt CoreBind CoreExpr Lam Let Lit Mk_Coercion Mk_Type
+     App Case Cast CoreAlt CoreBind CoreExpr Lam Let Lit Mk_Alt Mk_Coercion Mk_Type
      Mk_Var NonRec Rec Var bool foldl' isTyVar list map nat op_z2218U__ op_zp__
      op_zt__ orb pair sum varType AxiomatizedTypes.Coercion AxiomatizedTypes.Type_
      BasicTypes.NotTopLevel BasicTypes.TopLevel BasicTypes.TopLevelFlag
-     BasicTypes.isTopLevel GHC.Types.Tickish.CoreTickish GHC.Types.Tickish.ProfNote
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default Id.isJoinId
+     BasicTypes.isTopLevel GHC.Types.Tickish.CoreTickish HsToCoq.Err.Build_Default
+     HsToCoq.Err.Default HsToCoq.Err.default Id.isJoinId
 *)
