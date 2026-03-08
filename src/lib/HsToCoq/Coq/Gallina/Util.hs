@@ -241,9 +241,13 @@ qualidHasValidCoqOp :: Qualid -> Bool
 qualidHasValidCoqOp qid = case identToOp (qualidBase qid) of
   Nothing -> False
   Just op -> T.all isValidCoqOpChar op
+             && not (isAmbiguousCoqOp op)
   where
     isValidCoqOpChar c = c `elem` ("+-*/\\<>=~!@#%^&|:?," :: [Char])
                       || c > '\x7f'  -- Unicode symbols
+    -- Operators that start with a built-in operator prefix create ambiguity
+    -- when qualified (e.g., "GHC.Base.<*" parses as "GHC.Base.<" then "*").
+    isAmbiguousCoqOp op = op `elem` ["<*"]
 
 qualidToOp :: Qualid -> Maybe Op
 qualidToOp (Qualified qid aid) = ((qid <> ".") <>) <$> identToOp aid

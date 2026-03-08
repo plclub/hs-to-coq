@@ -216,7 +216,7 @@ Program Instance Functor__Backwards {f : Type -> Type} `{(GHC.Base.Functor f)}
   fun {a : Type} {b : Type} =>
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
-      | Mk_Backwards xs, Mk_Backwards ys => Mk_Backwards (ys GHC.Base.<* xs)
+      | Mk_Backwards xs, Mk_Backwards ys => Mk_Backwards (GHC.Base.op_zlzt__ ys xs)
       end.
 
 #[local] Definition Applicative__Backwards_pure {inst_f : Type -> Type}

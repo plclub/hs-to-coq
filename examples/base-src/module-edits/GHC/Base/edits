@@ -155,5 +155,11 @@ skip GHC.Base.Monoid__arrow
 skip GHC.Base.Alternative__arrow
 skip GHC.Base.MonadPlus__arrow
 
+# <* operator: default definition uses SigPat which hs-to-coq can't translate.
+# Add a standalone definition equivalent to liftA2 const.
+add GHC.Base Definition GHC.Base.op_zlzt__ `{g__0__ : Applicative f}
+   : forall {a : Type}, forall {b : Type}, f a -> f b -> f a :=
+  fun {a} {b} => @liftA2 f _ g__0__ a b a (fun x _ => x).
+
 # For hs_coq_map theorem
 redefine Definition GHC.Base.map {A B :Type} (f : A -> B) xs := Coq.Lists.List.map f xs.
