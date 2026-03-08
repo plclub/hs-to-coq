@@ -63,6 +63,14 @@
 ### examples/transformers/Makefile
 - Added post-generation sed to strip MonadTrans quantified superclass constraint
 
+## Phase 3: CI Fixes
+
+### examples/ghc/Makefile
+- Moved `CallArity` from `EXTRAS` to `HANDMOD` — CallArity has a manual version in `manual/CallArity.v` but was listed in EXTRAS (which triggers hs-to-coq generation). In parallel Make, this caused a race condition: if hs-to-coq ran before `lndir` created the symlink, it produced `CallArity.h2ci` (not in git), causing the `test-translation` CI job to fail.
+
+### .github/workflows/hs-to-coq.yml
+- Added `mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json` before cache steps in `build-haskell` and `test-translation` container jobs to suppress `WARNING: Error loading config file: open /root/.docker/config.json: permission denied`.
+
 ## Summary of Results
 - **23 examples fully compile** (base, base-thy, containers lib+theories, ghc lib+theories, transformers, graph/lib, core-semantics, bag, compiler, coinduction, dlist, intervals, successors, rle, quicksort, lambda, simple, resources)
 - **1 partial**: graph/theories (8/11, 3 need coq-equations)

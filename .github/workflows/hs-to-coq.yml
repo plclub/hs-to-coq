@@ -19,6 +19,8 @@ jobs:
       HOME: /root
     steps:
       - uses: actions/checkout@v4
+      - name: Fix Docker config permissions
+        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
       - name: Caching Stack
         uses: actions/cache@v4
         with:
@@ -133,6 +135,8 @@ jobs:
       HOME: /root
     steps:
       - uses: actions/checkout@v4
+      - name: Fix Docker config permissions
+        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
       - name: Initialize required submodules
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"

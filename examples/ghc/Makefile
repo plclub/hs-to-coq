@@ -57,7 +57,8 @@ HANDMOD = \
   GHC/Unit/External \
   GHC/Unit/Module/ModGuts \
   GHC/Utils/Monad/State/Strict \
-  GHC/Utils/Trace
+  GHC/Utils/Trace \
+  CallArity
 
 
 # generated from drop-in/
@@ -129,7 +130,6 @@ EXTRAS = \
   UnVarGraph \
   CoreArity \
   CoreTidy \
-  CallArity \
   CoAxiom \
   TysWiredIn \
   MkCore \
