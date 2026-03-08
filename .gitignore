@@ -54,3 +54,6 @@ ghc-head
 *.crashcoqide
 *.DS_Store
 
+# Claude related
+.claude
+
