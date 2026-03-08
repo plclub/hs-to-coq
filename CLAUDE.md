@@ -154,6 +154,7 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **mconcat `foldl' (<>) mempty`**: GHC 9.10 generates this but it creates circular deps. Fix: `redefine` to use `foldr mappend mempty` + `order mempty mconcat`
 - **`GHC.Prim.coerce` with abstract types**: Coq can't resolve `Coercible` for newtypes with abstract type vars. Fix: replace with explicit pattern matching
 - **`rightSection`**: GHC 9.10 desugars `(op x)` to `rightSection op x`. Defined in `base/GHC/Prim.v`. Operators with invalid Coq chars (like `$`) are rendered as z-encoded names (e.g. `op_zd__`) instead of notation form. Proofs involving `rightSection` need `unfold GHC.Prim.rightSection` before `lia`
+- **`<*` operator ambiguity**: `GHC.Base.<*` parses as `GHC.Base.<` followed by `*`. Excluded from `qualidHasValidCoqOp` in `Gallina/Util.hs` — renders as `op_zlzt__` instead. Definition added via `add` directive in base-src edits.
 - **`foldMap'` in Foldable**: GHC 9.10 added this to the Foldable class. Old restored .v files need the field added manually
 
 ### Edits system gotchas
@@ -179,7 +180,7 @@ Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories
 - `manual/AxiomatizedTypes.v`: All instances must be `#[global]` — downstream modules need Default/Eq/Ord resolution.
 - `axiomatize module OccurAnal`: Fully axiomatized. Needs `preamble.v` (Require Import Outputable, String scope) and `midamble.v` (Default instances for types defined after auto-generated defaults).
 - Midamble placement: inserted AFTER type declarations AND auto-generated Default instances, but BEFORE value declarations. Can't provide instances needed by auto-generated Defaults — use `skip` + midamble instead.
-- Makefile sed post-processing: BasicTypes (`#[global]` Default instances), UniqFM (phantom kind params), Core.v (mutual type ball fixes). Check Makefile when adding new post-processing.
+- Makefile sed post-processing: BasicTypes + Literal (`#[global]` Default instances), UniqFM (phantom kind params), Core.v (mutual type ball fixes). Check Makefile when adding new post-processing.
 - `Subst` type axiomatized (in `GHC.Core.TyCo.Subst`): theories can't pattern-match `Mk_Subst`. Use `getSubstInScopeVars` accessor or Admit.
 - `exitifyRec`, `floatExpr`/`floatBind`/`floatRhs`, `fiExpr`/`fiBinds`/`fiRhs`: all axiomatized. Proofs using `cbv beta delta [func]` must be Admitted.
 - `Id.idJoinPointHood`: skipped (uses `Outputable.JoinPointHood`). Axioms/lemmas referencing it must be Admitted or removed.
@@ -191,6 +192,9 @@ Containers is at v0.7. The `.v` files in `examples/containers/lib/` were transla
 - Map `fromList` proofs: `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing).
 - `hs-spec/IntSetProperties.v`: auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps).
 - `manual/Test/QuickCheck/Property.v`: z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
+
+### Transformers example (examples/transformers/)
+Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../ghc/ghc/libraries/transformers`. Makefile strips MonadTrans quantified superclass constraint via sed post-processing. Uses `skip class` for `Contravariant` and `Foldable1` (not in base).
 
 ### Coq 8.20 compatibility
 - `#[global]` required: `Program Instance` and `Program Definition` need `#[global]` prefix. Locality goes before `Program` (i.e., `#[global] Program Definition`).
