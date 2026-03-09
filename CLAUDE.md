@@ -207,6 +207,7 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 - Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
 - `eval unfold f` in sections: use `let x := constr:(@f args) in let rhs := eval unfold f in x`
 - `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — different unfolding chains needed
+- **Deprecated warnings (all fixed)**: `Hint` needs `#[export]` or `: core`; `Arguments` scope uses `%_` not `%`; empty/singleton-constructor inductives use `Set` not `Type` to avoid auto-prop-lowering; `app_length` → `length_app`, `map_length` → `length_map`, `seq_length` → `length_seq`; `N.mod_eq` etc. → `N.Div0.*`; `Declare Scope` before `Bind Scope`
 
 ## Workflow
 
