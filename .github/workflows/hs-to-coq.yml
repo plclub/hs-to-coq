@@ -32,7 +32,7 @@ jobs:
         run: stack --no-terminal --system-ghc --allow-different-user build
 
   test-coq-files:
-    name: Testing base, containers, ghc (Coq 8.20)
+    name: Testing all Coq examples (Coq 8.20)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,11 +61,28 @@ jobs:
             (cd examples/containers/theories; coq_makefile -f _CoqProject -o Makefile)
             make -j -C examples/containers/theories
             endGroup
+            startGroup "Compiling transformers"
+            (cd examples/transformers/lib; coq_makefile -f _CoqProject -o Makefile)
+            make -j -C examples/transformers/lib
+            endGroup
+            startGroup "Compiling graph"
+            (cd examples/graph/lib; coq_makefile -f _CoqProject -o Makefile)
+            make -j -C examples/graph/lib
+            (cd examples/graph/theories; coq_makefile -f _CoqProject -o Makefile)
+            make -j -C examples/graph/theories HeapEquiv.vo Crush.vo Helper.vo NicerQueue.vo RealRing.vo Path.vo Lex.vo WeightedGraphs.vo
+            endGroup
             startGroup "Compiling GHC core"
             (cd examples/ghc/lib; coq_makefile -f _CoqProject -o Makefile)
             make -j -C examples/ghc/lib
             (cd examples/ghc/theories; coq_makefile -f _CoqProject -o Makefile)
             make -j -C examples/ghc/theories
+            endGroup
+            startGroup "Compiling core-semantics"
+            (cd examples/core-semantics/lib; coq_makefile -f _CoqProject -o Makefile)
+            make -j -C examples/core-semantics/lib
+            endGroup
+            startGroup "Compiling resources"
+            coqc -Q base "" examples/resources/list_monad.v
             endGroup
 
   tests:
@@ -125,6 +142,7 @@ jobs:
           make -C examples/simple
           (cd examples/bag; coq_makefile -f _CoqProject -o Makefile)
           make -C examples/bag
+          coqc -Q base "" examples/resources/list_monad.v
 
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)

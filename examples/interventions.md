@@ -71,6 +71,15 @@
 ### .github/workflows/hs-to-coq.yml
 - Added `mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json` before cache steps in `build-haskell` and `test-translation` container jobs to suppress `WARNING: Error loading config file: open /root/.docker/config.json: permission denied`.
 
+## Phase 4: CI Coverage Expansion
+
+### .github/workflows/hs-to-coq.yml
+- Added transformers/lib to `test-coq-files` job
+- Added graph/lib + graph/theories (8 of 11 files, excluding 3 that need coq-equations: BFSProofs, HeapProofs, SPProofs) to `test-coq-files` job
+- Added core-semantics/lib to `test-coq-files` job (depends on ghc/lib + transformers)
+- Added resources/list_monad.v to both `test-coq-files` and `tests` jobs
+- Updated job name to "Testing all Coq examples (Coq 8.20)"
+
 ## Summary of Results
 - **23 examples fully compile** (base, base-thy, containers lib+theories, ghc lib+theories, transformers, graph/lib, core-semantics, bag, compiler, coinduction, dlist, intervals, successors, rle, quicksort, lambda, simple, resources)
 - **1 partial**: graph/theories (8/11, 3 need coq-equations)
