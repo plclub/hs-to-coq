@@ -80,7 +80,7 @@ Qed.
 Lemma length_app (xs : list A) (ys : list A) : List.length (xs ++ ys) = (List.length xs + List.length ys)%Z.
 Proof.
   rewrite !hs_coq_list_length. rewrite !Zlength_correct. 
-  rewrite app_length. rewrite Nat2Z.inj_add. reflexivity.
+  rewrite length_app. rewrite Nat2Z.inj_add. reflexivity.
 Qed. 
 
 End Length.

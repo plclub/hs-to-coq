@@ -394,7 +394,7 @@ Proof.
   - change @foldl' with @foldl; rewrite foldl_spec //.
     apply/Eq_eq.
     generalize (toList s). intro xs.
-    rewrite <- fold_left_length.
+    rewrite <- fold_left_S_O.
     replace (0%N) with (N.of_nat 0) by reflexivity.
     generalize 0.
     induction xs.

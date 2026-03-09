@@ -30,7 +30,7 @@ Set Bullet Behavior "Strict Subproofs".
 
 Lemma RespectsVar_const_true : RespectsVar (const true).
 Proof. move => x1 x2 Eq. reflexivity. Qed.
-#[export] Hint Resolve RespectsVar_const_true.
+#[export] Hint Resolve RespectsVar_const_true : core.
 Lemma RespectsVar_andb f0 f: 
   RespectsVar f0 -> RespectsVar f ->
   RespectsVar (fun v : Var => f0 v && f v).
@@ -335,12 +335,12 @@ Proof.
   intros. apply map_union_FV_WF; intros. apply unit_FV_WF.
 Qed.
 
-#[export] Hint Resolve unit_FV_WF.
-#[export] Hint Resolve empty_FV_WF.
-#[export] Hint Resolve union_FV_WF.
-#[export] Hint Resolve unions_FV_WF.
-#[export] Hint Resolve del_FV_WF.
-#[export] Hint Resolve mkFVs_FV_WF.
+#[export] Hint Resolve unit_FV_WF : core.
+#[export] Hint Resolve empty_FV_WF : core.
+#[export] Hint Resolve union_FV_WF : core.
+#[export] Hint Resolve unions_FV_WF : core.
+#[export] Hint Resolve del_FV_WF : core.
+#[export] Hint Resolve mkFVs_FV_WF : core.
 
 (** * Some other theroems about [FV]s. *)
 

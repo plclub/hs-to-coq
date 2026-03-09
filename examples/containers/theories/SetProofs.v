@@ -2527,7 +2527,7 @@ Proof.
   induction H.
   * reflexivity.
   * rewrite toList_Bin.
-    rewrite app_length.
+    rewrite length_app.
     simpl.
     rewrite H3, IHBounded1, IHBounded2.
     lia.
@@ -4084,7 +4084,7 @@ Next Obligation.
           destruct zs.
           ++  rewrite app_nil_r in H4.
               eapply IH.
-              + rewrite H4. simpl. rewrite app_length. lia.
+              + rewrite H4. simpl. rewrite length_app. lia.
               + lia.
               + assumption.
               + destruct H5 as [?|[??]]; [left; assumption | right].

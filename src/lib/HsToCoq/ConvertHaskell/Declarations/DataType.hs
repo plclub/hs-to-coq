@@ -261,4 +261,18 @@ convertDataDecl name tvs defn = do
       _ ->
         pure ()
 
-  pure $ IndBody coqName params resTy cons
+  -- Use Set instead of Type for types that Coq 8.20 would auto-lower to Prop:
+  -- empty inductives (0 constructors) and single-constructor types with no
+  -- explicit arguments.  These are all legitimate Set types.
+  -- Constructor args may be encoded as arrows in the return type (not as
+  -- binders), so we check both.
+  let finalResTy = case resTy of
+        Sort Type | propLowerable cons -> Sort Set
+        _                              -> resTy
+      propLowerable []                       = True
+      propLowerable [(_, binders, mty)]      = null binders && not (hasArrows mty)
+      propLowerable _                        = False
+      hasArrows (Just (Coq.Arrow _ _))       = True
+      hasArrows _                            = False
+
+  pure $ IndBody coqName params finalResTy cons

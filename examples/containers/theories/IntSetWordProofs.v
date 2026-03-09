@@ -2500,7 +2500,7 @@ Qed.
 
 Lemma empty_WF : WF empty.
 Proof. now exists (fun _ => false); constructor. Qed.
-#[export] Hint Resolve empty_WF.
+#[export] Hint Resolve empty_WF : core.
 
 (** *** Verification of [singleton] *)
 
@@ -5192,7 +5192,7 @@ Proof.
     erewrite toList_go_append with (s := s2) by eassumption.
     rewrite IHDesc1.
     rewrite IHDesc2.
-    rewrite !app_length.
+    rewrite !length_app.
     Int_Word_N.
     simpl length.
     unfold Nat in *.
@@ -5227,7 +5227,7 @@ Proof.
          erewrite toList_go_append with (s := s2) by eassumption.
          erewrite sizeGo_spec' by eassumption.
          erewrite sizeGo_spec' by eassumption.
-         rewrite !app_length.
+         rewrite !length_app.
          simpl length.
          Int_Word_N.
          rewrite Nat2Z.inj_add.
@@ -5236,7 +5236,7 @@ Proof.
          erewrite toList_go_append with (s := s2) by eassumption.
          erewrite sizeGo_spec' by eassumption.
          erewrite sizeGo_spec' by eassumption.
-         rewrite !app_length.
+         rewrite !length_app.
          simpl length.
          rewrite Nat.add_0_r.
          Int_Word_N.

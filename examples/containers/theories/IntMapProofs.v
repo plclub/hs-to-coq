@@ -1190,7 +1190,7 @@ Qed.
 
 Lemma empty_WF {a} : WF (empty : IntMap a).
 Proof. now exists (fun _ => None); constructor. Qed.
-#[export] Hint Resolve empty_WF.
+#[export] Hint Resolve empty_WF : core.
 
 
 (** *** Verification of [insert] *)

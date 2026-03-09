@@ -21,9 +21,9 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive Proxy {k : Type} (t : k) : Type := | Mk_Proxy : Proxy t.
+Inductive Proxy {k : Type} (t : k) : Set := | Mk_Proxy : Proxy t.
 
-Inductive KProxy (t : Type) : Type := | Mk_KProxy : KProxy t.
+Inductive KProxy (t : Type) : Set := | Mk_KProxy : KProxy t.
 
 Arguments Mk_Proxy {_} {_}.
 

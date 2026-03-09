@@ -360,7 +360,7 @@ Proof.
   unfold isLocalVar. unfold isGlobalId. rewrite h.
   auto.
 Qed.
-#[export] Hint Resolve RespectsVar_isLocalVar.
+#[export] Hint Resolve RespectsVar_isLocalVar : core.
 
 
 Definition RespectsAEVar (f :Var -> bool) :=
@@ -374,7 +374,7 @@ Proof.
   unfold isLocalVar. unfold isGlobalId. rewrite h.
   auto.
 Qed.
-#[export] Hint Resolve RespectsAEVar_isLocalVar.
+#[export] Hint Resolve RespectsAEVar_isLocalVar : core.
 
 (** ** [isTyVar] and [isCoVar] *)
 

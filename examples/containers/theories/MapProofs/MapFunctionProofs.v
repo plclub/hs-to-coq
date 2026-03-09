@@ -1066,7 +1066,7 @@ Proof.
         simpl. erewrite <- toList_sem''. unfold SomeIf.
         destruct (sem s1 i). reflexivity. simpl. destruct (i == x). reflexivity. simpl.
         reflexivity. eassumption. eassumption. }
-        rewrite Heql in H10. rewrite app_length in H10.
+        rewrite Heql in H10. rewrite length_app in H10.
         assert (size s = size m). eapply size_sem. wf_bounds. rewrite Heqm.
         eapply fromDistinctAscList_Desc. apply H9. intros. assumption. intros. rewrite H11. reflexivity.
         erewrite size_spec in H12. erewrite size_spec in H12. rewrite H12.

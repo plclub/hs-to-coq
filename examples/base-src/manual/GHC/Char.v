@@ -4,6 +4,7 @@ Require Import GHC.Num.
 
 Require Import NArith.
 Definition Char := N.
+Declare Scope char_scope.
 Bind Scope char_scope   with N.
 
 (* Notation for literal characters in Coq source. *)

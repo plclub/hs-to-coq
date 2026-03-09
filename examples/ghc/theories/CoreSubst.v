@@ -236,7 +236,7 @@ Proof.
   inversion H. subst.  eapply Forall_cons; eauto.
 Qed.
 
-#[export] Hint Constructors NoDup.
+#[export] Hint Constructors NoDup : core.
 
 Lemma NoDup_app_1 : forall (a : Type)`{Eq_ a} (l1 l2 : list a), 
     NoDup l1 ->

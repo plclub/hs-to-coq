@@ -751,7 +751,7 @@ instance Gallina ArgumentSpec where
                  ArgExplicit -> id
                  ArgImplicit -> brackets
                  ArgMaximal  -> braces
-    in wrap (renderGallina arg) <> maybe mempty (("%" <>) . renderIdent) oscope
+    in wrap (renderGallina arg) <> maybe mempty (("%_" <>) . renderIdent) oscope
 
 instance Gallina LocalModule where
   renderGallina' _ (LocalModule name sentences) = vcat $

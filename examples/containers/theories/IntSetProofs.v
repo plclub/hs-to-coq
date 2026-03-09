@@ -193,7 +193,7 @@ Proof.
   rewrite !N.shiftl_mul_pow2 by (intro Htmp; inversion Htmp).
   rewrite !N.shiftr_div_pow2 by (intro Htmp; inversion Htmp).
   apply N.mul_le_mono_nonneg_r. nonneg.
-  apply N.div_le_mono. apply N.pow_nonzero; Nomega.
+  apply N.Div0.div_le_mono.
   assumption.
 Qed.
 
@@ -642,8 +642,7 @@ Proof.
   rewrite N.land_ones.
   rewrite N.ldiff_ones_r.
   rewrite N.shiftl_mul_pow2.
-  apply N.mod_mul.
-  intro Htmp; inversion Htmp.
+  apply N.Div0.mod_mul.
 Qed.
 
 Lemma isTipPrefix_shiftl_shiftr:
@@ -2425,7 +2424,7 @@ Qed.
 
 Lemma empty_WF : WF empty.
 Proof. now exists (fun _ => false); constructor. Qed.
-#[export] Hint Resolve empty_WF.
+#[export] Hint Resolve empty_WF : core.
 
 (** *** Verification of [singleton] *)
 
@@ -5151,7 +5150,7 @@ Proof.
     erewrite toList_go_append with (s := s2) by eassumption.
     rewrite IHDesc1.
     rewrite IHDesc2.
-    rewrite !app_length.
+    rewrite !length_app.
     simpl length.
     unfold Nat in *.
     Nomega.
@@ -5178,7 +5177,7 @@ Proof.
          erewrite toList_go_append with (s := s2) by eassumption.
          erewrite sizeGo_spec' by eassumption.
          erewrite sizeGo_spec' by eassumption.
-         rewrite !app_length.
+         rewrite !length_app.
          simpl length.
          unfold Nat in *.
          Nomega.
@@ -5186,7 +5185,7 @@ Proof.
          erewrite toList_go_append with (s := s2) by eassumption.
          erewrite sizeGo_spec' by eassumption.
          erewrite sizeGo_spec' by eassumption.
-         rewrite !app_length.
+         rewrite !length_app.
          simpl length.
          unfold Nat in *.
          Nomega.

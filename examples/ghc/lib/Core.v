@@ -85,7 +85,7 @@ Inductive UnfoldingCache : Type :=
     : bool) (uf_expandable : bool)
    : UnfoldingCache.
 
-Inductive Unfolding : Type := | NoUnfolding : Unfolding.
+Inductive Unfolding : Set := | NoUnfolding : Unfolding.
 
 Inductive TypeShape : Type :=
   | TsFun : TypeShape -> TypeShape
@@ -117,7 +117,7 @@ Inductive Specificity : Type :=
 #[global] Definition RuntimeRepType :=
   Type_%type.
 
-Inductive RuleInfo : Type := | EmptyRuleInfo.
+Inductive RuleInfo : Set := | EmptyRuleInfo.
 
 Inductive PrimElemRep : Type :=
   | Int8ElemRep : PrimElemRep

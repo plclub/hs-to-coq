@@ -21,7 +21,7 @@ Require GHC.Tuple.
 
 (* Converted type declarations: *)
 
-Inductive Void : Type :=.
+Inductive Void : Set :=.
 
 Record Semigroup__Dict (a : Type) := Semigroup__Dict_Build {
   op_zlzlzgzg____ : a -> a -> a }.
@@ -197,9 +197,9 @@ Notation "'&' s" := (hs_string__ s) (at level 1, format "'&' s").
 Definition FilePath := String.
 
 (* ASZ: I've been assured that this is OK *)
-Inductive IO (a : Type) : Type :=.
-Inductive IORef (a : Type) : Type :=.
-Inductive IOError : Type :=.
+Inductive IO (a : Type) : Set :=.
+Inductive IORef (a : Type) : Set :=.
+Inductive IOError : Set :=.
 
 (****************************************************)
 
@@ -228,7 +228,7 @@ Arguments List.app {_} _ _.
 
 
 Definition Synonym {A : Type} (_uniq : Type) (x : A) : A := x.
-Arguments Synonym {A}%type _uniq%type x%type.
+Arguments Synonym {A}%_type _uniq%_type x%_type.
 
 
 (*********** built in classes Eq & Ord **********************)

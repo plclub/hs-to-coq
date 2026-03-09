@@ -134,17 +134,17 @@ Module OrdTheories(E: OrderedType).
       move=>Hcontra; inversion Hcontra.
   Qed.
 
-  #[export] Hint Resolve elt_eqP.
-  #[export] Hint Resolve elt_ltP.
-  #[export] Hint Resolve elt_gtP.
-  #[export] Hint Resolve elt_leP.
-  #[export] Hint Resolve elt_geP.
-  #[export] Hint Resolve elt_compare_ltP.
-  #[export] Hint Resolve elt_compare_lt'P.
-  #[export] Hint Resolve elt_compare_gtP.
-  #[export] Hint Resolve elt_compare_gt'P.
-  #[export] Hint Resolve elt_compare_eqP.
-  #[export] Hint Resolve elt_compare_eq'P.
+  #[export] Hint Resolve elt_eqP : core.
+  #[export] Hint Resolve elt_ltP : core.
+  #[export] Hint Resolve elt_gtP : core.
+  #[export] Hint Resolve elt_leP : core.
+  #[export] Hint Resolve elt_geP : core.
+  #[export] Hint Resolve elt_compare_ltP : core.
+  #[export] Hint Resolve elt_compare_lt'P : core.
+  #[export] Hint Resolve elt_compare_gtP : core.
+  #[export] Hint Resolve elt_compare_gt'P : core.
+  #[export] Hint Resolve elt_compare_eqP : core.
+  #[export] Hint Resolve elt_compare_eq'P : core.
 
   Lemma elt_eq : forall e1 e2, E.eq e1 e2 <-> e1 GHC.Base.== e2.
   Proof. move=>e1 e2. apply rwP =>//. Qed.

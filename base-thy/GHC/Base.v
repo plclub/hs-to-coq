@@ -70,7 +70,7 @@ Proof. by elim: bs. Qed.
    Coq theorems are automatically available. However, we make these
    automatically available to hs_simpl. *)
 
-#[export] Hint Rewrite @app_nil_r @app_length : hs_simpl.
+#[export] Hint Rewrite @app_nil_r @length_app : hs_simpl.
 
 (* ---------- map ------------------------------ *)
 

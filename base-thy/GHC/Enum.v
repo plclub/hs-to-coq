@@ -50,7 +50,7 @@ Proof. rewrite iterates_iterates'; apply iterates'_map. Qed.
 
 Theorem iterates'_length {A} (n : nat) (f : A -> A) (z : A) :
   length (iterates' n f z) = n.
-Proof. by rewrite iterates'_map map_length seq_length. Qed.
+Proof. by rewrite iterates'_map length_map length_seq. Qed.
 
 Theorem iterates_length {A} (n : nat) (f : A -> A) (z : A) :
   length (iterates n f z) = S n.

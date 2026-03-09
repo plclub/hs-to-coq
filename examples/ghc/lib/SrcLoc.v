@@ -47,7 +47,7 @@ Inductive RealSrcLoc : Type :=
   | ASrcLoc
    : FastString.LexicalFastString -> GHC.Num.Int -> GHC.Num.Int -> RealSrcLoc.
 
-Inductive NoComments : Type := | Mk_NoComments : NoComments.
+Inductive NoComments : Set := | Mk_NoComments : NoComments.
 
 Inductive GenLocated l e : Type := | L : l -> e -> GenLocated l e.
 

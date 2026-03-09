@@ -86,9 +86,9 @@ Proof.
   rewrite N.shiftr_div_pow2 in H by nonneg.
   subst.
   assert (0 < 2 ^ b) by (apply N_pow_pos_nonneg; Nomega).
-  assert (2 ^ b * (i / 2 ^ b) <= i) by (apply N.mul_div_le; lia).
+  assert (2 ^ b * (i / 2 ^ b) <= i) by (apply N.Div0.mul_div_le).
   enough (i - 2 ^ b * (i / 2 ^ b) < 2^b) by lia.
-  rewrite <- N.mod_eq by Nomega.
+  rewrite <- N.Div0.mod_eq.
   apply N.mod_lt; lia.
 Qed.
 

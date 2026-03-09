@@ -679,7 +679,7 @@ Lemma size_spec:
 Proof.
   intros. induction H.
   - simpl. reflexivity.
-  - simpl. rewrite toList_Bin. simpl. rewrite app_length. simpl.
+  - simpl. rewrite toList_Bin. simpl. rewrite length_app. simpl.
     rewrite Nat2Z.inj_add. rewrite <- IHBounded1.
     rewrite Nat2Z.inj_succ. rewrite <- IHBounded2.
     lia.

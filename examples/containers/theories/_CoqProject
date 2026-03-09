@@ -3,6 +3,8 @@
 -Q ../../../base ""
 -Q ../../../base-thy  Proofs
 -Q ../../containers/lib ""
+-arg -w
+-arg -masking-absolute-name,-deprecated-focus,-intuition-auto-with-star,-deprecated-tactic-notation-since-8.18,-deprecated-intros-until-0
 CustomTactics.v
 OrdTactic.v
 OrdTheories.v
