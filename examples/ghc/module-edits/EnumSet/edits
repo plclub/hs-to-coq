@@ -2,6 +2,15 @@ axiomatize module EnumSet
 
 data kinds EnumSet.EnumSet Type
 
+# GHC 9.10: axiomatized instances/values get bogus {k} type variable
+skip EnumSet.Semigroup__EnumSet
+skip EnumSet.Monoid__EnumSet
+skip EnumSet.empty
+skip EnumSet.difference
+skip EnumSet.union
+skip EnumSet.delete
+skip EnumSet.insert
+
 rename value GHC.Enum.fromEnum = EnumSet.fromEnumN
 rename value GHC.Enum.toEnum = EnumSet.toEnumN
 

@@ -1,4 +1,20 @@
 skip module Lexeme
+skip module GHC.Builtin.Uniques
+skip module GHC.Utils.Lexeme
+
+# Coq 8.20: type/constructor name clash
+rename value GHC.Types.Name.Occurrence.OccSet = OccName.Mk_OccSet
+
+# GHC 9.10: FldName constructor added, Eq instance provided in midamble
+skip OccName.Eq___NameSpace
+
+# GHC 9.10: Uniquable__NameSpace references GHC.Builtin.Uniques which we skip
+skip OccName.Uniquable__NameSpace
+
+# GHC 9.10: references GHC.Utils.Lexeme / GHC.Builtin.Uniques
+skip OccName.promoteOccName
+skip OccName.lookupFieldsOccEnv
+skip OccName.lookupOccEnv_WithFields
 
 #
 # axiomatize functions we cannot translate (and don't really care about the definition)
@@ -33,6 +49,9 @@ redefine Local Definition OccName.Ord__NameSpace_compare : NameSpace -> (NameSpa
           | VarName   , VarName   => Eq
           | VarName   , _         => Lt
           | _         , VarName   => Gt
+          | FldName a , FldName b => GHC.Base.compare a b
+          | FldName _ , _         => Lt
+          | _         , FldName _ => Gt
           | DataName  , DataName  => Eq
           | _         , DataName  => Lt
           | DataName  , _         => Gt
@@ -75,7 +94,8 @@ order OccName.Eq___NameSpace OccName.nameSpacesRelated
 # that uses UniqFM or UniqSet. So we need a big order here (it's not complete but
 # we got lucky.)
 #
-order OccName.Uniquable__OccName OccName.unitOccSet OccName.unitOccEnv OccName.mkOccSet OccName.mkOccEnv_C OccName.mkOccEnv OccName.lookupOccEnv OccName.initTidyOccEnv OccName.foldOccEnv OccName.filterOccSet OccName.extendOccSetList OccName.extendOccSet OccName.extendOccEnv_C OccName.extendOccEnv_Acc OccName.extendOccEnvList OccName.extendOccEnv
+order OccName.extendOccEnv OccName.extendOccEnvList
+order OccName.extendOccEnv OccName.unitOccSet OccName.unitOccEnv OccName.mkOccSet OccName.mkOccEnv_C OccName.mkOccEnv OccName.lookupOccEnv OccName.initTidyOccEnv OccName.foldOccEnv OccName.filterOccSet OccName.extendOccSetList OccName.extendOccSet OccName.extendOccEnv_C OccName.extendOccEnv_Acc OccName.extendOccEnvList
 
 # outputtable
 skip OccName.parenSymOcc
@@ -84,4 +104,5 @@ skip OccName.pprNonVarNameSpace
 skip OccName.pprNameSpaceBrief
 skip OccName.pprOccName
 skip OccName.pprOccEnv
+skip OccName.ppMainFn
 skip OccName.Default__OccName

@@ -200,8 +200,7 @@ data Config = Config { _outputFile          :: !(Maybe FilePath)
 makeLenses ''Config
 
 ghcInputDirs :: FilePath -> [FilePath]
-ghcInputDirs base = map ((base </> "compiler") </>) $ words
-    "backpack basicTypes cmm codeGen coreSyn deSugar ghci hsSyn iface llvmGen main nativeGen parser prelude profiling rename simplCore simplStg specialise stgSyn stranal typecheck types utils vectorise stage2/build"
+ghcInputDirs base = [base </> "compiler"]
 
 processArgs :: GhcMonad m => m Config
 processArgs = do

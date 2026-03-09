@@ -1,4 +1,5 @@
 redefine Axiom Core.CoercionHole : Type.
+skip Core.Uniquable__CoercionHole
 
 skip Core.tidyToIfaceTypeSty
 skip Core.tidyToIfaceType

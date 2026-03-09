@@ -1733,6 +1733,10 @@ Fixpoint eqString (arg_0__ arg_1__ : String) : bool
 
 (* Skipping definition `GHC.Base.op_iShiftRLzh__' *)
 
+#[global] Definition op_zlzt__ `{g__0__ : Applicative f}
+   : forall {a : Type}, forall {b : Type}, f a -> f b -> f a :=
+  fun {a} {b} => (@liftA2 f _ g__0__ a b a (fun x _ => x)).
+
 Module Notations.
 Export ManualNotations.
 Notation "'_GHC.Base.<<>>_'" := (op_zlzlzgzg__).

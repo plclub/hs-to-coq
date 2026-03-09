@@ -1,1 +1,16 @@
-{}
+constructorFields:
+  TysWiredIn.BI_Box: RecordFields [Qualified "TysWiredIn" "bi_data_con",Qualified
+    "TysWiredIn" "bi_inst_con",Qualified "TysWiredIn" "bi_boxed_type"]
+  TysWiredIn.BI_NoBoxAvailable: NonRecordFields 0
+  TysWiredIn.BI_NoBoxNeeded: NonRecordFields 0
+constructorTypes:
+  TysWiredIn.BI_Box: Qualified "TysWiredIn" "BoxingInfo"
+  TysWiredIn.BI_NoBoxAvailable: Qualified "TysWiredIn" "BoxingInfo"
+  TysWiredIn.BI_NoBoxNeeded: Qualified "TysWiredIn" "BoxingInfo"
+constructors:
+  TysWiredIn.BoxingInfo: '[Qualified "TysWiredIn" "BI_NoBoxNeeded",Qualified "TysWiredIn"
+    "BI_NoBoxAvailable",Qualified "TysWiredIn" "BI_Box"]'
+recordFieldTypes:
+  TysWiredIn.bi_boxed_type: Qualified "TysWiredIn" "BoxingInfo"
+  TysWiredIn.bi_data_con: Qualified "TysWiredIn" "BoxingInfo"
+  TysWiredIn.bi_inst_con: Qualified "TysWiredIn" "BoxingInfo"

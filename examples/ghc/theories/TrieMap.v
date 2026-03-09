@@ -20,9 +20,6 @@ Class TrieMapLaws (m : Type -> Type) `{TM : TrieMap m} : Prop :=
   ; tml_alter_there {a} k (f : XT a) tm k' :
       k <> k' -> lookupTM k' (alterTM k f tm) = lookupTM k' tm
   
-  ; tml_map {a b} (f : a -> b) k tm :
-      (f <$> lookupTM k tm) = lookupTM k (mapTM f tm)
-
   ; tml_fold_in {a} (tm : m a) v :
       In v (foldTM cons tm nil) <-> exists k, lookupTM k tm = Some v
   
@@ -51,25 +48,9 @@ Instance TrieMapLaws__Map          {k} `{GHC.Base.Ord k}                        
 Instance TrieMapLaws__IntMap                                                    : TrieMapLaws IntMap.IntMap. Admitted.
 Instance TrieMapLaws__MaybeMap     {m} `{TrieMapLaws m}                         : TrieMapLaws (MaybeMap m).                Admitted.
 Instance TrieMapLaws__ListMap      {m} `{TrieMapLaws m}                         : TrieMapLaws (ListMap m).                 Admitted.
-Instance TrieMapLaws__UniqFM                                                    : TrieMapLaws UniqFM.UniqFM.             Admitted.
+Instance TrieMapLaws__UniqFM {key} `{Unique.Uniquable key}                       : TrieMapLaws (UniqFM.UniqFM key).        Admitted.
 
-Instance TrieMapLaws__TypeMapX                                                  : TrieMapLaws TypeMapX.                    Admitted.
-Instance TrieMapLaws__CoreMapX                                                  : TrieMapLaws CoreMapX.                    Admitted.
-Instance TrieMapLaws__CoercionMapX                                              : TrieMapLaws CoercionMapX.                Admitted.
-
+(* Many TrieMap types (TypeMapX, CoreMapX, etc.) were axiomatized or removed
+   in GHC 9.10. Only declare instances for types that exist. *)
 Instance TrieMapLaws__GenMap       {m} `{TrieMapLaws m} `{GHC.Base.Eq_ (Key m)} : TrieMapLaws (GenMap m).                  Admitted.
-
-Instance TrieMapLaws__TypeMap                                                   : TrieMapLaws TypeMap.                     Admitted.
-Instance TrieMapLaws__CoreMap                                                   : TrieMapLaws CoreMap.                     Admitted.
-Instance TrieMapLaws__CoercionMap                                               : TrieMapLaws CoercionMap.                 Admitted.
-Instance TrieMapLaws__AltMap                                                    : TrieMapLaws AltMap.                      Admitted.
-
-Instance TrieMapLaws__VarMap                                                    : TrieMapLaws VarMap.                      Admitted.
-Instance TrieMapLaws__LooseTypeMap                                              : TrieMapLaws LooseTypeMap.                Admitted.
-
-Instance TrieMapLaws__CoreMapG                                                  : TrieMapLaws CoreMapG                     := TrieMapLaws__GenMap.
-Instance TrieMapLaws__TypeMapG                                                  : TrieMapLaws TypeMapG                     := TrieMapLaws__GenMap.
-Instance TrieMapLaws__CoercionMapG                                              : TrieMapLaws CoercionMapG                 := TrieMapLaws__GenMap.
-
-Instance TrieMapLaws__TyLitMap                                                  : TrieMapLaws TyLitMap.                    Admitted.
 

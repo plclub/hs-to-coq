@@ -12,28 +12,23 @@ simple class TrieMap.TrieMap
 ################################################################################
 ## Renaming constructors
 
-rename value TrieMap.LooseTypeMap = TrieMap.Mk_LooseTypeMap
-rename value TrieMap.TypeMap      = TrieMap.Mk_TypeMap
-rename value TrieMap.CoercionMap  = TrieMap.Mk_CoercionMap
-rename value TrieMap.CoercionMapX = TrieMap.Mk_CoercionMapX
-rename value TrieMap.CoreMap      = TrieMap.Mk_CoreMap
+rename value GHC.Data.TrieMap.LooseTypeMap = TrieMap.Mk_LooseTypeMap
+rename value GHC.Data.TrieMap.TypeMap      = TrieMap.Mk_TypeMap
+rename value GHC.Data.TrieMap.CoercionMap  = TrieMap.Mk_CoercionMap
+rename value GHC.Data.TrieMap.CoercionMapX = TrieMap.Mk_CoercionMapX
+rename value GHC.Data.TrieMap.CoreMap      = TrieMap.Mk_CoreMap
 
 ################################################################################
 ## Ordering constraints and type class resolution
 order TrieMap.TrieMap__Map            TrieMap.xtTickish
 order TrieMap.TrieMap__IntMap         TrieMap.mapVar
 order TrieMap.TrieMap__UniqFM         TrieMap.mapVar
-order TrieMap.TrieMap__TypeMapX       TrieMap.xtBndr
-order TrieMap.TrieMap__CoreMapX       TrieMap.mapA
-order TrieMap.TrieMap__GenMap         TrieMap.mapA
+# GHC 9.10: MapX/MapG instances are in midamble, so ordering is automatic
 order TrieMap.Eq___DeBruijn__CoreExpr TrieMap.mapA
 order TrieMap.TrieMap__TypeMap        TrieMap.lookupTypeMap
 order TrieMap.TrieMap__CoreMap        TrieMap.lookupCoreMap
 order TrieMap.Eq___DeBruijn__Type_    TrieMap.xtBndr
-
-order TrieMap.Eq___DeBruijn__CoreExpr TrieMap.TrieMap__CoreMapX TrieMap.TrieMap__CoreMapG TrieMap.TrieMap__CoreMap_alterTM
-order TrieMap.TrieMap__TypeMapX TrieMap.TrieMap__CoercionMapX_emptyTM
-order TrieMap.Eq___DeBruijn__Coercion TrieMap.TrieMap__CoercionMapX TrieMap.TrieMap__CoercionMapG
+order TrieMap.Eq___DeBruijn__CoreExpr TrieMap.TrieMap__CoreMap_alterTM
 order TrieMap.Eq___DeBruijn__Type_ TrieMap.Eq___DeBruijn__Coercion_op_zeze__
 
 # Why do I need to specify explicit type class instances for Coq?
@@ -59,20 +54,8 @@ in TrieMap.lookupCoreMap                  rewrite forall, TrieMap.lookupTM     =
 in TrieMap.extendCoreMap                  rewrite forall, TrieMap.alterTM      = TrieMap.alterTM      (m := TrieMap.CoreMap)
 in TrieMap.xtBndr                         rewrite forall, TrieMap.xtG          = TrieMap.xtG          (m := TrieMap.TypeMapX)
 
-# Why do I need to `add` redundant instances that should be computable?
-
-add TrieMap Instance TrieMap.TrieMap__CoreMapG     : TrieMap.TrieMap TrieMap.CoreMapG     := TrieMap.TrieMap__GenMap.
-add TrieMap Instance TrieMap.TrieMap__TypeMapG     : TrieMap.TrieMap TrieMap.TypeMapG     := TrieMap.TrieMap__GenMap.
-add TrieMap Instance TrieMap.TrieMap__CoercionMapG : TrieMap.TrieMap TrieMap.CoercionMapG := TrieMap.TrieMap__GenMap.
-
-order TrieMap.TrieMap__CoreMapX     TrieMap.TrieMap__CoreMapG
-order TrieMap.TrieMap__TypeMapX     TrieMap.TrieMap__TypeMapG
-order TrieMap.TrieMap__CoercionMapX TrieMap.TrieMap__CoercionMapG
-
-order TrieMap.TrieMap__CoreMapG     TrieMap.mapA
-order TrieMap.TrieMap__TypeMapG     TrieMap.lkTT
-order TrieMap.TrieMap__TypeMapG     TrieMap.xtTT
-order TrieMap.TrieMap__CoercionMapG TrieMap.TrieMap__CoercionMap_alterTM
+# GHC 9.10: MapX types, MapG definitions, TrieMap/Eq instances all provided in midamble
+# No ordering needed — midamble runs before converted value declarations
 
 # Alternative approach:
 # in TrieMap.mapA rewrite forall, TrieMap.mapTM f = TrieMap.mapTM (TrieMap := TrieMap.TrieMap__GenMap) f
@@ -123,8 +106,7 @@ axiomatize definition TrieMap.Eq___DeBruijn__Type_
 
 redefine Axiom TrieMap.ListMap  : forall (m : Type -> Type) (a : Type), Type.
 redefine Axiom TrieMap.GenMap   : forall (m : Type -> Type) (a : Type), Type.
-redefine Axiom TrieMap.TypeMapX : forall                    (a : Type), Type.
-redefine Axiom TrieMap.CoreMapX : forall                    (a : Type), Type.
+# GHC 9.10: TypeMapX and CoreMapX moved to GHC.Core.Map modules — added via `add` above
 
 ################################################################################
 ## Values of/pertaining to types we can't handle
@@ -144,6 +126,7 @@ add TrieMap Axiom TrieMap.GenMap__EmptyMap : forall {m} {a}, GenMap m a.
   # An axiomatized version of the `EmptyMap` constructor
 axiomatize definition TrieMap.mapG
 axiomatize definition TrieMap.fdG
+axiomatize definition TrieMap.ftG
 # We can't use `axiomatize definition` below because the order of `TrieMap` and
 # `Key` in the type signature is swapped.  Eventually we'll need a more general
 # solution to this.
@@ -155,15 +138,22 @@ redefine Axiom TrieMap.lkG :
            (TrieMap.Key m) -> ((TrieMap.GenMap m a) -> (option a)).
 # Again, solves the parameter order problem, the solution is just uglier.  It
 # also solves something about the `Key` type, but i'm not 100% sure what, tbh.
-redefine Instance TrieMap.TrieMap__GenMap {m} `{TrieMap.TrieMap m} `{GHC.Base.Eq_ (TrieMap.Key m)}
-    : TrieMap.TrieMap (TrieMap.GenMap m) :=
-  Build_TrieMap (TrieMap.GenMap m)
-                (TrieMap.Key m)
-                (fun {b}     => TrieMap.xtG)
-                (fun {a}     => TrieMap.GenMap__EmptyMap)
-                (fun {a} {b} => TrieMap.fdG)
-                (fun {a}     => TrieMap.lkG)
-                (fun {a} {b} => TrieMap.mapG).
+# GHC 9.10: TrieMap class now has filterTM instead of mapTM
+skip TrieMap.TrieMap__GenMap
+skip TrieMap.Functor__GenMap_fmap
+skip TrieMap.Functor__GenMap_op_zlzd__
+skip TrieMap.Functor__GenMap
+# GHC 9.10: Foldable for GenMap needs TrieMap (GenMap m) which we axiomatize
+skip TrieMap.Foldable__GenMap_foldMap
+skip TrieMap.Foldable__GenMap_fold
+skip TrieMap.Foldable__GenMap_foldl
+skip TrieMap.Foldable__GenMap_foldr
+skip TrieMap.Foldable__GenMap_length
+skip TrieMap.Foldable__GenMap_null
+skip TrieMap.Foldable__GenMap_product
+skip TrieMap.Foldable__GenMap_sum
+skip TrieMap.Foldable__GenMap_toList
+skip TrieMap.Foldable__GenMap
 
 # TypeMapX
 axiomatize definition TrieMap.emptyT
@@ -203,6 +193,10 @@ skip TrieMap.Eq___DeBruijn__unit
 # Skipping until `TyCoRep.TyLit` is a thing
 skip TrieMap.lkTyLit
 skip TrieMap.xtTyLit
+
+# GHC 9.10: uses unknown constructor LM
+axiomatize definition TrieMap.ftList
+axiomatize definition TrieMap.Functor__ListMap
 
 ################################################################################
 ## Interop and base types

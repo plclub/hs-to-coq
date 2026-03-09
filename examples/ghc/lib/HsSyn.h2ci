@@ -1,0 +1,32 @@
+constructorFields:
+  HsSyn.Boxed: NonRecordFields 0
+  HsSyn.NoSrcStrict: NonRecordFields 0
+  HsSyn.NoSrcUnpack: NonRecordFields 0
+  HsSyn.Nominal: NonRecordFields 0
+  HsSyn.Phantom: NonRecordFields 0
+  HsSyn.Representational: NonRecordFields 0
+  HsSyn.SrcLazy: NonRecordFields 0
+  HsSyn.SrcNoUnpack: NonRecordFields 0
+  HsSyn.SrcStrict: NonRecordFields 0
+  HsSyn.SrcUnpack: NonRecordFields 0
+  HsSyn.Unboxed: NonRecordFields 0
+constructorTypes:
+  HsSyn.Boxed: Qualified "HsSyn" "Boxity"
+  HsSyn.NoSrcStrict: Qualified "HsSyn" "SrcStrictness"
+  HsSyn.NoSrcUnpack: Qualified "HsSyn" "SrcUnpackedness"
+  HsSyn.Nominal: Qualified "HsSyn" "Role"
+  HsSyn.Phantom: Qualified "HsSyn" "Role"
+  HsSyn.Representational: Qualified "HsSyn" "Role"
+  HsSyn.SrcLazy: Qualified "HsSyn" "SrcStrictness"
+  HsSyn.SrcNoUnpack: Qualified "HsSyn" "SrcUnpackedness"
+  HsSyn.SrcStrict: Qualified "HsSyn" "SrcStrictness"
+  HsSyn.SrcUnpack: Qualified "HsSyn" "SrcUnpackedness"
+  HsSyn.Unboxed: Qualified "HsSyn" "Boxity"
+constructors:
+  HsSyn.Boxity: '[Qualified "HsSyn" "Boxed",Qualified "HsSyn" "Unboxed"]'
+  HsSyn.Role: '[Qualified "HsSyn" "Nominal",Qualified "HsSyn" "Representational",Qualified
+    "HsSyn" "Phantom"]'
+  HsSyn.SrcStrictness: '[Qualified "HsSyn" "SrcLazy",Qualified "HsSyn" "SrcStrict",Qualified
+    "HsSyn" "NoSrcStrict"]'
+  HsSyn.SrcUnpackedness: '[Qualified "HsSyn" "SrcUnpack",Qualified "HsSyn" "SrcNoUnpack",Qualified
+    "HsSyn" "NoSrcUnpack"]'

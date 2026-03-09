@@ -1,0 +1,1 @@
+../../../../../manual/GHC/Utils/Monad/State/Strict.v

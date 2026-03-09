@@ -1,1 +1,1 @@
-lib/Digraph.v: 
+lib/Digraph.v: ../../base/GHC/Base.h2ci

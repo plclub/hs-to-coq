@@ -10,11 +10,17 @@ Unset Printing Implicit Defensive.
 Require Coq.Program.Tactics.
 Require Coq.Program.Wf.
 
+(* Preamble *)
+
+
 (* Converted imports: *)
 
+Require BinNat.
 Require Data.Foldable.
+Require Data.IntMap.Internal.
 Require Data.IntSet.Internal.
 Require GHC.Base.
+Require GHC.Data.Word64Map.Internal.
 Require GHC.Prim.
 Require HsToCoq.Unpeel.
 Require IntMap.
@@ -23,438 +29,655 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Inductive UniqFM ele : Type := | UFM : (IntMap.IntMap ele) -> UniqFM ele.
+Inductive UniqFM (key : Type) (ele : Type) : Type :=
+  | UFM : GHC.Data.Word64Map.Internal.Word64Map ele -> UniqFM key ele.
 
-Arguments UFM {_} _.
+Inductive NonDetUniqFM (key : Type) (ele : Type) : Type :=
+  | Mk_NonDetUniqFM (getNonDet : UniqFM key ele) : NonDetUniqFM key ele.
+
+Inductive Edit (a : Type) : Type :=
+  | Removed : a -> Edit a
+  | Added : a -> Edit a
+  | Changed : a -> a -> Edit a.
 
 (* Midamble *)
 
-Require GHC.Err.
+Arguments UFM {_} {_} _.
+Arguments Mk_NonDetUniqFM {_} {_} _.
+Arguments Removed {_} _.
+Arguments Added {_} _.
+Arguments Changed {_} _ _.
 
-Instance Default__UniqFM {a} : Err.Default (UniqFM a) :=
-  Err.Build_Default _ (UFM IntMap.empty).
+Require GHC.Err.
+Require Data.IntMap.Internal.
+
+#[global] Instance Default__UniqFM {key} {ele} : Err.Default (UniqFM key ele) :=
+  Err.Build_Default _ (UFM Data.IntMap.Internal.empty).
+
+(* Functor/Semigroup/Monoid instances for UniqFM *)
+#[global]
+Program Instance Functor__UniqFM {key : Type} : GHC.Base.Functor (UniqFM key) :=
+  fun _ k__ => k__ {|
+    GHC.Base.fmap__ := fun {a} {b} f '(UFM m) => UFM (GHC.Base.fmap f m) ;
+    GHC.Base.op_zlzd____ := fun {a} {b} x '(UFM m) => UFM (GHC.Base.op_zlzd__ x m)
+  |}.
+
+#[global]
+Program Instance Semigroup__UniqFM {key : Type} {a : Type}
+  : GHC.Base.Semigroup (UniqFM key a) :=
+  fun _ k__ => k__ {|
+    GHC.Base.op_zlzlzgzg____ := fun '(UFM m1) '(UFM m2) =>
+      UFM (Data.IntMap.Internal.union m1 m2)
+  |}.
+
+#[global]
+Program Instance Monoid__UniqFM {key : Type} {a : Type}
+  : GHC.Base.Monoid (UniqFM key a) :=
+  fun _ k__ => k__ {|
+    GHC.Base.mappend__ := fun x y => GHC.Base.op_zlzlzgzg__ x y ;
+    GHC.Base.mconcat__ := fun xs => Data.Foldable.foldr GHC.Base.op_zlzlzgzg__ (UFM Data.IntMap.Internal.empty) xs ;
+    GHC.Base.mempty__ := UFM Data.IntMap.Internal.empty
+  |}.
+
+(* Manual definitions for functions that use GHC.Prim.coerce *)
+#[global] Definition addToUFM_L {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : (key -> elt -> elt -> elt) ->
+     key -> elt -> UniqFM key elt -> (option elt * UniqFM key elt)%type :=
+  fun f k v '(UFM m) =>
+    let '(old, m') :=
+      Data.IntMap.Internal.insertLookupWithKey
+        (fun _ _n _o => f k _o _n)
+        (Unique.getWordKey (Unique.getUnique k)) v m
+    in (old, UFM m').
+
+#[global] Definition mergeUFM {elta : Type} {eltb : Type} {eltc : Type} {key : Type}
+   : (elta -> eltb -> option eltc) ->
+     (UniqFM key elta -> UniqFM key eltc) ->
+     (UniqFM key eltb -> UniqFM key eltc) ->
+     UniqFM key elta -> UniqFM key eltb -> UniqFM key eltc :=
+  fun f g h '(UFM xm) '(UFM ym) =>
+    UFM (Data.IntMap.Internal.mergeWithKey
+      (fun _ x y => f x y)
+      (fun m => match g (UFM m) with | UFM r => r end)
+      (fun m => match h (UFM m) with | UFM r => r end)
+      xm ym).
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `Data.Data.Data', including
-   `UniqFM.Data__UniqFM' *)
+(* Skipping instance `UniqFM.Functor__NonDetUniqFM' of class
+   `GHC.Base.Functor' *)
 
-Instance Unpeel_UniqFM ele
-   : HsToCoq.Unpeel.Unpeel (UniqFM ele) (IntMap.IntMap ele) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(UFM y) => y) UFM.
+(* Skipping instance `UniqFM.Functor__UniqFM' of class `GHC.Base.Functor' *)
 
-Local Definition Eq___UniqFM_op_zeze__ {inst_ele : Type} `{GHC.Base.Eq_
-  inst_ele}
-   : UniqFM inst_ele -> UniqFM inst_ele -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
+(* Skipping instance `UniqFM.Foldable__NonDetUniqFM' of class
+   `Data.Foldable.Foldable' *)
 
-Local Definition Eq___UniqFM_op_zsze__ {inst_ele : Type} `{GHC.Base.Eq_
-  inst_ele}
-   : UniqFM inst_ele -> UniqFM inst_ele -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
+(* Skipping instance `UniqFM.Traversable__NonDetUniqFM' of class
+   `Data.Traversable.Traversable' *)
 
-Program Instance Eq___UniqFM {ele : Type} `{GHC.Base.Eq_ ele}
-   : GHC.Base.Eq_ (UniqFM ele) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___UniqFM_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___UniqFM_op_zsze__ |}.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `UniqFM.Outputable__Edit' *)
 
-Local Definition Functor__UniqFM_fmap
-   : forall {a : Type}, forall {b : Type}, (a -> b) -> UniqFM a -> UniqFM b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce GHC.Base.fmap.
+(* Skipping instance `UniqFM.Semigroup__UniqFM' of class `GHC.Base.Semigroup' *)
 
-Local Definition Functor__UniqFM_op_zlzd__
-   : forall {a : Type}, forall {b : Type}, a -> UniqFM b -> UniqFM a :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce _GHC.Base.<$_.
-
-Program Instance Functor__UniqFM : GHC.Base.Functor UniqFM :=
-  fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__UniqFM_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
-             Functor__UniqFM_op_zlzd__ |}.
-
-Definition plusUFM {elt : Type} : UniqFM elt -> UniqFM elt -> UniqFM elt :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | UFM x, UFM y => UFM (IntMap.union y x)
-    end.
-
-Local Definition Semigroup__UniqFM_op_zlzlzgzg__ {inst_a : Type}
-   : UniqFM inst_a -> UniqFM inst_a -> UniqFM inst_a :=
-  plusUFM.
-
-Program Instance Semigroup__UniqFM {a : Type} : GHC.Base.Semigroup (UniqFM a) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__UniqFM_op_zlzlzgzg__ |}.
-
-Local Definition Monoid__UniqFM_mappend {inst_a : Type}
-   : UniqFM inst_a -> UniqFM inst_a -> UniqFM inst_a :=
-  _GHC.Base.<<>>_.
-
-Definition emptyUFM {elt : Type} : UniqFM elt :=
-  UFM IntMap.empty.
-
-Local Definition Monoid__UniqFM_mempty {inst_a : Type} : UniqFM inst_a :=
-  emptyUFM.
-
-Local Definition Monoid__UniqFM_mconcat {inst_a : Type}
-   : list (UniqFM inst_a) -> UniqFM inst_a :=
-  GHC.Base.foldr Monoid__UniqFM_mappend Monoid__UniqFM_mempty.
-
-Program Instance Monoid__UniqFM {a : Type} : GHC.Base.Monoid (UniqFM a) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.mappend__ := Monoid__UniqFM_mappend ;
-           GHC.Base.mconcat__ := Monoid__UniqFM_mconcat ;
-           GHC.Base.mempty__ := Monoid__UniqFM_mempty |}.
+(* Skipping instance `UniqFM.Monoid__UniqFM' of class `GHC.Base.Monoid' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `UniqFM.Outputable__UniqFM' *)
 
-Definition isNullUFM {elt : Type} : UniqFM elt -> bool :=
-  fun '(UFM m) => IntMap.null m.
+#[global] Definition emptyUFM {key : Type} {elt : Type}
+   : UniqFM key elt :=
+  UFM Data.IntMap.Internal.empty.
 
-Definition unitUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : key -> elt -> UniqFM elt :=
-  fun k v => UFM (IntMap.singleton (Unique.getWordKey (Unique.getUnique k)) v).
+#[global] Definition isNullUFM {key : Type} {elt : Type}
+   : UniqFM key elt -> bool :=
+  fun '(UFM m) => Data.IntMap.Internal.null m.
 
-Definition unitDirectlyUFM {elt : Type} : Unique.Unique -> elt -> UniqFM elt :=
-  fun u v => UFM (IntMap.singleton (Unique.getWordKey u) v).
+#[global] Definition unitUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : key -> elt -> UniqFM key elt :=
+  fun k v =>
+    UFM (Data.IntMap.Internal.singleton (Unique.getWordKey (Unique.getUnique k)) v).
 
-Definition addToUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : UniqFM elt -> key -> elt -> UniqFM elt :=
+#[global] Definition unitDirectlyUFM {elt : Type} {key : Type}
+   : Unique.Unique -> elt -> UniqFM key elt :=
+  fun u v => UFM (Data.IntMap.Internal.singleton (Unique.getWordKey u) v).
+
+#[global] Definition addToUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : UniqFM key elt -> key -> elt -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | UFM m, k, v =>
-        UFM (IntMap.insert (Unique.getWordKey (Unique.getUnique k)) v m)
+        UFM (Data.IntMap.Internal.insert (Unique.getWordKey (Unique.getUnique k)) v m)
     end.
 
-Definition listToUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : list (key * elt)%type -> UniqFM elt :=
-  Data.Foldable.foldl (fun arg_0__ arg_1__ =>
-                         match arg_0__, arg_1__ with
-                         | m, pair k v => addToUFM m k v
-                         end) emptyUFM.
+#[global] Definition zipToUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : list key -> list elt -> UniqFM key elt :=
+  fun ks vs =>
+    let fix innerZip arg_0__ arg_1__ arg_2__
+      := match arg_0__, arg_1__, arg_2__ with
+         | ufm, cons k kList, cons v vList => innerZip (addToUFM ufm k v) kList vList
+         | ufm, _, _ => ufm
+         end in
+    innerZip emptyUFM ks vs.
 
-Definition addToUFM_Directly {elt : Type}
-   : UniqFM elt -> Unique.Unique -> elt -> UniqFM elt :=
+#[global] Definition listToUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : list (key * elt)%type -> UniqFM key elt :=
+  Data.Foldable.foldl' (fun arg_0__ arg_1__ =>
+                          match arg_0__, arg_1__ with
+                          | m, pair k v => addToUFM m k v
+                          end) emptyUFM.
+
+#[global] Definition addToUFM_Directly {key : Type} {elt : Type}
+   : UniqFM key elt -> Unique.Unique -> elt -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | UFM m, u, v => UFM (IntMap.insert (Unique.getWordKey u) v m)
+    | UFM m, u, v => UFM (Data.IntMap.Internal.insert (Unique.getWordKey u) v m)
     end.
 
-Definition listToUFM_Directly {elt : Type}
-   : list (Unique.Unique * elt)%type -> UniqFM elt :=
-  Data.Foldable.foldl (fun arg_0__ arg_1__ =>
-                         match arg_0__, arg_1__ with
-                         | m, pair u v => addToUFM_Directly m u v
-                         end) emptyUFM.
+#[global] Definition listToUFM_Directly {elt : Type} {key : Type}
+   : list (Unique.Unique * elt)%type -> UniqFM key elt :=
+  Data.Foldable.foldl' (fun arg_0__ arg_1__ =>
+                          match arg_0__, arg_1__ with
+                          | m, pair u v => addToUFM_Directly m u v
+                          end) emptyUFM.
 
-Definition addToUFM_C {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : (elt -> elt -> elt) -> UniqFM elt -> key -> elt -> UniqFM elt :=
+#[global] Definition listToIdentityUFM {key : Type} `{Unique.Uniquable key}
+   : list key -> UniqFM key key :=
+  Data.Foldable.foldl' (fun m x => addToUFM m x x) emptyUFM.
+
+#[global] Definition addToUFM_C {key : Type} {elt : Type} `{Unique.Uniquable
+  key}
+   : (elt -> elt -> elt) -> UniqFM key elt -> key -> elt -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
     | f, UFM m, k, v =>
-        UFM (IntMap.insertWith (GHC.Base.flip f) (Unique.getWordKey (Unique.getUnique
-                                                                     k)) v m)
+        UFM (Data.IntMap.Internal.insertWith (GHC.Base.flip f) (Unique.getWordKey
+                                                                (Unique.getUnique k)) v m)
     end.
 
-Definition listToUFM_C {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : (elt -> elt -> elt) -> list (key * elt)%type -> UniqFM elt :=
+#[global] Definition listToUFM_C {key : Type} {elt : Type} `{Unique.Uniquable
+  key}
+   : (elt -> elt -> elt) -> list (key * elt)%type -> UniqFM key elt :=
   fun f =>
-    Data.Foldable.foldl (fun arg_0__ arg_1__ =>
-                           match arg_0__, arg_1__ with
-                           | m, pair k v => addToUFM_C f m k v
-                           end) emptyUFM.
+    Data.Foldable.foldl' (fun arg_0__ arg_1__ =>
+                            match arg_0__, arg_1__ with
+                            | m, pair k v => addToUFM_C f m k v
+                            end) emptyUFM.
 
-Definition addListToUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : UniqFM elt -> list (key * elt)%type -> UniqFM elt :=
-  Data.Foldable.foldl (fun arg_0__ arg_1__ =>
-                         match arg_0__, arg_1__ with
-                         | m, pair k v => addToUFM m k v
-                         end).
+#[global] Definition addListToUFM {key : Type} {elt : Type} `{Unique.Uniquable
+  key}
+   : UniqFM key elt -> list (key * elt)%type -> UniqFM key elt :=
+  Data.Foldable.foldl' (fun arg_0__ arg_1__ =>
+                          match arg_0__, arg_1__ with
+                          | m, pair k v => addToUFM m k v
+                          end).
 
-Definition addListToUFM_Directly {elt : Type}
-   : UniqFM elt -> list (Unique.Unique * elt)%type -> UniqFM elt :=
-  Data.Foldable.foldl (fun arg_0__ arg_1__ =>
-                         match arg_0__, arg_1__ with
-                         | m, pair k v => addToUFM_Directly m k v
-                         end).
+#[global] Definition addListToUFM_Directly {key : Type} {elt : Type}
+   : UniqFM key elt -> list (Unique.Unique * elt)%type -> UniqFM key elt :=
+  Data.Foldable.foldl' (fun arg_0__ arg_1__ =>
+                          match arg_0__, arg_1__ with
+                          | m, pair k v => addToUFM_Directly m k v
+                          end).
 
-Definition addToUFM_Acc {key : Type} {elt : Type} {elts : Type}
+#[global] Definition addToUFM_Acc {key : Type} {elt : Type} {elts : Type}
   `{Unique.Uniquable key}
    : (elt -> elts -> elts) ->
-     (elt -> elts) -> UniqFM elts -> key -> elt -> UniqFM elts :=
+     (elt -> elts) -> UniqFM key elts -> key -> elt -> UniqFM key elts :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
     | exi, new, UFM m, k, v =>
-        UFM (IntMap.insertWith (fun _new old => exi v old) (Unique.getWordKey
-                                                            (Unique.getUnique k)) (new v) m)
+        UFM (Data.IntMap.Internal.insertWith (fun _new old => exi v old)
+             (Unique.getWordKey (Unique.getUnique k)) (new v) m)
     end.
 
-Definition alterUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : (option elt -> option elt) -> UniqFM elt -> key -> UniqFM elt :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | f, UFM m, k => UFM (IntMap.alter f (Unique.getWordKey (Unique.getUnique k)) m)
-    end.
+(* Skipping definition `UniqFM.addToUFM_L' *)
 
-Definition addListToUFM_C {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : (elt -> elt -> elt) -> UniqFM elt -> list (key * elt)%type -> UniqFM elt :=
-  fun f =>
-    Data.Foldable.foldl (fun arg_0__ arg_1__ =>
-                           match arg_0__, arg_1__ with
-                           | m, pair k v => addToUFM_C f m k v
-                           end).
-
-Definition adjustUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : (elt -> elt) -> UniqFM elt -> key -> UniqFM elt :=
+#[global] Definition alterUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : (option elt -> option elt) -> UniqFM key elt -> key -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | f, UFM m, k =>
-        UFM (IntMap.adjust f (Unique.getWordKey (Unique.getUnique k)) m)
+        UFM (Data.IntMap.Internal.alter f (Unique.getWordKey (Unique.getUnique k)) m)
     end.
 
-Definition adjustUFM_Directly {elt : Type}
-   : (elt -> elt) -> UniqFM elt -> Unique.Unique -> UniqFM elt :=
+#[global] Definition alterUFM_Directly {elt : Type} {key : Type}
+   : (option elt -> option elt) ->
+     UniqFM key elt -> Unique.Unique -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | f, UFM m, u => UFM (IntMap.adjust f (Unique.getWordKey u) m)
+    | f, UFM m, k => UFM (Data.IntMap.Internal.alter f (Unique.getWordKey k) m)
     end.
 
-Definition delFromUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : UniqFM elt -> key -> UniqFM elt :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | UFM m, k => UFM (IntMap.delete (Unique.getWordKey (Unique.getUnique k)) m)
-    end.
+#[global] Definition addListToUFM_C {key : Type} {elt : Type} `{Unique.Uniquable
+  key}
+   : (elt -> elt -> elt) ->
+     UniqFM key elt -> list (key * elt)%type -> UniqFM key elt :=
+  fun f =>
+    Data.Foldable.foldl' (fun arg_0__ arg_1__ =>
+                            match arg_0__, arg_1__ with
+                            | m, pair k v => addToUFM_C f m k v
+                            end).
 
-Definition delListFromUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : UniqFM elt -> list key -> UniqFM elt :=
-  Data.Foldable.foldl delFromUFM.
-
-Definition delFromUFM_Directly {elt : Type}
-   : UniqFM elt -> Unique.Unique -> UniqFM elt :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | UFM m, u => UFM (IntMap.delete (Unique.getWordKey u) m)
-    end.
-
-Definition delListFromUFM_Directly {elt : Type}
-   : UniqFM elt -> list Unique.Unique -> UniqFM elt :=
-  Data.Foldable.foldl delFromUFM_Directly.
-
-Definition plusUFM_C {elt : Type}
-   : (elt -> elt -> elt) -> UniqFM elt -> UniqFM elt -> UniqFM elt :=
+#[global] Definition adjustUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : (elt -> elt) -> UniqFM key elt -> key -> UniqFM key elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | f, UFM x, UFM y => UFM (IntMap.unionWith f x y)
+    | f, UFM m, k =>
+        UFM (Data.IntMap.Internal.adjust f (Unique.getWordKey (Unique.getUnique k)) m)
     end.
 
-Axiom plusUFM_CD : forall {elt : Type},
-                   (elt -> elt -> elt) -> UniqFM elt -> elt -> UniqFM elt -> elt -> UniqFM elt.
+#[global] Definition adjustUFM_Directly {elt : Type} {key : Type}
+   : (elt -> elt) -> UniqFM key elt -> Unique.Unique -> UniqFM key elt :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, UFM m, u => UFM (Data.IntMap.Internal.adjust f (Unique.getWordKey u) m)
+    end.
 
-Axiom plusMaybeUFM_C : forall {elt : Type},
-                       (elt -> elt -> option elt) -> UniqFM elt -> UniqFM elt -> UniqFM elt.
+#[global] Definition delFromUFM {key : Type} {elt : Type} `{Unique.Uniquable
+  key}
+   : UniqFM key elt -> key -> UniqFM key elt :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | UFM m, k =>
+        UFM (Data.IntMap.Internal.delete (Unique.getWordKey (Unique.getUnique k)) m)
+    end.
 
-Definition plusUFMList {elt : Type} : list (UniqFM elt) -> UniqFM elt :=
+#[global] Definition delListFromUFM {key : Type} {elt : Type} `{Unique.Uniquable
+  key}
+   : UniqFM key elt -> list key -> UniqFM key elt :=
+  Data.Foldable.foldl' delFromUFM.
+
+#[global] Definition delFromUFM_Directly {key : Type} {elt : Type}
+   : UniqFM key elt -> Unique.Unique -> UniqFM key elt :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | UFM m, u => UFM (Data.IntMap.Internal.delete (Unique.getWordKey u) m)
+    end.
+
+#[global] Definition delListFromUFM_Directly {key : Type} {elt : Type}
+   : UniqFM key elt -> list Unique.Unique -> UniqFM key elt :=
+  Data.Foldable.foldl' delFromUFM_Directly.
+
+#[global] Definition plusUFM {key : Type} {elt : Type}
+   : UniqFM key elt -> UniqFM key elt -> UniqFM key elt :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | UFM x, UFM y => UFM (Data.IntMap.Internal.union y x)
+    end.
+
+#[global] Definition plusUFM_C {elt : Type} {key : Type}
+   : (elt -> elt -> elt) -> UniqFM key elt -> UniqFM key elt -> UniqFM key elt :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, UFM x, UFM y => UFM (Data.IntMap.Internal.unionWith f x y)
+    end.
+
+#[global] Definition plusUFM_CD {elta : Type} {eltb : Type} {eltc
+   : Type} {key : Type}
+   : (elta -> eltb -> eltc) ->
+     UniqFM key elta -> elta -> UniqFM key eltb -> eltb -> UniqFM key eltc :=
+  fun arg_0__ arg_1__ arg_2__ arg_3__ arg_4__ =>
+    match arg_0__, arg_1__, arg_2__, arg_3__, arg_4__ with
+    | f, UFM xm, dx, UFM ym, dy =>
+        UFM (Data.IntMap.Internal.mergeWithKey (fun arg_5__ arg_6__ arg_7__ =>
+                                                  match arg_5__, arg_6__, arg_7__ with
+                                                  | _, x, y => Some (f x y)
+                                                  end) (Data.IntMap.Internal.map (fun x => f x dy))
+                                               (Data.IntMap.Internal.map (fun y => f dx y)) xm ym)
+    end.
+
+#[global] Definition plusUFM_CD2 {elta : Type} {eltb : Type} {eltc
+   : Type} {key : Type}
+   : (option elta -> option eltb -> eltc) ->
+     UniqFM key elta -> UniqFM key eltb -> UniqFM key eltc :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, UFM xm, UFM ym =>
+        UFM (Data.IntMap.Internal.mergeWithKey (fun arg_3__ arg_4__ arg_5__ =>
+                                                  match arg_3__, arg_4__, arg_5__ with
+                                                  | _, x, y => Some (f (Some x) (Some y))
+                                                  end) (Data.IntMap.Internal.map (fun x => f (Some x) None))
+                                               (Data.IntMap.Internal.map (fun y => f None (Some y))) xm ym)
+    end.
+
+(* Skipping definition `UniqFM.mergeUFM' *)
+
+#[global] Definition plusMaybeUFM_C {elt : Type} {key : Type}
+   : (elt -> elt -> option elt) ->
+     UniqFM key elt -> UniqFM key elt -> UniqFM key elt :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, UFM xm, UFM ym =>
+        UFM (Data.IntMap.Internal.mergeWithKey (fun arg_3__ arg_4__ arg_5__ =>
+                                                  match arg_3__, arg_4__, arg_5__ with
+                                                  | _, x, y => f x y
+                                                  end) GHC.Base.id GHC.Base.id xm ym)
+    end.
+
+#[global] Definition plusUFMList {key : Type} {elt : Type}
+   : list (UniqFM key elt) -> UniqFM key elt :=
   Data.Foldable.foldl' plusUFM emptyUFM.
 
-Definition minusUFM {elt1 : Type} {elt2 : Type}
-   : UniqFM elt1 -> UniqFM elt2 -> UniqFM elt1 :=
+#[global] Definition ufmToIntMap {key : Type} {elt : Type}
+   : UniqFM key elt -> IntMap.IntMap elt :=
+  fun '(UFM m) => m.
+
+#[global] Definition unsafeIntMapToUFM {elt : Type} {key : Type}
+   : IntMap.IntMap elt -> UniqFM key elt :=
+  UFM.
+
+#[global] Definition plusUFMListWith {elt : Type} {key : Type}
+   : (elt -> elt -> elt) -> list (UniqFM key elt) -> UniqFM key elt :=
+  fun f xs =>
+    unsafeIntMapToUFM (Data.IntMap.Internal.unionsWith f (GHC.Base.map ufmToIntMap
+                                                        xs)).
+
+#[global] Definition sequenceUFMList {key : Type} {elt : Type}
+   : list (UniqFM key elt) -> UniqFM key (list elt) :=
+  let cons_ : option elt -> option (list elt) -> list elt :=
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | Some x, Some ys => cons x ys
+      | None, Some ys => ys
+      | Some x, None => cons x nil
+      | None, None => nil
+      end in
+  Data.Foldable.foldr (plusUFM_CD2 cons_) emptyUFM.
+
+#[global] Definition minusUFM {key : Type} {elt1 : Type} {elt2 : Type}
+   : UniqFM key elt1 -> UniqFM key elt2 -> UniqFM key elt1 :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | UFM x, UFM y => UFM (IntMap.difference x y)
+    | UFM x, UFM y => UFM (Data.IntMap.Internal.difference x y)
     end.
 
-Definition intersectUFM {elt1 : Type} {elt2 : Type}
-   : UniqFM elt1 -> UniqFM elt2 -> UniqFM elt1 :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | UFM x, UFM y => UFM (IntMap.intersection x y)
-    end.
-
-Definition intersectUFM_C {elt1 : Type} {elt2 : Type} {elt3 : Type}
-   : (elt1 -> elt2 -> elt3) -> UniqFM elt1 -> UniqFM elt2 -> UniqFM elt3 :=
+#[global] Definition minusUFM_C {elt1 : Type} {elt2 : Type} {key : Type}
+   : (elt1 -> elt2 -> option elt1) ->
+     UniqFM key elt1 -> UniqFM key elt2 -> UniqFM key elt1 :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | f, UFM x, UFM y => UFM (IntMap.intersectionWith f x y)
+    | f, UFM x, UFM y => UFM (Data.IntMap.Internal.differenceWith f x y)
     end.
 
-Definition disjointUFM {elt1 : Type} {elt2 : Type}
-   : UniqFM elt1 -> UniqFM elt2 -> bool :=
+#[global] Definition intersectUFM {key : Type} {elt1 : Type} {elt2
+   : Type}
+   : UniqFM key elt1 -> UniqFM key elt2 -> UniqFM key elt1 :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | UFM x, UFM y => IntMap.null (IntMap.intersection x y)
+    | UFM x, UFM y => UFM (Data.IntMap.Internal.intersection x y)
     end.
 
-Definition foldUFM {elt : Type} {a : Type}
-   : (elt -> a -> a) -> a -> UniqFM elt -> a :=
+#[global] Definition intersectUFM_C {elt1 : Type} {elt2 : Type} {elt3
+   : Type} {key : Type}
+   : (elt1 -> elt2 -> elt3) ->
+     UniqFM key elt1 -> UniqFM key elt2 -> UniqFM key elt3 :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | k, z, UFM m => IntMap.foldr k z m
+    | f, UFM x, UFM y => UFM (Data.IntMap.Internal.intersectionWith f x y)
     end.
 
-Definition mapUFM {elt1 : Type} {elt2 : Type}
-   : (elt1 -> elt2) -> UniqFM elt1 -> UniqFM elt2 :=
+#[global] Definition disjointUFM {key : Type} {elt1 : Type} {elt2
+   : Type}
+   : UniqFM key elt1 -> UniqFM key elt2 -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | f, UFM m => UFM (IntMap.map f m)
+    | UFM x, UFM y => Data.IntMap.Internal.disjoint x y
     end.
 
-Definition mapUFM_Directly {elt1 : Type} {elt2 : Type}
-   : (Unique.Unique -> elt1 -> elt2) -> UniqFM elt1 -> UniqFM elt2 :=
+#[global] Definition nonDetFoldUFM {elt : Type} {a : Type} {key : Type}
+   : (elt -> a -> a) -> a -> UniqFM key elt -> a :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, z, UFM m => Data.IntMap.Internal.foldr f z m
+    end.
+
+#[global] Definition nonDetFoldWithKeyUFM {elt : Type} {a : Type}
+  {key : Type}
+   : (Unique.Unique -> elt -> a -> a) -> a -> UniqFM key elt -> a :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, z, UFM m =>
+        let f' := fun k e a => f (Unique.mkUniqueGrimily k) e a in
+        Data.IntMap.Internal.foldrWithKey f' z m
+    end.
+
+#[global] Definition mapUFM {elt1 : Type} {elt2 : Type} {key : Type}
+   : (elt1 -> elt2) -> UniqFM key elt1 -> UniqFM key elt2 :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | f, UFM m => UFM (IntMap.mapWithKey (f GHC.Base.∘ Unique.getUnique) m)
+    | f, UFM m => UFM (Data.IntMap.Internal.map f m)
     end.
 
-Definition filterUFM {elt : Type} : (elt -> bool) -> UniqFM elt -> UniqFM elt :=
+#[global] Definition mapMaybeUFM {elt1 : Type} {elt2 : Type} {key
+   : Type}
+   : (elt1 -> option elt2) -> UniqFM key elt1 -> UniqFM key elt2 :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | p, UFM m => UFM (IntMap.filter p m)
+    | f, UFM m => UFM (Data.IntMap.Internal.mapMaybe f m)
     end.
 
-Definition filterUFM_Directly {elt : Type}
-   : (Unique.Unique -> elt -> bool) -> UniqFM elt -> UniqFM elt :=
+#[global] Definition mapMaybeWithKeyUFM {elt1 : Type} {elt2 : Type}
+  {key : Type}
+   : (Unique.Unique -> elt1 -> option elt2) ->
+     UniqFM key elt1 -> UniqFM key elt2 :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | p, UFM m => UFM (IntMap.filterWithKey (p GHC.Base.∘ Unique.getUnique) m)
+    | f, UFM m =>
+        UFM (Data.IntMap.Internal.mapMaybeWithKey (f GHC.Base.∘ Unique.mkUniqueGrimily)
+             m)
     end.
 
-Definition partitionUFM {elt : Type}
-   : (elt -> bool) -> UniqFM elt -> (UniqFM elt * UniqFM elt)%type :=
+#[global] Definition mapUFM_Directly {elt1 : Type} {elt2 : Type} {key
+   : Type}
+   : (Unique.Unique -> elt1 -> elt2) -> UniqFM key elt1 -> UniqFM key elt2 :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | f, UFM m =>
+        UFM (Data.IntMap.Internal.mapWithKey (f GHC.Base.∘ Unique.mkUniqueGrimily) m)
+    end.
+
+#[global] Definition strictMapUFM {a : Type} {b : Type} {k2 : Type}
+   : (a -> b) -> UniqFM k2 a -> UniqFM k2 b :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | f, UFM a => UFM (Data.IntMap.Internal.map f a)
+    end.
+
+#[global] Definition filterUFM {elt : Type} {key : Type}
+   : (elt -> bool) -> UniqFM key elt -> UniqFM key elt :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | p, UFM m => UFM (Data.IntMap.Internal.filter p m)
+    end.
+
+#[global] Definition filterUFM_Directly {elt : Type} {key : Type}
+   : (Unique.Unique -> elt -> bool) -> UniqFM key elt -> UniqFM key elt :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | p, UFM m =>
-        let 'pair left_ right_ := IntMap.partition p m in
+        UFM (Data.IntMap.Internal.filterWithKey (p GHC.Base.∘ Unique.mkUniqueGrimily) m)
+    end.
+
+#[global] Definition partitionUFM {elt : Type} {key : Type}
+   : (elt -> bool) -> UniqFM key elt -> (UniqFM key elt * UniqFM key elt)%type :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | p, UFM m =>
+        let 'pair left_ right_ := Data.IntMap.Internal.partition p m in
         pair (UFM left_) (UFM right_)
     end.
 
-Definition sizeUFM {elt : Type} : UniqFM elt -> nat :=
-  fun '(UFM m) => IntMap.size m.
+#[global] Definition sizeUFM {key : Type} {elt : Type}
+   : UniqFM key elt -> nat :=
+  fun '(UFM m) => BinNat.N.to_nat (Data.IntMap.Internal.size m).
 
-Definition elemUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : key -> UniqFM elt -> bool :=
+#[global] Definition elemUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : key -> UniqFM key elt -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | k, UFM m => IntMap.member (Unique.getWordKey (Unique.getUnique k)) m
+    | k, UFM m =>
+        Data.IntMap.Internal.member (Unique.getWordKey (Unique.getUnique k)) m
     end.
 
-Definition elemUFM_Directly {elt : Type}
-   : Unique.Unique -> UniqFM elt -> bool :=
+#[global] Definition elemUFM_Directly {key : Type} {elt : Type}
+   : Unique.Unique -> UniqFM key elt -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | u, UFM m => IntMap.member (Unique.getWordKey u) m
+    | u, UFM m => Data.IntMap.Internal.member (Unique.getWordKey u) m
     end.
 
-Definition lookupUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
-   : UniqFM elt -> key -> option elt :=
+#[global] Definition lookupUFM {key : Type} {elt : Type} `{Unique.Uniquable key}
+   : UniqFM key elt -> key -> option elt :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | UFM m, k => IntMap.lookup (Unique.getWordKey (Unique.getUnique k)) m
+    | UFM m, k =>
+        Data.IntMap.Internal.lookup (Unique.getWordKey (Unique.getUnique k)) m
     end.
 
-Definition lookupUFM_Directly {elt : Type}
-   : UniqFM elt -> Unique.Unique -> option elt :=
+#[global] Definition lookupUFM_Directly {key : Type} {elt : Type}
+   : UniqFM key elt -> Unique.Unique -> option elt :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | UFM m, u => IntMap.lookup (Unique.getWordKey u) m
+    | UFM m, u => Data.IntMap.Internal.lookup (Unique.getWordKey u) m
     end.
 
-Definition lookupWithDefaultUFM {key : Type} {elt : Type} `{Unique.Uniquable
-  key}
-   : UniqFM elt -> elt -> key -> elt :=
+#[global] Definition lookupWithDefaultUFM {key : Type} {elt : Type}
+  `{Unique.Uniquable key}
+   : UniqFM key elt -> elt -> key -> elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | UFM m, v, k =>
-        IntMap.findWithDefault v (Unique.getWordKey (Unique.getUnique k)) m
+        Data.IntMap.Internal.findWithDefault v (Unique.getWordKey (Unique.getUnique k))
+        m
     end.
 
-Definition lookupWithDefaultUFM_Directly {elt : Type}
-   : UniqFM elt -> elt -> Unique.Unique -> elt :=
+#[global] Definition lookupWithDefaultUFM_Directly {key : Type} {elt
+   : Type}
+   : UniqFM key elt -> elt -> Unique.Unique -> elt :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
-    | UFM m, v, u => IntMap.findWithDefault v (Unique.getWordKey u) m
+    | UFM m, v, u => Data.IntMap.Internal.findWithDefault v (Unique.getWordKey u) m
     end.
 
-Definition eltsUFM {elt : Type} : UniqFM elt -> list elt :=
-  fun '(UFM m) => IntMap.elems m.
+#[global] Definition ufmToSet_Directly {key : Type} {elt : Type}
+   : UniqFM key elt -> Data.IntSet.Internal.IntSet :=
+  fun '(UFM m) => Data.IntMap.Internal.keysSet m.
 
-Definition ufmToSet_Directly {elt : Type}
-   : UniqFM elt -> Data.IntSet.Internal.IntSet :=
-  fun '(UFM m) => IntMap.keysSet m.
-
-Definition anyUFM {elt : Type} : (elt -> bool) -> UniqFM elt -> bool :=
+#[global] Definition anyUFM {elt : Type} {key : Type}
+   : (elt -> bool) -> UniqFM key elt -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | p, UFM m => IntMap.foldr (orb GHC.Base.∘ p) false m
+    | p, UFM m => Data.IntMap.Internal.foldr (orb GHC.Base.∘ p) false m
     end.
 
-Definition allUFM {elt : Type} : (elt -> bool) -> UniqFM elt -> bool :=
+#[global] Definition allUFM {elt : Type} {key : Type}
+   : (elt -> bool) -> UniqFM key elt -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | p, UFM m => IntMap.foldr (andb GHC.Base.∘ p) true m
+    | p, UFM m => Data.IntMap.Internal.foldr (andb GHC.Base.∘ p) true m
     end.
 
-Definition nonDetEltsUFM {elt : Type} : UniqFM elt -> list elt :=
-  fun '(UFM m) => IntMap.elems m.
+#[global] Definition seqEltsUFM {elt : Type} {key : Type}
+   : (elt -> unit) -> UniqFM key elt -> unit :=
+  fun seqElt => nonDetFoldUFM (fun v rest => GHC.Prim.seq (seqElt v) rest) tt.
 
-Definition seqEltsUFM {elt : Type} : (list elt -> unit) -> UniqFM elt -> unit :=
-  fun seqList => seqList GHC.Base.∘ nonDetEltsUFM.
+#[global] Definition nonDetEltsUFM {key : Type} {elt : Type}
+   : UniqFM key elt -> list elt :=
+  fun '(UFM m) => Data.IntMap.Internal.elems m.
 
-Definition nonDetKeysUFM {elt : Type} : UniqFM elt -> list Unique.Unique :=
-  fun '(UFM m) => GHC.Base.map Unique.getUnique (IntMap.keys m).
-
-Definition nonDetFoldUFM {elt : Type} {a : Type}
-   : (elt -> a -> a) -> a -> UniqFM elt -> a :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | k, z, UFM m => IntMap.foldr k z m
-    end.
-
-Definition nonDetFoldUFM_Directly {elt : Type} {a : Type}
-   : (Unique.Unique -> elt -> a -> a) -> a -> UniqFM elt -> a :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | k, z, UFM m => IntMap.foldrWithKey (k GHC.Base.∘ Unique.getUnique) z m
-    end.
-
-Definition nonDetUFMToList {elt : Type}
-   : UniqFM elt -> list (Unique.Unique * elt)%type :=
+#[global] Definition nonDetKeysUFM {key : Type} {elt : Type}
+   : UniqFM key elt -> list Unique.Unique :=
   fun '(UFM m) =>
-    GHC.Base.map (fun '(pair k v) => pair (Unique.getUnique k) v) (IntMap.toList m).
+    GHC.Base.map Unique.mkUniqueGrimily (Data.IntMap.Internal.keys m).
 
-Definition ufmToIntMap {elt : Type} : UniqFM elt -> IntMap.IntMap elt :=
-  fun '(UFM m) => m.
+#[global] Definition nonDetStrictFoldUFM {elt : Type} {a : Type} {key
+   : Type}
+   : (elt -> a -> a) -> a -> UniqFM key elt -> a :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | k, z, UFM m => Data.IntMap.Internal.foldl' (GHC.Base.flip k) z m
+    end.
+
+#[global] Definition nonDetStrictFoldUFM_DirectlyM {m : Type -> Type}
+  {b : Type} {elt : Type} {key : Type} `{GHC.Base.Monad m}
+   : (Unique.Unique -> b -> elt -> m b) -> b -> UniqFM key elt -> m b :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | f, z0, UFM xs =>
+        let c := fun u x k z => f (Unique.mkUniqueGrimily u) z x GHC.Base.>>= k in
+        Data.IntMap.Internal.foldrWithKey c GHC.Base.return_ xs z0
+    end.
+
+#[global] Definition nonDetStrictFoldUFM_Directly {elt : Type} {a
+   : Type} {key : Type}
+   : (Unique.Unique -> elt -> a -> a) -> a -> UniqFM key elt -> a :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | k, z, UFM m =>
+        Data.IntMap.Internal.foldlWithKey' (fun z' i x =>
+                                              k (Unique.mkUniqueGrimily i) x z') z m
+    end.
+
+#[global] Definition nonDetUFMToList {key : Type} {elt : Type}
+   : UniqFM key elt -> list (Unique.Unique * elt)%type :=
+  fun '(UFM m) =>
+    GHC.Base.map (fun '(pair k v) => pair (Unique.mkUniqueGrimily k) v)
+    (Data.IntMap.Internal.toList m).
+
+#[global] Definition unsafeCastUFMKey {key1 : Type} {elt
+   : Type} {key2 : Type}
+   : UniqFM key1 elt -> UniqFM key2 elt :=
+  fun '(UFM m) => UFM m.
 
 (* Skipping definition `UniqFM.equalKeysUFM' *)
+
+#[global] Definition diffUFM {a : Type} {key : Type} `{GHC.Base.Eq_ a}
+   : UniqFM key a -> UniqFM key a -> UniqFM key (Edit a) :=
+  let both :=
+    fun x y => if x GHC.Base.== y : bool then None else Some (Changed x y) in
+  mergeUFM both (mapUFM Removed) (mapUFM Added).
 
 (* Skipping definition `UniqFM.pprUniqFM' *)
 
 (* Skipping definition `UniqFM.pprUFM' *)
 
-Definition pprUFMWithKeys {a : Type}
-   : UniqFM a ->
+#[global] Definition pprUFMWithKeys {key : Type} {a : Type}
+   : UniqFM key a ->
      (list (Unique.Unique * a)%type -> GHC.Base.String) -> GHC.Base.String :=
   fun ufm pp => pp (nonDetUFMToList ufm).
 
 (* Skipping definition `UniqFM.pluralUFM' *)
 
+Instance Unpeel_UniqFM key ele
+   : HsToCoq.Unpeel.Unpeel (UniqFM key ele) (GHC.Data.Word64Map.Internal.Word64Map
+                            ele) :=
+  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(UFM y) => y) UFM.
+
 (* External variables:
-     Type andb bool false list nat op_zt__ option orb pair true unit
-     Data.Foldable.foldl Data.Foldable.foldl' Data.IntSet.Internal.IntSet
-     GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monoid GHC.Base.Semigroup GHC.Base.String
-     GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__ GHC.Base.foldr GHC.Base.map
-     GHC.Base.mappend__ GHC.Base.mconcat__ GHC.Base.mempty__ GHC.Base.op_z2218U__
-     GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
-     GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__
-     GHC.Base.op_zsze____ GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel
-     HsToCoq.Unpeel.Unpeel IntMap.IntMap IntMap.adjust IntMap.alter IntMap.delete
-     IntMap.difference IntMap.elems IntMap.empty IntMap.filter IntMap.filterWithKey
-     IntMap.findWithDefault IntMap.foldr IntMap.foldrWithKey IntMap.insert
-     IntMap.insertWith IntMap.intersection IntMap.intersectionWith IntMap.keys
-     IntMap.keysSet IntMap.lookup IntMap.map IntMap.mapWithKey IntMap.member
-     IntMap.null IntMap.partition IntMap.singleton IntMap.size IntMap.toList
-     IntMap.union IntMap.unionWith Unique.Uniquable Unique.Unique Unique.getUnique
-     Unique.getWordKey
+     None Some Type andb bool cons false list mergeUFM nat nil op_zt__ option orb
+     pair true tt unit BinNat.N.to_nat Data.Foldable.foldl' Data.Foldable.foldr
+     Data.IntMap.Internal.adjust Data.IntMap.Internal.alter
+     Data.IntMap.Internal.delete Data.IntMap.Internal.difference
+     Data.IntMap.Internal.differenceWith Data.IntMap.Internal.disjoint
+     Data.IntMap.Internal.elems Data.IntMap.Internal.empty
+     Data.IntMap.Internal.filter Data.IntMap.Internal.filterWithKey
+     Data.IntMap.Internal.findWithDefault Data.IntMap.Internal.foldl'
+     Data.IntMap.Internal.foldlWithKey' Data.IntMap.Internal.foldr
+     Data.IntMap.Internal.foldrWithKey Data.IntMap.Internal.insert
+     Data.IntMap.Internal.insertWith Data.IntMap.Internal.intersection
+     Data.IntMap.Internal.intersectionWith Data.IntMap.Internal.keys
+     Data.IntMap.Internal.keysSet Data.IntMap.Internal.lookup
+     Data.IntMap.Internal.map Data.IntMap.Internal.mapMaybe
+     Data.IntMap.Internal.mapMaybeWithKey Data.IntMap.Internal.mapWithKey
+     Data.IntMap.Internal.member Data.IntMap.Internal.mergeWithKey
+     Data.IntMap.Internal.null Data.IntMap.Internal.partition
+     Data.IntMap.Internal.singleton Data.IntMap.Internal.size
+     Data.IntMap.Internal.toList Data.IntMap.Internal.union
+     Data.IntMap.Internal.unionWith Data.IntMap.Internal.unionsWith
+     Data.IntSet.Internal.IntSet GHC.Base.Eq_ GHC.Base.Monad GHC.Base.String
+     GHC.Base.flip GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
+     GHC.Base.op_zgzgze__ GHC.Base.return_ GHC.Data.Word64Map.Internal.Word64Map
+     GHC.Prim.seq HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel IntMap.IntMap
+     Unique.Uniquable Unique.Unique Unique.getUnique Unique.getWordKey
+     Unique.mkUniqueGrimily
 *)

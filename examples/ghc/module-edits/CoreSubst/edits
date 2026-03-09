@@ -3,33 +3,15 @@ import module GHC.List
 import module Data.Traversable
 import module Core
 
+# GHC 9.10: Subst is axiomatized — axiomatize entire module
+axiomatize module CoreSubst
+
+# GHC 9.10: types moved to GHC.Core.TyCo.Subst
+skip module GHC.Core.TyCo.Subst
+
 # requires mkTyVarTy and mkCoVarCo
 skip CoreSubst.lookupTCvSubst
 
-# ruleInfo substitution function (but unused)
-axiomatize definition CoreSubst.substSpec 
-
-#############################################################################
-#  Edits that just make the translation go through
-#############################################################################
-
-#
-## Fixes for mutual recursion (subst_expr/substBind/substIdBndr)
-#
-#
-# Replace unused recursive subst with error
-#
-in CoreSubst.substRecBndrs rewrite forall x, CoreSubst.substIdBndr x new_subst = CoreSubst.substIdBndr x (GHC.Err.error Panic.someSDoc)
-in CoreSubst.cloneRecIdBndrs rewrite forall, CoreSubst.clone_id subst' = CoreSubst.clone_id (GHC.Err.error Panic.someSDoc)
-
-
-# Replace a map & unzip with a map and snd
-#
-in CoreSubst.substBind rewrite forall x rhss, GHC.Base.map (CoreSubst.subst_expr x subst') rhss = GHC.Base.map (fun ps => CoreSubst.subst_expr x subst' (snd ps)) pairs
-
-#
-# use of GHC.Prim.seq
-#
-in CoreSubst.substUnfolding rewrite forall x y, GHC.Prim.seq x y = y
+# GHC 9.10: substBndrs needs Data.Traversable (imported above)
 
 

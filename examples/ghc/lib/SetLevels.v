@@ -18,14 +18,15 @@ Require BinNums.
 Require Core.
 Require CoreFVs.
 Require CoreMonad.
-Require CoreSubst.
 Require GHC.Base.
+Require GHC.Core.TyCo.Subst.
+Require GHC.Types.Cpr.
 Require HsToCoq.Err.
 Require UniqSupply.
 
 (* Converted type declarations: *)
 
-Definition LvlM :=
+#[global] Definition LvlM :=
   UniqSupply.UniqSM%type.
 
 Inductive LevelType : Type := | BndrLvl : LevelType | JoinCeilLvl : LevelType.
@@ -37,53 +38,66 @@ Inductive FloatSpec : Type :=
   | FloatMe : Level -> FloatSpec
   | StayPut : Level -> FloatSpec.
 
-Definition LevelledBind :=
+#[global] Definition LevelledBind :=
   (Core.TaggedBind FloatSpec)%type.
 
-Definition LevelledBndr :=
+#[global] Definition LevelledBndr :=
   (Core.TaggedBndr FloatSpec)%type.
 
-Definition LevelledExpr :=
+#[global] Definition LevelledExpr :=
   (Core.TaggedExpr FloatSpec)%type.
 
 Inductive LevelEnv : Type :=
   | LE (le_switches : CoreMonad.FloatOutSwitches) (le_ctxt_lvl : Level)
   (le_lvl_env : Core.VarEnv Level) (le_join_ceil : Level) (le_subst
-    : CoreSubst.Subst) (le_env : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
+    : GHC.Core.TyCo.Subst.Subst) (le_env
+    : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
    : LevelEnv.
 
 Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
   HsToCoq.Err.Build_Default _ BndrLvl.
 
-Definition le_ctxt_lvl (arg_0__ : LevelEnv) :=
+#[global] Definition le_ctxt_lvl (arg_0__ : LevelEnv) :=
   let 'LE _ le_ctxt_lvl _ _ _ _ := arg_0__ in
   le_ctxt_lvl.
 
-Definition le_env (arg_0__ : LevelEnv) :=
+#[global] Definition le_env (arg_0__ : LevelEnv) :=
   let 'LE _ _ _ _ _ le_env := arg_0__ in
   le_env.
 
-Definition le_join_ceil (arg_0__ : LevelEnv) :=
+#[global] Definition le_join_ceil (arg_0__ : LevelEnv) :=
   let 'LE _ _ _ le_join_ceil _ _ := arg_0__ in
   le_join_ceil.
 
-Definition le_lvl_env (arg_0__ : LevelEnv) :=
+#[global] Definition le_lvl_env (arg_0__ : LevelEnv) :=
   let 'LE _ _ le_lvl_env _ _ _ := arg_0__ in
   le_lvl_env.
 
-Definition le_subst (arg_0__ : LevelEnv) :=
+#[global] Definition le_subst (arg_0__ : LevelEnv) :=
   let 'LE _ _ _ _ le_subst _ := arg_0__ in
   le_subst.
 
-Definition le_switches (arg_0__ : LevelEnv) :=
+#[global] Definition le_switches (arg_0__ : LevelEnv) :=
   let 'LE le_switches _ _ _ _ _ := arg_0__ in
   le_switches.
 
-(* Converted value declarations: *)
+(* Midamble *)
 
-Instance Eq___LevelType : GHC.Base.Eq_ LevelType.
-Proof.
-Admitted.
+(* GHC 9.10: Eq instances needed by FloatOut.v *)
+Definition Eq__LevelType_op_zeze (a b : LevelType) : bool :=
+  match a, b with
+  | BndrLvl, BndrLvl => true
+  | JoinCeilLvl, JoinCeilLvl => true
+  | _, _ => false
+  end.
+
+#[global]
+Instance Eq__LevelType : GHC.Base.Eq_ LevelType :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq__LevelType_op_zeze ;
+           GHC.Base.op_zsze____ := fun a b => negb (Eq__LevelType_op_zeze a b) |}.
+
+(* Converted value declarations: *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `SetLevels.Outputable__FloatSpec' *)
@@ -118,11 +132,11 @@ Axiom isJoinCeilLvl : Level -> bool.
 Axiom setLevels : CoreMonad.FloatOutSwitches ->
                   Core.CoreProgram -> UniqSupply.UniqSupply -> list LevelledBind.
 
-Axiom lvlTopBind : LevelEnv ->
-                   Core.Bind Core.Id -> LvlM (LevelledBind * LevelEnv)%type.
+Axiom lvlTopBind : LevelEnv -> Core.Bind Core.Id -> LvlM LevelledBind.
 
 Axiom lvl_top : LevelEnv ->
-                BasicTypes.RecFlag -> Core.Id -> Core.CoreExpr -> LvlM LevelledExpr.
+                BasicTypes.RecFlag ->
+                Core.Id -> Core.CoreExpr -> LvlM (LevelledBndr * LevelledExpr)%type.
 
 Axiom lvlExpr : LevelEnv -> CoreFVs.CoreExprWithFVs -> LvlM LevelledExpr.
 
@@ -144,10 +158,11 @@ Axiom lvlNonTailMFE : LevelEnv ->
 
 Axiom lvlMFE : LevelEnv -> bool -> CoreFVs.CoreExprWithFVs -> LvlM LevelledExpr.
 
-Axiom isBottomThunk : forall {s}, option (BasicTypes.Arity * s)%type -> bool.
+Axiom hasFreeJoin : LevelEnv -> Core.DVarSet -> bool.
 
 Axiom annotateBotStr : Core.Id ->
-                       BasicTypes.Arity -> option (BasicTypes.Arity * Core.StrictSig)%type -> Core.Id.
+                       BasicTypes.Arity ->
+                       option (BasicTypes.Arity * Core.DmdSig * GHC.Types.Cpr.CprSig)%type -> Core.Id.
 
 Axiom notWorthFloating : Core.CoreExpr -> list Core.Var -> bool.
 
@@ -156,18 +171,9 @@ Axiom lvlBind : LevelEnv ->
 
 Axiom profitableFloat : LevelEnv -> Level -> bool.
 
-Axiom lvlRhs : LevelEnv ->
-               BasicTypes.RecFlag ->
-               bool ->
-               option BasicTypes.JoinArity -> CoreFVs.CoreExprWithFVs -> LvlM LevelledExpr.
+(* Skipping definition `SetLevels.lvlRhs' *)
 
-Axiom lvlFloatRhs : list Core.OutVar ->
-                    Level ->
-                    LevelEnv ->
-                    BasicTypes.RecFlag ->
-                    bool ->
-                    option BasicTypes.JoinArity ->
-                    CoreFVs.CoreExprWithFVs -> LvlM (Core.Expr LevelledBndr).
+(* Skipping definition `SetLevels.lvlFloatRhs' *)
 
 Axiom substAndLvlBndrs : BasicTypes.RecFlag ->
                          LevelEnv -> Level -> list Core.InVar -> (LevelEnv * list LevelledBndr)%type.
@@ -194,7 +200,7 @@ Axiom isFunction : CoreFVs.CoreExprWithFVs -> bool.
 
 Axiom countFreeIds : Core.DVarSet -> nat.
 
-Axiom initialEnv : CoreMonad.FloatOutSwitches -> LevelEnv.
+Axiom initialEnv : CoreMonad.FloatOutSwitches -> Core.CoreProgram -> LevelEnv.
 
 Axiom addLvl : Level -> Core.VarEnv Level -> Core.OutVar -> Core.VarEnv Level.
 
@@ -234,8 +240,7 @@ Axiom newPolyBndrs : Level ->
                      LevelEnv ->
                      list Core.OutVar -> list Core.InId -> LvlM (LevelEnv * list Core.OutId)%type.
 
-Axiom newLvlVar : LevelledExpr ->
-                  option BasicTypes.JoinArity -> bool -> LvlM Core.Id.
+(* Skipping definition `SetLevels.newLvlVar' *)
 
 Axiom cloneCaseBndrs : LevelEnv ->
                        Level -> list Core.Var -> LvlM (LevelEnv * list Core.Var)%type.
@@ -252,12 +257,12 @@ Instance Default__Level : HsToCoq.Err.Default Level :=
 
 (* External variables:
      bool list nat op_zt__ option AxiomatizedTypes.Type_ BasicTypes.Arity
-     BasicTypes.JoinArity BasicTypes.RecFlag BinNums.N Core.Bind Core.CoreBndr
-     Core.CoreExpr Core.CoreProgram Core.DVarSet Core.Expr Core.Id Core.IdEnv
-     Core.InId Core.InVar Core.OutId Core.OutVar Core.StrictSig Core.TaggedBind
-     Core.TaggedBndr Core.TaggedExpr Core.TyCoVarSet Core.Var Core.VarEnv
-     CoreFVs.CoreAltWithFVs CoreFVs.CoreBindWithFVs CoreFVs.CoreExprWithFVs
-     CoreMonad.FloatOutSwitches CoreSubst.Subst GHC.Base.Eq_
+     BasicTypes.RecFlag BinNums.N Core.Bind Core.CoreBndr Core.CoreExpr
+     Core.CoreProgram Core.DVarSet Core.DmdSig Core.Expr Core.Id Core.IdEnv Core.InId
+     Core.InVar Core.OutId Core.OutVar Core.TaggedBind Core.TaggedBndr
+     Core.TaggedExpr Core.TyCoVarSet Core.Var Core.VarEnv CoreFVs.CoreAltWithFVs
+     CoreFVs.CoreBindWithFVs CoreFVs.CoreExprWithFVs CoreMonad.FloatOutSwitches
+     GHC.Base.Eq_ GHC.Core.TyCo.Subst.Subst GHC.Types.Cpr.CprSig
      HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
      UniqSupply.UniqSM UniqSupply.UniqSupply
 *)

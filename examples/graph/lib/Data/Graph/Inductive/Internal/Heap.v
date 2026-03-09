@@ -13,7 +13,7 @@ Require Coq.Program.Wf.
 (* Preamble *)
 
 Require Import Coq.Lists.List.
-Require Import Omega.
+Require Import Lia.
 Require Import Wellfounded.
 
 (* Converted imports: *)
@@ -127,7 +127,7 @@ Lemma merge_size {a} {b} `{GHC.Base.Ord a} (h1 h2 : Heap a b) : size (merge h1
 Proof.
 intros. generalize dependent h2. induction h1; intros; simpl.
   - destruct h2; reflexivity.
-  - destruct h2; simpl. omega. destruct (_GHC.Base.<_ a0 a1 ) eqn : ?; simpl; omega.
+  - destruct h2; simpl. lia. destruct (_GHC.Base.<_ a0 a1 ) eqn : ?; simpl; lia.
  
 Qed.
 
@@ -141,22 +141,22 @@ Proof.
   destruct l.
   - reflexivity.
   - destruct l.
-    + simpl. omega.
-    + simpl. repeat(rewrite merge_size). rewrite plus_assoc. rewrite H1. reflexivity. simpl. omega.
+    + simpl. lia.
+    + simpl. repeat(rewrite merge_size). rewrite H1. lia. simpl. lia.
 Qed.
 
 Lemma deleteMin_size {a} {b} `{GHC.Base.Ord a} (h : Heap a b) : h <> Empty ->
   size (deleteMin h) + 1 = size h.
 Proof.
   intros. unfold deleteMin. destruct h. contradiction. rewrite mergeAll_size.
-  unfold size. simpl. omega.
+  unfold size. simpl. lia.
 Qed.
 
 Lemma toList_termination {a} {b} `{GHC.Base.Ord a} (h : Heap a b) : Empty <>
   h ->
   size (deleteMin h) < size h.
 Proof.
-  intros. assert (A: h <> Empty) by auto; apply deleteMin_size in A; omega.
+  intros. assert (A: h <> Empty) by auto; apply deleteMin_size in A; lia.
 Qed.
 
 Program Fixpoint toList {a} {b} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a * b)}

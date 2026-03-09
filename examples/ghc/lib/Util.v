@@ -16,27 +16,25 @@ Require HsToCoq.Nat.
 
 (* Converted imports: *)
 
-Require Control.Monad.IO.Class.
 Require Coq.Init.Datatypes.
 Require Coq.Lists.List.
+Require Data.Bifunctor.
 Require Data.Bits.
 Require Data.Either.
 Require Data.Foldable.
-Require Data.Functor.
+Require Data.Maybe.
 Require Data.OldList.
 Require Data.Set.Internal.
+Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Char.
-Require GHC.Enum.
-Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
 Require GHC.Prim.
+Require GHC.Tuple.
 Require HsToCoq.DeferredFix.
 Require HsToCoq.Err.
-Require PlainPanic.
-Import Data.Bits.Notations.
-Import Data.Functor.Notations.
+Require Panic.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
@@ -45,44 +43,19 @@ Import GHC.Num.Notations.
 #[global] Definition Suffix :=
   GHC.Base.String%type.
 
-Inductive OverridingBool : Type :=
-  | Auto : OverridingBool
-  | Always : OverridingBool
-  | Never : OverridingBool.
-
-#[global] Definition HasDebugCallStack :=
-  unit.
-
 Inductive Direction : Type := | Forwards : Direction | Backwards : Direction.
-
-Instance Default__OverridingBool : HsToCoq.Err.Default OverridingBool :=
-  HsToCoq.Err.Build_Default _ Auto.
 
 Instance Default__Direction : HsToCoq.Err.Default Direction :=
   HsToCoq.Err.Build_Default _ Forwards.
 
 (* Midamble *)
 
-Existing Class HasDebugCallStack.
-Instance Util_HasDebugCallStack : HasDebugCallStack := tt.
+(* HasDebugCallStack is a type alias for HasCallStack in GHC.
+   We define it as a trivial typeclass so references in other modules compile. *)
+Class HasDebugCallStack := {}.
+#[global] Instance hasDebugCallStack : HasDebugCallStack := {}.
 
 (* Converted value declarations: *)
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Util.Show__OverridingBool' *)
-
-#[global] Definition ghciSupported : bool :=
-  false.
-
-Axiom debugIsOn : bool.
-
-#[global] Definition ghciTablesNextToCode : bool :=
-  false.
-
-#[global] Definition isWindowsHost : bool :=
-  false.
-
-(* Skipping definition `Util.isDarwinHost' *)
 
 #[global] Definition applyWhen {a : Type} : bool -> (a -> a) -> a -> a :=
   fun arg_0__ arg_1__ arg_2__ =>
@@ -92,6 +65,13 @@ Axiom debugIsOn : bool.
     end.
 
 (* Skipping definition `Util.nTimes' *)
+
+#[global] Definition const2 {a : Type} {b : Type} {c : Type}
+   : a -> b -> c -> a :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | x, _, _ => x
+    end.
 
 #[global] Definition fstOf3 {a : Type} {b : Type} {c : Type}
    : (a * b * c)%type -> a :=
@@ -104,6 +84,14 @@ Axiom debugIsOn : bool.
 #[global] Definition thdOf3 {a : Type} {b : Type} {c : Type}
    : (a * b * c)%type -> c :=
   fun '(pair (pair _ _) c) => c.
+
+#[global] Definition fstOf4 {a : Type} {b : Type} {c : Type} {d : Type}
+   : (a * b * c * d)%type -> a :=
+  fun '(pair (pair (pair a _) _) _) => a.
+
+#[global] Definition sndOf4 {a : Type} {b : Type} {c : Type} {d : Type}
+   : (a * b * c * d)%type -> b :=
+  fun '(pair (pair (pair _ b) _) _) => b.
 
 #[global] Definition fst3 {a : Type} {d : Type} {b : Type} {c : Type}
    : (a -> d) -> (a * b * c)%type -> (d * b * c)%type :=
@@ -133,49 +121,8 @@ Axiom debugIsOn : bool.
     | f, pair (pair a b) c => f a b c
     end.
 
-#[global] Definition liftFst {a : Type} {b : Type} {c : Type}
-   : (a -> b) -> (a * c)%type -> (b * c)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | f, pair a c => pair (f a) c
-    end.
-
-#[global] Definition liftSnd {a : Type} {b : Type} {c : Type}
-   : (a -> b) -> (c * a)%type -> (c * b)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | f, pair c a => pair c (f a)
-    end.
-
-#[global] Definition firstM {m : Type -> Type} {a : Type} {c : Type} {b : Type}
-  `{GHC.Base.Monad m}
-   : (a -> m c) -> (a * b)%type -> m (c * b)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | f, pair x y => GHC.Base.liftM (fun x' => pair x' y) (f x)
-    end.
-
-#[global] Definition first3M {m : Type -> Type} {a : Type} {d : Type} {b : Type}
-  {c : Type} `{GHC.Base.Monad m}
-   : (a -> m d) -> (a * b * c)%type -> m (d * b * c)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | f, pair (pair x y) z => GHC.Base.liftM (fun x' => pair (pair x' y) z) (f x)
-    end.
-
-#[global] Definition secondM {m : Type -> Type} {b : Type} {c : Type} {a : Type}
-  `{GHC.Base.Monad m}
-   : (b -> m c) -> (a * b)%type -> m (a * c)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | f, pair x y => (fun arg_2__ => pair x arg_2__) Data.Functor.<$> f y
-    end.
-
-Fixpoint filterOut {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : list a
-  := match arg_0__, arg_1__ with
-     | _, nil => nil
-     | p, cons x xs => if p x : bool then filterOut p xs else cons x (filterOut p xs)
-     end.
+#[global] Definition filterOut {a : Type} : (a -> bool) -> list a -> list a :=
+  fun p => GHC.List.filter (negb GHC.Base.∘ p).
 
 Fixpoint partitionWith {a : Type} {b : Type} {c : Type} (arg_0__
                          : a -> Data.Either.Either b c) (arg_1__ : list a) : (list b * list c)%type
@@ -189,55 +136,48 @@ Fixpoint partitionWith {a : Type} {b : Type} {c : Type} (arg_0__
          end
      end.
 
+Fixpoint partitionWithM {m : Type -> Type} {a : Type} {b : Type} {c : Type}
+                        `{GHC.Base.Monad m} (arg_0__ : a -> m (Data.Either.Either b c)) (arg_1__
+                          : list a) : m (list b * list c)%type
+  := match arg_0__, arg_1__ with
+     | _, nil => GHC.Base.return_ (pair nil nil)
+     | f, cons x xs =>
+         f x GHC.Base.>>=
+         (fun y =>
+            let cont_3__ arg_4__ :=
+              let 'pair bs cs := arg_4__ in
+              match y with
+              | Data.Either.Left b => GHC.Base.return_ (pair (cons b bs) cs)
+              | Data.Either.Right c => GHC.Base.return_ (pair bs (cons c cs))
+              end in
+            partitionWithM f xs GHC.Base.>>= cont_3__)
+     end.
+
 #[global] Definition chkAppend {a : Type} : list a -> list a -> list a :=
   fun xs ys =>
     if Data.Foldable.null ys : bool then xs else
     Coq.Init.Datatypes.app xs ys.
 
-#[global] Definition zipEqual {a : Type} {b : Type}
+#[global] Definition zipEqual {a : Type} {b : Type} `{HasDebugCallStack}
    : GHC.Base.String -> list a -> list b -> list (a * b)%type :=
   fun arg_0__ => GHC.List.zip.
 
 #[global] Definition zipWithEqual {a : Type} {b : Type} {c : Type}
+  `{HasDebugCallStack}
    : GHC.Base.String -> (a -> b -> c) -> list a -> list b -> list c :=
   fun arg_0__ => GHC.List.zipWith.
 
 #[global] Definition zipWith3Equal {a : Type} {b : Type} {c : Type} {d : Type}
+  `{HasDebugCallStack}
    : GHC.Base.String ->
      (a -> b -> c -> d) -> list a -> list b -> list c -> list d :=
   fun arg_0__ => GHC.List.zipWith3.
 
 #[global] Definition zipWith4Equal {a : Type} {b : Type} {c : Type} {d : Type}
-  {e : Type}
+  {e : Type} `{HasDebugCallStack}
    : GHC.Base.String ->
      (a -> b -> c -> d -> e) -> list a -> list b -> list c -> list d -> list e :=
   fun arg_0__ => Data.OldList.zipWith4.
-
-Fixpoint zipLazy {a : Type} {b : Type} (arg_0__ : list a) (arg_1__ : list b)
-  : list (a * b)%type
-  := match arg_0__, arg_1__ with
-     | nil, _ => nil
-     | cons x xs, cons y ys => cons (pair x y) (zipLazy xs ys)
-     | _, _ => GHC.Err.patternFailure
-     end.
-
-Fixpoint zipWithLazy {a : Type} {b : Type} {c : Type} (arg_0__ : a -> b -> c)
-                     (arg_1__ : list a) (arg_2__ : list b) : list c
-  := match arg_0__, arg_1__, arg_2__ with
-     | _, nil, _ => nil
-     | f, cons a as_, cons b bs => cons (f a b) (zipWithLazy f as_ bs)
-     | _, _, _ => GHC.Err.patternFailure
-     end.
-
-Fixpoint zipWith3Lazy {a : Type} {b : Type} {c : Type} {d : Type} (arg_0__
-                        : a -> b -> c -> d) (arg_1__ : list a) (arg_2__ : list b) (arg_3__ : list c)
-  : list d
-  := match arg_0__, arg_1__, arg_2__, arg_3__ with
-     | _, nil, _, _ => nil
-     | f, cons a as_, cons b bs, cons c cs =>
-         cons (f a b c) (zipWith3Lazy f as_ bs cs)
-     | _, _, _, _ => GHC.Err.patternFailure
-     end.
 
 Fixpoint filterByList {a : Type} (arg_0__ : list bool) (arg_1__ : list a) : list
                                                                             a
@@ -278,17 +218,15 @@ Fixpoint stretchZipWith {a : Type} {b : Type} {c : Type} (arg_0__ : a -> bool)
          end
      end.
 
-#[global] Definition mapFst {a : Type} {c : Type} {b : Type}
-   : (a -> c) -> list (a * b)%type -> list (c * b)%type :=
-  fun f xys =>
-    let cont_0__ arg_1__ := let 'pair x y := arg_1__ in cons (pair (f x) y) nil in
-    Coq.Lists.List.flat_map cont_0__ xys.
+#[global] Definition mapFst {f : Type -> Type} {a : Type} {c : Type} {b : Type}
+  `{GHC.Base.Functor f}
+   : (a -> c) -> f (a * b)%type -> f (c * b)%type :=
+  GHC.Base.fmap GHC.Base.∘ Data.Bifunctor.first.
 
-#[global] Definition mapSnd {b : Type} {c : Type} {a : Type}
-   : (b -> c) -> list (a * b)%type -> list (a * c)%type :=
-  fun f xys =>
-    let cont_0__ arg_1__ := let 'pair x y := arg_1__ in cons (pair x (f y)) nil in
-    Coq.Lists.List.flat_map cont_0__ xys.
+#[global] Definition mapSnd {f : Type -> Type} {b : Type} {c : Type} {a : Type}
+  `{GHC.Base.Functor f}
+   : (b -> c) -> f (a * b)%type -> f (a * c)%type :=
+  GHC.Base.fmap GHC.Base.∘ Data.Bifunctor.second.
 
 Fixpoint mapAndUnzip {a : Type} {b : Type} {c : Type} (arg_0__
                        : a -> (b * c)%type) (arg_1__ : list a) : (list b * list c)%type
@@ -308,6 +246,18 @@ Fixpoint mapAndUnzip3 {a : Type} {b : Type} {c : Type} {d : Type} (arg_0__
          let 'pair (pair rs1 rs2) rs3 := mapAndUnzip3 f xs in
          let 'pair (pair r1 r2) r3 := f x in
          pair (pair (cons r1 rs1) (cons r2 rs2)) (cons r3 rs3)
+     end.
+
+Fixpoint mapAndUnzip4 {a : Type} {b : Type} {c : Type} {d : Type} {e : Type}
+                      (arg_0__ : a -> (b * c * d * e)%type) (arg_1__ : list a) : (list b * list c *
+                                                                                  list d *
+                                                                                  list e)%type
+  := match arg_0__, arg_1__ with
+     | _, nil => pair (pair (pair nil nil) nil) nil
+     | f, cons x xs =>
+         let 'pair (pair (pair rs1 rs2) rs3) rs4 := mapAndUnzip4 f xs in
+         let 'pair (pair (pair r1 r2) r3) r4 := f x in
+         pair (pair (pair (cons r1 rs1) (cons r2 rs2)) (cons r3 rs3)) (cons r4 rs4)
      end.
 
 Fixpoint zipWithAndUnzip {a : Type} {b : Type} {c : Type} {d : Type} (arg_0__
@@ -330,8 +280,6 @@ Fixpoint zipAndUnzip {a : Type} {b : Type} (arg_0__ : list a) (arg_1__ : list b)
      | _, _ => pair nil nil
      end.
 
-(* Skipping definition `Util.mapAccumL2' *)
-
 #[global] Definition atLength {a : Type} {b : Type}
    : (list a -> b) -> b -> list a -> nat -> b :=
   fun atLenPred atEnd ls0 n0 =>
@@ -347,8 +295,10 @@ Fixpoint zipAndUnzip {a : Type} {b : Type} (arg_0__ : list a) (arg_1__ : list b)
     if n0 GHC.Base.< #0 : bool then atLenPred ls0 else
     go n0 ls0.
 
-#[global] Definition notNull {a : Type} : list a -> bool :=
-  fun arg_0__ => match arg_0__ with | nil => false | _ => true end.
+#[global] Definition notNull {f : Type -> Type} {a : Type}
+  `{Data.Foldable.Foldable f}
+   : f a -> bool :=
+  negb GHC.Base.∘ Data.Foldable.null.
 
 #[global] Definition lengthExceeds {a : Type} : list a -> nat -> bool :=
   fun lst n =>
@@ -425,25 +375,39 @@ Fixpoint compareLength {a : Type} {b : Type} (arg_0__ : list a) (arg_1__
   fun arg_0__ =>
     match arg_0__ with
     | cons a _ => a
-    | _ => PlainPanic.panic (GHC.Base.hs_string__ "Util: only")
+    | _ => Panic.panic (GHC.Base.hs_string__ "Util: only")
     end.
 
-#[global] Definition isIn {a : Type} `{GHC.Base.Eq_ a}
-   : GHC.Base.String -> a -> list a -> bool :=
-  fun _msg x ys => Data.Foldable.elem x ys.
+#[global] Definition expectOnly {a} `{HsToCoq.Err.Default a}
+   : GHC.Base.String -> list a -> a :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | _, cons a _ => a
+    | msg, _ =>
+        Panic.panic (Coq.Init.Datatypes.app (GHC.Base.hs_string__ "expectOnly: ") msg)
+    end.
 
-#[global] Definition isn'tIn {a : Type} `{GHC.Base.Eq_ a}
-   : GHC.Base.String -> a -> list a -> bool :=
-  fun _msg x ys => Data.Foldable.notElem x ys.
+Fixpoint holes {a : Type} (arg_0__ : list a) : list (a * list a)%type
+  := match arg_0__ with
+     | nil => nil
+     | cons x xs => cons (pair x xs) (mapSnd (cons x) (holes xs))
+     end.
 
-(* Skipping definition `Util.chunkList' *)
-
-Fixpoint changeLast {a : Type} (arg_0__ : list a) (arg_1__ : a) : list a
+Fixpoint changeLast {a} `{HsToCoq.Err.Default a} (arg_0__ : list a) (arg_1__
+                      : a) : list a
   := match arg_0__, arg_1__ with
-     | nil, _ => PlainPanic.panic (GHC.Base.hs_string__ "changeLast")
+     | nil, _ => Panic.panic (GHC.Base.hs_string__ "changeLast")
      | cons _ nil, x => cons x nil
      | cons x xs, x' => cons x (changeLast xs x')
      end.
+
+(* Skipping definition `Util.expectNonEmpty' *)
+
+#[global] Definition expectNonEmptyPanic {a} `{HsToCoq.Err.Default a}
+   : GHC.Base.String -> a :=
+  fun msg =>
+    Panic.panic (Coq.Init.Datatypes.app (GHC.Base.hs_string__ "expectNonEmpty: ")
+                                        msg).
 
 #[global] Definition whenNonEmpty {m : Type -> Type} {a : Type}
   `{GHC.Base.Applicative m}
@@ -454,20 +418,28 @@ Fixpoint changeLast {a : Type} (arg_0__ : list a) (arg_1__ : a) : list a
     | cons x xs, f => f (GHC.Base.NEcons x xs)
     end.
 
+(* Skipping definition `Util.mergeListsBy' *)
+
+(* Skipping definition `Util.isSortedBy' *)
+
 (* Skipping definition `Util.minWith' *)
 
 (* Skipping definition `Util.nubSort' *)
 
-#[global] Definition ordNub {a : Type} `{GHC.Base.Ord a} : list a -> list a :=
-  fun xs =>
+#[global] Definition ordNubOn {b : Type} {a : Type} `{GHC.Base.Ord b}
+   : (a -> b) -> list a -> list a :=
+  fun f xs =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | _, nil => nil
          | s, cons x xs =>
-             if Data.Set.Internal.member x s : bool then go s xs else
-             cons x (go (Data.Set.Internal.insert x s) xs)
+             if Data.Set.Internal.member (f x) s : bool then go s xs else
+             cons x (go (Data.Set.Internal.insert (f x) s) xs)
          end in
     go Data.Set.Internal.empty xs.
+
+#[global] Definition ordNub {a : Type} `{GHC.Base.Ord a} : list a -> list a :=
+  fun xs => ordNubOn GHC.Base.id xs.
 
 #[global] Definition transitiveClosure {a : Type}
    : (a -> list a) -> (a -> a -> bool) -> list a -> list a :=
@@ -493,7 +465,7 @@ Fixpoint foldl2 {acc} {a} {b} `{HsToCoq.Err.Default acc} (arg_0__
   := match arg_0__, arg_1__, arg_2__, arg_3__ with
      | _, z, nil, nil => z
      | k, z, cons a as_, cons b bs => foldl2 k (k z a b) as_ bs
-     | _, _, _, _ => PlainPanic.panic (GHC.Base.hs_string__ "Util: foldl2")
+     | _, _, _, _ => Panic.panic (GHC.Base.hs_string__ "Util: foldl2")
      end.
 
 Fixpoint all2 {a : Type} {b : Type} (arg_0__ : a -> b -> bool) (arg_1__
@@ -542,15 +514,7 @@ Fixpoint dropList {b : Type} {a : Type} (arg_0__ : list b) (arg_1__ : list a)
      | cons _ xs, cons _ ys => dropList xs ys
      end.
 
-Fixpoint splitAtList {b : Type} {a : Type} (arg_0__ : list b) (arg_1__ : list a)
-  : (list a * list a)%type
-  := match arg_0__, arg_1__ with
-     | nil, xs => pair nil xs
-     | _, (nil as xs) => pair xs xs
-     | cons _ xs, cons y ys =>
-         let 'pair ys' ys'' := splitAtList xs ys in
-         pair (cons y ys') ys''
-     end.
+(* Skipping definition `Util.splitAtList' *)
 
 #[global] Definition dropTail {a : Type} : nat -> list a -> list a :=
   fun n xs =>
@@ -581,43 +545,27 @@ Fixpoint splitAtList {b : Type} {a : Type} (arg_0__ : list b) (arg_1__ : list a)
          end in
     go l nil nil l.
 
-#[global] Definition last2 {a : Type} : list a -> (a * a)%type :=
-  let partialError :=
-    PlainPanic.panic (GHC.Base.hs_string__ "last2 - list length less than two") in
-  Data.Foldable.foldl' (fun arg_1__ arg_2__ =>
-                          match arg_1__, arg_2__ with
-                          | pair _ x2, x => pair x2 x
-                          end) (pair partialError partialError).
+#[global] Definition last2 {a : Type} : list a -> option (a * a)%type :=
+  Data.Tuple.uncurry (GHC.Base.liftA2 GHC.Tuple.pair2) GHC.Base.∘
+  Data.Foldable.foldl' (fun arg_0__ arg_1__ =>
+                          match arg_0__, arg_1__ with
+                          | pair _ x2, x => pair x2 (Some x)
+                          end) (pair None None).
 
-#[global] Definition lastMaybe {a : Type} : list a -> option a :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => None
-    | xs => Some (GHC.List.last xs)
-    end.
+(* Skipping definition `Util.lastMaybe' *)
 
-#[global] Definition snocView {a : Type} : list a -> option (list a * a)%type :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | nil => None
-    | xs =>
-        let go {a} : list a -> (list a * a)%type :=
-          fix go (arg_1__ : list a) : (list a * a)%type
-            := match arg_1__ with
-               | cons x nil => pair nil x
-               | cons x xs => let 'pair xs' x' := go xs in pair (cons x xs') x'
-               | nil => GHC.Err.error (GHC.Base.hs_string__ "impossible")
-               end in
-        let 'pair xs x := go xs in
-        Some (pair xs x)
-    end.
+#[global] Definition onJust {b : Type} {a : Type}
+   : b -> option a -> (a -> b) -> b :=
+  fun dflt => GHC.Base.flip (Data.Maybe.maybe dflt).
+
+(* Skipping definition `Util.snocView' *)
 
 #[global] Definition split
    : GHC.Char.Char -> GHC.Base.String -> list GHC.Base.String :=
   HsToCoq.DeferredFix.deferredFix2 (fun split
                                     (c : GHC.Char.Char)
                                     (s : GHC.Base.String) =>
-                                      let 'pair chunk rest := GHC.List.break (fun arg_0__ => arg_0__ GHC.Base.== c)
+                                      let 'pair chunk rest := GHC.List.break (GHC.Prim.rightSection _GHC.Base.==_ c)
                                                                 s in
                                       match rest with
                                       | nil => cons chunk nil
@@ -629,43 +577,6 @@ Fixpoint splitAtList {b : Type} {a : Type} (arg_0__ : list b) (arg_1__ : list a)
 
 #[global] Definition isEqual : comparison -> bool :=
   fun arg_0__ => match arg_0__ with | Gt => false | Eq => true | Lt => false end.
-
-#[global] Definition thenCmp : comparison -> comparison -> comparison :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Eq, ordering => ordering
-    | ordering, _ => ordering
-    end.
-
-Fixpoint eqListBy {a : Type} (arg_0__ : a -> a -> bool) (arg_1__ arg_2__
-                    : list a) : bool
-  := match arg_0__, arg_1__, arg_2__ with
-     | _, nil, nil => true
-     | eq, cons x xs, cons y ys => andb (eq x y) (eqListBy eq xs ys)
-     | _, _, _ => false
-     end.
-
-#[global] Definition eqMaybeBy {a : Type}
-   : (a -> a -> bool) -> option a -> option a -> bool :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | _, None, None => true
-    | eq, Some x, Some y => eq x y
-    | _, _, _ => false
-    end.
-
-Fixpoint cmpList {a : Type} (arg_0__ : a -> a -> comparison) (arg_1__ arg_2__
-                   : list a) : comparison
-  := match arg_0__, arg_1__, arg_2__ with
-     | _, nil, nil => Eq
-     | _, nil, _ => Lt
-     | _, _, nil => Gt
-     | cmp, cons a as_, cons b bs =>
-         match cmp a b with
-         | Eq => cmpList cmp as_ bs
-         | xxx => xxx
-         end
-     end.
 
 (* Skipping definition `Util.removeSpaces' *)
 
@@ -705,7 +616,7 @@ Infix "<||>" := (_<||>_) (at level 99).
 
 #[global] Definition unzipWith {a : Type} {b : Type} {c : Type}
    : (a -> b -> c) -> list (a * b)%type -> list c :=
-  fun f pairs => GHC.Base.map (fun '(pair a b) => f a b) pairs.
+  GHC.Base.fmap GHC.Base.∘ Data.Tuple.uncurry.
 
 Fixpoint seqList {a : Type} {b : Type} (arg_0__ : list a) (arg_1__ : b) : b
   := match arg_0__, arg_1__ with
@@ -713,44 +624,54 @@ Fixpoint seqList {a : Type} {b : Type} (arg_0__ : list a) (arg_1__ : b) : b
      | cons x xs, b => GHC.Prim.seq x (seqList xs b)
      end.
 
-(* Skipping definition `Util.global' *)
+Fixpoint strictMap {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__ : list a)
+  : list b
+  := match arg_0__, arg_1__ with
+     | _, nil => nil
+     | f, cons x xs => let xs' := strictMap f xs in let x' := f x in cons x' xs'
+     end.
 
-(* Skipping definition `Util.consIORef' *)
+Fixpoint strictZipWith {a : Type} {b : Type} {c : Type} (arg_0__ : a -> b -> c)
+                       (arg_1__ : list a) (arg_2__ : list b) : list c
+  := match arg_0__, arg_1__, arg_2__ with
+     | _, nil, _ => nil
+     | _, _, nil => nil
+     | f, cons x xs, cons y ys =>
+         let xs' := strictZipWith f xs ys in let x' := f x y in cons x' xs'
+     end.
 
-(* Skipping definition `Util.globalM' *)
-
-(* Skipping definition `Util.sharedGlobal' *)
-
-(* Skipping definition `Util.sharedGlobalM' *)
+Fixpoint strictZipWith3 {a : Type} {b : Type} {c : Type} {d : Type} (arg_0__
+                          : a -> b -> c -> d) (arg_1__ : list a) (arg_2__ : list b) (arg_3__ : list c)
+  : list d
+  := match arg_0__, arg_1__, arg_2__, arg_3__ with
+     | _, nil, _, _ => nil
+     | _, _, nil, _ => nil
+     | _, _, _, nil => nil
+     | f, cons x xs, cons y ys, cons z zs =>
+         let xs' := strictZipWith3 f xs ys zs in let x' := f x y z in cons x' xs'
+     end.
 
 (* Skipping definition `Util.looksLikeModuleName' *)
 
 Axiom looksLikePackageName : GHC.Base.String -> bool.
 
-(* Skipping definition `Util.getCmd' *)
-
-(* Skipping definition `Util.toCmdArgs' *)
-
-(* Skipping definition `Util.toArgs' *)
-
-#[global] Definition exactLog2 : GHC.Num.Integer -> option GHC.Num.Integer :=
-  fun x =>
-    let x' := GHC.Real.fromIntegral x : GHC.Int.Int32 in
-    let c := Data.Bits.countTrailingZeros x' in
-    if x GHC.Base.<= #0 : bool then None else
-    if x GHC.Base.> GHC.Real.fromIntegral (GHC.Enum.maxBound : GHC.Int.Int32) : bool
-    then None else
-    if (x' Data.Bits..&.(**) (GHC.Num.negate x')) GHC.Base./= x' : bool
-    then None else
-    Some (GHC.Real.fromIntegral c).
+(* Skipping definition `Util.exactLog2' *)
 
 (* Skipping definition `Util.readRational__' *)
 
 (* Skipping definition `Util.readRational' *)
 
+(* Skipping definition `Util.readSignificandExponentPair__' *)
+
+(* Skipping definition `Util.readSignificandExponentPair' *)
+
 (* Skipping definition `Util.readHexRational' *)
 
 (* Skipping definition `Util.readHexRational__' *)
+
+(* Skipping definition `Util.readHexSignificandExponentPair' *)
+
+(* Skipping definition `Util.readHexSignificandExponentPair__' *)
 
 (* Skipping definition `Util.doesDirNameExist' *)
 
@@ -758,20 +679,9 @@ Axiom looksLikePackageName : GHC.Base.String -> bool.
 
 (* Skipping definition `Util.modificationTimeIfExists' *)
 
-#[global] Definition withAtomicRename {m : Type -> Type} {a : Type}
-  `{Control.Monad.IO.Class.MonadIO m}
-   : GHC.Base.String -> (GHC.Base.String -> m a) -> m a :=
-  fun targetFile f =>
-    let enableAtomicRename : bool := true in
-    if enableAtomicRename : bool
-    then let temp :=
-           targetFile System.FilePath.Posix.<.> GHC.Base.hs_string__ "tmp" in
-         f temp GHC.Base.>>=
-         (fun res =>
-            Control.Monad.IO.Class.liftIO (System.Directory.renameFile temp targetFile)
-            GHC.Base.>>
-            GHC.Base.return_ res) else
-    f targetFile.
+(* Skipping definition `Util.fileHashIfExists' *)
+
+(* Skipping definition `Util.withAtomicRename' *)
 
 (* Skipping definition `Util.splitLongestPrefix' *)
 
@@ -795,13 +705,12 @@ Axiom makeRelativeTo : GHC.Base.String -> GHC.Base.String -> GHC.Base.String.
 
 (* Skipping definition `Util.mulHi' *)
 
-#[global] Definition overrideWith : bool -> OverridingBool -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | b, Auto => b
-    | _, Always => true
-    | _, Never => false
-    end.
+#[global] Definition mapMaybe' {f : Type -> Type} {a : Type} {b : Type}
+  `{Data.Foldable.Foldable f}
+   : (a -> option b) -> f a -> list b :=
+  fun f =>
+    let g := fun x rest => match f x with | Some y => cons y rest | _ => rest end in
+    Data.Foldable.foldr g nil.
 
 Module Notations.
 Notation "'_Util.<&&>_'" := (op_zlzazazg__).
@@ -811,23 +720,20 @@ Infix "Util.<||>" := (_<||>_) (at level 99).
 End Notations.
 
 (* External variables:
-     Eq Gt Lt None Some Type andb bool comparison cons false list nat nil op_zt__
-     option orb pair true tt unit Control.Monad.IO.Class.MonadIO
-     Control.Monad.IO.Class.liftIO Coq.Init.Datatypes.app Coq.Lists.List.flat_map
-     Coq.Lists.List.skipn Data.Bits.Bits Data.Bits.countTrailingZeros
-     Data.Bits.op_zizazi__ Data.Bits.xor Data.Either.Either Data.Either.Left
-     Data.Either.Right Data.Foldable.elem Data.Foldable.foldl' Data.Foldable.foldr
-     Data.Foldable.notElem Data.Foldable.null Data.Functor.op_zlzdzg__
-     Data.OldList.zipWith4 Data.Set.Internal.empty Data.Set.Internal.insert
-     Data.Set.Internal.member GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Monad
+     Eq Gt HasDebugCallStack Lt None Some Type andb bool comparison cons false list
+     nat negb nil op_zt__ option orb pair true tt unit Coq.Init.Datatypes.app
+     Coq.Lists.List.skipn Data.Bifunctor.first Data.Bifunctor.second Data.Bits.Bits
+     Data.Bits.xor Data.Either.Either Data.Either.Left Data.Either.Right
+     Data.Foldable.Foldable Data.Foldable.foldl' Data.Foldable.foldr
+     Data.Foldable.null Data.Maybe.maybe Data.OldList.zipWith4
+     Data.Set.Internal.empty Data.Set.Internal.insert Data.Set.Internal.member
+     Data.Tuple.uncurry GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monad
      GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord GHC.Base.String GHC.Base.const
-     GHC.Base.liftA2 GHC.Base.liftM GHC.Base.map GHC.Base.op_zeze__ GHC.Base.op_zg__
-     GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.op_zlze__
-     GHC.Base.op_zsze__ GHC.Base.pure GHC.Base.return_ GHC.Char.Char
-     GHC.Enum.maxBound GHC.Err.error GHC.Err.patternFailure GHC.Int.Int32
-     GHC.List.break GHC.List.last GHC.List.reverse GHC.List.zip GHC.List.zipWith
-     GHC.List.zipWith3 GHC.Num.Integer GHC.Num.fromInteger GHC.Num.negate
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq GHC.Real.fromIntegral
-     HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     PlainPanic.panic System.Directory.renameFile System.FilePath.Posix.op_zlzizg__
+     GHC.Base.flip GHC.Base.fmap GHC.Base.id GHC.Base.liftA2 GHC.Base.op_z2218U__
+     GHC.Base.op_zeze__ GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.pure
+     GHC.Base.return_ GHC.Char.Char GHC.List.break GHC.List.filter GHC.List.reverse
+     GHC.List.zip GHC.List.zipWith GHC.List.zipWith3 GHC.Num.fromInteger
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.rightSection GHC.Prim.seq
+     GHC.Tuple.pair2 HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default
+     HsToCoq.Err.Default Panic.panic
 *)

@@ -1,6 +1,9 @@
 
 axiomatize module CoreArity
 
+# GHC 9.10: Coq 8.20 doesn't allow same name for type and constructor
+rename value GHC.Core.Opt.Arity.ArityOpts = CoreArity.Mk_ArityOpts
+
 # in CoreArity.typeArity termination go deferred
 # in CoreArity.mkEtaWW termination go deferred
 # in CoreArity.etaExpandToJoinPoint termination go deferred

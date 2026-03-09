@@ -14,6 +14,14 @@ Definition rightSection {a b c : Type} (op : a -> b -> c) (x : b) : a -> c :=
 
 Class Coercible a b := { coerce : a -> b }.
 
+(* Empty Notations module for generated code that imports GHC.Prim.Notations *)
+Module Notations.
+End Notations.
+
+(* HasCallStack is a trivial constraint in Coq — always satisfiable *)
+Class HasCallStack := {}.
+#[global] Instance hasCallStack : HasCallStack := {}.
+
 #[global]
 Instance Coercible_Unpeel
   a b c

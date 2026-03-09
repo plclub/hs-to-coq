@@ -1,1 +1,1 @@
-lib/CoreSubst.v: lib/Core.h2ci
+lib/CoreSubst.v: 

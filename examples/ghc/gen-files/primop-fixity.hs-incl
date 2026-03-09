@@ -17,4 +17,4 @@ primOpFixity DoubleAddOp = Just (Fixity NoSourceText 6 InfixL)
 primOpFixity DoubleSubOp = Just (Fixity NoSourceText 6 InfixL)
 primOpFixity DoubleMulOp = Just (Fixity NoSourceText 7 InfixL)
 primOpFixity DoubleDivOp = Just (Fixity NoSourceText 7 InfixL)
-primOpFixity _ = Nothing
+primOpFixity _thisOp = Nothing

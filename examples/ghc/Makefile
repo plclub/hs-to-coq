@@ -9,13 +9,56 @@ CORE_EDITS=axiomatize-types.edits
 # see [notes.md] for discussion of issues
 
 # Handwritten modules (usually by modification of generated version)
+# Handwritten modules and axiomatized stubs for GHC 9.10 dependencies
 HANDMOD = \
   FastString \
   AxiomatizedTypes \
   NestedRecursionHelpers \
   IntMap \
-  # Used by CSE
-  # TysWiredIn \
+  State \
+  ConLike \
+  Outputable \
+  ClassSpec \
+  ConIds \
+  Platform \
+  TcType \
+  UniqDFM \
+  UniqDSet \
+  PrimOp \
+  RepType \
+  Data/ByteString/Internal/Type \
+  GHC/Builtin/Types/Prim \
+  GHC/Builtin/Uniques \
+  GHC/Core/FamInstEnv \
+  GHC/Core/Map/Expr \
+  GHC/Core/Map/Type \
+  GHC/Core/Multiplicity \
+  GHC/Core/Opt/Stats \
+  GHC/Core/Predicate \
+  GHC/Core/Reduction \
+  GHC/Core/Rules \
+  GHC/Core/Rules/Config \
+  GHC/Core/TyCo/Compare \
+  GHC/Core/TyCo/FVs \
+  GHC/Core/TyCo/Subst \
+  GHC/Core/TyCo/Tidy \
+  GHC/Core/TyCon/RecWalk \
+  GHC/Data/List/Infinite \
+  GHC/Data/Word64Map/Internal \
+  GHC/Data/Word64Map/Strict/Internal \
+  GHC/Data/Word64Set/Internal \
+  GHC/Runtime/Context \
+  GHC/Stg/InferTags/TagSig \
+  GHC/StgToCmm/Types \
+  GHC/Types/Cpr \
+  GHC/Types/GREInfo \
+  GHC/Types/Tickish \
+  GHC/Types/TyThing \
+  GHC/Unit/External \
+  GHC/Unit/Module/ModGuts \
+  GHC/Utils/Monad/State/Strict \
+  GHC/Utils/Trace \
+  CallArity
 
 
 # generated from drop-in/
@@ -34,7 +77,7 @@ EXTRA_CORE = Json \
   IfaceType \
   PrelNames \
   TysWiredIn \
-  CoAxiom 
+  CoAxiom
 
 
 UTILS = \
@@ -42,6 +85,7 @@ UTILS = \
   SrcLoc \
   Unique \
   UniqSupply \
+  HsSyn \
   BasicTypes \
   DynFlags \
   Panic \
@@ -58,12 +102,10 @@ DATASTRUCTS = \
   FiniteMap \
   ListSetOps \
   Pair \
-  State \
   Maybes \
   MonadUtils \
 
 # Generated modules
-# generated directly from ghc/compiler/*/
 # These are general purpose utility modules
 MODULES = \
   $(UTILS) \
@@ -88,7 +130,6 @@ EXTRAS = \
   UnVarGraph \
   CoreArity \
   CoreTidy \
-  CallArity \
   CoAxiom \
   TysWiredIn \
   MkCore \
@@ -113,7 +154,6 @@ CORE_MODULES = \
   FV \
   Literal \
   FieldLabel \
-  ConLike \
   CoreFVs \
   Exitify \
 
@@ -134,6 +174,93 @@ CORETYPE = \
 BROKEN_MODULES = \
 
 
+####################################################
+# GHC 9.10 source path mappings
+# Maps old module names to GHC 9.10 compiler paths
+####################################################
+
+SRCPATH = ghc/compiler
+
+# UTILS
+SRC_Util        = $(SRCPATH)/GHC/Utils/Misc.hs
+SRC_SrcLoc      = $(SRCPATH)/GHC/Types/SrcLoc.hs
+SRC_Unique      = $(SRCPATH)/GHC/Types/Unique.hs
+SRC_UniqSupply  = $(SRCPATH)/GHC/Types/Unique/Supply.hs
+SRC_HsSyn       = $(SRCPATH)/Language/Haskell/Syntax/Basic.hs
+SRC_BasicTypes  = $(SRCPATH)/GHC/Types/Basic.hs
+SRC_DynFlags    = $(SRCPATH)/GHC/Driver/DynFlags.hs
+SRC_Panic       = $(SRCPATH)/GHC/Utils/Panic.hs
+SRC_OccName     = $(SRCPATH)/GHC/Types/Name/Occurrence.hs
+SRC_Module      = $(SRCPATH)/GHC/Unit/Module.hs
+
+# DATASTRUCTS
+SRC_Bag         = $(SRCPATH)/GHC/Data/Bag.hs
+SRC_EnumSet     = $(SRCPATH)/GHC/Data/EnumSet.hs
+SRC_BooleanFormula = $(SRCPATH)/GHC/Data/BooleanFormula.hs
+SRC_UniqFM      = $(SRCPATH)/GHC/Types/Unique/FM.hs
+SRC_UniqSet     = $(SRCPATH)/GHC/Types/Unique/Set.hs
+SRC_OrdList     = ghc-head/OrdList.hs
+SRC_FiniteMap   = $(SRCPATH)/GHC/Data/FiniteMap.hs
+SRC_ListSetOps  = $(SRCPATH)/GHC/Data/List/SetOps.hs
+SRC_Pair        = $(SRCPATH)/GHC/Data/Pair.hs
+SRC_Maybes      = $(SRCPATH)/GHC/Data/Maybe.hs
+SRC_MonadUtils  = $(SRCPATH)/GHC/Utils/Monad.hs
+
+# CORESYN (mutually dependent modules -> Core.v)
+SRC_IdInfo      = $(SRCPATH)/GHC/Types/Id/Info.hs
+SRC_Class       = $(SRCPATH)/GHC/Core/Class.hs
+SRC_TyCon       = $(SRCPATH)/GHC/Core/TyCon.hs
+SRC_DataCon     = $(SRCPATH)/GHC/Core/DataCon.hs
+SRC_PatSyn      = $(SRCPATH)/GHC/Core/PatSyn.hs
+SRC_Var         = $(SRCPATH)/GHC/Types/Var.hs
+SRC_VarSet      = $(SRCPATH)/GHC/Types/Var/Set.hs
+SRC_VarEnv      = $(SRCPATH)/GHC/Types/Var/Env.hs
+SRC_CoreSyn     = $(SRCPATH)/GHC/Core.hs
+SRC_Demand      = $(SRCPATH)/GHC/Types/Demand.hs
+SRC_Type        = $(SRCPATH)/GHC/Core/Type.hs
+SRC_TyCoRep     = $(SRCPATH)/GHC/Core/TyCo/Rep.hs
+SRC_Coercion    = $(SRCPATH)/GHC/Core/Coercion.hs
+
+# CORE_MODULES
+SRC_FastStringEnv = $(SRCPATH)/GHC/Data/FastString/Env.hs
+SRC_Constants   = $(SRCPATH)/GHC/Settings/Constants.hs
+SRC_Id          = $(SRCPATH)/GHC/Types/Id.hs
+SRC_CoreSubst   = $(SRCPATH)/GHC/Core/Subst.hs
+SRC_PrelNames   = $(SRCPATH)/GHC/Builtin/Names.hs
+SRC_CoreUtils   = $(SRCPATH)/GHC/Core/Utils.hs
+SRC_Name        = $(SRCPATH)/GHC/Types/Name.hs
+SRC_NameEnv     = $(SRCPATH)/GHC/Types/Name/Env.hs
+SRC_NameSet     = $(SRCPATH)/GHC/Types/Name/Set.hs
+SRC_FV          = $(SRCPATH)/GHC/Utils/FV.hs
+SRC_Literal     = $(SRCPATH)/GHC/Types/Literal.hs
+SRC_FieldLabel  = $(SRCPATH)/GHC/Types/FieldLabel.hs
+SRC_ConLike     = $(SRCPATH)/GHC/Core/ConLike.hs
+SRC_CoreFVs     = $(SRCPATH)/GHC/Core/FVs.hs
+SRC_Exitify     = $(SRCPATH)/GHC/Core/Opt/Exitify.hs
+
+# EXTRAS
+SRC_TrieMap     = $(SRCPATH)/GHC/Data/TrieMap.hs
+SRC_CSE         = $(SRCPATH)/GHC/Core/Opt/CSE.hs
+SRC_CoreStats   = $(SRCPATH)/GHC/Core/Stats.hs
+SRC_UnVarGraph  = $(SRCPATH)/GHC/Data/Graph/UnVar.hs
+SRC_CoreArity   = $(SRCPATH)/GHC/Core/Opt/Arity.hs
+SRC_CoreTidy    = $(SRCPATH)/GHC/Core/Tidy.hs
+SRC_CallArity   = $(SRCPATH)/GHC/Core/Opt/CallArity.hs
+SRC_CoAxiom     = $(SRCPATH)/GHC/Core/Coercion/Axiom.hs
+SRC_TysWiredIn  = $(SRCPATH)/GHC/Builtin/Types.hs
+SRC_MkCore      = $(SRCPATH)/GHC/Core/Make.hs
+SRC_Digraph     = $(SRCPATH)/GHC/Data/Graph/Directed.hs
+SRC_SetLevels   = $(SRCPATH)/GHC/Core/Opt/SetLevels.hs
+SRC_CoreMonad   = $(SRCPATH)/GHC/Core/Opt/Monad.hs
+SRC_OccurAnal   = $(SRCPATH)/GHC/Core/Opt/OccurAnal.hs
+SRC_FloatIn     = $(SRCPATH)/GHC/Core/Opt/FloatIn.hs
+SRC_FloatOut    = $(SRCPATH)/GHC/Core/Opt/FloatOut.hs
+
+# Helper function: get source path for a module name
+# Usage: $(call ghc_src,ModuleName)
+ghc_src = $(SRC_$(1))
+
+####################################################
 
 VFILES_GEN       = $(addsuffix .v,$(MODULES))
 VFILES_MAN       = $(addsuffix .v,$(HANDMOD))
@@ -156,12 +283,8 @@ OUTFILES_TYPE      = $(addprefix $(OUT)/,$(VFILES_TYPE))
 
 OUTFILES   = $(OUTFILES_GEN) $(OUTFILES_MAN) $(OUTFILES_DROPIN) $(OUTFILES_CORE) $(OUTFILES_CORESYN)
 
-
-HSFILES     = $(addsuffix .hs,$(MODULES) $(CORESYN) $(CORE_MODULES)) 
-HSFILESPATH = $(addprefix ghc/compiler/*/,$(HSFILES)) 
-
-SMALLCORE = $(addsuffix .hs,$(CORESYN))
-SMALLPATH  = $(addprefix ghc/compiler/*/,$(SMALLCORE)) 
+# Build list of source .hs files using path mappings
+HSFILES     = $(foreach m,$(MODULES) $(CORESYN) $(CORE_MODULES),$(SRC_$(m)))
 
 EDITPATHS = $(addprefix module-edits/,$(MODULES) $(CORESYN) $(CORE_MODULES))
 EDITFILES = edits $(CORE_EDITS) $(addsuffix /edits,$(EDITPATHS)) $(addsuffix /*.v, $(EDITPATHS))
@@ -174,7 +297,7 @@ core: $(OUT)/README.md coq
 
 
 filelist:
-	@ls -1 $(HSFILESPATH)
+	@for f in $(HSFILES); do echo $$f; done
 
 
 editlist:
@@ -200,7 +323,7 @@ edittable:
 	@echo "rewrite"
 	@cat $(EDITFILES) 2>/dev/null | grep "rewrite" | grep -v "#" | wc -l
 	@echo "redefine"
-	@cat $(EDITFILES) 2>/dev/null | grep "redefine" | grep -v "#" | grep -v "Axiom" 
+	@cat $(EDITFILES) 2>/dev/null | grep "redefine" | grep -v "#" | grep -v "Axiom"
 	@echo "rename type"
 	@cat $(EDITFILES) 2>/dev/null | grep "rename type" | grep -v "#" | wc -l
 	@echo "rename value"
@@ -214,56 +337,20 @@ edittable:
 	@echo "TOTAL"
 	@cat $(EDITFILES) 2>/dev/null | grep -v "#" --include "*edits" | wc -l
 
-ghc.all.pdf: Makefile
-	find ghc/compiler -name \*.hs | xargs graphmod --no-cluster --prune-edges -r Outputable -r GhcPrelude | dot -Tpdf -o ghc.all.pdf
-
-
-ghc.core.pdf: Makefile
-	@ls -1 $(HSFILESPATH) | xargs	graphmod -i ghc/compiler/coreSyn -i ghc/compiler/basicTypes -i ghc/compiler/types -i ghc/compiler/utils -i ghc/compiler/simplCore -i ghc/compiler/main --no-cluster --prune-edges | dot -Tpdf -o ghc.core.pdf
-
-# ghcrec.dot: Makefile
-#	@ls -1 $(SMALLPATH) | xargs	graphmod -s 2 -i ghc/compiler/coreSyn -i ghc/compiler/basicTypes -i ghc/compiler/types -i ghc/compiler/utils -i ghc/compiler/simplCore -i ghc/compiler/main --prune-edges -r BooleanFormula -r Outputable -r Util -r DynFlags -r Module -r FiniteMap -r MonadUtils -r GhcPrelude -r FastString -r StringBuffer -r Lexeme -r UniqSupply -r BasicTypes -r CmdLineParser -r Packages -r Platform -r Binary -r UniqDSet -r OccName -r Digraph -r ErrUtils -r Panic -r Bag -r CoreStats -r SrcLoc -r Maybes -r Unique -r ListSetOps -r FastStringEnv -r UniqFM -r InteractiveEvalTypes -r OrdList -r DriverPhases -r Exception -r Pair -r UniqDFM -r UniqSet -r Constants > ghcrec.dot
-
-ghcrec.pdf: ghcrec.dot
-	dot -Tpdf -o ghcrec.pdf ghcrec.dot
-
-
-cloc_table_hs: 
-	echo UTIL 
-	cloc --by-file $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(UTILS))) 
-	echo DATASTRUCTS
-	cloc --by-file $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(DATASTRUCTS))) 
-	echo CORESYN
-	cloc --by-file $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(CORESYN))) 
-	echo CORE_MODULES
-	cloc --by-file $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(CORE_MODULES)))
-	echo TOTAL
-	cloc $(addsuffix .hs,$(addprefix ghc/compiler/*/,$(MODULES) $(CORESYN) $(CORE_MODULES))) 
-
-
-cloc_table_v: 
-	echo MANUAL
-	cloc --by-file $(addsuffix .v, $(addprefix manual/,$(HANDMOD)))
-	echo UTIL 
-	cloc --by-file $(addsuffix .v,$(addprefix lib/,$(UTILS)))
-	echo DATASTRUCTS
-	cloc --by-file $(addsuffix .v,$(addprefix lib/,$(DATASTRUCTS)))
-	echo CORESYN
-	cloc --by-file lib/Core.v 
-	echo CORE_MODULES
-	cloc --by-file $(addsuffix .v,$(addprefix lib/,$(CORE_MODULES)))
-	echo TOTAL
-	cloc $(addsuffix .v,$(addprefix lib/,$(MODULES) $(CORE_MODULES))) lib/Core.v $(addsuffix .v, $(addprefix manual/,$(HANDMOD)))
-
-
 
 # This target is also used as a dependecy to ensure that $(OUT) exists.
 $(OUT)/README.md:
 	mkdir -p $(OUT)
 	mkdir -p deps
 	> $@
-	echo 'This directory contains a Coq’ified version of parts of GHC' >> $@
-	echo 'Do not edit files here! Instead, look in `examples/ghc`.' >> $@
+	echo 'This directory contains a Coq'\''ified version of parts of GHC.' >> $@
+	echo '' >> $@
+	echo '**Do not edit files here!** This directory is generated by `make` from' >> $@
+	echo '`examples/ghc/`. Hand-written modules are symlinked from `manual/`;' >> $@
+	echo 'generated `.v` files come from hs-to-coq translation of GHC 9.10.3 source.' >> $@
+	echo '' >> $@
+	echo '`make clean` in the parent directory removes this entire directory.' >> $@
+	echo 'To regenerate: `make -C examples/ghc`.' >> $@
 
 $(OUT)/edits:
 	mkdir -p $(OUT)
@@ -290,10 +377,13 @@ HS_TO_COQ_GHC_OPTS=\
      --ghc-tree ghc \
      -i gen-files \
      -I gen-files \
-     -I ghc/includes \
+     -I ghc/rts/include \
+     -I ghc/rts/include/stg \
+     -I ghc/rts/include/rts/storage \
      -I ghc/compiler \
      --ghc -DSTAGE=2 \
      --ghc -package=ghc-boot-th \
+     --ghc -package=ghc \
      --ghc -XNoImplicitPrelude \
      -e ../../base/edits \
      -e ../containers/edits \
@@ -319,9 +409,28 @@ $(OUTFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildca
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
 		     $(HS_TO_COQ_GHC_OPTS) \
                      -o $(OUT) \
-		     $(word 1,$(wildcard ghc-head/$*.hs ghc/compiler/*/$*.hs))
+		     $(SRC_$*)
 	test -e $@
-
+	@# GHC 9.10: fix phantom kind parameters in UniqFM.
+	@# Remove {k : Type}/{k1 : Type}/{k2 : Type} kind params and
+	@# replace {key : k}/{key1 : k1}/{key2 : k2}/{k2 : k1} with {... : Type}.
+	@if [ "$*" = "UniqFM" ]; then \
+	  sed -i \
+	    -e 's/{k : Type} //g' \
+	    -e 's/{k1 : Type} //g' \
+	    -e 's/{k2 : Type} //g' \
+	    $@; \
+	  sed -i -e ':a' -e 'N' -e '$$!ba' \
+	    -e 's/{key\(\s*\):\s*k}/{key\1: Type}/g' \
+	    -e 's/{key1\(\s*\):\s*k1}/{key1\1: Type}/g' \
+	    -e 's/{key2\(\s*\):\s*k2}/{key2\1: Type}/g' \
+	    -e 's/{k2\(\s*\):\s*k1}/{k2\1: Type}/g' \
+	    $@; \
+	fi
+	@# GHC 9.10: make all Default instances in BasicTypes global so downstream modules can resolve them.
+	@if [ "$*" = "BasicTypes" ]; then \
+	  sed -i 's/^Instance Default__/#[global] Instance Default__/' $@; \
+	fi
 $(OUTFILES_CORE): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits $(CORE_EDITS)
 	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
@@ -329,8 +438,12 @@ $(OUTFILES_CORE): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildc
 		     $(HS_TO_COQ_GHC_OPTS) \
                      -e $(CORE_EDITS) \
                      -o $(OUT) \
-		     $(word 1,$(wildcard ghc-head/$*.hs ghc/compiler/*/$*.hs))
+		     $(SRC_$*)
 	test -e $@
+	@# GHC 9.10: make Default instances in Literal global for cross-module resolution.
+	@if [ "$*" = "Literal" ]; then \
+	  sed -i 's/^Instance Default__/#[global] Instance Default__/' $@; \
+	fi
 
 CORESYN_PRE = $(wildcard $(addprefix module-edits/, $(addsuffix /preamble.v, $(CORESYN))))
 CORESYN_MID = $(wildcard $(addprefix module-edits/, $(addsuffix /midamble.v, $(CORESYN))))
@@ -344,8 +457,43 @@ $(OUTFILES_CORESYN) : edits $(CORE_EDITS) $(CORESYN_PRE) $(CORESYN_MID) $(wildca
 	             $(addprefix -e , $(wildcard $(addprefix module-edits/, $(addsuffix /edits, $(CORESYN))))) \
                 -e $(CORE_EDITS) \
                 -o $(OUT) \
-		     $(addprefix ghc/compiler/*/, $(addsuffix .hs, $(CORESYN)))
+		     $(foreach m,$(CORESYN),$(SRC_$(m)))
 	test -e $@
+	@# GHC 9.10: Remove circular deps and fix Omega→Lia in Core.v
+	sed -i \
+	  -e '/^Require ConLike\.$$/d' \
+	  -e '/^Require TysWiredIn\.$$/d' \
+	  -e '/^Require UnVarGraph\.$$/d' \
+	  -e 's/^Require Import Omega\.$$/Require Import Lia./' \
+	  -e 's/ConLike\.ConLike/ConLike/g' \
+	  -e 's/ConLike\.RealDataCon/RealDataCon/g' \
+	  -e 's/ConLike\.PatSynCon/PatSynCon/g' \
+	  -e '/^Require Import/!s/^Require \([A-Z]\)/Require Import \1/' \
+	  -e '/^Inductive InScopeSet.*VarSet -> nat/d' \
+	  $@
+	@# GHC 9.10: Insert ConLike into the mutual type block (after PatSyn)
+	sed -i '/^   : PatSyn$$/a with ConLike : Type :=\n  | RealDataCon : DataCon -> ConLike\n  | PatSynCon : PatSyn -> ConLike' $@
+	@# Insert type definitions and Admitted Default instances before Arguments
+	@# (needed by partial record accessors; some types only defined in commented-out block)
+	sed -i '/^Arguments Bndr/i \
+Definition RuleBase := (NameEnv.NameEnv (list CoreRule))%type.\n\
+Axiom RuleEnv : Type.\n\
+\#[global] Instance Default__TyFamEqnValidityInfo : HsToCoq.Err.Default TyFamEqnValidityInfo. Admitted.\n\
+\#[global] Instance Default__AlgTyConRhs : HsToCoq.Err.Default AlgTyConRhs. Admitted.\n\
+\#[global] Instance Default__TyConDetails : HsToCoq.Err.Default TyConDetails. Admitted.\n\
+\#[global] Instance Default__TyCon : HsToCoq.Err.Default TyCon. Admitted.\n\
+\#[global] Instance Default__DmdType : HsToCoq.Err.Default DmdType. Admitted.\n\
+\#[global] Instance Default__IdInfo : HsToCoq.Err.Default IdInfo. Admitted.\n\
+\#[global] Instance Default__Var : HsToCoq.Err.Default Var. Admitted.\n\
+\#[global] Instance Default__DataCon : HsToCoq.Err.Default DataCon. Admitted.\n\
+\#[global] Instance Default__CoreRule : HsToCoq.Err.Default CoreRule. Admitted.\n\
+\#[global] Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv. Admitted.\n' $@
+	@# GHC 9.10: Eq___AltCon not auto-generated; inject after Eq___DataCon closing
+	sed -i '/Eq___DataCon_op_zsze__.*|}\./a \
+\n\#[local] Definition Eq___AltCon_op_zeze__ : AltCon -> AltCon -> bool :=\n  fun a b => match a, b with\n    | DataAlt dc1, DataAlt dc2 => dc1 GHC.Base.== dc2\n    | LitAlt l1, LitAlt l2 => l1 GHC.Base.== l2\n    | DEFAULT, DEFAULT => true\n    | _, _ => false\n  end.\n\n\#[local] Definition Eq___AltCon_op_zsze__ : AltCon -> AltCon -> bool :=\n  fun a b => negb (Eq___AltCon_op_zeze__ a b).\n\n\#[global]\nProgram Instance Eq___AltCon : GHC.Base.Eq_ AltCon :=\n  fun _ k__ =>\n    k__ {| GHC.Base.op_zeze____ := Eq___AltCon_op_zeze__ ;\n           GHC.Base.op_zsze____ := Eq___AltCon_op_zsze__ |}.' $@
+	@# GHC 9.10: Var has single constructor Mk_Id — remove redundant wildcard branches
+	@# Match when Mk_Id has 7 args (all positions filled, whether _ or named)
+	sed -i '/| Mk_Id [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* =>/{n;/| _ =>/d}' $@
 	rm -f CoreSyn_preamble.v CoreSyn_midamble.v
 
 $(OUTFILES_TYPE) : edits $(CORE_EDITS) $$(wildcard module-edits/Type/preamble.v) $$(wildcard module-edits/Type/midamble.v)  $$(wildcard module-edits/Type/edits)
@@ -354,7 +502,7 @@ $(OUTFILES_TYPE) : edits $(CORE_EDITS) $$(wildcard module-edits/Type/preamble.v)
 	             $(addprefix --midamble , $(wildcard module-edits/Type/midamble.v)) \
 		     $(HS_TO_COQ_GHC_OPTS) \
             -o Type_.v \
-		     $(word 1,$(wildcard ghc-head/Type.hs ghc/compiler/*/Type.hs))
+		     $(SRC_Type)
 	test -e $@
 
 $(OUTFILES_CONSTR) : edits $(CORE_EDITS) module-edits/Constructors/preamble.v  module-edits/Constructors/midamble.v module-edits/Constructors/edits
@@ -364,7 +512,7 @@ $(OUTFILES_CONSTR) : edits $(CORE_EDITS) module-edits/Constructors/preamble.v  m
 		     $(HS_TO_COQ_GHC_OPTS) \
                      -e $(CORE_EDITS) \
                      -o $(OUT) \
-		     $(addprefix ghc/compiler/*/, $(addsuffix .hs, $(CONSTRUCTORS)))
+		     $(foreach m,$(CONSTRUCTORS),$(SRC_$(m)))
 	test -e $@
 
 
@@ -375,7 +523,7 @@ $(OUTFILES_CORETYPE) : edits core-edits module-edits/CoreType/preamble.v  module
 		     $(HS_TO_COQ_GHC_OPTS) \
                      -e core-edits \
                      -o $(OUT) \
-		     $(addprefix ghc/compiler/*/, $(addsuffix .hs, $(CORETYPE)))
+		     $(foreach m,$(CORETYPE),$(SRC_$(m)))
 	test -e $@
 
 $(OUTFILES_MAN): $(OUT)/%.v : manual/%.v

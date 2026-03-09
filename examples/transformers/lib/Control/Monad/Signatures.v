@@ -14,13 +14,13 @@ Require Coq.Program.Wf.
 
 (* Converted type declarations: *)
 
-Definition Pass w m a :=
+#[global] Definition Pass w m a :=
   (m (a * (w -> w))%type -> m a)%type.
 
-Definition Listen w m a :=
+#[global] Definition Listen w m a :=
   (m a -> m (a * w)%type)%type.
 
-Definition CallCC m a b :=
+#[global] Definition CallCC m a b :=
   (((a -> m b) -> m a) -> m a)%type.
 
 (* No value declarations to convert. *)

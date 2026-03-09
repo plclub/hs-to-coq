@@ -1,41 +1,69 @@
-constructors:
-  OccurAnal.OccEncl: ! '[Qualified "OccurAnal" "OccRhs",Qualified "OccurAnal" "OccVanilla"]'
-  OccurAnal.UsageDetails: ! '[Qualified "OccurAnal" "UD"]'
-  OccurAnal.Details: ! '[Qualified "OccurAnal" "ND"]'
-  OccurAnal.OccEnv: ! '[Qualified "OccurAnal" "Mk_OccEnv"]'
 constructorFields:
+  OccurAnal.ManyOccL: NonRecordFields 1
   OccurAnal.Mk_OccEnv: RecordFields [Qualified "OccurAnal" "occ_encl",Qualified "OccurAnal"
-    "occ_one_shots",Qualified "OccurAnal" "occ_gbl_scrut",Qualified "OccurAnal" "occ_rule_act",Qualified
-    "OccurAnal" "occ_binder_swap"]
-  OccurAnal.OccVanilla: NonRecordFields 0
-  OccurAnal.UD: RecordFields [Qualified "OccurAnal" "ud_env",Qualified "OccurAnal"
-    "ud_z_many",Qualified "OccurAnal" "ud_z_in_lam",Qualified "OccurAnal" "ud_z_no_tail"]
+    "occ_one_shots",Qualified "OccurAnal" "occ_unf_act",Qualified "OccurAnal" "occ_rule_act",Qualified
+    "OccurAnal" "occ_bs_env",Qualified "OccurAnal" "occ_bs_rng",Qualified "OccurAnal"
+    "occ_join_points"]
   OccurAnal.ND: RecordFields [Qualified "OccurAnal" "nd_bndr",Qualified "OccurAnal"
-    "nd_rhs",Qualified "OccurAnal" "nd_rhs_bndrs",Qualified "OccurAnal" "nd_uds",Qualified
-    "OccurAnal" "nd_inl",Qualified "OccurAnal" "nd_weak",Qualified "OccurAnal" "nd_active_rule_fvs",Qualified
-    "OccurAnal" "nd_score"]
+    "nd_rhs",Qualified "OccurAnal" "nd_inl",Qualified "OccurAnal" "nd_simple",Qualified
+    "OccurAnal" "nd_weak_fvs",Qualified "OccurAnal" "nd_active_rule_fvs"]
   OccurAnal.OccRhs: NonRecordFields 0
-recordFieldTypes:
-  OccurAnal.ud_z_many: Qualified "OccurAnal" "UsageDetails"
-  OccurAnal.ud_env: Qualified "OccurAnal" "UsageDetails"
-  OccurAnal.occ_encl: Qualified "OccurAnal" "OccEnv"
-  OccurAnal.occ_binder_swap: Qualified "OccurAnal" "OccEnv"
-  OccurAnal.nd_rhs: Qualified "OccurAnal" "Details"
-  OccurAnal.nd_uds: Qualified "OccurAnal" "Details"
-  OccurAnal.nd_bndr: Qualified "OccurAnal" "Details"
-  OccurAnal.nd_rhs_bndrs: Qualified "OccurAnal" "Details"
-  OccurAnal.occ_one_shots: Qualified "OccurAnal" "OccEnv"
-  OccurAnal.ud_z_in_lam: Qualified "OccurAnal" "UsageDetails"
-  OccurAnal.nd_inl: Qualified "OccurAnal" "Details"
-  OccurAnal.nd_active_rule_fvs: Qualified "OccurAnal" "Details"
-  OccurAnal.occ_rule_act: Qualified "OccurAnal" "OccEnv"
-  OccurAnal.occ_gbl_scrut: Qualified "OccurAnal" "OccEnv"
-  OccurAnal.nd_score: Qualified "OccurAnal" "Details"
-  OccurAnal.nd_weak: Qualified "OccurAnal" "Details"
-  OccurAnal.ud_z_no_tail: Qualified "OccurAnal" "UsageDetails"
+  OccurAnal.OccScrut: NonRecordFields 0
+  OccurAnal.OccVanilla: NonRecordFields 0
+  OccurAnal.OneOccL: RecordFields [Qualified "OccurAnal" "lo_n_br",Qualified "OccurAnal"
+    "lo_tail",Qualified "OccurAnal" "lo_int_cxt"]
+  OccurAnal.SND: RecordFields [Qualified "OccurAnal" "snd_bndr",Qualified "OccurAnal"
+    "snd_rhs",Qualified "OccurAnal" "snd_score"]
+  OccurAnal.TUD: NonRecordFields 2
+  OccurAnal.UD: RecordFields [Qualified "OccurAnal" "ud_env",Qualified "OccurAnal"
+    "ud_z_many",Qualified "OccurAnal" "ud_z_in_lam",Qualified "OccurAnal" "ud_z_tail"]
+  OccurAnal.WTUD: NonRecordFields 2
+  OccurAnal.WUD: NonRecordFields 2
 constructorTypes:
+  OccurAnal.ManyOccL: Qualified "OccurAnal" "LocalOcc"
   OccurAnal.Mk_OccEnv: Qualified "OccurAnal" "OccEnv"
-  OccurAnal.OccVanilla: Qualified "OccurAnal" "OccEncl"
-  OccurAnal.UD: Qualified "OccurAnal" "UsageDetails"
-  OccurAnal.ND: Qualified "OccurAnal" "Details"
+  OccurAnal.ND: Qualified "OccurAnal" "NodeDetails"
   OccurAnal.OccRhs: Qualified "OccurAnal" "OccEncl"
+  OccurAnal.OccScrut: Qualified "OccurAnal" "OccEncl"
+  OccurAnal.OccVanilla: Qualified "OccurAnal" "OccEncl"
+  OccurAnal.OneOccL: Qualified "OccurAnal" "LocalOcc"
+  OccurAnal.SND: Qualified "OccurAnal" "SimpleNodeDetails"
+  OccurAnal.TUD: Qualified "OccurAnal" "TailUsageDetails"
+  OccurAnal.UD: Qualified "OccurAnal" "UsageDetails"
+  OccurAnal.WTUD: Qualified "OccurAnal" "WithTailUsageDetails"
+  OccurAnal.WUD: Qualified "OccurAnal" "WithUsageDetails"
+constructors:
+  OccurAnal.LocalOcc: '[Qualified "OccurAnal" "OneOccL",Qualified "OccurAnal" "ManyOccL"]'
+  OccurAnal.NodeDetails: '[Qualified "OccurAnal" "ND"]'
+  OccurAnal.OccEncl: '[Qualified "OccurAnal" "OccRhs",Qualified "OccurAnal" "OccScrut",Qualified
+    "OccurAnal" "OccVanilla"]'
+  OccurAnal.OccEnv: '[Qualified "OccurAnal" "Mk_OccEnv"]'
+  OccurAnal.SimpleNodeDetails: '[Qualified "OccurAnal" "SND"]'
+  OccurAnal.TailUsageDetails: '[Qualified "OccurAnal" "TUD"]'
+  OccurAnal.UsageDetails: '[Qualified "OccurAnal" "UD"]'
+  OccurAnal.WithTailUsageDetails: '[Qualified "OccurAnal" "WTUD"]'
+  OccurAnal.WithUsageDetails: '[Qualified "OccurAnal" "WUD"]'
+recordFieldTypes:
+  OccurAnal.lo_int_cxt: Qualified "OccurAnal" "LocalOcc"
+  OccurAnal.lo_n_br: Qualified "OccurAnal" "LocalOcc"
+  OccurAnal.lo_tail: Qualified "OccurAnal" "LocalOcc"
+  OccurAnal.nd_active_rule_fvs: Qualified "OccurAnal" "NodeDetails"
+  OccurAnal.nd_bndr: Qualified "OccurAnal" "NodeDetails"
+  OccurAnal.nd_inl: Qualified "OccurAnal" "NodeDetails"
+  OccurAnal.nd_rhs: Qualified "OccurAnal" "NodeDetails"
+  OccurAnal.nd_simple: Qualified "OccurAnal" "NodeDetails"
+  OccurAnal.nd_weak_fvs: Qualified "OccurAnal" "NodeDetails"
+  OccurAnal.occ_bs_env: Qualified "OccurAnal" "OccEnv"
+  OccurAnal.occ_bs_rng: Qualified "OccurAnal" "OccEnv"
+  OccurAnal.occ_encl: Qualified "OccurAnal" "OccEnv"
+  OccurAnal.occ_join_points: Qualified "OccurAnal" "OccEnv"
+  OccurAnal.occ_one_shots: Qualified "OccurAnal" "OccEnv"
+  OccurAnal.occ_rule_act: Qualified "OccurAnal" "OccEnv"
+  OccurAnal.occ_unf_act: Qualified "OccurAnal" "OccEnv"
+  OccurAnal.snd_bndr: Qualified "OccurAnal" "SimpleNodeDetails"
+  OccurAnal.snd_rhs: Qualified "OccurAnal" "SimpleNodeDetails"
+  OccurAnal.snd_score: Qualified "OccurAnal" "SimpleNodeDetails"
+  OccurAnal.ud_env: Qualified "OccurAnal" "UsageDetails"
+  OccurAnal.ud_z_in_lam: Qualified "OccurAnal" "UsageDetails"
+  OccurAnal.ud_z_many: Qualified "OccurAnal" "UsageDetails"
+  OccurAnal.ud_z_tail: Qualified "OccurAnal" "UsageDetails"

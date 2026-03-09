@@ -17,11 +17,11 @@ Require UniqFM.
 
 (* Converted type declarations: *)
 
-Definition FastStringEnv :=
-  UniqFM.UniqFM%type.
+#[global] Definition FastStringEnv :=
+  (UniqFM.UniqFM FastString.FastString)%type.
 
-Definition DFastStringEnv :=
-  UniqFM.UniqFM%type.
+#[global] Definition DFastStringEnv :=
+  (UniqFM.UniqFM FastString.FastString)%type.
 
 (* Converted value declarations: *)
 
@@ -81,8 +81,18 @@ Axiom delListFromFsEnv : forall {a : Type},
 Axiom filterFsEnv : forall {elt : Type},
                     (elt -> bool) -> FastStringEnv elt -> FastStringEnv elt.
 
+Axiom mapMaybeFsEnv : forall {elt1 : Type},
+                      forall {elt2 : Type},
+                      (elt1 -> option elt2) -> FastStringEnv elt1 -> FastStringEnv elt2.
+
 Axiom lookupFsEnv_NF : forall {a : Type},
                        FastStringEnv a -> FastString.FastString -> a.
+
+Axiom strictMapFsEnv : forall {a : Type},
+                       forall {b : Type}, (a -> b) -> FastStringEnv a -> FastStringEnv b.
+
+Axiom nonDetFoldFsEnv : forall {a : Type},
+                        forall {b : Type}, (a -> b -> b) -> b -> FastStringEnv a -> b.
 
 Axiom emptyDFsEnv : forall {a : Type}, DFastStringEnv a.
 

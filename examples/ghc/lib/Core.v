@@ -7,65 +7,70 @@ Set Maximal Implicit Insertion.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Require Coq.Program.Tactics.
-Require Coq.Program.Wf.
+Require Import Coq.Program.Tactics.
+Require Import Coq.Program.Wf.
 
 (* Preamble *)
 
+Require Import TcType.
 
 (* Converted imports: *)
 
 Require Import AxiomatizedTypes.
-Require BasicTypes.
-Require DynFlags.
-Require FastString.
-Require FieldLabel.
-Require GHC.Base.
-Require GHC.Num.
-Require Module.
-Require Name.
-Require OccName.
-Require Pair.
-Require UniqSet.
-Require UniqSupply.
-Require Unique.
-Require Util.
-Require BinNat.
-Require BinNums.
-Require BooleanFormula.
-Require Coq.Init.Datatypes.
-Require Coq.Init.Peano.
-Require Coq.Lists.List.
-Require Data.Foldable.
-Require Data.Function.
-Require Data.Tuple.
-Require Datatypes.
-Require GHC.Char.
-Require GHC.Err.
-Require GHC.List.
-Require GHC.Prim.
-Require GHC.Real.
-Require HsToCoq.DeferredFix.
-Require HsToCoq.Err.
-Require HsToCoq.Wf.
+Require Import BasicTypes.
+Require Import FastString.
+Require Import FieldLabel.
+Require Import GHC.Base.
+Require Import GHC.Char.
+Require Import GHC.Core.TyCo.Subst.
+Require Import GHC.Data.List.Infinite.
+Require Import GHC.Num.
+Require Import GHC.Prim.
+Require Import GHC.Types.TyThing.
+Require Import HsSyn.
+Require Import Module.
+Require Import Name.
+Require Import NameEnv.
+Require Import OccName.
+Require Import Pair.
+Require Import UniqSet.
+Require Import Unique.
+Require Import Util.
+Require Import BinNums.
+Require Import BooleanFormula.
+Require Import Coq.Init.Datatypes.
+Require Import Coq.Init.Peano.
+Require Import Coq.Lists.List.
+Require Import Data.Bits.
+Require Import Data.Foldable.
+Require Import Data.Function.
+Require Import Data.IntMap.Internal.
+Require Import Data.Tuple.
+Require Import GHC.Core.Rules.Config.
+Require Import GHC.Core.TyCon.RecWalk.
+Require Import GHC.Err.
+Require Import GHC.List.
+Require Import GHC.Real.
+Require Import GHC.Stg.InferTags.TagSig.
+Require Import GHC.StgToCmm.Types.
+Require Import GHC.Types.Cpr.
+Require Import GHC.Types.Tickish.
+Require Import HsToCoq.DeferredFix.
+Require Import HsToCoq.Err.
+Require Import HsToCoq.Wf.
 Require Import Literal.
-Require Maybes.
-Require NameEnv.
-Require Panic.
-Require SrcLoc.
-Require UniqFM.
+Require Import Maybes.
+Require Import Panic.
+Require Import SrcLoc.
+Require Import UniqDFM.
+Require Import UniqDSet.
+Require Import UniqFM.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Definition VarEnv :=
-  UniqFM.UniqFM%type.
-
-Inductive UnfoldingSource : Type :=
-  | InlineRhs : UnfoldingSource
-  | InlineStable : UnfoldingSource
-  | InlineCompulsory : UnfoldingSource.
+Inductive VarBndr var argf : Type := | Bndr : var -> argf -> VarBndr var argf.
 
 Inductive UnfoldingGuidance : Type :=
   | UnfWhen (ug_arity : BasicTypes.Arity) (ug_unsat_ok : bool) (ug_boring_ok
@@ -75,6 +80,11 @@ Inductive UnfoldingGuidance : Type :=
    : UnfoldingGuidance
   | UnfNever : UnfoldingGuidance.
 
+Inductive UnfoldingCache : Type :=
+  | Mk_UnfoldingCache (uf_is_value : bool) (uf_is_conlike : bool) (uf_is_work_free
+    : bool) (uf_expandable : bool)
+   : UnfoldingCache.
+
 Inductive Unfolding : Type := | NoUnfolding : Unfolding.
 
 Inductive TypeShape : Type :=
@@ -82,93 +92,32 @@ Inductive TypeShape : Type :=
   | TsProd : list TypeShape -> TypeShape
   | TsUnk : TypeShape.
 
-Inductive TypeOrdering : Type :=
-  | TLT : TypeOrdering
-  | TEQ : TypeOrdering
-  | TEQX : TypeOrdering
-  | TGT : TypeOrdering.
-
-Definition TyVarEnv :=
-  VarEnv%type.
-
-Inductive TyVarBndr tyvar argf : Type :=
-  | TvBndr : tyvar -> argf -> TyVarBndr tyvar argf.
-
 Inductive TyLit : Type :=
   | NumTyLit : GHC.Num.Integer -> TyLit
-  | StrTyLit : FastString.FastString -> TyLit.
+  | StrTyLit : FastString.FastString -> TyLit
+  | CharTyLit : GHC.Char.Char -> TyLit.
 
-Definition TyConRepName :=
+#[global] Definition TyConRepName :=
   Name.Name%type.
 
-Inductive TyConFlavour : Type :=
-  | ClassFlavour : TyConFlavour
-  | TupleFlavour : BasicTypes.Boxity -> TyConFlavour
-  | SumFlavour : TyConFlavour
-  | DataTypeFlavour : TyConFlavour
-  | NewtypeFlavour : TyConFlavour
-  | AbstractTypeFlavour : TyConFlavour
-  | DataFamilyFlavour : TyConFlavour
-  | OpenTypeFamilyFlavour : TyConFlavour
-  | ClosedTypeFamilyFlavour : TyConFlavour
-  | TypeSynonymFlavour : TyConFlavour
-  | BuiltInTypeFlavour : TyConFlavour
-  | PromotedDataConFlavour : TyConFlavour.
-
-Definition TyCoVarEnv :=
-  VarEnv%type.
-
-Definition TvSubstEnv :=
-  (TyVarEnv Type_)%type.
-
-Inductive TickishScoping : Type :=
-  | NoScope : TickishScoping
-  | SoftScope : TickishScoping
-  | CostCentreScope : TickishScoping.
-
-Inductive TickishPlacement : Type :=
-  | PlaceRuntime : TickishPlacement
-  | PlaceNonLam : TickishPlacement
-  | PlaceCostCentre : TickishPlacement.
-
-Inductive Tickish id : Type :=
-  | ProfNote (profNoteCC : CostCentre) (profNoteCount : bool) (profNoteScope
-    : bool)
-   : Tickish id
-  | HpcTick (tickModule : Module.Module) (tickId : nat) : Tickish id
-  | Breakpoint (breakpointId : nat) (breakpointFVs : list id) : Tickish id
-  | SourceNote (sourceSpan : SrcLoc.RealSrcSpan) (sourceName : GHC.Base.String)
-   : Tickish id.
-
-Definition TickBoxId :=
+#[global] Definition TickBoxId :=
   nat%type.
 
 Inductive TickBoxOp : Type :=
   | TickBox : Module.Module -> TickBoxId -> TickBoxOp.
 
-Inductive Termination r : Type :=
-  | Diverges : Termination r
-  | ThrowsExn : Termination r
-  | Dunno : r -> Termination r.
-
 Inductive StrictnessMark : Type :=
   | MarkedStrict : StrictnessMark
   | NotMarkedStrict : StrictnessMark.
 
-Inductive SrcUnpackedness : Type :=
-  | SrcUnpack : SrcUnpackedness
-  | SrcNoUnpack : SrcUnpackedness
-  | NoSrcUnpack : SrcUnpackedness.
+Inductive Specificity : Type :=
+  | InferredSpec : Specificity
+  | SpecifiedSpec : Specificity.
 
-Inductive SrcStrictness : Type :=
-  | SrcLazy : SrcStrictness
-  | SrcStrict : SrcStrictness
-  | NoSrcStrict : SrcStrictness.
+#[global] Definition RuntimeRepType :=
+  Type_%type.
 
 Inductive RuleInfo : Type := | EmptyRuleInfo.
-
-Inductive RecTcChecker : Type :=
-  | RC : nat -> (NameEnv.NameEnv nat) -> RecTcChecker.
 
 Inductive PrimElemRep : Type :=
   | Int8ElemRep : PrimElemRep
@@ -183,88 +132,134 @@ Inductive PrimElemRep : Type :=
   | DoubleElemRep : PrimElemRep.
 
 Inductive PrimRep : Type :=
-  | VoidRep : PrimRep
-  | LiftedRep : PrimRep
-  | UnliftedRep : PrimRep
-  | IntRep : PrimRep
-  | WordRep : PrimRep
+  | BoxedRep : (option BasicTypes.Levity) -> PrimRep
+  | Int8Rep : PrimRep
+  | Int16Rep : PrimRep
+  | Int32Rep : PrimRep
   | Int64Rep : PrimRep
+  | IntRep : PrimRep
+  | Word8Rep : PrimRep
+  | Word16Rep : PrimRep
+  | Word32Rep : PrimRep
   | Word64Rep : PrimRep
+  | WordRep : PrimRep
   | AddrRep : PrimRep
   | FloatRep : PrimRep
   | DoubleRep : PrimRep
   | VecRep : nat -> PrimElemRep -> PrimRep.
 
-Inductive RuntimeRepInfo : Type :=
-  | NoRRI : RuntimeRepInfo
-  | RuntimeRep : (list Type_ -> list PrimRep) -> RuntimeRepInfo
-  | VecCount : nat -> RuntimeRepInfo
-  | VecElem : PrimElemRep -> RuntimeRepInfo.
+Inductive PrimOrVoidRep : Type :=
+  | VoidRep : PrimOrVoidRep
+  | NVRep : PrimRep -> PrimOrVoidRep.
 
-Definition OutType :=
+Inductive PromDataConInfo : Type :=
+  | NoPromInfo : PromDataConInfo
+  | RuntimeRep : (list Type_ -> list PrimRep) -> PromDataConInfo
+  | VecCount : nat -> PromDataConInfo
+  | VecElem : PrimElemRep -> PromDataConInfo
+  | Levity : BasicTypes.Levity -> PromDataConInfo.
+
+#[global] Definition PatSynMatcher :=
+  (Name.Name * Type_ * bool)%type%type.
+
+#[global] Definition PatSynBuilder :=
+  (option (Name.Name * Type_ * bool)%type)%type.
+
+#[global] Definition OutType :=
   Type_%type.
 
-Definition OutKind :=
+#[global] Definition OutKind :=
   Kind%type.
 
-Definition OutCoercion :=
+#[global] Definition OutCoercion :=
   Coercion%type.
 
 Inductive NormaliseStepResult ev : Type :=
   | NS_Done : NormaliseStepResult ev
   | NS_Abort : NormaliseStepResult ev
-  | NS_Step : RecTcChecker -> Type_ -> ev -> NormaliseStepResult ev.
+  | NS_Step
+   : GHC.Core.TyCon.RecWalk.RecTcChecker -> Type_ -> ev -> NormaliseStepResult ev.
 
-Definition LiftCoEnv :=
-  (VarEnv Coercion)%type.
+#[global] Definition Mult :=
+  Type_%type.
 
-Inductive LevityInfo : Type :=
-  | NoLevityInfo : LevityInfo
-  | NeverLevityPolymorphic : LevityInfo.
+Inductive Scaled a : Type := | Mk_Scaled : Mult -> a -> Scaled a.
 
-Definition KindOrType :=
+Inductive MCoercion : Type := | MRefl : MCoercion | MCo : Coercion -> MCoercion.
+
+#[global] Definition MCoercionN :=
+  MCoercion%type.
+
+#[global] Definition MCoercionR :=
+  MCoercion%type.
+
+#[global] Definition MOutCoercion :=
+  MCoercion%type.
+
+#[global] Definition LevityType :=
+  Type_%type.
+
+#[global] Definition KnotTied (ty : Type) :=
+  ty.
+
+#[global] Definition KindOrType :=
   Type_%type.
 
 Inductive KillFlags : Type :=
   | Mk_KillFlags (kf_abs : bool) (kf_used_once : bool) (kf_called_once : bool)
    : KillFlags.
 
-Inductive JointDmd s u : Type := | JD (sd : s) (ud : u) : JointDmd s u.
-
 Inductive IsOrphan : Type :=
   | Mk_IsOrphan : IsOrphan
   | NotOrphan : OccName.OccName -> IsOrphan.
 
-Definition InlinePragInfo :=
+#[global] Definition InlinePragInfo :=
   BasicTypes.InlinePragma%type.
 
 Inductive Injectivity : Type :=
   | NotInjective : Injectivity
   | Injective : list bool -> Injectivity.
 
-Definition InType :=
+#[global] Definition InType :=
   Type_%type.
 
-Definition InKind :=
+#[global] Definition InKind :=
   Kind%type.
 
-Definition InCoercion :=
+#[global] Definition InCoercion :=
   Coercion%type.
-
-Definition IdEnv :=
-  VarEnv%type.
 
 Inductive HsSrcBang : Type :=
   | Mk_HsSrcBang
-   : BasicTypes.SourceText -> SrcUnpackedness -> SrcStrictness -> HsSrcBang.
+   : BasicTypes.SourceText ->
+     HsSyn.SrcUnpackedness -> HsSyn.SrcStrictness -> HsSrcBang.
 
 Inductive HsImplBang : Type :=
   | HsLazy : HsImplBang
-  | HsStrict : HsImplBang
+  | HsStrict : bool -> HsImplBang
   | HsUnpack : (option Coercion) -> HsImplBang.
 
-Definition FunDep a :=
+Inductive FunTyFlag : Type :=
+  | FTF_T_T : FunTyFlag
+  | FTF_T_C : FunTyFlag
+  | FTF_C_T : FunTyFlag
+  | FTF_C_C : FunTyFlag.
+
+Inductive FunSel : Type :=
+  | SelMult : FunSel
+  | SelArg : FunSel
+  | SelRes : FunSel.
+
+#[global] Definition FunDep a :=
   (list a * list a)%type%type.
+
+Inductive ForAllTyFlag : Type :=
+  | Invisible : Specificity -> ForAllTyFlag
+  | Required : ForAllTyFlag.
+
+Inductive TyConBndrVis : Type :=
+  | NamedTCB : ForAllTyFlag -> TyConBndrVis
+  | AnonTCB : TyConBndrVis.
 
 Inductive FamTyConFlav : Type :=
   | DataFamilyTyCon : TyConRepName -> FamTyConFlav
@@ -272,6 +267,9 @@ Inductive FamTyConFlav : Type :=
   | ClosedSynFamilyTyCon : (option (CoAxiom Branched)) -> FamTyConFlav
   | AbstractClosedSynFamilyTyCon : FamTyConFlav
   | BuiltInSynFamTyCon : BuiltInSynFamily -> FamTyConFlav.
+
+#[global] Definition FRRType :=
+  Type_%type.
 
 Inductive ExportFlag : Type :=
   | NotExported : ExportFlag
@@ -281,128 +279,71 @@ Inductive IdScope : Type :=
   | GlobalId : IdScope
   | LocalId : ExportFlag -> IdScope.
 
-Inductive ExnStr : Type := | VanStr : ExnStr | Mk_ExnStr : ExnStr.
+#[global] Definition ErrorMsgType :=
+  Type_%type.
 
-Inductive Str s : Type := | Lazy : Str s | Mk_Str : ExnStr -> s -> Str s.
+Inductive Divergence : Type :=
+  | Diverges : Divergence
+  | ExnOrDiv : Divergence
+  | Dunno : Divergence.
 
-Inductive EqRel : Type := | NomEq : EqRel | ReprEq : EqRel.
-
-Definition DefMethInfo :=
+#[global] Definition DefMethInfo :=
   (option (Name.Name * BasicTypes.DefMethSpec Type_)%type)%type.
 
-Definition DVarEnv :=
-  UniqFM.UniqFM%type.
-
-Definition DTyVarEnv :=
-  DVarEnv%type.
-
-Definition DIdEnv :=
-  DVarEnv%type.
-
-Inductive Count : Type := | One : Count | Many : Count.
-
-Inductive Use u : Type := | Abs : Use u | Mk_Use : Count -> u -> Use u.
-
-Definition DmdShell :=
-  (JointDmd (Str unit) (Use unit))%type.
-
-Definition CoercionR :=
+#[global] Definition CoercionR :=
   Coercion%type.
 
-Definition CoercionP :=
+#[global] Definition CoercionP :=
   Coercion%type.
 
-Definition CoercionN :=
+#[global] Definition CoercionN :=
   Coercion%type.
 
-Definition KindCoercion :=
+#[global] Definition KindCoercion :=
   CoercionN%type.
 
 Inductive UnivCoProvenance : Type :=
-  | UnsafeCoerceProv : UnivCoProvenance
   | PhantomProv : KindCoercion -> UnivCoProvenance
   | ProofIrrelProv : KindCoercion -> UnivCoProvenance
   | PluginProv : GHC.Base.String -> UnivCoProvenance.
 
 Axiom CoercionHole : Type.
 
-Definition CoVarEnv :=
-  VarEnv%type.
+Inductive CoSel : Type :=
+  | SelTyCon : nat -> HsSyn.Role -> CoSel
+  | SelFun : FunSel -> CoSel
+  | SelForAll : CoSel.
 
-Definition CvSubstEnv :=
-  (CoVarEnv Coercion)%type.
-
-Definition ClassMinimalDef :=
+#[global] Definition ClassMinimalDef :=
   (BooleanFormula.BooleanFormula Name.Name)%type.
+
+Inductive Card : Type := | Mk_Card : nat -> Card.
+
+#[global] Definition CardNonAbs :=
+  Card%type.
+
+#[global] Definition CardNonOnce :=
+  Card%type.
+
+Inductive SubDemand : Type :=
+  | Poly : HsSyn.Boxity -> CardNonOnce -> SubDemand
+  | Call : CardNonAbs -> SubDemand -> SubDemand
+  | Prod : HsSyn.Boxity -> list Demand -> SubDemand
+with Demand : Type :=
+  | BotDmd : Demand
+  | AbsDmd : Demand
+  | D : CardNonAbs -> SubDemand -> Demand.
 
 Inductive CafInfo : Type := | MayHaveCafRefs : CafInfo | NoCafRefs : CafInfo.
 
-Inductive CPRResult : Type :=
-  | NoCPR : CPRResult
-  | RetProd : CPRResult
-  | RetSum : BasicTypes.ConTag -> CPRResult.
+Inductive BitField : Type := | Mk_BitField : BinNums.N -> BitField.
 
-Definition DmdResult :=
-  (Termination CPRResult)%type.
-
-Definition ArityInfo :=
+#[global] Definition ArityInfo :=
   BasicTypes.Arity%type.
-
-Inductive UseDmd : Type :=
-  | UCall : Count -> UseDmd -> UseDmd
-  | UProd : list (Use UseDmd)%type -> UseDmd
-  | UHead : UseDmd
-  | Used : UseDmd.
-
-Definition ArgUse :=
-  (Use UseDmd)%type.
-
-Inductive StrDmd : Type :=
-  | HyperStr : StrDmd
-  | SCall : StrDmd -> StrDmd
-  | SProd : list (Str StrDmd)%type -> StrDmd
-  | HeadStr : StrDmd.
-
-Definition ArgStr :=
-  (Str StrDmd)%type.
-
-Definition Demand :=
-  (JointDmd ArgStr ArgUse)%type.
-
-Definition DmdEnv :=
-  (VarEnv Demand)%type.
-
-Definition BothDmdArg :=
-  (DmdEnv * Termination unit)%type%type.
-
-Inductive DmdType : Type :=
-  | Mk_DmdType : DmdEnv -> list Demand -> DmdResult -> DmdType.
-
-Inductive StrictSig : Type := | Mk_StrictSig : DmdType -> StrictSig.
-
-Inductive IdInfo : Type :=
-  | Mk_IdInfo (arityInfo : ArityInfo) (ruleInfo : RuleInfo) (unfoldingInfo
-    : Unfolding) (cafInfo : CafInfo) (oneShotInfo : BasicTypes.OneShotInfo)
-  (inlinePragInfo : BasicTypes.InlinePragma) (occInfo : BasicTypes.OccInfo)
-  (strictnessInfo : StrictSig) (demandInfo : Demand) (callArityInfo : ArityInfo)
-  (levityInfo : LevityInfo)
-   : IdInfo.
-
-Definition CleanDemand :=
-  (JointDmd StrDmd UseDmd)%type.
-
-Inductive ArgFlag : Type :=
-  | Required : ArgFlag
-  | Specified : ArgFlag
-  | Inferred : ArgFlag.
-
-Inductive TyConBndrVis : Type :=
-  | NamedTCB : ArgFlag -> TyConBndrVis
-  | AnonTCB : TyConBndrVis.
 
 Inductive AlgTyConFlav : Type :=
   | VanillaAlgTyCon : TyConRepName -> AlgTyConFlav
-  | UnboxedAlgTyCon : (option TyConRepName) -> AlgTyConFlav
+  | UnboxedSumTyCon : AlgTyConFlav
   | ClassTyCon : Class -> TyConRepName -> AlgTyConFlav
   | DataFamInstTyCon : (CoAxiom Unbranched) -> TyCon -> list Type_ -> AlgTyConFlav
 with Class : Type :=
@@ -412,323 +353,363 @@ with Class : Type :=
    : Class
 with ClassBody : Type :=
   | AbstractClass : ClassBody
-  | ConcreteClass (classSCThetaStuff : list PredType) (classSCSels
-    : list Var%type) (classATStuff : list ClassATItem) (classOpStuff
-    : list (Var%type * DefMethInfo)%type%type) (classMinimalDefStuff
-    : ClassMinimalDef)
+  | ConcreteClass (cls_sc_theta : list PredType) (cls_sc_sel_ids : list Var%type)
+  (cls_ats : list ClassATItem) (cls_ops : list (Var%type * DefMethInfo)%type%type)
+  (cls_min_def : ClassMinimalDef)
    : ClassBody
 with ClassATItem : Type :=
-  | ATI : TyCon -> (option (Type_ * SrcLoc.SrcSpan)%type) -> ClassATItem
+  | ATI : TyCon -> (option (Type_ * TyFamEqnValidityInfo)%type) -> ClassATItem
 with TyCon : Type :=
-  | FunTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
-    : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConResKind : Kind) (tyConKind
-    : Kind) (tyConArity : BasicTypes.Arity) (tcRepName : TyConRepName)
+  | Mk_TyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
+    : list (VarBndr Var%type TyConBndrVis)%type) (tyConResKind : Kind)
+  (tyConHasClosedResKind : bool) (tyConTyVars : list Var%type) (tyConKind : Kind)
+  (tyConArity : BasicTypes.Arity) (tyConNullaryTy : Type_) (tyConRoles
+    : list HsSyn.Role) (tyConDetails : TyConDetails)
    : TyCon
-  | AlgTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
-    : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConTyVars : list Var%type)
-  (tyConResKind : Kind) (tyConKind : Kind) (tyConArity : BasicTypes.Arity)
-  (tcRoles : list Role) (tyConCType : option CType) (algTcGadtSyntax : bool)
-  (algTcStupidTheta : list PredType) (algTcRhs : AlgTyConRhs) (algTcFields
-    : FieldLabel.FieldLabelEnv) (algTcParent : AlgTyConFlav)
-   : TyCon
-  | SynonymTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
-  (tyConBinders : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConTyVars
-    : list Var%type) (tyConResKind : Kind) (tyConKind : Kind) (tyConArity
-    : BasicTypes.Arity) (tcRoles : list Role) (synTcRhs : Type_) (synIsTau : bool)
-  (synIsFamFree : bool)
-   : TyCon
-  | FamilyTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
-  (tyConBinders : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConTyVars
-    : list Var%type) (tyConResKind : Kind) (tyConKind : Kind) (tyConArity
-    : BasicTypes.Arity) (famTcResVar : option Name.Name) (famTcFlav : FamTyConFlav)
-  (famTcParent : option Class) (famTcInj : Injectivity)
-   : TyCon
-  | PrimTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
-    : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConResKind : Kind) (tyConKind
-    : Kind) (tyConArity : BasicTypes.Arity) (tcRoles : list Role) (isUnlifted
-    : bool) (primRepName : option TyConRepName)
-   : TyCon
-  | PromotedDataCon (tyConUnique : Unique.Unique) (tyConName : Name.Name)
-  (tyConBinders : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConResKind
-    : Kind) (tyConKind : Kind) (tyConArity : BasicTypes.Arity) (tcRoles
-    : list Role) (dataCon : DataCon) (tcRepName : TyConRepName) (promDcRepInfo
-    : RuntimeRepInfo)
-   : TyCon
-  | TcTyCon (tyConUnique : Unique.Unique) (tyConName : Name.Name) (tyConBinders
-    : list (TyVarBndr Var%type TyConBndrVis)%type) (tyConTyVars : list Var%type)
-  (tyConResKind : Kind) (tyConKind : Kind) (tyConArity : BasicTypes.Arity)
-  (tcTyConScopedTyVars : list (Name.Name * Var%type)%type) (tcTyConFlavour
-    : TyConFlavour)
-   : TyCon
-with AlgTyConRhs : Type :=
-  | AbstractTyCon : AlgTyConRhs
-  | DataTyCon (data_cons : list DataCon) (is_enum : bool) : AlgTyConRhs
-  | TupleTyCon (data_con : DataCon) (tup_sort : BasicTypes.TupleSort)
-   : AlgTyConRhs
-  | SumTyCon (data_cons : list DataCon) : AlgTyConRhs
-  | NewTyCon (data_con : DataCon) (nt_rhs : Type_) (nt_etad_rhs
-    : (list Var%type * Type_)%type) (nt_co : CoAxiom Unbranched)
-   : AlgTyConRhs
+with Var : Type :=
+  | Mk_Id (varName : Name.Name) (realUnique : Unique.Unique) (varType : Type_)
+  (varMult : Mult) (idScope : IdScope) (id_details : IdDetails) (id_info : IdInfo)
+   : Var
+with IdDetails : Type :=
+  | VanillaId : IdDetails
+  | RecSelId (sel_tycon : RecSelParent) (sel_fieldLabel : FieldLabel.FieldLabel)
+  (sel_naughty : bool) (sel_cons
+    : (list ConLike * list ConLike)%type)
+   : IdDetails
+  | DataConWorkId : DataCon -> IdDetails
+  | DataConWrapId : DataCon -> IdDetails
+  | ClassOpId : Class -> bool -> IdDetails
+  | RepPolyId (id_concrete_tvs : TcType.ConcreteTyVars) : IdDetails
+  | PrimOpId (id_primop : PrimOp) (id_concrete_tvs : TcType.ConcreteTyVars)
+   : IdDetails
+  | FCallId : ForeignCall -> IdDetails
+  | TickBoxOpId : TickBoxOp -> IdDetails
+  | Mk_DFunId : bool -> IdDetails
+  | Mk_JoinId
+   : BasicTypes.JoinArity -> (option (list BasicTypes.CbvMark)) -> IdDetails
+  | WorkerLikeId : list BasicTypes.CbvMark -> IdDetails
 with DataCon : Type :=
-  | MkData (dcName : Name.Name) (dcUnique : Unique.Unique) (dcTag
-    : BasicTypes.ConTag) (dcVanilla : bool) (dcUnivTyVars : list Var%type)
-  (dcExTyVars : list Var%type) (dcUserTyVarBinders
-    : list (TyVarBndr Var%type ArgFlag)%type) (dcEqSpec : list EqSpec)
-  (dcOtherTheta : ThetaType) (dcStupidTheta : ThetaType) (dcOrigArgTys
-    : list Type_) (dcOrigResTy : Type_) (dcSrcBangs : list HsSrcBang) (dcFields
-    : list FieldLabel.FieldLabel) (dcWorkId : Var%type) (dcRep : DataConRep)
-  (dcRepArity : BasicTypes.Arity) (dcSourceArity : BasicTypes.Arity) (dcRepTyCon
-    : TyCon) (dcRepType : Type_) (dcInfix : bool) (dcPromoted : TyCon)
+  | MkData (dcName : Name.Name) (dcUnique : Unique.Unique) (dcTag : HsSyn.ConTag)
+  (dcVanilla : bool) (dcUnivTyVars : list Var%type) (dcExTyCoVars
+    : list Var%type%type) (dcConcreteTyVars : TcType.ConcreteTyVars)
+  (dcUserTyVarBinders : list (VarBndr Var%type Specificity)%type) (dcEqSpec
+    : list EqSpec) (dcOtherTheta : ThetaType) (dcStupidTheta : ThetaType)
+  (dcOrigArgTys : list (Scaled Type_)) (dcOrigResTy : Type_) (dcSrcBangs
+    : list HsSrcBang) (dcFields : list FieldLabel.FieldLabel) (dcWorkId : Var%type)
+  (dcRep : DataConRep) (dcRepArity : BasicTypes.Arity) (dcSourceArity
+    : BasicTypes.Arity) (dcRepTyCon : TyCon) (dcRepType : Type_) (dcInfix : bool)
+  (dcPromoted : TyCon)
    : DataCon
 with DataConRep : Type :=
   | NoDataConRep : DataConRep
   | DCR (dcr_wrap_id : Var%type) (dcr_boxer : DataConBoxer) (dcr_arg_tys
-    : list Type_) (dcr_stricts : list StrictnessMark) (dcr_bangs : list HsImplBang)
+    : list (Scaled Type_)) (dcr_stricts : list StrictnessMark) (dcr_bangs
+    : list HsImplBang)
    : DataConRep
-with Var : Type :=
-  | Mk_Id (varName : Name.Name) (realUnique : BinNums.N) (varType : Type_)
-  (idScope : IdScope) (id_details : IdDetails) (id_info : IdInfo)
-   : Var
-with IdDetails : Type :=
-  | VanillaId : IdDetails
-  | RecSelId (sel_tycon : RecSelParent) (sel_naughty : bool) : IdDetails
-  | DataConWorkId : DataCon -> IdDetails
-  | DataConWrapId : DataCon -> IdDetails
-  | ClassOpId : Class -> IdDetails
-  | PrimOpId : PrimOp -> IdDetails
-  | FCallId : ForeignCall -> IdDetails
-  | TickBoxOpId : TickBoxOp -> IdDetails
-  | Mk_DFunId : bool -> IdDetails
-  | Mk_JoinId : BasicTypes.JoinArity -> IdDetails
+with EqSpec : Type := | Mk_EqSpec : Var%type -> Type_ -> EqSpec
 with RecSelParent : Type :=
   | RecSelData : TyCon -> RecSelParent
   | RecSelPatSyn : PatSyn -> RecSelParent
 with PatSyn : Type :=
-  | MkPatSyn (psName : Name.Name) (psUnique : Unique.Unique) (psArgs : list Type_)
-  (psArity : BasicTypes.Arity) (psInfix : bool) (psFieldLabels
+  | MkPatSyn (psName : Name.Name) (psUnique : Unique.Unique) (psArgs
+    : list FRRType) (psArity : BasicTypes.Arity) (psInfix : bool) (psFieldLabels
     : list FieldLabel.FieldLabel) (psUnivTyVars
-    : list (TyVarBndr Var%type ArgFlag)%type) (psReqTheta : ThetaType) (psExTyVars
-    : list (TyVarBndr Var%type ArgFlag)%type) (psProvTheta : ThetaType) (psResultTy
-    : Type_) (psMatcher : (Var%type * bool)%type) (psBuilder
-    : option (Var%type * bool)%type)
+    : list (VarBndr Var%type Specificity)%type) (psReqTheta : ThetaType)
+  (psExTyVars : list (VarBndr Var%type Specificity)%type) (psProvTheta
+    : ThetaType) (psResultTy : Type_) (psMatcher : PatSynMatcher) (psBuilder
+    : PatSynBuilder)
    : PatSyn
-with EqSpec : Type := | Mk_EqSpec : Var%type -> Type_ -> EqSpec.
+with ConLike : Type :=
+  | RealDataCon : DataCon -> ConLike
+  | PatSynCon : PatSyn -> ConLike
+with IdInfo : Type :=
+  | Mk_IdInfo (ruleInfo : RuleInfo) (realUnfoldingInfo : Unfolding)
+  (inlinePragInfo : BasicTypes.InlinePragma) (occInfo : BasicTypes.OccInfo)
+  (dmdSigInfo : DmdSig) (cprSigInfo : GHC.Types.Cpr.CprSig) (demandInfo : Demand)
+  (bitfield : BitField) (lfInfo : (option GHC.StgToCmm.Types.LambdaFormInfo))
+  (tagSig : (option GHC.Stg.InferTags.TagSig.TagSig))
+   : IdInfo
+with DmdSig : Type := | Mk_DmdSig : DmdType -> DmdSig
+with DmdType : Type :=
+  | Mk_DmdType (dt_env : DmdEnv) (dt_args : list Demand) : DmdType
+with DmdEnv : Type :=
+  | DE (de_fvs : ((UniqFM.UniqFM Var)%type Demand)) (de_div : Divergence) : DmdEnv
+with TyConDetails : Type :=
+  | AlgTyCon (tyConCType : option CType) (algTcGadtSyntax : bool)
+  (algTcStupidTheta : list PredType) (algTcRhs : AlgTyConRhs) (algTcFields
+    : FieldLabel.FieldLabelEnv) (algTcFlavour : AlgTyConFlav)
+   : TyConDetails
+  | SynonymTyCon (synTcRhs : Type_) (synIsTau : bool) (synIsFamFree : bool)
+  (synIsForgetful : bool) (synIsConcrete : bool)
+   : TyConDetails
+  | FamilyTyCon (famTcResVar : option Name.Name) (famTcFlav : FamTyConFlav)
+  (famTcParent : option TyCon) (famTcInj : Injectivity)
+   : TyConDetails
+  | PrimTyCon (primRepName : TyConRepName) : TyConDetails
+  | PromotedDataCon (dataCon : DataCon) (tcRepName : TyConRepName) (promDcInfo
+    : PromDataConInfo)
+   : TyConDetails
+  | TcTyCon (tctc_scoped_tvs : list (Name.Name * Var%type)%type) (tctc_is_poly
+    : bool) (tctc_flavour : BasicTypes.TyConFlavour TyCon)
+   : TyConDetails
+with AlgTyConRhs : Type :=
+  | AbstractTyCon : AlgTyConRhs
+  | DataTyCon (data_cons : list DataCon) (data_cons_size : nat) (is_enum : bool)
+  (is_type_data : bool) (data_fixed_lev : bool)
+   : AlgTyConRhs
+  | TupleTyCon (data_con : DataCon) (tup_sort : BasicTypes.TupleSort)
+   : AlgTyConRhs
+  | SumTyCon (data_cons : list DataCon) (data_cons_size : nat) : AlgTyConRhs
+  | NewTyCon (data_con : DataCon) (nt_rhs : Type_) (nt_etad_rhs
+    : (list Var%type * Type_)%type) (nt_co : CoAxiom Unbranched) (nt_fixed_rep
+    : bool)
+   : AlgTyConRhs
+with TyFamEqnValidityInfo : Type :=
+  | NoVI : TyFamEqnValidityInfo
+  | VI (vi_loc : SrcLoc.SrcSpan) (vi_qtvs : list Var%type) (vi_non_user_tvs
+    : (UniqSet.UniqSet Var%type)%type) (vi_pats : list Type_) (vi_rhs : Type_)
+   : TyFamEqnValidityInfo.
 
-Definition TyVar :=
+#[global] Definition VarEnv :=
+  (UniqFM.UniqFM Var)%type.
+
+#[global] Definition TyVar :=
   Var%type.
 
-Definition TyVarBinder :=
-  (TyVarBndr TyVar ArgFlag)%type.
+#[global] Definition TyVarSet :=
+  (UniqSet.UniqSet TyVar)%type.
 
-Definition TyConBinder :=
-  (TyVarBndr TyVar TyConBndrVis)%type.
+#[global] Definition TyConBinder :=
+  (VarBndr TyVar TyConBndrVis)%type.
 
-Definition Id :=
+#[global] Definition TcTyVar :=
   Var%type.
 
-Definition ClassOpItem :=
+#[global] Definition InvisTVBinder :=
+  (VarBndr TyVar Specificity)%type.
+
+#[global] Definition Id :=
+  Var%type.
+
+#[global] Definition TyCoVar :=
+  Id%type.
+
+#[global] Definition ClassOpItem :=
   (Id * DefMethInfo)%type%type.
 
-Definition NormaliseStepper ev :=
-  (RecTcChecker -> TyCon -> list Type_ -> NormaliseStepResult ev)%type.
+#[global] Definition NormaliseStepper ev :=
+  (GHC.Core.TyCon.RecWalk.RecTcChecker ->
+   TyCon -> list Type_ -> NormaliseStepResult ev)%type.
 
-Definition CoreBndr :=
+#[global] Definition CoreBndr :=
   Var%type.
 
-Definition InBndr :=
+#[global] Definition InBndr :=
   CoreBndr%type.
 
-Definition OutBndr :=
+#[global] Definition OutBndr :=
   CoreBndr%type.
 
 Inductive TaggedBndr t : Type := | TB : CoreBndr -> t -> TaggedBndr t.
 
-Definition DVarSet :=
+#[global] Definition DIdEnv :=
+  (UniqFM.UniqFM Var)%type.
+
+#[global] Definition DVarEnv :=
+  (UniqFM.UniqFM Var)%type.
+
+#[global] Definition DVarSet :=
   (UniqSet.UniqSet Var)%type.
 
-Definition CoVar :=
+#[global] Definition CoVar :=
   Id%type.
 
-Definition CoVarSet :=
+#[global] Definition CoVarEnv :=
+  (UniqFM.UniqFM CoVar)%type.
+
+#[global] Definition CoVarSet :=
   (UniqSet.UniqSet CoVar)%type.
 
-Definition InCoVar :=
+#[global] Definition InCoVar :=
   CoVar%type.
 
-Definition OutCoVar :=
+#[global] Definition OutCoVar :=
   CoVar%type.
 
-Definition DFunId :=
+#[global] Definition DFunId :=
   Id%type.
 
-Definition DIdSet :=
+#[global] Definition DIdSet :=
   (UniqSet.UniqSet Id)%type.
 
-Definition EvId :=
+#[global] Definition EvId :=
   Id%type.
 
-Definition DictId :=
+#[global] Definition DictId :=
   EvId%type.
 
-Definition EqVar :=
+#[global] Definition EqVar :=
   EvId%type.
 
-Definition EvVar :=
+#[global] Definition EvVar :=
   EvId%type.
 
-Definition IpId :=
+#[global] Definition IpId :=
   EvId%type.
 
-Definition IdSet :=
+#[global] Definition IdEnv :=
+  (UniqFM.UniqFM Id)%type.
+
+#[global] Definition IdSet :=
   (UniqSet.UniqSet Id)%type.
 
-Definition IdUnfoldingFun :=
+#[global] Definition IdUnfoldingFun :=
   (Id -> Unfolding)%type.
 
-Definition InId :=
+#[global] Definition InId :=
   Id%type.
 
-Definition JoinId :=
+#[global] Definition JoinId :=
   Id%type.
 
-Definition NcId :=
+#[global] Definition NcId :=
   Id%type.
 
-Definition OutId :=
+#[global] Definition OutId :=
   Id%type.
 
-Definition TyCoVar :=
-  Id%type.
-
-Definition DTyCoVarSet :=
+#[global] Definition DTyCoVarSet :=
   (UniqSet.UniqSet TyCoVar)%type.
 
-Definition TyCoVarSet :=
+#[global] Definition ForAllTyBinder :=
+  (VarBndr TyCoVar ForAllTyFlag)%type.
+
+Inductive PiTyBinder : Type :=
+  | Named : ForAllTyBinder -> PiTyBinder
+  | Anon : (Scaled Type_) -> FunTyFlag -> PiTyBinder.
+
+#[global] Definition PiTyVarBinder :=
+  PiTyBinder%type.
+
+#[global] Definition InvisTyBinder :=
+  (VarBndr TyCoVar Specificity)%type.
+
+#[global] Definition ReqTyBinder :=
+  (VarBndr TyCoVar unit)%type.
+
+#[global] Definition TyCoVarEnv :=
+  (UniqFM.UniqFM TyCoVar)%type.
+
+#[global] Definition TyCoVarSet :=
   (UniqSet.UniqSet TyCoVar)%type.
 
-Definition InVar :=
+#[global] Definition InVar :=
   Var%type.
 
-Definition KindVar :=
+#[global] Definition KindVar :=
   Var%type.
 
-Definition OutVar :=
+#[global] Definition OutVar :=
   Var%type.
 
-Definition TKVar :=
+#[global] Definition TKVar :=
   Var%type.
 
-Definition TidyEnv :=
-  (OccName.TidyOccEnv * VarEnv Var)%type%type.
+#[global] Definition DTyVarEnv :=
+  (UniqFM.UniqFM TyVar)%type.
 
-Inductive PredTree : Type :=
-  | ClassPred : Class -> list Type_ -> PredTree
-  | EqPred : EqRel -> Type_ -> Type_ -> PredTree
-  | IrredPred : PredType -> PredTree.
-
-Definition DTyVarSet :=
+#[global] Definition DTyVarSet :=
   (UniqSet.UniqSet TyVar)%type.
 
-Definition InTyVar :=
-  TyVar%type.
+Inductive ExpandSynResult tyco : Type :=
+  | NoExpansion : ExpandSynResult tyco
+  | ExpandsSyn
+   : list (TyVar * tyco)%type -> Type_ -> list tyco -> ExpandSynResult tyco.
 
-Definition OutTyVar :=
+#[global] Definition InTyVar :=
   TyVar%type.
-
-Inductive TyCoMapper env m : Type :=
-  | Mk_TyCoMapper (tcm_smart : bool) (tcm_tyvar : env -> TyVar -> m Type_)
-  (tcm_covar : env -> CoVar -> m Coercion) (tcm_hole
-    : env -> CoercionHole -> m Coercion) (tcm_tybinder
-    : env -> TyVar -> ArgFlag -> m (env * TyVar)%type)
-   : TyCoMapper env m.
 
 Inductive AltCon : Type :=
   | DataAlt : DataCon -> AltCon
   | LitAlt : Literal -> AltCon
   | DEFAULT : AltCon.
 
-Inductive Expr b : Type :=
+Inductive Alt b : Type := | Mk_Alt : AltCon -> list b -> (Expr b) -> Alt b
+with Expr b : Type :=
   | Mk_Var : Id -> Expr b
   | Lit : Literal -> Expr b
   | App : (Expr b) -> (Expr%type b) -> Expr b
   | Lam : b -> (Expr b) -> Expr b
   | Let : (Bind b) -> (Expr b) -> Expr b
-  | Case
-   : (Expr b) ->
-     b ->
-     Type_ -> list ((fun b_ => (AltCon * list b_ * Expr b_)%type%type) b) -> Expr b
-  | Cast : (Expr b) -> Coercion -> Expr b
+  | Case : (Expr b) -> b -> Type_ -> list (Alt b) -> Expr b
+  | Cast : (Expr b) -> CoercionR -> Expr b
   | Mk_Type : Type_ -> Expr b
   | Mk_Coercion : Coercion -> Expr b
 with Bind b : Type :=
   | NonRec : b -> (Expr b) -> Bind b
   | Rec : list (b * (Expr b))%type -> Bind b.
 
-Definition Arg :=
+#[global] Definition Arg :=
   Expr%type.
 
-Definition Alt :=
-  fun b_ => (AltCon * list b_ * Expr b_)%type%type.
-
-Definition CoreAlt :=
+#[global] Definition CoreAlt :=
   (Alt CoreBndr)%type.
 
-Definition InAlt :=
+#[global] Definition InAlt :=
   CoreAlt%type.
 
-Definition OutAlt :=
+#[global] Definition OutAlt :=
   CoreAlt%type.
 
-Definition CoreArg :=
+#[global] Definition CoreArg :=
   (Arg CoreBndr)%type.
 
-Definition InArg :=
+#[global] Definition InArg :=
   CoreArg%type.
 
-Definition OutArg :=
+#[global] Definition OutArg :=
   CoreArg%type.
 
-Definition TaggedArg t :=
+#[global] Definition TaggedArg t :=
   (Arg (TaggedBndr t))%type.
 
-Definition CoreBind :=
+#[global] Definition CoreBind :=
   (Bind CoreBndr)%type.
 
-Definition CoreProgram :=
+#[global] Definition CoreProgram :=
   (list CoreBind)%type.
 
-Definition InBind :=
+#[global] Definition InBind :=
   CoreBind%type.
 
-Definition OutBind :=
+#[global] Definition OutBind :=
   CoreBind%type.
 
-Definition TaggedBind t :=
+#[global] Definition TaggedBind t :=
   (Bind (TaggedBndr t))%type.
 
-Definition CoreExpr :=
+#[global] Definition CoreExpr :=
   (Expr CoreBndr)%type.
 
-Inductive CoreVect : Type :=
-  | Vect : Id -> CoreExpr -> CoreVect
-  | NoVect : Id -> CoreVect
-  | VectType : bool -> TyCon -> (option TyCon) -> CoreVect
-  | VectClass : TyCon -> CoreVect
-  | VectInst : Id -> CoreVect.
-
-Definition InExpr :=
+#[global] Definition InExpr :=
   CoreExpr%type.
 
-Definition OutExpr :=
+#[global] Definition OutExpr :=
   CoreExpr%type.
 
-Definition TaggedExpr t :=
+#[global] Definition TaggedExpr t :=
   (Expr (TaggedBndr t))%type.
 
-Definition TaggedAlt t :=
+#[global] Definition TaggedAlt t :=
   (Alt (TaggedBndr t))%type.
 
-Inductive AnnExpr' bndr annot : Type :=
+Inductive AnnAlt bndr annot : Type :=
+  | Mk_AnnAlt
+   : AltCon ->
+     list bndr ->
+     ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr annot) ->
+     AnnAlt bndr annot
+with AnnExpr' bndr annot : Type :=
   | AnnVar : Id -> AnnExpr' bndr annot
   | AnnLit : Literal -> AnnExpr' bndr annot
   | AnnLam
@@ -743,13 +724,7 @@ Inductive AnnExpr' bndr annot : Type :=
   | AnnCase
    : ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr
       annot) ->
-     bndr ->
-     Type_ ->
-     list ((fun bndr_ annot_ =>
-              (AltCon * list bndr_ *
-               (fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr_
-               annot_)%type%type) bndr annot) ->
-     AnnExpr' bndr annot
+     bndr -> Type_ -> list (AnnAlt bndr annot) -> AnnExpr' bndr annot
   | AnnLet
    : (AnnBind bndr annot) ->
      ((fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type) bndr annot) ->
@@ -771,28 +746,56 @@ with AnnBind bndr annot : Type :=
            annot)%type ->
      AnnBind bndr annot.
 
-Definition AnnExpr :=
+#[global] Definition AnnExpr :=
   fun bndr_ annot_ => (annot_ * AnnExpr' bndr_ annot_)%type%type.
 
-Definition AnnAlt :=
-  fun bndr_ annot_ => (AltCon * list bndr_ * AnnExpr bndr_ annot_)%type%type.
+#[global] Definition DataConEnv :=
+  (UniqFM.UniqFM DataCon)%type.
 
-Definition TyVarSet :=
-  (UniqSet.UniqSet TyVar)%type.
+#[global] Definition OutTyVar :=
+  TyVar%type.
 
-Definition TypeVar :=
+#[global] Definition ReqTVBinder :=
+  (VarBndr TyVar unit)%type.
+
+Inductive TyCoFolder env a : Type :=
+  | Mk_TyCoFolder (tcf_view : Type_ -> option Type_) (tcf_tyvar
+    : env -> TyVar -> a) (tcf_covar : env -> CoVar -> a) (tcf_hole
+    : env -> CoercionHole -> a) (tcf_tycobinder
+    : env -> TyCoVar -> ForAllTyFlag -> env)
+   : TyCoFolder env a.
+
+#[global] Definition TyVarBinder :=
+  (VarBndr TyVar ForAllTyFlag)%type.
+
+#[global] Definition TyVarEnv :=
+  (UniqFM.UniqFM Var)%type.
+
+#[global] Definition TypeVar :=
   Var%type.
 
-Definition VarSet :=
+#[global] Definition DmdTransformer :=
+  (SubDemand -> DmdType)%type.
+
+#[global] Definition LiftCoEnv :=
+  (VarEnv Coercion)%type.
+
+Inductive LiftingContext : Type :=
+  | LC : GHC.Core.TyCo.Subst.Subst -> LiftCoEnv -> LiftingContext.
+
+#[global] Definition TidyEnv :=
+  (OccName.TidyOccEnv * VarEnv Var)%type%type.
+
+#[global] Definition VarSet :=
   (UniqSet.UniqSet Var)%type.
 
-Inductive InScopeSet : Type := | InScope : VarSet -> nat -> InScopeSet.
+Inductive InScopeSet : Type := | InScope : VarSet -> InScopeSet.
 
-Definition InScopeEnv :=
-  (InScopeSet * IdUnfoldingFun)%type%type.
+Inductive InScopeEnv : Type :=
+  | ISE : InScopeSet -> IdUnfoldingFun -> InScopeEnv.
 
-Definition RuleFun :=
-  (DynFlags.DynFlags ->
+#[global] Definition RuleFun :=
+  (GHC.Core.Rules.Config.RuleOpts ->
    InScopeEnv -> Id -> list CoreExpr -> option CoreExpr)%type.
 
 Inductive CoreRule : Type :=
@@ -805,37 +808,42 @@ Inductive CoreRule : Type :=
     : nat) (ru_try : RuleFun)
    : CoreRule.
 
-Definition RuleBase :=
-  (NameEnv.NameEnv (list CoreRule))%type.
-
-Inductive RuleEnv : Type :=
-  | Mk_RuleEnv (re_base : RuleBase) (re_visible_orphs : Module.ModuleSet)
-   : RuleEnv.
-
 Inductive RnEnv2 : Type :=
   | RV2 (envL : VarEnv Var) (envR : VarEnv Var) (in_scope : InScopeSet) : RnEnv2.
 
-Inductive TCvSubst : Type :=
-  | Mk_TCvSubst : InScopeSet -> TvSubstEnv -> CvSubstEnv -> TCvSubst.
+Inductive TyCoMapper env m : Type :=
+  | Mk_TyCoMapper (tcm_tyvar : env -> TyVar -> m Type_) (tcm_covar
+    : env -> CoVar -> m Coercion) (tcm_hole : env -> CoercionHole -> m Coercion)
+  (tcm_tycobinder
+    : forall {r}, env -> TyCoVar -> ForAllTyFlag -> (env -> TyCoVar -> m r) -> m r)
+  (tcm_tycon : TyCon -> m TyCon)
+   : TyCoMapper env m.
 
-Inductive LiftingContext : Type :=
-  | LC : TCvSubst -> LiftCoEnv -> LiftingContext.
+Definition RuleBase := (NameEnv.NameEnv (list CoreRule))%type.
 
-Arguments TvBndr {_} {_} _ _.
+Axiom RuleEnv : Type.
 
-Arguments ProfNote {_} _ _ _.
+#[global] Instance Default__TyFamEqnValidityInfo : HsToCoq.Err.Default TyFamEqnValidityInfo. Admitted.
 
-Arguments HpcTick {_} _ _.
+#[global] Instance Default__AlgTyConRhs : HsToCoq.Err.Default AlgTyConRhs. Admitted.
 
-Arguments Breakpoint {_} _ _.
+#[global] Instance Default__TyConDetails : HsToCoq.Err.Default TyConDetails. Admitted.
 
-Arguments SourceNote {_} _ _.
+#[global] Instance Default__TyCon : HsToCoq.Err.Default TyCon. Admitted.
 
-Arguments Diverges {_}.
+#[global] Instance Default__DmdType : HsToCoq.Err.Default DmdType. Admitted.
 
-Arguments ThrowsExn {_}.
+#[global] Instance Default__IdInfo : HsToCoq.Err.Default IdInfo. Admitted.
 
-Arguments Dunno {_} _.
+#[global] Instance Default__Var : HsToCoq.Err.Default Var. Admitted.
+
+#[global] Instance Default__DataCon : HsToCoq.Err.Default DataCon. Admitted.
+
+#[global] Instance Default__CoreRule : HsToCoq.Err.Default CoreRule. Admitted.
+
+#[global] Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv. Admitted.
+
+Arguments Bndr {_} {_} _ _.
 
 Arguments NS_Done {_}.
 
@@ -843,19 +851,15 @@ Arguments NS_Abort {_}.
 
 Arguments NS_Step {_} _ _ _.
 
-Arguments JD {_} {_} _ _.
-
-Arguments Lazy {_}.
-
-Arguments Mk_Str {_} _ _.
-
-Arguments Abs {_}.
-
-Arguments Mk_Use {_} _ _.
+Arguments Mk_Scaled {_} _ _.
 
 Arguments TB {_} _ _.
 
-Arguments Mk_TyCoMapper {_} {_} _ _ _ _ _.
+Arguments NoExpansion {_}.
+
+Arguments ExpandsSyn {_} _ _ _.
+
+Arguments Mk_Alt {_} _ _ _.
 
 Arguments Mk_Var {_} _.
 
@@ -879,6 +883,8 @@ Arguments NonRec {_} _ _.
 
 Arguments Rec {_} _.
 
+Arguments Mk_AnnAlt {_} {_} _ _ _.
+
 Arguments AnnVar {_} {_} _.
 
 Arguments AnnLit {_} {_} _.
@@ -901,12 +907,17 @@ Arguments AnnNonRec {_} {_} _ _.
 
 Arguments AnnRec {_} {_} _.
 
-Instance Default__UnfoldingSource : HsToCoq.Err.Default UnfoldingSource :=
-  HsToCoq.Err.Build_Default _ InlineRhs.
+Arguments Mk_TyCoFolder {_} {_} _ _ _ _ _.
+
+Arguments Mk_TyCoMapper {_} {_} _ _ _ _ _.
 
 Instance Default__UnfoldingGuidance : HsToCoq.Err.Default UnfoldingGuidance :=
   HsToCoq.Err.Build_Default _ (UnfWhen HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
+
+Instance Default__UnfoldingCache : HsToCoq.Err.Default UnfoldingCache :=
+  HsToCoq.Err.Build_Default _ (Mk_UnfoldingCache HsToCoq.Err.default
+                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
 Instance Default__Unfolding : HsToCoq.Err.Default Unfolding :=
   HsToCoq.Err.Build_Default _ NoUnfolding.
@@ -914,38 +925,26 @@ Instance Default__Unfolding : HsToCoq.Err.Default Unfolding :=
 Instance Default__TypeShape : HsToCoq.Err.Default TypeShape :=
   HsToCoq.Err.Build_Default _ TsUnk.
 
-Instance Default__TypeOrdering : HsToCoq.Err.Default TypeOrdering :=
-  HsToCoq.Err.Build_Default _ TLT.
-
-Instance Default__TyConFlavour : HsToCoq.Err.Default TyConFlavour :=
-  HsToCoq.Err.Build_Default _ ClassFlavour.
-
-Instance Default__TickishScoping : HsToCoq.Err.Default TickishScoping :=
-  HsToCoq.Err.Build_Default _ NoScope.
-
-Instance Default__TickishPlacement : HsToCoq.Err.Default TickishPlacement :=
-  HsToCoq.Err.Build_Default _ PlaceRuntime.
-
 Instance Default__StrictnessMark : HsToCoq.Err.Default StrictnessMark :=
   HsToCoq.Err.Build_Default _ MarkedStrict.
 
-Instance Default__SrcUnpackedness : HsToCoq.Err.Default SrcUnpackedness :=
-  HsToCoq.Err.Build_Default _ SrcUnpack.
-
-Instance Default__SrcStrictness : HsToCoq.Err.Default SrcStrictness :=
-  HsToCoq.Err.Build_Default _ SrcLazy.
+Instance Default__Specificity : HsToCoq.Err.Default Specificity :=
+  HsToCoq.Err.Build_Default _ InferredSpec.
 
 Instance Default__PrimElemRep : HsToCoq.Err.Default PrimElemRep :=
   HsToCoq.Err.Build_Default _ Int8ElemRep.
 
 Instance Default__PrimRep : HsToCoq.Err.Default PrimRep :=
+  HsToCoq.Err.Build_Default _ Int8Rep.
+
+Instance Default__PrimOrVoidRep : HsToCoq.Err.Default PrimOrVoidRep :=
   HsToCoq.Err.Build_Default _ VoidRep.
 
-Instance Default__RuntimeRepInfo : HsToCoq.Err.Default RuntimeRepInfo :=
-  HsToCoq.Err.Build_Default _ NoRRI.
+Instance Default__PromDataConInfo : HsToCoq.Err.Default PromDataConInfo :=
+  HsToCoq.Err.Build_Default _ NoPromInfo.
 
-Instance Default__LevityInfo : HsToCoq.Err.Default LevityInfo :=
-  HsToCoq.Err.Build_Default _ NoLevityInfo.
+Instance Default__MCoercion : HsToCoq.Err.Default MCoercion :=
+  HsToCoq.Err.Build_Default _ MRefl.
 
 Instance Default__KillFlags : HsToCoq.Err.Default KillFlags :=
   HsToCoq.Err.Build_Default _ (Mk_KillFlags HsToCoq.Err.default
@@ -960,6 +959,18 @@ Instance Default__Injectivity : HsToCoq.Err.Default Injectivity :=
 Instance Default__HsImplBang : HsToCoq.Err.Default HsImplBang :=
   HsToCoq.Err.Build_Default _ HsLazy.
 
+Instance Default__FunTyFlag : HsToCoq.Err.Default FunTyFlag :=
+  HsToCoq.Err.Build_Default _ FTF_T_T.
+
+Instance Default__FunSel : HsToCoq.Err.Default FunSel :=
+  HsToCoq.Err.Build_Default _ SelMult.
+
+Instance Default__ForAllTyFlag : HsToCoq.Err.Default ForAllTyFlag :=
+  HsToCoq.Err.Build_Default _ Required.
+
+Instance Default__TyConBndrVis : HsToCoq.Err.Default TyConBndrVis :=
+  HsToCoq.Err.Build_Default _ AnonTCB.
+
 Instance Default__FamTyConFlav : HsToCoq.Err.Default FamTyConFlav :=
   HsToCoq.Err.Build_Default _ OpenSynFamilyTyCon.
 
@@ -969,57 +980,37 @@ Instance Default__ExportFlag : HsToCoq.Err.Default ExportFlag :=
 Instance Default__IdScope : HsToCoq.Err.Default IdScope :=
   HsToCoq.Err.Build_Default _ GlobalId.
 
-Instance Default__ExnStr : HsToCoq.Err.Default ExnStr :=
-  HsToCoq.Err.Build_Default _ VanStr.
+Instance Default__Divergence : HsToCoq.Err.Default Divergence :=
+  HsToCoq.Err.Build_Default _ Diverges.
 
-Instance Default__EqRel : HsToCoq.Err.Default EqRel :=
-  HsToCoq.Err.Build_Default _ NomEq.
+Instance Default__CoSel : HsToCoq.Err.Default CoSel :=
+  HsToCoq.Err.Build_Default _ SelForAll.
 
-Instance Default__Count : HsToCoq.Err.Default Count :=
-  HsToCoq.Err.Build_Default _ One.
-
-Instance Default__UnivCoProvenance : HsToCoq.Err.Default UnivCoProvenance :=
-  HsToCoq.Err.Build_Default _ UnsafeCoerceProv.
+Instance Default__Demand : HsToCoq.Err.Default Demand :=
+  HsToCoq.Err.Build_Default _ BotDmd.
 
 Instance Default__CafInfo : HsToCoq.Err.Default CafInfo :=
   HsToCoq.Err.Build_Default _ MayHaveCafRefs.
 
-Instance Default__CPRResult : HsToCoq.Err.Default CPRResult :=
-  HsToCoq.Err.Build_Default _ NoCPR.
-
-Instance Default__UseDmd : HsToCoq.Err.Default UseDmd :=
-  HsToCoq.Err.Build_Default _ UHead.
-
-Instance Default__StrDmd : HsToCoq.Err.Default StrDmd :=
-  HsToCoq.Err.Build_Default _ HyperStr.
-
-Instance Default__ArgFlag : HsToCoq.Err.Default ArgFlag :=
-  HsToCoq.Err.Build_Default _ Required.
-
-Instance Default__TyConBndrVis : HsToCoq.Err.Default TyConBndrVis :=
-  HsToCoq.Err.Build_Default _ AnonTCB.
+Instance Default__AlgTyConFlav : HsToCoq.Err.Default AlgTyConFlav :=
+  HsToCoq.Err.Build_Default _ UnboxedSumTyCon.
 
 Instance Default__ClassBody : HsToCoq.Err.Default ClassBody :=
   HsToCoq.Err.Build_Default _ AbstractClass.
 
-Instance Default__TyCon : HsToCoq.Err.Default TyCon :=
-  HsToCoq.Err.Build_Default _ (FunTyCon HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default).
-
-Instance Default__AlgTyConRhs : HsToCoq.Err.Default AlgTyConRhs :=
-  HsToCoq.Err.Build_Default _ AbstractTyCon.
+Instance Default__IdDetails : HsToCoq.Err.Default IdDetails :=
+  HsToCoq.Err.Build_Default _ VanillaId.
 
 Instance Default__DataConRep : HsToCoq.Err.Default DataConRep :=
   HsToCoq.Err.Build_Default _ NoDataConRep.
 
-Instance Default__IdDetails : HsToCoq.Err.Default IdDetails :=
-  HsToCoq.Err.Build_Default _ VanillaId.
+Instance Default__DmdEnv : HsToCoq.Err.Default DmdEnv :=
+  HsToCoq.Err.Build_Default _ (DE HsToCoq.Err.default HsToCoq.Err.default).
 
 Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
   HsToCoq.Err.Build_Default _ DEFAULT.
 
-Definition ug_args (arg_0__ : UnfoldingGuidance) :=
+#[global] Definition ug_args (arg_0__ : UnfoldingGuidance) :=
   match arg_0__ with
   | UnfWhen _ _ _ =>
       GHC.Err.error (GHC.Base.hs_string__
@@ -1030,7 +1021,7 @@ Definition ug_args (arg_0__ : UnfoldingGuidance) :=
                      "Partial record selector: field `ug_args' has no match in constructor `UnfNever' of type `UnfoldingGuidance'")
   end.
 
-Definition ug_arity (arg_0__ : UnfoldingGuidance) :=
+#[global] Definition ug_arity (arg_0__ : UnfoldingGuidance) :=
   match arg_0__ with
   | UnfWhen ug_arity _ _ => ug_arity
   | UnfIfGoodArgs _ _ _ =>
@@ -1041,7 +1032,7 @@ Definition ug_arity (arg_0__ : UnfoldingGuidance) :=
                      "Partial record selector: field `ug_arity' has no match in constructor `UnfNever' of type `UnfoldingGuidance'")
   end.
 
-Definition ug_boring_ok (arg_0__ : UnfoldingGuidance) :=
+#[global] Definition ug_boring_ok (arg_0__ : UnfoldingGuidance) :=
   match arg_0__ with
   | UnfWhen _ _ ug_boring_ok => ug_boring_ok
   | UnfIfGoodArgs _ _ _ =>
@@ -1052,7 +1043,7 @@ Definition ug_boring_ok (arg_0__ : UnfoldingGuidance) :=
                      "Partial record selector: field `ug_boring_ok' has no match in constructor `UnfNever' of type `UnfoldingGuidance'")
   end.
 
-Definition ug_res (arg_0__ : UnfoldingGuidance) :=
+#[global] Definition ug_res (arg_0__ : UnfoldingGuidance) :=
   match arg_0__ with
   | UnfWhen _ _ _ =>
       GHC.Err.error (GHC.Base.hs_string__
@@ -1063,7 +1054,7 @@ Definition ug_res (arg_0__ : UnfoldingGuidance) :=
                      "Partial record selector: field `ug_res' has no match in constructor `UnfNever' of type `UnfoldingGuidance'")
   end.
 
-Definition ug_size (arg_0__ : UnfoldingGuidance) :=
+#[global] Definition ug_size (arg_0__ : UnfoldingGuidance) :=
   match arg_0__ with
   | UnfWhen _ _ _ =>
       GHC.Err.error (GHC.Base.hs_string__
@@ -1074,7 +1065,7 @@ Definition ug_size (arg_0__ : UnfoldingGuidance) :=
                      "Partial record selector: field `ug_size' has no match in constructor `UnfNever' of type `UnfoldingGuidance'")
   end.
 
-Definition ug_unsat_ok (arg_0__ : UnfoldingGuidance) :=
+#[global] Definition ug_unsat_ok (arg_0__ : UnfoldingGuidance) :=
   match arg_0__ with
   | UnfWhen _ ug_unsat_ok _ => ug_unsat_ok
   | UnfIfGoodArgs _ _ _ =>
@@ -1085,1008 +1076,335 @@ Definition ug_unsat_ok (arg_0__ : UnfoldingGuidance) :=
                      "Partial record selector: field `ug_unsat_ok' has no match in constructor `UnfNever' of type `UnfoldingGuidance'")
   end.
 
-Definition breakpointFVs {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `breakpointFVs' has no match in constructor `ProfNote' of type `Tickish'")
-  | HpcTick _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `breakpointFVs' has no match in constructor `HpcTick' of type `Tickish'")
-  | Breakpoint _ breakpointFVs => breakpointFVs
-  | SourceNote _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `breakpointFVs' has no match in constructor `SourceNote' of type `Tickish'")
-  end.
+#[global] Definition uf_expandable (arg_0__ : UnfoldingCache) :=
+  let 'Mk_UnfoldingCache _ _ _ uf_expandable := arg_0__ in
+  uf_expandable.
 
-Definition breakpointId {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `breakpointId' has no match in constructor `ProfNote' of type `Tickish'")
-  | HpcTick _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `breakpointId' has no match in constructor `HpcTick' of type `Tickish'")
-  | Breakpoint breakpointId _ => breakpointId
-  | SourceNote _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `breakpointId' has no match in constructor `SourceNote' of type `Tickish'")
-  end.
+#[global] Definition uf_is_conlike (arg_0__ : UnfoldingCache) :=
+  let 'Mk_UnfoldingCache _ uf_is_conlike _ _ := arg_0__ in
+  uf_is_conlike.
 
-Definition profNoteCC {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote profNoteCC _ _ => profNoteCC
-  | HpcTick _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteCC' has no match in constructor `HpcTick' of type `Tickish'")
-  | Breakpoint _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteCC' has no match in constructor `Breakpoint' of type `Tickish'")
-  | SourceNote _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteCC' has no match in constructor `SourceNote' of type `Tickish'")
-  end.
+#[global] Definition uf_is_value (arg_0__ : UnfoldingCache) :=
+  let 'Mk_UnfoldingCache uf_is_value _ _ _ := arg_0__ in
+  uf_is_value.
 
-Definition profNoteCount {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote _ profNoteCount _ => profNoteCount
-  | HpcTick _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteCount' has no match in constructor `HpcTick' of type `Tickish'")
-  | Breakpoint _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteCount' has no match in constructor `Breakpoint' of type `Tickish'")
-  | SourceNote _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteCount' has no match in constructor `SourceNote' of type `Tickish'")
-  end.
+#[global] Definition uf_is_work_free (arg_0__ : UnfoldingCache) :=
+  let 'Mk_UnfoldingCache _ _ uf_is_work_free _ := arg_0__ in
+  uf_is_work_free.
 
-Definition profNoteScope {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote _ _ profNoteScope => profNoteScope
-  | HpcTick _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteScope' has no match in constructor `HpcTick' of type `Tickish'")
-  | Breakpoint _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteScope' has no match in constructor `Breakpoint' of type `Tickish'")
-  | SourceNote _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `profNoteScope' has no match in constructor `SourceNote' of type `Tickish'")
-  end.
-
-Definition sourceName {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `sourceName' has no match in constructor `ProfNote' of type `Tickish'")
-  | HpcTick _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `sourceName' has no match in constructor `HpcTick' of type `Tickish'")
-  | Breakpoint _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `sourceName' has no match in constructor `Breakpoint' of type `Tickish'")
-  | SourceNote _ sourceName => sourceName
-  end.
-
-Definition sourceSpan {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `sourceSpan' has no match in constructor `ProfNote' of type `Tickish'")
-  | HpcTick _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `sourceSpan' has no match in constructor `HpcTick' of type `Tickish'")
-  | Breakpoint _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `sourceSpan' has no match in constructor `Breakpoint' of type `Tickish'")
-  | SourceNote sourceSpan _ => sourceSpan
-  end.
-
-Definition tickId {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tickId' has no match in constructor `ProfNote' of type `Tickish'")
-  | HpcTick _ tickId => tickId
-  | Breakpoint _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tickId' has no match in constructor `Breakpoint' of type `Tickish'")
-  | SourceNote _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tickId' has no match in constructor `SourceNote' of type `Tickish'")
-  end.
-
-Definition tickModule {id} (arg_0__ : Tickish id) :=
-  match arg_0__ with
-  | ProfNote _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tickModule' has no match in constructor `ProfNote' of type `Tickish'")
-  | HpcTick tickModule _ => tickModule
-  | Breakpoint _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tickModule' has no match in constructor `Breakpoint' of type `Tickish'")
-  | SourceNote _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tickModule' has no match in constructor `SourceNote' of type `Tickish'")
-  end.
-
-Definition kf_abs (arg_0__ : KillFlags) :=
+#[global] Definition kf_abs (arg_0__ : KillFlags) :=
   let 'Mk_KillFlags kf_abs _ _ := arg_0__ in
   kf_abs.
 
-Definition kf_called_once (arg_0__ : KillFlags) :=
+#[global] Definition kf_called_once (arg_0__ : KillFlags) :=
   let 'Mk_KillFlags _ _ kf_called_once := arg_0__ in
   kf_called_once.
 
-Definition kf_used_once (arg_0__ : KillFlags) :=
+#[global] Definition kf_used_once (arg_0__ : KillFlags) :=
   let 'Mk_KillFlags _ kf_used_once _ := arg_0__ in
   kf_used_once.
 
-Definition sd {s} {u} (arg_0__ : JointDmd s u) :=
-  let 'JD sd _ := arg_0__ in
-  sd.
-
-Definition ud {s} {u} (arg_0__ : JointDmd s u) :=
-  let 'JD _ ud := arg_0__ in
-  ud.
-
-Definition arityInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo arityInfo _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  arityInfo.
-
-Definition cafInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ _ cafInfo _ _ _ _ _ _ _ := arg_0__ in
-  cafInfo.
-
-Definition callArityInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ _ _ _ _ _ _ _ callArityInfo _ := arg_0__ in
-  callArityInfo.
-
-Definition demandInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ _ _ _ _ _ _ demandInfo _ _ := arg_0__ in
-  demandInfo.
-
-Definition inlinePragInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ _ _ _ inlinePragInfo _ _ _ _ _ := arg_0__ in
-  inlinePragInfo.
-
-Definition levityInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ _ _ _ _ _ _ _ _ levityInfo := arg_0__ in
-  levityInfo.
-
-Definition occInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ _ _ _ _ occInfo _ _ _ _ := arg_0__ in
-  occInfo.
-
-Definition oneShotInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ _ _ oneShotInfo _ _ _ _ _ _ := arg_0__ in
-  oneShotInfo.
-
-Definition ruleInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ ruleInfo _ _ _ _ _ _ _ _ _ := arg_0__ in
-  ruleInfo.
-
-Definition strictnessInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ _ _ _ _ _ strictnessInfo _ _ _ := arg_0__ in
-  strictnessInfo.
-
-Definition unfoldingInfo (arg_0__ : IdInfo) :=
-  let 'Mk_IdInfo _ _ unfoldingInfo _ _ _ _ _ _ _ _ := arg_0__ in
-  unfoldingInfo.
-
-Definition classBody (arg_0__ : Class) :=
+#[global] Definition classBody (arg_0__ : Class) :=
   let 'Mk_Class _ _ _ _ _ classBody := arg_0__ in
   classBody.
 
-Definition classFunDeps (arg_0__ : Class) :=
+#[global] Definition classFunDeps (arg_0__ : Class) :=
   let 'Mk_Class _ _ _ _ classFunDeps _ := arg_0__ in
   classFunDeps.
 
-Definition classKey (arg_0__ : Class) :=
+#[global] Definition classKey (arg_0__ : Class) :=
   let 'Mk_Class _ _ classKey _ _ _ := arg_0__ in
   classKey.
 
-Definition className (arg_0__ : Class) :=
+#[global] Definition className (arg_0__ : Class) :=
   let 'Mk_Class _ className _ _ _ _ := arg_0__ in
   className.
 
-Definition classTyCon (arg_0__ : Class) :=
+#[global] Definition classTyCon (arg_0__ : Class) :=
   let 'Mk_Class classTyCon _ _ _ _ _ := arg_0__ in
   classTyCon.
 
-Definition classTyVars (arg_0__ : Class) :=
+#[global] Definition classTyVars (arg_0__ : Class) :=
   let 'Mk_Class _ _ _ classTyVars _ _ := arg_0__ in
   classTyVars.
 
-Definition classATStuff (arg_0__ : ClassBody) :=
+#[global] Definition cls_ats (arg_0__ : ClassBody) :=
   match arg_0__ with
   | AbstractClass =>
       GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `classATStuff' has no match in constructor `AbstractClass' of type `ClassBody'")
-  | ConcreteClass _ _ classATStuff _ _ => classATStuff
+                     "Partial record selector: field `cls_ats' has no match in constructor `AbstractClass' of type `ClassBody'")
+  | ConcreteClass _ _ cls_ats _ _ => cls_ats
   end.
 
-Definition classMinimalDefStuff (arg_0__ : ClassBody) :=
+#[global] Definition cls_min_def (arg_0__ : ClassBody) :=
   match arg_0__ with
   | AbstractClass =>
       GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `classMinimalDefStuff' has no match in constructor `AbstractClass' of type `ClassBody'")
-  | ConcreteClass _ _ _ _ classMinimalDefStuff => classMinimalDefStuff
+                     "Partial record selector: field `cls_min_def' has no match in constructor `AbstractClass' of type `ClassBody'")
+  | ConcreteClass _ _ _ _ cls_min_def => cls_min_def
   end.
 
-Definition classOpStuff (arg_0__ : ClassBody) :=
+#[global] Definition cls_ops (arg_0__ : ClassBody) :=
   match arg_0__ with
   | AbstractClass =>
       GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `classOpStuff' has no match in constructor `AbstractClass' of type `ClassBody'")
-  | ConcreteClass _ _ _ classOpStuff _ => classOpStuff
+                     "Partial record selector: field `cls_ops' has no match in constructor `AbstractClass' of type `ClassBody'")
+  | ConcreteClass _ _ _ cls_ops _ => cls_ops
   end.
 
-Definition classSCSels (arg_0__ : ClassBody) :=
+#[global] Definition cls_sc_sel_ids (arg_0__ : ClassBody) :=
   match arg_0__ with
   | AbstractClass =>
       GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `classSCSels' has no match in constructor `AbstractClass' of type `ClassBody'")
-  | ConcreteClass _ classSCSels _ _ _ => classSCSels
+                     "Partial record selector: field `cls_sc_sel_ids' has no match in constructor `AbstractClass' of type `ClassBody'")
+  | ConcreteClass _ cls_sc_sel_ids _ _ _ => cls_sc_sel_ids
   end.
 
-Definition classSCThetaStuff (arg_0__ : ClassBody) :=
+#[global] Definition cls_sc_theta (arg_0__ : ClassBody) :=
   match arg_0__ with
   | AbstractClass =>
       GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `classSCThetaStuff' has no match in constructor `AbstractClass' of type `ClassBody'")
-  | ConcreteClass classSCThetaStuff _ _ _ _ => classSCThetaStuff
+                     "Partial record selector: field `cls_sc_theta' has no match in constructor `AbstractClass' of type `ClassBody'")
+  | ConcreteClass cls_sc_theta _ _ _ _ => cls_sc_theta
   end.
 
-Definition algTcFields (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcFields' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ algTcFields _ => algTcFields
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcFields' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcFields' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcFields' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcFields' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcFields' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConArity (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ _ _ _ _ _ tyConArity _ _ _ := arg_0__ in
+  tyConArity.
 
-Definition algTcGadtSyntax (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ algTcGadtSyntax _ _ _ _ => algTcGadtSyntax
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConBinders (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ tyConBinders _ _ _ _ _ _ _ _ := arg_0__ in
+  tyConBinders.
 
-Definition algTcRhs (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcRhs' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ algTcRhs _ _ => algTcRhs
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcRhs' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcRhs' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcRhs' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcRhs' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcRhs' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConDetails (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ _ _ _ _ _ _ _ _ tyConDetails := arg_0__ in
+  tyConDetails.
 
-Definition algTcStupidTheta (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ algTcStupidTheta _ _ _ => algTcStupidTheta
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConHasClosedResKind (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ _ _ tyConHasClosedResKind _ _ _ _ _ _ := arg_0__ in
+  tyConHasClosedResKind.
 
-Definition famTcFlav (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcFlav' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcFlav' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcFlav' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ famTcFlav _ _ => famTcFlav
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcFlav' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcFlav' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcFlav' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConKind (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ _ _ _ _ tyConKind _ _ _ _ := arg_0__ in
+  tyConKind.
 
-Definition famTcInj (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcInj' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcInj' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcInj' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ famTcInj => famTcInj
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcInj' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcInj' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcInj' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConName (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ tyConName _ _ _ _ _ _ _ _ _ := arg_0__ in
+  tyConName.
 
-Definition famTcParent (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcParent' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcParent' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcParent' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ famTcParent _ => famTcParent
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcParent' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcParent' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcParent' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConNullaryTy (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ _ _ _ _ _ _ tyConNullaryTy _ _ := arg_0__ in
+  tyConNullaryTy.
 
-Definition famTcResVar (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcResVar' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcResVar' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcResVar' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ famTcResVar _ _ _ => famTcResVar
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcResVar' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcResVar' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `famTcResVar' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConResKind (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ _ tyConResKind _ _ _ _ _ _ _ := arg_0__ in
+  tyConResKind.
 
-Definition isUnlifted (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `isUnlifted' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `isUnlifted' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `isUnlifted' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `isUnlifted' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ isUnlifted _ => isUnlifted
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `isUnlifted' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `isUnlifted' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConRoles (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ _ _ _ _ _ _ _ tyConRoles _ := arg_0__ in
+  tyConRoles.
 
-Definition primRepName (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `primRepName' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `primRepName' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `primRepName' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `primRepName' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ primRepName => primRepName
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `primRepName' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `primRepName' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConTyVars (arg_0__ : TyCon) :=
+  let 'Mk_TyCon _ _ _ _ _ tyConTyVars _ _ _ _ _ := arg_0__ in
+  tyConTyVars.
 
-Definition synIsFamFree (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsFamFree' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsFamFree' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ synIsFamFree => synIsFamFree
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsFamFree' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsFamFree' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsFamFree' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsFamFree' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
+#[global] Definition tyConUnique (arg_0__ : TyCon) :=
+  let 'Mk_TyCon tyConUnique _ _ _ _ _ _ _ _ _ _ := arg_0__ in
+  tyConUnique.
 
-Definition synIsTau (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsTau' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsTau' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ synIsTau _ => synIsTau
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsTau' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsTau' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsTau' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synIsTau' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
-
-Definition synTcRhs (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synTcRhs' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synTcRhs' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ synTcRhs _ _ => synTcRhs
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synTcRhs' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synTcRhs' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synTcRhs' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `synTcRhs' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
-
-Definition tcRepName (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ tcRepName => tcRepName
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcRepName' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcRepName' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcRepName' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcRepName' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ tcRepName _ => tcRepName
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcRepName' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
-
-Definition tcRoles (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcRoles' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ tcRoles _ _ _ _ _ _ => tcRoles
-  | SynonymTyCon _ _ _ _ _ _ _ tcRoles _ _ _ => tcRoles
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcRoles' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ tcRoles _ _ => tcRoles
-  | PromotedDataCon _ _ _ _ _ _ tcRoles _ _ _ => tcRoles
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcRoles' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
-
-Definition tcTyConFlavour (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConFlavour' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConFlavour' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConFlavour' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConFlavour' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConFlavour' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConFlavour' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ tcTyConFlavour => tcTyConFlavour
-  end.
-
-Definition tcTyConScopedTyVars (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConScopedTyVars' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConScopedTyVars' has no match in constructor `AlgTyCon' of type `TyCon'")
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConScopedTyVars' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConScopedTyVars' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConScopedTyVars' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tcTyConScopedTyVars' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ tcTyConScopedTyVars _ => tcTyConScopedTyVars
-  end.
-
-Definition tyConArity (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ tyConArity _ => tyConArity
-  | AlgTyCon _ _ _ _ _ _ tyConArity _ _ _ _ _ _ _ => tyConArity
-  | SynonymTyCon _ _ _ _ _ _ tyConArity _ _ _ _ => tyConArity
-  | FamilyTyCon _ _ _ _ _ _ tyConArity _ _ _ _ => tyConArity
-  | PrimTyCon _ _ _ _ _ tyConArity _ _ _ => tyConArity
-  | PromotedDataCon _ _ _ _ _ tyConArity _ _ _ _ => tyConArity
-  | TcTyCon _ _ _ _ _ _ tyConArity _ _ => tyConArity
-  end.
-
-Definition tyConBinders (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ tyConBinders _ _ _ _ => tyConBinders
-  | AlgTyCon _ _ tyConBinders _ _ _ _ _ _ _ _ _ _ _ => tyConBinders
-  | SynonymTyCon _ _ tyConBinders _ _ _ _ _ _ _ _ => tyConBinders
-  | FamilyTyCon _ _ tyConBinders _ _ _ _ _ _ _ _ => tyConBinders
-  | PrimTyCon _ _ tyConBinders _ _ _ _ _ _ => tyConBinders
-  | PromotedDataCon _ _ tyConBinders _ _ _ _ _ _ _ => tyConBinders
-  | TcTyCon _ _ tyConBinders _ _ _ _ _ _ => tyConBinders
-  end.
-
-Definition tyConCType (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConCType' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ _ _ _ _ _ tyConCType _ _ _ _ _ => tyConCType
-  | SynonymTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConCType' has no match in constructor `SynonymTyCon' of type `TyCon'")
-  | FamilyTyCon _ _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConCType' has no match in constructor `FamilyTyCon' of type `TyCon'")
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConCType' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConCType' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConCType' has no match in constructor `TcTyCon' of type `TyCon'")
-  end.
-
-Definition tyConKind (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ tyConKind _ _ => tyConKind
-  | AlgTyCon _ _ _ _ _ tyConKind _ _ _ _ _ _ _ _ => tyConKind
-  | SynonymTyCon _ _ _ _ _ tyConKind _ _ _ _ _ => tyConKind
-  | FamilyTyCon _ _ _ _ _ tyConKind _ _ _ _ _ => tyConKind
-  | PrimTyCon _ _ _ _ tyConKind _ _ _ _ => tyConKind
-  | PromotedDataCon _ _ _ _ tyConKind _ _ _ _ _ => tyConKind
-  | TcTyCon _ _ _ _ _ tyConKind _ _ _ => tyConKind
-  end.
-
-Definition tyConName (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ tyConName _ _ _ _ _ => tyConName
-  | AlgTyCon _ tyConName _ _ _ _ _ _ _ _ _ _ _ _ => tyConName
-  | SynonymTyCon _ tyConName _ _ _ _ _ _ _ _ _ => tyConName
-  | FamilyTyCon _ tyConName _ _ _ _ _ _ _ _ _ => tyConName
-  | PrimTyCon _ tyConName _ _ _ _ _ _ _ => tyConName
-  | PromotedDataCon _ tyConName _ _ _ _ _ _ _ _ => tyConName
-  | TcTyCon _ tyConName _ _ _ _ _ _ _ => tyConName
-  end.
-
-Definition tyConResKind (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ tyConResKind _ _ _ => tyConResKind
-  | AlgTyCon _ _ _ _ tyConResKind _ _ _ _ _ _ _ _ _ => tyConResKind
-  | SynonymTyCon _ _ _ _ tyConResKind _ _ _ _ _ _ => tyConResKind
-  | FamilyTyCon _ _ _ _ tyConResKind _ _ _ _ _ _ => tyConResKind
-  | PrimTyCon _ _ _ tyConResKind _ _ _ _ _ => tyConResKind
-  | PromotedDataCon _ _ _ tyConResKind _ _ _ _ _ _ => tyConResKind
-  | TcTyCon _ _ _ _ tyConResKind _ _ _ _ => tyConResKind
-  end.
-
-Definition tyConTyVars (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConTyVars' has no match in constructor `FunTyCon' of type `TyCon'")
-  | AlgTyCon _ _ _ tyConTyVars _ _ _ _ _ _ _ _ _ _ => tyConTyVars
-  | SynonymTyCon _ _ _ tyConTyVars _ _ _ _ _ _ _ => tyConTyVars
-  | FamilyTyCon _ _ _ tyConTyVars _ _ _ _ _ _ _ => tyConTyVars
-  | PrimTyCon _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConTyVars' has no match in constructor `PrimTyCon' of type `TyCon'")
-  | PromotedDataCon _ _ _ _ _ _ _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tyConTyVars' has no match in constructor `PromotedDataCon' of type `TyCon'")
-  | TcTyCon _ _ _ tyConTyVars _ _ _ _ _ => tyConTyVars
-  end.
-
-Definition tyConUnique (arg_0__ : TyCon) :=
-  match arg_0__ with
-  | FunTyCon tyConUnique _ _ _ _ _ _ => tyConUnique
-  | AlgTyCon tyConUnique _ _ _ _ _ _ _ _ _ _ _ _ _ => tyConUnique
-  | SynonymTyCon tyConUnique _ _ _ _ _ _ _ _ _ _ => tyConUnique
-  | FamilyTyCon tyConUnique _ _ _ _ _ _ _ _ _ _ => tyConUnique
-  | PrimTyCon tyConUnique _ _ _ _ _ _ _ _ => tyConUnique
-  | PromotedDataCon tyConUnique _ _ _ _ _ _ _ _ _ => tyConUnique
-  | TcTyCon tyConUnique _ _ _ _ _ _ _ _ => tyConUnique
-  end.
-
-Definition data_cons (arg_0__ : AlgTyConRhs) :=
-  match arg_0__ with
-  | AbstractTyCon =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `data_cons' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
-  | DataTyCon data_cons _ => data_cons
-  | TupleTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `data_cons' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
-  | SumTyCon data_cons => data_cons
-  | NewTyCon _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `data_cons' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
-  end.
-
-Definition is_enum (arg_0__ : AlgTyConRhs) :=
-  match arg_0__ with
-  | AbstractTyCon =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `is_enum' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
-  | DataTyCon _ is_enum => is_enum
-  | TupleTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `is_enum' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
-  | SumTyCon _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `is_enum' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
-  | NewTyCon _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `is_enum' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
-  end.
-
-Definition nt_co (arg_0__ : AlgTyConRhs) :=
-  match arg_0__ with
-  | AbstractTyCon =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_co' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
-  | DataTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_co' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
-  | TupleTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_co' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
-  | SumTyCon _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_co' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
-  | NewTyCon _ _ _ nt_co => nt_co
-  end.
-
-Definition nt_etad_rhs (arg_0__ : AlgTyConRhs) :=
-  match arg_0__ with
-  | AbstractTyCon =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_etad_rhs' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
-  | DataTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_etad_rhs' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
-  | TupleTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_etad_rhs' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
-  | SumTyCon _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_etad_rhs' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
-  | NewTyCon _ _ nt_etad_rhs _ => nt_etad_rhs
-  end.
-
-Definition nt_rhs (arg_0__ : AlgTyConRhs) :=
-  match arg_0__ with
-  | AbstractTyCon =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_rhs' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
-  | DataTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_rhs' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
-  | TupleTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_rhs' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
-  | SumTyCon _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `nt_rhs' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
-  | NewTyCon _ nt_rhs _ _ => nt_rhs
-  end.
-
-Definition tup_sort (arg_0__ : AlgTyConRhs) :=
-  match arg_0__ with
-  | AbstractTyCon =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tup_sort' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
-  | DataTyCon _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tup_sort' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
-  | TupleTyCon _ tup_sort => tup_sort
-  | SumTyCon _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tup_sort' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
-  | NewTyCon _ _ _ _ =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `tup_sort' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
-  end.
-
-Definition dcEqSpec (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ dcEqSpec _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcEqSpec.
-
-Definition dcExTyVars (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ dcExTyVars _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcExTyVars.
-
-Definition dcFields (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ dcFields _ _ _ _ _ _ _ _ := arg_0__ in
-  dcFields.
-
-Definition dcInfix (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcInfix _ := arg_0__ in
-  dcInfix.
-
-Definition dcName (arg_0__ : DataCon) :=
-  let 'MkData dcName _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcName.
-
-Definition dcOrigArgTys (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ dcOrigArgTys _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcOrigArgTys.
-
-Definition dcOrigResTy (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ dcOrigResTy _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcOrigResTy.
-
-Definition dcOtherTheta (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ dcOtherTheta _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcOtherTheta.
-
-Definition dcPromoted (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcPromoted := arg_0__ in
-  dcPromoted.
-
-Definition dcRep (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcRep _ _ _ _ _ _ := arg_0__ in
-  dcRep.
-
-Definition dcRepArity (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcRepArity _ _ _ _ _ := arg_0__ in
-  dcRepArity.
-
-Definition dcRepTyCon (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcRepTyCon _ _ _ := arg_0__ in
-  dcRepTyCon.
-
-Definition dcRepType (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcRepType _ _ := arg_0__ in
-  dcRepType.
-
-Definition dcSourceArity (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcSourceArity _ _ _ _ :=
-    arg_0__ in
-  dcSourceArity.
-
-Definition dcSrcBangs (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ dcSrcBangs _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcSrcBangs.
-
-Definition dcStupidTheta (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ dcStupidTheta _ _ _ _ _ _ _ _ _ _ _ _ :=
-    arg_0__ in
-  dcStupidTheta.
-
-Definition dcTag (arg_0__ : DataCon) :=
-  let 'MkData _ _ dcTag _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcTag.
-
-Definition dcUnique (arg_0__ : DataCon) :=
-  let 'MkData _ dcUnique _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcUnique.
-
-Definition dcUnivTyVars (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ dcUnivTyVars _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcUnivTyVars.
-
-Definition dcUserTyVarBinders (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ dcUserTyVarBinders _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ :=
-    arg_0__ in
-  dcUserTyVarBinders.
-
-Definition dcVanilla (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ dcVanilla _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
-  dcVanilla.
-
-Definition dcWorkId (arg_0__ : DataCon) :=
-  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcWorkId _ _ _ _ _ _ _ := arg_0__ in
-  dcWorkId.
-
-Definition dcr_arg_tys (arg_0__ : DataConRep) :=
-  match arg_0__ with
-  | NoDataConRep =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `dcr_arg_tys' has no match in constructor `NoDataConRep' of type `DataConRep'")
-  | DCR _ _ dcr_arg_tys _ _ => dcr_arg_tys
-  end.
-
-Definition dcr_bangs (arg_0__ : DataConRep) :=
-  match arg_0__ with
-  | NoDataConRep =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `dcr_bangs' has no match in constructor `NoDataConRep' of type `DataConRep'")
-  | DCR _ _ _ _ dcr_bangs => dcr_bangs
-  end.
-
-Definition dcr_boxer (arg_0__ : DataConRep) :=
-  match arg_0__ with
-  | NoDataConRep =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `dcr_boxer' has no match in constructor `NoDataConRep' of type `DataConRep'")
-  | DCR _ dcr_boxer _ _ _ => dcr_boxer
-  end.
-
-Definition dcr_stricts (arg_0__ : DataConRep) :=
-  match arg_0__ with
-  | NoDataConRep =>
-      GHC.Err.error (GHC.Base.hs_string__
-                     "Partial record selector: field `dcr_stricts' has no match in constructor `NoDataConRep' of type `DataConRep'")
-  | DCR _ _ _ dcr_stricts _ => dcr_stricts
-  end.
-
-Definition idScope (arg_0__ : Var) :=
-  let 'Mk_Id _ _ _ idScope _ _ := arg_0__ in
+#[global] Definition idScope (arg_0__ : Var) :=
+  let 'Mk_Id _ _ _ _ idScope _ _ := arg_0__ in
   idScope.
 
-Definition id_details (arg_0__ : Var) :=
-  let 'Mk_Id _ _ _ _ id_details _ := arg_0__ in
+#[global] Definition id_details (arg_0__ : Var) :=
+  let 'Mk_Id _ _ _ _ _ id_details _ := arg_0__ in
   id_details.
 
-Definition realUnique (arg_0__ : Var) :=
-  let 'Mk_Id _ realUnique _ _ _ _ := arg_0__ in
+#[global] Definition realUnique (arg_0__ : Var) :=
+  let 'Mk_Id _ realUnique _ _ _ _ _ := arg_0__ in
   realUnique.
 
-Definition varName (arg_0__ : Var) :=
-  let 'Mk_Id varName _ _ _ _ _ := arg_0__ in
+#[global] Definition varMult (arg_0__ : Var) :=
+  let 'Mk_Id _ _ _ varMult _ _ _ := arg_0__ in
+  varMult.
+
+#[global] Definition varName (arg_0__ : Var) :=
+  let 'Mk_Id varName _ _ _ _ _ _ := arg_0__ in
   varName.
 
-Definition varType (arg_0__ : Var) :=
-  let 'Mk_Id _ _ varType _ _ _ := arg_0__ in
+#[global] Definition varType (arg_0__ : Var) :=
+  let 'Mk_Id _ _ varType _ _ _ _ := arg_0__ in
   varType.
 
-Definition sel_naughty (arg_0__ : IdDetails) :=
+#[global] Definition id_concrete_tvs (arg_0__ : IdDetails) :=
+  match arg_0__ with
+  | VanillaId =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `VanillaId' of type `IdDetails'")
+  | RecSelId _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `RecSelId' of type `IdDetails'")
+  | DataConWorkId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `DataConWorkId' of type `IdDetails'")
+  | DataConWrapId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `DataConWrapId' of type `IdDetails'")
+  | ClassOpId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `ClassOpId' of type `IdDetails'")
+  | RepPolyId id_concrete_tvs => id_concrete_tvs
+  | PrimOpId _ id_concrete_tvs => id_concrete_tvs
+  | FCallId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `FCallId' of type `IdDetails'")
+  | TickBoxOpId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `TickBoxOpId' of type `IdDetails'")
+  | Mk_DFunId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `Mk_DFunId' of type `IdDetails'")
+  | Mk_JoinId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `Mk_JoinId' of type `IdDetails'")
+  | WorkerLikeId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_concrete_tvs' has no match in constructor `WorkerLikeId' of type `IdDetails'")
+  end.
+
+#[global] Definition id_primop (arg_0__ : IdDetails) :=
+  match arg_0__ with
+  | VanillaId =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `VanillaId' of type `IdDetails'")
+  | RecSelId _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `RecSelId' of type `IdDetails'")
+  | DataConWorkId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `DataConWorkId' of type `IdDetails'")
+  | DataConWrapId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `DataConWrapId' of type `IdDetails'")
+  | ClassOpId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `ClassOpId' of type `IdDetails'")
+  | RepPolyId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `RepPolyId' of type `IdDetails'")
+  | PrimOpId id_primop _ => id_primop
+  | FCallId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `FCallId' of type `IdDetails'")
+  | TickBoxOpId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `TickBoxOpId' of type `IdDetails'")
+  | Mk_DFunId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `Mk_DFunId' of type `IdDetails'")
+  | Mk_JoinId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `Mk_JoinId' of type `IdDetails'")
+  | WorkerLikeId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `id_primop' has no match in constructor `WorkerLikeId' of type `IdDetails'")
+  end.
+
+#[global] Definition sel_cons (arg_0__ : IdDetails) :=
+  match arg_0__ with
+  | VanillaId =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `VanillaId' of type `IdDetails'")
+  | RecSelId _ _ _ sel_cons => sel_cons
+  | DataConWorkId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `DataConWorkId' of type `IdDetails'")
+  | DataConWrapId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `DataConWrapId' of type `IdDetails'")
+  | ClassOpId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `ClassOpId' of type `IdDetails'")
+  | RepPolyId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `RepPolyId' of type `IdDetails'")
+  | PrimOpId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `PrimOpId' of type `IdDetails'")
+  | FCallId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `FCallId' of type `IdDetails'")
+  | TickBoxOpId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `TickBoxOpId' of type `IdDetails'")
+  | Mk_DFunId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `Mk_DFunId' of type `IdDetails'")
+  | Mk_JoinId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `Mk_JoinId' of type `IdDetails'")
+  | WorkerLikeId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_cons' has no match in constructor `WorkerLikeId' of type `IdDetails'")
+  end.
+
+#[global] Definition sel_fieldLabel (arg_0__ : IdDetails) :=
+  match arg_0__ with
+  | VanillaId =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `VanillaId' of type `IdDetails'")
+  | RecSelId _ sel_fieldLabel _ _ => sel_fieldLabel
+  | DataConWorkId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `DataConWorkId' of type `IdDetails'")
+  | DataConWrapId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `DataConWrapId' of type `IdDetails'")
+  | ClassOpId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `ClassOpId' of type `IdDetails'")
+  | RepPolyId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `RepPolyId' of type `IdDetails'")
+  | PrimOpId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `PrimOpId' of type `IdDetails'")
+  | FCallId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `FCallId' of type `IdDetails'")
+  | TickBoxOpId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `TickBoxOpId' of type `IdDetails'")
+  | Mk_DFunId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `Mk_DFunId' of type `IdDetails'")
+  | Mk_JoinId _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `Mk_JoinId' of type `IdDetails'")
+  | WorkerLikeId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_fieldLabel' has no match in constructor `WorkerLikeId' of type `IdDetails'")
+  end.
+
+#[global] Definition sel_naughty (arg_0__ : IdDetails) :=
   match arg_0__ with
   | VanillaId =>
       GHC.Err.error (GHC.Base.hs_string__
                      "Partial record selector: field `sel_naughty' has no match in constructor `VanillaId' of type `IdDetails'")
-  | RecSelId _ sel_naughty => sel_naughty
+  | RecSelId _ _ sel_naughty _ => sel_naughty
   | DataConWorkId _ =>
       GHC.Err.error (GHC.Base.hs_string__
                      "Partial record selector: field `sel_naughty' has no match in constructor `DataConWorkId' of type `IdDetails'")
   | DataConWrapId _ =>
       GHC.Err.error (GHC.Base.hs_string__
                      "Partial record selector: field `sel_naughty' has no match in constructor `DataConWrapId' of type `IdDetails'")
-  | ClassOpId _ =>
+  | ClassOpId _ _ =>
       GHC.Err.error (GHC.Base.hs_string__
                      "Partial record selector: field `sel_naughty' has no match in constructor `ClassOpId' of type `IdDetails'")
-  | PrimOpId _ =>
+  | RepPolyId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_naughty' has no match in constructor `RepPolyId' of type `IdDetails'")
+  | PrimOpId _ _ =>
       GHC.Err.error (GHC.Base.hs_string__
                      "Partial record selector: field `sel_naughty' has no match in constructor `PrimOpId' of type `IdDetails'")
   | FCallId _ =>
@@ -2098,84 +1416,902 @@ Definition sel_naughty (arg_0__ : IdDetails) :=
   | Mk_DFunId _ =>
       GHC.Err.error (GHC.Base.hs_string__
                      "Partial record selector: field `sel_naughty' has no match in constructor `Mk_DFunId' of type `IdDetails'")
-  | Mk_JoinId _ =>
+  | Mk_JoinId _ _ =>
       GHC.Err.error (GHC.Base.hs_string__
                      "Partial record selector: field `sel_naughty' has no match in constructor `Mk_JoinId' of type `IdDetails'")
+  | WorkerLikeId _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `sel_naughty' has no match in constructor `WorkerLikeId' of type `IdDetails'")
   end.
 
-Definition psArgs (arg_0__ : PatSyn) :=
+#[global] Definition dcConcreteTyVars (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ dcConcreteTyVars _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ :=
+    arg_0__ in
+  dcConcreteTyVars.
+
+#[global] Definition dcEqSpec (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ dcEqSpec _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
+  dcEqSpec.
+
+#[global] Definition dcExTyCoVars (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ dcExTyCoVars _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ :=
+    arg_0__ in
+  dcExTyCoVars.
+
+#[global] Definition dcFields (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcFields _ _ _ _ _ _ _ _ := arg_0__ in
+  dcFields.
+
+#[global] Definition dcInfix (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcInfix _ := arg_0__ in
+  dcInfix.
+
+#[global] Definition dcName (arg_0__ : DataCon) :=
+  let 'MkData dcName _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
+  dcName.
+
+#[global] Definition dcOrigArgTys (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ dcOrigArgTys _ _ _ _ _ _ _ _ _ _ _ :=
+    arg_0__ in
+  dcOrigArgTys.
+
+#[global] Definition dcOrigResTy (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ dcOrigResTy _ _ _ _ _ _ _ _ _ _ :=
+    arg_0__ in
+  dcOrigResTy.
+
+#[global] Definition dcOtherTheta (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ dcOtherTheta _ _ _ _ _ _ _ _ _ _ _ _ _ :=
+    arg_0__ in
+  dcOtherTheta.
+
+#[global] Definition dcPromoted (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcPromoted := arg_0__ in
+  dcPromoted.
+
+#[global] Definition dcRep (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcRep _ _ _ _ _ _ := arg_0__ in
+  dcRep.
+
+#[global] Definition dcRepArity (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcRepArity _ _ _ _ _ := arg_0__ in
+  dcRepArity.
+
+#[global] Definition dcRepTyCon (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcRepTyCon _ _ _ := arg_0__ in
+  dcRepTyCon.
+
+#[global] Definition dcRepType (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcRepType _ _ := arg_0__ in
+  dcRepType.
+
+#[global] Definition dcSourceArity (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcSourceArity _ _ _ _ :=
+    arg_0__ in
+  dcSourceArity.
+
+#[global] Definition dcSrcBangs (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ dcSrcBangs _ _ _ _ _ _ _ _ _ := arg_0__ in
+  dcSrcBangs.
+
+#[global] Definition dcStupidTheta (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ dcStupidTheta _ _ _ _ _ _ _ _ _ _ _ _ :=
+    arg_0__ in
+  dcStupidTheta.
+
+#[global] Definition dcTag (arg_0__ : DataCon) :=
+  let 'MkData _ _ dcTag _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
+  dcTag.
+
+#[global] Definition dcUnique (arg_0__ : DataCon) :=
+  let 'MkData _ dcUnique _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
+  dcUnique.
+
+#[global] Definition dcUnivTyVars (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ dcUnivTyVars _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ :=
+    arg_0__ in
+  dcUnivTyVars.
+
+#[global] Definition dcUserTyVarBinders (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ dcUserTyVarBinders _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ :=
+    arg_0__ in
+  dcUserTyVarBinders.
+
+#[global] Definition dcVanilla (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ dcVanilla _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
+  dcVanilla.
+
+#[global] Definition dcWorkId (arg_0__ : DataCon) :=
+  let 'MkData _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ dcWorkId _ _ _ _ _ _ _ := arg_0__ in
+  dcWorkId.
+
+#[global] Definition dcr_arg_tys (arg_0__ : DataConRep) :=
+  match arg_0__ with
+  | NoDataConRep =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `dcr_arg_tys' has no match in constructor `NoDataConRep' of type `DataConRep'")
+  | DCR _ _ dcr_arg_tys _ _ => dcr_arg_tys
+  end.
+
+#[global] Definition dcr_bangs (arg_0__ : DataConRep) :=
+  match arg_0__ with
+  | NoDataConRep =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `dcr_bangs' has no match in constructor `NoDataConRep' of type `DataConRep'")
+  | DCR _ _ _ _ dcr_bangs => dcr_bangs
+  end.
+
+#[global] Definition dcr_boxer (arg_0__ : DataConRep) :=
+  match arg_0__ with
+  | NoDataConRep =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `dcr_boxer' has no match in constructor `NoDataConRep' of type `DataConRep'")
+  | DCR _ dcr_boxer _ _ _ => dcr_boxer
+  end.
+
+#[global] Definition dcr_stricts (arg_0__ : DataConRep) :=
+  match arg_0__ with
+  | NoDataConRep =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `dcr_stricts' has no match in constructor `NoDataConRep' of type `DataConRep'")
+  | DCR _ _ _ dcr_stricts _ => dcr_stricts
+  end.
+
+#[global] Definition psArgs (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ psArgs _ _ _ _ _ _ _ _ _ _ := arg_0__ in
   psArgs.
 
-Definition psArity (arg_0__ : PatSyn) :=
+#[global] Definition psArity (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ psArity _ _ _ _ _ _ _ _ _ := arg_0__ in
   psArity.
 
-Definition psBuilder (arg_0__ : PatSyn) :=
+#[global] Definition psBuilder (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ _ _ _ _ _ _ _ _ psBuilder := arg_0__ in
   psBuilder.
 
-Definition psExTyVars (arg_0__ : PatSyn) :=
+#[global] Definition psExTyVars (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ _ _ _ _ psExTyVars _ _ _ _ := arg_0__ in
   psExTyVars.
 
-Definition psFieldLabels (arg_0__ : PatSyn) :=
+#[global] Definition psFieldLabels (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ _ psFieldLabels _ _ _ _ _ _ _ := arg_0__ in
   psFieldLabels.
 
-Definition psInfix (arg_0__ : PatSyn) :=
+#[global] Definition psInfix (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ psInfix _ _ _ _ _ _ _ _ := arg_0__ in
   psInfix.
 
-Definition psMatcher (arg_0__ : PatSyn) :=
+#[global] Definition psMatcher (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ _ _ _ _ _ _ _ psMatcher _ := arg_0__ in
   psMatcher.
 
-Definition psName (arg_0__ : PatSyn) :=
+#[global] Definition psName (arg_0__ : PatSyn) :=
   let 'MkPatSyn psName _ _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
   psName.
 
-Definition psProvTheta (arg_0__ : PatSyn) :=
+#[global] Definition psProvTheta (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ _ _ _ _ _ psProvTheta _ _ _ := arg_0__ in
   psProvTheta.
 
-Definition psReqTheta (arg_0__ : PatSyn) :=
+#[global] Definition psReqTheta (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ _ _ _ psReqTheta _ _ _ _ _ := arg_0__ in
   psReqTheta.
 
-Definition psResultTy (arg_0__ : PatSyn) :=
+#[global] Definition psResultTy (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ _ _ _ _ _ _ psResultTy _ _ := arg_0__ in
   psResultTy.
 
-Definition psUnique (arg_0__ : PatSyn) :=
+#[global] Definition psUnique (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ psUnique _ _ _ _ _ _ _ _ _ _ _ := arg_0__ in
   psUnique.
 
-Definition psUnivTyVars (arg_0__ : PatSyn) :=
+#[global] Definition psUnivTyVars (arg_0__ : PatSyn) :=
   let 'MkPatSyn _ _ _ _ _ _ psUnivTyVars _ _ _ _ _ _ := arg_0__ in
   psUnivTyVars.
 
-Definition tcm_covar {env} {m} (arg_0__ : TyCoMapper env m) :=
-  let 'Mk_TyCoMapper _ _ tcm_covar _ _ := arg_0__ in
-  tcm_covar.
+#[global] Definition bitfield (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ _ _ _ _ _ _ bitfield _ _ := arg_0__ in
+  bitfield.
 
-Definition tcm_hole {env} {m} (arg_0__ : TyCoMapper env m) :=
-  let 'Mk_TyCoMapper _ _ _ tcm_hole _ := arg_0__ in
-  tcm_hole.
+#[global] Definition cprSigInfo (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ _ _ _ _ cprSigInfo _ _ _ _ := arg_0__ in
+  cprSigInfo.
 
-Definition tcm_smart {env} {m} (arg_0__ : TyCoMapper env m) :=
-  let 'Mk_TyCoMapper tcm_smart _ _ _ _ := arg_0__ in
-  tcm_smart.
+#[global] Definition demandInfo (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ _ _ _ _ _ demandInfo _ _ _ := arg_0__ in
+  demandInfo.
 
-Definition tcm_tybinder {env} {m} (arg_0__ : TyCoMapper env m) :=
-  let 'Mk_TyCoMapper _ _ _ _ tcm_tybinder := arg_0__ in
-  tcm_tybinder.
+#[global] Definition dmdSigInfo (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ _ _ _ dmdSigInfo _ _ _ _ _ := arg_0__ in
+  dmdSigInfo.
 
-Definition tcm_tyvar {env} {m} (arg_0__ : TyCoMapper env m) :=
-  let 'Mk_TyCoMapper _ tcm_tyvar _ _ _ := arg_0__ in
-  tcm_tyvar.
+#[global] Definition inlinePragInfo (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ _ inlinePragInfo _ _ _ _ _ _ _ := arg_0__ in
+  inlinePragInfo.
 
-Definition ru_act (arg_0__ : CoreRule) :=
+#[global] Definition lfInfo (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ _ _ _ _ _ _ _ lfInfo _ := arg_0__ in
+  lfInfo.
+
+#[global] Definition occInfo (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ _ _ occInfo _ _ _ _ _ _ := arg_0__ in
+  occInfo.
+
+#[global] Definition realUnfoldingInfo (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ realUnfoldingInfo _ _ _ _ _ _ _ _ := arg_0__ in
+  realUnfoldingInfo.
+
+#[global] Definition ruleInfo (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo ruleInfo _ _ _ _ _ _ _ _ _ := arg_0__ in
+  ruleInfo.
+
+#[global] Definition tagSig (arg_0__ : IdInfo) :=
+  let 'Mk_IdInfo _ _ _ _ _ _ _ _ _ tagSig := arg_0__ in
+  tagSig.
+
+#[global] Definition dt_args (arg_0__ : DmdType) :=
+  let 'Mk_DmdType _ dt_args := arg_0__ in
+  dt_args.
+
+#[global] Definition dt_env (arg_0__ : DmdType) :=
+  let 'Mk_DmdType dt_env _ := arg_0__ in
+  dt_env.
+
+#[global] Definition de_div (arg_0__ : DmdEnv) :=
+  let 'DE _ de_div := arg_0__ in
+  de_div.
+
+#[global] Definition de_fvs (arg_0__ : DmdEnv) :=
+  let 'DE de_fvs _ := arg_0__ in
+  de_fvs.
+
+#[global] Definition algTcFields (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ algTcFields _ => algTcFields
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFields' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFields' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFields' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFields' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFields' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition algTcFlavour (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ algTcFlavour => algTcFlavour
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFlavour' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFlavour' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFlavour' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFlavour' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcFlavour' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition algTcGadtSyntax (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ algTcGadtSyntax _ _ _ _ => algTcGadtSyntax
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcGadtSyntax' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition algTcRhs (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ algTcRhs _ _ => algTcRhs
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcRhs' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcRhs' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcRhs' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcRhs' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcRhs' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition algTcStupidTheta (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ algTcStupidTheta _ _ _ => algTcStupidTheta
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `algTcStupidTheta' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition famTcFlav (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcFlav' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcFlav' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ famTcFlav _ _ => famTcFlav
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcFlav' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcFlav' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcFlav' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition famTcInj (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcInj' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcInj' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ famTcInj => famTcInj
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcInj' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcInj' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcInj' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition famTcParent (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcParent' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcParent' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ famTcParent _ => famTcParent
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcParent' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcParent' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcParent' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition famTcResVar (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcResVar' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcResVar' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon famTcResVar _ _ _ => famTcResVar
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcResVar' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcResVar' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `famTcResVar' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition primRepName (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `primRepName' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `primRepName' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `primRepName' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon primRepName => primRepName
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `primRepName' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `primRepName' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition promDcInfo (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `promDcInfo' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `promDcInfo' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `promDcInfo' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `promDcInfo' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ promDcInfo => promDcInfo
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `promDcInfo' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition synIsConcrete (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsConcrete' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ synIsConcrete => synIsConcrete
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsConcrete' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsConcrete' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsConcrete' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsConcrete' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition synIsFamFree (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsFamFree' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ synIsFamFree _ _ => synIsFamFree
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsFamFree' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsFamFree' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsFamFree' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsFamFree' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition synIsForgetful (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsForgetful' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ synIsForgetful _ => synIsForgetful
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsForgetful' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsForgetful' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsForgetful' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsForgetful' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition synIsTau (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsTau' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ synIsTau _ _ _ => synIsTau
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsTau' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsTau' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsTau' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synIsTau' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition synTcRhs (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synTcRhs' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon synTcRhs _ _ _ _ => synTcRhs
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synTcRhs' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synTcRhs' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synTcRhs' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `synTcRhs' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition tcRepName (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tcRepName' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tcRepName' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tcRepName' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tcRepName' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ tcRepName _ => tcRepName
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tcRepName' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition tctc_flavour (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_flavour' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_flavour' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_flavour' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_flavour' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_flavour' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ tctc_flavour => tctc_flavour
+  end.
+
+#[global] Definition tctc_is_poly (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_is_poly' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_is_poly' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_is_poly' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_is_poly' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_is_poly' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ tctc_is_poly _ => tctc_is_poly
+  end.
+
+#[global] Definition tctc_scoped_tvs (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon _ _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_scoped_tvs' has no match in constructor `AlgTyCon' of type `TyConDetails'")
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_scoped_tvs' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_scoped_tvs' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_scoped_tvs' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tctc_scoped_tvs' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon tctc_scoped_tvs _ _ => tctc_scoped_tvs
+  end.
+
+#[global] Definition tyConCType (arg_0__ : TyConDetails) :=
+  match arg_0__ with
+  | AlgTyCon tyConCType _ _ _ _ _ => tyConCType
+  | SynonymTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tyConCType' has no match in constructor `SynonymTyCon' of type `TyConDetails'")
+  | FamilyTyCon _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tyConCType' has no match in constructor `FamilyTyCon' of type `TyConDetails'")
+  | PrimTyCon _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tyConCType' has no match in constructor `PrimTyCon' of type `TyConDetails'")
+  | PromotedDataCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tyConCType' has no match in constructor `PromotedDataCon' of type `TyConDetails'")
+  | TcTyCon _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tyConCType' has no match in constructor `TcTyCon' of type `TyConDetails'")
+  end.
+
+#[global] Definition data_cons (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_cons' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon data_cons _ _ _ _ => data_cons
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_cons' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon data_cons _ => data_cons
+  | NewTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_cons' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
+  end.
+
+#[global] Definition data_cons_size (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_cons_size' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ data_cons_size _ _ _ => data_cons_size
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_cons_size' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon _ data_cons_size => data_cons_size
+  | NewTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_cons_size' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
+  end.
+
+#[global] Definition data_fixed_lev (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_fixed_lev' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ _ _ _ data_fixed_lev => data_fixed_lev
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_fixed_lev' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_fixed_lev' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
+  | NewTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `data_fixed_lev' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
+  end.
+
+#[global] Definition is_enum (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `is_enum' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ _ is_enum _ _ => is_enum
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `is_enum' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `is_enum' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
+  | NewTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `is_enum' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
+  end.
+
+#[global] Definition is_type_data (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `is_type_data' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ _ _ is_type_data _ => is_type_data
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `is_type_data' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `is_type_data' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
+  | NewTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `is_type_data' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
+  end.
+
+#[global] Definition nt_co (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_co' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_co' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_co' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_co' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
+  | NewTyCon _ _ _ nt_co _ => nt_co
+  end.
+
+#[global] Definition nt_etad_rhs (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_etad_rhs' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_etad_rhs' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_etad_rhs' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_etad_rhs' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
+  | NewTyCon _ _ nt_etad_rhs _ _ => nt_etad_rhs
+  end.
+
+#[global] Definition nt_fixed_rep (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_fixed_rep' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_fixed_rep' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_fixed_rep' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_fixed_rep' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
+  | NewTyCon _ _ _ _ nt_fixed_rep => nt_fixed_rep
+  end.
+
+#[global] Definition nt_rhs (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_rhs' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_rhs' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
+  | TupleTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_rhs' has no match in constructor `TupleTyCon' of type `AlgTyConRhs'")
+  | SumTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `nt_rhs' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
+  | NewTyCon _ nt_rhs _ _ _ => nt_rhs
+  end.
+
+#[global] Definition tup_sort (arg_0__ : AlgTyConRhs) :=
+  match arg_0__ with
+  | AbstractTyCon =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tup_sort' has no match in constructor `AbstractTyCon' of type `AlgTyConRhs'")
+  | DataTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tup_sort' has no match in constructor `DataTyCon' of type `AlgTyConRhs'")
+  | TupleTyCon _ tup_sort => tup_sort
+  | SumTyCon _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tup_sort' has no match in constructor `SumTyCon' of type `AlgTyConRhs'")
+  | NewTyCon _ _ _ _ _ =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `tup_sort' has no match in constructor `NewTyCon' of type `AlgTyConRhs'")
+  end.
+
+#[global] Definition vi_loc (arg_0__ : TyFamEqnValidityInfo) :=
+  match arg_0__ with
+  | NoVI =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `vi_loc' has no match in constructor `NoVI' of type `TyFamEqnValidityInfo'")
+  | VI vi_loc _ _ _ _ => vi_loc
+  end.
+
+#[global] Definition vi_non_user_tvs (arg_0__ : TyFamEqnValidityInfo) :=
+  match arg_0__ with
+  | NoVI =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `vi_non_user_tvs' has no match in constructor `NoVI' of type `TyFamEqnValidityInfo'")
+  | VI _ _ vi_non_user_tvs _ _ => vi_non_user_tvs
+  end.
+
+#[global] Definition vi_pats (arg_0__ : TyFamEqnValidityInfo) :=
+  match arg_0__ with
+  | NoVI =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `vi_pats' has no match in constructor `NoVI' of type `TyFamEqnValidityInfo'")
+  | VI _ _ _ vi_pats _ => vi_pats
+  end.
+
+#[global] Definition vi_qtvs (arg_0__ : TyFamEqnValidityInfo) :=
+  match arg_0__ with
+  | NoVI =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `vi_qtvs' has no match in constructor `NoVI' of type `TyFamEqnValidityInfo'")
+  | VI _ vi_qtvs _ _ _ => vi_qtvs
+  end.
+
+#[global] Definition vi_rhs (arg_0__ : TyFamEqnValidityInfo) :=
+  match arg_0__ with
+  | NoVI =>
+      GHC.Err.error (GHC.Base.hs_string__
+                     "Partial record selector: field `vi_rhs' has no match in constructor `NoVI' of type `TyFamEqnValidityInfo'")
+  | VI _ _ _ _ vi_rhs => vi_rhs
+  end.
+
+#[global] Definition tcf_covar {env} {a} (arg_0__ : TyCoFolder env a) :=
+  let 'Mk_TyCoFolder _ _ tcf_covar _ _ := arg_0__ in
+  tcf_covar.
+
+#[global] Definition tcf_hole {env} {a} (arg_0__ : TyCoFolder env a) :=
+  let 'Mk_TyCoFolder _ _ _ tcf_hole _ := arg_0__ in
+  tcf_hole.
+
+#[global] Definition tcf_tycobinder {env} {a} (arg_0__ : TyCoFolder env a) :=
+  let 'Mk_TyCoFolder _ _ _ _ tcf_tycobinder := arg_0__ in
+  tcf_tycobinder.
+
+#[global] Definition tcf_tyvar {env} {a} (arg_0__ : TyCoFolder env a) :=
+  let 'Mk_TyCoFolder _ tcf_tyvar _ _ _ := arg_0__ in
+  tcf_tyvar.
+
+#[global] Definition tcf_view {env} {a} (arg_0__ : TyCoFolder env a) :=
+  let 'Mk_TyCoFolder tcf_view _ _ _ _ := arg_0__ in
+  tcf_view.
+
+#[global] Definition ru_act (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ ru_act _ _ _ _ _ _ _ _ _ => ru_act
   | BuiltinRule _ _ _ _ =>
@@ -2183,7 +2319,7 @@ Definition ru_act (arg_0__ : CoreRule) :=
                      "Partial record selector: field `ru_act' has no match in constructor `BuiltinRule' of type `CoreRule'")
   end.
 
-Definition ru_args (arg_0__ : CoreRule) :=
+#[global] Definition ru_args (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ _ _ ru_args _ _ _ _ _ => ru_args
   | BuiltinRule _ _ _ _ =>
@@ -2191,7 +2327,7 @@ Definition ru_args (arg_0__ : CoreRule) :=
                      "Partial record selector: field `ru_args' has no match in constructor `BuiltinRule' of type `CoreRule'")
   end.
 
-Definition ru_auto (arg_0__ : CoreRule) :=
+#[global] Definition ru_auto (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ _ _ _ _ ru_auto _ _ _ => ru_auto
   | BuiltinRule _ _ _ _ =>
@@ -2199,7 +2335,7 @@ Definition ru_auto (arg_0__ : CoreRule) :=
                      "Partial record selector: field `ru_auto' has no match in constructor `BuiltinRule' of type `CoreRule'")
   end.
 
-Definition ru_bndrs (arg_0__ : CoreRule) :=
+#[global] Definition ru_bndrs (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ _ ru_bndrs _ _ _ _ _ _ => ru_bndrs
   | BuiltinRule _ _ _ _ =>
@@ -2207,13 +2343,13 @@ Definition ru_bndrs (arg_0__ : CoreRule) :=
                      "Partial record selector: field `ru_bndrs' has no match in constructor `BuiltinRule' of type `CoreRule'")
   end.
 
-Definition ru_fn (arg_0__ : CoreRule) :=
+#[global] Definition ru_fn (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ ru_fn _ _ _ _ _ _ _ _ => ru_fn
   | BuiltinRule _ ru_fn _ _ => ru_fn
   end.
 
-Definition ru_local (arg_0__ : CoreRule) :=
+#[global] Definition ru_local (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ _ _ _ _ _ _ _ ru_local => ru_local
   | BuiltinRule _ _ _ _ =>
@@ -2221,13 +2357,13 @@ Definition ru_local (arg_0__ : CoreRule) :=
                      "Partial record selector: field `ru_local' has no match in constructor `BuiltinRule' of type `CoreRule'")
   end.
 
-Definition ru_name (arg_0__ : CoreRule) :=
+#[global] Definition ru_name (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule ru_name _ _ _ _ _ _ _ _ _ _ => ru_name
   | BuiltinRule ru_name _ _ _ => ru_name
   end.
 
-Definition ru_nargs (arg_0__ : CoreRule) :=
+#[global] Definition ru_nargs (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ _ _ _ _ _ _ _ _ =>
       GHC.Err.error (GHC.Base.hs_string__
@@ -2235,7 +2371,7 @@ Definition ru_nargs (arg_0__ : CoreRule) :=
   | BuiltinRule _ _ ru_nargs _ => ru_nargs
   end.
 
-Definition ru_origin (arg_0__ : CoreRule) :=
+#[global] Definition ru_origin (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ _ _ _ _ _ ru_origin _ _ => ru_origin
   | BuiltinRule _ _ _ _ =>
@@ -2243,7 +2379,7 @@ Definition ru_origin (arg_0__ : CoreRule) :=
                      "Partial record selector: field `ru_origin' has no match in constructor `BuiltinRule' of type `CoreRule'")
   end.
 
-Definition ru_orphan (arg_0__ : CoreRule) :=
+#[global] Definition ru_orphan (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ _ _ _ _ _ _ ru_orphan _ => ru_orphan
   | BuiltinRule _ _ _ _ =>
@@ -2251,7 +2387,7 @@ Definition ru_orphan (arg_0__ : CoreRule) :=
                      "Partial record selector: field `ru_orphan' has no match in constructor `BuiltinRule' of type `CoreRule'")
   end.
 
-Definition ru_rough (arg_0__ : CoreRule) :=
+#[global] Definition ru_rough (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ ru_rough _ _ _ _ _ _ _ => ru_rough
   | BuiltinRule _ _ _ _ =>
@@ -2259,7 +2395,7 @@ Definition ru_rough (arg_0__ : CoreRule) :=
                      "Partial record selector: field `ru_rough' has no match in constructor `BuiltinRule' of type `CoreRule'")
   end.
 
-Definition ru_try (arg_0__ : CoreRule) :=
+#[global] Definition ru_try (arg_0__ : CoreRule) :=
   match arg_0__ with
   | Rule _ _ _ _ _ _ _ _ _ _ _ =>
       GHC.Err.error (GHC.Base.hs_string__
@@ -2267,81 +2403,62 @@ Definition ru_try (arg_0__ : CoreRule) :=
   | BuiltinRule _ _ _ ru_try => ru_try
   end.
 
-Definition re_base (arg_0__ : RuleEnv) :=
-  let 'Mk_RuleEnv re_base _ := arg_0__ in
-  re_base.
-
-Definition re_visible_orphs (arg_0__ : RuleEnv) :=
-  let 'Mk_RuleEnv _ re_visible_orphs := arg_0__ in
-  re_visible_orphs.
-
-Definition envL (arg_0__ : RnEnv2) :=
+#[global] Definition envL (arg_0__ : RnEnv2) :=
   let 'RV2 envL _ _ := arg_0__ in
   envL.
 
-Definition envR (arg_0__ : RnEnv2) :=
+#[global] Definition envR (arg_0__ : RnEnv2) :=
   let 'RV2 _ envR _ := arg_0__ in
   envR.
 
-Definition in_scope (arg_0__ : RnEnv2) :=
+#[global] Definition in_scope (arg_0__ : RnEnv2) :=
   let 'RV2 _ _ in_scope := arg_0__ in
   in_scope.
+
+#[global] Definition tcm_covar {env} {m} (arg_0__ : TyCoMapper env m) :=
+  let 'Mk_TyCoMapper _ tcm_covar _ _ _ := arg_0__ in
+  tcm_covar.
+
+#[global] Definition tcm_hole {env} {m} (arg_0__ : TyCoMapper env m) :=
+  let 'Mk_TyCoMapper _ _ tcm_hole _ _ := arg_0__ in
+  tcm_hole.
+
+#[global] Definition tcm_tycobinder {env} {m} (arg_0__ : TyCoMapper env m) :=
+  let 'Mk_TyCoMapper _ _ _ tcm_tycobinder _ := arg_0__ in
+  tcm_tycobinder.
+
+#[global] Definition tcm_tycon {env} {m} (arg_0__ : TyCoMapper env m) :=
+  let 'Mk_TyCoMapper _ _ _ _ tcm_tycon := arg_0__ in
+  tcm_tycon.
+
+#[global] Definition tcm_tyvar {env} {m} (arg_0__ : TyCoMapper env m) :=
+  let 'Mk_TyCoMapper tcm_tyvar _ _ _ _ := arg_0__ in
+  tcm_tyvar.
 
 (* Midamble *)
 
 (*  IdInfo: midamble *)
 
-Require HsToCoq.Err.
+Require Import HsToCoq.Err.
 
 (* --------------------- *)
 
 
 (*****)
 
-Instance Default__RuleInfo : HsToCoq.Err.Default RuleInfo :=
+#[global] Instance Default__RuleInfo : HsToCoq.Err.Default RuleInfo :=
   HsToCoq.Err.Build_Default _ EmptyRuleInfo.
 
-Instance Default__TickBoxOp : HsToCoq.Err.Default TickBoxOp :=
+#[global] Instance Default__TickBoxOp : HsToCoq.Err.Default TickBoxOp :=
   HsToCoq.Err.Build_Default _ (TickBox HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__Termination {r} : HsToCoq.Err.Default (Termination r) :=
-  HsToCoq.Err.Build_Default _ Diverges.
-
-Instance Default__DmdType : HsToCoq.Err.Default DmdType :=
-  HsToCoq.Err.Build_Default _ (Mk_DmdType HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
-
-Instance Default__StrictSig : HsToCoq.Err.Default StrictSig :=
-  HsToCoq.Err.Build_Default _ (Mk_StrictSig HsToCoq.Err.default).
-
-Instance Default__JointDmd `{HsToCoq.Err.Default a} `{HsToCoq.Err.Default b} : HsToCoq.Err.Default (JointDmd a b) :=
-  HsToCoq.Err.Build_Default _ (JD HsToCoq.Err.default HsToCoq.Err.default).
-
-Instance Default__Str {s} : HsToCoq.Err.Default (Str s) :=
-  HsToCoq.Err.Build_Default _ Lazy.
-Instance Default__Use {s} : HsToCoq.Err.Default (Use s) :=
-  HsToCoq.Err.Build_Default _ Abs.
-
-Instance Default__IdInfo : HsToCoq.Err.Default IdInfo :=
-  HsToCoq.Err.Build_Default _ (Mk_IdInfo HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
-                         HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
-                         HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
-
-Instance Default__RecSelParent : HsToCoq.Err.Default RecSelParent :=
+(* Default__DmdType, Default__IdInfo, Default__Var, Default__DataCon
+   are injected via sed in Makefile before record accessors need them.
+   Default__RecSelParent is needed by record accessors for IdDetails. *)
+#[global] Instance Default__RecSelParent : HsToCoq.Err.Default RecSelParent :=
   HsToCoq.Err.Build_Default _ (RecSelData HsToCoq.Err.default).
-
-
-Instance Default__Var : HsToCoq.Err.Default Var := HsToCoq.Err.Build_Default _ (Mk_Id HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
-
-
-Instance Default__DataCon : HsToCoq.Err.Default DataCon :=
- Err.Build_Default _ (MkData HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default nil nil nil nil HsToCoq.Err.default HsToCoq.Err.default nil HsToCoq.Err.default nil nil HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 (* ---- TyCon midamble ----- *)
-Instance Default__AlgTyConFlav : Err.Default AlgTyConFlav :=
-  Err.Build_Default _ (VanillaAlgTyCon Err.default).
-Instance Default__RuntimRepInfo : Err.Default RuntimeRepInfo :=
-  Err.Build_Default _ NoRRI.
-
-
+(* Default__AlgTyConFlav is auto-generated by hs-to-coq *)
 
 (* ------------- Var midamble.v --------------- *)
 Instance Name_NamedThing_TyCoVar : Name.NamedThing TyCoVar.
@@ -2379,7 +2496,6 @@ Definition TyVarSet :=
 Definition VarSet :=
   (UniqSetInv.UniqSet Var)%type.
 
-Inductive InScopeSet : Type := | InScope : VarSet -> nat -> InScopeSet.
 
 Definition InScopeEnv :=
   (InScopeSet * IdUnfoldingFun)%type%type.
@@ -2417,36 +2533,36 @@ Inductive LiftingContext : Type
   := | LC : TCvSubst -> LiftCoEnv -> LiftingContext.
 *)
 (* ------------- VarEnv midamble.v ------------ *)
-Instance Default__InScopeSet : HsToCoq.Err.Default InScopeSet :=
-  HsToCoq.Err.Build_Default _ (InScope HsToCoq.Err.default HsToCoq.Err.default).
-Instance Default__RnEnv2 : HsToCoq.Err.Default RnEnv2 :=
+(* GHC 9.10: InScopeSet has 1 field (VarSet only, no nat counter) *)
+#[global] Instance Default__InScopeSet : HsToCoq.Err.Default InScopeSet :=
+  HsToCoq.Err.Build_Default _ (InScope HsToCoq.Err.default).
+#[global] Instance Default__RnEnv2 : HsToCoq.Err.Default RnEnv2 :=
   HsToCoq.Err.Build_Default _ (RV2 HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
-Instance Default__TidyEnv : HsToCoq.Err.Default TidyEnv :=
+#[global] Instance Default__TidyEnv : HsToCoq.Err.Default TidyEnv :=
   HsToCoq.Err.Build_Default _ (pair HsToCoq.Err.default HsToCoq.Err.default).
-
 
 (* ------------- CoreSyn midamble.v ------------ *)
 Require Import Coq.ZArith.ZArith.
-Require Import Omega.
+Require Import Lia.
 
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;lia.
 
-Ltac intro_split := 
+Ltac intro_split :=
   try intros [? [? [? ?]]];
   try intros [? [? ?]];
   try intros [? ?].
-  
-Ltac distinguish3 := 
+
+Ltac distinguish3 :=
   split; intros; unfold not;  intro_split; discriminate.
 
-Ltac solve_collectAnnArgsTicks :=   
+Ltac solve_collectAnnArgsTicks :=
   Tactics.program_simpl;
   try solve [distinguish3];
   try solve [repeat match goal with [ f : AnnExpr _ _ |- _ ] => destruct f end;
              Tactics.program_simpl;
-             omega].
+             lia].
 
 (* This function is needed to show the termination of collectAnnArgs, 
    collectAnnArgsTicks. *)
@@ -2456,13 +2572,13 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
   | AnnLit _ => 0
   | AnnLam _ (_ , bdy) => S (size_AnnExpr' bdy)
   | AnnApp (_,e1) (_, e2) => S (size_AnnExpr' e1 + size_AnnExpr' e2)
-  | AnnCase (_,scrut) bndr _ alts => 
-    S (size_AnnExpr' scrut + 
-       List.fold_right plus 0 
+  | AnnCase (_,scrut) bndr _ alts =>
+    S (size_AnnExpr' scrut +
+       List.fold_right plus 0
                           (List.map (fun p =>
-                                       match p with 
-                                         | (_,_,(_,e)) => size_AnnExpr' e
-                                    end) 
+                                       match p with
+                                         | Mk_AnnAlt _ _ (_,e) => size_AnnExpr' e
+                                    end)
                                     alts))
   | AnnLet (AnnNonRec v (_,rhs)) (_,body) => 
         S (size_AnnExpr' rhs + size_AnnExpr' body)
@@ -2479,35 +2595,58 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
 
 (* ---------------------------------- *)
 
-Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
+#[global] Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
   HsToCoq.Err.Build_Default _ (Mk_Var HsToCoq.Err.default).
 
-Instance Default__Tickish {a} : HsToCoq.Err.Default (Tickish a) :=
-  HsToCoq.Err.Build_Default _ (Breakpoint HsToCoq.Err.default HsToCoq.Err.default).
+(* Default__Tickish removed: Tickish is now GHC.Types.Tickish.CoreTickish (axiomatized) *)
 
-Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
+#[global] Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
   HsToCoq.Err.Build_Default _ (TB HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
+#[global] Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
   HsToCoq.Err.Build_Default _ (AnnVar HsToCoq.Err.default). 
 
-Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
+#[global] Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
   HsToCoq.Err.Build_Default _ (AnnRec HsToCoq.Err.default). 
 
-Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
+#[global] Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
   HsToCoq.Err.Build_Default _ (Rec HsToCoq.Err.default). 
 
-Instance Default__CoreVect : HsToCoq.Err.Default CoreVect :=
-  HsToCoq.Err.Build_Default _ (Vect HsToCoq.Err.default HsToCoq.Err.default). 
+(* Default__CoreVect removed: CoreVect doesn't exist in GHC 9.10 *)
 
-Instance Default__CoreRule : HsToCoq.Err.Default CoreRule :=
-  HsToCoq.Err.Build_Default _ (BuiltinRule HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
-
-Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv :=
-  HsToCoq.Err.Build_Default _ (Mk_RuleEnv HsToCoq.Err.default HsToCoq.Err.default).
+(* Default__CoreRule and Default__RuleEnv injected by sed before record accessors *)
 
 
 (* ---------------------------------- *)
+
+(* collectBinders and collectNBinders — no longer auto-generated in GHC 9.10 *)
+
+Definition collectBinders {b : Type} : Expr b -> (list b * Expr b)%type :=
+  let fix go (bs : list b) (e : Expr b) : (list b * Expr b) :=
+    match e with
+    | Lam b body => go (cons b bs) body
+    | _ => pair (GHC.List.reverse bs) e
+    end in
+  fun e => go nil e.
+
+Definition collectNBinders {b : Type}
+  : nat -> Expr b -> (list b * Expr b)%type :=
+  fun orig_n orig_expr =>
+    let fix go (n : nat) (bs : list b) (expr : Expr b) : (list b * Expr b) :=
+      match n, bs, expr with
+      | O, _, _ => pair (GHC.List.reverse bs) expr
+      | S m, _, Lam b body => go m (cons b bs) body
+      | _, _, _ => Panic.panicStr (GHC.Base.hs_string__ "collectNBinders") Panic.someSDoc
+      end in
+    go orig_n nil orig_expr.
+
+Definition collectArgs {b : Type} : Expr b -> (Expr b * list (Expr b))%type :=
+  let fix go (e : Expr b) (args : list (Expr b)) : (Expr b * list (Expr b)) :=
+    match e with
+    | App f a => go f (cons a args)
+    | _ => pair e args
+    end in
+  fun e => go e nil.
 
 (* See comments in CoreSyn/edits file. We can't use termination edits for collect. *)
 
@@ -2530,7 +2669,7 @@ Definition collectNAnnBndrs {bndr} {annot}`{HsToCoq.Err.Default annot}
 
 Require Import HsToCoq.Nat.
 Require Import HsToCoq.Unpeel.
-Require Import Omega.
+Require Import Lia.
 
 Ltac solve_not_zero_N := match goal with
   | [ H : GHC.Base.op_zeze__ ?x ?y = false |- _ ] =>
@@ -2539,7 +2678,7 @@ Ltac solve_not_zero_N := match goal with
     simpl in H;
     apply N.eqb_neq in H end;
     zify;
-    omega.
+    lia.
 Ltac simpl_not_zero := match goal with
   | [ H : GHC.Base.op_zeze__ ?x ?y = false |- _ ] =>
   unfold GHC.Base.op_zeze__ in H;
@@ -2557,7 +2696,7 @@ Ltac solve_error_sub :=
       symmetry in HeqHltb;
       try (rewrite Nat.ltb_lt in HeqHltb);
       try (rewrite Nat.ltb_ge in HeqHltb);
-      try solve [zify; omega]
+      try solve [zify; lia]
   end.
 
 Ltac distinguish := split; intros; unfold not; intros [? ?]; discriminate.
@@ -2565,1179 +2704,69 @@ Ltac solve_mkWorkerDemand := Tactics.program_simpl; simpl_not_zero; solve_error_
 
 Ltac solve_dmdTransform := Tactics.program_simpl; try solve_mkWorkerDemand; try distinguish.
 
-
-Instance Unpeel_StrictSig : Unpeel StrictSig DmdType :=
-  Build_Unpeel _ _ (fun x => match x with | Mk_StrictSig y => y end) Mk_StrictSig.
-
-
-(* size metric, incase it is useful *)
-
-Definition Str_size {a} (f : a -> nat) (x : Str a) : nat :=
-  match x with
-  | Lazy => 0
-  | Mk_Str _ s => f s
-  end.
-
-Fixpoint StrDmd_size (s1 : StrDmd): nat :=
-  match s1 with
-  | HyperStr => 0
-  | SCall s => Nat.add 1 (StrDmd_size s)
-  | SProd ss => List.fold_left Nat.add (List.map (Str_size StrDmd_size) ss) 1
-  | HeadStr => 0
-  end.
-
-Definition ArgStrDmd_size := Str_size StrDmd_size.
+(* GHC 9.10: StrictSig renamed to DmdSig *)
+(* Unpeel_StrictSig removed — StrictSig no longer exists *)
+(* Str_size/StrDmd_size/ArgStrDmd_size removed — Str/StrDmd types removed in GHC 9.10 *)
 
 (* Converted value declarations: *)
 
-Local Definition Eq___ArgFlag_op_zeze__ : ArgFlag -> ArgFlag -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Required, Required => true
-    | Specified, Specified => true
-    | Inferred, Inferred => true
-    | _, _ => false
-    end.
+#[local] Definition Functor__NormaliseStepResult_fmap
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> NormaliseStepResult a -> NormaliseStepResult b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, NS_Done => NS_Done
+      | f, NS_Abort => NS_Abort
+      | f, NS_Step a1 a2 a3 => NS_Step a1 a2 (f a3)
+      end.
 
-Local Definition Eq___ArgFlag_op_zsze__ : ArgFlag -> ArgFlag -> bool :=
-  fun x y => negb (Eq___ArgFlag_op_zeze__ x y).
+#[local] Definition Functor__NormaliseStepResult_op_zlzd__
+   : forall {a : Type},
+     forall {b : Type}, a -> NormaliseStepResult b -> NormaliseStepResult a :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | z, NS_Done => NS_Done
+      | z, NS_Abort => NS_Abort
+      | z, NS_Step a1 a2 a3 => NS_Step a1 a2 z
+      end.
 
-Program Instance Eq___ArgFlag : GHC.Base.Eq_ ArgFlag :=
+#[global]
+Program Instance Functor__NormaliseStepResult
+   : GHC.Base.Functor NormaliseStepResult :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___ArgFlag_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___ArgFlag_op_zsze__ |}.
+    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+             Functor__NormaliseStepResult_fmap ;
+           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+             Functor__NormaliseStepResult_op_zlzd__ |}.
 
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__ArgFlag' *)
+Axiom dataConTag : DataCon -> HsSyn.ConTag.
 
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__TyVarBndr' *)
-
-Local Definition Eq___EqRel_op_zeze__ : EqRel -> EqRel -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | NomEq, NomEq => true
-    | ReprEq, ReprEq => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___EqRel_op_zsze__ : EqRel -> EqRel -> bool :=
-  fun x y => negb (Eq___EqRel_op_zeze__ x y).
-
-Program Instance Eq___EqRel : GHC.Base.Eq_ EqRel :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___EqRel_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___EqRel_op_zsze__ |}.
-
-Local Definition Ord__EqRel_op_zl__ : EqRel -> EqRel -> bool :=
-  fun a b =>
-    match a with
-    | NomEq => match b with | NomEq => false | _ => true end
-    | ReprEq => match b with | ReprEq => false | _ => false end
-    end.
-
-Local Definition Ord__EqRel_op_zlze__ : EqRel -> EqRel -> bool :=
-  fun a b => negb (Ord__EqRel_op_zl__ b a).
-
-Local Definition Ord__EqRel_op_zg__ : EqRel -> EqRel -> bool :=
-  fun a b => Ord__EqRel_op_zl__ b a.
-
-Local Definition Ord__EqRel_op_zgze__ : EqRel -> EqRel -> bool :=
-  fun a b => negb (Ord__EqRel_op_zl__ a b).
-
-Local Definition Ord__EqRel_compare : EqRel -> EqRel -> comparison :=
-  fun a b =>
-    match a with
-    | NomEq => match b with | NomEq => Eq | _ => Lt end
-    | ReprEq => match b with | ReprEq => Eq | _ => Gt end
-    end.
-
-Local Definition Ord__EqRel_max : EqRel -> EqRel -> EqRel :=
-  fun x y => if Ord__EqRel_op_zlze__ x y : bool then y else x.
-
-Local Definition Ord__EqRel_min : EqRel -> EqRel -> EqRel :=
-  fun x y => if Ord__EqRel_op_zlze__ x y : bool then x else y.
-
-Program Instance Ord__EqRel : GHC.Base.Ord EqRel :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zl____ := Ord__EqRel_op_zl__ ;
-           GHC.Base.op_zlze____ := Ord__EqRel_op_zlze__ ;
-           GHC.Base.op_zg____ := Ord__EqRel_op_zg__ ;
-           GHC.Base.op_zgze____ := Ord__EqRel_op_zgze__ ;
-           GHC.Base.compare__ := Ord__EqRel_compare ;
-           GHC.Base.max__ := Ord__EqRel_max ;
-           GHC.Base.min__ := Ord__EqRel_min |}.
-
-Local Definition Eq___TypeOrdering_op_zeze__
-   : TypeOrdering -> TypeOrdering -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | TLT, TLT => true
-    | TEQ, TEQ => true
-    | TEQX, TEQX => true
-    | TGT, TGT => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___TypeOrdering_op_zsze__
-   : TypeOrdering -> TypeOrdering -> bool :=
-  fun x y => negb (Eq___TypeOrdering_op_zeze__ x y).
-
-Program Instance Eq___TypeOrdering : GHC.Base.Eq_ TypeOrdering :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___TypeOrdering_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___TypeOrdering_op_zsze__ |}.
-
-(* Skipping instance `Core.Ord__TypeOrdering' of class `GHC.Base.Ord' *)
-
-(* Skipping all instances of class `GHC.Enum.Enum', including
-   `Core.Enum__TypeOrdering' *)
-
-(* Skipping all instances of class `GHC.Enum.Bounded', including
-   `Core.Bounded__TypeOrdering' *)
-
-Local Definition Eq___Injectivity_op_zeze__
-   : Injectivity -> Injectivity -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | NotInjective, NotInjective => true
-    | Injective a1, Injective b1 => ((a1 GHC.Base.== b1))
-    | _, _ => false
-    end.
-
-Local Definition Eq___Injectivity_op_zsze__
-   : Injectivity -> Injectivity -> bool :=
-  fun x y => negb (Eq___Injectivity_op_zeze__ x y).
-
-Program Instance Eq___Injectivity : GHC.Base.Eq_ Injectivity :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Injectivity_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Injectivity_op_zsze__ |}.
-
-Local Definition Eq___PrimElemRep_op_zeze__
-   : PrimElemRep -> PrimElemRep -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Int8ElemRep, Int8ElemRep => true
-    | Int16ElemRep, Int16ElemRep => true
-    | Int32ElemRep, Int32ElemRep => true
-    | Int64ElemRep, Int64ElemRep => true
-    | Word8ElemRep, Word8ElemRep => true
-    | Word16ElemRep, Word16ElemRep => true
-    | Word32ElemRep, Word32ElemRep => true
-    | Word64ElemRep, Word64ElemRep => true
-    | FloatElemRep, FloatElemRep => true
-    | DoubleElemRep, DoubleElemRep => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___PrimElemRep_op_zsze__
-   : PrimElemRep -> PrimElemRep -> bool :=
-  fun x y => negb (Eq___PrimElemRep_op_zeze__ x y).
-
-Program Instance Eq___PrimElemRep : GHC.Base.Eq_ PrimElemRep :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___PrimElemRep_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___PrimElemRep_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__PrimElemRep' *)
-
-Local Definition Eq___PrimRep_op_zeze__ : PrimRep -> PrimRep -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | VoidRep, VoidRep => true
-    | LiftedRep, LiftedRep => true
-    | UnliftedRep, UnliftedRep => true
-    | IntRep, IntRep => true
-    | WordRep, WordRep => true
-    | Int64Rep, Int64Rep => true
-    | Word64Rep, Word64Rep => true
-    | AddrRep, AddrRep => true
-    | FloatRep, FloatRep => true
-    | DoubleRep, DoubleRep => true
-    | VecRep a1 a2, VecRep b1 b2 =>
-        (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
-    | _, _ => false
-    end.
-
-Local Definition Eq___PrimRep_op_zsze__ : PrimRep -> PrimRep -> bool :=
-  fun x y => negb (Eq___PrimRep_op_zeze__ x y).
-
-Program Instance Eq___PrimRep : GHC.Base.Eq_ PrimRep :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___PrimRep_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___PrimRep_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__PrimRep' *)
-
-Local Definition Eq___TyConFlavour_op_zeze__
-   : TyConFlavour -> TyConFlavour -> bool :=
-  fun a b => false.
-
-Local Definition Eq___TyConFlavour_op_zsze__
-   : TyConFlavour -> TyConFlavour -> bool :=
-  fun x y => negb (Eq___TyConFlavour_op_zeze__ x y).
-
-Program Instance Eq___TyConFlavour : GHC.Base.Eq_ TyConFlavour :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___TyConFlavour_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___TyConFlavour_op_zsze__ |}.
-
-Local Definition Eq___TyLit_op_zeze__ : TyLit -> TyLit -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | NumTyLit a1, NumTyLit b1 => ((a1 GHC.Base.== b1))
-    | StrTyLit a1, StrTyLit b1 => ((a1 GHC.Base.== b1))
-    | _, _ => false
-    end.
-
-Local Definition Eq___TyLit_op_zsze__ : TyLit -> TyLit -> bool :=
-  fun x y => negb (Eq___TyLit_op_zeze__ x y).
-
-Program Instance Eq___TyLit : GHC.Base.Eq_ TyLit :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___TyLit_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___TyLit_op_zsze__ |}.
-
-Local Definition Ord__TyLit_op_zl__ : TyLit -> TyLit -> bool :=
-  fun a b =>
-    match a with
-    | NumTyLit a1 =>
-        match b with
-        | NumTyLit b1 => (a1 GHC.Base.< b1)
-        | _ => true
-        end
-    | StrTyLit a1 =>
-        match b with
-        | StrTyLit b1 => (a1 GHC.Base.< b1)
-        | _ => false
-        end
-    end.
-
-Local Definition Ord__TyLit_op_zlze__ : TyLit -> TyLit -> bool :=
-  fun a b => negb (Ord__TyLit_op_zl__ b a).
-
-Local Definition Ord__TyLit_op_zg__ : TyLit -> TyLit -> bool :=
-  fun a b => Ord__TyLit_op_zl__ b a.
-
-Local Definition Ord__TyLit_op_zgze__ : TyLit -> TyLit -> bool :=
-  fun a b => negb (Ord__TyLit_op_zl__ a b).
-
-Local Definition Ord__TyLit_compare : TyLit -> TyLit -> comparison :=
-  fun a b =>
-    match a with
-    | NumTyLit a1 =>
-        match b with
-        | NumTyLit b1 => (GHC.Base.compare a1 b1)
-        | _ => Lt
-        end
-    | StrTyLit a1 =>
-        match b with
-        | StrTyLit b1 => (GHC.Base.compare a1 b1)
-        | _ => Gt
-        end
-    end.
-
-Local Definition Ord__TyLit_max : TyLit -> TyLit -> TyLit :=
-  fun x y => if Ord__TyLit_op_zlze__ x y : bool then y else x.
-
-Local Definition Ord__TyLit_min : TyLit -> TyLit -> TyLit :=
-  fun x y => if Ord__TyLit_op_zlze__ x y : bool then x else y.
-
-Program Instance Ord__TyLit : GHC.Base.Ord TyLit :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zl____ := Ord__TyLit_op_zl__ ;
-           GHC.Base.op_zlze____ := Ord__TyLit_op_zlze__ ;
-           GHC.Base.op_zg____ := Ord__TyLit_op_zg__ ;
-           GHC.Base.op_zgze____ := Ord__TyLit_op_zgze__ ;
-           GHC.Base.compare__ := Ord__TyLit_compare ;
-           GHC.Base.max__ := Ord__TyLit_max ;
-           GHC.Base.min__ := Ord__TyLit_min |}.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__TyLit' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__Coercion' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__UnivCoProvenance' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__Type_' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__TyBinder' *)
-
-Local Definition Uniquable__PatSyn_getUnique : PatSyn -> Unique.Unique :=
-  psUnique.
-
-Program Instance Uniquable__PatSyn : Unique.Uniquable PatSyn :=
-  fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__PatSyn_getUnique |}.
-
-Local Definition Eq___PatSyn_op_zeze__ : PatSyn -> PatSyn -> bool :=
-  Data.Function.on _GHC.Base.==_ Unique.getUnique.
-
-Local Definition Eq___PatSyn_op_zsze__ : PatSyn -> PatSyn -> bool :=
-  Data.Function.on _GHC.Base./=_ Unique.getUnique.
-
-Program Instance Eq___PatSyn : GHC.Base.Eq_ PatSyn :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___PatSyn_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___PatSyn_op_zsze__ |}.
-
-Local Definition Uniquable__TyCon_getUnique : TyCon -> Unique.Unique :=
+#[local] Definition Uniquable__TyCon_getUnique : TyCon -> Unique.Unique :=
   fun tc => tyConUnique tc.
 
+#[global]
 Program Instance Uniquable__TyCon : Unique.Uniquable TyCon :=
   fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__TyCon_getUnique |}.
 
-Local Definition Eq___TyCon_op_zeze__ : TyCon -> TyCon -> bool :=
+#[local] Definition Eq___TyCon_op_zeze__ : TyCon -> TyCon -> bool :=
   fun a b => Unique.getUnique a GHC.Base.== Unique.getUnique b.
 
-Local Definition Eq___TyCon_op_zsze__ : TyCon -> TyCon -> bool :=
+#[local] Definition Eq___TyCon_op_zsze__ : TyCon -> TyCon -> bool :=
   fun a b => Unique.getUnique a GHC.Base./= Unique.getUnique b.
 
+#[global]
 Program Instance Eq___TyCon : GHC.Base.Eq_ TyCon :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___TyCon_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___TyCon_op_zsze__ |}.
 
-Local Definition Eq___RecSelParent_op_zeze__
-   : RecSelParent -> RecSelParent -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RecSelData a1, RecSelData b1 => ((a1 GHC.Base.== b1))
-    | RecSelPatSyn a1, RecSelPatSyn b1 => ((a1 GHC.Base.== b1))
-    | _, _ => false
-    end.
-
-Local Definition Eq___RecSelParent_op_zsze__
-   : RecSelParent -> RecSelParent -> bool :=
-  fun x y => negb (Eq___RecSelParent_op_zeze__ x y).
-
-Program Instance Eq___RecSelParent : GHC.Base.Eq_ RecSelParent :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___RecSelParent_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___RecSelParent_op_zsze__ |}.
-
-Local Definition Eq___CafInfo_op_zeze__ : CafInfo -> CafInfo -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | MayHaveCafRefs, MayHaveCafRefs => true
-    | NoCafRefs, NoCafRefs => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___CafInfo_op_zsze__ : CafInfo -> CafInfo -> bool :=
-  fun x y => negb (Eq___CafInfo_op_zeze__ x y).
-
-Program Instance Eq___CafInfo : GHC.Base.Eq_ CafInfo :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___CafInfo_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___CafInfo_op_zsze__ |}.
-
-Local Definition Ord__CafInfo_op_zl__ : CafInfo -> CafInfo -> bool :=
-  fun a b =>
-    match a with
-    | MayHaveCafRefs => match b with | MayHaveCafRefs => false | _ => true end
-    | NoCafRefs => match b with | NoCafRefs => false | _ => false end
-    end.
-
-Local Definition Ord__CafInfo_op_zlze__ : CafInfo -> CafInfo -> bool :=
-  fun a b => negb (Ord__CafInfo_op_zl__ b a).
-
-Local Definition Ord__CafInfo_op_zg__ : CafInfo -> CafInfo -> bool :=
-  fun a b => Ord__CafInfo_op_zl__ b a.
-
-Local Definition Ord__CafInfo_op_zgze__ : CafInfo -> CafInfo -> bool :=
-  fun a b => negb (Ord__CafInfo_op_zl__ a b).
-
-Local Definition Ord__CafInfo_compare : CafInfo -> CafInfo -> comparison :=
-  fun a b =>
-    match a with
-    | MayHaveCafRefs => match b with | MayHaveCafRefs => Eq | _ => Lt end
-    | NoCafRefs => match b with | NoCafRefs => Eq | _ => Gt end
-    end.
-
-Local Definition Ord__CafInfo_max : CafInfo -> CafInfo -> CafInfo :=
-  fun x y => if Ord__CafInfo_op_zlze__ x y : bool then y else x.
-
-Local Definition Ord__CafInfo_min : CafInfo -> CafInfo -> CafInfo :=
-  fun x y => if Ord__CafInfo_op_zlze__ x y : bool then x else y.
-
-Program Instance Ord__CafInfo : GHC.Base.Ord CafInfo :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zl____ := Ord__CafInfo_op_zl__ ;
-           GHC.Base.op_zlze____ := Ord__CafInfo_op_zlze__ ;
-           GHC.Base.op_zg____ := Ord__CafInfo_op_zg__ ;
-           GHC.Base.op_zgze____ := Ord__CafInfo_op_zgze__ ;
-           GHC.Base.compare__ := Ord__CafInfo_compare ;
-           GHC.Base.max__ := Ord__CafInfo_max ;
-           GHC.Base.min__ := Ord__CafInfo_min |}.
-
-Local Definition Eq___LevityInfo_op_zeze__ : LevityInfo -> LevityInfo -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | NoLevityInfo, NoLevityInfo => true
-    | NeverLevityPolymorphic, NeverLevityPolymorphic => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___LevityInfo_op_zsze__ : LevityInfo -> LevityInfo -> bool :=
-  fun x y => negb (Eq___LevityInfo_op_zeze__ x y).
-
-Program Instance Eq___LevityInfo : GHC.Base.Eq_ LevityInfo :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___LevityInfo_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___LevityInfo_op_zsze__ |}.
-
-Local Definition Eq___JointDmd_op_zeze__ {inst_s : Type} {inst_u : Type}
-  `{GHC.Base.Eq_ inst_s} `{GHC.Base.Eq_ inst_u}
-   : JointDmd inst_s inst_u -> JointDmd inst_s inst_u -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | JD a1 a2, JD b1 b2 => (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
-    end.
-
-Local Definition Eq___JointDmd_op_zsze__ {inst_s : Type} {inst_u : Type}
-  `{GHC.Base.Eq_ inst_s} `{GHC.Base.Eq_ inst_u}
-   : JointDmd inst_s inst_u -> JointDmd inst_s inst_u -> bool :=
-  fun x y => negb (Eq___JointDmd_op_zeze__ x y).
-
-Local Definition Eq___ExnStr_op_zeze__ : ExnStr -> ExnStr -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | VanStr, VanStr => true
-    | Mk_ExnStr, Mk_ExnStr => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___ExnStr_op_zsze__ : ExnStr -> ExnStr -> bool :=
-  fun x y => negb (Eq___ExnStr_op_zeze__ x y).
-
-Program Instance Eq___ExnStr : GHC.Base.Eq_ ExnStr :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___ExnStr_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___ExnStr_op_zsze__ |}.
-
-Local Definition Eq___Str_op_zeze__ {inst_s : Type} `{GHC.Base.Eq_ inst_s}
-   : Str inst_s -> Str inst_s -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Lazy, Lazy => true
-    | Mk_Str a1 a2, Mk_Str b1 b2 =>
-        (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
-    | _, _ => false
-    end.
-
-Local Definition Eq___Str_op_zsze__ {inst_s : Type} `{GHC.Base.Eq_ inst_s}
-   : Str inst_s -> Str inst_s -> bool :=
-  fun x y => negb (Eq___Str_op_zeze__ x y).
-
-Program Instance Eq___Str {s : Type} `{GHC.Base.Eq_ s} : GHC.Base.Eq_ (Str s) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Str_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Str_op_zsze__ |}.
-
-Local Definition Eq___StrDmd_op_zeze__ : StrDmd -> StrDmd -> bool :=
-  fix StrDmd_eq x y
-    := let eq' : GHC.Base.Eq_ StrDmd := GHC.Base.eq_default StrDmd_eq in
-       match x, y with
-       | HyperStr, HyperStr => true
-       | SCall a1, SCall b1 => a1 GHC.Base.== b1
-       | SProd a1, SProd b1 => a1 GHC.Base.== b1
-       | HeadStr, HeadStr => true
-       | _, _ => false
-       end.
-
-Local Definition Eq___StrDmd_op_zsze__ : StrDmd -> StrDmd -> bool :=
-  fun x y => negb (Eq___StrDmd_op_zeze__ x y).
-
-Program Instance Eq___StrDmd : GHC.Base.Eq_ StrDmd :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___StrDmd_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___StrDmd_op_zsze__ |}.
-
-Program Instance Eq___JointDmd {s : Type} {u : Type} `{GHC.Base.Eq_ s}
-  `{GHC.Base.Eq_ u}
-   : GHC.Base.Eq_ (JointDmd s u) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___JointDmd_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___JointDmd_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__JointDmd' *)
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__ExnStr' *)
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__Str' *)
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__StrDmd' *)
-
-Local Definition Eq___Count_op_zeze__ : Count -> Count -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | One, One => true
-    | Many, Many => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___Count_op_zsze__ : Count -> Count -> bool :=
-  fun x y => negb (Eq___Count_op_zeze__ x y).
-
-Program Instance Eq___Count : GHC.Base.Eq_ Count :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Count_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Count_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__Count' *)
-
-Local Definition Eq___Use_op_zeze__ {inst_u : Type} `{GHC.Base.Eq_ inst_u}
-   : Use inst_u -> Use inst_u -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Abs, Abs => true
-    | Mk_Use a1 a2, Mk_Use b1 b2 =>
-        (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
-    | _, _ => false
-    end.
-
-Local Definition Eq___Use_op_zsze__ {inst_u : Type} `{GHC.Base.Eq_ inst_u}
-   : Use inst_u -> Use inst_u -> bool :=
-  fun x y => negb (Eq___Use_op_zeze__ x y).
-
-Program Instance Eq___Use {u : Type} `{GHC.Base.Eq_ u} : GHC.Base.Eq_ (Use u) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Use_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Use_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__Use' *)
-
-Local Definition Eq___UseDmd_op_zeze__ : UseDmd -> UseDmd -> bool :=
-  fix UseDmd_eq x y
-    := let eq' : GHC.Base.Eq_ UseDmd := GHC.Base.eq_default UseDmd_eq in
-       match x, y with
-       | UCall a1 a2, UCall b1 b2 => andb (a1 GHC.Base.== b1) (a2 GHC.Base.== b2)
-       | UProd a1, UProd b1 => a1 GHC.Base.== b1
-       | UHead, UHead => true
-       | Used, Used => true
-       | _, _ => false
-       end.
-
-Local Definition Eq___UseDmd_op_zsze__ : UseDmd -> UseDmd -> bool :=
-  fun x y => negb (Eq___UseDmd_op_zeze__ x y).
-
-Program Instance Eq___UseDmd : GHC.Base.Eq_ UseDmd :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___UseDmd_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___UseDmd_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__UseDmd' *)
-
-Local Definition Eq___Termination_op_zeze__ {inst_r : Type} `{GHC.Base.Eq_
-  inst_r}
-   : Termination inst_r -> Termination inst_r -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Diverges, Diverges => true
-    | ThrowsExn, ThrowsExn => true
-    | Dunno a1, Dunno b1 => ((a1 GHC.Base.== b1))
-    | _, _ => false
-    end.
-
-Local Definition Eq___Termination_op_zsze__ {inst_r : Type} `{GHC.Base.Eq_
-  inst_r}
-   : Termination inst_r -> Termination inst_r -> bool :=
-  fun x y => negb (Eq___Termination_op_zeze__ x y).
-
-Program Instance Eq___Termination {r : Type} `{GHC.Base.Eq_ r}
-   : GHC.Base.Eq_ (Termination r) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Termination_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Termination_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__Termination' *)
-
-Local Definition Eq___CPRResult_op_zeze__ : CPRResult -> CPRResult -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | NoCPR, NoCPR => true
-    | RetProd, RetProd => true
-    | RetSum a1, RetSum b1 => ((a1 GHC.Base.== b1))
-    | _, _ => false
-    end.
-
-Local Definition Eq___CPRResult_op_zsze__ : CPRResult -> CPRResult -> bool :=
-  fun x y => negb (Eq___CPRResult_op_zeze__ x y).
-
-Program Instance Eq___CPRResult : GHC.Base.Eq_ CPRResult :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___CPRResult_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___CPRResult_op_zsze__ |}.
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Core.Show__CPRResult' *)
-
-Local Definition Eq___DmdType_op_zeze__ : DmdType -> DmdType -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | Mk_DmdType fv1 ds1 res1, Mk_DmdType fv2 ds2 res2 =>
-        andb (UniqFM.nonDetUFMToList fv1 GHC.Base.== UniqFM.nonDetUFMToList fv2) (andb
-              (ds1 GHC.Base.== ds2) (res1 GHC.Base.== res2))
-    end.
-
-Local Definition Eq___DmdType_op_zsze__ : DmdType -> DmdType -> bool :=
-  fun x y => negb (Eq___DmdType_op_zeze__ x y).
-
-Program Instance Eq___DmdType : GHC.Base.Eq_ DmdType :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___DmdType_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___DmdType_op_zsze__ |}.
-
-Local Definition Eq___StrictSig_op_zeze__ : StrictSig -> StrictSig -> bool :=
-  GHC.Prim.coerce _GHC.Base.==_.
-
-Local Definition Eq___StrictSig_op_zsze__ : StrictSig -> StrictSig -> bool :=
-  GHC.Prim.coerce _GHC.Base./=_.
-
-Program Instance Eq___StrictSig : GHC.Base.Eq_ StrictSig :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___StrictSig_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___StrictSig_op_zsze__ |}.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__HsImplBang' *)
-
-Local Definition Eq___SrcStrictness_op_zeze__
-   : SrcStrictness -> SrcStrictness -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | SrcLazy, SrcLazy => true
-    | SrcStrict, SrcStrict => true
-    | NoSrcStrict, NoSrcStrict => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___SrcStrictness_op_zsze__
-   : SrcStrictness -> SrcStrictness -> bool :=
-  fun x y => negb (Eq___SrcStrictness_op_zeze__ x y).
-
-Program Instance Eq___SrcStrictness : GHC.Base.Eq_ SrcStrictness :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___SrcStrictness_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___SrcStrictness_op_zsze__ |}.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__SrcStrictness' *)
-
-Local Definition Eq___SrcUnpackedness_op_zeze__
-   : SrcUnpackedness -> SrcUnpackedness -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | SrcUnpack, SrcUnpack => true
-    | SrcNoUnpack, SrcNoUnpack => true
-    | NoSrcUnpack, NoSrcUnpack => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___SrcUnpackedness_op_zsze__
-   : SrcUnpackedness -> SrcUnpackedness -> bool :=
-  fun x y => negb (Eq___SrcUnpackedness_op_zeze__ x y).
-
-Program Instance Eq___SrcUnpackedness : GHC.Base.Eq_ SrcUnpackedness :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___SrcUnpackedness_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___SrcUnpackedness_op_zsze__ |}.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__SrcUnpackedness' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__HsSrcBang' *)
-
-Local Definition Uniquable__DataCon_getUnique : DataCon -> Unique.Unique :=
-  dcUnique.
-
-Program Instance Uniquable__DataCon : Unique.Uniquable DataCon :=
-  fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__DataCon_getUnique |}.
-
-Local Definition Eq___DataCon_op_zsze__ : DataCon -> DataCon -> bool :=
-  fun a b => Unique.getUnique a GHC.Base./= Unique.getUnique b.
-
-Local Definition Eq___DataCon_op_zeze__ : DataCon -> DataCon -> bool :=
-  fun a b => Unique.getUnique a GHC.Base.== Unique.getUnique b.
-
-Program Instance Eq___DataCon : GHC.Base.Eq_ DataCon :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___DataCon_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___DataCon_op_zsze__ |}.
-
-Local Definition Eq___AltCon_op_zeze__ : AltCon -> AltCon -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | DataAlt a1, DataAlt b1 => ((a1 GHC.Base.== b1))
-    | LitAlt a1, LitAlt b1 => ((a1 GHC.Base.== b1))
-    | DEFAULT, DEFAULT => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___AltCon_op_zsze__ : AltCon -> AltCon -> bool :=
-  fun x y => negb (Eq___AltCon_op_zeze__ x y).
-
-Program Instance Eq___AltCon : GHC.Base.Eq_ AltCon :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___AltCon_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___AltCon_op_zsze__ |}.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__AltCon' *)
-
-Local Definition Eq___Tickish_op_zeze__ {inst_id : Type} `{GHC.Base.Eq_ inst_id}
-   : Tickish inst_id -> Tickish inst_id -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | ProfNote a1 a2 a3, ProfNote b1 b2 b3 =>
-        (andb (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2))) ((a3 GHC.Base.== b3)))
-    | HpcTick a1 a2, HpcTick b1 b2 =>
-        (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
-    | Breakpoint a1 a2, Breakpoint b1 b2 =>
-        (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
-    | SourceNote a1 a2, SourceNote b1 b2 =>
-        (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2)))
-    | _, _ => false
-    end.
-
-Local Definition Eq___Tickish_op_zsze__ {inst_id : Type} `{GHC.Base.Eq_ inst_id}
-   : Tickish inst_id -> Tickish inst_id -> bool :=
-  fun x y => negb (Eq___Tickish_op_zeze__ x y).
-
-Program Instance Eq___Tickish {id : Type} `{GHC.Base.Eq_ id}
-   : GHC.Base.Eq_ (Tickish id) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Tickish_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Tickish_op_zsze__ |}.
-
-Local Definition Ord__Tickish_compare {inst_id : Type} `{GHC.Base.Ord inst_id}
-   : Tickish inst_id -> Tickish inst_id -> comparison :=
-  fun a b =>
-    match a with
-    | ProfNote a1 a2 a3 =>
-        match b with
-        | ProfNote b1 b2 b3 =>
-            match (GHC.Base.compare a1 b1) with
-            | Lt => Lt
-            | Eq =>
-                match (GHC.Base.compare a2 b2) with
-                | Lt => Lt
-                | Eq => (GHC.Base.compare a3 b3)
-                | Gt => Gt
-                end
-            | Gt => Gt
-            end
-        | _ => Lt
-        end
-    | HpcTick a1 a2 =>
-        match b with
-        | ProfNote _ _ _ => Gt
-        | HpcTick b1 b2 =>
-            match (GHC.Base.compare a1 b1) with
-            | Lt => Lt
-            | Eq => (GHC.Base.compare a2 b2)
-            | Gt => Gt
-            end
-        | _ => Lt
-        end
-    | Breakpoint a1 a2 =>
-        match b with
-        | SourceNote _ _ => Lt
-        | Breakpoint b1 b2 =>
-            match (GHC.Base.compare a1 b1) with
-            | Lt => Lt
-            | Eq => (GHC.Base.compare a2 b2)
-            | Gt => Gt
-            end
-        | _ => Gt
-        end
-    | SourceNote a1 a2 =>
-        match b with
-        | SourceNote b1 b2 =>
-            match (GHC.Base.compare a1 b1) with
-            | Lt => Lt
-            | Eq => (GHC.Base.compare a2 b2)
-            | Gt => Gt
-            end
-        | _ => Gt
-        end
-    end.
-
-Local Definition Ord__Tickish_op_zl__ {inst_id : Type} `{GHC.Base.Ord inst_id}
-   : Tickish inst_id -> Tickish inst_id -> bool :=
-  fun x y => Ord__Tickish_compare x y GHC.Base.== Lt.
-
-Local Definition Ord__Tickish_op_zlze__ {inst_id : Type} `{GHC.Base.Ord inst_id}
-   : Tickish inst_id -> Tickish inst_id -> bool :=
-  fun x y => Ord__Tickish_compare x y GHC.Base./= Gt.
-
-Local Definition Ord__Tickish_op_zg__ {inst_id : Type} `{GHC.Base.Ord inst_id}
-   : Tickish inst_id -> Tickish inst_id -> bool :=
-  fun x y => Ord__Tickish_compare x y GHC.Base.== Gt.
-
-Local Definition Ord__Tickish_op_zgze__ {inst_id : Type} `{GHC.Base.Ord inst_id}
-   : Tickish inst_id -> Tickish inst_id -> bool :=
-  fun x y => Ord__Tickish_compare x y GHC.Base./= Lt.
-
-Local Definition Ord__Tickish_max {inst_id : Type} `{GHC.Base.Ord inst_id}
-   : Tickish inst_id -> Tickish inst_id -> Tickish inst_id :=
-  fun x y => if Ord__Tickish_op_zlze__ x y : bool then y else x.
-
-Local Definition Ord__Tickish_min {inst_id : Type} `{GHC.Base.Ord inst_id}
-   : Tickish inst_id -> Tickish inst_id -> Tickish inst_id :=
-  fun x y => if Ord__Tickish_op_zlze__ x y : bool then x else y.
-
-Program Instance Ord__Tickish {id : Type} `{GHC.Base.Ord id}
-   : GHC.Base.Ord (Tickish id) :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zl____ := Ord__Tickish_op_zl__ ;
-           GHC.Base.op_zlze____ := Ord__Tickish_op_zlze__ ;
-           GHC.Base.op_zg____ := Ord__Tickish_op_zg__ ;
-           GHC.Base.op_zgze____ := Ord__Tickish_op_zgze__ ;
-           GHC.Base.compare__ := Ord__Tickish_compare ;
-           GHC.Base.max__ := Ord__Tickish_max ;
-           GHC.Base.min__ := Ord__Tickish_min |}.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__Tickish' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__Expr' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__Bind' *)
-
-Local Definition Eq___TickishScoping_op_zeze__
-   : TickishScoping -> TickishScoping -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | NoScope, NoScope => true
-    | SoftScope, SoftScope => true
-    | CostCentreScope, CostCentreScope => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___TickishScoping_op_zsze__
-   : TickishScoping -> TickishScoping -> bool :=
-  fun x y => negb (Eq___TickishScoping_op_zeze__ x y).
-
-Program Instance Eq___TickishScoping : GHC.Base.Eq_ TickishScoping :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___TickishScoping_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___TickishScoping_op_zsze__ |}.
-
-Local Definition Eq___TickishPlacement_op_zeze__
-   : TickishPlacement -> TickishPlacement -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | PlaceRuntime, PlaceRuntime => true
-    | PlaceNonLam, PlaceNonLam => true
-    | PlaceCostCentre, PlaceCostCentre => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___TickishPlacement_op_zsze__
-   : TickishPlacement -> TickishPlacement -> bool :=
-  fun x y => negb (Eq___TickishPlacement_op_zeze__ x y).
-
-Program Instance Eq___TickishPlacement : GHC.Base.Eq_ TickishPlacement :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___TickishPlacement_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___TickishPlacement_op_zsze__ |}.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__IsOrphan' *)
-
-Local Definition Eq___UnfoldingGuidance_op_zeze__
-   : UnfoldingGuidance -> UnfoldingGuidance -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | UnfWhen a1 a2 a3, UnfWhen b1 b2 b3 =>
-        (andb (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2))) ((a3 GHC.Base.== b3)))
-    | UnfIfGoodArgs a1 a2 a3, UnfIfGoodArgs b1 b2 b3 =>
-        (andb (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.== b2))) ((a3 GHC.Base.== b3)))
-    | UnfNever, UnfNever => true
-    | _, _ => false
-    end.
-
-Local Definition Eq___UnfoldingGuidance_op_zsze__
-   : UnfoldingGuidance -> UnfoldingGuidance -> bool :=
-  fun x y => negb (Eq___UnfoldingGuidance_op_zeze__ x y).
-
-Program Instance Eq___UnfoldingGuidance : GHC.Base.Eq_ UnfoldingGuidance :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___UnfoldingGuidance_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___UnfoldingGuidance_op_zsze__ |}.
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__EqSpec' *)
-
-Local Definition NamedThing__DataCon_getName : DataCon -> Name.Name :=
-  dcName.
-
-Local Definition NamedThing__DataCon_getOccName : DataCon -> OccName.OccName :=
-  fun n => Name.nameOccName (NamedThing__DataCon_getName n).
-
-Program Instance NamedThing__DataCon : Name.NamedThing DataCon :=
-  fun _ k__ =>
-    k__ {| Name.getName__ := NamedThing__DataCon_getName ;
-           Name.getOccName__ := NamedThing__DataCon_getOccName |}.
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__DataCon' *)
-
-(* Skipping all instances of class `Outputable.OutputableBndr', including
-   `Core.OutputableBndr__DataCon' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__DataCon' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__HsSrcBang' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__HsImplBang' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__SrcStrictness' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__SrcUnpackedness' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__StrictnessMark' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__SrcStrictness' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__SrcUnpackedness' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__JointDmd' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__StrDmd' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__ArgStr' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__ArgUse' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__UseDmd' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__Count' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__TypeShape' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__Termination' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__CPRResult' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__DmdType' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__StrictSig' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__StrDmd' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__ExnStr' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__ArgStr' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__Count' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__ArgUse' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__UseDmd' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__JointDmd' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__StrictSig' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__DmdType' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__DmdResult' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__CPRResult' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__RecSelParent' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__IdDetails' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__CafInfo' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__TickBoxOp' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__LevityInfo' *)
-
-Axiom patSynName : PatSyn -> Name.Name.
-
-Local Definition NamedThing__PatSyn_getName : PatSyn -> Name.Name :=
-  patSynName.
-
-Local Definition NamedThing__PatSyn_getOccName : PatSyn -> OccName.OccName :=
-  fun n => Name.nameOccName (NamedThing__PatSyn_getName n).
-
-Program Instance NamedThing__PatSyn : Name.NamedThing PatSyn :=
-  fun _ k__ =>
-    k__ {| Name.getName__ := NamedThing__PatSyn_getName ;
-           Name.getOccName__ := NamedThing__PatSyn_getOccName |}.
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__PatSyn' *)
-
-(* Skipping all instances of class `Outputable.OutputableBndr', including
-   `Core.OutputableBndr__PatSyn' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__PatSyn' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__Var' *)
-
-Local Definition NamedThing__Var_getName : Var -> Name.Name :=
-  varName.
-
-Local Definition NamedThing__Var_getOccName : Var -> OccName.OccName :=
-  fun n => Name.nameOccName (NamedThing__Var_getName n).
-
-Program Instance NamedThing__Var : Name.NamedThing Var :=
-  fun _ k__ =>
-    k__ {| Name.getName__ := NamedThing__Var_getName ;
-           Name.getOccName__ := NamedThing__Var_getOccName |}.
-
-Definition varUnique : Var -> Unique.Unique :=
-  fun var => Unique.mkUniqueGrimily (realUnique var).
-
-Local Definition Uniquable__Var_getUnique : Var -> Unique.Unique :=
-  varUnique.
-
-Program Instance Uniquable__Var : Unique.Uniquable Var :=
-  fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__Var_getUnique |}.
-
-Local Definition Eq___Var_op_zeze__ : Var -> Var -> bool :=
-  fun a b => realUnique a GHC.Base.== realUnique b.
-
-Local Definition Eq___Var_op_zsze__ : Var -> Var -> bool :=
-  fun x y => negb (Eq___Var_op_zeze__ x y).
-
-Program Instance Eq___Var : GHC.Base.Eq_ Var :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zeze____ := Eq___Var_op_zeze__ ;
-           GHC.Base.op_zsze____ := Eq___Var_op_zsze__ |}.
-
-Local Definition Ord__Var_op_zl__ : Var -> Var -> bool :=
-  fun a b => realUnique a GHC.Base.< realUnique b.
-
-Local Definition Ord__Var_op_zlze__ : Var -> Var -> bool :=
-  fun a b => realUnique a GHC.Base.<= realUnique b.
-
-Local Definition Ord__Var_op_zg__ : Var -> Var -> bool :=
-  fun a b => realUnique a GHC.Base.> realUnique b.
-
-Local Definition Ord__Var_op_zgze__ : Var -> Var -> bool :=
-  fun a b => realUnique a GHC.Base.>= realUnique b.
-
-Definition nonDetCmpVar : Var -> Var -> comparison :=
-  fun a b => Unique.nonDetCmpUnique (varUnique a) (varUnique b).
-
-Local Definition Ord__Var_compare : Var -> Var -> comparison :=
-  fun a b => nonDetCmpVar a b.
-
-Local Definition Ord__Var_max : Var -> Var -> Var :=
-  fun x y => if Ord__Var_op_zlze__ x y : bool then y else x.
-
-Local Definition Ord__Var_min : Var -> Var -> Var :=
-  fun x y => if Ord__Var_op_zlze__ x y : bool then x else y.
-
-Program Instance Ord__Var : GHC.Base.Ord Var :=
-  fun _ k__ =>
-    k__ {| GHC.Base.op_zl____ := Ord__Var_op_zl__ ;
-           GHC.Base.op_zlze____ := Ord__Var_op_zlze__ ;
-           GHC.Base.op_zg____ := Ord__Var_op_zg__ ;
-           GHC.Base.op_zgze____ := Ord__Var_op_zgze__ ;
-           GHC.Base.compare__ := Ord__Var_compare ;
-           GHC.Base.max__ := Ord__Var_max ;
-           GHC.Base.min__ := Ord__Var_min |}.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__Var' *)
-
-Local Definition HasOccName__Var_occName : Var -> OccName.OccName :=
-  Name.nameOccName GHC.Base.∘ varName.
-
-Program Instance HasOccName__Var : OccName.HasOccName Var :=
-  fun _ k__ => k__ {| OccName.occName__ := HasOccName__Var_occName |}.
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__TyVarBndr__ArgFlag__11' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__ArgFlag' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__TyVarBndr' *)
-
-(* Skipping all instances of class `Binary.Binary', including
-   `Core.Binary__ArgFlag' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__InScopeSet' *)
-
-Axiom dataConTag : DataCon -> BasicTypes.ConTag.
-
-Axiom dataConTyCon : DataCon -> TyCon.
-
-Local Definition Ord__AltCon_compare : AltCon -> AltCon -> comparison :=
+#[local] Definition Ord__AltCon_compare : AltCon -> AltCon -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | DataAlt con1, DataAlt con2 =>
-        if andb Util.debugIsOn (negb (dataConTyCon con1 GHC.Base.==
-                                      dataConTyCon con2)) : bool
-        then (Panic.assertPanic (GHC.Base.hs_string__ "ghc/compiler/coreSyn/CoreSyn.hs")
-              #319)
-        else GHC.Base.compare (dataConTag con1) (dataConTag con2)
+        GHC.Base.compare (dataConTag con1) (dataConTag con2)
     | DataAlt _, _ => Gt
     | _, DataAlt _ => Lt
     | LitAlt l1, LitAlt l2 => GHC.Base.compare l1 l2
@@ -3746,24 +2775,61 @@ Local Definition Ord__AltCon_compare : AltCon -> AltCon -> comparison :=
     | DEFAULT, _ => Lt
     end.
 
-Local Definition Ord__AltCon_op_zl__ : AltCon -> AltCon -> bool :=
+#[local] Definition Ord__AltCon_op_zl__ : AltCon -> AltCon -> bool :=
   fun x y => Ord__AltCon_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__AltCon_op_zlze__ : AltCon -> AltCon -> bool :=
+#[local] Definition Ord__AltCon_op_zlze__ : AltCon -> AltCon -> bool :=
   fun x y => Ord__AltCon_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__AltCon_op_zg__ : AltCon -> AltCon -> bool :=
+#[local] Definition Ord__AltCon_op_zg__ : AltCon -> AltCon -> bool :=
   fun x y => Ord__AltCon_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__AltCon_op_zgze__ : AltCon -> AltCon -> bool :=
+#[local] Definition Ord__AltCon_op_zgze__ : AltCon -> AltCon -> bool :=
   fun x y => Ord__AltCon_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__AltCon_max : AltCon -> AltCon -> AltCon :=
+#[local] Definition Ord__AltCon_max : AltCon -> AltCon -> AltCon :=
   fun x y => if Ord__AltCon_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__AltCon_min : AltCon -> AltCon -> AltCon :=
+#[local] Definition Ord__AltCon_min : AltCon -> AltCon -> AltCon :=
   fun x y => if Ord__AltCon_op_zlze__ x y : bool then x else y.
 
+#[local] Definition Uniquable__DataCon_getUnique : DataCon -> Unique.Unique :=
+  dcUnique.
+
+#[global]
+Program Instance Uniquable__DataCon : Unique.Uniquable DataCon :=
+  fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__DataCon_getUnique |}.
+
+#[local] Definition Eq___DataCon_op_zsze__ : DataCon -> DataCon -> bool :=
+  fun a b => Unique.getUnique a GHC.Base./= Unique.getUnique b.
+
+#[local] Definition Eq___DataCon_op_zeze__ : DataCon -> DataCon -> bool :=
+  fun a b => Unique.getUnique a GHC.Base.== Unique.getUnique b.
+
+#[global]
+Program Instance Eq___DataCon : GHC.Base.Eq_ DataCon :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___DataCon_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___DataCon_op_zsze__ |}.
+
+#[local] Definition Eq___AltCon_op_zeze__ : AltCon -> AltCon -> bool :=
+  fun a b => match a, b with
+    | DataAlt dc1, DataAlt dc2 => dc1 GHC.Base.== dc2
+    | LitAlt l1, LitAlt l2 => l1 GHC.Base.== l2
+    | DEFAULT, DEFAULT => true
+    | _, _ => false
+  end.
+
+#[local] Definition Eq___AltCon_op_zsze__ : AltCon -> AltCon -> bool :=
+  fun a b => negb (Eq___AltCon_op_zeze__ a b).
+
+#[global]
+Program Instance Eq___AltCon : GHC.Base.Eq_ AltCon :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___AltCon_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___AltCon_op_zsze__ |}.
+
+#[global]
 Program Instance Ord__AltCon : GHC.Base.Ord AltCon :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__AltCon_op_zl__ ;
@@ -3783,29 +2849,32 @@ Program Instance Ord__AltCon : GHC.Base.Ord AltCon :=
 (* Skipping all instances of class `Outputable.Outputable', including
    `Core.Outputable__TaggedBndr' *)
 
-Local Definition Eq___Class_op_zeze__ : Class -> Class -> bool :=
+#[local] Definition Eq___Class_op_zeze__ : Class -> Class -> bool :=
   fun c1 c2 => classKey c1 GHC.Base.== classKey c2.
 
-Local Definition Eq___Class_op_zsze__ : Class -> Class -> bool :=
+#[local] Definition Eq___Class_op_zsze__ : Class -> Class -> bool :=
   fun c1 c2 => classKey c1 GHC.Base./= classKey c2.
 
+#[global]
 Program Instance Eq___Class : GHC.Base.Eq_ Class :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___Class_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___Class_op_zsze__ |}.
 
-Local Definition Uniquable__Class_getUnique : Class -> Unique.Unique :=
+#[local] Definition Uniquable__Class_getUnique : Class -> Unique.Unique :=
   fun c => classKey c.
 
+#[global]
 Program Instance Uniquable__Class : Unique.Uniquable Class :=
   fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__Class_getUnique |}.
 
-Local Definition NamedThing__Class_getName : Class -> Name.Name :=
+#[local] Definition NamedThing__Class_getName : Class -> Name.Name :=
   fun clas => className clas.
 
-Local Definition NamedThing__Class_getOccName : Class -> OccName.OccName :=
+#[local] Definition NamedThing__Class_getOccName : Class -> OccName.OccName :=
   fun n => Name.nameOccName (NamedThing__Class_getName n).
 
+#[global]
 Program Instance NamedThing__Class : Name.NamedThing Class :=
   fun _ k__ =>
     k__ {| Name.getName__ := NamedThing__Class_getName ;
@@ -3814,28 +2883,105 @@ Program Instance NamedThing__Class : Name.NamedThing Class :=
 (* Skipping all instances of class `Outputable.Outputable', including
    `Core.Outputable__Class' *)
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `Core.Data__Class' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__NormaliseStepResult' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `Core.Outputable__LiftingContext' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__TyThing' *)
+   `Core.Outputable__EqSpec' *)
 
-(* Skipping instance `Core.NamedThing__TyThing' of class `Name.NamedThing' *)
+#[local] Definition NamedThing__DataCon_getName : DataCon -> Name.Name :=
+  dcName.
+
+#[local] Definition NamedThing__DataCon_getOccName
+   : DataCon -> OccName.OccName :=
+  fun n => Name.nameOccName (NamedThing__DataCon_getName n).
+
+#[global]
+Program Instance NamedThing__DataCon : Name.NamedThing DataCon :=
+  fun _ k__ =>
+    k__ {| Name.getName__ := NamedThing__DataCon_getName ;
+           Name.getOccName__ := NamedThing__DataCon_getOccName |}.
 
 (* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__UnivCoProvenance' *)
+   `Core.Outputable__DataCon' *)
 
-(* Skipping all instances of class `Data.Data.Data', including
-   `Core.Data__CoercionHole' *)
+(* Skipping all instances of class `Outputable.OutputableBndr', including
+   `Core.OutputableBndr__DataCon' *)
+
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
+   `Core.Data__DataCon' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__CoercionHole' *)
+   `Core.Outputable__HsSrcBang' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__TCvSubst' *)
+   `Core.Outputable__HsImplBang' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__SrcStrictness' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__SrcUnpackedness' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__StrictnessMark' *)
+
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__StrictnessMark' *)
+
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__SrcStrictness' *)
+
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__SrcUnpackedness' *)
+
+#[local] Definition Uniquable__PatSyn_getUnique : PatSyn -> Unique.Unique :=
+  psUnique.
+
+#[global]
+Program Instance Uniquable__PatSyn : Unique.Uniquable PatSyn :=
+  fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__PatSyn_getUnique |}.
+
+#[local] Definition Eq___PatSyn_op_zeze__ : PatSyn -> PatSyn -> bool :=
+  Data.Function.on _GHC.Base.==_ Unique.getUnique.
+
+#[local] Definition Eq___PatSyn_op_zsze__ : PatSyn -> PatSyn -> bool :=
+  Data.Function.on _GHC.Base./=_ Unique.getUnique.
+
+#[global]
+Program Instance Eq___PatSyn : GHC.Base.Eq_ PatSyn :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___PatSyn_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___PatSyn_op_zsze__ |}.
+
+Axiom patSynName : PatSyn -> Name.Name.
+
+#[local] Definition NamedThing__PatSyn_getName : PatSyn -> Name.Name :=
+  patSynName.
+
+#[local] Definition NamedThing__PatSyn_getOccName : PatSyn -> OccName.OccName :=
+  fun n => Name.nameOccName (NamedThing__PatSyn_getName n).
+
+#[global]
+Program Instance NamedThing__PatSyn : Name.NamedThing PatSyn :=
+  fun _ k__ =>
+    k__ {| Name.getName__ := NamedThing__PatSyn_getName ;
+           Name.getOccName__ := NamedThing__PatSyn_getOccName |}.
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__PatSyn' *)
+
+(* Skipping all instances of class `Outputable.OutputableBndr', including
+   `Core.OutputableBndr__PatSyn' *)
+
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
+   `Core.Data__PatSyn' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `Core.Outputable__Type_' *)
@@ -3844,13 +2990,43 @@ Program Instance NamedThing__Class : Name.NamedThing Class :=
    `Core.Outputable__TyLit' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__TyBinder' *)
-
-(* Skipping all instances of class `Outputable.Outputable', including
    `Core.Outputable__Coercion' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__TyVarBndr__TyConBndrVis__11' *)
+   `Core.Outputable__CoSel' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__FunSel' *)
+
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__CoSel' *)
+
+(* Skipping all instances of class `Control.DeepSeq.NFData', including
+   `Core.NFData__CoSel' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__MCoercion' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__UnivCoProvenance' *)
+
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
+   `Core.Data__CoercionHole' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__CoercionHole' *)
+
+(* Skipping instance `Core.Uniquable__CoercionHole' of class
+   `Unique.Uniquable' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__Scaled' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__TyConBndrVis' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__VarBndr__TyConBndrVis__11' *)
 
 (* Skipping all instances of class `Binary.Binary', including
    `Core.Binary__TyConBndrVis' *)
@@ -3867,552 +3043,236 @@ Program Instance NamedThing__Class : Name.NamedThing Class :=
 (* Skipping all instances of class `Outputable.Outputable', including
    `Core.Outputable__PrimElemRep' *)
 
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__PrimRep' *)
+
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__PrimElemRep' *)
+
 (* Skipping all instances of class `Outputable.Outputable', including
    `Core.Outputable__TyCon' *)
 
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__TyConFlavour' *)
-
-Local Definition NamedThing__TyCon_getName : TyCon -> Name.Name :=
+#[local] Definition NamedThing__TyCon_getName : TyCon -> Name.Name :=
   tyConName.
 
-Local Definition NamedThing__TyCon_getOccName : TyCon -> OccName.OccName :=
+#[local] Definition NamedThing__TyCon_getOccName : TyCon -> OccName.OccName :=
   fun n => Name.nameOccName (NamedThing__TyCon_getName n).
 
+#[global]
 Program Instance NamedThing__TyCon : Name.NamedThing TyCon :=
   fun _ k__ =>
     k__ {| Name.getName__ := NamedThing__TyCon_getName ;
            Name.getOccName__ := NamedThing__TyCon_getOccName |}.
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `Core.Data__TyCon' *)
 
 (* Skipping all instances of class `Binary.Binary', including
    `Core.Binary__Injectivity' *)
 
+(* Skipping instance `Core.Eq___SubDemand' of class `GHC.Base.Eq_' *)
+
+(* Skipping instance `Core.Eq___DmdEnv' of class `GHC.Base.Eq_' *)
+
+(* Skipping instance `Core.Eq___DmdType' of class `GHC.Base.Eq_' *)
+
+(* Skipping all instances of class `GHC.Show.Show', including
+   `Core.Show__Card' *)
+
 (* Skipping all instances of class `Outputable.Outputable', including
-   `Core.Outputable__EqRel' *)
+   `Core.Outputable__Card' *)
 
-Axiom mkEqSpec : TyVar -> Type_ -> EqSpec.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__Demand' *)
 
-Axiom eqSpecTyVar : EqSpec -> TyVar.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__SubDemand' *)
 
-Axiom eqSpecType : EqSpec -> Type_.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__Divergence' *)
 
-Axiom eqSpecPair : EqSpec -> (TyVar * Type_)%type.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__DmdEnv' *)
 
-Axiom eqSpecPreds : list EqSpec -> ThetaType.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__DmdType' *)
 
-Axiom substEqSpec : TCvSubst -> EqSpec -> EqSpec.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__DmdSig' *)
 
-Axiom filterEqSpec : list EqSpec -> list TyVar -> list TyVar.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__TypeShape' *)
 
-Axiom eqHsBang : HsImplBang -> HsImplBang -> bool.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__Card' *)
 
-Axiom isBanged : HsImplBang -> bool.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__Demand' *)
 
-Axiom isSrcStrict : SrcStrictness -> bool.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__SubDemand' *)
 
-Axiom isSrcUnpacked : SrcUnpackedness -> bool.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__Divergence' *)
 
-Axiom isMarkedStrict : StrictnessMark -> bool.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__DmdEnv' *)
 
-Axiom mkDataCon : Name.Name ->
-                  bool ->
-                  TyConRepName ->
-                  list HsSrcBang ->
-                  list FieldLabel.FieldLabel ->
-                  list TyVar ->
-                  list TyVar ->
-                  list TyVarBinder ->
-                  list EqSpec ->
-                  ThetaType ->
-                  list Type_ ->
-                  Type_ -> RuntimeRepInfo -> TyCon -> ThetaType -> Id -> DataConRep -> DataCon.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__DmdType' *)
 
-(* Skipping definition `Core.mkCleanAnonTyConBinders' *)
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__DmdSig' *)
 
-(* Skipping definition `Core.freshNames' *)
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__RecSelParent' *)
 
-Axiom dataConName : DataCon -> Name.Name.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__IdDetails' *)
 
-Axiom dataConTagZ : DataCon -> BasicTypes.ConTagZ.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__CafInfo' *)
 
-Axiom dataConOrigTyCon : DataCon -> TyCon.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__TickBoxOp' *)
 
-Axiom dataConRepType : DataCon -> Type_.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__Var' *)
 
-Axiom dataConIsInfix : DataCon -> bool.
+#[local] Definition NamedThing__Var_getName : Var -> Name.Name :=
+  varName.
 
-Axiom dataConUnivTyVars : DataCon -> list TyVar.
+#[local] Definition NamedThing__Var_getOccName : Var -> OccName.OccName :=
+  fun n => Name.nameOccName (NamedThing__Var_getName n).
 
-Axiom dataConExTyVars : DataCon -> list TyVar.
+#[global]
+Program Instance NamedThing__Var : Name.NamedThing Var :=
+  fun _ k__ =>
+    k__ {| Name.getName__ := NamedThing__Var_getName ;
+           Name.getOccName__ := NamedThing__Var_getOccName |}.
 
-Axiom dataConUnivAndExTyVars : DataCon -> list TyVar.
+#[global] Definition varUnique : Var -> Unique.Unique :=
+  fun var => realUnique var.
 
-Axiom dataConUserTyVars : DataCon -> list TyVar.
+#[local] Definition Uniquable__Var_getUnique : Var -> Unique.Unique :=
+  varUnique.
 
-Axiom dataConUserTyVarBinders : DataCon -> list TyVarBinder.
+#[global]
+Program Instance Uniquable__Var : Unique.Uniquable Var :=
+  fun _ k__ => k__ {| Unique.getUnique__ := Uniquable__Var_getUnique |}.
 
-Axiom dataConEqSpec : DataCon -> list EqSpec.
+#[local] Definition Eq___Var_op_zeze__ : Var -> Var -> bool :=
+  fun a b => realUnique a GHC.Base.== realUnique b.
 
-Axiom dataConTheta : DataCon -> ThetaType.
+#[local] Definition Eq___Var_op_zsze__ : Var -> Var -> bool :=
+  fun x y => negb (Eq___Var_op_zeze__ x y).
 
-Axiom dataConWorkId : DataCon -> Id.
+#[global]
+Program Instance Eq___Var : GHC.Base.Eq_ Var :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zeze____ := Eq___Var_op_zeze__ ;
+           GHC.Base.op_zsze____ := Eq___Var_op_zsze__ |}.
 
-Axiom dataConWrapId_maybe : DataCon -> option Id.
+#[local] Definition Ord__Var_op_zl__ : Var -> Var -> bool :=
+  fun a b => Unique.getKey (realUnique a) GHC.Base.< Unique.getKey (realUnique b).
 
-Axiom dataConWrapId : DataCon -> Id.
+#[local] Definition Ord__Var_op_zlze__ : Var -> Var -> bool :=
+  fun a b =>
+    Unique.getKey (realUnique a) GHC.Base.<= Unique.getKey (realUnique b).
 
-Axiom dataConImplicitTyThings : DataCon -> list TyThing.
+#[local] Definition Ord__Var_op_zg__ : Var -> Var -> bool :=
+  fun a b => Unique.getKey (realUnique a) GHC.Base.> Unique.getKey (realUnique b).
 
-Axiom dataConFieldLabels : DataCon -> list FieldLabel.FieldLabel.
+#[local] Definition Ord__Var_op_zgze__ : Var -> Var -> bool :=
+  fun a b =>
+    Unique.getKey (realUnique a) GHC.Base.>= Unique.getKey (realUnique b).
 
-Axiom dataConFieldType : DataCon -> FieldLabel.FieldLabelString -> Type_.
+#[global] Definition nonDetCmpVar : Var -> Var -> comparison :=
+  fun a b => Unique.nonDetCmpUnique (varUnique a) (varUnique b).
 
-Axiom dataConFieldType_maybe : DataCon ->
-                               FieldLabel.FieldLabelString -> option (FieldLabel.FieldLabel * Type_)%type.
+#[local] Definition Ord__Var_compare : Var -> Var -> comparison :=
+  fun a b => nonDetCmpVar a b.
 
-Axiom dataConSrcBangs : DataCon -> list HsSrcBang.
+#[local] Definition Ord__Var_max : Var -> Var -> Var :=
+  fun x y => if Ord__Var_op_zlze__ x y : bool then y else x.
 
-Axiom dataConSourceArity : DataCon -> BasicTypes.Arity.
+#[local] Definition Ord__Var_min : Var -> Var -> Var :=
+  fun x y => if Ord__Var_op_zlze__ x y : bool then x else y.
 
-Axiom dataConRepArity : DataCon -> BasicTypes.Arity.
+#[global]
+Program Instance Ord__Var : GHC.Base.Ord Var :=
+  fun _ k__ =>
+    k__ {| GHC.Base.op_zl____ := Ord__Var_op_zl__ ;
+           GHC.Base.op_zlze____ := Ord__Var_op_zlze__ ;
+           GHC.Base.op_zg____ := Ord__Var_op_zg__ ;
+           GHC.Base.op_zgze____ := Ord__Var_op_zgze__ ;
+           GHC.Base.compare__ := Ord__Var_compare ;
+           GHC.Base.max__ := Ord__Var_max ;
+           GHC.Base.min__ := Ord__Var_min |}.
 
-Axiom isNullarySrcDataCon : DataCon -> bool.
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
+   `Core.Data__Var' *)
 
-Axiom isNullaryRepDataCon : DataCon -> bool.
+#[local] Definition HasOccName__Var_occName : Var -> OccName.OccName :=
+  Name.nameOccName GHC.Base.∘ varName.
 
-Axiom dataConRepStrictness : DataCon -> list StrictnessMark.
+#[global]
+Program Instance HasOccName__Var : OccName.HasOccName Var :=
+  fun _ k__ => k__ {| OccName.occName__ := HasOccName__Var_occName |}.
 
-Axiom dataConImplBangs : DataCon -> list HsImplBang.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__ForAllTyFlag' *)
 
-Axiom dataConBoxer : DataCon -> option DataConBoxer.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__Specificity' *)
 
-Axiom dataConSig : DataCon ->
-                   (list TyVar * ThetaType * list Type_ * Type_)%type.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__ForAllTyFlag' *)
 
-Axiom dataConInstSig : DataCon ->
-                       list Type_ -> (list TyVar * ThetaType * list Type_)%type.
+(* Skipping all instances of class `Control.DeepSeq.NFData', including
+   `Core.NFData__Specificity' *)
 
-Axiom dataConFullSig : DataCon ->
-                       (list TyVar * list TyVar * list EqSpec * ThetaType * list Type_ * Type_)%type.
+(* Skipping all instances of class `Control.DeepSeq.NFData', including
+   `Core.NFData__ForAllTyFlag' *)
 
-Axiom dataConOrigResTy : DataCon -> Type_.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__FunTyFlag' *)
 
-Axiom dataConStupidTheta : DataCon -> ThetaType.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__FunTyFlag' *)
 
-Axiom dataConUserType : DataCon -> Type_.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__VarBndr__ForAllTyFlag__11' *)
 
-Axiom dataConInstArgTys : DataCon -> list Type_ -> list Type_.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__VarBndr__Specificity__11' *)
 
-Axiom dataConInstOrigArgTys : DataCon -> list Type_ -> list Type_.
+(* Skipping all instances of class `Binary.Binary', including
+   `Core.Binary__VarBndr' *)
 
-Axiom dataConOrigArgTys : DataCon -> list Type_.
+#[local] Definition NamedThing__VarBndr_getName {inst_tv : Type} {inst_flag
+   : Type} `{Name.NamedThing inst_tv}
+   : VarBndr inst_tv inst_flag -> Name.Name :=
+  fun '(Bndr tv _) => Name.getName tv.
 
-Axiom dataConRepArgTys : DataCon -> list Type_.
+#[local] Definition NamedThing__VarBndr_getOccName {inst_tv : Type} {inst_flag
+   : Type} `{Name.NamedThing inst_tv}
+   : VarBndr inst_tv inst_flag -> OccName.OccName :=
+  fun n => Name.nameOccName (NamedThing__VarBndr_getName n).
 
-(* Skipping definition `Core.dataConIdentity' *)
+#[global]
+Program Instance NamedThing__VarBndr {tv : Type} {flag : Type} `{Name.NamedThing
+  tv}
+   : Name.NamedThing (VarBndr tv flag) :=
+  fun _ k__ =>
+    k__ {| Name.getName__ := NamedThing__VarBndr_getName ;
+           Name.getOccName__ := NamedThing__VarBndr_getOccName |}.
 
-Axiom isTupleDataCon : DataCon -> bool.
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__PiTyBinder' *)
 
-Axiom isUnboxedTupleCon : DataCon -> bool.
-
-Axiom isUnboxedSumCon : DataCon -> bool.
-
-Axiom isVanillaDataCon : DataCon -> bool.
-
-Axiom specialPromotedDc : DataCon -> bool.
-
-Axiom isLegacyPromotableDataCon : DataCon -> bool.
-
-Axiom isLegacyPromotableTyCon : TyCon -> bool.
-
-Axiom classDataCon : Class -> DataCon.
-
-Axiom dataConCannotMatch : list Type_ -> DataCon -> bool.
-
-Axiom dataConUserTyVarsArePermuted : DataCon -> bool.
-
-Axiom promoteDataCon : DataCon -> TyCon.
-
-Axiom splitDataProductType_maybe : Type_ ->
-                                   option (TyCon * list Type_ * DataCon * list Type_)%type.
-
-Axiom buildAlgTyCon : Name.Name ->
-                      list TyVar ->
-                      list Role ->
-                      option CType -> ThetaType -> AlgTyConRhs -> bool -> AlgTyConFlav -> TyCon.
-
-Axiom buildSynTyCon : Name.Name ->
-                      list TyConBinder -> Kind -> list Role -> Type_ -> TyCon.
-
-Axiom getStrDmd : forall {s : Type}, forall {u : Type}, JointDmd s u -> s.
-
-Axiom getUseDmd : forall {s : Type}, forall {u : Type}, JointDmd s u -> u.
-
-Axiom mkJointDmd : forall {s} {u}, s -> u -> JointDmd s u.
-
-Axiom mkJointDmds : forall {s} {u}, list s -> list u -> list (JointDmd s u).
-
-Axiom strBot : ArgStr.
-
-Axiom strTop : ArgStr.
-
-Axiom mkSCall : StrDmd -> StrDmd.
-
-Axiom mkSProd : list ArgStr -> StrDmd.
-
-Axiom isLazy : ArgStr -> bool.
-
-Axiom isHyperStr : ArgStr -> bool.
-
-Axiom lubArgStr : ArgStr -> ArgStr -> ArgStr.
-
-Axiom lubExnStr : ExnStr -> ExnStr -> ExnStr.
-
-Axiom lubStr : StrDmd -> StrDmd -> StrDmd.
-
-Axiom bothArgStr : ArgStr -> ArgStr -> ArgStr.
-
-Axiom bothExnStr : ExnStr -> ExnStr -> ExnStr.
-
-Axiom bothStr : StrDmd -> StrDmd -> StrDmd.
-
-Definition seqStrDmd : StrDmd -> unit :=
-  fun x => tt.
-
-Definition seqStrDmdList : list ArgStr -> unit :=
-  fun x => tt.
-
-Definition seqArgStr : ArgStr -> unit :=
-  fun x => tt.
-
-Axiom splitArgStrProdDmd : nat -> ArgStr -> option (list ArgStr).
-
-Axiom splitStrProdDmd : nat -> StrDmd -> option (list ArgStr).
-
-Axiom useBot : ArgUse.
-
-Axiom useTop : ArgUse.
-
-Axiom mkUCall : Count -> UseDmd -> UseDmd.
-
-Axiom mkUProd : list ArgUse -> UseDmd.
-
-Axiom lubCount : Count -> Count -> Count.
-
-Axiom lubArgUse : ArgUse -> ArgUse -> ArgUse.
-
-Axiom lubUse : UseDmd -> UseDmd -> UseDmd.
-
-Axiom bothArgUse : ArgUse -> ArgUse -> ArgUse.
-
-Axiom bothUse : UseDmd -> UseDmd -> UseDmd.
-
-Axiom peelUseCall : UseDmd -> option (Count * UseDmd)%type.
-
-(* Skipping definition `Core.addCaseBndrDmd' *)
-
-Axiom markReusedDmd : ArgUse -> ArgUse.
-
-Axiom markReused : UseDmd -> UseDmd.
-
-Axiom isUsedMU : ArgUse -> bool.
-
-Axiom isUsedU : UseDmd -> bool.
-
-Definition seqUseDmd : UseDmd -> unit :=
-  fun x => tt.
-
-Definition seqArgUseList : list ArgUse -> unit :=
-  fun x => tt.
-
-Definition seqArgUse : ArgUse -> unit :=
-  fun x => tt.
-
-Axiom splitUseProdDmd : nat -> UseDmd -> option (list ArgUse).
-
-Axiom useCount : forall {u : Type}, Use u -> Count.
-
-Axiom bothCleanDmd : CleanDemand -> CleanDemand -> CleanDemand.
-
-Axiom mkHeadStrict : CleanDemand -> CleanDemand.
-
-Axiom mkOnceUsedDmd : CleanDemand -> Demand.
-
-Axiom mkManyUsedDmd : CleanDemand -> Demand.
-
-Axiom evalDmd : Demand.
-
-Axiom mkProdDmd : list Demand -> CleanDemand.
-
-Axiom mkCallDmd : CleanDemand -> CleanDemand.
-
-Axiom mkWorkerDemand : nat -> Demand.
-
-Axiom cleanEvalDmd : CleanDemand.
-
-Axiom cleanEvalProdDmd : BasicTypes.Arity -> CleanDemand.
-
-Axiom lubDmd : Demand -> Demand -> Demand.
-
-Axiom bothDmd : Demand -> Demand -> Demand.
-
-Axiom strictApply1Dmd : Demand.
-
-Axiom catchArgDmd : Demand.
-
-Axiom lazyApply1Dmd : Demand.
-
-Axiom lazyApply2Dmd : Demand.
-
-Axiom absDmd : Demand.
-
-Axiom topDmd : Demand.
-
-Axiom botDmd : Demand.
-
-Axiom seqDmd : Demand.
-
-Axiom oneifyDmd : Demand -> Demand.
-
-Axiom isTopDmd : Demand -> bool.
-
-Axiom isAbsDmd : Demand -> bool.
-
-Axiom isSeqDmd : Demand -> bool.
-
-Axiom isUsedOnce : Demand -> bool.
-
-Definition seqDemand : Demand -> unit :=
-  fun x => tt.
-
-Definition seqDemandList : list Demand -> unit :=
-  fun x => tt.
-
-Axiom isStrictDmd : Demand -> bool.
-
-Axiom isWeakDmd : Demand -> bool.
-
-Axiom cleanUseDmd_maybe : Demand -> option UseDmd.
-
-Axiom splitFVs : bool -> DmdEnv -> (DmdEnv * DmdEnv)%type.
-
-(* Skipping definition `Core.trimToType' *)
-
-Axiom splitProdDmd_maybe : Demand -> option (list Demand).
-
-Axiom lubCPR : CPRResult -> CPRResult -> CPRResult.
-
-Axiom lubDmdResult : DmdResult -> DmdResult -> DmdResult.
-
-Axiom bothDmdResult : DmdResult -> Termination unit -> DmdResult.
-
-Definition seqDmdResult : DmdResult -> unit :=
-  fun x => tt.
-
-Definition seqCPRResult : CPRResult -> unit :=
-  fun x => tt.
-
-Axiom topRes : DmdResult.
-
-Axiom exnRes : DmdResult.
-
-Axiom botRes : DmdResult.
-
-Axiom cprSumRes : BasicTypes.ConTag -> DmdResult.
-
-Axiom cprProdRes : list DmdType -> DmdResult.
-
-Axiom vanillaCprProdRes : BasicTypes.Arity -> DmdResult.
-
-Axiom isTopRes : DmdResult -> bool.
-
-Axiom isBotRes : DmdResult -> bool.
-
-Axiom trimCPRInfo : bool -> bool -> DmdResult -> DmdResult.
-
-Axiom returnsCPR_maybe : DmdResult -> option BasicTypes.ConTag.
-
-Axiom retCPR_maybe : CPRResult -> option BasicTypes.ConTag.
-
-Axiom defaultDmd : forall {r}, Termination r -> Demand.
-
-Axiom resTypeArgDmd : forall {r}, Termination r -> Demand.
-
-Axiom lubDmdType : DmdType -> DmdType -> DmdType.
-
-Axiom mkBothDmdArg : DmdEnv -> BothDmdArg.
-
-Axiom toBothDmdArg : DmdType -> BothDmdArg.
-
-Axiom bothDmdType : DmdType -> BothDmdArg -> DmdType.
-
-Axiom emptyDmdEnv : VarEnv Demand.
-
-Axiom nopDmdType : DmdType.
-
-Axiom botDmdType : DmdType.
-
-Axiom exnDmdType : DmdType.
-
-Axiom cprProdDmdType : BasicTypes.Arity -> DmdType.
-
-Axiom isTopDmdType : DmdType -> bool.
-
-Axiom mkDmdType : DmdEnv -> list Demand -> DmdResult -> DmdType.
-
-Axiom dmdTypeDepth : DmdType -> BasicTypes.Arity.
-
-Axiom removeDmdTyArgs : DmdType -> DmdType.
-
-Axiom ensureArgs : BasicTypes.Arity -> DmdType -> DmdType.
-
-Definition seqDmdType : DmdType -> unit :=
-  fun x => tt.
-
-Definition seqDmdEnv : DmdEnv -> unit :=
-  fun x => tt.
-
-Axiom splitDmdTy : DmdType -> (Demand * DmdType)%type.
-
-Axiom deferAfterIO : DmdType -> DmdType.
-
-Axiom strictenDmd : Demand -> CleanDemand.
-
-(* Skipping definition `Core.toCleanDmd' *)
-
-Axiom postProcessDmdType : DmdShell -> DmdType -> BothDmdArg.
-
-Axiom postProcessDmdResult : Str unit -> DmdResult -> DmdResult.
-
-Axiom postProcessDmdEnv : DmdShell -> DmdEnv -> DmdEnv.
-
-Axiom reuseEnv : DmdEnv -> DmdEnv.
-
-Axiom postProcessUnsat : DmdShell -> DmdType -> DmdType.
-
-Axiom postProcessDmd : DmdShell -> Demand -> Demand.
-
-Axiom markExnStr : ArgStr -> ArgStr.
-
-Axiom peelCallDmd : CleanDemand -> (CleanDemand * DmdShell)%type.
-
-Axiom peelManyCalls : nat -> CleanDemand -> DmdShell.
-
-Axiom peelFV : DmdType -> Var -> (DmdType * Demand)%type.
-
-Axiom addDemand : Demand -> DmdType -> DmdType.
-
-Axiom findIdDemand : DmdType -> Var -> Demand.
-
-(* Skipping definition `Core.pprIfaceStrictSig' *)
-
-Axiom mkStrictSig : DmdType -> StrictSig.
-
-Axiom mkClosedStrictSig : list Demand -> DmdResult -> StrictSig.
-
-Axiom splitStrictSig : StrictSig -> (list Demand * DmdResult)%type.
-
-Axiom increaseStrictSigArity : nat -> StrictSig -> StrictSig.
-
-Axiom isTopSig : StrictSig -> bool.
-
-Axiom hasDemandEnvSig : StrictSig -> bool.
-
-Axiom strictSigDmdEnv : StrictSig -> DmdEnv.
-
-Axiom isBottomingSig : StrictSig -> bool.
-
-Axiom nopSig : StrictSig.
-
-Axiom botSig : StrictSig.
-
-Axiom exnSig : StrictSig.
-
-Axiom cprProdSig : BasicTypes.Arity -> StrictSig.
-
-Definition seqStrictSig : StrictSig -> unit :=
-  fun x => tt.
-
-Axiom dmdTransformSig : StrictSig -> CleanDemand -> DmdType.
-
-Axiom dmdTransformDataConSig : BasicTypes.Arity ->
-                               StrictSig -> CleanDemand -> DmdType.
-
-Axiom dmdTransformDictSelSig : StrictSig -> CleanDemand -> DmdType.
-
-Axiom argsOneShots : StrictSig ->
-                     BasicTypes.Arity -> list (list BasicTypes.OneShotInfo).
-
-Axiom saturatedByOneShots : nat -> Demand -> bool.
-
-Axiom argOneShots : Demand -> list BasicTypes.OneShotInfo.
-
-Axiom appIsBottom : StrictSig -> nat -> bool.
-
-Axiom zapUsageEnvSig : StrictSig -> StrictSig.
-
-Axiom zapUsageDemand : Demand -> Demand.
-
-Axiom zapUsedOnceDemand : Demand -> Demand.
-
-Axiom zapUsedOnceSig : StrictSig -> StrictSig.
-
-Axiom killUsageDemand : DynFlags.DynFlags -> Demand -> Demand.
-
-Axiom killUsageSig : DynFlags.DynFlags -> StrictSig -> StrictSig.
-
-Axiom killFlags : DynFlags.DynFlags -> option KillFlags.
-
-Axiom kill_usage : KillFlags -> Demand -> Demand.
-
-Axiom zap_musg : KillFlags -> ArgUse -> ArgUse.
-
-Axiom zap_usg : KillFlags -> UseDmd -> UseDmd.
-
-(* Skipping definition `Core.strictifyDictDmd' *)
-
-Axiom mkPatSyn : Name.Name ->
-                 bool ->
-                 (list TyVarBinder * ThetaType)%type ->
-                 (list TyVarBinder * ThetaType)%type ->
-                 list Type_ ->
-                 Type_ ->
-                 (Id * bool)%type ->
-                 option (Id * bool)%type -> list FieldLabel.FieldLabel -> PatSyn.
-
-Axiom patSynIsInfix : PatSyn -> bool.
-
-Axiom patSynArity : PatSyn -> BasicTypes.Arity.
-
-Axiom patSynArgs : PatSyn -> list Type_.
-
-Axiom patSynFieldLabels : PatSyn -> list FieldLabel.FieldLabel.
-
-Axiom patSynFieldType : PatSyn -> FieldLabel.FieldLabelString -> Type_.
-
-Axiom patSynUnivTyVarBinders : PatSyn -> list TyVarBinder.
-
-Axiom patSynExTyVars : PatSyn -> list TyVar.
-
-Axiom patSynExTyVarBinders : PatSyn -> list TyVarBinder.
-
-Axiom patSynSig : PatSyn ->
-                  (list TyVar * ThetaType * list TyVar * ThetaType * list Type_ * Type_)%type.
-
-Axiom patSynMatcher : PatSyn -> (Id * bool)%type.
-
-Axiom patSynBuilder : PatSyn -> option (Id * bool)%type.
-
-Axiom tidyPatSynIds : (Id -> Id) -> PatSyn -> PatSyn.
-
-Axiom patSynInstArgTys : PatSyn -> list Type_ -> list Type_.
-
-Axiom patSynInstResTy : PatSyn -> list Type_ -> Type_.
-
-(* Skipping definition `Core.pprPatSynType' *)
+(* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__InScopeSet' *)
 
 Axiom classMinimalDef : Class -> ClassMinimalDef.
 
@@ -4430,6 +3290,8 @@ Axiom classArity : Class -> BasicTypes.Arity.
 
 Axiom classAllSelIds : Class -> list Id.
 
+Axiom classSCSelIds : Class -> list Id.
+
 (* Skipping definition `Core.classSCSelId' *)
 
 Axiom classMethods : Class -> list Id.
@@ -4441,6 +3303,8 @@ Axiom classATs : Class -> list TyCon.
 Axiom classATItems : Class -> list ClassATItem.
 
 Axiom classSCTheta : Class -> list PredType.
+
+Axiom classHasSCs : Class -> bool.
 
 Axiom classTvsFds : Class -> (list TyVar * list (FunDep TyVar))%type.
 
@@ -4467,99 +3331,162 @@ Axiom setCoVarUnique : CoVar -> Unique.Unique -> CoVar.
 
 Axiom setCoVarName : CoVar -> Name.Name -> CoVar.
 
+Axiom etaExpandCoAxBranch : CoAxBranch ->
+                            (list TyVar * list Type_ * Type_)%type.
+
 Axiom pprCoAxiom : forall {br : BranchFlag}, CoAxiom br -> GHC.Base.String.
 
-Axiom pprCoAxBranch : forall {br : BranchFlag},
-                      CoAxiom br -> CoAxBranch -> GHC.Base.String.
+Axiom pprCoAxBranchUser : TyCon -> CoAxBranch -> GHC.Base.String.
 
-Axiom pprCoAxBranchHdr : forall {br : BranchFlag},
-                         CoAxiom br -> BranchIndex -> GHC.Base.String.
+Axiom pprCoAxBranchLHS : TyCon -> CoAxBranch -> GHC.Base.String.
 
-Axiom ppr_co_ax_branch : forall {br},
-                         (TyCon -> Type_ -> GHC.Base.String) ->
-                         CoAxiom br -> CoAxBranch -> GHC.Base.String.
+Axiom pprCoAxBranch : TyCon -> CoAxBranch -> GHC.Base.String.
 
-Axiom decomposeCo : BasicTypes.Arity -> Coercion -> list Coercion.
+Axiom ppr_co_ax_branch : (TidyEnv -> Type_ -> GHC.Base.String) ->
+                         TyCon -> CoAxBranch -> GHC.Base.String.
 
-Axiom decomposeFunCo : Coercion -> (Coercion * Coercion)%type.
+Axiom tidyCoAxBndrsForUser : TidyEnv -> list Var -> (TidyEnv * list Var)%type.
+
+Axiom coToMCo : Coercion -> MCoercion.
+
+Axiom checkReflexiveMCo : MCoercion -> MCoercion.
+
+Axiom isGReflMCo : MCoercion -> bool.
+
+Axiom mkGReflCo : HsSyn.Role -> Type_ -> MCoercionN -> Coercion.
+
+Axiom mkTransMCo : MCoercion -> MCoercion -> MCoercion.
+
+Axiom mkTransMCoL : MCoercion -> Coercion -> MCoercion.
+
+Axiom mkTransMCoR : Coercion -> MCoercion -> MCoercion.
+
+Axiom mkSymMCo : MCoercion -> MCoercion.
+
+Axiom mkCastTyMCo : Type_ -> MCoercion -> Type_.
+
+Axiom mkPiMCos : list Var -> MCoercion -> MCoercion.
+
+Axiom mkFunResMCo : Id -> MCoercionR -> MCoercionR.
+
+Axiom mkGReflLeftMCo : HsSyn.Role -> Type_ -> MCoercionN -> Coercion.
+
+Axiom mkGReflRightMCo : HsSyn.Role -> Type_ -> MCoercionN -> Coercion.
+
+Axiom mkCoherenceRightMCo : HsSyn.Role ->
+                            Type_ -> MCoercionN -> Coercion -> Coercion.
+
+Axiom isReflMCo : MCoercion -> bool.
+
+Axiom decomposeCo : BasicTypes.Arity ->
+                    Coercion -> GHC.Data.List.Infinite.Infinite HsSyn.Role -> list Coercion.
+
+Axiom decomposeFunCo : forall `{Util.HasDebugCallStack},
+                       Coercion -> (CoercionN * Coercion * Coercion)%type.
+
+Axiom decomposePiCos : forall `{Util.HasDebugCallStack},
+                       CoercionN -> Pair.Pair Type_ -> list Type_ -> (list CoercionN * CoercionN)%type.
 
 Axiom getCoVar_maybe : Coercion -> option CoVar.
 
-Axiom splitTyConAppCo_maybe : Coercion -> option (TyCon * list Coercion)%type.
+Axiom multToCo : Mult -> Coercion.
 
 Axiom splitAppCo_maybe : Coercion -> option (Coercion * Coercion)%type.
 
 Axiom splitFunCo_maybe : Coercion -> option (Coercion * Coercion)%type.
 
 Axiom splitForAllCo_maybe : Coercion ->
-                            option (TyVar * Coercion * Coercion)%type.
+                            option (TyCoVar * ForAllTyFlag * ForAllTyFlag * Coercion * Coercion)%type.
 
-Axiom coVarTypes : CoVar -> Pair.Pair Type_.
+Axiom splitForAllCo_ty_maybe : Coercion ->
+                               option (TyVar * ForAllTyFlag * ForAllTyFlag * Coercion * Coercion)%type.
 
-Axiom coVarKindsTypesRole : CoVar -> (Kind * Kind * Type_ * Type_ * Role)%type.
+Axiom splitForAllCo_co_maybe : Coercion ->
+                               option (CoVar * ForAllTyFlag * ForAllTyFlag * Coercion * Coercion)%type.
+
+Axiom coVarLType : forall `{Util.HasDebugCallStack}, CoVar -> Type_.
+
+Axiom coVarRType : forall `{Util.HasDebugCallStack}, CoVar -> Type_.
+
+Axiom coVarTypes : forall `{Util.HasDebugCallStack}, CoVar -> Pair.Pair Type_.
+
+Axiom coVarKindsTypesRole : forall `{Util.HasDebugCallStack},
+                            CoVar -> (Kind * Kind * Type_ * Type_ * HsSyn.Role)%type.
 
 Axiom coVarKind : CoVar -> Type_.
 
-Axiom coVarRole : CoVar -> Role.
+Axiom coVarRole : CoVar -> HsSyn.Role.
 
-Axiom mkCoercionType : Role -> Type_ -> Type_ -> Type_.
-
-Axiom mkHeteroCoercionType : Role -> Kind -> Kind -> Type_ -> Type_ -> Type_.
+Axiom eqTyConRole : TyCon -> HsSyn.Role.
 
 Axiom mkRuntimeRepCo : forall `{Util.HasDebugCallStack}, Coercion -> Coercion.
 
-Axiom isReflCoVar_maybe : CoVar -> option Coercion.
+Axiom isReflCoVar_maybe : Var -> option Coercion.
+
+Axiom isGReflCo : Coercion -> bool.
 
 Axiom isReflCo : Coercion -> bool.
 
-Axiom isReflCo_maybe : Coercion -> option (Type_ * Role)%type.
+Axiom isGReflCo_maybe : Coercion -> option (Type_ * HsSyn.Role)%type.
+
+Axiom isReflCo_maybe : Coercion -> option (Type_ * HsSyn.Role)%type.
 
 Axiom isReflexiveCo : Coercion -> bool.
 
-Axiom isReflexiveCo_maybe : Coercion -> option (Type_ * Role)%type.
+Axiom isReflexiveCo_maybe : Coercion -> option (Type_ * HsSyn.Role)%type.
 
-Axiom mkReflCo : Role -> Type_ -> Coercion.
+Axiom mkReflCo : HsSyn.Role -> Type_ -> Coercion.
 
 Axiom mkRepReflCo : Type_ -> Coercion.
 
 Axiom mkNomReflCo : Type_ -> Coercion.
 
 Axiom mkTyConAppCo : forall `{Util.HasDebugCallStack},
-                     Role -> TyCon -> list Coercion -> Coercion.
+                     HsSyn.Role -> TyCon -> list Coercion -> Coercion.
 
-Axiom mkFunCo : Role -> Coercion -> Coercion -> Coercion.
+Axiom mkFunCoNoFTF : forall `{Util.HasDebugCallStack},
+                     HsSyn.Role -> CoercionN -> Coercion -> Coercion -> Coercion.
 
-Axiom mkFunCos : Role -> list Coercion -> Coercion -> Coercion.
+Axiom mkFunCo : HsSyn.Role ->
+                FunTyFlag -> CoercionN -> Coercion -> Coercion -> Coercion.
+
+Axiom mkNakedFunCo : HsSyn.Role ->
+                     FunTyFlag -> CoercionN -> Coercion -> Coercion -> Coercion.
+
+Axiom mkFunCo2 : HsSyn.Role ->
+                 FunTyFlag -> FunTyFlag -> CoercionN -> Coercion -> Coercion -> Coercion.
 
 Axiom mkAppCo : Coercion -> Coercion -> Coercion.
 
 Axiom mkAppCos : Coercion -> list Coercion -> Coercion.
 
-Axiom mkTransAppCo : Role ->
-                     Coercion ->
-                     Type_ -> Type_ -> Role -> Coercion -> Type_ -> Type_ -> Role -> Coercion.
+Axiom mkForAllCo : forall `{Util.HasDebugCallStack},
+                   TyCoVar -> ForAllTyFlag -> ForAllTyFlag -> CoercionN -> Coercion -> Coercion.
 
-Axiom mkForAllCo : TyVar -> Coercion -> Coercion -> Coercion.
+Axiom mkHomoForAllCos : list ForAllTyBinder -> Coercion -> Coercion.
 
-Axiom mkForAllCos : list (TyVar * Coercion)%type -> Coercion -> Coercion.
+Axiom mkForAllCo_NoRefl : TyCoVar ->
+                          ForAllTyFlag -> ForAllTyFlag -> CoercionN -> Coercion -> Coercion.
 
-Axiom mkHomoForAllCos : list TyVar -> Coercion -> Coercion.
+Axiom assertGoodForAllCo : forall {a},
+                           forall `{Util.HasDebugCallStack},
+                           TyCoVar -> ForAllTyFlag -> ForAllTyFlag -> CoercionN -> Coercion -> a -> a.
 
-Axiom mkHomoForAllCos_NoRefl : list TyVar -> Coercion -> Coercion.
+Axiom mkNakedForAllCo : TyVar ->
+                        ForAllTyFlag -> ForAllTyFlag -> CoercionN -> Coercion -> Coercion.
 
 (* Skipping definition `Core.mkCoVarCo' *)
 
 (* Skipping definition `Core.mkCoVarCos' *)
 
-Axiom isCoVar_maybe : Coercion -> option CoVar.
-
 Axiom mkAxInstCo : forall {br : BranchFlag},
-                   Role -> CoAxiom br -> BranchIndex -> list Type_ -> list Coercion -> Coercion.
+                   HsSyn.Role ->
+                   CoAxiom br -> BranchIndex -> list Type_ -> list Coercion -> Coercion.
 
 Axiom mkAxiomInstCo : CoAxiom Branched ->
                       BranchIndex -> list Coercion -> Coercion.
 
-Axiom mkUnbranchedAxInstCo : Role ->
+Axiom mkUnbranchedAxInstCo : HsSyn.Role ->
                              CoAxiom Unbranched -> list Type_ -> list Coercion -> Coercion.
 
 Axiom mkAxInstRHS : forall {br : BranchFlag},
@@ -4574,82 +3501,100 @@ Axiom mkAxInstLHS : forall {br : BranchFlag},
 Axiom mkUnbranchedAxInstLHS : CoAxiom Unbranched ->
                               list Type_ -> list Coercion -> Type_.
 
-Axiom mkUnsafeCo : Role -> Type_ -> Type_ -> Coercion.
-
 Axiom mkHoleCo : CoercionHole -> Coercion.
 
-Axiom mkUnivCo : UnivCoProvenance -> Role -> Type_ -> Type_ -> Coercion.
+Axiom mkUnivCo : UnivCoProvenance -> HsSyn.Role -> Type_ -> Type_ -> Coercion.
 
 Axiom mkSymCo : Coercion -> Coercion.
 
 Axiom mkTransCo : Coercion -> Coercion -> Coercion.
 
-Axiom mkNthCoRole : Role -> nat -> Coercion -> Coercion.
+Axiom mkSelCo : forall `{Util.HasDebugCallStack}, CoSel -> Coercion -> Coercion.
 
-Axiom mkNthCo : nat -> Coercion -> Coercion.
+Axiom mkSelCo_maybe : forall `{Util.HasDebugCallStack},
+                      CoSel -> Coercion -> option Coercion.
+
+Axiom getNthFun : forall {a : Type}, FunSel -> a -> a -> a -> a.
 
 Axiom mkLRCo : BasicTypes.LeftOrRight -> Coercion -> Coercion.
 
-Axiom mkInstCo : Coercion -> Coercion -> Coercion.
+Axiom mkInstCo : Coercion -> CoercionN -> Coercion.
 
-Axiom mkCoherenceCo : Coercion -> Coercion -> Coercion.
+Axiom mkGReflRightCo : HsSyn.Role -> Type_ -> CoercionN -> Coercion.
 
-Axiom mkCoherenceRightCo : Coercion -> Coercion -> Coercion.
+Axiom mkGReflLeftCo : HsSyn.Role -> Type_ -> CoercionN -> Coercion.
 
-Axiom mkCoherenceLeftCo : Coercion -> Coercion -> Coercion.
+Axiom mkCoherenceLeftCo : HsSyn.Role ->
+                          Type_ -> CoercionN -> Coercion -> Coercion.
+
+Axiom mkCoherenceRightCo : HsSyn.Role ->
+                           Type_ -> CoercionN -> Coercion -> Coercion.
 
 Axiom mkKindCo : Coercion -> Coercion.
 
-Axiom mkSubCo : Coercion -> Coercion.
+Axiom mkSubCo : forall `{Util.HasDebugCallStack}, Coercion -> Coercion.
 
-Axiom downgradeRole_maybe : Role -> Role -> Coercion -> option Coercion.
+Axiom downgradeRole_maybe : HsSyn.Role ->
+                            HsSyn.Role -> Coercion -> option Coercion.
 
-Axiom downgradeRole : Role -> Role -> Coercion -> Coercion.
-
-(* Skipping definition `Core.maybeSubCo' *)
+Axiom downgradeRole : HsSyn.Role -> HsSyn.Role -> Coercion -> Coercion.
 
 Axiom mkAxiomRuleCo : CoAxiomRule -> list Coercion -> Coercion.
 
-Axiom mkProofIrrelCo : Role -> Coercion -> Coercion -> Coercion -> Coercion.
+Axiom mkProofIrrelCo : HsSyn.Role ->
+                       CoercionN -> Coercion -> Coercion -> Coercion.
 
-Axiom setNominalRole_maybe : Coercion -> option Coercion.
+Axiom setNominalRole_maybe : HsSyn.Role -> Coercion -> option CoercionN.
 
 Axiom mkPhantomCo : Coercion -> Type_ -> Type_ -> Coercion.
-
-Axiom mkHomoPhantomCo : Type_ -> Type_ -> Coercion.
 
 Axiom toPhantomCo : Coercion -> Coercion.
 
 Axiom applyRoles : TyCon -> list Coercion -> list Coercion.
 
-Axiom tyConRolesX : Role -> TyCon -> list Role.
+Axiom tyConRolesX : HsSyn.Role ->
+                    TyCon -> GHC.Data.List.Infinite.Infinite HsSyn.Role.
 
-Axiom tyConRolesRepresentational : TyCon -> list Role.
+Axiom tyConRoleListX : HsSyn.Role -> TyCon -> list HsSyn.Role.
 
-Axiom nthRole : Role -> TyCon -> nat -> Role.
+Axiom tyConRolesRepresentational : TyCon ->
+                                   GHC.Data.List.Infinite.Infinite HsSyn.Role.
 
-Axiom ltRole : Role -> Role -> bool.
+Axiom tyConRoleListRepresentational : TyCon -> list HsSyn.Role.
 
-Axiom promoteCoercion : Coercion -> Coercion.
+Axiom tyConRole : HsSyn.Role -> TyCon -> nat -> HsSyn.Role.
 
-Axiom instCoercion : Pair.Pair Type_ -> Coercion -> Coercion -> option Coercion.
+Axiom funRole : HsSyn.Role -> FunSel -> HsSyn.Role.
 
-Axiom instCoercions : Coercion -> list Coercion -> option Coercion.
+Axiom funRoleRepresentational : FunSel -> HsSyn.Role.
 
-Axiom castCoercionKind : Coercion -> Coercion -> Coercion -> Coercion.
+Axiom ltRole : HsSyn.Role -> HsSyn.Role -> bool.
 
-Axiom mkPiCos : Role -> list Var -> Coercion -> Coercion.
+Axiom promoteCoercion : forall `{Util.HasDebugCallStack}, Coercion -> CoercionN.
 
-Axiom mkPiCo : Role -> Var -> Coercion -> Coercion.
+Axiom instCoercion : Pair.Pair Type_ ->
+                     CoercionN -> Coercion -> option CoercionN.
 
-Axiom mkCoCast : Coercion -> Coercion -> Coercion.
+Axiom instCoercions : CoercionN -> list Coercion -> option CoercionN.
+
+Axiom castCoercionKind2 : Coercion ->
+                          HsSyn.Role -> Type_ -> Type_ -> CoercionN -> CoercionN -> Coercion.
+
+Axiom castCoercionKind1 : Coercion ->
+                          HsSyn.Role -> Type_ -> Type_ -> CoercionN -> Coercion.
+
+Axiom castCoercionKind : Coercion -> CoercionN -> CoercionN -> Coercion.
+
+Axiom mkPiCos : HsSyn.Role -> list Var -> Coercion -> Coercion.
+
+Axiom mkPiCo : HsSyn.Role -> Var -> Coercion -> Coercion.
+
+Axiom mkFunResCo : HsSyn.Role -> Id -> Coercion -> Coercion.
+
+Axiom mkCoCast : Coercion -> CoercionR -> Coercion.
 
 Axiom instNewTyCon_maybe : TyCon ->
                            list Type_ -> option (Type_ * Coercion)%type.
-
-Axiom mapStepResult : forall {ev1 : Type},
-                      forall {ev2 : Type},
-                      (ev1 -> ev2) -> NormaliseStepResult ev1 -> NormaliseStepResult ev2.
 
 Axiom composeSteppers : forall {ev : Type},
                         NormaliseStepper ev -> NormaliseStepper ev -> NormaliseStepper ev.
@@ -4665,45 +3610,64 @@ Axiom eqCoercion : Coercion -> Coercion -> bool.
 
 Axiom eqCoercionX : RnEnv2 -> Coercion -> Coercion -> bool.
 
-Axiom liftCoSubstWithEx : Role ->
+Axiom liftCoSubstWithEx : HsSyn.Role ->
                           list TyVar ->
                           list Coercion ->
-                          list TyVar -> list Type_ -> ((Type_ -> Coercion) * list Type_)%type.
+                          list TyCoVar -> list Type_ -> ((Type_ -> Coercion) * list Type_)%type.
 
-Axiom liftCoSubstWith : Role ->
+Axiom liftCoSubstWith : HsSyn.Role ->
                         list TyCoVar -> list Coercion -> Type_ -> Coercion.
 
 Axiom liftCoSubst : forall `{Util.HasDebugCallStack},
-                    Role -> LiftingContext -> Type_ -> Coercion.
+                    HsSyn.Role -> LiftingContext -> Type_ -> Coercion.
 
 Axiom emptyLiftingContext : InScopeSet -> LiftingContext.
 
 Axiom mkLiftingContext : list (TyCoVar * Coercion)%type -> LiftingContext.
 
-Axiom mkSubstLiftingContext : TCvSubst -> LiftingContext.
+Axiom mkSubstLiftingContext : GHC.Core.TyCo.Subst.Subst -> LiftingContext.
 
 Axiom extendLiftingContext : LiftingContext ->
-                             TyVar -> Coercion -> LiftingContext.
+                             TyCoVar -> Coercion -> LiftingContext.
+
+Axiom extendLiftingContextCvSubst : LiftingContext ->
+                                    CoVar -> Coercion -> LiftingContext.
+
+Axiom extendLiftingContextAndInScope : LiftingContext ->
+                                       TyCoVar -> Coercion -> LiftingContext.
 
 Axiom extendLiftingContextEx : LiftingContext ->
-                               list (TyVar * Type_)%type -> LiftingContext.
+                               list (TyCoVar * Type_)%type -> LiftingContext.
 
 Axiom zapLiftingContext : LiftingContext -> LiftingContext.
 
-Axiom substForAllCoBndrCallbackLC : bool ->
-                                    (Coercion -> Coercion) ->
-                                    LiftingContext -> TyVar -> Coercion -> (LiftingContext * TyVar * Coercion)%type.
+Axiom substForAllCoBndrUsingLC : bool ->
+                                 (Coercion -> Coercion) ->
+                                 LiftingContext ->
+                                 TyCoVar -> Coercion -> (LiftingContext * TyCoVar * Coercion)%type.
 
-Axiom ty_co_subst : LiftingContext -> Role -> Type_ -> Coercion.
+Axiom ty_co_subst : LiftingContext -> HsSyn.Role -> Type_ -> Coercion.
 
-Axiom liftCoSubstTyVar : LiftingContext -> Role -> TyVar -> option Coercion.
+Axiom liftCoSubstTyVar : LiftingContext ->
+                         HsSyn.Role -> TyVar -> option Coercion.
 
 Axiom liftCoSubstVarBndr : LiftingContext ->
-                           TyVar -> (LiftingContext * TyVar * Coercion)%type.
+                           TyCoVar -> (LiftingContext * TyCoVar * Coercion)%type.
 
-Axiom liftCoSubstVarBndrCallback : forall {a : Type},
-                                   (LiftingContext -> Type_ -> (Coercion * a)%type) ->
-                                   LiftingContext -> TyVar -> (LiftingContext * TyVar * Coercion * a)%type.
+Axiom liftCoSubstVarBndrUsing : forall {r : Type},
+                                (r -> CoercionN) ->
+                                (LiftingContext -> Type_ -> r) ->
+                                LiftingContext -> TyCoVar -> (LiftingContext * TyCoVar * r)%type.
+
+Axiom liftCoSubstTyVarBndrUsing : forall {r},
+                                  (r -> CoercionN) ->
+                                  (LiftingContext -> Type_ -> r) ->
+                                  LiftingContext -> TyVar -> (LiftingContext * TyVar * r)%type.
+
+Axiom liftCoSubstCoVarBndrUsing : forall {r},
+                                  (r -> CoercionN) ->
+                                  (LiftingContext -> Type_ -> r) ->
+                                  LiftingContext -> CoVar -> (LiftingContext * CoVar * r)%type.
 
 Axiom isMappedByLC : TyCoVar -> LiftingContext -> bool.
 
@@ -4713,20 +3677,24 @@ Axiom substRightCo : LiftingContext -> Coercion -> Coercion.
 
 Axiom swapLiftCoEnv : LiftCoEnv -> LiftCoEnv.
 
-Axiom lcSubstLeft : LiftingContext -> TCvSubst.
+Axiom lcSubstLeft : LiftingContext -> GHC.Core.TyCo.Subst.Subst.
 
-Axiom lcSubstRight : LiftingContext -> TCvSubst.
+Axiom lcSubstRight : LiftingContext -> GHC.Core.TyCo.Subst.Subst.
 
-Axiom liftEnvSubstLeft : TCvSubst -> LiftCoEnv -> TCvSubst.
+Axiom liftEnvSubstLeft : GHC.Core.TyCo.Subst.Subst ->
+                         LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
 
-Axiom liftEnvSubstRight : TCvSubst -> LiftCoEnv -> TCvSubst.
+Axiom liftEnvSubstRight : GHC.Core.TyCo.Subst.Subst ->
+                          LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
 
 Axiom liftEnvSubst : (forall {a}, Pair.Pair a -> a) ->
-                     TCvSubst -> LiftCoEnv -> TCvSubst.
+                     GHC.Core.TyCo.Subst.Subst -> LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
 
-Axiom lcTCvSubst : LiftingContext -> TCvSubst.
+Axiom lcLookupCoVar : LiftingContext -> CoVar -> option Coercion.
 
 Axiom lcInScopeSet : LiftingContext -> InScopeSet.
+
+Axiom seqMCo : MCoercion -> unit.
 
 Axiom seqCo : Coercion -> unit.
 
@@ -4734,430 +3702,382 @@ Axiom seqProv : UnivCoProvenance -> unit.
 
 Axiom seqCos : list Coercion -> unit.
 
+Axiom coercionKinds : list Coercion -> Pair.Pair (list Type_).
+
+Axiom coercionKindRole : Coercion -> (Pair.Pair Type_ * HsSyn.Role)%type.
+
 Axiom coercionType : Coercion -> Type_.
 
 Axiom coercionKind : Coercion -> Pair.Pair Type_.
 
-Axiom coercionKinds : list Coercion -> Pair.Pair (list Type_).
+Axiom coercionLKind : Coercion -> Type_.
 
-Axiom coercionKindRole : Coercion -> (Pair.Pair Type_ * Role)%type.
+Axiom getNthFromType : forall `{Util.HasDebugCallStack},
+                       CoSel -> Type_ -> Type_.
 
-Axiom coercionRole : Coercion -> Role.
+Axiom coercionRKind : Coercion -> Type_.
 
-Axiom pprShortTyThing : TyThing -> GHC.Base.String.
+Axiom coercionRole : Coercion -> HsSyn.Role.
 
-Axiom pprTyThingCategory : TyThing -> GHC.Base.String.
+Axiom mkCoercionType : HsSyn.Role -> Type_ -> Type_ -> Type_.
 
-Axiom tyThingCategory : TyThing -> GHC.Base.String.
+Axiom mkPrimEqPred : Type_ -> Type_ -> Type_.
 
-Axiom delBinderVar : VarSet -> TyVarBinder -> VarSet.
+Axiom mkReprPrimEqPred : Type_ -> Type_ -> Type_.
 
-Axiom isInvisibleBinder : TyBinder -> bool.
+Axiom mkPrimEqPredRole : HsSyn.Role -> Type_ -> Type_ -> PredType.
 
-Axiom isVisibleBinder : TyBinder -> bool.
+Axiom mkNomPrimEqPred : Kind -> Type_ -> Type_ -> Type_.
+
+Axiom buildCoercion : Type_ -> Type_ -> CoercionN.
+
+Axiom hasCoercionHoleTy : Type_ -> bool.
+
+Axiom hasCoercionHoleCo : Coercion -> bool.
+
+Axiom hasThisCoercionHoleTy : Type_ -> CoercionHole -> bool.
+
+Axiom setCoHoleType : CoercionHole -> Type_ -> CoercionHole.
+
+Axiom mkEqSpec : TyVar -> Type_ -> EqSpec.
+
+Axiom eqSpecTyVar : EqSpec -> TyVar.
+
+Axiom eqSpecType : EqSpec -> Type_.
+
+Axiom eqSpecPair : EqSpec -> (TyVar * Type_)%type.
+
+Axiom eqSpecPreds : list EqSpec -> ThetaType.
+
+Axiom eqHsBang : HsImplBang -> HsImplBang -> bool.
+
+Axiom isBanged : HsImplBang -> bool.
+
+Axiom isSrcStrict : HsSyn.SrcStrictness -> bool.
+
+Axiom isSrcUnpacked : HsSyn.SrcUnpackedness -> bool.
+
+Axiom isMarkedStrict : StrictnessMark -> bool.
+
+Axiom cbvFromStrictMark : StrictnessMark -> BasicTypes.CbvMark.
+
+Axiom mkDataCon : Name.Name ->
+                  bool ->
+                  TyConRepName ->
+                  list HsSrcBang ->
+                  list FieldLabel.FieldLabel ->
+                  list TyVar ->
+                  list TyCoVar ->
+                  TcType.ConcreteTyVars ->
+                  list InvisTVBinder ->
+                  list EqSpec ->
+                  KnotTied ThetaType ->
+                  list (KnotTied (Scaled Type_)) ->
+                  KnotTied Type_ ->
+                  PromDataConInfo ->
+                  KnotTied TyCon -> HsSyn.ConTag -> ThetaType -> Id -> DataConRep -> DataCon.
+
+(* Skipping definition `Core.freshNames' *)
+
+Axiom dataConName : DataCon -> Name.Name.
+
+Axiom dataConTagZ : DataCon -> BasicTypes.ConTagZ.
+
+Axiom dataConTyCon : DataCon -> TyCon.
+
+Axiom dataConOrigTyCon : DataCon -> TyCon.
+
+Axiom dataConRepType : DataCon -> Type_.
+
+Axiom dataConIsInfix : DataCon -> bool.
+
+Axiom dataConUnivTyVars : DataCon -> list TyVar.
+
+Axiom dataConExTyCoVars : DataCon -> list TyCoVar.
+
+Axiom dataConUnivAndExTyCoVars : DataCon -> list TyCoVar.
+
+Axiom dataConConcreteTyVars : DataCon -> TcType.ConcreteTyVars.
+
+Axiom dataConUserTyVars : DataCon -> list TyVar.
+
+Axiom dataConUserTyVarBinders : DataCon -> list InvisTVBinder.
+
+Axiom dataConKindEqSpec : DataCon -> list EqSpec.
+
+Axiom dataConTheta : DataCon -> ThetaType.
+
+Axiom dataConWorkId : DataCon -> Id.
+
+Axiom dataConWrapId_maybe : DataCon -> option Id.
+
+Axiom dataConWrapId : DataCon -> Id.
+
+Axiom dataConImplicitTyThings : DataCon -> list GHC.Types.TyThing.TyThing.
+
+Axiom dataConFieldLabels : DataCon -> list FieldLabel.FieldLabel.
+
+Axiom dataConFieldType : DataCon -> HsSyn.FieldLabelString -> Type_.
+
+Axiom dataConFieldType_maybe : DataCon ->
+                               HsSyn.FieldLabelString -> option (FieldLabel.FieldLabel * Type_)%type.
+
+Axiom dataConSrcBangs : DataCon -> list HsSrcBang.
+
+Axiom dataConSourceArity : DataCon -> BasicTypes.Arity.
+
+Axiom dataConRepArity : DataCon -> BasicTypes.Arity.
+
+Axiom isNullarySrcDataCon : DataCon -> bool.
+
+Axiom isNullaryRepDataCon : DataCon -> bool.
+
+Axiom dataConRepStrictness : DataCon -> list StrictnessMark.
+
+Axiom dataConImplBangs : DataCon -> list HsImplBang.
+
+Axiom dataConBoxer : DataCon -> option DataConBoxer.
+
+Axiom dataConInstSig : DataCon ->
+                       list Type_ -> (list TyCoVar * ThetaType * list Type_)%type.
+
+Axiom dataConFullSig : DataCon ->
+                       (list TyVar * list TyCoVar * list EqSpec * ThetaType * list (Scaled Type_) *
+                        Type_)%type.
+
+Axiom dataConOrigResTy : DataCon -> Type_.
+
+Axiom dataConStupidTheta : DataCon -> ThetaType.
+
+Axiom dataConWrapperType : DataCon -> Type_.
+
+Axiom dataConNonlinearType : DataCon -> Type_.
+
+Axiom dataConDisplayType : bool -> DataCon -> Type_.
+
+Axiom dataConInstArgTys : DataCon -> list Type_ -> list (Scaled Type_).
+
+Axiom dataConInstOrigArgTys : DataCon -> list Type_ -> list (Scaled Type_).
+
+Axiom dataConInstUnivs : DataCon -> list Type_ -> list Type_.
+
+Axiom dataConOrigArgTys : DataCon -> list (Scaled Type_).
+
+Axiom dataConOtherTheta : DataCon -> ThetaType.
+
+Axiom dataConRepArgTys : DataCon -> list (Scaled Type_).
+
+(* Skipping definition `Core.dataConIdentity' *)
+
+Axiom isTupleDataCon : DataCon -> bool.
+
+Axiom isBoxedTupleDataCon : DataCon -> bool.
+
+Axiom isUnboxedTupleDataCon : DataCon -> bool.
+
+Axiom isUnboxedSumDataCon : DataCon -> bool.
+
+Axiom isVanillaDataCon : DataCon -> bool.
+
+Axiom isNewDataCon : DataCon -> bool.
+
+Axiom isTypeDataCon : DataCon -> bool.
+
+Axiom isCovertGadtDataCon : DataCon -> bool.
+
+Axiom specialPromotedDc : DataCon -> bool.
+
+Axiom classDataCon : Class -> DataCon.
+
+Axiom dataConCannotMatch : list Type_ -> DataCon -> bool.
+
+Axiom dataConResRepTyArgs : DataCon -> list Type_.
+
+Axiom checkDataConTyVars : DataCon -> bool.
+
+Axiom dataConUserTyVarsNeedWrapper : DataCon -> bool.
+
+Axiom promoteDataCon : DataCon -> TyCon.
+
+Axiom splitDataProductType_maybe : Type_ ->
+                                   option (TyCon * list Type_ * DataCon * list (Scaled Type_))%type.
+
+Axiom mkPatSyn : Name.Name ->
+                 bool ->
+                 (list InvisTVBinder * ThetaType)%type ->
+                 (list InvisTVBinder * ThetaType)%type ->
+                 list FRRType ->
+                 Type_ -> PatSynMatcher -> PatSynBuilder -> list FieldLabel.FieldLabel -> PatSyn.
+
+Axiom patSynIsInfix : PatSyn -> bool.
+
+Axiom patSynArity : PatSyn -> BasicTypes.Arity.
+
+Axiom isVanillaPatSyn : PatSyn -> bool.
+
+Axiom patSynArgs : PatSyn -> list Type_.
+
+Axiom patSynFieldLabels : PatSyn -> list FieldLabel.FieldLabel.
+
+Axiom patSynFieldType : PatSyn -> HsSyn.FieldLabelString -> Type_.
+
+Axiom patSynUnivTyVarBinders : PatSyn -> list InvisTVBinder.
+
+Axiom patSynExTyVars : PatSyn -> list TyVar.
+
+Axiom patSynExTyVarBinders : PatSyn -> list InvisTVBinder.
+
+Axiom patSynSigBndr : PatSyn ->
+                      (list InvisTVBinder * ThetaType * list InvisTVBinder * ThetaType *
+                       list (Scaled Type_) *
+                       Type_)%type.
+
+Axiom patSynSig : PatSyn ->
+                  (list TyVar * ThetaType * list TyVar * ThetaType * list (Scaled Type_) *
+                   Type_)%type.
+
+Axiom patSynMatcher : PatSyn -> PatSynMatcher.
+
+Axiom patSynBuilder : PatSyn -> PatSynBuilder.
+
+Axiom patSynResultType : PatSyn -> Type_.
+
+Axiom patSynInstArgTys : PatSyn -> list Type_ -> list Type_.
+
+Axiom patSynInstResTy : PatSyn -> list Type_ -> Type_.
+
+(* Skipping definition `Core.pprPatSynType' *)
+
+Axiom nonDetCmpTyLit : TyLit -> TyLit -> comparison.
+
+Axiom cmpTyLit : TyLit -> TyLit -> comparison.
+
+Axiom cmpTyLitWith : forall {r},
+                     forall `{GHC.Base.Ord r},
+                     (FastString.FastString -> r) -> TyLit -> TyLit -> comparison.
 
 (* Skipping definition `Core.mkTyVarTy' *)
 
 (* Skipping definition `Core.mkTyVarTys' *)
 
-Axiom mkFunTy : Type_ -> Type_ -> Type_.
+Axiom mkTyCoVarTy : TyCoVar -> Type_.
 
-Axiom mkFunTys : list Type_ -> Type_ -> Type_.
+Axiom mkTyCoVarTys : list TyCoVar -> list Type_.
 
-Axiom mkForAllTy : TyVar -> ArgFlag -> Type_ -> Type_.
+Axiom mkNakedFunTy : FunTyFlag -> Kind -> Kind -> Kind.
 
-Axiom mkForAllTys : list TyVarBinder -> Type_ -> Type_.
+Axiom mkFunTy : forall `{Util.HasDebugCallStack},
+                FunTyFlag -> Mult -> Type_ -> Type_ -> Type_.
 
-Axiom mkPiTy : TyBinder -> Type_ -> Type_.
+Axiom mkInvisFunTy : forall `{Util.HasDebugCallStack}, Type_ -> Type_ -> Type_.
 
-Axiom mkPiTys : list TyBinder -> Type_ -> Type_.
+Axiom mkInvisFunTys : forall `{Util.HasDebugCallStack},
+                      list Type_ -> Type_ -> Type_.
 
-Axiom isCoercionType : Type_ -> bool.
+Axiom mkVisFunTy : forall `{Util.HasDebugCallStack},
+                   Mult -> Type_ -> Type_ -> Type_.
 
-Axiom mkTyConTy : TyCon -> Type_.
+Axiom mkVisFunTyMany : forall `{Util.HasDebugCallStack},
+                       Type_ -> Type_ -> Type_.
 
-Axiom is_TYPE : (Type_ -> bool) -> Kind -> bool.
+Axiom mkVisFunTysMany : list Type_ -> Type_ -> Type_.
 
-Axiom isLiftedTypeKind : Kind -> bool.
+Axiom mkScaledFunTy : forall `{Util.HasDebugCallStack},
+                      FunTyFlag -> Scaled Type_ -> Type_ -> Type_.
 
-Axiom isUnliftedTypeKind : Kind -> bool.
+Axiom mkScaledFunTys : forall `{Util.HasDebugCallStack},
+                       list (Scaled Type_) -> Type_ -> Type_.
 
-Axiom isRuntimeRepTy : Type_ -> bool.
+Axiom mkForAllTy : ForAllTyBinder -> Type_ -> Type_.
 
-Axiom isRuntimeRepVar : TyVar -> bool.
+Axiom mkForAllTys : list ForAllTyBinder -> Type_ -> Type_.
+
+Axiom mkInvisForAllTys : list InvisTVBinder -> Type_ -> Type_.
+
+Axiom mkPiTy : forall `{Util.HasDebugCallStack}, PiTyBinder -> Type_ -> Type_.
+
+Axiom mkPiTys : forall `{Util.HasDebugCallStack},
+                list PiTyBinder -> Type_ -> Type_.
+
+Axiom mkNakedTyConTy : TyCon -> Type_.
+
+Axiom tcMkVisFunTy : Mult -> Type_ -> Type_ -> Type_.
+
+Axiom tcMkInvisFunTy : BasicTypes.TypeOrConstraint -> Type_ -> Type_ -> Type_.
+
+Axiom tcMkScaledFunTys : list (Scaled Type_) -> Type_ -> Type_.
+
+Axiom tcMkScaledFunTy : Scaled Type_ -> Type_ -> Type_.
 
 Axiom coHoleCoVar : CoercionHole -> CoVar.
 
-Axiom tyCoVarsOfType : Type_ -> TyCoVarSet.
-
-Axiom tyCoVarsOfTypeDSet : Type_ -> DTyCoVarSet.
-
-Axiom tyCoVarsOfTypeList : Type_ -> list TyCoVar.
-
-(* Skipping definition `Core.tyCoFVsOfType' *)
-
-(* Skipping definition `Core.tyCoFVsBndr' *)
-
-Axiom tyCoVarsOfTypes : list Type_ -> TyCoVarSet.
-
-Axiom tyCoVarsOfTypesSet : TyVarEnv Type_ -> TyCoVarSet.
-
-Axiom tyCoVarsOfTypesDSet : list Type_ -> DTyCoVarSet.
-
-Axiom tyCoVarsOfTypesList : list Type_ -> list TyCoVar.
-
-(* Skipping definition `Core.tyCoFVsOfTypes' *)
-
-Axiom tyCoVarsOfCo : Coercion -> TyCoVarSet.
-
-Axiom tyCoVarsOfCoDSet : Coercion -> DTyCoVarSet.
-
-Axiom tyCoVarsOfCoList : Coercion -> list TyCoVar.
-
-(* Skipping definition `Core.tyCoFVsOfCo' *)
-
-(* Skipping definition `Core.tyCoFVsOfCoVar' *)
-
-Axiom tyCoVarsOfProv : UnivCoProvenance -> TyCoVarSet.
-
-(* Skipping definition `Core.tyCoFVsOfProv' *)
-
-Axiom tyCoVarsOfCos : list Coercion -> TyCoVarSet.
-
-Axiom tyCoVarsOfCosSet : CoVarEnv Coercion -> TyCoVarSet.
-
-(* Skipping definition `Core.tyCoFVsOfCos' *)
-
-Axiom coVarsOfType : Type_ -> CoVarSet.
-
-Axiom coVarsOfTypes : list Type_ -> TyCoVarSet.
-
-Axiom coVarsOfCo : Coercion -> CoVarSet.
-
-Axiom coVarsOfCoVar : CoVar -> CoVarSet.
-
-Axiom coVarsOfProv : UnivCoProvenance -> CoVarSet.
-
-Axiom coVarsOfCos : list Coercion -> CoVarSet.
-
-Axiom closeOverKinds : TyVarSet -> TyVarSet.
-
-(* Skipping definition `Core.closeOverKindsFV' *)
-
-Axiom closeOverKindsList : list TyVar -> list TyVar.
-
-Axiom closeOverKindsDSet : DTyVarSet -> DTyVarSet.
-
-(* Skipping definition `Core.injectiveVarsOfBinder' *)
-
-(* Skipping definition `Core.injectiveVarsOfType' *)
-
-Axiom noFreeVarsOfType : Type_ -> bool.
-
-Axiom noFreeVarsOfCo : Coercion -> bool.
-
-Axiom noFreeVarsOfProv : UnivCoProvenance -> bool.
-
-Axiom emptyTvSubstEnv : TvSubstEnv.
-
-Axiom emptyCvSubstEnv : CvSubstEnv.
-
-Axiom composeTCvSubstEnv : InScopeSet ->
-                           (TvSubstEnv * CvSubstEnv)%type ->
-                           (TvSubstEnv * CvSubstEnv)%type -> (TvSubstEnv * CvSubstEnv)%type.
-
-Axiom composeTCvSubst : TCvSubst -> TCvSubst -> TCvSubst.
-
-Axiom emptyTCvSubst : TCvSubst.
-
-Axiom mkEmptyTCvSubst : InScopeSet -> TCvSubst.
-
-Axiom isEmptyTCvSubst : TCvSubst -> bool.
-
-Axiom mkTCvSubst : InScopeSet -> (TvSubstEnv * CvSubstEnv)%type -> TCvSubst.
-
-Axiom mkTvSubst : InScopeSet -> TvSubstEnv -> TCvSubst.
-
-Axiom getTvSubstEnv : TCvSubst -> TvSubstEnv.
-
-Axiom getCvSubstEnv : TCvSubst -> CvSubstEnv.
-
-Axiom getTCvInScope : TCvSubst -> InScopeSet.
-
-Axiom getTCvSubstRangeFVs : TCvSubst -> VarSet.
-
-Axiom isInScope : Var -> TCvSubst -> bool.
-
-Axiom notElemTCvSubst : Var -> TCvSubst -> bool.
-
-Axiom setTvSubstEnv : TCvSubst -> TvSubstEnv -> TCvSubst.
-
-Axiom setCvSubstEnv : TCvSubst -> CvSubstEnv -> TCvSubst.
-
-Axiom zapTCvSubst : TCvSubst -> TCvSubst.
-
-Axiom extendTCvInScope : TCvSubst -> Var -> TCvSubst.
-
-Axiom extendTCvInScopeList : TCvSubst -> list Var -> TCvSubst.
-
-Axiom extendTCvInScopeSet : TCvSubst -> VarSet -> TCvSubst.
-
-Axiom extendTCvSubst : TCvSubst -> TyCoVar -> Type_ -> TCvSubst.
-
-Axiom extendTvSubst : TCvSubst -> TyVar -> Type_ -> TCvSubst.
-
-Axiom extendTvSubstBinderAndInScope : TCvSubst -> TyBinder -> Type_ -> TCvSubst.
-
-Axiom extendTvSubstWithClone : TCvSubst -> TyVar -> TyVar -> TCvSubst.
-
-Axiom extendCvSubst : TCvSubst -> CoVar -> Coercion -> TCvSubst.
-
-Axiom extendCvSubstWithClone : TCvSubst -> CoVar -> CoVar -> TCvSubst.
-
-Axiom extendTvSubstAndInScope : TCvSubst -> TyVar -> Type_ -> TCvSubst.
-
-Axiom extendTvSubstList : TCvSubst -> list Var -> list Type_ -> TCvSubst.
-
-Axiom unionTCvSubst : TCvSubst -> TCvSubst -> TCvSubst.
-
-Axiom mkTyCoInScopeSet : list Type_ -> list Coercion -> InScopeSet.
-
-Axiom zipTvSubst : list TyVar -> list Type_ -> TCvSubst.
-
-Axiom zipCvSubst : list CoVar -> list Coercion -> TCvSubst.
-
-Axiom mkTvSubstPrs : list (TyVar * Type_)%type -> TCvSubst.
-
-Axiom zipTyEnv : list TyVar -> list Type_ -> TvSubstEnv.
-
-Axiom zipCoEnv : list CoVar -> list Coercion -> CvSubstEnv.
-
-Axiom substTyWith : forall `{Util.HasDebugCallStack},
-                    list TyVar -> list Type_ -> Type_ -> Type_.
-
-Axiom substTyWithUnchecked : list TyVar -> list Type_ -> Type_ -> Type_.
-
-Axiom substTyWithInScope : InScopeSet ->
-                           list TyVar -> list Type_ -> Type_ -> Type_.
-
-Axiom substCoWith : forall `{Util.HasDebugCallStack},
-                    list TyVar -> list Type_ -> Coercion -> Coercion.
-
-Axiom substCoWithUnchecked : list TyVar -> list Type_ -> Coercion -> Coercion.
-
-Axiom substTyWithCoVars : list CoVar -> list Coercion -> Type_ -> Type_.
-
-Axiom substTysWith : list TyVar -> list Type_ -> list Type_ -> list Type_.
-
-Axiom substTysWithCoVars : list CoVar ->
-                           list Coercion -> list Type_ -> list Type_.
-
-Axiom substTyAddInScope : TCvSubst -> Type_ -> Type_.
-
-Axiom isValidTCvSubst : TCvSubst -> bool.
-
-Axiom checkValidSubst : forall {a : Type},
-                        forall `{Util.HasDebugCallStack},
-                        TCvSubst -> list Type_ -> list Coercion -> a -> a.
-
-Axiom substTy : forall `{Util.HasDebugCallStack}, TCvSubst -> Type_ -> Type_.
-
-Axiom substTyUnchecked : TCvSubst -> Type_ -> Type_.
-
-Axiom substTys : forall `{Util.HasDebugCallStack},
-                 TCvSubst -> list Type_ -> list Type_.
-
-Axiom substTysUnchecked : TCvSubst -> list Type_ -> list Type_.
-
-Axiom substTheta : forall `{Util.HasDebugCallStack},
-                   TCvSubst -> ThetaType -> ThetaType.
-
-Axiom substThetaUnchecked : TCvSubst -> ThetaType -> ThetaType.
-
-Axiom subst_ty : TCvSubst -> Type_ -> Type_.
-
-Axiom substTyVar : TCvSubst -> TyVar -> Type_.
-
-Axiom substTyVars : TCvSubst -> list TyVar -> list Type_.
-
-Axiom lookupTyVar : TCvSubst -> TyVar -> option Type_.
-
-Axiom substCo : forall `{Util.HasDebugCallStack},
-                TCvSubst -> Coercion -> Coercion.
-
-Axiom substCoUnchecked : TCvSubst -> Coercion -> Coercion.
-
-Axiom substCos : forall `{Util.HasDebugCallStack},
-                 TCvSubst -> list Coercion -> list Coercion.
-
-Axiom subst_co : TCvSubst -> Coercion -> Coercion.
-
-Axiom substForAllCoBndr : TCvSubst ->
-                          TyVar -> Coercion -> (TCvSubst * TyVar * Coercion)%type.
-
-Axiom substForAllCoBndrUnchecked : TCvSubst ->
-                                   TyVar -> Coercion -> (TCvSubst * TyVar * Coercion)%type.
-
-Axiom substForAllCoBndrCallback : bool ->
-                                  (Coercion -> Coercion) ->
-                                  TCvSubst -> TyVar -> Coercion -> (TCvSubst * TyVar * Coercion)%type.
-
-Axiom substCoVar : TCvSubst -> CoVar -> Coercion.
-
-Axiom substCoVars : TCvSubst -> list CoVar -> list Coercion.
-
-Axiom lookupCoVar : TCvSubst -> Var -> option Coercion.
-
-Axiom substTyVarBndr : forall `{Util.HasDebugCallStack},
-                       TCvSubst -> TyVar -> (TCvSubst * TyVar)%type.
-
-Axiom substTyVarBndrUnchecked : TCvSubst -> TyVar -> (TCvSubst * TyVar)%type.
-
-Axiom substTyVarBndrCallback : (TCvSubst -> Type_ -> Type_) ->
-                               TCvSubst -> TyVar -> (TCvSubst * TyVar)%type.
-
-Axiom substCoVarBndr : TCvSubst -> CoVar -> (TCvSubst * CoVar)%type.
-
-Axiom cloneTyVarBndr : TCvSubst ->
-                       TyVar -> Unique.Unique -> (TCvSubst * TyVar)%type.
-
-Axiom cloneTyVarBndrs : TCvSubst ->
-                        list TyVar -> UniqSupply.UniqSupply -> (TCvSubst * list TyVar)%type.
-
-Axiom pprType : Type_ -> GHC.Base.String.
-
-Axiom pprParendType : Type_ -> GHC.Base.String.
-
-Axiom pprPrecType : BasicTypes.TyPrec -> Type_ -> GHC.Base.String.
-
-Axiom pprTyLit : TyLit -> GHC.Base.String.
-
-Axiom pprKind : Kind -> GHC.Base.String.
-
-Axiom pprParendKind : Kind -> GHC.Base.String.
-
-(* Skipping definition `Core.tidyToIfaceTypeSty' *)
-
-(* Skipping definition `Core.tidyToIfaceType' *)
-
-Axiom pprCo : Coercion -> GHC.Base.String.
-
-Axiom pprParendCo : Coercion -> GHC.Base.String.
-
-(* Skipping definition `Core.tidyToIfaceCoSty' *)
-
-(* Skipping definition `Core.tidyToIfaceCo' *)
-
-Axiom pprClassPred : Class -> list Type_ -> GHC.Base.String.
-
-Axiom pprTheta : ThetaType -> GHC.Base.String.
-
-Axiom pprParendTheta : ThetaType -> GHC.Base.String.
-
-Axiom pprThetaArrowTy : ThetaType -> GHC.Base.String.
-
-Axiom pprSigmaType : Type_ -> GHC.Base.String.
-
-Axiom pprForAll : list TyVarBinder -> GHC.Base.String.
-
-Axiom pprUserForAll : list TyVarBinder -> GHC.Base.String.
-
-Axiom pprTvBndrs : list TyVarBinder -> GHC.Base.String.
-
-Axiom pprTvBndr : TyVarBinder -> GHC.Base.String.
-
-Axiom pprTyVars : list TyVar -> GHC.Base.String.
-
-Axiom pprTyVar : TyVar -> GHC.Base.String.
-
-Axiom debugPprType : Type_ -> GHC.Base.String.
-
-Axiom debug_ppr_ty : BasicTypes.TyPrec -> Type_ -> GHC.Base.String.
-
-Axiom pprDataCons : TyCon -> GHC.Base.String.
-
-Axiom pprDataConWithArgs : DataCon -> GHC.Base.String.
-
-Axiom pprTypeApp : TyCon -> list Type_ -> GHC.Base.String.
-
-Axiom ppSuggestExplicitKinds : GHC.Base.String.
-
-Axiom tidyTyCoVarBndrs : TidyEnv ->
-                         list TyCoVar -> (TidyEnv * list TyCoVar)%type.
-
-Axiom tidyTyCoVarBndr : TidyEnv -> TyCoVar -> (TidyEnv * TyCoVar)%type.
-
-Axiom getHelpfulOccName : TyCoVar -> OccName.OccName.
-
-Axiom tidyTyVarBinder : forall {vis : Type},
-                        TidyEnv -> TyVarBndr TyVar vis -> (TidyEnv * TyVarBndr TyVar vis)%type.
-
-Axiom tidyTyVarBinders : forall {vis : Type},
-                         TidyEnv ->
-                         list (TyVarBndr TyVar vis) -> (TidyEnv * list (TyVarBndr TyVar vis))%type.
-
-Axiom tidyFreeTyCoVars : TidyEnv -> list TyCoVar -> TidyEnv.
-
-Axiom tidyOpenTyCoVars : TidyEnv ->
-                         list TyCoVar -> (TidyEnv * list TyCoVar)%type.
-
-Axiom tidyOpenTyCoVar : TidyEnv -> TyCoVar -> (TidyEnv * TyCoVar)%type.
-
-Axiom tidyTyVarOcc : TidyEnv -> TyVar -> TyVar.
-
-Axiom tidyTypes : TidyEnv -> list Type_ -> list Type_.
-
-Axiom tidyType : TidyEnv -> Type_ -> Type_.
-
-Axiom mkForAllTys' : list (TyVar * ArgFlag)%type -> Type_ -> Type_.
-
-Axiom splitForAllTys' : Type_ -> (list TyVar * list ArgFlag * Type_)%type.
-
-Axiom tidyOpenTypes : TidyEnv -> list Type_ -> (TidyEnv * list Type_)%type.
-
-Axiom tidyOpenType : TidyEnv -> Type_ -> (TidyEnv * Type_)%type.
-
-Axiom tidyTopType : Type_ -> Type_.
-
-Axiom tidyOpenKind : TidyEnv -> Kind -> (TidyEnv * Kind)%type.
-
-Axiom tidyKind : TidyEnv -> Kind -> Kind.
-
-Axiom tidyCo : TidyEnv -> Coercion -> Coercion.
-
-Axiom tidyCos : TidyEnv -> list Coercion -> list Coercion.
+Axiom isHeteroKindCoHole : CoercionHole -> bool.
+
+Axiom setCoHoleCoVar : CoercionHole -> CoVar -> CoercionHole.
+
+Axiom foldTyCo : forall {a : Type},
+                 forall {env : Type},
+                 forall `{GHC.Base.Monoid a},
+                 TyCoFolder env a ->
+                 env ->
+                 ((Type_ -> a) * (list Type_ -> a) * (Coercion -> a) *
+                  (list Coercion -> a))%type.
+
+Axiom noView : Type_ -> option Type_.
 
 Axiom typeSize : Type_ -> nat.
+
+Axiom typesSize : list Type_ -> nat.
 
 Axiom coercionSize : Coercion -> nat.
 
 Axiom provSize : UnivCoProvenance -> nat.
 
+Axiom scaledMult : forall {a : Type}, Scaled a -> Mult.
+
+Axiom scaledThing : forall {a : Type}, Scaled a -> a.
+
+Axiom mapScaledType : (Type_ -> Type_) -> Scaled Type_ -> Scaled Type_.
+
 Axiom mkAnonTyConBinder : TyVar -> TyConBinder.
 
 Axiom mkAnonTyConBinders : list TyVar -> list TyConBinder.
 
-Axiom mkNamedTyConBinder : ArgFlag -> TyVar -> TyConBinder.
+Axiom mkNamedTyConBinder : ForAllTyFlag -> TyVar -> TyConBinder.
 
-Axiom mkNamedTyConBinders : ArgFlag -> list TyVar -> list TyConBinder.
+Axiom mkNamedTyConBinders : ForAllTyFlag -> list TyVar -> list TyConBinder.
 
-Axiom tyConBinderArgFlag : TyConBinder -> ArgFlag.
+Axiom mkRequiredTyConBinder : TyCoVarSet -> TyVar -> TyConBinder.
+
+Axiom tyConBinderForAllTyFlag : TyConBinder -> ForAllTyFlag.
+
+Axiom tyConBndrVisForAllTyFlag : TyConBndrVis -> ForAllTyFlag.
 
 Axiom isNamedTyConBinder : TyConBinder -> bool.
 
 Axiom isVisibleTyConBinder : forall {tv : Type},
-                             TyVarBndr tv TyConBndrVis -> bool.
+                             VarBndr tv TyConBndrVis -> bool.
 
 Axiom isVisibleTcbVis : TyConBndrVis -> bool.
 
+Axiom isInvisSpecTcbVis : TyConBndrVis -> bool.
+
 Axiom isInvisibleTyConBinder : forall {tv : Type},
-                               TyVarBndr tv TyConBndrVis -> bool.
+                               VarBndr tv TyConBndrVis -> bool.
 
 Axiom mkTyConKind : list TyConBinder -> Kind -> Kind.
 
-Axiom tyConTyVarBinders : list TyConBinder -> list TyVarBinder.
+Axiom mkTyConTy : TyCon -> Type_.
+
+Axiom tyConInvisTVBinders : list TyConBinder -> list InvisTVBinder.
 
 Axiom tyConVisibleTyVars : TyCon -> list TyVar.
+
+Axiom mkSumTyConRhs : list DataCon -> AlgTyConRhs.
+
+Axiom mkLevPolyDataTyConRhs : bool -> bool -> list DataCon -> AlgTyConRhs.
+
+Axiom mkDataTyConRhs : list DataCon -> AlgTyConRhs.
 
 Axiom visibleDataCons : AlgTyConRhs -> list DataCon.
 
@@ -5172,62 +4092,74 @@ Axiom mkPrelTyConRepName : Name.Name -> TyConRepName.
 Axiom tyConRepModOcc : Module.Module ->
                        OccName.OccName -> (Module.Module * OccName.OccName)%type.
 
-Axiom isVoidRep : PrimRep -> bool.
-
 Axiom isGcPtrRep : PrimRep -> bool.
+
+Axiom primRepCompatible : Platform.Platform -> PrimRep -> PrimRep -> bool.
+
+Axiom primRepsCompatible : Platform.Platform ->
+                           list PrimRep -> list PrimRep -> bool.
 
 (* Skipping definition `Core.primRepSizeB' *)
 
-Axiom primElemRepSizeB : PrimElemRep -> nat.
+Axiom primRepSizeW64_B : PrimRep -> nat.
+
+Axiom primElemRepSizeB : Platform.Platform -> PrimElemRep -> nat.
+
+Axiom primElemRepSizeW64_B : PrimElemRep -> nat.
+
+Axiom primElemRepToPrimRep : PrimElemRep -> PrimRep.
 
 Axiom primRepIsFloat : PrimRep -> option bool.
+
+Axiom primRepIsWord : PrimRep -> bool.
+
+Axiom primRepIsInt : PrimRep -> bool.
 
 Axiom tyConFieldLabels : TyCon -> list FieldLabel.FieldLabel.
 
 Axiom tyConFieldLabelEnv : TyCon -> FieldLabel.FieldLabelEnv.
 
-Axiom lookupTyConFieldLabel : FieldLabel.FieldLabelString ->
+Axiom lookupTyConFieldLabel : HsSyn.FieldLabelString ->
                               TyCon -> option FieldLabel.FieldLabel.
 
 Axiom fieldsOfAlgTcRhs : AlgTyConRhs -> FieldLabel.FieldLabelEnv.
 
-Axiom mkFunTyCon : Name.Name -> list TyConBinder -> Name.Name -> TyCon.
+Axiom mkTyCon : Name.Name ->
+                list TyConBinder -> Kind -> list HsSyn.Role -> TyConDetails -> TyCon.
 
 Axiom mkAlgTyCon : Name.Name ->
                    list TyConBinder ->
                    Kind ->
-                   list Role ->
+                   list HsSyn.Role ->
                    option CType -> list PredType -> AlgTyConRhs -> AlgTyConFlav -> bool -> TyCon.
 
 Axiom mkClassTyCon : Name.Name ->
-                     list TyConBinder -> list Role -> AlgTyConRhs -> Class -> Name.Name -> TyCon.
+                     list TyConBinder ->
+                     list HsSyn.Role -> AlgTyConRhs -> Class -> Name.Name -> TyCon.
 
 Axiom mkTupleTyCon : Name.Name ->
                      list TyConBinder ->
-                     Kind ->
-                     BasicTypes.Arity -> DataCon -> BasicTypes.TupleSort -> AlgTyConFlav -> TyCon.
+                     Kind -> DataCon -> BasicTypes.TupleSort -> AlgTyConFlav -> TyCon.
+
+Axiom constRoles : list TyConBinder -> HsSyn.Role -> list HsSyn.Role.
 
 Axiom mkSumTyCon : Name.Name ->
-                   list TyConBinder ->
-                   Kind -> BasicTypes.Arity -> list TyVar -> list DataCon -> AlgTyConFlav -> TyCon.
+                   list TyConBinder -> Kind -> list DataCon -> AlgTyConFlav -> TyCon.
 
 Axiom mkTcTyCon : Name.Name ->
                   list TyConBinder ->
-                  Kind -> list (Name.Name * TyVar)%type -> TyConFlavour -> TyCon.
+                  Kind ->
+                  list (Name.Name * TcTyVar)%type ->
+                  bool -> BasicTypes.TyConFlavour TyCon -> TyCon.
 
-Axiom mkPrimTyCon : Name.Name -> list TyConBinder -> Kind -> list Role -> TyCon.
+Axiom noTcTyConScopedTyVars : list (Name.Name * TcTyVar)%type.
 
-Axiom mkKindTyCon : Name.Name ->
-                    list TyConBinder -> Kind -> list Role -> Name.Name -> TyCon.
-
-Axiom mkLiftedPrimTyCon : Name.Name ->
-                          list TyConBinder -> Kind -> list Role -> TyCon.
-
-Axiom mkPrimTyCon' : Name.Name ->
-                     list TyConBinder -> Kind -> list Role -> bool -> option TyConRepName -> TyCon.
+Axiom mkPrimTyCon : Name.Name ->
+                    list TyConBinder -> Kind -> list HsSyn.Role -> TyCon.
 
 Axiom mkSynonymTyCon : Name.Name ->
-                       list TyConBinder -> Kind -> list Role -> Type_ -> bool -> bool -> TyCon.
+                       list TyConBinder ->
+                       Kind -> list HsSyn.Role -> Type_ -> bool -> bool -> bool -> bool -> TyCon.
 
 Axiom mkFamilyTyCon : Name.Name ->
                       list TyConBinder ->
@@ -5237,27 +4169,25 @@ Axiom mkFamilyTyCon : Name.Name ->
 Axiom mkPromotedDataCon : DataCon ->
                           Name.Name ->
                           TyConRepName ->
-                          list TyConBinder -> Kind -> list Role -> RuntimeRepInfo -> TyCon.
-
-Axiom isFunTyCon : TyCon -> bool.
+                          list TyConBinder -> Kind -> list HsSyn.Role -> PromDataConInfo -> TyCon.
 
 Axiom isAbstractTyCon : TyCon -> bool.
 
-Axiom makeRecoveryTyCon : TyCon -> TyCon.
-
 Axiom isPrimTyCon : TyCon -> bool.
-
-Axiom isUnliftedTyCon : TyCon -> bool.
 
 Axiom isAlgTyCon : TyCon -> bool.
 
 Axiom isVanillaAlgTyCon : TyCon -> bool.
 
+Axiom isValidDTT2TyCon : TyCon -> bool.
+
 Axiom isDataTyCon : TyCon -> bool.
 
-Axiom isInjectiveTyCon : TyCon -> Role -> bool.
+Axiom isTypeDataTyCon : TyCon -> bool.
 
-Axiom isGenerativeTyCon : TyCon -> Role -> bool.
+Axiom isInjectiveTyCon : TyCon -> HsSyn.Role -> bool.
+
+Axiom isGenerativeTyCon : TyCon -> HsSyn.Role -> bool.
 
 Axiom isGenInjAlgRhs : AlgTyConRhs -> bool.
 
@@ -5269,19 +4199,15 @@ Axiom unwrapNewTyCon_maybe : TyCon ->
 Axiom unwrapNewTyConEtad_maybe : TyCon ->
                                  option (list TyVar * Type_ * CoAxiom Unbranched)%type.
 
-Axiom isProductTyCon : TyCon -> bool.
-
-Axiom isDataProductTyCon_maybe : TyCon -> option DataCon.
-
-Axiom isDataSumTyCon_maybe : TyCon -> option (list DataCon).
-
 Axiom isTypeSynonymTyCon : TyCon -> bool.
 
 Axiom isTauTyCon : TyCon -> bool.
 
 Axiom isFamFreeTyCon : TyCon -> bool.
 
-Axiom mightBeUnsaturatedTyCon : TyCon -> bool.
+Axiom isForgetfulSynTyCon : TyCon -> bool.
+
+Axiom tyConMustBeSaturated : TyCon -> bool.
 
 Axiom isGadtSyntaxTyCon : TyCon -> bool.
 
@@ -5300,15 +4226,17 @@ Axiom isOpenTypeFamilyTyCon : TyCon -> bool.
 Axiom isClosedSynFamilyTyConWithAxiom_maybe : TyCon ->
                                               option (CoAxiom Branched).
 
-Axiom tyConInjectivityInfo : TyCon -> Injectivity.
-
 Axiom isBuiltInSynFamTyCon_maybe : TyCon -> option BuiltInSynFamily.
+
+Axiom tyConFamilyResVar_maybe : TyCon -> option Name.Name.
+
+Axiom tyConInjectivityInfo : TyCon -> Injectivity.
 
 Axiom isDataFamFlav : FamTyConFlav -> bool.
 
 Axiom isTyConAssoc : TyCon -> bool.
 
-Axiom tyConAssoc_maybe : TyCon -> option Class.
+Axiom tyConAssoc_maybe : TyCon -> option TyCon.
 
 Axiom isTupleTyCon : TyCon -> bool.
 
@@ -5320,13 +4248,21 @@ Axiom isBoxedTupleTyCon : TyCon -> bool.
 
 Axiom isUnboxedSumTyCon : TyCon -> bool.
 
+Axiom isLiftedAlgTyCon : TyCon -> bool.
+
+Axiom isPromotedDataCon_maybe : TyCon -> option DataCon.
+
 Axiom isPromotedTupleTyCon : TyCon -> bool.
 
 Axiom isPromotedDataCon : TyCon -> bool.
 
-Axiom isPromotedDataCon_maybe : TyCon -> option DataCon.
+Axiom isDataKindsPromotedDataCon : TyCon -> bool.
 
 Axiom isKindTyCon : TyCon -> bool.
+
+Axiom isKindName : Name.Name -> bool.
+
+Axiom isKindUniquable : forall {a}, forall `{Unique.Uniquable a}, a -> bool.
 
 Axiom kindTyConKeys : UniqSet.UniqSet Unique.Unique.
 
@@ -5336,13 +4272,20 @@ Axiom isImplicitTyCon : TyCon -> bool.
 
 Axiom tyConCType_maybe : TyCon -> option CType.
 
+Axiom tcHasFixedRuntimeRep : TyCon -> bool.
+
+Axiom isConcreteTyCon : TyCon -> bool.
+
 Axiom isTcTyCon : TyCon -> bool.
 
-Axiom isTcLevPoly : TyCon -> bool.
+Axiom setTcTyConKind : TyCon -> Kind -> TyCon.
+
+Axiom isMonoTcTyCon : TyCon -> bool.
+
+Axiom tcTyConScopedTyVars : TyCon -> list (Name.Name * TcTyVar)%type.
 
 Axiom expandSynTyCon_maybe : forall {tyco : Type},
-                             TyCon ->
-                             list tyco -> option (list (TyVar * tyco)%type * Type_ * list tyco)%type.
+                             TyCon -> list tyco -> ExpandSynResult tyco.
 
 Axiom isTyConWithSrcDataCons : TyCon -> bool.
 
@@ -5356,15 +4299,11 @@ Axiom tyConSingleDataCon : TyCon -> DataCon.
 
 Axiom tyConSingleAlgDataCon_maybe : TyCon -> option DataCon.
 
+Axiom tyConAlgDataCons_maybe : TyCon -> option (list DataCon).
+
 Axiom tyConFamilySize : TyCon -> nat.
 
-Axiom tyConFamilySizeAtMost : TyCon -> nat -> bool.
-
 Axiom algTyConRhs : TyCon -> AlgTyConRhs.
-
-Axiom tyConFamilyResVar_maybe : TyCon -> option Name.Name.
-
-Axiom tyConRoles : TyCon -> list Role.
 
 Axiom newTyConRhs : TyCon -> (list TyVar * Type_)%type.
 
@@ -5401,45 +4340,109 @@ Axiom tyConFamInst_maybe : TyCon -> option (TyCon * list Type_)%type.
 
 Axiom tyConFamilyCoercion_maybe : TyCon -> option (CoAxiom Unbranched).
 
-Axiom tyConRuntimeRepInfo : TyCon -> RuntimeRepInfo.
+Axiom tyConPromDataConInfo : TyCon -> PromDataConInfo.
 
-Axiom tyConFlavour : TyCon -> TyConFlavour.
+Axiom mkTyConTagMap : TyCon -> NameEnv.NameEnv HsSyn.ConTag.
 
-Axiom tcFlavourCanBeUnsaturated : TyConFlavour -> bool.
+Axiom tyConFlavour : TyCon -> BasicTypes.TyConFlavour TyCon.
 
-Axiom tcFlavourIsOpen : TyConFlavour -> bool.
+Axiom tcFlavourMustBeSaturated : forall {tc},
+                                 BasicTypes.TyConFlavour tc -> bool.
+
+Axiom tcFlavourIsOpen : forall {tc : Type}, BasicTypes.TyConFlavour tc -> bool.
 
 Axiom pprPromotionQuote : TyCon -> GHC.Base.String.
 
-Axiom initRecTc : RecTcChecker.
-
-Axiom checkRecTc : RecTcChecker -> TyCon -> option RecTcChecker.
-
 Axiom tyConSkolem : TyCon -> bool.
+
+Axiom rewriterView : Type_ -> option Type_.
 
 Axiom coreView : Type_ -> option Type_.
 
-Axiom tcView : Type_ -> option Type_.
+Axiom coreFullView : Type_ -> Type_.
+
+Axiom core_full_view : Type_ -> Type_.
+
+Axiom expandSynTyConApp_maybe : TyCon -> list Type_ -> option Type_.
+
+Axiom saturates : list Type_ -> BasicTypes.Arity -> bool.
+
+Axiom expand_syn : list TyVar -> Type_ -> list Type_ -> Type_.
 
 Axiom expandTypeSynonyms : Type_ -> Type_.
 
-Axiom mapType : forall {m : Type -> Type},
-                forall {env : Type},
-                forall `{GHC.Base.Monad m}, TyCoMapper env m -> env -> Type_ -> m Type_.
+Axiom isTyConKeyApp_maybe : Unique.Unique -> Type_ -> option (list Type_).
 
-Axiom mapCoercion : forall {m : Type -> Type},
-                    forall {env : Type},
-                    forall `{GHC.Base.Monad m}, TyCoMapper env m -> env -> Coercion -> m Coercion.
+Axiom kindRep : forall `{Util.HasDebugCallStack}, Kind -> RuntimeRepType.
 
-Axiom getTyVar : GHC.Base.String -> Type_ -> TyVar.
+Axiom kindRep_maybe : forall `{Util.HasDebugCallStack},
+                      Kind -> option RuntimeRepType.
 
-Axiom isTyVarTy : Type_ -> bool.
+Axiom isLiftedTypeKind : Kind -> bool.
+
+Axiom isUnliftedTypeKind : Kind -> bool.
+
+Axiom pickyIsLiftedTypeKind : Kind -> bool.
+
+Axiom kindBoxedRepLevity_maybe : Type_ -> option BasicTypes.Levity.
+
+Axiom isLiftedRuntimeRep : RuntimeRepType -> bool.
+
+Axiom isUnliftedRuntimeRep : RuntimeRepType -> bool.
+
+Axiom isNullaryTyConKeyApp : Unique.Unique -> Type_ -> bool.
+
+Axiom isLiftedLevity : Type_ -> bool.
+
+Axiom isUnliftedLevity : Type_ -> bool.
+
+Axiom isLevityTy : Type_ -> bool.
+
+Axiom isRuntimeRepTy : Type_ -> bool.
+
+Axiom isRuntimeRepVar : TyVar -> bool.
+
+Axiom isLevityVar : TyVar -> bool.
+
+Axiom isMultiplicityTy : Type_ -> bool.
+
+Axiom isMultiplicityVar : TyVar -> bool.
+
+Axiom splitRuntimeRep_maybe : RuntimeRepType ->
+                              option (TyCon * list Type_)%type.
+
+Axiom isBoxedRuntimeRep : RuntimeRepType -> bool.
+
+Axiom isBoxedRuntimeRep_maybe : RuntimeRepType -> option LevityType.
+
+Axiom runtimeRepLevity_maybe : RuntimeRepType -> option BasicTypes.Levity.
+
+Axiom levityType_maybe : LevityType -> option BasicTypes.Levity.
+
+Axiom mapTyCo : forall {m : Type -> Type},
+                forall `{GHC.Base.Monad m},
+                TyCoMapper unit m ->
+                ((Type_ -> m Type_) * (list Type_ -> m (list Type_)) * (Coercion -> m Coercion)
+                 *
+                 (list Coercion -> m (list Coercion)))%type.
+
+Axiom mapTyCoX : forall {m : Type -> Type},
+                 forall {env : Type},
+                 forall `{GHC.Base.Monad m},
+                 TyCoMapper env m ->
+                 ((env -> Type_ -> m Type_) * (env -> list Type_ -> m (list Type_)) *
+                  (env -> Coercion -> m Coercion) *
+                  (env -> list Coercion -> m (list Coercion)))%type.
+
+Axiom getTyVar : forall `{Util.HasDebugCallStack}, Type_ -> TyVar.
 
 Axiom getTyVar_maybe : Type_ -> option TyVar.
 
-Axiom getCastedTyVar_maybe : Type_ -> option (TyVar * CoercionN)%type.
-
 Axiom repGetTyVar_maybe : Type_ -> option TyVar.
+
+Axiom isTyVarTy : Type_ -> bool.
+
+Axiom getCastedTyVar_maybe : Type_ -> option (TyVar * CoercionN)%type.
 
 Axiom mkAppTy : Type_ -> Type_ -> Type_.
 
@@ -5447,23 +4450,18 @@ Axiom mkAppTys : Type_ -> list Type_ -> Type_.
 
 Axiom splitAppTy_maybe : Type_ -> option (Type_ * Type_)%type.
 
-Axiom repSplitAppTy_maybe : forall `{Util.HasDebugCallStack},
-                            Type_ -> option (Type_ * Type_)%type.
-
-Axiom tcRepSplitAppTy_maybe : Type_ -> option (Type_ * Type_)%type.
-
-Axiom tcSplitTyConApp_maybe : forall `{Util.HasDebugCallStack},
-                              Type_ -> option (TyCon * list Type_)%type.
-
-Axiom tcRepSplitTyConApp_maybe : forall `{Util.HasDebugCallStack},
-                                 Type_ -> option (TyCon * list Type_)%type.
-
 Axiom splitAppTy : Type_ -> (Type_ * Type_)%type.
 
-Axiom splitAppTys : Type_ -> (Type_ * list Type_)%type.
+Axiom splitAppTyNoView_maybe : forall `{Util.HasDebugCallStack},
+                               Type_ -> option (Type_ * Type_)%type.
 
-Axiom repSplitAppTys : forall `{Util.HasDebugCallStack},
-                       Type_ -> (Type_ * list Type_)%type.
+Axiom tcSplitAppTyNoView_maybe : Type_ -> option (Type_ * Type_)%type.
+
+Axiom splitAppTys : forall `{Util.HasDebugCallStack},
+                    Type_ -> (Type_ * list Type_)%type.
+
+Axiom splitAppTysNoView : forall `{Util.HasDebugCallStack},
+                          Type_ -> (Type_ * list Type_)%type.
 
 Axiom mkNumLitTy : GHC.Num.Integer -> Type_.
 
@@ -5473,21 +4471,47 @@ Axiom mkStrLitTy : FastString.FastString -> Type_.
 
 Axiom isStrLitTy : Type_ -> option FastString.FastString.
 
-Axiom userTypeError_maybe : Type_ -> option Type_.
+Axiom mkCharLitTy : GHC.Char.Char -> Type_.
 
-Axiom pprUserTypeErrorTy : Type_ -> GHC.Base.String.
+Axiom isCharLitTy : Type_ -> option GHC.Char.Char.
 
-Axiom isFunTy : Type_ -> bool.
+Axiom isLitTy : Type_ -> option TyLit.
 
-Axiom splitFunTy : Type_ -> (Type_ * Type_)%type.
+Axiom userTypeError_maybe : Type_ -> option ErrorMsgType.
 
-Axiom splitFunTy_maybe : Type_ -> option (Type_ * Type_)%type.
+Axiom deepUserTypeError_maybe : Type_ -> option ErrorMsgType.
 
-Axiom splitFunTys : Type_ -> (list Type_ * Type_)%type.
+Axiom pprUserTypeErrorTy : ErrorMsgType -> GHC.Base.String.
 
-Axiom funResultTy : Type_ -> Type_.
+Axiom funTyConAppTy_maybe : FunTyFlag ->
+                            Type_ -> Type_ -> Type_ -> option (TyCon * list Type_)%type.
 
-Axiom funArgTy : Type_ -> Type_.
+Axiom tyConAppFunTy_maybe : forall `{Util.HasDebugCallStack},
+                            TyCon -> list Type_ -> option Type_.
+
+Axiom tyConAppFunCo_maybe : forall `{Util.HasDebugCallStack},
+                            HsSyn.Role -> TyCon -> list Coercion -> option Coercion.
+
+(* Skipping definition `Core.ty_con_app_fun_maybe' *)
+
+Axiom mkFunctionType : forall `{Util.HasDebugCallStack},
+                       Mult -> Type_ -> Type_ -> Type_.
+
+Axiom mkScaledFunctionTys : list (Scaled Type_) -> Type_ -> Type_.
+
+Axiom chooseFunTyFlag : forall `{Util.HasDebugCallStack},
+                        Type_ -> Type_ -> FunTyFlag.
+
+Axiom splitFunTy : Type_ -> (Mult * Type_ * Type_)%type.
+
+Axiom splitFunTy_maybe : Type_ ->
+                         option (FunTyFlag * Mult * Type_ * Type_)%type.
+
+Axiom splitFunTys : Type_ -> (list (Scaled Type_) * Type_)%type.
+
+Axiom funResultTy : forall `{Util.HasDebugCallStack}, Type_ -> Type_.
+
+Axiom funArgTy : forall `{Util.HasDebugCallStack}, Type_ -> Type_.
 
 Axiom piResultTy : forall `{Util.HasDebugCallStack}, Type_ -> Type_ -> Type_.
 
@@ -5496,33 +4520,31 @@ Axiom piResultTy_maybe : Type_ -> Type_ -> option Type_.
 Axiom piResultTys : forall `{Util.HasDebugCallStack},
                     Type_ -> list Type_ -> Type_.
 
-Axiom applyTysX : list TyVar -> Type_ -> list Type_ -> Type_.
-
-Axiom mkTyConApp : TyCon -> list Type_ -> Type_.
+Axiom applyTysX : forall `{Util.HasDebugCallStack},
+                  list TyVar -> Type_ -> list Type_ -> Type_.
 
 Axiom tyConAppTyConPicky_maybe : Type_ -> option TyCon.
 
 Axiom tyConAppTyCon_maybe : Type_ -> option TyCon.
 
-Axiom tyConAppTyCon : Type_ -> TyCon.
+Axiom tyConAppTyCon : forall `{Util.HasDebugCallStack}, Type_ -> TyCon.
 
 Axiom tyConAppArgs_maybe : Type_ -> option (list Type_).
 
-Axiom tyConAppArgs : Type_ -> list Type_.
-
-Axiom tyConAppArgN : nat -> Type_ -> Type_.
+Axiom tyConAppArgs : forall `{GHC.Prim.HasCallStack}, Type_ -> list Type_.
 
 Axiom splitTyConApp : Type_ -> (TyCon * list Type_)%type.
 
 Axiom splitTyConApp_maybe : forall `{Util.HasDebugCallStack},
                             Type_ -> option (TyCon * list Type_)%type.
 
-Axiom repSplitTyConApp_maybe : forall `{Util.HasDebugCallStack},
-                               Type_ -> option (TyCon * list Type_)%type.
+Axiom splitTyConAppNoView_maybe : forall `{Util.HasDebugCallStack},
+                                  Type_ -> option (TyCon * list Type_)%type.
 
-Axiom splitListTyConApp_maybe : Type_ -> option Type_.
+Axiom tcSplitTyConApp_maybe : forall `{GHC.Prim.HasCallStack},
+                              Type_ -> option (TyCon * list Type_)%type.
 
-Axiom nextRole : Type_ -> Role.
+Axiom tcSplitTyConApp : Type_ -> (TyCon * list Type_)%type.
 
 Axiom newTyConInstRhs : TyCon -> list Type_ -> Type_.
 
@@ -5530,7 +4552,7 @@ Axiom splitCastTy_maybe : Type_ -> option (Type_ * Coercion)%type.
 
 Axiom mkCastTy : Type_ -> Coercion -> Type_.
 
-Axiom tyConBindersTyBinders : list TyConBinder -> list TyBinder.
+Axiom mk_cast_ty : Type_ -> Coercion -> Type_.
 
 Axiom mkCoercionTy : Coercion -> Type_.
 
@@ -5540,150 +4562,136 @@ Axiom isCoercionTy_maybe : Type_ -> option Coercion.
 
 Axiom stripCoercionTy : Type_ -> Coercion.
 
-Axiom mkInvForAllTy : TyVar -> Type_ -> Type_.
+Axiom tyConBindersPiTyBinders : list TyConBinder -> list PiTyBinder.
 
-Axiom mkInvForAllTys : list TyVar -> Type_ -> Type_.
+Axiom mkTyCoForAllTy : TyCoVar -> ForAllTyFlag -> Type_ -> Type_.
+
+Axiom mkTyCoForAllTys : list ForAllTyBinder -> Type_ -> Type_.
+
+Axiom mkTyCoInvForAllTy : TyCoVar -> Type_ -> Type_.
+
+Axiom mkInfForAllTy : TyVar -> Type_ -> Type_.
+
+Axiom mkTyCoInvForAllTys : list TyCoVar -> Type_ -> Type_.
+
+Axiom mkInfForAllTys : list TyVar -> Type_ -> Type_.
+
+Axiom mkSpecForAllTy : TyVar -> Type_ -> Type_.
 
 Axiom mkSpecForAllTys : list TyVar -> Type_ -> Type_.
 
 Axiom mkVisForAllTys : list TyVar -> Type_ -> Type_.
 
-Axiom mkLamType : Var -> Type_ -> Type_.
+Axiom mkTyConBindersPreferAnon : list TyVar -> TyCoVarSet -> list TyConBinder.
 
-Axiom mkLamTypes : list Var -> Type_ -> Type_.
+Axiom splitForAllForAllTyBinders : Type_ -> (list ForAllTyBinder * Type_)%type.
 
-Axiom mkTyConBindersPreferAnon : list TyVar -> Type_ -> list TyConBinder.
+Axiom splitForAllTyCoVars : Type_ -> (list TyCoVar * Type_)%type.
 
-Axiom splitForAllTys : Type_ -> (list TyVar * Type_)%type.
+Axiom splitForAllTyVars : Type_ -> (list TyVar * Type_)%type.
 
-Axiom splitForAllTyVarBndrs : Type_ -> (list TyVarBinder * Type_)%type.
+Axiom splitForAllReqTyBinders : Type_ -> (list ReqTyBinder * Type_)%type.
+
+Axiom splitForAllInvisTyBinders : Type_ -> (list InvisTyBinder * Type_)%type.
 
 Axiom isForAllTy : Type_ -> bool.
 
+Axiom isForAllTy_ty : Type_ -> bool.
+
+Axiom isForAllTy_invis_ty : Type_ -> bool.
+
+Axiom isForAllTy_co : Type_ -> bool.
+
 Axiom isPiTy : Type_ -> bool.
 
-Axiom splitForAllTy : Type_ -> (TyVar * Type_)%type.
+Axiom isFunTy : Type_ -> bool.
+
+Axiom splitForAllTyCoVar : Type_ -> (TyCoVar * Type_)%type.
 
 Axiom dropForAlls : Type_ -> Type_.
 
-Axiom splitForAllTy_maybe : Type_ -> option (TyVar * Type_)%type.
+Axiom splitForAllForAllTyBinder_maybe : Type_ ->
+                                        option (ForAllTyBinder * Type_)%type.
 
-Axiom splitPiTy_maybe : Type_ -> option (TyBinder * Type_)%type.
+Axiom splitForAllTyCoVar_maybe : Type_ -> option (TyCoVar * Type_)%type.
 
-Axiom splitPiTy : Type_ -> (TyBinder * Type_)%type.
+Axiom splitForAllTyVar_maybe : Type_ -> option (TyVar * Type_)%type.
 
-Axiom splitPiTys : Type_ -> (list TyBinder * Type_)%type.
+Axiom splitForAllCoVar_maybe : Type_ -> option (CoVar * Type_)%type.
 
-Axiom splitPiTysInvisible : Type_ -> (list TyBinder * Type_)%type.
+Axiom splitPiTy_maybe : Type_ -> option (PiTyBinder * Type_)%type.
+
+Axiom splitPiTy : Type_ -> (PiTyBinder * Type_)%type.
+
+Axiom splitPiTys : Type_ -> (list PiTyBinder * Type_)%type.
+
+Axiom getRuntimeArgTys : Type_ -> list (Scaled Type_ * FunTyFlag)%type.
+
+Axiom invisibleTyBndrCount : Type_ -> nat.
+
+Axiom splitInvisPiTys : Type_ -> (list PiTyBinder * Type_)%type.
+
+Axiom splitInvisPiTysN : nat -> Type_ -> (list PiTyBinder * Type_)%type.
 
 Axiom filterOutInvisibleTypes : TyCon -> list Type_ -> list Type_.
 
+Axiom filterOutInferredTypes : TyCon -> list Type_ -> list Type_.
+
+Axiom partitionInvisibleTypes : TyCon ->
+                                list Type_ -> (list Type_ * list Type_)%type.
+
 Axiom partitionInvisibles : forall {a : Type},
-                            TyCon -> (a -> Type_) -> list a -> (list a * list a)%type.
+                            list (a * ForAllTyFlag)%type -> (list a * list a)%type.
+
+Axiom tyConForAllTyFlags : TyCon -> list Type_ -> list ForAllTyFlag.
+
+Axiom appTyForAllTyFlags : Type_ -> list Type_ -> list ForAllTyFlag.
+
+Axiom fun_kind_arg_flags : Kind -> list Type_ -> list ForAllTyFlag.
 
 Axiom isTauTy : Type_ -> bool.
 
-Axiom mkAnonBinder : Type_ -> TyBinder.
-
-Axiom isAnonTyBinder : TyBinder -> bool.
-
-Axiom isNamedTyBinder : TyBinder -> bool.
-
-Axiom tyBinderType : TyBinder -> Type_.
-
-Axiom binderRelevantType_maybe : TyBinder -> option Type_.
-
-Axiom caseBinder : forall {a : Type},
-                   TyBinder -> (TyVarBinder -> a) -> (Type_ -> a) -> a.
-
-Axiom isPredTy : Type_ -> bool.
-
-Axiom isClassPred : PredType -> bool.
-
-Axiom isEqPred : PredType -> bool.
-
-Axiom isNomEqPred : PredType -> bool.
-
-Axiom isIPPred : PredType -> bool.
-
-Axiom isIPTyCon : TyCon -> bool.
-
-Axiom isIPClass : Class -> bool.
-
-Axiom isCTupleClass : Class -> bool.
-
-Axiom isIPPred_maybe : Type_ -> option (FastString.FastString * Type_)%type.
-
-Axiom mkPrimEqPredRole : Role -> Type_ -> Type_ -> PredType.
-
-Axiom mkPrimEqPred : Type_ -> Type_ -> Type_.
-
-Axiom mkHeteroPrimEqPred : Kind -> Kind -> Type_ -> Type_ -> Type_.
-
-Axiom mkHeteroReprPrimEqPred : Kind -> Kind -> Type_ -> Type_ -> Type_.
-
-Axiom splitCoercionType_maybe : Type_ -> option (Type_ * Type_)%type.
-
-Axiom mkReprPrimEqPred : Type_ -> Type_ -> Type_.
-
-Axiom equalityTyCon : Role -> TyCon.
-
-Axiom mkClassPred : Class -> list Type_ -> PredType.
-
-Axiom isDictTy : Type_ -> bool.
-
-Axiom isDictLikeTy : Type_ -> bool.
-
-Axiom eqRelRole : EqRel -> Role.
-
-Axiom classifyPredType : PredType -> PredTree.
-
-Axiom getClassPredTys : PredType -> (Class * list Type_)%type.
-
-Axiom getClassPredTys_maybe : PredType -> option (Class * list Type_)%type.
-
-Axiom getEqPredTys : PredType -> (Type_ * Type_)%type.
-
-Axiom getEqPredTys_maybe : PredType -> option (Role * Type_ * Type_)%type.
-
-Axiom getEqPredRole : PredType -> Role.
-
-Axiom predTypeEqRel : PredType -> EqRel.
-
-Axiom toposortTyVars : list TyCoVar -> list TyCoVar.
-
-Axiom dVarSetElemsWellScoped : DVarSet -> list Var.
-
-Axiom tyCoVarsOfTypeWellScoped : Type_ -> list TyVar.
-
-Axiom tyCoVarsOfTypesWellScoped : list Type_ -> list TyVar.
+Axiom isAtomicTy : Type_ -> bool.
 
 Axiom mkFamilyTyConApp : TyCon -> list Type_ -> Type_.
 
 Axiom coAxNthLHS : forall {br : BranchFlag}, CoAxiom br -> nat -> Type_.
 
-Axiom pprSourceTyCon : TyCon -> GHC.Base.String.
-
 Axiom isFamFreeTy : Type_ -> bool.
 
-Axiom isLiftedType_maybe : forall `{Util.HasDebugCallStack},
-                           Type_ -> option bool.
+Axiom buildSynTyCon : Name.Name ->
+                      list (KnotTied TyConBinder) ->
+                      Kind -> list HsSyn.Role -> KnotTied Type_ -> TyCon.
+
+Axiom typeLevity_maybe : forall `{Util.HasDebugCallStack},
+                         Type_ -> option BasicTypes.Levity.
+
+Axiom typeLevity : forall `{Util.HasDebugCallStack}, Type_ -> BasicTypes.Levity.
 
 Axiom isUnliftedType : forall `{Util.HasDebugCallStack}, Type_ -> bool.
+
+Axiom mightBeLiftedType : Type_ -> bool.
+
+Axiom definitelyLiftedType : Type_ -> bool.
+
+Axiom mightBeUnliftedType : Type_ -> bool.
+
+Axiom definitelyUnliftedType : Type_ -> bool.
+
+Axiom isBoxedType : Type_ -> bool.
 
 Axiom isRuntimeRepKindedTy : Type_ -> bool.
 
 Axiom dropRuntimeRepArgs : list Type_ -> list Type_.
 
 Axiom getRuntimeRep_maybe : forall `{Util.HasDebugCallStack},
-                            Type_ -> option Type_.
+                            Type_ -> option RuntimeRepType.
 
-Axiom getRuntimeRep : forall `{Util.HasDebugCallStack}, Type_ -> Type_.
+Axiom getRuntimeRep : forall `{Util.HasDebugCallStack}, Type_ -> RuntimeRepType.
 
-Axiom getRuntimeRepFromKind : forall `{Util.HasDebugCallStack}, Type_ -> Type_.
+Axiom getLevity_maybe : forall `{Util.HasDebugCallStack}, Type_ -> option Type_.
 
-Axiom getRuntimeRepFromKind_maybe : forall `{Util.HasDebugCallStack},
-                                    Type_ -> option Type_.
+Axiom getLevity : forall `{Util.HasDebugCallStack}, Type_ -> Type_.
 
 Axiom isUnboxedTupleType : Type_ -> bool.
 
@@ -5695,6 +4703,10 @@ Axiom isDataFamilyAppType : Type_ -> bool.
 
 Axiom isStrictType : forall `{Util.HasDebugCallStack}, Type_ -> bool.
 
+Axiom isTerminatingType : forall `{Util.HasDebugCallStack}, Type_ -> bool.
+
+Axiom isCoVarType : Type_ -> bool.
+
 Axiom isPrimitiveType : Type_ -> bool.
 
 Axiom isValidJoinPointType : BasicTypes.JoinArity -> Type_ -> bool.
@@ -5703,1313 +4715,435 @@ Axiom seqType : Type_ -> unit.
 
 Axiom seqTypes : list Type_ -> unit.
 
-Axiom eqType : Type_ -> Type_ -> bool.
-
-Axiom eqTypeX : RnEnv2 -> Type_ -> Type_ -> bool.
-
-Axiom eqTypes : list Type_ -> list Type_ -> bool.
-
-Axiom eqVarBndrs : RnEnv2 -> list Var -> list Var -> option RnEnv2.
-
-Axiom nonDetCmpType : Type_ -> Type_ -> comparison.
-
-Axiom nonDetCmpTypes : list Type_ -> list Type_ -> comparison.
-
-Axiom nonDetCmpTypeX : RnEnv2 -> Type_ -> Type_ -> comparison.
-
-Axiom nonDetCmpTypesX : RnEnv2 -> list Type_ -> list Type_ -> comparison.
-
-Axiom nonDetCmpTc : TyCon -> TyCon -> comparison.
-
 Axiom typeKind : forall `{Util.HasDebugCallStack}, Type_ -> Kind.
+
+Axiom sORTKind_maybe : Kind ->
+                       option (BasicTypes.TypeOrConstraint * Type_)%type.
+
+Axiom typeTypeOrConstraint : forall `{Util.HasDebugCallStack},
+                             Type_ -> BasicTypes.TypeOrConstraint.
+
+Axiom isPredTy : forall `{Util.HasDebugCallStack}, Type_ -> bool.
+
+Axiom isTYPEorCONSTRAINT : Kind -> bool.
+
+Axiom tyConIsTYPEorCONSTRAINT : TyCon -> bool.
+
+Axiom isConstraintLikeKind : Kind -> bool.
+
+Axiom isConstraintKind : Kind -> bool.
+
+Axiom tcIsLiftedTypeKind : Kind -> bool.
+
+Axiom tcIsBoxedTypeKind : Kind -> bool.
+
+Axiom isTypeLikeKind : Kind -> bool.
+
+Axiom returnsConstraintKind : Kind -> bool.
 
 Axiom typeLiteralKind : TyLit -> Kind.
 
-Axiom isTypeLevPoly : Type_ -> bool.
+Axiom typeHasFixedRuntimeRep : forall `{Util.HasDebugCallStack}, Type_ -> bool.
 
-Axiom resultIsLevPoly : Type_ -> bool.
+Axiom isFixedRuntimeRepKind : forall `{Util.HasDebugCallStack}, Kind -> bool.
 
-Axiom tyConsOfType : Type_ -> UniqSet.UniqSet TyCon.
+Axiom isConcreteType : Type_ -> bool.
 
-Axiom synTyConResKind : TyCon -> Kind.
+Axiom tyConAppNeedsKindSig : bool -> TyCon -> nat -> bool.
 
-Axiom splitVisVarsOfType : Type_ -> Pair.Pair TyCoVarSet.
+Axiom unrestricted : forall {a : Type}, a -> Scaled a.
 
-Axiom splitVisVarsOfTypes : list Type_ -> Pair.Pair TyCoVarSet.
+Axiom linear : forall {a : Type}, a -> Scaled a.
 
-Axiom modifyJoinResTy : nat -> (Type_ -> Type_) -> Type_ -> Type_.
+Axiom tymult : forall {a : Type}, a -> Scaled a.
 
-Axiom setJoinResTy : nat -> Type_ -> Type_ -> Type_.
+Axiom irrelevantMult : forall {a : Type}, Scaled a -> a.
 
-(* Skipping definition `Core.coVarDetails' *)
+Axiom mkScaled : forall {a : Type}, Mult -> a -> Scaled a.
 
-Definition isCoVarDetails : IdDetails -> bool :=
-  fun arg_0__ => false.
+Axiom scaledSet : forall {a : Type},
+                  forall {b : Type}, Scaled a -> b -> Scaled b.
 
-Definition isJoinIdDetails_maybe : IdDetails -> option BasicTypes.JoinArity :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | Mk_JoinId join_arity => Some join_arity
-    | _ => None
-    end.
+Axiom isManyTy : Mult -> bool.
 
-(* Skipping definition `Core.pprIdDetails' *)
+Axiom isOneTy : Mult -> bool.
 
-Definition setRuleInfo : IdInfo -> RuleInfo -> IdInfo :=
-  fun info sp =>
-    GHC.Prim.seq sp (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__
-                        cafInfo_3__ oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__
-                        demandInfo_8__ callArityInfo_9__ levityInfo_10__ := info in
-                  Mk_IdInfo arityInfo_0__ sp unfoldingInfo_2__ cafInfo_3__ oneShotInfo_4__
-                            inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-                            callArityInfo_9__ levityInfo_10__).
+Axiom isLinearType : Type_ -> bool.
 
-Definition setInlinePragInfo : IdInfo -> BasicTypes.InlinePragma -> IdInfo :=
-  fun info pr =>
-    GHC.Prim.seq pr (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__
-                        cafInfo_3__ oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__
-                        demandInfo_8__ callArityInfo_9__ levityInfo_10__ := info in
-                  Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                            oneShotInfo_4__ pr occInfo_6__ strictnessInfo_7__ demandInfo_8__
-                            callArityInfo_9__ levityInfo_10__).
+Axiom mkTyConApp : TyCon -> list Type_ -> Type_.
 
-Definition setOccInfo : IdInfo -> BasicTypes.OccInfo -> IdInfo :=
-  fun info oc =>
-    GHC.Prim.seq oc (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__
-                        cafInfo_3__ oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__
-                        demandInfo_8__ callArityInfo_9__ levityInfo_10__ := info in
-                  Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                            oneShotInfo_4__ inlinePragInfo_5__ oc strictnessInfo_7__ demandInfo_8__
-                            callArityInfo_9__ levityInfo_10__).
+Axiom mkTYPEapp : RuntimeRepType -> Type_.
 
-Definition setUnfoldingInfo : IdInfo -> Unfolding -> IdInfo :=
-  fun info uf =>
-    let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-       oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-       callArityInfo_9__ levityInfo_10__ := info in
-    Mk_IdInfo arityInfo_0__ ruleInfo_1__ uf cafInfo_3__ oneShotInfo_4__
-              inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-              callArityInfo_9__ levityInfo_10__.
+Axiom mkTYPEapp_maybe : RuntimeRepType -> option Type_.
 
-Definition setArityInfo : IdInfo -> ArityInfo -> IdInfo :=
-  fun info ar =>
-    let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-       oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-       callArityInfo_9__ levityInfo_10__ := info in
-    Mk_IdInfo ar ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__ oneShotInfo_4__
-              inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-              callArityInfo_9__ levityInfo_10__.
+Axiom mkCONSTRAINTapp : RuntimeRepType -> Type_.
 
-Definition setCallArityInfo : IdInfo -> ArityInfo -> IdInfo :=
-  fun info ar =>
-    let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-       oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-       callArityInfo_9__ levityInfo_10__ := info in
-    Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-              oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-              ar levityInfo_10__.
+Axiom mkCONSTRAINTapp_maybe : RuntimeRepType -> option Type_.
 
-Definition setCafInfo : IdInfo -> CafInfo -> IdInfo :=
-  fun info caf =>
-    let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-       oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-       callArityInfo_9__ levityInfo_10__ := info in
-    Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ caf oneShotInfo_4__
-              inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-              callArityInfo_9__ levityInfo_10__.
+Axiom mkBoxedRepApp_maybe : LevityType -> option Type_.
 
-Definition setOneShotInfo : IdInfo -> BasicTypes.OneShotInfo -> IdInfo :=
-  fun info lb =>
-    let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-       oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-       callArityInfo_9__ levityInfo_10__ := info in
-    Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__ lb
-              inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-              callArityInfo_9__ levityInfo_10__.
+Axiom mkTupleRepApp_maybe : Type_ -> option Type_.
 
-Definition setDemandInfo : IdInfo -> Demand -> IdInfo :=
-  fun info dd =>
-    GHC.Prim.seq dd (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__
-                        cafInfo_3__ oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__
-                        demandInfo_8__ callArityInfo_9__ levityInfo_10__ := info in
-                  Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                            oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ dd
-                            callArityInfo_9__ levityInfo_10__).
+Axiom typeOrConstraintKind : BasicTypes.TypeOrConstraint ->
+                             RuntimeRepType -> Kind.
 
-Definition setStrictnessInfo : IdInfo -> StrictSig -> IdInfo :=
-  fun info dd =>
-    GHC.Prim.seq dd (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__
-                        cafInfo_3__ oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__
-                        demandInfo_8__ callArityInfo_9__ levityInfo_10__ := info in
-                  Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                            oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ dd demandInfo_8__
-                            callArityInfo_9__ levityInfo_10__).
+Axiom boxedWins : HsSyn.Boxity -> HsSyn.Boxity -> HsSyn.Boxity.
 
-Definition emptyRuleInfo :=
-  EmptyRuleInfo.
+Axiom _unboxedWins : HsSyn.Boxity -> HsSyn.Boxity -> HsSyn.Boxity.
 
-Definition noUnfolding : Unfolding :=
-  NoUnfolding.
+Axiom lubBoxity : HsSyn.Boxity -> HsSyn.Boxity -> HsSyn.Boxity.
 
-Definition unknownArity : BasicTypes.Arity :=
-  #0.
+Axiom _botCard : Card.
 
-Definition vanillaCafInfo : CafInfo :=
-  MayHaveCafRefs.
+Axiom topCard : Card.
 
-Definition vanillaIdInfo : IdInfo :=
-  Mk_IdInfo unknownArity emptyRuleInfo noUnfolding vanillaCafInfo
-            BasicTypes.NoOneShotInfo BasicTypes.defaultInlinePragma BasicTypes.noOccInfo
-            nopSig topDmd unknownArity NoLevityInfo.
+Axiom isStrict : Card -> bool.
 
-Definition noCafIdInfo : IdInfo :=
-  setCafInfo vanillaIdInfo NoCafRefs.
+Axiom isAbs : Card -> bool.
 
-(* Skipping definition `Core.ppArityInfo' *)
+Axiom isAtMostOnce : Card -> bool.
 
-(* Skipping definition `Core.pprStrictness' *)
+Axiom isCardNonAbs : Card -> bool.
 
-Definition isEmptyRuleInfo : RuleInfo -> bool :=
-  fun x => true.
+Axiom isCardNonOnce : Card -> bool.
 
-Definition emptyDVarSet : DVarSet :=
-  UniqSet.emptyUniqSet.
+Axiom oneifyCard : Card -> Card.
 
-Definition ruleInfoFreeVars : RuleInfo -> DVarSet :=
-  fun x => emptyDVarSet.
+Axiom strictifyCard : Card -> Card.
 
-Definition ruleInfoRules : RuleInfo -> list CoreRule :=
-  fun x => nil.
+Axiom lubCard : Card -> Card -> Card.
 
-Definition setRuleInfoHead : Name.Name -> RuleInfo -> RuleInfo :=
-  fun x y => EmptyRuleInfo.
+Axiom glbCard : Card -> Card -> Card.
 
-Definition mayHaveCafRefs : CafInfo -> bool :=
-  fun arg_0__ => match arg_0__ with | MayHaveCafRefs => true | _ => false end.
+Axiom plusCard : Card -> Card -> Card.
 
-(* Skipping definition `Core.ppCafInfo' *)
+Axiom multCard : Card -> Card -> Card.
 
-Definition zapLamInfo : IdInfo -> option IdInfo :=
-  fun '((Mk_IdInfo _ _ _ _ _ _ occ _ demand _ _ as info)) =>
-    let is_safe_dmd := fun dmd => negb (isStrictDmd dmd) in
-    let safe_occ :=
-      match occ with
-      | BasicTypes.OneOcc _ _ _ _ =>
-          match occ with
-          | BasicTypes.ManyOccs _ =>
-              GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
-          | BasicTypes.IAmDead =>
-              GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
-          | BasicTypes.OneOcc occ_in_lam_2__ occ_one_br_3__ occ_int_cxt_4__
-          occ_tail_5__ =>
-              BasicTypes.OneOcc true occ_one_br_3__ occ_int_cxt_4__ BasicTypes.NoTailCallInfo
-          | BasicTypes.IAmALoopBreaker _ _ =>
-              GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
-          end
-      | BasicTypes.IAmALoopBreaker _ _ =>
-          match occ with
-          | BasicTypes.ManyOccs occ_tail_12__ =>
-              BasicTypes.ManyOccs BasicTypes.NoTailCallInfo
-          | BasicTypes.IAmDead =>
-              GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
-          | BasicTypes.OneOcc occ_in_lam_13__ occ_one_br_14__ occ_int_cxt_15__
-          occ_tail_16__ =>
-              BasicTypes.OneOcc occ_in_lam_13__ occ_one_br_14__ occ_int_cxt_15__
-                                BasicTypes.NoTailCallInfo
-          | BasicTypes.IAmALoopBreaker occ_rules_only_17__ occ_tail_18__ =>
-              BasicTypes.IAmALoopBreaker occ_rules_only_17__ BasicTypes.NoTailCallInfo
-          end
-      | _other => occ
-      end in
-    let is_safe_occ :=
-      fun arg_27__ =>
-        let 'occ := arg_27__ in
-        if BasicTypes.isAlwaysTailCalled occ : bool then false else
-        match arg_27__ with
-        | BasicTypes.OneOcc in_lam _ _ _ => in_lam
-        | _other => true
-        end in
-    if andb (is_safe_occ occ) (is_safe_dmd demand) : bool then None else
-    Some (let 'Mk_IdInfo arityInfo_31__ ruleInfo_32__ unfoldingInfo_33__
-             cafInfo_34__ oneShotInfo_35__ inlinePragInfo_36__ occInfo_37__
-             strictnessInfo_38__ demandInfo_39__ callArityInfo_40__ levityInfo_41__ :=
-            info in
-          Mk_IdInfo arityInfo_31__ ruleInfo_32__ unfoldingInfo_33__ cafInfo_34__
-                    oneShotInfo_35__ inlinePragInfo_36__ safe_occ strictnessInfo_38__ topDmd
-                    callArityInfo_40__ levityInfo_41__).
+Axiom viewDmdPair : Demand -> (Card * SubDemand)%type.
 
-Definition zapDemandInfo : IdInfo -> option IdInfo :=
-  fun info =>
-    Some (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-             oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-             callArityInfo_9__ levityInfo_10__ := info in
-          Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                    oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ topDmd
-                    callArityInfo_9__ levityInfo_10__).
+Axiom topSubDmd : SubDemand.
 
-Definition zapUsageInfo : IdInfo -> option IdInfo :=
-  fun info =>
-    Some (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-             oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-             callArityInfo_9__ levityInfo_10__ := info in
-          Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                    oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__
-                    (zapUsageDemand (demandInfo info)) callArityInfo_9__ levityInfo_10__).
+Axiom botSubDmd : SubDemand.
 
-Definition zapUsageEnvInfo : IdInfo -> option IdInfo :=
-  fun info =>
-    if hasDemandEnvSig (strictnessInfo info) : bool
-    then Some (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__
-                  cafInfo_3__ oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__
-                  demandInfo_8__ callArityInfo_9__ levityInfo_10__ := info in
-               Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                         oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ (zapUsageEnvSig (strictnessInfo
-                                                                                         info)) demandInfo_8__
-                         callArityInfo_9__ levityInfo_10__) else
-    None.
+Axiom seqSubDmd : SubDemand.
 
-Definition zapUsedOnceInfo : IdInfo -> option IdInfo :=
-  fun info =>
-    Some (let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-             oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-             callArityInfo_9__ levityInfo_10__ := info in
-          Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                    oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ (zapUsedOnceSig (strictnessInfo
-                                                                                    info)) (zapUsedOnceDemand
-                     (demandInfo info)) callArityInfo_9__ levityInfo_10__).
+Axiom polyFieldDmd : HsSyn.Boxity -> CardNonOnce -> Demand.
 
-Definition isFragileUnfolding : Unfolding -> bool :=
-  fun arg_0__ => false.
+Axiom mkProd : HsSyn.Boxity -> list Demand -> SubDemand.
 
-Definition zapFragileUnfolding : Unfolding -> Unfolding :=
-  fun unf => if isFragileUnfolding unf : bool then noUnfolding else unf.
+Axiom viewProd : BasicTypes.Arity ->
+                 SubDemand -> option (HsSyn.Boxity * list Demand)%type.
 
-Definition zapFragileInfo : IdInfo -> option IdInfo :=
-  fun '((Mk_IdInfo _ _ unf _ _ _ occ _ _ _ _ as info)) =>
-    let new_unf := zapFragileUnfolding unf in
-    GHC.Prim.seq new_unf (Some (setOccInfo (setUnfoldingInfo (setRuleInfo info
-                                                                          emptyRuleInfo) new_unf)
-                                           (BasicTypes.zapFragileOcc occ))).
+Axiom mkCall : CardNonAbs -> SubDemand -> SubDemand.
 
-Definition zapTailCallInfo : IdInfo -> option IdInfo :=
-  fun info =>
-    let 'occ := occInfo info in
-    let safe_occ :=
-      match occ with
-      | BasicTypes.ManyOccs occ_tail_1__ =>
-          BasicTypes.ManyOccs BasicTypes.NoTailCallInfo
-      | BasicTypes.IAmDead =>
-          GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
-      | BasicTypes.OneOcc occ_in_lam_2__ occ_one_br_3__ occ_int_cxt_4__
-      occ_tail_5__ =>
-          BasicTypes.OneOcc occ_in_lam_2__ occ_one_br_3__ occ_int_cxt_4__
-                            BasicTypes.NoTailCallInfo
-      | BasicTypes.IAmALoopBreaker occ_rules_only_6__ occ_tail_7__ =>
-          BasicTypes.IAmALoopBreaker occ_rules_only_6__ BasicTypes.NoTailCallInfo
-      end in
-    if BasicTypes.isAlwaysTailCalled occ : bool
-    then Some (setOccInfo info safe_occ) else
-    None.
+Axiom viewCall : SubDemand -> option (Card * SubDemand)%type.
 
-Definition zapCallArityInfo : IdInfo -> IdInfo :=
-  fun info => setCallArityInfo info #0.
+Axiom topDmd : Demand.
 
-Definition setNeverLevPoly `{Util.HasDebugCallStack}
-   : IdInfo -> Type_ -> IdInfo :=
-  fun info ty =>
-    if andb Util.debugIsOn (negb (negb (resultIsLevPoly ty))) : bool
-    then (GHC.Err.error Panic.someSDoc)
-    else let 'Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-            oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-            callArityInfo_9__ levityInfo_10__ := info in
-         Mk_IdInfo arityInfo_0__ ruleInfo_1__ unfoldingInfo_2__ cafInfo_3__
-                   oneShotInfo_4__ inlinePragInfo_5__ occInfo_6__ strictnessInfo_7__ demandInfo_8__
-                   callArityInfo_9__ NeverLevityPolymorphic.
+Axiom absDmd : Demand.
 
-(* Skipping definition `Core.setLevityInfoWithType' *)
+Axiom botDmd : Demand.
 
-Definition isNeverLevPolyIdInfo : IdInfo -> bool :=
-  fun info =>
-    match levityInfo info with
-    | NeverLevityPolymorphic => true
-    | _ => false
-    end.
+Axiom seqDmd : Demand.
 
-(* Skipping definition `Core.ppr_debug' *)
+Axiom unboxDeeplySubDmd : SubDemand -> SubDemand.
 
-(* Skipping definition `Core.ppr_id_scope' *)
+Axiom unboxDeeplyDmd : Demand -> Demand.
 
-Definition setVarUnique : Var -> Unique.Unique -> Var :=
-  fun var uniq =>
-    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__
-       id_info_5__ := var in
-    Mk_Id (Name.setNameUnique (varName var) uniq) (Unique.getKey uniq) varType_2__
-          idScope_3__ id_details_4__ id_info_5__.
+Axiom multDmd : Card -> Demand -> Demand.
 
-Definition setVarName : Var -> Name.Name -> Var :=
-  fun var new_name =>
-    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__
-       id_info_5__ := var in
-    Mk_Id new_name (Unique.getKey (Unique.getUnique new_name)) varType_2__
-          idScope_3__ id_details_4__ id_info_5__.
+Axiom multSubDmd : Card -> SubDemand -> SubDemand.
 
-Definition setVarType : Id -> Type_ -> Id :=
-  fun id ty =>
-    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__
-       id_info_5__ := id in
-    Mk_Id varName_0__ realUnique_1__ ty idScope_3__ id_details_4__ id_info_5__.
+Axiom lazifyIfStrict : Card -> SubDemand -> SubDemand.
 
-Definition updateVarType : (Type_ -> Type_) -> Id -> Id :=
-  fun f id =>
-    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__
-       id_info_5__ := id in
-    Mk_Id varName_0__ realUnique_1__ (f (varType id)) idScope_3__ id_details_4__
-          id_info_5__.
+Axiom lubDmd : Demand -> Demand -> Demand.
 
-Definition updateVarTypeM {m : Type -> Type} `{GHC.Base.Monad m}
-   : (Type_ -> m Type_) -> Id -> m Id :=
-  fun f id =>
-    f (varType id) GHC.Base.>>=
-    (fun ty' =>
-       GHC.Base.return_ (let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__
-                            id_details_4__ id_info_5__ := id in
-                         Mk_Id varName_0__ realUnique_1__ ty' idScope_3__ id_details_4__ id_info_5__)).
+Axiom lubSubDmd : SubDemand -> SubDemand -> SubDemand.
 
-Definition isVisibleArgFlag : ArgFlag -> bool :=
-  fun arg_0__ => match arg_0__ with | Required => true | _ => false end.
+Axiom plusDmd : Demand -> Demand -> Demand.
 
-Definition isInvisibleArgFlag : ArgFlag -> bool :=
-  negb GHC.Base.∘ isVisibleArgFlag.
+Axiom plusSubDmd : SubDemand -> SubDemand -> SubDemand.
 
-Definition sameVis : ArgFlag -> ArgFlag -> bool :=
+Axiom isTopDmd : Demand -> bool.
+
+Axiom isAbsDmd : Demand -> bool.
+
+Axiom isStrictDmd : Demand -> bool.
+
+Axiom isStrUsedDmd : Demand -> bool.
+
+Axiom isAtMostOnceDmd : Demand -> bool.
+
+Axiom isWeakDmd : Demand -> bool.
+
+Axiom evalDmd : Demand.
+
+Axiom strictOnceApply1Dmd : Demand.
+
+Axiom strictManyApply1Dmd : Demand.
+
+Axiom lazyApply1Dmd : Demand.
+
+Axiom lazyApply2Dmd : Demand.
+
+Axiom oneifyDmd : Demand -> Demand.
+
+Axiom strictifyDmd : Demand -> Demand.
+
+(* Skipping definition `Core.strictifyDictDmd' *)
+
+Axiom lazifyDmd : Demand -> Demand.
+
+Axiom floatifyDmd : Demand -> Demand.
+
+Axiom mkCalledOnceDmd : SubDemand -> SubDemand.
+
+Axiom mkCalledOnceDmds : BasicTypes.Arity -> SubDemand -> SubDemand.
+
+Axiom peelCallDmd : SubDemand -> (Card * SubDemand)%type.
+
+Axiom peelManyCalls : BasicTypes.Arity -> SubDemand -> (Card * SubDemand)%type.
+
+Axiom subDemandIfEvaluated : Demand -> SubDemand.
+
+Axiom mkWorkerDemand : nat -> Demand.
+
+Axiom argsOneShots : DmdSig ->
+                     BasicTypes.Arity -> list (list BasicTypes.OneShotInfo).
+
+Axiom argOneShots : Demand -> list BasicTypes.OneShotInfo.
+
+Axiom callCards : SubDemand -> list Card.
+
+Axiom saturatedByOneShots : nat -> Demand -> bool.
+
+Axiom lubDivergence : Divergence -> Divergence -> Divergence.
+
+Axiom plusDivergence : Divergence -> Divergence -> Divergence.
+
+Axiom multDivergence : Card -> Divergence -> Divergence.
+
+Axiom topDiv : Divergence.
+
+Axiom exnDiv : Divergence.
+
+Axiom botDiv : Divergence.
+
+Axiom isDeadEndDiv : Divergence -> bool.
+
+Axiom defaultFvDmd : Divergence -> Demand.
+
+Axiom defaultArgDmd : Divergence -> Demand.
+
+Axiom mkEmptyDmdEnv : Divergence -> DmdEnv.
+
+Axiom mkTermDmdEnv : VarEnv Demand -> DmdEnv.
+
+Axiom nopDmdEnv : DmdEnv.
+
+Axiom botDmdEnv : DmdEnv.
+
+Axiom exnDmdEnv : DmdEnv.
+
+Axiom lubDmdEnv : DmdEnv -> DmdEnv -> DmdEnv.
+
+Axiom addVarDmdEnv : DmdEnv -> Id -> Demand -> DmdEnv.
+
+Axiom plusDmdEnv : DmdEnv -> DmdEnv -> DmdEnv.
+
+Axiom plusDmdEnvs : list DmdEnv -> DmdEnv.
+
+Axiom multDmdEnv : Card -> DmdEnv -> DmdEnv.
+
+Axiom reuseEnv : DmdEnv -> DmdEnv.
+
+Axiom lookupDmdEnv : DmdEnv -> Id -> Demand.
+
+Axiom delDmdEnv : DmdEnv -> Id -> DmdEnv.
+
+Axiom lubDmdType : DmdType -> DmdType -> DmdType.
+
+Axiom discardArgDmds : DmdType -> DmdEnv.
+
+Axiom plusDmdType : DmdType -> DmdEnv -> DmdType.
+
+Axiom botDmdType : DmdType.
+
+Axiom nopDmdType : DmdType.
+
+Axiom exnDmdType : DmdType.
+
+Axiom dmdTypeDepth : DmdType -> BasicTypes.Arity.
+
+Axiom etaExpandDmdType : BasicTypes.Arity -> DmdType -> DmdType.
+
+Axiom decreaseArityDmdType : DmdType -> DmdType.
+
+Axiom splitDmdTy : DmdType -> (Demand * DmdType)%type.
+
+Axiom multDmdType : Card -> DmdType -> DmdType.
+
+Axiom peelFV : DmdType -> Var -> (DmdType * Demand)%type.
+
+Axiom addDemand : Demand -> DmdType -> DmdType.
+
+Axiom findIdDemand : DmdType -> Var -> Demand.
+
+Axiom deferAfterPreciseException : DmdType -> DmdType.
+
+Axiom mkDmdSigForArity : BasicTypes.Arity -> DmdType -> DmdSig.
+
+Axiom mkClosedDmdSig : list Demand -> Divergence -> DmdSig.
+
+Axiom mkVanillaDmdSig : BasicTypes.Arity -> Divergence -> DmdSig.
+
+Axiom splitDmdSig : DmdSig -> (list Demand * Divergence)%type.
+
+Axiom dmdSigDmdEnv : DmdSig -> DmdEnv.
+
+Axiom hasDemandEnvSig : DmdSig -> bool.
+
+Axiom botSig : DmdSig.
+
+Axiom nopSig : DmdSig.
+
+Axiom isNopSig : DmdSig -> bool.
+
+Axiom isDeadEndSig : DmdSig -> bool.
+
+Axiom isBottomingSig : DmdSig -> bool.
+
+Axiom onlyBoxedArguments : DmdSig -> bool.
+
+Axiom isDeadEndAppSig : DmdSig -> nat -> bool.
+
+Axiom trimBoxityDmdEnv : DmdEnv -> DmdEnv.
+
+Axiom trimBoxityDmdType : DmdType -> DmdType.
+
+Axiom trimBoxityDmdSig : DmdSig -> DmdSig.
+
+Axiom transferBoxity : Demand -> Demand -> Demand.
+
+Axiom transferArgBoxityDmdType : DmdType -> DmdType -> DmdType.
+
+Axiom transferArgBoxityDmdSig : DmdSig -> DmdSig -> DmdSig.
+
+Axiom prependArgsDmdSig : nat -> DmdSig -> DmdSig.
+
+Axiom etaConvertDmdSig : BasicTypes.Arity -> DmdSig -> DmdSig.
+
+Axiom dmdTransformSig : DmdSig -> DmdTransformer.
+
+Axiom dmdTransformDataConSig : list StrictnessMark -> DmdTransformer.
+
+Axiom dmdTransformDictSelSig : DmdSig -> DmdTransformer.
+
+Axiom zapDmdEnv : DmdEnv -> DmdEnv.
+
+Axiom zapDmdEnvSig : DmdSig -> DmdSig.
+
+Axiom zapUsageDemand : Demand -> Demand.
+
+Axiom zapUsedOnceDemand : Demand -> Demand.
+
+Axiom zapUsedOnceSig : DmdSig -> DmdSig.
+
+Axiom kill_usage_card : KillFlags -> Card -> Card.
+
+Axiom kill_usage : KillFlags -> Demand -> Demand.
+
+Axiom kill_usage_sd : KillFlags -> SubDemand -> SubDemand.
+
+(* Skipping definition `Core.trimToType' *)
+
+Axiom trimBoxity : Demand -> Demand.
+
+#[global] Definition seqDemand : Demand -> unit :=
+  fun x => tt.
+
+Axiom seqSubDemand : SubDemand -> unit.
+
+#[global] Definition seqDemandList : list Demand -> unit :=
+  fun x => tt.
+
+#[global] Definition seqDmdType : DmdType -> unit :=
+  fun x => tt.
+
+#[global] Definition seqDmdEnv : DmdEnv -> unit :=
+  fun x => tt.
+
+Axiom seqDmdSig : DmdSig -> unit.
+
+Axiom pp_boxity : HsSyn.Boxity -> GHC.Base.String.
+
+#[global] Definition mkBinds {b : Type}
+   : BasicTypes.RecFlag -> list (b * Expr b)%type -> list (Bind b) :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | Required, Required => true
-    | Required, _ => false
-    | _, Required => false
-    | _, _ => true
+    | BasicTypes.Recursive, binds => cons (Rec binds) nil
+    | BasicTypes.NonRecursive, binds =>
+        GHC.Base.map (Data.Tuple.uncurry NonRec) binds
     end.
 
-Definition binderVar {tv : Type} {argf : Type} : TyVarBndr tv argf -> tv :=
-  fun '(TvBndr v _) => v.
-
-Definition binderVars {tv : Type} {argf : Type}
-   : list (TyVarBndr tv argf) -> list tv :=
-  fun tvbs => GHC.Base.map binderVar tvbs.
-
-Definition binderArgFlag {tv : Type} {argf : Type}
-   : TyVarBndr tv argf -> argf :=
-  fun '(TvBndr _ argf) => argf.
-
-Definition tyVarKind : TyVar -> Kind :=
-  varType.
-
-Definition binderKind {argf : Type} : TyVarBndr TyVar argf -> Kind :=
-  fun '(TvBndr tv _) => tyVarKind tv.
-
-Definition mkTyVarBinder : ArgFlag -> Var -> TyVarBinder :=
-  fun vis var => TvBndr var vis.
-
-Definition mkTyVarBinders : ArgFlag -> list TyVar -> list TyVarBinder :=
-  fun vis => GHC.Base.map (mkTyVarBinder vis).
-
-Definition tyVarName : TyVar -> Name.Name :=
-  varName.
-
-Definition setTyVarUnique : TyVar -> Unique.Unique -> TyVar :=
-  setVarUnique.
-
-Definition setTyVarName : TyVar -> Name.Name -> TyVar :=
-  setVarName.
-
-Definition setTyVarKind : TyVar -> Kind -> TyVar :=
-  fun tv k =>
-    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__
-       id_info_5__ := tv in
-    Mk_Id varName_0__ realUnique_1__ k idScope_3__ id_details_4__ id_info_5__.
-
-Definition updateTyVarKind : (Kind -> Kind) -> TyVar -> TyVar :=
-  fun update tv =>
-    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__
-       id_info_5__ := tv in
-    Mk_Id varName_0__ realUnique_1__ (update (tyVarKind tv)) idScope_3__
-          id_details_4__ id_info_5__.
-
-Definition updateTyVarKindM {m : Type -> Type} `{GHC.Base.Monad m}
-   : (Kind -> m Kind) -> TyVar -> m TyVar :=
-  fun update tv =>
-    update (tyVarKind tv) GHC.Base.>>=
-    (fun k' =>
-       GHC.Base.return_ (let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__
-                            id_details_4__ id_info_5__ := tv in
-                         Mk_Id varName_0__ realUnique_1__ k' idScope_3__ id_details_4__ id_info_5__)).
-
-(* Skipping definition `Core.mkTyVar' *)
-
-(* Skipping definition `Core.mkTcTyVar' *)
-
-(* Skipping definition `Core.tcTyVarDetails' *)
-
-(* Skipping definition `Core.setTcTyVarDetails' *)
-
-Definition idInfo `{Util.HasDebugCallStack} : Id -> IdInfo :=
-  fun '(Mk_Id _ _ _ _ _ info) => info.
-
-Definition idDetails : Id -> IdDetails :=
-  fun '(Mk_Id _ _ _ _ details _) => details.
-
-Definition mk_id : Name.Name -> Type_ -> IdScope -> IdDetails -> IdInfo -> Id :=
-  fun name ty scope details info =>
-    Mk_Id name (Unique.getKey (Name.nameUnique name)) ty scope details info.
-
-Definition mkGlobalVar : IdDetails -> Name.Name -> Type_ -> IdInfo -> Id :=
-  fun details name ty info => mk_id name ty GlobalId details info.
-
-Definition mkLocalVar : IdDetails -> Name.Name -> Type_ -> IdInfo -> Id :=
-  fun details name ty info => mk_id name ty (LocalId NotExported) details info.
-
-(* Skipping definition `Core.mkCoVar' *)
-
-Definition mkExportedLocalVar
-   : IdDetails -> Name.Name -> Type_ -> IdInfo -> Id :=
-  fun details name ty info => mk_id name ty (LocalId Exported) details info.
-
-Definition lazySetIdInfo : Id -> IdInfo -> Var :=
-  fun id info =>
-    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__
-       id_info_5__ := id in
-    Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__ info.
-
-Definition setIdDetails : Id -> IdDetails -> Id :=
-  fun id details =>
-    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ id_details_4__
-       id_info_5__ := id in
-    Mk_Id varName_0__ realUnique_1__ varType_2__ idScope_3__ details id_info_5__.
-
-(* Skipping definition `Core.globaliseId' *)
-
-(* Skipping definition `Core.setIdExported' *)
-
-(* Skipping definition `Core.setIdNotExported' *)
-
-Definition isTyVar : Var -> bool :=
-  fun arg_0__ => false.
-
-Definition isTcTyVar : Var -> bool :=
-  fun arg_0__ => false.
-
-Definition isCoVar : Var -> bool :=
-  fun '(Mk_Id _ _ _ _ details _) => isCoVarDetails details.
-
-Definition isTyCoVar : Var -> bool :=
-  fun v => orb (isTyVar v) (isCoVar v).
-
-Definition isId : Var -> bool :=
-  fun '(Mk_Id _ _ _ _ _ _) => true.
-
-Definition isNonCoVarId : Var -> bool :=
-  fun '(Mk_Id _ _ _ _ details _) => negb (isCoVarDetails details).
-
-Definition isLocalId : Var -> bool :=
-  fun v => Unique.isLocalUnique (varUnique v).
-
-Definition isGlobalId : Var -> bool :=
-  fun v => negb (Unique.isLocalUnique (varUnique v)).
-
-Definition isLocalVar : Var -> bool :=
-  fun v => negb (isGlobalId v).
-
-Definition mustHaveLocalBinding : Var -> bool :=
-  fun var => isLocalVar var.
-
-Axiom isExportedId : Var -> bool.
-
-Definition emptyVarSet : VarSet :=
-  UniqSet.emptyUniqSet.
-
-Definition emptyInScopeSet : InScopeSet :=
-  InScope emptyVarSet #1.
-
-Definition getInScopeVars : InScopeSet -> VarSet :=
-  fun '(InScope vs _) => vs.
-
-Definition mkInScopeSet : VarSet -> InScopeSet :=
-  fun in_scope => InScope in_scope #1.
-
-Definition extendDVarEnv {a : Type} : DVarEnv a -> Var -> a -> DVarEnv a :=
-  UniqFM.addToUFM.
-
-Definition extendVarEnv {a : Type} : VarEnv a -> Var -> a -> VarEnv a :=
-  UniqFM.addToUFM.
-
-Definition extendDVarEnvList {a : Type}
-   : DVarEnv a -> list (Var * a)%type -> DVarEnv a :=
-  UniqFM.addListToUFM.
-
-Definition extendVarEnvList {a : Type}
-   : VarEnv a -> list (Var * a)%type -> VarEnv a :=
-  UniqFM.addListToUFM.
-
-Definition extendDVarEnv_C {a : Type}
-   : (a -> a -> a) -> DVarEnv a -> Var -> a -> DVarEnv a :=
-  UniqFM.addToUFM_C.
-
-Definition extendVarEnv_Acc {a : Type} {b : Type}
-   : (a -> b -> b) -> (a -> b) -> VarEnv b -> Var -> a -> VarEnv b :=
-  UniqFM.addToUFM_Acc.
-
-Definition extendVarEnv_C {a : Type}
-   : (a -> a -> a) -> VarEnv a -> Var -> a -> VarEnv a :=
-  UniqFM.addToUFM_C.
-
-Definition extendVarEnv_Directly {a : Type}
-   : VarEnv a -> Unique.Unique -> a -> VarEnv a :=
-  UniqFM.addToUFM_Directly.
-
-Definition extendVarSet : VarSet -> Var -> VarSet :=
-  UniqSet.addOneToUniqSet.
-
-Definition extendInScopeSet : InScopeSet -> Var -> InScopeSet :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InScope in_scope n, v => InScope (extendVarSet in_scope v) (n GHC.Num.+ #1)
-    end.
-
-Definition extendInScopeSetList : InScopeSet -> list Var -> InScopeSet :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InScope in_scope n, vs =>
-        InScope (Data.Foldable.foldl (fun s v => extendVarSet s v) in_scope vs) (n
-                                                                                 GHC.Num.+
-                                                                                 Coq.Lists.List.length vs)
-    end.
-
-Definition unionVarSet : VarSet -> VarSet -> VarSet :=
-  UniqSet.unionUniqSets.
-
-Definition extendInScopeSetSet : InScopeSet -> VarSet -> InScopeSet :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InScope in_scope n, vs =>
-        InScope (unionVarSet in_scope vs) (n GHC.Num.+ UniqSet.sizeUniqSet vs)
-    end.
-
-Definition alterDVarEnv {a : Type}
-   : (option a -> option a) -> DVarEnv a -> Var -> DVarEnv a :=
-  UniqFM.alterUFM.
-
-Definition alterVarEnv {a : Type}
-   : (option a -> option a) -> VarEnv a -> Var -> VarEnv a :=
-  UniqFM.alterUFM.
-
-Definition delDVarEnv {a : Type} : DVarEnv a -> Var -> DVarEnv a :=
-  UniqFM.delFromUFM.
-
-Definition delVarEnv {a : Type} : VarEnv a -> Var -> VarEnv a :=
-  UniqFM.delFromUFM.
-
-Definition delDVarEnvList {a : Type} : DVarEnv a -> list Var -> DVarEnv a :=
-  UniqFM.delListFromUFM.
-
-Definition delVarEnvList {a : Type} : VarEnv a -> list Var -> VarEnv a :=
-  UniqFM.delListFromUFM.
-
-Definition delDVarSet : DVarSet -> Var -> DVarSet :=
-  UniqSet.delOneFromUniqSet.
-
-Definition delVarSet : VarSet -> Var -> VarSet :=
-  UniqSet.delOneFromUniqSet.
-
-Definition delInScopeSet : InScopeSet -> Var -> InScopeSet :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InScope in_scope n, v => InScope (delVarSet in_scope v) n
-    end.
-
-Definition delDVarSetList : DVarSet -> list Var -> DVarSet :=
-  UniqSet.delListFromUniqSet.
-
-Definition delVarSetList : VarSet -> list Var -> VarSet :=
-  UniqSet.delListFromUniqSet.
-
-Definition delVarEnv_Directly {a : Type}
-   : VarEnv a -> Unique.Unique -> VarEnv a :=
-  UniqFM.delFromUFM_Directly.
-
-Definition delVarSetByKey : VarSet -> Unique.Unique -> VarSet :=
-  UniqSet.delOneFromUniqSet_Directly.
-
-Definition elemDVarEnv {a : Type} : Var -> DVarEnv a -> bool :=
-  UniqFM.elemUFM.
-
-Definition elemVarEnv {a : Type} : Var -> VarEnv a -> bool :=
-  UniqFM.elemUFM.
-
-Definition elemDVarSet : Var -> DVarSet -> bool :=
-  UniqSet.elementOfUniqSet.
-
-Definition elemVarSet : Var -> VarSet -> bool :=
-  UniqSet.elementOfUniqSet.
-
-Definition elemInScopeSet : Var -> InScopeSet -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | v, InScope in_scope _ => elemVarSet v in_scope
-    end.
-
-Definition lookupDVarEnv {a : Type} : DVarEnv a -> Var -> option a :=
-  UniqFM.lookupUFM.
-
-Definition lookupVarEnv {a : Type} : VarEnv a -> Var -> option a :=
-  UniqFM.lookupUFM.
-
-Definition lookupVarEnv_Directly {a : Type}
-   : VarEnv a -> Unique.Unique -> option a :=
-  UniqFM.lookupUFM_Directly.
-
-Definition lookupVarEnv_NF {a} `{_ : HsToCoq.Err.Default a} (env : VarEnv a) id
-   : a :=
-  match lookupVarEnv env id with
-  | Some xx => xx
-  | None => HsToCoq.Err.default
-  end.
-
-Definition lookupVarSet : VarSet -> Var -> option Var :=
-  UniqSet.lookupUniqSet.
-
-Definition lookupInScope : InScopeSet -> Var -> option Var :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InScope in_scope _, v => lookupVarSet in_scope v
-    end.
-
-Definition lookupVarSetByName : VarSet -> Name.Name -> option Var :=
-  UniqSet.lookupUniqSet.
-
-Definition lookupVarSet_Directly : VarSet -> Unique.Unique -> option Var :=
-  UniqSet.lookupUniqSet_Directly.
-
-Definition lookupInScope_Directly : InScopeSet -> Unique.Unique -> option Var :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InScope in_scope _, uniq => lookupVarSet_Directly in_scope uniq
-    end.
-
-Definition unionInScope : InScopeSet -> InScopeSet -> InScopeSet :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InScope s1 _, InScope s2 n2 => InScope (unionVarSet s1 s2) n2
-    end.
-
-Definition isEmptyVarSet : VarSet -> bool :=
-  UniqSet.isEmptyUniqSet.
-
-Definition minusVarSet : VarSet -> VarSet -> VarSet :=
-  UniqSet.minusUniqSet.
-
-Definition subVarSet : VarSet -> VarSet -> bool :=
-  fun s1 s2 => isEmptyVarSet (minusVarSet s1 s2).
-
-Definition varSetInScope : VarSet -> InScopeSet -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | vars, InScope s1 _ => subVarSet vars s1
-    end.
-
-Axiom uniqAway : InScopeSet -> Var -> Var.
-
-Definition elemVarSetByKey : Unique.Unique -> VarSet -> bool :=
-  UniqSet.elemUniqSet_Directly.
-
-Definition mkDVarEnv {a : Type} : list (Var * a)%type -> DVarEnv a :=
-  UniqFM.listToUFM.
-
-Definition mkVarEnv {a : Type} : list (Var * a)%type -> VarEnv a :=
-  UniqFM.listToUFM.
-
-Definition mkDVarSet : list Var -> DVarSet :=
-  UniqSet.mkUniqSet.
-
-Definition mkVarSet : list Var -> VarSet :=
-  UniqSet.mkUniqSet.
-
-Definition uniqAway' : InScopeSet -> Var -> Var :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | InScope set n, var =>
-        let orig_unique := Unique.getUnique var in
-        let try :=
-          HsToCoq.DeferredFix.deferredFix1 (fun try k =>
-                                              let uniq :=
-                                                Unique.deriveUnique orig_unique (BinNat.N.of_nat n GHC.Num.* k) in
-                                              let msg :=
-                                                GHC.Base.mappend (GHC.Base.mappend (GHC.Base.mappend Panic.someSDoc
-                                                                                                     (Datatypes.id
-                                                                                                      (GHC.Base.hs_string__
-                                                                                                       "tries")))
-                                                                                   Panic.someSDoc) Panic.someSDoc in
-                                              if andb Util.debugIsOn (k GHC.Base.> #1000) : bool
-                                              then Panic.panicStr (GHC.Base.hs_string__ "uniqAway loop:") msg else
-                                              if elemVarSetByKey uniq set : bool then try (k GHC.Num.+ #1) else
-                                              if k GHC.Base.> #3 : bool then setVarUnique var uniq else
-                                              setVarUnique var uniq) in
-        try #1
-    end.
-
-Definition emptyVarEnv {a : Type} : VarEnv a :=
-  UniqFM.emptyUFM.
-
-Definition mkRnEnv2 : InScopeSet -> RnEnv2 :=
-  fun vars => RV2 emptyVarEnv emptyVarEnv vars.
-
-Definition addRnInScopeSet : RnEnv2 -> VarSet -> RnEnv2 :=
-  fun env vs =>
-    if isEmptyVarSet vs : bool then env else
-    let 'RV2 envL_0__ envR_1__ in_scope_2__ := env in
-    RV2 envL_0__ envR_1__ (extendInScopeSetSet (in_scope env) vs).
-
-Definition rnInScope : Var -> RnEnv2 -> bool :=
-  fun x env => elemInScopeSet x (in_scope env).
-
-Definition rnInScopeSet : RnEnv2 -> InScopeSet :=
-  in_scope.
-
-Definition rnEnvL : RnEnv2 -> VarEnv Var :=
-  envL.
-
-Definition rnEnvR : RnEnv2 -> VarEnv Var :=
-  envR.
-
-Definition rnBndr2_var : RnEnv2 -> Var -> Var -> (RnEnv2 * Var)%type :=
-  fun arg_0__ arg_1__ arg_2__ =>
-    match arg_0__, arg_1__, arg_2__ with
-    | RV2 envL envR in_scope, bL, bR =>
-        let new_b :=
-          if negb (elemInScopeSet bL in_scope) : bool then bL else
-          if negb (elemInScopeSet bR in_scope) : bool then bR else
-          uniqAway' in_scope bL in
-        pair (RV2 (extendVarEnv envL bL new_b) (extendVarEnv envR bR new_b)
-                  (extendInScopeSet in_scope new_b)) new_b
-    end.
-
-Definition rnBndr2 : RnEnv2 -> Var -> Var -> RnEnv2 :=
-  fun env bL bR => Data.Tuple.fst (rnBndr2_var env bL bR).
-
-Definition rnBndrs2 : RnEnv2 -> list Var -> list Var -> RnEnv2 :=
-  fun env bsL bsR => Util.foldl2 rnBndr2 env bsL bsR.
-
-Definition rnBndrL : RnEnv2 -> Var -> (RnEnv2 * Var)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 envL envR in_scope, bL =>
-        let new_b := uniqAway in_scope bL in
-        pair (RV2 (extendVarEnv envL bL new_b) envR (extendInScopeSet in_scope new_b))
-             new_b
-    end.
-
-Definition rnBndrR : RnEnv2 -> Var -> (RnEnv2 * Var)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 envL envR in_scope, bR =>
-        let new_b := uniqAway in_scope bR in
-        pair (RV2 envL (extendVarEnv envR bR new_b) (extendInScopeSet in_scope new_b))
-             new_b
-    end.
-
-Definition rnEtaL : RnEnv2 -> Var -> (RnEnv2 * Var)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 envL envR in_scope, bL =>
-        let new_b := uniqAway in_scope bL in
-        pair (RV2 (extendVarEnv envL bL new_b) (extendVarEnv envR new_b new_b)
-                  (extendInScopeSet in_scope new_b)) new_b
-    end.
-
-Definition rnEtaR : RnEnv2 -> Var -> (RnEnv2 * Var)%type :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 envL envR in_scope, bR =>
-        let new_b := uniqAway in_scope bR in
-        pair (RV2 (extendVarEnv envL new_b new_b) (extendVarEnv envR bR new_b)
-                  (extendInScopeSet in_scope new_b)) new_b
-    end.
-
-Definition delBndrL : RnEnv2 -> Var -> RnEnv2 :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | (RV2 env _ in_scope as rn), v =>
-        let 'RV2 envL_2__ envR_3__ in_scope_4__ := rn in
-        RV2 (delVarEnv env v) envR_3__ (extendInScopeSet in_scope v)
-    end.
-
-Definition delBndrR : RnEnv2 -> Var -> RnEnv2 :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | (RV2 _ env in_scope as rn), v =>
-        let 'RV2 envL_2__ envR_3__ in_scope_4__ := rn in
-        RV2 envL_2__ (delVarEnv env v) (extendInScopeSet in_scope v)
-    end.
-
-Definition delBndrsL : RnEnv2 -> list Var -> RnEnv2 :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | (RV2 env _ in_scope as rn), v =>
-        let 'RV2 envL_2__ envR_3__ in_scope_4__ := rn in
-        RV2 (delVarEnvList env v) envR_3__ (extendInScopeSetList in_scope v)
-    end.
-
-Definition delBndrsR : RnEnv2 -> list Var -> RnEnv2 :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | (RV2 _ env in_scope as rn), v =>
-        let 'RV2 envL_2__ envR_3__ in_scope_4__ := rn in
-        RV2 envL_2__ (delVarEnvList env v) (extendInScopeSetList in_scope v)
-    end.
-
-Definition rnOccL : RnEnv2 -> Var -> Var :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 env _ _, v => Maybes.orElse (lookupVarEnv env v) v
-    end.
-
-Definition rnOccR : RnEnv2 -> Var -> Var :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 _ env _, v => Maybes.orElse (lookupVarEnv env v) v
-    end.
-
-Definition rnOccL_maybe : RnEnv2 -> Var -> option Var :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 env _ _, v => lookupVarEnv env v
-    end.
-
-Definition rnOccR_maybe : RnEnv2 -> Var -> option Var :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 _ env _, v => lookupVarEnv env v
-    end.
-
-Definition inRnEnvL : RnEnv2 -> Var -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 env _ _, v => elemVarEnv v env
-    end.
-
-Definition inRnEnvR : RnEnv2 -> Var -> bool :=
-  fun arg_0__ arg_1__ =>
-    match arg_0__, arg_1__ with
-    | RV2 _ env _, v => elemVarEnv v env
-    end.
-
-Definition lookupRnInScope : RnEnv2 -> Var -> Var :=
-  fun env v => Maybes.orElse (lookupInScope (in_scope env) v) v.
-
-Definition nukeRnEnvL : RnEnv2 -> RnEnv2 :=
-  fun '(RV2 envL_0__ envR_1__ in_scope_2__) =>
-    RV2 emptyVarEnv envR_1__ in_scope_2__.
-
-Definition nukeRnEnvR : RnEnv2 -> RnEnv2 :=
-  fun '(RV2 envL_0__ envR_1__ in_scope_2__) =>
-    RV2 envL_0__ emptyVarEnv in_scope_2__.
-
-Definition rnSwap : RnEnv2 -> RnEnv2 :=
-  fun '(RV2 envL envR in_scope) => RV2 envR envL in_scope.
-
-Definition emptyTidyEnv : TidyEnv :=
-  pair OccName.emptyTidyOccEnv emptyVarEnv.
-
-Definition elemVarEnvByKey {a : Type} : Unique.Unique -> VarEnv a -> bool :=
-  UniqFM.elemUFM_Directly.
-
-Definition disjointVarEnv {a : Type} : VarEnv a -> VarEnv a -> bool :=
-  UniqFM.disjointUFM.
-
-Definition plusVarEnv_C {a : Type}
-   : (a -> a -> a) -> VarEnv a -> VarEnv a -> VarEnv a :=
-  UniqFM.plusUFM_C.
-
-Definition plusVarEnv_CD {a : Type}
-   : (a -> a -> a) -> VarEnv a -> a -> VarEnv a -> a -> VarEnv a :=
-  UniqFM.plusUFM_CD.
-
-Definition plusMaybeVarEnv_C {a : Type}
-   : (a -> a -> option a) -> VarEnv a -> VarEnv a -> VarEnv a :=
-  UniqFM.plusMaybeUFM_C.
-
-Definition minusVarEnv {a : Type} {b : Type}
-   : VarEnv a -> VarEnv b -> VarEnv a :=
-  UniqFM.minusUFM.
-
-Definition isEmptyVarEnv {a : Type} : VarEnv a -> bool :=
-  UniqFM.isNullUFM.
-
-Definition intersectsVarEnv {a : Type} : VarEnv a -> VarEnv a -> bool :=
-  fun e1 e2 => negb (isEmptyVarEnv (UniqFM.intersectUFM e1 e2)).
-
-Definition plusVarEnv {a : Type} : VarEnv a -> VarEnv a -> VarEnv a :=
-  UniqFM.plusUFM.
-
-Definition plusVarEnvList {a : Type} : list (VarEnv a) -> VarEnv a :=
-  UniqFM.plusUFMList.
-
-Definition filterVarEnv {a : Type} : (a -> bool) -> VarEnv a -> VarEnv a :=
-  UniqFM.filterUFM.
-
-Definition lookupWithDefaultVarEnv {a : Type} : VarEnv a -> a -> Var -> a :=
-  UniqFM.lookupWithDefaultUFM.
-
-Definition mapVarEnv {a : Type} {b : Type} : (a -> b) -> VarEnv a -> VarEnv b :=
-  UniqFM.mapUFM.
-
-Definition mkVarEnv_Directly {a : Type}
-   : list (Unique.Unique * a)%type -> VarEnv a :=
-  UniqFM.listToUFM_Directly.
-
-Definition unitDVarEnv {a : Type} : Var -> a -> DVarEnv a :=
-  UniqFM.unitUFM.
-
-Definition unitVarEnv {a : Type} : Var -> a -> VarEnv a :=
-  UniqFM.unitUFM.
-
-Definition filterVarEnv_Directly {a : Type}
-   : (Unique.Unique -> a -> bool) -> VarEnv a -> VarEnv a :=
-  UniqFM.filterUFM_Directly.
-
-Definition partitionVarEnv {a : Type}
-   : (a -> bool) -> VarEnv a -> (VarEnv a * VarEnv a)%type :=
-  UniqFM.partitionUFM.
-
-Definition restrictVarEnv {a : Type} : VarEnv a -> VarSet -> VarEnv a :=
-  fun env vs =>
-    let keep :=
-      fun arg_0__ arg_1__ =>
-        match arg_0__, arg_1__ with
-        | u, _ => elemVarSetByKey u vs
-        end in
-    filterVarEnv_Directly keep env.
-
-Definition zipVarEnv {a : Type} : list Var -> list a -> VarEnv a :=
-  fun tyvars tys =>
-    mkVarEnv (Util.zipEqual (GHC.Base.hs_string__ "zipVarEnv") tyvars tys).
-
-Definition modifyVarEnv {a : Type} : (a -> a) -> VarEnv a -> Var -> VarEnv a :=
-  fun mangle_fn env key =>
-    match (lookupVarEnv env key) with
-    | None => env
-    | Some xx => extendVarEnv env key (mangle_fn xx)
-    end.
-
-Definition modifyVarEnv_Directly {a : Type}
-   : (a -> a) -> UniqFM.UniqFM a -> Unique.Unique -> UniqFM.UniqFM a :=
-  fun mangle_fn env key =>
-    match (UniqFM.lookupUFM_Directly env key) with
-    | None => env
-    | Some xx => UniqFM.addToUFM_Directly env key (mangle_fn xx)
-    end.
-
-Definition emptyDVarEnv {a : Type} : DVarEnv a :=
-  UniqFM.emptyUFM.
-
-Definition dVarEnvElts {a : Type} : DVarEnv a -> list a :=
-  UniqFM.eltsUFM.
-
-Definition minusDVarEnv {a : Type} {a' : Type}
-   : DVarEnv a -> DVarEnv a' -> DVarEnv a :=
-  UniqFM.minusUFM.
-
-Definition foldDVarEnv {a : Type} {b : Type}
-   : (a -> b -> b) -> b -> DVarEnv a -> b :=
-  UniqFM.nonDetFoldUFM.
-
-Definition mapDVarEnv {a : Type} {b : Type}
-   : (a -> b) -> DVarEnv a -> DVarEnv b :=
-  UniqFM.mapUFM.
-
-Definition filterDVarEnv {a : Type} : (a -> bool) -> DVarEnv a -> DVarEnv a :=
-  UniqFM.filterUFM.
-
-Definition plusDVarEnv {a : Type} : DVarEnv a -> DVarEnv a -> DVarEnv a :=
-  UniqFM.plusUFM.
-
-Definition plusDVarEnv_C {a : Type}
-   : (a -> a -> a) -> DVarEnv a -> DVarEnv a -> DVarEnv a :=
-  UniqFM.plusUFM_C.
-
-Definition isEmptyDVarEnv {a : Type} : DVarEnv a -> bool :=
-  UniqFM.isNullUFM.
-
-Definition modifyDVarEnv {a : Type}
-   : (a -> a) -> DVarEnv a -> Var -> DVarEnv a :=
-  fun mangle_fn env key =>
-    match (lookupDVarEnv env key) with
-    | None => env
-    | Some xx => extendDVarEnv env key (mangle_fn xx)
-    end.
-
-Definition partitionDVarEnv {a : Type}
-   : (a -> bool) -> DVarEnv a -> (DVarEnv a * DVarEnv a)%type :=
-  UniqFM.partitionUFM.
-
-Definition anyDVarEnv {a : Type} : (a -> bool) -> DVarEnv a -> bool :=
-  UniqFM.anyUFM.
-
-Definition unitDVarSet : Var -> DVarSet :=
-  UniqSet.unitUniqSet.
-
-Definition unitVarSet : Var -> VarSet :=
-  UniqSet.unitUniqSet.
-
-Definition extendDVarSet : DVarSet -> Var -> DVarSet :=
-  UniqSet.addOneToUniqSet.
-
-Definition extendDVarSetList : DVarSet -> list Var -> DVarSet :=
-  UniqSet.addListToUniqSet.
-
-Definition extendVarSetList : VarSet -> list Var -> VarSet :=
-  UniqSet.addListToUniqSet.
-
-Definition intersectVarSet : VarSet -> VarSet -> VarSet :=
-  UniqSet.intersectUniqSets.
-
-Definition unionVarSets : list VarSet -> VarSet :=
-  UniqSet.unionManyUniqSets.
-
-Definition sizeVarSet : VarSet -> nat :=
-  UniqSet.sizeUniqSet.
-
-Definition filterVarSet : (Var -> bool) -> VarSet -> VarSet :=
-  UniqSet.filterUniqSet.
-
-(* Skipping definition `Core.partitionVarSet' *)
-
-Definition mapUnionVarSet {a : Type} : (a -> VarSet) -> list a -> VarSet :=
-  fun get_set xs =>
-    Data.Foldable.foldr (unionVarSet GHC.Base.∘ get_set) emptyVarSet xs.
-
-Definition disjointVarSet : VarSet -> VarSet -> bool :=
-  fun s1 s2 => UniqFM.disjointUFM (UniqSet.getUniqSet s1) (UniqSet.getUniqSet s2).
-
-Definition intersectsVarSet : VarSet -> VarSet -> bool :=
-  fun s1 s2 => negb (disjointVarSet s1 s2).
-
-Definition anyVarSet : (Var -> bool) -> VarSet -> bool :=
-  UniqSet.uniqSetAny.
-
-Definition allVarSet : (Var -> bool) -> VarSet -> bool :=
-  UniqSet.uniqSetAll.
-
-(* Skipping definition `Core.mapVarSet' *)
-
-Definition fixVarSet : (VarSet -> VarSet) -> VarSet -> VarSet :=
-  HsToCoq.DeferredFix.deferredFix2 (fun fixVarSet
-                                    (fn : VarSet -> VarSet)
-                                    (vars : VarSet) =>
-                                      let new_vars := fn vars in
-                                      if subVarSet new_vars vars : bool then vars else
-                                      fixVarSet fn new_vars).
-
-Definition transCloVarSet : (VarSet -> VarSet) -> VarSet -> VarSet :=
-  fun fn seeds =>
-    let go : VarSet -> VarSet -> VarSet :=
-      HsToCoq.DeferredFix.deferredFix1 (fun go (acc candidates : VarSet) =>
-                                          let new_vs := minusVarSet (fn candidates) acc in
-                                          if isEmptyVarSet new_vs : bool then acc else
-                                          go (unionVarSet acc new_vs) new_vs) in
-    go seeds seeds.
-
-Definition seqVarSet : VarSet -> unit :=
-  fun s => GHC.Prim.seq (sizeVarSet s) tt.
-
-(* Skipping definition `Core.pluralVarSet' *)
-
-(* Skipping definition `Core.pprVarSet' *)
-
-Definition dVarSetElems : DVarSet -> list Var :=
-  UniqSet.nonDetEltsUniqSet.
-
-Definition isEmptyDVarSet : DVarSet -> bool :=
-  UniqSet.isEmptyUniqSet.
-
-Definition minusDVarSet : DVarSet -> DVarSet -> DVarSet :=
-  UniqSet.minusUniqSet.
-
-Definition subDVarSet : DVarSet -> DVarSet -> bool :=
-  fun s1 s2 => isEmptyDVarSet (minusDVarSet s1 s2).
-
-Definition unionDVarSet : DVarSet -> DVarSet -> DVarSet :=
-  UniqSet.unionUniqSets.
-
-Definition unionDVarSets : list DVarSet -> DVarSet :=
-  UniqSet.unionManyUniqSets.
-
-Definition mapUnionDVarSet {a : Type} : (a -> DVarSet) -> list a -> DVarSet :=
-  fun get_set xs =>
-    Data.Foldable.foldr (unionDVarSet GHC.Base.∘ get_set) emptyDVarSet xs.
-
-Definition intersectDVarSet : DVarSet -> DVarSet -> DVarSet :=
-  UniqSet.intersectUniqSets.
-
-Definition dVarSetIntersectVarSet : DVarSet -> VarSet -> DVarSet :=
-  UniqSet.intersectUniqSets.
-
-Definition disjointDVarSet :=
-  disjointVarSet.
-
-Definition intersectsDVarSet : DVarSet -> DVarSet -> bool :=
-  fun s1 s2 => negb (disjointDVarSet s1 s2).
-
-Definition dVarSetMinusVarSet : DVarSet -> VarSet -> DVarSet :=
-  UniqSet.minusUniqSet.
-
-Definition foldDVarSet {a : Type} : (Var -> a -> a) -> a -> DVarSet -> a :=
-  UniqSet.nonDetFoldUniqSet.
-
-Definition anyDVarSet :=
-  anyVarSet.
-
-Definition allDVarSet :=
-  allVarSet.
-
-Definition filterDVarSet : (Var -> bool) -> DVarSet -> DVarSet :=
-  UniqSet.filterUniqSet.
-
-Definition sizeDVarSet : DVarSet -> nat :=
-  UniqSet.sizeUniqSet.
-
-Definition partitionDVarSet
-   : (Var -> bool) -> DVarSet -> (DVarSet * DVarSet)%type :=
-  UniqSet.partitionUniqSet.
-
-Definition seqDVarSet : DVarSet -> unit :=
-  fun s => GHC.Prim.seq (sizeDVarSet s) tt.
-
-Definition dVarSetToVarSet : DVarSet -> VarSet :=
-  fun x => x.
-
-Definition transCloDVarSet : (DVarSet -> DVarSet) -> DVarSet -> DVarSet :=
-  fun fn seeds =>
-    let go : DVarSet -> DVarSet -> DVarSet :=
-      HsToCoq.DeferredFix.deferredFix1 (fun go (acc candidates : DVarSet) =>
-                                          let new_vs := minusDVarSet (fn candidates) acc in
-                                          if isEmptyDVarSet new_vs : bool then acc else
-                                          go (unionDVarSet acc new_vs) new_vs) in
-    go seeds seeds.
-
-Axiom tickishCounts : forall {id : Type}, Tickish id -> bool.
-
-Definition tickishScoped {id : Type} : Tickish id -> TickishScoping :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | (ProfNote _ _ _ as n) =>
-        if profNoteScope n : bool then CostCentreScope else
-        NoScope
-    | HpcTick _ _ => NoScope
-    | Breakpoint _ _ => CostCentreScope
-    | SourceNote _ _ => SoftScope
-    end.
-
-Definition tickishScopesLike {id : Type}
-   : Tickish id -> TickishScoping -> bool :=
-  fun t scope =>
-    let like :=
-      fun arg_0__ arg_1__ =>
-        match arg_0__, arg_1__ with
-        | NoScope, _ => true
-        | _, NoScope => false
-        | SoftScope, _ => true
-        | _, SoftScope => false
-        | CostCentreScope, _ => true
-        end in
-    like (tickishScoped t) scope.
-
-Definition tickishFloatable {id : Type} : Tickish id -> bool :=
-  fun t => andb (tickishScopesLike t SoftScope) (negb (tickishCounts t)).
-
-(* Skipping definition `Core.tickishCanSplit' *)
-
-(* Skipping definition `Core.mkNoCount' *)
-
-(* Skipping definition `Core.mkNoScope' *)
-
-Axiom tickishIsCode : forall {id : Type}, Tickish id -> bool.
-
-Definition tickishPlace {id : Type} : Tickish id -> TickishPlacement :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | (ProfNote _ _ _ as n) =>
-        if profNoteCount n : bool then PlaceRuntime else
-        PlaceCostCentre
-    | HpcTick _ _ => PlaceRuntime
-    | Breakpoint _ _ => PlaceRuntime
-    | SourceNote _ _ => PlaceNonLam
-    end.
-
-(* Skipping definition `Core.tickishContains' *)
-
-Definition isOrphan : IsOrphan -> bool :=
+#[global] Definition isOrphan : IsOrphan -> bool :=
   fun arg_0__ => match arg_0__ with | Mk_IsOrphan => true | _ => false end.
 
-Definition notOrphan : IsOrphan -> bool :=
+#[global] Definition notOrphan : IsOrphan -> bool :=
   fun arg_0__ => match arg_0__ with | NotOrphan _ => true | _ => false end.
 
-Definition chooseOrphanAnchor (local_names : list Name.Name) : IsOrphan :=
+#[global] Definition chooseOrphanAnchor (local_names : list Name.Name)
+   : IsOrphan :=
   match GHC.Base.map Name.nameOccName local_names with
   | cons hd tl => NotOrphan (Data.Foldable.foldr GHC.Base.min hd tl)
   | nil => Mk_IsOrphan
   end.
 
-Definition mkRuleEnv : RuleBase -> list Module.Module -> RuleEnv :=
-  fun rules vis_orphs => Mk_RuleEnv rules (Module.mkModuleSet vis_orphs).
-
-Definition emptyRuleEnv : RuleEnv :=
-  Mk_RuleEnv NameEnv.emptyNameEnv Module.emptyModuleSet.
-
-Definition isBuiltinRule : CoreRule -> bool :=
+#[global] Definition isBuiltinRule : CoreRule -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | BuiltinRule _ _ _ _ => true
     | _ => false
     end.
 
-Definition isAutoRule : CoreRule -> bool :=
+#[global] Definition isAutoRule : CoreRule -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | BuiltinRule _ _ _ _ => false
     | Rule _ _ _ _ _ _ _ is_auto _ _ _ => is_auto
     end.
 
-Definition ruleArity : CoreRule -> nat :=
+#[global] Definition ruleArity : CoreRule -> nat :=
   fun arg_0__ =>
     match arg_0__ with
     | BuiltinRule _ _ n _ => n
     | Rule _ _ _ _ _ args _ _ _ _ _ => Coq.Lists.List.length args
     end.
 
-Definition ruleName : CoreRule -> BasicTypes.RuleName :=
+#[global] Definition ruleName : CoreRule -> BasicTypes.RuleName :=
   ru_name.
 
-Definition ruleModule : CoreRule -> option Module.Module :=
+#[global] Definition ruleModule : CoreRule -> option Module.Module :=
   fun arg_0__ =>
     match arg_0__ with
     | Rule _ _ _ _ _ _ _ _ ru_origin _ _ => Some ru_origin
     | BuiltinRule _ _ _ _ => None
     end.
 
-Definition ruleActivation : CoreRule -> BasicTypes.Activation :=
+#[global] Definition ruleActivation : CoreRule -> BasicTypes.Activation :=
   fun arg_0__ =>
     match arg_0__ with
     | BuiltinRule _ _ _ _ => BasicTypes.AlwaysActive
     | Rule _ act _ _ _ _ _ _ _ _ _ => act
     end.
 
-Definition ruleIdName : CoreRule -> Name.Name :=
+#[global] Definition ruleIdName : CoreRule -> Name.Name :=
   ru_fn.
 
-Definition isLocalRule : CoreRule -> bool :=
+#[global] Definition isLocalRule : CoreRule -> bool :=
   ru_local.
 
-Definition setRuleIdName : Name.Name -> CoreRule -> CoreRule :=
+#[global] Definition setRuleIdName : Name.Name -> CoreRule -> CoreRule :=
   fun nm ru =>
     match ru with
     | Rule ru_name_0__ ru_act_1__ ru_fn_2__ ru_rough_3__ ru_bndrs_4__ ru_args_5__
@@ -7020,77 +5154,84 @@ Definition setRuleIdName : Name.Name -> CoreRule -> CoreRule :=
         BuiltinRule ru_name_11__ nm ru_nargs_13__ ru_try_14__
     end.
 
-Definition needSaturated : bool :=
+#[global] Definition needSaturated : bool :=
   false.
 
-Definition unSaturatedOk : bool :=
+#[global] Definition unSaturatedOk : bool :=
   true.
 
-Definition boringCxtOk : bool :=
+#[global] Definition boringCxtOk : bool :=
   true.
 
-Definition boringCxtNotOk : bool :=
+#[global] Definition boringCxtNotOk : bool :=
   false.
 
-(* Skipping definition `Core.evaldUnfolding' *)
+#[global] Definition noUnfolding : Unfolding :=
+  NoUnfolding.
+
+Axiom evaldUnfolding : Unfolding.
 
 (* Skipping definition `Core.bootUnfolding' *)
 
 (* Skipping definition `Core.mkOtherCon' *)
 
-Definition isStableSource : UnfoldingSource -> bool :=
-  fun arg_0__ =>
-    match arg_0__ with
-    | InlineCompulsory => true
-    | InlineStable => true
-    | InlineRhs => false
-    end.
-
 Axiom unfoldingTemplate : Unfolding -> CoreExpr.
 
-Definition maybeUnfoldingTemplate : Unfolding -> option CoreExpr :=
+#[global] Definition maybeUnfoldingTemplate : Unfolding -> option CoreExpr :=
   fun arg_0__ => None.
 
-Definition otherCons : Unfolding -> list AltCon :=
+#[global] Definition otherCons : Unfolding -> list AltCon :=
   fun arg_0__ => nil.
 
-Definition isValueUnfolding : Unfolding -> bool :=
+#[global] Definition isValueUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition isEvaldUnfolding : Unfolding -> bool :=
+#[global] Definition isEvaldUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition isConLikeUnfolding : Unfolding -> bool :=
+#[global] Definition isConLikeUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition isCheapUnfolding : Unfolding -> bool :=
+#[global] Definition isCheapUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition isExpandableUnfolding : Unfolding -> bool :=
+#[global] Definition isExpandableUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition expandUnfolding_maybe : Unfolding -> option CoreExpr :=
+#[global] Definition expandUnfolding_maybe : Unfolding -> option CoreExpr :=
   fun arg_0__ => None.
 
-Definition isCompulsoryUnfolding : Unfolding -> bool :=
+#[global] Definition isCompulsoryUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition isStableUnfolding : Unfolding -> bool :=
+#[global] Definition isStableUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition hasSomeUnfolding : Unfolding -> bool :=
+#[global] Definition isStableUserUnfolding : Unfolding -> bool :=
+  fun arg_0__ => false.
+
+#[global] Definition isStableSystemUnfolding : Unfolding -> bool :=
+  fun arg_0__ => false.
+
+#[global] Definition isInlineUnfolding : Unfolding -> bool :=
+  fun arg_0__ => false.
+
+#[global] Definition hasSomeUnfolding : Unfolding -> bool :=
   fun '(NoUnfolding) => false.
 
-Definition isBootUnfolding : Unfolding -> bool :=
+#[global] Definition isBootUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition neverUnfoldGuidance : UnfoldingGuidance -> bool :=
+#[global] Definition neverUnfoldGuidance : UnfoldingGuidance -> bool :=
   fun arg_0__ => match arg_0__ with | UnfNever => true | _ => false end.
 
-Definition canUnfold : Unfolding -> bool :=
+#[global] Definition hasCoreUnfolding : Unfolding -> bool :=
   fun arg_0__ => false.
 
-Definition cmpAltCon : AltCon -> AltCon -> comparison :=
+#[global] Definition canUnfold : Unfolding -> bool :=
+  fun arg_0__ => false.
+
+#[global] Definition cmpAltCon : AltCon -> AltCon -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | DEFAULT, DEFAULT => Eq
@@ -7100,24 +5241,16 @@ Definition cmpAltCon : AltCon -> AltCon -> comparison :=
     | LitAlt l1, LitAlt l2 => GHC.Base.compare l1 l2
     | LitAlt _, DEFAULT => Gt
     | con1, con2 =>
-        Panic.warnPprTrace (true) (GHC.Base.hs_string__
-                            "ghc/compiler/coreSyn/CoreSyn.hs") #1700 (GHC.Base.mappend (GHC.Base.mappend
-                                                                                        (Datatypes.id
-                                                                                         (GHC.Base.hs_string__
-                                                                                          "Comparing incomparable AltCons"))
-                                                                                        Panic.someSDoc) Panic.someSDoc)
-        Lt
+        Panic.pprPanic (GHC.Base.hs_string__ "cmpAltCon") (Panic.someSDoc)
     end.
 
-Definition cmpAlt {a : Type} {b : Type}
-   : (AltCon * a * b)%type -> (AltCon * a * b)%type -> comparison :=
+#[global] Definition cmpAlt {a : Type} : Alt a -> Alt a -> comparison :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
-    | pair (pair con1 _) _, pair (pair con2 _) _ => cmpAltCon con1 con2
+    | Mk_Alt con1 _ _, Mk_Alt con2 _ _ => cmpAltCon con1 con2
     end.
 
-Definition ltAlt {a : Type} {b : Type}
-   : (AltCon * a * b)%type -> (AltCon * a * b)%type -> bool :=
+#[global] Definition ltAlt {a : Type} : Alt a -> Alt a -> bool :=
   fun a1 a2 => (cmpAlt a1 a2) GHC.Base.== Lt.
 
 Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
@@ -7131,9 +5264,9 @@ Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
                 Coq.Lists.List.flat_map cont_2__ prs)
        end in
      let deTagAlt {t} (arg_0__ : TaggedAlt t) : CoreAlt :=
-       let 'pair (pair con bndrs) rhs := arg_0__ in
-       pair (pair con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
-                   Coq.Lists.List.flat_map cont_1__ bndrs)) (deTagExpr rhs) in
+       let 'Mk_Alt con bndrs rhs := arg_0__ in
+       Mk_Alt con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
+                   Coq.Lists.List.flat_map cont_1__ bndrs) (deTagExpr rhs) in
      match arg_0__ with
      | Mk_Var v => Mk_Var v
      | Lit l => Lit l
@@ -7147,7 +5280,7 @@ Fixpoint deTagExpr {t : Type} (arg_0__ : TaggedExpr t) : CoreExpr
      | Cast e co => Cast (deTagExpr e) co
      end.
 
-Definition deTagBind {t} : TaggedBind t -> CoreBind :=
+#[global] Definition deTagBind {t} : TaggedBind t -> CoreBind :=
   fun arg_0__ =>
     match arg_0__ with
     | NonRec (TB b _) rhs => NonRec b (deTagExpr rhs)
@@ -7158,113 +5291,116 @@ Definition deTagBind {t} : TaggedBind t -> CoreBind :=
              Coq.Lists.List.flat_map cont_2__ prs)
     end.
 
-Definition deTagAlt {t} : TaggedAlt t -> CoreAlt :=
-  fun '(pair (pair con bndrs) rhs) =>
-    pair (pair con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
-                Coq.Lists.List.flat_map cont_1__ bndrs)) (deTagExpr rhs).
+#[global] Definition deTagAlt {t} : TaggedAlt t -> CoreAlt :=
+  fun '(Mk_Alt con bndrs rhs) =>
+    Mk_Alt con (let cont_1__ arg_2__ := let 'TB b _ := arg_2__ in cons b nil in
+                Coq.Lists.List.flat_map cont_1__ bndrs) (deTagExpr rhs).
 
-Definition mkApps {b : Type} : Expr b -> list (Arg b) -> Expr b :=
-  fun f args => Data.Foldable.foldl App f args.
+#[global] Definition mkApps {b : Type} : Expr b -> list (Arg b) -> Expr b :=
+  fun f args => Data.Foldable.foldl' App f args.
 
-Definition mkCoApps {b : Type} : Expr b -> list Coercion -> Expr b :=
-  fun f args => Data.Foldable.foldl (fun e a => App e (Mk_Coercion a)) f args.
+#[global] Definition mkCoApps {b : Type} : Expr b -> list Coercion -> Expr b :=
+  fun f args => Data.Foldable.foldl' (fun e a => App e (Mk_Coercion a)) f args.
 
-Definition varToCoreExpr {b : Type} : CoreBndr -> Expr b :=
-  fun v =>
-    if andb Util.debugIsOn (negb (true)) : bool
-    then (Panic.assertPanic (GHC.Base.hs_string__ "ghc/compiler/coreSyn/CoreSyn.hs")
-          #1920)
-    else Mk_Var v.
+#[global] Definition varToCoreExpr {b : Type} : CoreBndr -> Expr b :=
+  fun v => Mk_Var v.
 
-Definition mkVarApps {b : Type} : Expr b -> list Var -> Expr b :=
-  fun f vars => Data.Foldable.foldl (fun e a => App e (varToCoreExpr a)) f vars.
+#[global] Definition mkVarApps {b : Type} : Expr b -> list Var -> Expr b :=
+  fun f vars => Data.Foldable.foldl' (fun e a => App e (varToCoreExpr a)) f vars.
 
-Definition mkConApp {b : Type} : DataCon -> list (Arg b) -> Expr b :=
+#[global] Definition mkConApp {b : Type} : DataCon -> list (Arg b) -> Expr b :=
   fun con args => mkApps (Mk_Var (dataConWorkId con)) args.
 
-Definition mkTyArg {b : Type} : Type_ -> Expr b :=
+#[global] Definition mkTyArg {b : Type} : Type_ -> Expr b :=
   fun ty =>
     match isCoercionTy_maybe ty with
     | Some co => Mk_Coercion co
     | _ => Mk_Type ty
     end.
 
-Definition mkTyApps {b : Type} : Expr b -> list Type_ -> Expr b :=
-  fun f args => Data.Foldable.foldl (fun e a => App e (mkTyArg a)) f args.
+#[global] Definition mkTyApps {b : Type} : Expr b -> list Type_ -> Expr b :=
+  fun f args => Data.Foldable.foldl' (fun e a => App e (mkTyArg a)) f args.
 
-Definition mkConApp2 {b : Type} : DataCon -> list Type_ -> list Var -> Expr b :=
+#[global] Definition mkConApp2 {b : Type}
+   : DataCon -> list Type_ -> list Var -> Expr b :=
   fun con tys arg_ids =>
     mkApps (mkApps (Mk_Var (dataConWorkId con)) (GHC.Base.map Mk_Type tys))
            (GHC.Base.map varToCoreExpr arg_ids).
 
 (* Skipping definition `Core.mkIntLit' *)
 
-(* Skipping definition `Core.mkIntLitInt' *)
+#[global] Definition mkIntLitWrap {b : Type}
+   : Platform.Platform -> GHC.Num.Integer -> Expr b :=
+  fun platform n => Lit (mkLitIntWrap platform n).
 
 (* Skipping definition `Core.mkWordLit' *)
 
-(* Skipping definition `Core.mkWordLitWord' *)
+#[global] Definition mkWordLitWrap {b : Type}
+   : Platform.Platform -> GHC.Num.Integer -> Expr b :=
+  fun platform w => Lit (mkLitWordWrap platform w).
+
+#[global] Definition mkWord8Lit {b : Type} : GHC.Num.Integer -> Expr b :=
+  fun w => Lit (mkLitWord8 w).
+
+(* Skipping definition `Core.mkWord32LitWord32' *)
 
 (* Skipping definition `Core.mkWord64LitWord64' *)
 
 (* Skipping definition `Core.mkInt64LitInt64' *)
 
-Definition mkCharLit {b : Type} : GHC.Char.Char -> Expr b :=
-  fun c => Lit (mkMachChar c).
+#[global] Definition mkCharLit {b : Type} : GHC.Char.Char -> Expr b :=
+  fun c => Lit (mkLitChar c).
 
-Definition mkStringLit {b : Type} : GHC.Base.String -> Expr b :=
-  fun s => Lit (mkMachString s).
+#[global] Definition mkStringLit {b : Type} : GHC.Base.String -> Expr b :=
+  fun s => Lit (mkLitString s).
 
-Definition mkFloatLit {b : Type} : GHC.Real.Rational -> Expr b :=
-  fun f => Lit (mkMachFloat f).
+#[global] Definition mkFloatLit {b : Type} : GHC.Real.Rational -> Expr b :=
+  fun f => Lit (mkLitFloat f).
 
 (* Skipping definition `Core.mkFloatLitFloat' *)
 
-Definition mkDoubleLit {b : Type} : GHC.Real.Rational -> Expr b :=
-  fun d => Lit (mkMachDouble d).
+#[global] Definition mkDoubleLit {b : Type} : GHC.Real.Rational -> Expr b :=
+  fun d => Lit (mkLitDouble d).
 
 (* Skipping definition `Core.mkDoubleLitDouble' *)
 
-Definition mkLams {b : Type} : list b -> Expr b -> Expr b :=
+#[global] Definition mkLams {b : Type} : list b -> Expr b -> Expr b :=
   fun binders body => Data.Foldable.foldr Lam body binders.
 
-Definition mkLet {b : Type} : Bind b -> Expr b -> Expr b :=
+#[global] Definition mkLet {b : Type} : Bind b -> Expr b -> Expr b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | Rec nil, body => body
     | bind, body => Let bind body
     end.
 
-Definition mkLets {b : Type} : list (Bind b) -> Expr b -> Expr b :=
+#[global] Definition mkLets {b : Type} : list (Bind b) -> Expr b -> Expr b :=
   fun binds body => Data.Foldable.foldr mkLet body binds.
 
-Definition mkLetNonRec {b : Type} : b -> Expr b -> Expr b -> Expr b :=
+#[global] Definition mkLetNonRec {b : Type} : b -> Expr b -> Expr b -> Expr b :=
   fun b rhs body => Let (NonRec b rhs) body.
 
-Definition mkLetRec {b : Type} : list (b * Expr b)%type -> Expr b -> Expr b :=
+#[global] Definition mkLetRec {b : Type}
+   : list (b * Expr b)%type -> Expr b -> Expr b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | nil, body => body
     | bs, body => Let (Rec bs) body
     end.
 
-Definition mkTyBind : TyVar -> Type_ -> CoreBind :=
+#[global] Definition mkTyBind : TyVar -> Type_ -> CoreBind :=
   fun tv ty => NonRec tv (Mk_Type ty).
 
-Definition mkCoBind : CoVar -> Coercion -> CoreBind :=
+#[global] Definition mkCoBind : CoVar -> Coercion -> CoreBind :=
   fun cv co => NonRec cv (Mk_Coercion co).
 
-Definition varsToCoreExprs {b : Type} : list CoreBndr -> list (Expr b) :=
+#[global] Definition varsToCoreExprs {b : Type}
+   : list CoreBndr -> list (Expr b) :=
   fun vs => GHC.Base.map varToCoreExpr vs.
-
-(* Skipping definition `Core.applyTypeToArg' *)
 
 (* Skipping definition `Core.exprToType' *)
 
-Definition exprToCoercion_maybe : CoreExpr -> option Coercion :=
-  fun arg_0__ => match arg_0__ with | Mk_Coercion co => Some co | _ => None end.
-
-Definition bindersOf {b : Type} : Bind b -> list b :=
+#[global] Definition bindersOf {b : Type} : Bind b -> list b :=
   fun arg_0__ =>
     match arg_0__ with
     | NonRec binder _ => cons binder nil
@@ -7273,11 +5409,26 @@ Definition bindersOf {b : Type} : Bind b -> list b :=
         Coq.Lists.List.flat_map cont_2__ pairs
     end.
 
-Definition bindersOfBinds {b : Type} : list (Bind b) -> list b :=
+#[global] Definition bindersOfBinds {b : Type} : list (Bind b) -> list b :=
   fun binds =>
     Data.Foldable.foldr (Coq.Init.Datatypes.app GHC.Base.∘ bindersOf) nil binds.
 
-Definition rhssOfBind {b : Type} : Bind b -> list (Expr b) :=
+#[global] Definition foldBindersOfBindStrict {a : Type} {b : Type}
+   : (a -> b -> a) -> a -> Bind b -> a :=
+  fun f =>
+    fun z bind =>
+      match bind with
+      | NonRec b _rhs => f z b
+      | Rec pairs => Data.Foldable.foldl' f z (GHC.Base.map Data.Tuple.fst pairs)
+      end.
+
+#[global] Definition foldBindersOfBindsStrict {a : Type} {b : Type}
+   : (a -> b -> a) -> a -> list (Bind b) -> a :=
+  fun f =>
+    let fold_bind := (foldBindersOfBindStrict f) in
+    fun z binds => Data.Foldable.foldl' fold_bind z binds.
+
+#[global] Definition rhssOfBind {b : Type} : Bind b -> list (Expr b) :=
   fun arg_0__ =>
     match arg_0__ with
     | NonRec _ rhs => cons rhs nil
@@ -7286,9 +5437,9 @@ Definition rhssOfBind {b : Type} : Bind b -> list (Expr b) :=
         Coq.Lists.List.flat_map cont_2__ pairs
     end.
 
-Definition rhssOfAlts {b : Type} : list (Alt b) -> list (Expr b) :=
+#[global] Definition rhssOfAlts {b : Type} : list (Alt b) -> list (Expr b) :=
   fun alts =>
-    let cont_0__ arg_1__ := let 'pair (pair _ _) e := arg_1__ in cons e nil in
+    let cont_0__ arg_1__ := let 'Mk_Alt _ _ e := arg_1__ in cons e nil in
     Coq.Lists.List.flat_map cont_0__ alts.
 
 Fixpoint flattenBinds {b : Type} (arg_0__ : list (Bind b)) : list (b *
@@ -7299,16 +5450,13 @@ Fixpoint flattenBinds {b : Type} (arg_0__ : list (Bind b)) : list (b *
      | nil => nil
      end.
 
-Definition collectBinders {b : Type} : Expr b -> (list b * Expr b)%type :=
-  fun expr =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | bs, Lam b e => go (cons b bs) e
-         | bs, e => pair (GHC.List.reverse bs) e
-         end in
-    go nil expr.
+(* Skipping definition `Core.collectBinders' *)
 
-Definition collectTyBinders : CoreExpr -> (list TyVar * CoreExpr)%type :=
+#[global] Definition isTyVar : Var -> bool :=
+  fun arg_0__ => false.
+
+#[global] Definition collectTyBinders
+   : CoreExpr -> (list TyVar * CoreExpr)%type :=
   fun expr =>
     let fix go arg_0__ arg_1__
       := let j_3__ :=
@@ -7321,7 +5469,11 @@ Definition collectTyBinders : CoreExpr -> (list TyVar * CoreExpr)%type :=
          end in
     go nil expr.
 
-Definition collectValBinders : CoreExpr -> (list Id * CoreExpr)%type :=
+#[global] Definition isId : Var -> bool :=
+  fun '(Mk_Id _ _ _ _ _ _ _) => true.
+
+#[global] Definition collectValBinders
+   : CoreExpr -> (list Id * CoreExpr)%type :=
   fun expr =>
     let fix go arg_0__ arg_1__
       := let j_3__ :=
@@ -7334,40 +5486,69 @@ Definition collectValBinders : CoreExpr -> (list Id * CoreExpr)%type :=
          end in
     go nil expr.
 
-Definition collectTyAndValBinders
+#[global] Definition collectTyAndValBinders
    : CoreExpr -> (list TyVar * list Id * CoreExpr)%type :=
   fun expr =>
     let 'pair tvs body1 := collectTyBinders expr in
     let 'pair ids body := collectValBinders body1 in
     pair (pair tvs ids) body.
 
-Definition collectNBinders {b : Type}
-   : nat -> Expr b -> (list b * Expr b)%type :=
+(* Skipping definition `Core.collectNBinders' *)
+
+#[global] Definition collectNValBinders_maybe
+   : BasicTypes.Arity -> CoreExpr -> option (list Var * CoreExpr)%type :=
   fun orig_n orig_expr =>
     let fix go arg_0__ arg_1__ arg_2__
       := match arg_0__, arg_1__, arg_2__ with
          | num_3__, bs, expr =>
-             if num_3__ GHC.Base.== #0 : bool then pair (GHC.List.reverse bs) expr else
+             if num_3__ GHC.Base.== #0 : bool
+             then Some (pair (GHC.List.reverse bs) expr) else
              match arg_0__, arg_1__, arg_2__ with
-             | n, bs, Lam b e => go (n GHC.Num.- #1) (cons b bs) e
-             | _, _, _ =>
-                 Panic.panicStr (GHC.Base.hs_string__ "collectNBinders") Panic.someSDoc
+             | n, bs, Lam b e =>
+                 if isId b : bool then go (n GHC.Num.- #1) (cons b bs) e else
+                 go n (cons b bs) e
+             | _, _, _ => None
              end
          end in
     go orig_n nil orig_expr.
 
-Definition collectArgs {b : Type} : Expr b -> (Expr b * list (Arg b))%type :=
-  fun expr =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | App f a, as_ => go f (cons a as_)
-         | e, as_ => pair e as_
-         end in
-    go expr nil.
+(* Skipping definition `Core.collectArgs' *)
 
-Definition collectArgsTicks {b : Type}
-   : (Tickish Id -> bool) ->
-     Expr b -> (Expr b * list (Arg b) * list (Tickish Id))%type :=
+#[global] Definition collectFunSimple {b : Type} : Expr b -> Expr b :=
+  fun expr =>
+    let fix go expr'
+      := match expr' with
+         | App f _a => go f
+         | Cast e _co => go e
+         | e => e
+         end in
+    go expr.
+
+#[global] Definition wrapLamBody
+   : (CoreExpr -> CoreExpr) -> CoreExpr -> CoreExpr :=
+  fun f expr =>
+    let fix go arg_0__
+      := match arg_0__ with
+         | Lam v body => Lam v (go body)
+         | expr => f expr
+         end in
+    go expr.
+
+Fixpoint stripNArgs {a : Type} (arg_0__ : GHC.Num.Word) (arg_1__ : Expr a)
+  : option (Expr a)
+  := match arg_0__, arg_1__ with
+     | n, Cast f _ => stripNArgs n f
+     | num_2__, e =>
+         if num_2__ GHC.Base.== #0 : bool then Some e else
+         match arg_0__, arg_1__ with
+         | n, App f _ => stripNArgs (n GHC.Num.- #1) f
+         | _, _ => None
+         end
+     end.
+
+#[global] Definition collectArgsTicks {b : Type}
+   : (GHC.Types.Tickish.CoreTickish -> bool) ->
+     Expr b -> (Expr b * list (Arg b) * list GHC.Types.Tickish.CoreTickish)%type :=
   fun skipTick expr =>
     let fix go arg_0__ arg_1__ arg_2__
       := match arg_0__, arg_1__, arg_2__ with
@@ -7376,19 +5557,19 @@ Definition collectArgsTicks {b : Type}
          end in
     go expr nil nil.
 
-Definition isRuntimeVar : Var -> bool :=
+#[global] Definition isRuntimeVar : Var -> bool :=
   isId.
 
-Definition isTypeArg {b : Type} : Expr b -> bool :=
+#[global] Definition isTypeArg {b : Type} : Expr b -> bool :=
   fun arg_0__ => match arg_0__ with | Mk_Type _ => true | _ => false end.
 
-Definition isValArg {b : Type} : Expr b -> bool :=
+#[global] Definition isValArg {b : Type} : Expr b -> bool :=
   fun e => negb (isTypeArg e).
 
-Definition isRuntimeArg : CoreExpr -> bool :=
+#[global] Definition isRuntimeArg : CoreExpr -> bool :=
   isValArg.
 
-Definition isTyCoArg {b : Type} : Expr b -> bool :=
+#[global] Definition isTyCoArg {b : Type} : Expr b -> bool :=
   fun arg_0__ =>
     match arg_0__ with
     | Mk_Type _ => true
@@ -7396,13 +5577,16 @@ Definition isTyCoArg {b : Type} : Expr b -> bool :=
     | _ => false
     end.
 
-Definition valBndrCount : list CoreBndr -> nat :=
+#[global] Definition isCoArg {b : Type} : Expr b -> bool :=
+  fun arg_0__ => match arg_0__ with | Mk_Coercion _ => true | _ => false end.
+
+#[global] Definition valBndrCount : list CoreBndr -> nat :=
   Util.count isId.
 
-Definition valArgCount {b : Type} : list (Arg b) -> nat :=
+#[global] Definition valArgCount {b : Type} : list (Arg b) -> nat :=
   Util.count isValArg.
 
-Program Definition collectAnnArgs {b : Type} {a : Type}
+#[global] Program Definition collectAnnArgs {b : Type} {a : Type}
    : AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a))%type :=
   fun expr =>
     let go :=
@@ -7415,9 +5599,10 @@ Program Definition collectAnnArgs {b : Type} {a : Type}
     go expr nil.
 Solve Obligations with (solve_collectAnnArgsTicks).
 
-Program Definition collectAnnArgsTicks {b : Type} {a : Type}
-   : (Tickish Var -> bool) ->
-     AnnExpr b a -> (AnnExpr b a * list (AnnExpr b a) * list (Tickish Var))%type :=
+#[global] Program Definition collectAnnArgsTicks {b : Type} {a : Type}
+   : (GHC.Types.Tickish.CoreTickish -> bool) ->
+     AnnExpr b a ->
+     (AnnExpr b a * list (AnnExpr b a) * list GHC.Types.Tickish.CoreTickish)%type :=
   fun tickishOk expr =>
     let go :=
       HsToCoq.Wf.wfFix3 Coq.Init.Peano.lt (fun arg_0__ arg_1__ arg_2__ =>
@@ -7429,7 +5614,7 @@ Program Definition collectAnnArgsTicks {b : Type} {a : Type}
     go expr nil nil.
 Solve Obligations with (solve_collectAnnArgsTicks).
 
-Definition deAnnotate'
+#[global] Definition deAnnotate'
    : forall {bndr : Type} {annot : Type}, AnnExpr' bndr annot -> Expr bndr :=
   fix deAnnotate' {bndr annot : Type} (arg_0__ : AnnExpr' bndr annot) : Expr bndr
     := let deAnnotate {bndr annot : Type} (arg_0__ : AnnExpr bndr annot)
@@ -7437,8 +5622,8 @@ Definition deAnnotate'
          let 'pair _ e := arg_0__ in
          deAnnotate' e in
        let deAnnAlt {bndr annot : Type} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
-         let 'pair (pair con args) rhs := arg_0__ in
-         pair (pair con args) (deAnnotate rhs) in
+         let 'Mk_AnnAlt con args rhs := arg_0__ in
+         Mk_Alt con args (deAnnotate rhs) in
        match arg_0__ with
        | AnnType t => Mk_Type t
        | AnnCoercion co => Mk_Coercion co
@@ -7465,15 +5650,15 @@ Definition deAnnotate'
                 Coq.Lists.List.flat_map cont_2__ pairs)
        end for deAnnotate'.
 
-Definition deAnnotate {bndr : Type} {annot : Type}
+#[global] Definition deAnnotate {bndr : Type} {annot : Type}
    : AnnExpr bndr annot -> Expr bndr :=
   fun '(pair _ e) => deAnnotate' e.
 
-Definition deAnnAlt {bndr : Type} {annot : Type}
+#[global] Definition deAnnAlt {bndr : Type} {annot : Type}
    : AnnAlt bndr annot -> Alt bndr :=
-  fun '(pair (pair con args) rhs) => pair (pair con args) (deAnnotate rhs).
+  fun '(Mk_AnnAlt con args rhs) => Mk_Alt con args (deAnnotate rhs).
 
-Definition deAnnBind
+#[global] Definition deAnnBind
    : forall {b : Type} {annot : Type}, AnnBind b annot -> Bind b :=
   fix deAnnotate' {bndr annot : Type} (arg_0__ : AnnExpr' bndr annot) : Expr bndr
     := let deAnnotate {bndr annot : Type} (arg_0__ : AnnExpr bndr annot)
@@ -7481,8 +5666,8 @@ Definition deAnnBind
          let 'pair _ e := arg_0__ in
          deAnnotate' e in
        let deAnnAlt {bndr annot : Type} (arg_0__ : AnnAlt bndr annot) : Alt bndr :=
-         let 'pair (pair con args) rhs := arg_0__ in
-         pair (pair con args) (deAnnotate rhs) in
+         let 'Mk_AnnAlt con args rhs := arg_0__ in
+         Mk_Alt con args (deAnnotate rhs) in
        match arg_0__ with
        | AnnType t => Mk_Type t
        | AnnCoercion co => Mk_Coercion co
@@ -7509,7 +5694,7 @@ Definition deAnnBind
                 Coq.Lists.List.flat_map cont_2__ pairs)
        end for deAnnBind.
 
-Program Definition collectAnnBndrs {bndr : Type} {annot : Type}
+#[global] Program Definition collectAnnBndrs {bndr : Type} {annot : Type}
    : AnnExpr bndr annot -> (list bndr * AnnExpr bndr annot)%type :=
   fun e =>
     let collect :=
@@ -7523,63 +5708,1584 @@ Program Definition collectAnnBndrs {bndr : Type} {annot : Type}
 
 (* Skipping definition `Core.collectNAnnBndrs' *)
 
+#[global] Definition idDetailsConcreteTvs
+   : IdDetails -> TcType.ConcreteTyVars :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | PrimOpId _ conc_tvs => conc_tvs
+    | RepPolyId conc_tvs => conc_tvs
+    | DataConWorkId dc => dataConConcreteTyVars dc
+    | DataConWrapId dc => dataConConcreteTyVars dc
+    | _ => TcType.noConcreteTyVars
+    end.
+
+#[global] Definition recSelParentName : RecSelParent -> Name.Name :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | RecSelData tc => tyConName tc
+    | RecSelPatSyn ps => patSynName ps
+    end.
+
+#[global] Definition recSelFirstConName : RecSelParent -> Name.Name :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | RecSelData tc => dataConName (GHC.Err.head (tyConDataCons tc))
+    | RecSelPatSyn ps => patSynName ps
+    end.
+
+#[global] Definition recSelParentCons : RecSelParent -> list ConLike :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | RecSelData tc =>
+        if isAlgTyCon tc : bool
+        then GHC.Base.map RealDataCon (visibleDataCons (algTyConRhs tc)) else
+        nil
+    | RecSelPatSyn ps => cons (PatSynCon ps) nil
+    end.
+
+(* Skipping definition `Core.coVarDetails' *)
+
+#[global] Definition isCoVarDetails : IdDetails -> bool :=
+  fun arg_0__ => false.
+
+#[global] Definition isJoinIdDetails_maybe
+   : IdDetails ->
+     option (BasicTypes.JoinArity * option (list BasicTypes.CbvMark))%type :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Mk_JoinId join_arity marks => Some (pair join_arity marks)
+    | _ => None
+    end.
+
+(* Skipping definition `Core.pprIdDetails' *)
+
+#[global] Definition emptyBitField : BitField :=
+  Mk_BitField #0.
+
+#[global] Definition bitfieldGetOneShotInfo
+   : BitField -> BasicTypes.OneShotInfo :=
+  fun '(Mk_BitField bits) =>
+    if Data.Bits.testBit bits #0 : bool
+    then BasicTypes.OneShotLam
+    else BasicTypes.NoOneShotInfo.
+
+#[global] Definition bitfieldGetCafInfo : BitField -> CafInfo :=
+  fun '(Mk_BitField bits) =>
+    if Data.Bits.testBit bits #1 : bool
+    then NoCafRefs
+    else MayHaveCafRefs.
+
+Axiom bitfieldGetCallArityInfo : BitField -> ArityInfo.
+
+Axiom bitfieldGetArityInfo : BitField -> ArityInfo.
+
+#[global] Definition bitfieldSetOneShotInfo
+   : BasicTypes.OneShotInfo -> BitField -> BitField :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | info, Mk_BitField bits =>
+        match info with
+        | BasicTypes.NoOneShotInfo => Mk_BitField (Data.Bits.clearBit bits #0)
+        | BasicTypes.OneShotLam => Mk_BitField (Data.Bits.setBit bits #0)
+        end
+    end.
+
+#[global] Definition bitfieldSetCafInfo : CafInfo -> BitField -> BitField :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | info, Mk_BitField bits =>
+        match info with
+        | MayHaveCafRefs => Mk_BitField (Data.Bits.clearBit bits #1)
+        | NoCafRefs => Mk_BitField (Data.Bits.setBit bits #1)
+        end
+    end.
+
+Axiom bitfieldSetCallArityInfo : ArityInfo -> BitField -> BitField.
+
+Axiom bitfieldSetArityInfo : ArityInfo -> BitField -> BitField.
+
+#[global] Definition oneShotInfo : IdInfo -> BasicTypes.OneShotInfo :=
+  bitfieldGetOneShotInfo GHC.Base.∘ bitfield.
+
+#[global] Definition arityInfo : IdInfo -> ArityInfo :=
+  bitfieldGetArityInfo GHC.Base.∘ bitfield.
+
+#[global] Definition cafInfo : IdInfo -> CafInfo :=
+  bitfieldGetCafInfo GHC.Base.∘ bitfield.
+
+#[global] Definition callArityInfo : IdInfo -> ArityInfo :=
+  bitfieldGetCallArityInfo GHC.Base.∘ bitfield.
+
+#[global] Definition tagSigInfo
+   : IdInfo -> option GHC.Stg.InferTags.TagSig.TagSig :=
+  tagSig.
+
+#[global] Definition setRuleInfo : IdInfo -> RuleInfo -> IdInfo :=
+  fun info sp =>
+    GHC.Prim.seq sp (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__
+                        inlinePragInfo_2__ occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__
+                        bitfield_7__ lfInfo_8__ tagSig_9__ := info in
+                  Mk_IdInfo sp realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__ dmdSigInfo_4__
+                            cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__ tagSig_9__).
+
+#[global] Definition setInlinePragInfo
+   : IdInfo -> BasicTypes.InlinePragma -> IdInfo :=
+  fun info pr =>
+    GHC.Prim.seq pr (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__
+                        inlinePragInfo_2__ occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__
+                        bitfield_7__ lfInfo_8__ tagSig_9__ := info in
+                  Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ pr occInfo_3__ dmdSigInfo_4__
+                            cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__ tagSig_9__).
+
+#[global] Definition setOccInfo : IdInfo -> BasicTypes.OccInfo -> IdInfo :=
+  fun info oc =>
+    GHC.Prim.seq oc (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__
+                        inlinePragInfo_2__ occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__
+                        bitfield_7__ lfInfo_8__ tagSig_9__ := info in
+                  Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ oc
+                            dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+                            tagSig_9__).
+
+#[global] Definition trimUnfolding : Unfolding -> Unfolding :=
+  fun unf => if isEvaldUnfolding unf : bool then evaldUnfolding else noUnfolding.
+
+#[global] Definition unfoldingInfo : IdInfo -> Unfolding :=
+  fun info =>
+    if BasicTypes.isStrongLoopBreaker (occInfo info) : bool
+    then trimUnfolding (realUnfoldingInfo info) else
+    realUnfoldingInfo info.
+
+#[global] Definition setUnfoldingInfo : IdInfo -> Unfolding -> IdInfo :=
+  fun info uf =>
+    let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+       dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+       tagSig_9__ := info in
+    Mk_IdInfo ruleInfo_0__ uf inlinePragInfo_2__ occInfo_3__ dmdSigInfo_4__
+              cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__ tagSig_9__.
+
+#[global] Definition hasInlineUnfolding : IdInfo -> bool :=
+  fun info => isInlineUnfolding (unfoldingInfo info).
+
+#[global] Definition setArityInfo : IdInfo -> ArityInfo -> IdInfo :=
+  fun info ar =>
+    let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+       dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+       tagSig_9__ := info in
+    Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+              dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ (bitfieldSetArityInfo ar (bitfield
+                                                                                     info)) lfInfo_8__ tagSig_9__.
+
+#[global] Definition setCallArityInfo : IdInfo -> ArityInfo -> IdInfo :=
+  fun info ar =>
+    let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+       dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+       tagSig_9__ := info in
+    Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+              dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ (bitfieldSetCallArityInfo ar
+               (bitfield info)) lfInfo_8__ tagSig_9__.
+
+#[global] Definition setCafInfo : IdInfo -> CafInfo -> IdInfo :=
+  fun info caf =>
+    let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+       dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+       tagSig_9__ := info in
+    Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+              dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ (bitfieldSetCafInfo caf (bitfield
+                                                                                    info)) lfInfo_8__ tagSig_9__.
+
+#[global] Definition setLFInfo
+   : IdInfo -> GHC.StgToCmm.Types.LambdaFormInfo -> IdInfo :=
+  fun info lf =>
+    let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+       dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+       tagSig_9__ := info in
+    Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+              dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ (Some lf) tagSig_9__.
+
+#[global] Definition setTagSig
+   : IdInfo -> GHC.Stg.InferTags.TagSig.TagSig -> IdInfo :=
+  fun info sig =>
+    let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+       dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+       tagSig_9__ := info in
+    Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+              dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__ (Some sig).
+
+#[global] Definition setOneShotInfo
+   : IdInfo -> BasicTypes.OneShotInfo -> IdInfo :=
+  fun info lb =>
+    let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+       dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+       tagSig_9__ := info in
+    Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+              dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ (bitfieldSetOneShotInfo lb
+               (bitfield info)) lfInfo_8__ tagSig_9__.
+
+#[global] Definition setDemandInfo : IdInfo -> Demand -> IdInfo :=
+  fun info dd =>
+    GHC.Prim.seq dd (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__
+                        inlinePragInfo_2__ occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__
+                        bitfield_7__ lfInfo_8__ tagSig_9__ := info in
+                  Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+                            dmdSigInfo_4__ cprSigInfo_5__ dd bitfield_7__ lfInfo_8__ tagSig_9__).
+
+#[global] Definition setDmdSigInfo : IdInfo -> DmdSig -> IdInfo :=
+  fun info dd =>
+    GHC.Prim.seq dd (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__
+                        inlinePragInfo_2__ occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__
+                        bitfield_7__ lfInfo_8__ tagSig_9__ := info in
+                  Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__ dd
+                            cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__ tagSig_9__).
+
+#[global] Definition setCprSigInfo : IdInfo -> GHC.Types.Cpr.CprSig -> IdInfo :=
+  fun info cpr =>
+    GHC.Prim.seq cpr (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__
+                         inlinePragInfo_2__ occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__
+                         bitfield_7__ lfInfo_8__ tagSig_9__ := info in
+                  Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+                            dmdSigInfo_4__ cpr demandInfo_6__ bitfield_7__ lfInfo_8__ tagSig_9__).
+
+#[global] Definition emptyRuleInfo :=
+  EmptyRuleInfo.
+
+#[global] Definition unknownArity : BasicTypes.Arity :=
+  #0.
+
+#[global] Definition vanillaCafInfo : CafInfo :=
+  MayHaveCafRefs.
+
+#[global] Definition vanillaIdInfo : IdInfo :=
+  Mk_IdInfo emptyRuleInfo noUnfolding BasicTypes.defaultInlinePragma
+            BasicTypes.noOccInfo nopSig GHC.Types.Cpr.topCprSig topDmd (bitfieldSetCafInfo
+             vanillaCafInfo (bitfieldSetArityInfo unknownArity (bitfieldSetCallArityInfo
+                                                   unknownArity (bitfieldSetOneShotInfo BasicTypes.NoOneShotInfo
+                                                                                        emptyBitField)))) None None.
+
+#[global] Definition noCafIdInfo : IdInfo :=
+  setCafInfo vanillaIdInfo NoCafRefs.
+
+(* Skipping definition `Core.ppArityInfo' *)
+
+(* Skipping definition `Core.pprStrictness' *)
+
+#[global] Definition isEmptyRuleInfo : RuleInfo -> bool :=
+  fun x => true.
+
+#[global] Definition emptyDVarSet : DVarSet :=
+  UniqSet.emptyUniqSet.
+
+#[global] Definition ruleInfoFreeVars : RuleInfo -> DVarSet :=
+  fun x => emptyDVarSet.
+
+#[global] Definition ruleInfoRules : RuleInfo -> list CoreRule :=
+  fun x => nil.
+
+#[global] Definition setRuleInfoHead : Name.Name -> RuleInfo -> RuleInfo :=
+  fun x y => EmptyRuleInfo.
+
+#[global] Definition mayHaveCafRefs : CafInfo -> bool :=
+  fun arg_0__ => match arg_0__ with | MayHaveCafRefs => true | _ => false end.
+
+(* Skipping definition `Core.ppCafInfo' *)
+
+#[global] Definition zapLamInfo : IdInfo -> option IdInfo :=
+  fun '((Mk_IdInfo _ _ _ occ _ _ demand _ _ _ as info)) =>
+    let is_safe_dmd := fun dmd => negb (isStrUsedDmd dmd) in
+    let safe_occ :=
+      match occ with
+      | BasicTypes.OneOcc _ _ _ _ =>
+          match occ with
+          | BasicTypes.ManyOccs _ =>
+              GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
+          | BasicTypes.IAmDead =>
+              GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
+          | BasicTypes.OneOcc occ_in_lam_2__ occ_n_br_3__ occ_int_cxt_4__ occ_tail_5__ =>
+              BasicTypes.OneOcc BasicTypes.IsInsideLam occ_n_br_3__ occ_int_cxt_4__
+                                BasicTypes.NoTailCallInfo
+          | BasicTypes.IAmALoopBreaker _ _ =>
+              GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
+          end
+      | BasicTypes.IAmALoopBreaker _ _ =>
+          match occ with
+          | BasicTypes.ManyOccs occ_tail_12__ =>
+              BasicTypes.ManyOccs BasicTypes.NoTailCallInfo
+          | BasicTypes.IAmDead =>
+              GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
+          | BasicTypes.OneOcc occ_in_lam_13__ occ_n_br_14__ occ_int_cxt_15__
+          occ_tail_16__ =>
+              BasicTypes.OneOcc occ_in_lam_13__ occ_n_br_14__ occ_int_cxt_15__
+                                BasicTypes.NoTailCallInfo
+          | BasicTypes.IAmALoopBreaker occ_rules_only_17__ occ_tail_18__ =>
+              BasicTypes.IAmALoopBreaker occ_rules_only_17__ BasicTypes.NoTailCallInfo
+          end
+      | _other => occ
+      end in
+    let is_safe_occ :=
+      fun arg_27__ =>
+        let 'occ := arg_27__ in
+        if BasicTypes.isAlwaysTailCalled occ : bool then false else
+        match arg_27__ with
+        | BasicTypes.OneOcc BasicTypes.NotInsideLam _ _ _ => false
+        | _other => true
+        end in
+    if andb (is_safe_occ occ) (is_safe_dmd demand) : bool then None else
+    Some (let 'Mk_IdInfo ruleInfo_31__ realUnfoldingInfo_32__ inlinePragInfo_33__
+             occInfo_34__ dmdSigInfo_35__ cprSigInfo_36__ demandInfo_37__ bitfield_38__
+             lfInfo_39__ tagSig_40__ := info in
+          Mk_IdInfo ruleInfo_31__ realUnfoldingInfo_32__ inlinePragInfo_33__ safe_occ
+                    dmdSigInfo_35__ cprSigInfo_36__ topDmd bitfield_38__ lfInfo_39__ tagSig_40__).
+
+#[global] Definition lazifyDemandInfo : IdInfo -> option IdInfo :=
+  fun '((Mk_IdInfo _ _ _ _ _ _ dmd _ _ _ as info)) =>
+    Some (let 'Mk_IdInfo ruleInfo_1__ realUnfoldingInfo_2__ inlinePragInfo_3__
+             occInfo_4__ dmdSigInfo_5__ cprSigInfo_6__ demandInfo_7__ bitfield_8__ lfInfo_9__
+             tagSig_10__ := info in
+          Mk_IdInfo ruleInfo_1__ realUnfoldingInfo_2__ inlinePragInfo_3__ occInfo_4__
+                    dmdSigInfo_5__ cprSigInfo_6__ (lazifyDmd dmd) bitfield_8__ lfInfo_9__
+                    tagSig_10__).
+
+#[global] Definition floatifyDemandInfo : IdInfo -> option IdInfo :=
+  fun '((Mk_IdInfo _ _ _ _ _ _ dmd _ _ _ as info)) =>
+    Some (let 'Mk_IdInfo ruleInfo_1__ realUnfoldingInfo_2__ inlinePragInfo_3__
+             occInfo_4__ dmdSigInfo_5__ cprSigInfo_6__ demandInfo_7__ bitfield_8__ lfInfo_9__
+             tagSig_10__ := info in
+          Mk_IdInfo ruleInfo_1__ realUnfoldingInfo_2__ inlinePragInfo_3__ occInfo_4__
+                    dmdSigInfo_5__ cprSigInfo_6__ (floatifyDmd dmd) bitfield_8__ lfInfo_9__
+                    tagSig_10__).
+
+#[global] Definition zapUsageInfo : IdInfo -> option IdInfo :=
+  fun info =>
+    Some (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__
+             occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+             tagSig_9__ := info in
+          Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+                    dmdSigInfo_4__ cprSigInfo_5__ (zapUsageDemand (demandInfo info)) bitfield_7__
+                    lfInfo_8__ tagSig_9__).
+
+#[global] Definition zapUsageEnvInfo : IdInfo -> option IdInfo :=
+  fun info =>
+    if hasDemandEnvSig (dmdSigInfo info) : bool
+    then Some (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__
+                  occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+                  tagSig_9__ := info in
+               Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+                         (zapDmdEnvSig (dmdSigInfo info)) cprSigInfo_5__ demandInfo_6__ bitfield_7__
+                         lfInfo_8__ tagSig_9__) else
+    None.
+
+#[global] Definition zapUsedOnceInfo : IdInfo -> option IdInfo :=
+  fun info =>
+    Some (let 'Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__
+             occInfo_3__ dmdSigInfo_4__ cprSigInfo_5__ demandInfo_6__ bitfield_7__ lfInfo_8__
+             tagSig_9__ := info in
+          Mk_IdInfo ruleInfo_0__ realUnfoldingInfo_1__ inlinePragInfo_2__ occInfo_3__
+                    (zapUsedOnceSig (dmdSigInfo info)) cprSigInfo_5__ (zapUsedOnceDemand (demandInfo
+                                                                                          info)) bitfield_7__ lfInfo_8__
+                    tagSig_9__).
+
+#[global] Definition zapFragileUnfolding : Unfolding -> Unfolding :=
+  fun unf => if isEvaldUnfolding unf : bool then evaldUnfolding else noUnfolding.
+
+#[global] Definition zapFragileInfo : IdInfo -> option IdInfo :=
+  fun '((Mk_IdInfo _ unf _ occ _ _ _ _ _ _ as info)) =>
+    let new_unf := zapFragileUnfolding unf in
+    GHC.Prim.seq new_unf (Some (setOccInfo (setUnfoldingInfo (setRuleInfo info
+                                                                          emptyRuleInfo) new_unf)
+                                           (BasicTypes.zapFragileOcc occ))).
+
+#[global] Definition zapTailCallInfo : IdInfo -> option IdInfo :=
+  fun info =>
+    let 'occ := occInfo info in
+    let safe_occ :=
+      match occ with
+      | BasicTypes.ManyOccs occ_tail_1__ =>
+          BasicTypes.ManyOccs BasicTypes.NoTailCallInfo
+      | BasicTypes.IAmDead =>
+          GHC.Err.error (GHC.Base.hs_string__ "Partial record update")
+      | BasicTypes.OneOcc occ_in_lam_2__ occ_n_br_3__ occ_int_cxt_4__ occ_tail_5__ =>
+          BasicTypes.OneOcc occ_in_lam_2__ occ_n_br_3__ occ_int_cxt_4__
+                            BasicTypes.NoTailCallInfo
+      | BasicTypes.IAmALoopBreaker occ_rules_only_6__ occ_tail_7__ =>
+          BasicTypes.IAmALoopBreaker occ_rules_only_6__ BasicTypes.NoTailCallInfo
+      end in
+    if BasicTypes.isAlwaysTailCalled occ : bool
+    then Some (setOccInfo info safe_occ) else
+    None.
+
+#[global] Definition zapCallArityInfo : IdInfo -> IdInfo :=
+  fun info => setCallArityInfo info #0.
+
+(* Skipping definition `Core.ppr_id_scope' *)
+
+#[global] Definition varMultMaybe : Var -> option Mult :=
+  fun v => Some (varMult v).
+
+#[global] Definition setVarUnique : Var -> Unique.Unique -> Var :=
+  fun var uniq =>
+    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+       id_details_5__ id_info_6__ := var in
+    Mk_Id (Name.setNameUnique (varName var) uniq) uniq varType_2__ varMult_3__
+          idScope_4__ id_details_5__ id_info_6__.
+
+#[global] Definition setVarName : Var -> Name.Name -> Var :=
+  fun var new_name =>
+    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+       id_details_5__ id_info_6__ := var in
+    Mk_Id new_name (Unique.getUnique new_name) varType_2__ varMult_3__ idScope_4__
+          id_details_5__ id_info_6__.
+
+#[global] Definition setVarType : Var -> Type_ -> Var :=
+  fun id ty =>
+    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+       id_details_5__ id_info_6__ := id in
+    Mk_Id varName_0__ realUnique_1__ ty varMult_3__ idScope_4__ id_details_5__
+          id_info_6__.
+
+#[global] Definition updateVarType : (Type_ -> Type_) -> Var -> Var :=
+  fun upd var =>
+    let result :=
+      let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+         id_details_5__ id_info_6__ := var in
+      Mk_Id varName_0__ realUnique_1__ (upd (varType var)) varMult_3__ idScope_4__
+            id_details_5__ id_info_6__ in
+    match var with
+    | Mk_Id _ _ _ _ _ details _ => result
+    end.
+
+#[global] Definition updateVarTypeM {m : Type -> Type} `{GHC.Base.Monad m}
+   : (Type_ -> m Type_) -> Var -> m Var :=
+  fun upd var =>
+    let result :=
+      upd (varType var) GHC.Base.>>=
+      (fun ty' =>
+         GHC.Base.return_ (let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__
+                              idScope_4__ id_details_5__ id_info_6__ := var in
+                           Mk_Id varName_0__ realUnique_1__ ty' varMult_3__ idScope_4__ id_details_5__
+                                 id_info_6__)) in
+    match var with
+    | Mk_Id _ _ _ _ _ details _ => result
+    end.
+
+#[global] Definition isInvisibleForAllTyFlag : ForAllTyFlag -> bool :=
+  fun arg_0__ => match arg_0__ with | Invisible _ => true | Required => false end.
+
+#[global] Definition isVisibleForAllTyFlag : ForAllTyFlag -> bool :=
+  fun af => negb (isInvisibleForAllTyFlag af).
+
+#[global] Definition isInferredForAllTyFlag : ForAllTyFlag -> bool :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Invisible InferredSpec => true
+    | _ => false
+    end.
+
+#[global] Definition isSpecifiedForAllTyFlag : ForAllTyFlag -> bool :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Invisible SpecifiedSpec => true
+    | _ => false
+    end.
+
+Axiom coreTyLamForAllTyFlag : ForAllTyFlag.
+
+#[global] Definition invisArg : BasicTypes.TypeOrConstraint -> FunTyFlag :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | BasicTypes.TypeLike => FTF_C_T
+    | BasicTypes.ConstraintLike => FTF_C_C
+    end.
+
+#[global] Definition visArg : BasicTypes.TypeOrConstraint -> FunTyFlag :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | BasicTypes.TypeLike => FTF_T_T
+    | BasicTypes.ConstraintLike => FTF_T_C
+    end.
+
+#[global] Definition mkFunTyFlag
+   : BasicTypes.TypeOrConstraint -> BasicTypes.TypeOrConstraint -> FunTyFlag :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | BasicTypes.TypeLike, torc => visArg torc
+    | BasicTypes.ConstraintLike, torc => invisArg torc
+    end.
+
+#[global] Definition visArgTypeLike : FunTyFlag :=
+  FTF_T_T.
+
+#[global] Definition visArgConstraintLike : FunTyFlag :=
+  FTF_T_C.
+
+#[global] Definition invisArgTypeLike : FunTyFlag :=
+  FTF_C_T.
+
+#[global] Definition invisArgConstraintLike : FunTyFlag :=
+  FTF_C_C.
+
+#[global] Definition isVisibleFunArg : FunTyFlag -> bool :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | FTF_T_T => true
+    | FTF_T_C => true
+    | _ => false
+    end.
+
+#[global] Definition isInvisibleFunArg : FunTyFlag -> bool :=
+  fun af => negb (isVisibleFunArg af).
+
+#[global] Definition isFUNArg : FunTyFlag -> bool :=
+  fun arg_0__ => match arg_0__ with | FTF_T_T => true | _ => false end.
+
+#[global] Definition funTyFlagArgTypeOrConstraint
+   : FunTyFlag -> BasicTypes.TypeOrConstraint :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | FTF_T_T => BasicTypes.TypeLike
+    | FTF_T_C => BasicTypes.TypeLike
+    | _ => BasicTypes.ConstraintLike
+    end.
+
+#[global] Definition funTyFlagResultTypeOrConstraint
+   : FunTyFlag -> BasicTypes.TypeOrConstraint :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | FTF_T_T => BasicTypes.TypeLike
+    | FTF_C_T => BasicTypes.TypeLike
+    | _ => BasicTypes.ConstraintLike
+    end.
+
+#[global] Definition tyVarSpecToBinder {a : Type}
+   : VarBndr a Specificity -> VarBndr a ForAllTyFlag :=
+  fun '(Bndr tv vis) => Bndr tv (Invisible vis).
+
+#[global] Definition tyVarSpecToBinders {a : Type}
+   : list (VarBndr a Specificity) -> list (VarBndr a ForAllTyFlag) :=
+  GHC.Base.map tyVarSpecToBinder.
+
+#[global] Definition tyVarReqToBinder {a : Type}
+   : VarBndr a unit -> VarBndr a ForAllTyFlag :=
+  fun '(Bndr tv _) => Bndr tv Required.
+
+#[global] Definition tyVarReqToBinders {a : Type}
+   : list (VarBndr a unit) -> list (VarBndr a ForAllTyFlag) :=
+  GHC.Base.map tyVarReqToBinder.
+
+#[global] Definition isVisibleForAllTyBinder : ForAllTyBinder -> bool :=
+  fun '(Bndr _ vis) => isVisibleForAllTyFlag vis.
+
+#[global] Definition isInvisibleForAllTyBinder : ForAllTyBinder -> bool :=
+  fun '(Bndr _ vis) => isInvisibleForAllTyFlag vis.
+
+#[global] Definition binderVar {tv : Type} {argf : Type}
+   : VarBndr tv argf -> tv :=
+  fun '(Bndr v _) => v.
+
+#[global] Definition binderVars {tv : Type} {argf : Type}
+   : list (VarBndr tv argf) -> list tv :=
+  fun tvbs => GHC.Base.map binderVar tvbs.
+
+#[global] Definition binderFlag {tv : Type} {argf : Type}
+   : VarBndr tv argf -> argf :=
+  fun '(Bndr _ argf) => argf.
+
+#[global] Definition binderFlags {tv : Type} {argf : Type}
+   : list (VarBndr tv argf) -> list argf :=
+  fun tvbs => GHC.Base.map binderFlag tvbs.
+
+#[global] Definition binderType {argf : Type} : VarBndr TyCoVar argf -> Type_ :=
+  fun '(Bndr tv _) => varType tv.
+
+#[global] Definition isTyVarBinder {vis : Type} : VarBndr TyCoVar vis -> bool :=
+  fun '(Bndr tcv _) => isTyVar tcv.
+
+#[global] Definition mkForAllTyBinder {vis : Type}
+   : vis -> TyCoVar -> VarBndr TyCoVar vis :=
+  fun vis var => Bndr var vis.
+
+#[global] Definition mkTyVarBinder {vis : Type}
+   : vis -> TyVar -> VarBndr TyVar vis :=
+  fun vis var => Bndr var vis.
+
+#[global] Definition mkForAllTyBinders {vis : Type}
+   : vis -> list TyCoVar -> list (VarBndr TyCoVar vis) :=
+  fun vis => GHC.Base.map (mkForAllTyBinder vis).
+
+#[global] Definition mkTyVarBinders {vis : Type}
+   : vis -> list TyVar -> list (VarBndr TyVar vis) :=
+  fun vis => GHC.Base.map (mkTyVarBinder vis).
+
+#[global] Definition mapVarBndr {var : Type} {var' : Type} {flag : Type}
+   : (var -> var') -> VarBndr var flag -> VarBndr var' flag :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | f, Bndr v fl => Bndr (f v) fl
+    end.
+
+#[global] Definition mapVarBndrs {var : Type} {var' : Type} {flag : Type}
+   : (var -> var') -> list (VarBndr var flag) -> list (VarBndr var' flag) :=
+  fun f => GHC.Base.map (mapVarBndr f).
+
+#[global] Definition isInvisiblePiTyBinder : PiTyBinder -> bool :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Named (Bndr _ vis) => isInvisibleForAllTyFlag vis
+    | Anon _ af => isInvisibleFunArg af
+    end.
+
+#[global] Definition isVisiblePiTyBinder : PiTyBinder -> bool :=
+  negb GHC.Base.∘ isInvisiblePiTyBinder.
+
+#[global] Definition isNamedPiTyBinder : PiTyBinder -> bool :=
+  fun arg_0__ => match arg_0__ with | Named _ => true | Anon _ _ => false end.
+
+#[global] Definition namedPiTyBinder_maybe : PiTyBinder -> option TyCoVar :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Named tv => Some (binderVar tv)
+    | _ => None
+    end.
+
+#[global] Definition isAnonPiTyBinder : PiTyBinder -> bool :=
+  fun arg_0__ => match arg_0__ with | Named _ => false | Anon _ _ => true end.
+
+#[global] Definition anonPiTyBinderType_maybe : PiTyBinder -> option Type_ :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Named _ => None
+    | Anon ty _ => Some (scaledThing ty)
+    end.
+
+#[global] Definition isTyBinder : PiTyBinder -> bool :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Named bnd => isTyVarBinder bnd
+    | _ => true
+    end.
+
+#[global] Definition piTyBinderType : PiTyBinder -> Type_ :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Named (Bndr tv _) => varType tv
+    | Anon ty _ => scaledThing ty
+    end.
+
+#[global] Definition tyVarName : TyVar -> Name.Name :=
+  varName.
+
+#[global] Definition tyVarKind : TyVar -> Kind :=
+  varType.
+
+#[global] Definition setTyVarUnique : TyVar -> Unique.Unique -> TyVar :=
+  setVarUnique.
+
+#[global] Definition setTyVarName : TyVar -> Name.Name -> TyVar :=
+  setVarName.
+
+#[global] Definition setTyVarKind : TyVar -> Kind -> TyVar :=
+  fun tv k =>
+    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+       id_details_5__ id_info_6__ := tv in
+    Mk_Id varName_0__ realUnique_1__ k varMult_3__ idScope_4__ id_details_5__
+          id_info_6__.
+
+#[global] Definition updateTyVarKind : (Kind -> Kind) -> TyVar -> TyVar :=
+  fun update tv =>
+    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+       id_details_5__ id_info_6__ := tv in
+    Mk_Id varName_0__ realUnique_1__ (update (tyVarKind tv)) varMult_3__ idScope_4__
+          id_details_5__ id_info_6__.
+
+#[global] Definition updateTyVarKindM {m : Type -> Type} `{GHC.Base.Monad m}
+   : (Kind -> m Kind) -> TyVar -> m TyVar :=
+  fun update tv =>
+    update (tyVarKind tv) GHC.Base.>>=
+    (fun k' =>
+       GHC.Base.return_ (let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__
+                            idScope_4__ id_details_5__ id_info_6__ := tv in
+                         Mk_Id varName_0__ realUnique_1__ k' varMult_3__ idScope_4__ id_details_5__
+                               id_info_6__)).
+
+(* Skipping definition `Core.mkTyVar' *)
+
+(* Skipping definition `Core.mkTcTyVar' *)
+
+(* Skipping definition `Core.tcTyVarDetails' *)
+
+(* Skipping definition `Core.setTcTyVarDetails' *)
+
+#[global] Definition idInfo `{Util.HasDebugCallStack} : Id -> IdInfo :=
+  fun '(Mk_Id _ _ _ _ _ _ info) => info.
+
+#[global] Definition idDetails : Id -> IdDetails :=
+  fun '(Mk_Id _ _ _ _ _ details _) => details.
+
+Axiom mkGlobalVar : IdDetails -> Name.Name -> Type_ -> IdInfo -> Id.
+
+#[global] Definition mk_id
+   : Name.Name -> Mult -> Type_ -> IdScope -> IdDetails -> IdInfo -> Id :=
+  fun name w ty scope details info =>
+    Mk_Id name (Name.nameUnique name) ty w scope details info.
+
+#[global] Definition mkLocalVar
+   : IdDetails -> Name.Name -> Mult -> Type_ -> IdInfo -> Id :=
+  fun details name w ty info =>
+    mk_id name w ty (LocalId NotExported) details info.
+
+(* Skipping definition `Core.mkCoVar' *)
+
+Axiom mkExportedLocalVar : IdDetails -> Name.Name -> Type_ -> IdInfo -> Id.
+
+#[global] Definition lazySetIdInfo : Id -> IdInfo -> Var :=
+  fun id info =>
+    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+       id_details_5__ id_info_6__ := id in
+    Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+          id_details_5__ info.
+
+#[global] Definition setIdDetails : Id -> IdDetails -> Id :=
+  fun id details =>
+    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+       id_details_5__ id_info_6__ := id in
+    Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__ details
+          id_info_6__.
+
+(* Skipping definition `Core.globaliseId' *)
+
+(* Skipping definition `Core.setIdExported' *)
+
+(* Skipping definition `Core.setIdNotExported' *)
+
+#[global] Definition updateIdTypeButNotMult : (Type_ -> Type_) -> Id -> Id :=
+  fun f id =>
+    let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+       id_details_5__ id_info_6__ := id in
+    Mk_Id varName_0__ realUnique_1__ (f (varType id)) varMult_3__ idScope_4__
+          id_details_5__ id_info_6__.
+
+Axiom updateIdTypeAndMult : (Type_ -> Type_) -> Id -> Id.
+
+Axiom updateIdTypeAndMultM : forall {m : Type -> Type},
+                             forall `{GHC.Base.Monad m}, (Type_ -> m Type_) -> Id -> m Id.
+
+#[global] Definition setIdMult : Id -> Mult -> Id :=
+  fun id r =>
+    if isId id : bool
+    then let 'Mk_Id varName_0__ realUnique_1__ varType_2__ varMult_3__ idScope_4__
+            id_details_5__ id_info_6__ := id in
+         Mk_Id varName_0__ realUnique_1__ varType_2__ r idScope_4__ id_details_5__
+               id_info_6__ else
+    Panic.pprPanic (GHC.Base.hs_string__ "setIdMult") (GHC.Base.mappend
+                                                       Panic.someSDoc Panic.someSDoc).
+
+#[global] Definition isTcTyVar : Var -> bool :=
+  fun arg_0__ => false.
+
+#[global] Definition isCoVar : Var -> bool :=
+  fun '(Mk_Id _ _ _ _ _ details _) => isCoVarDetails details.
+
+#[global] Definition isTyCoVar : Var -> bool :=
+  fun v => orb (isTyVar v) (isCoVar v).
+
+#[global] Definition isNonCoVarId : Var -> bool :=
+  fun '(Mk_Id _ _ _ _ _ details _) => negb (isCoVarDetails details).
+
+#[global] Definition isLocalId : Var -> bool :=
+  fun v => Unique.isLocalUnique (varUnique v).
+
+#[global] Definition isLocalId_maybe : Var -> option ExportFlag :=
+  fun arg_0__ =>
+    match arg_0__ with
+    | Mk_Id _ _ _ _ (LocalId ef) _ _ => Some ef
+    | _ => None
+    end.
+
+#[global] Definition isGlobalId : Var -> bool :=
+  fun v => negb (Unique.isLocalUnique (varUnique v)).
+
+#[global] Definition isLocalVar : Var -> bool :=
+  fun v => negb (isGlobalId v).
+
+#[global] Definition mustHaveLocalBinding : Var -> bool :=
+  fun var => isLocalVar var.
+
+Axiom isExportedId : Var -> bool.
+
+#[global] Definition emptyVarSet : VarSet :=
+  UniqSet.emptyUniqSet.
+
+#[global] Definition emptyInScopeSet : InScopeSet :=
+  InScope emptyVarSet.
+
+#[global] Definition getInScopeVars : InScopeSet -> VarSet :=
+  fun '(InScope vs) => vs.
+
+#[global] Definition mkInScopeSet : VarSet -> InScopeSet :=
+  fun in_scope => InScope in_scope.
+
+#[global] Definition mkDVarEnv {a : Type} : list (Var * a)%type -> DVarEnv a :=
+  UniqFM.listToUFM.
+
+#[global] Definition mkVarEnv {a : Type} : list (Var * a)%type -> VarEnv a :=
+  UniqFM.listToUFM.
+
+#[global] Definition mkDVarSet : list Var -> DVarSet :=
+  UniqSet.mkUniqSet.
+
+#[global] Definition mkVarSet : list Var -> VarSet :=
+  UniqSet.mkUniqSet.
+
+#[global] Definition mkInScopeSetList : list Var -> InScopeSet :=
+  fun vs => InScope (mkVarSet vs).
+
+#[global] Definition extendDVarEnv {a : Type}
+   : DVarEnv a -> Var -> a -> DVarEnv a :=
+  UniqFM.addToUFM.
+
+#[global] Definition extendVarEnv {a : Type}
+   : VarEnv a -> Var -> a -> VarEnv a :=
+  UniqFM.addToUFM.
+
+#[global] Definition extendDVarEnvList {a : Type}
+   : DVarEnv a -> list (Var * a)%type -> DVarEnv a :=
+  UniqFM.addListToUFM.
+
+#[global] Definition extendVarEnvList {a : Type}
+   : VarEnv a -> list (Var * a)%type -> VarEnv a :=
+  UniqFM.addListToUFM.
+
+#[global] Definition extendDVarEnv_C {a : Type}
+   : (a -> a -> a) -> DVarEnv a -> Var -> a -> DVarEnv a :=
+  UniqFM.addToUFM_C.
+
+#[global] Definition extendVarEnv_Acc {a : Type} {b : Type}
+   : (a -> b -> b) -> (a -> b) -> VarEnv b -> Var -> a -> VarEnv b :=
+  UniqFM.addToUFM_Acc.
+
+#[global] Definition extendVarEnv_C {a : Type}
+   : (a -> a -> a) -> VarEnv a -> Var -> a -> VarEnv a :=
+  UniqFM.addToUFM_C.
+
+#[global] Definition extendVarSet : VarSet -> Var -> VarSet :=
+  UniqSet.addOneToUniqSet.
+
+#[global] Definition extendInScopeSet : InScopeSet -> Var -> InScopeSet :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | InScope in_scope, v => InScope (extendVarSet in_scope v)
+    end.
+
+#[global] Definition extendInScopeSetList
+   : InScopeSet -> list Var -> InScopeSet :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | InScope in_scope, vs =>
+        InScope (Data.Foldable.foldl' extendVarSet in_scope vs)
+    end.
+
+#[global] Definition unionVarSet : VarSet -> VarSet -> VarSet :=
+  UniqSet.unionUniqSets.
+
+#[global] Definition extendInScopeSetSet : InScopeSet -> VarSet -> InScopeSet :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | InScope in_scope, vs => InScope (unionVarSet in_scope vs)
+    end.
+
+#[global] Definition alterDVarEnv {a : Type}
+   : (option a -> option a) -> DVarEnv a -> Var -> DVarEnv a :=
+  UniqFM.alterUFM.
+
+#[global] Definition alterVarEnv {a : Type}
+   : (option a -> option a) -> VarEnv a -> Var -> VarEnv a :=
+  UniqFM.alterUFM.
+
+#[global] Definition delDVarEnv {a : Type} : DVarEnv a -> Var -> DVarEnv a :=
+  UniqFM.delFromUFM.
+
+#[global] Definition delVarEnv {a : Type} : VarEnv a -> Var -> VarEnv a :=
+  UniqFM.delFromUFM.
+
+#[global] Definition delDVarEnvList {a : Type}
+   : DVarEnv a -> list Var -> DVarEnv a :=
+  UniqFM.delListFromUFM.
+
+#[global] Definition delVarEnvList {a : Type}
+   : VarEnv a -> list Var -> VarEnv a :=
+  UniqFM.delListFromUFM.
+
+#[global] Definition delDVarSet : DVarSet -> Var -> DVarSet :=
+  UniqSet.delOneFromUniqSet.
+
+#[global] Definition delVarSet : VarSet -> Var -> VarSet :=
+  UniqSet.delOneFromUniqSet.
+
+#[global] Definition delInScopeSet : InScopeSet -> Var -> InScopeSet :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | InScope in_scope, v => InScope (delVarSet in_scope v)
+    end.
+
+#[global] Definition delVarSetByKey : VarSet -> Unique.Unique -> VarSet :=
+  UniqSet.delOneFromUniqSet_Directly.
+
+#[global] Definition elemDVarEnv {a : Type} : Var -> DVarEnv a -> bool :=
+  UniqFM.elemUFM.
+
+#[global] Definition elemVarEnv {a : Type} : Var -> VarEnv a -> bool :=
+  UniqFM.elemUFM.
+
+#[global] Definition elemDVarSet : Var -> DVarSet -> bool :=
+  UniqSet.elementOfUniqSet.
+
+#[global] Definition elemVarSet : Var -> VarSet -> bool :=
+  UniqSet.elementOfUniqSet.
+
+#[global] Definition elemInScopeSet : Var -> InScopeSet -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | v, InScope in_scope => elemVarSet v in_scope
+    end.
+
+#[global] Definition lookupDVarEnv {a : Type} : DVarEnv a -> Var -> option a :=
+  UniqFM.lookupUFM.
+
+#[global] Definition lookupVarEnv {a : Type} : VarEnv a -> Var -> option a :=
+  UniqFM.lookupUFM.
+
+#[global] Definition lookupVarEnv_Directly {a : Type}
+   : VarEnv a -> Unique.Unique -> option a :=
+  UniqFM.lookupUFM_Directly.
+
+#[global] Definition lookupVarEnv_NF {a} `{_ : HsToCoq.Err.Default a} (env
+    : VarEnv a) id
+   : a :=
+  match lookupVarEnv env id with
+  | Some xx => xx
+  | None => HsToCoq.Err.default
+  end.
+
+#[global] Definition lookupVarSet : VarSet -> Var -> option Var :=
+  UniqSet.lookupUniqSet.
+
+#[global] Definition lookupInScope : InScopeSet -> Var -> option Var :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | InScope in_scope, v => lookupVarSet in_scope v
+    end.
+
+#[global] Definition lookupVarSetByName : VarSet -> Name.Name -> option Var :=
+  fun set name => UniqSet.lookupUniqSet_Directly set (Unique.getUnique name).
+
+#[global] Definition lookupVarSet_Directly
+   : VarSet -> Unique.Unique -> option Var :=
+  UniqSet.lookupUniqSet_Directly.
+
+#[global] Definition lookupInScope_Directly
+   : InScopeSet -> Unique.Unique -> option Var :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | InScope in_scope, uniq => lookupVarSet_Directly in_scope uniq
+    end.
+
+#[global] Definition unionInScope : InScopeSet -> InScopeSet -> InScopeSet :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | InScope s1, InScope s2 => InScope (unionVarSet s1 s2)
+    end.
+
+#[global] Definition isEmptyVarSet : VarSet -> bool :=
+  UniqSet.isEmptyUniqSet.
+
+#[global] Definition minusVarSet : VarSet -> VarSet -> VarSet :=
+  UniqSet.minusUniqSet.
+
+#[global] Definition subVarSet : VarSet -> VarSet -> bool :=
+  fun s1 s2 => isEmptyVarSet (minusVarSet s1 s2).
+
+#[global] Definition varSetInScope : VarSet -> InScopeSet -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | vars, InScope s1 => subVarSet vars s1
+    end.
+
+Axiom uniqAway : InScopeSet -> Var -> Var.
+
+#[global] Definition unsafeGetFreshLocalUnique : InScopeSet -> Unique.Unique :=
+  fun '(InScope set) =>
+    match Data.IntMap.Internal.lookupLT (Unique.getKey Unique.maxLocalUnique)
+            (UniqFM.ufmToIntMap (UniqSet.getUniqSet set)) with
+    | Some (pair uniq _) =>
+        let uniq' := Unique.mkLocalUnique uniq in
+        if negb (Unique.ltUnique uniq' Unique.minLocalUnique) : bool
+        then Unique.incrUnique uniq' else
+        Unique.minLocalUnique
+    | _ => Unique.minLocalUnique
+    end.
+
+#[global] Definition uniqAway' : InScopeSet -> Var -> Var :=
+  fun in_scope var => setVarUnique var (unsafeGetFreshLocalUnique in_scope).
+
+#[global] Definition emptyVarEnv {a : Type} : VarEnv a :=
+  UniqFM.emptyUFM.
+
+#[global] Definition mkRnEnv2 : InScopeSet -> RnEnv2 :=
+  fun vars => RV2 emptyVarEnv emptyVarEnv vars.
+
+#[global] Definition extendRnInScopeSetList : RnEnv2 -> list Var -> RnEnv2 :=
+  fun env vs =>
+    if Data.Foldable.null vs : bool then env else
+    let 'RV2 envL_0__ envR_1__ in_scope_2__ := env in
+    RV2 envL_0__ envR_1__ (extendInScopeSetList (in_scope env) vs).
+
+#[global] Definition rnInScope : Var -> RnEnv2 -> bool :=
+  fun x env => elemInScopeSet x (in_scope env).
+
+#[global] Definition rnInScopeSet : RnEnv2 -> InScopeSet :=
+  in_scope.
+
+#[global] Definition rnEnvL : RnEnv2 -> VarEnv Var :=
+  envL.
+
+#[global] Definition rnEnvR : RnEnv2 -> VarEnv Var :=
+  envR.
+
+#[global] Definition rnBndr2_var
+   : RnEnv2 -> Var -> Var -> (RnEnv2 * Var)%type :=
+  fun arg_0__ arg_1__ arg_2__ =>
+    match arg_0__, arg_1__, arg_2__ with
+    | RV2 envL envR in_scope, bL, bR =>
+        let new_b :=
+          if negb (elemInScopeSet bR in_scope) : bool then bR else
+          if negb (elemInScopeSet bL in_scope) : bool
+          then setVarUnique bR (varUnique bL) else
+          uniqAway' in_scope bR in
+        pair (RV2 (extendVarEnv envL bL new_b) (extendVarEnv envR bR new_b)
+                  (extendInScopeSet in_scope new_b)) new_b
+    end.
+
+#[global] Definition rnBndr2 : RnEnv2 -> Var -> Var -> RnEnv2 :=
+  fun env bL bR => Data.Tuple.fst (rnBndr2_var env bL bR).
+
+#[global] Definition rnBndrs2 : RnEnv2 -> list Var -> list Var -> RnEnv2 :=
+  fun env bsL bsR => Util.foldl2 rnBndr2 env bsL bsR.
+
+#[global] Definition rnBndrL : RnEnv2 -> Var -> (RnEnv2 * Var)%type :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 envL envR in_scope, bL =>
+        let new_b := uniqAway in_scope bL in
+        pair (RV2 (extendVarEnv envL bL new_b) envR (extendInScopeSet in_scope new_b))
+             new_b
+    end.
+
+#[global] Definition rnBndrR : RnEnv2 -> Var -> (RnEnv2 * Var)%type :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 envL envR in_scope, bR =>
+        let new_b := uniqAway in_scope bR in
+        pair (RV2 envL (extendVarEnv envR bR new_b) (extendInScopeSet in_scope new_b))
+             new_b
+    end.
+
+#[global] Definition rnEtaL : RnEnv2 -> Var -> (RnEnv2 * Var)%type :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 envL envR in_scope, bL =>
+        let new_b := uniqAway in_scope bL in
+        pair (RV2 (extendVarEnv envL bL new_b) (extendVarEnv envR new_b new_b)
+                  (extendInScopeSet in_scope new_b)) new_b
+    end.
+
+#[global] Definition rnEtaR : RnEnv2 -> Var -> (RnEnv2 * Var)%type :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 envL envR in_scope, bR =>
+        let new_b := uniqAway in_scope bR in
+        pair (RV2 (extendVarEnv envL new_b new_b) (extendVarEnv envR bR new_b)
+                  (extendInScopeSet in_scope new_b)) new_b
+    end.
+
+#[global] Definition delBndrL : RnEnv2 -> Var -> RnEnv2 :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | (RV2 env _ in_scope as rn), v =>
+        let 'RV2 envL_2__ envR_3__ in_scope_4__ := rn in
+        RV2 (delVarEnv env v) envR_3__ (extendInScopeSet in_scope v)
+    end.
+
+#[global] Definition delBndrR : RnEnv2 -> Var -> RnEnv2 :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | (RV2 _ env in_scope as rn), v =>
+        let 'RV2 envL_2__ envR_3__ in_scope_4__ := rn in
+        RV2 envL_2__ (delVarEnv env v) (extendInScopeSet in_scope v)
+    end.
+
+#[global] Definition delBndrsL : RnEnv2 -> list Var -> RnEnv2 :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | (RV2 env _ in_scope as rn), v =>
+        let 'RV2 envL_2__ envR_3__ in_scope_4__ := rn in
+        RV2 (delVarEnvList env v) envR_3__ (extendInScopeSetList in_scope v)
+    end.
+
+#[global] Definition delBndrsR : RnEnv2 -> list Var -> RnEnv2 :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | (RV2 _ env in_scope as rn), v =>
+        let 'RV2 envL_2__ envR_3__ in_scope_4__ := rn in
+        RV2 envL_2__ (delVarEnvList env v) (extendInScopeSetList in_scope v)
+    end.
+
+#[global] Definition rnOccL : RnEnv2 -> Var -> Var :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 env _ _, v => Maybes.orElse (lookupVarEnv env v) v
+    end.
+
+#[global] Definition rnOccR : RnEnv2 -> Var -> Var :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 _ env _, v => Maybes.orElse (lookupVarEnv env v) v
+    end.
+
+#[global] Definition rnOccL_maybe : RnEnv2 -> Var -> option Var :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 env _ _, v => lookupVarEnv env v
+    end.
+
+#[global] Definition rnOccR_maybe : RnEnv2 -> Var -> option Var :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 _ env _, v => lookupVarEnv env v
+    end.
+
+#[global] Definition inRnEnvL : RnEnv2 -> Var -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 env _ _, v => elemVarEnv v env
+    end.
+
+#[global] Definition inRnEnvR : RnEnv2 -> Var -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 _ env _, v => elemVarEnv v env
+    end.
+
+#[global] Definition anyVarSet : (Var -> bool) -> VarSet -> bool :=
+  UniqSet.uniqSetAny.
+
+#[global] Definition isEmptyVarEnv {a : Type} : VarEnv a -> bool :=
+  UniqFM.isNullUFM.
+
+#[global] Definition anyInRnEnvR : RnEnv2 -> VarSet -> bool :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | RV2 _ env _, vs =>
+        if isEmptyVarEnv env : bool then false else
+        anyVarSet (GHC.Prim.rightSection elemVarEnv env) vs
+    end.
+
+#[global] Definition lookupRnInScope : RnEnv2 -> Var -> Var :=
+  fun env v => Maybes.orElse (lookupInScope (in_scope env) v) v.
+
+#[global] Definition nukeRnEnvL : RnEnv2 -> RnEnv2 :=
+  fun '(RV2 envL_0__ envR_1__ in_scope_2__) =>
+    RV2 emptyVarEnv envR_1__ in_scope_2__.
+
+#[global] Definition nukeRnEnvR : RnEnv2 -> RnEnv2 :=
+  fun '(RV2 envL_0__ envR_1__ in_scope_2__) =>
+    RV2 envL_0__ emptyVarEnv in_scope_2__.
+
+#[global] Definition rnSwap : RnEnv2 -> RnEnv2 :=
+  fun '(RV2 envL envR in_scope) => RV2 envR envL in_scope.
+
+#[global] Definition emptyTidyEnv : TidyEnv :=
+  pair OccName.emptyTidyOccEnv emptyVarEnv.
+
+#[global] Definition mkEmptyTidyEnv : OccName.TidyOccEnv -> TidyEnv :=
+  fun occ_env => pair occ_env emptyVarEnv.
+
+#[global] Definition delTidyEnvList : TidyEnv -> list Var -> TidyEnv :=
+  fun arg_0__ arg_1__ =>
+    match arg_0__, arg_1__ with
+    | pair occ_env var_env, vs =>
+        let var_env' := delVarEnvList var_env vs in
+        let occ_env' :=
+          OccName.delTidyOccEnvList occ_env (GHC.Base.map (OccName.occNameFS GHC.Base.∘
+                                                           Name.getOccName) vs) in
+        pair occ_env' var_env'
+    end.
+
+#[global] Definition elemVarEnvByKey {a : Type}
+   : Unique.Unique -> VarEnv a -> bool :=
+  UniqFM.elemUFM_Directly.
+
+#[global] Definition disjointVarEnv {a : Type} : VarEnv a -> VarEnv a -> bool :=
+  UniqFM.disjointUFM.
+
+#[global] Definition plusVarEnv_C {a : Type}
+   : (a -> a -> a) -> VarEnv a -> VarEnv a -> VarEnv a :=
+  UniqFM.plusUFM_C.
+
+#[global] Definition plusVarEnv_CD {a : Type}
+   : (a -> a -> a) -> VarEnv a -> a -> VarEnv a -> a -> VarEnv a :=
+  UniqFM.plusUFM_CD.
+
+#[global] Definition plusMaybeVarEnv_C {a : Type}
+   : (a -> a -> option a) -> VarEnv a -> VarEnv a -> VarEnv a :=
+  UniqFM.plusMaybeUFM_C.
+
+#[global] Definition minusVarEnv {a : Type} {b : Type}
+   : VarEnv a -> VarEnv b -> VarEnv a :=
+  UniqFM.minusUFM.
+
+#[global] Definition plusVarEnv {a : Type} : VarEnv a -> VarEnv a -> VarEnv a :=
+  UniqFM.plusUFM.
+
+#[global] Definition plusVarEnvList {a : Type} : list (VarEnv a) -> VarEnv a :=
+  UniqFM.plusUFMList.
+
+#[global] Definition filterVarEnv {a : Type}
+   : (a -> bool) -> VarEnv a -> VarEnv a :=
+  UniqFM.filterUFM.
+
+(* Skipping definition `Core.anyVarEnv' *)
+
+#[global] Definition lookupWithDefaultVarEnv {a : Type}
+   : VarEnv a -> a -> Var -> a :=
+  UniqFM.lookupWithDefaultUFM.
+
+#[global] Definition mapVarEnv {a : Type} {b : Type}
+   : (a -> b) -> VarEnv a -> VarEnv b :=
+  UniqFM.mapUFM.
+
+#[global] Definition mkVarEnv_Directly {a : Type}
+   : list (Unique.Unique * a)%type -> VarEnv a :=
+  UniqFM.listToUFM_Directly.
+
+#[global] Definition unitDVarEnv {a : Type} : Var -> a -> DVarEnv a :=
+  UniqFM.unitUFM.
+
+#[global] Definition unitVarEnv {a : Type} : Var -> a -> VarEnv a :=
+  UniqFM.unitUFM.
+
+#[global] Definition partitionVarEnv {a : Type}
+   : (a -> bool) -> VarEnv a -> (VarEnv a * VarEnv a)%type :=
+  UniqFM.partitionUFM.
+
+(* Skipping definition `Core.varEnvDomain' *)
+
+#[global] Definition nonDetStrictFoldVarEnv_Directly {a : Type} {r : Type}
+   : (Unique.Unique -> a -> r -> r) -> r -> VarEnv a -> r :=
+  UniqFM.nonDetStrictFoldUFM_Directly.
+
+#[global] Definition elemVarSetByKey : Unique.Unique -> VarSet -> bool :=
+  UniqSet.elemUniqSet_Directly.
+
+#[global] Definition restrictVarEnv {a : Type}
+   : VarEnv a -> VarSet -> VarEnv a :=
+  fun env vs =>
+    let keep :=
+      fun arg_0__ arg_1__ =>
+        match arg_0__, arg_1__ with
+        | u, _ => elemVarSetByKey u vs
+        end in
+    UniqFM.filterUFM_Directly keep env.
+
+#[global] Definition zipVarEnv {a : Type} : list Var -> list a -> VarEnv a :=
+  fun tyvars tys =>
+    mkVarEnv (Util.zipEqual (GHC.Base.hs_string__ "zipVarEnv") tyvars tys).
+
+#[global] Definition modifyVarEnv {a : Type}
+   : (a -> a) -> VarEnv a -> Var -> VarEnv a :=
+  fun mangle_fn env key =>
+    match (lookupVarEnv env key) with
+    | None => env
+    | Some xx => extendVarEnv env key (mangle_fn xx)
+    end.
+
+(* Skipping definition `Core.modifyVarEnv_Directly' *)
+
+#[global] Definition emptyDVarEnv {a : Type} : DVarEnv a :=
+  UniqFM.emptyUFM.
+
+(* Skipping definition `Core.dVarEnvElts' *)
+
+#[global] Definition minusDVarEnv {a : Type} {a' : Type}
+   : DVarEnv a -> DVarEnv a' -> DVarEnv a :=
+  UniqFM.minusUFM.
+
+#[global] Definition foldDVarEnv {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> DVarEnv a -> b :=
+  UniqFM.nonDetFoldUFM.
+
+#[global] Definition nonDetStrictFoldDVarEnv {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> DVarEnv a -> b :=
+  UniqDFM.nonDetStrictFoldUDFM.
+
+#[global] Definition mapDVarEnv {a : Type} {b : Type}
+   : (a -> b) -> DVarEnv a -> DVarEnv b :=
+  UniqFM.mapUFM.
+
+#[global] Definition filterDVarEnv {a : Type}
+   : (a -> bool) -> DVarEnv a -> DVarEnv a :=
+  UniqFM.filterUFM.
+
+#[global] Definition plusDVarEnv {a : Type}
+   : DVarEnv a -> DVarEnv a -> DVarEnv a :=
+  UniqFM.plusUFM.
+
+#[global] Definition plusDVarEnv_C {a : Type}
+   : (a -> a -> a) -> DVarEnv a -> DVarEnv a -> DVarEnv a :=
+  UniqFM.plusUFM_C.
+
+#[global] Definition isEmptyDVarEnv {a : Type} : DVarEnv a -> bool :=
+  UniqFM.isNullUFM.
+
+#[global] Definition modifyDVarEnv {a : Type}
+   : (a -> a) -> DVarEnv a -> Var -> DVarEnv a :=
+  fun mangle_fn env key =>
+    match (lookupDVarEnv env key) with
+    | None => env
+    | Some xx => extendDVarEnv env key (mangle_fn xx)
+    end.
+
+#[global] Definition partitionDVarEnv {a : Type}
+   : (a -> bool) -> DVarEnv a -> (DVarEnv a * DVarEnv a)%type :=
+  UniqFM.partitionUFM.
+
+#[global] Definition anyDVarEnv {a : Type} : (a -> bool) -> DVarEnv a -> bool :=
+  UniqFM.anyUFM.
+
+#[global] Definition unitDVarSet : Var -> DVarSet :=
+  UniqSet.unitUniqSet.
+
+#[global] Definition unitVarSet : Var -> VarSet :=
+  UniqSet.unitUniqSet.
+
+#[global] Definition extendDVarSet : DVarSet -> Var -> DVarSet :=
+  UniqSet.addOneToUniqSet.
+
+#[global] Definition extendDVarSetList : DVarSet -> list Var -> DVarSet :=
+  UniqSet.addListToUniqSet.
+
+#[global] Definition extendVarSetList : VarSet -> list Var -> VarSet :=
+  UniqSet.addListToUniqSet.
+
+#[global] Definition intersectVarSet : VarSet -> VarSet -> VarSet :=
+  UniqSet.intersectUniqSets.
+
+#[global] Definition unionVarSets : list VarSet -> VarSet :=
+  UniqSet.unionManyUniqSets.
+
+#[global] Definition delDVarSetList : DVarSet -> list Var -> DVarSet :=
+  UniqSet.delListFromUniqSet.
+
+#[global] Definition delVarSetList : VarSet -> list Var -> VarSet :=
+  UniqSet.delListFromUniqSet.
+
+#[global] Definition sizeVarSet : VarSet -> nat :=
+  UniqSet.sizeUniqSet.
+
+#[global] Definition filterVarSet : (Var -> bool) -> VarSet -> VarSet :=
+  UniqSet.filterUniqSet.
+
+(* Skipping definition `Core.partitionVarSet' *)
+
+#[global] Definition mapUnionVarSet {a : Type}
+   : (a -> VarSet) -> list a -> VarSet :=
+  fun get_set xs =>
+    Data.Foldable.foldr (unionVarSet GHC.Base.∘ get_set) emptyVarSet xs.
+
+#[global] Definition disjointVarSet : VarSet -> VarSet -> bool :=
+  fun s1 s2 => UniqFM.disjointUFM (UniqSet.getUniqSet s1) (UniqSet.getUniqSet s2).
+
+#[global] Definition intersectsVarSet : VarSet -> VarSet -> bool :=
+  fun s1 s2 => negb (disjointVarSet s1 s2).
+
+#[global] Definition allVarSet : (Var -> bool) -> VarSet -> bool :=
+  UniqSet.uniqSetAll.
+
+(* Skipping definition `Core.mapVarSet' *)
+
+#[global] Definition nonDetStrictFoldVarSet {a : Type}
+   : (Var -> a -> a) -> a -> VarSet -> a :=
+  UniqSet.nonDetStrictFoldUniqSet.
+
+#[global] Definition fixVarSet : (VarSet -> VarSet) -> VarSet -> VarSet :=
+  HsToCoq.DeferredFix.deferredFix2 (fun fixVarSet
+                                    (fn : VarSet -> VarSet)
+                                    (vars : VarSet) =>
+                                      let new_vars := fn vars in
+                                      if subVarSet new_vars vars : bool then vars else
+                                      fixVarSet fn new_vars).
+
+#[global] Definition transCloVarSet : (VarSet -> VarSet) -> VarSet -> VarSet :=
+  fun fn seeds =>
+    let go : VarSet -> VarSet -> VarSet :=
+      HsToCoq.DeferredFix.deferredFix1 (fun go (acc candidates : VarSet) =>
+                                          let new_vs := minusVarSet (fn candidates) acc in
+                                          if isEmptyVarSet new_vs : bool then acc else
+                                          go (unionVarSet acc new_vs) new_vs) in
+    go seeds seeds.
+
+#[global] Definition seqVarSet : VarSet -> unit :=
+  fun s => GHC.Prim.seq s tt.
+
+(* Skipping definition `Core.pluralVarSet' *)
+
+(* Skipping definition `Core.pprVarSet' *)
+
+#[global] Definition dVarSetElems : DVarSet -> list Var :=
+  UniqSet.nonDetEltsUniqSet.
+
+#[global] Definition isEmptyDVarSet : DVarSet -> bool :=
+  UniqSet.isEmptyUniqSet.
+
+#[global] Definition minusDVarSet : DVarSet -> DVarSet -> DVarSet :=
+  UniqSet.minusUniqSet.
+
+#[global] Definition subDVarSet : DVarSet -> DVarSet -> bool :=
+  fun s1 s2 => isEmptyDVarSet (minusDVarSet s1 s2).
+
+#[global] Definition unionDVarSet : DVarSet -> DVarSet -> DVarSet :=
+  UniqSet.unionUniqSets.
+
+#[global] Definition unionDVarSets : list DVarSet -> DVarSet :=
+  UniqSet.unionManyUniqSets.
+
+#[global] Definition mapUnionDVarSet {a : Type}
+   : (a -> DVarSet) -> list a -> DVarSet :=
+  fun get_set xs =>
+    Data.Foldable.foldr (unionDVarSet GHC.Base.∘ get_set) emptyDVarSet xs.
+
+#[global] Definition intersectDVarSet : DVarSet -> DVarSet -> DVarSet :=
+  UniqSet.intersectUniqSets.
+
+#[global] Definition dVarSetIntersectVarSet : DVarSet -> VarSet -> DVarSet :=
+  UniqSet.intersectUniqSets.
+
+#[global] Definition disjointDVarSet :=
+  disjointVarSet.
+
+#[global] Definition intersectsDVarSet : DVarSet -> DVarSet -> bool :=
+  fun s1 s2 => negb (disjointDVarSet s1 s2).
+
+#[global] Definition dVarSetMinusVarSet : DVarSet -> VarSet -> DVarSet :=
+  UniqSet.minusUniqSet.
+
+#[global] Definition nonDetStrictFoldDVarSet {a : Type}
+   : (Var -> a -> a) -> a -> DVarSet -> a :=
+  UniqDSet.nonDetStrictFoldUniqDSet.
+
+#[global] Definition anyDVarSet :=
+  anyVarSet.
+
+#[global] Definition allDVarSet :=
+  allVarSet.
+
+#[global] Definition mapDVarSet {b : Type} {a : Type} `{Unique.Uniquable b}
+   : (a -> b) -> UniqSet.UniqSet a -> UniqSet.UniqSet b :=
+  UniqDSet.mapUniqDSet.
+
+#[global] Definition filterDVarSet : (Var -> bool) -> DVarSet -> DVarSet :=
+  UniqSet.filterUniqSet.
+
+#[global] Definition sizeDVarSet : DVarSet -> nat :=
+  UniqSet.sizeUniqSet.
+
+#[global] Definition partitionDVarSet
+   : (Var -> bool) -> DVarSet -> (DVarSet * DVarSet)%type :=
+  UniqSet.partitionUniqSet.
+
+#[global] Definition seqDVarSet : DVarSet -> unit :=
+  fun s => GHC.Prim.seq s tt.
+
+#[global] Definition dVarSetToVarSet : DVarSet -> VarSet :=
+  fun x => x.
+
+#[global] Definition transCloDVarSet
+   : (DVarSet -> DVarSet) -> DVarSet -> DVarSet :=
+  fun fn seeds =>
+    let go : DVarSet -> DVarSet -> DVarSet :=
+      HsToCoq.DeferredFix.deferredFix1 (fun go (acc candidates : DVarSet) =>
+                                          let new_vs := minusDVarSet (fn candidates) acc in
+                                          if isEmptyDVarSet new_vs : bool then acc else
+                                          go (unionDVarSet acc new_vs) new_vs) in
+    go seeds seeds.
+
 (* External variables:
      BranchFlag BranchIndex Branched BuiltInSynFamily CType CoAxBranch CoAxiom
-     CoAxiomRule Coercion CostCentre DataConBoxer Eq ForeignCall Gt Kind Literal Lt
-     None PredType PrimOp Role Some ThetaType TyBinder TyThing Type Type_ Unbranched
-     andb bool comparison cons false list mkMachChar mkMachDouble mkMachFloat
-     mkMachString nat negb nil op_zt__ option orb pair size_AnnExpr' snd true tt unit
-     BasicTypes.Activation BasicTypes.AlwaysActive BasicTypes.Arity BasicTypes.Boxity
-     BasicTypes.ConTag BasicTypes.ConTagZ BasicTypes.DefMethSpec
-     BasicTypes.IAmALoopBreaker BasicTypes.IAmDead BasicTypes.InlinePragma
-     BasicTypes.JoinArity BasicTypes.LeftOrRight BasicTypes.ManyOccs
-     BasicTypes.NoOneShotInfo BasicTypes.NoTailCallInfo BasicTypes.OccInfo
-     BasicTypes.OneOcc BasicTypes.OneShotInfo BasicTypes.RuleName
-     BasicTypes.SourceText BasicTypes.TupleSort BasicTypes.TyPrec
-     BasicTypes.defaultInlinePragma BasicTypes.isAlwaysTailCalled
-     BasicTypes.noOccInfo BasicTypes.zapFragileOcc BinNat.N.of_nat BinNums.N
-     BooleanFormula.BooleanFormula Coq.Init.Datatypes.app Coq.Init.Peano.lt
-     Coq.Lists.List.flat_map Coq.Lists.List.length Data.Foldable.foldl
-     Data.Foldable.foldr Data.Function.on Data.Tuple.fst Datatypes.id
-     DynFlags.DynFlags FastString.FastString FieldLabel.FieldLabel
-     FieldLabel.FieldLabelEnv FieldLabel.FieldLabelString GHC.Base.Eq_ GHC.Base.Monad
-     GHC.Base.Ord GHC.Base.String GHC.Base.compare GHC.Base.compare__
-     GHC.Base.eq_default GHC.Base.map GHC.Base.mappend GHC.Base.max__ GHC.Base.min
+     CoAxiomRule Coercion DataConBoxer Eq ForeignCall Gt Kind Literal Lt None
+     PredType PrimOp Some ThetaType Type Type_ Unbranched andb bool comparison cons
+     false list mkLitChar mkLitDouble mkLitFloat mkLitIntWrap mkLitString mkLitWord8
+     mkLitWordWrap nat negb nil op_zt__ option orb pair size_AnnExpr' snd true tt
+     unit BasicTypes.Activation BasicTypes.AlwaysActive BasicTypes.Arity
+     BasicTypes.CbvMark BasicTypes.ConTagZ BasicTypes.ConstraintLike
+     BasicTypes.DefMethSpec BasicTypes.IAmALoopBreaker BasicTypes.IAmDead
+     BasicTypes.InlinePragma BasicTypes.IsInsideLam BasicTypes.JoinArity
+     BasicTypes.LeftOrRight BasicTypes.Levity BasicTypes.ManyOccs
+     BasicTypes.NoOneShotInfo BasicTypes.NoTailCallInfo BasicTypes.NonRecursive
+     BasicTypes.NotInsideLam BasicTypes.OccInfo BasicTypes.OneOcc
+     BasicTypes.OneShotInfo BasicTypes.OneShotLam BasicTypes.RecFlag
+     BasicTypes.Recursive BasicTypes.RuleName BasicTypes.SourceText
+     BasicTypes.TupleSort BasicTypes.TyConFlavour BasicTypes.TypeLike
+     BasicTypes.TypeOrConstraint BasicTypes.defaultInlinePragma
+     BasicTypes.isAlwaysTailCalled BasicTypes.isStrongLoopBreaker
+     BasicTypes.noOccInfo BasicTypes.zapFragileOcc BinNums.N
+     BooleanFormula.BooleanFormula ConLike PatSynCon
+     RealDataCon Coq.Init.Datatypes.app Coq.Init.Peano.lt
+     Coq.Lists.List.flat_map Coq.Lists.List.length Data.Bits.clearBit
+     Data.Bits.setBit Data.Bits.testBit Data.Foldable.foldl' Data.Foldable.foldr
+     Data.Foldable.null Data.Function.on Data.IntMap.Internal.lookupLT Data.Tuple.fst
+     Data.Tuple.uncurry FastString.FastString FieldLabel.FieldLabel
+     FieldLabel.FieldLabelEnv GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad
+     GHC.Base.Monoid GHC.Base.Ord GHC.Base.String GHC.Base.compare GHC.Base.compare__
+     GHC.Base.fmap__ GHC.Base.map GHC.Base.mappend GHC.Base.max__ GHC.Base.min
      GHC.Base.min__ GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zeze____
      GHC.Base.op_zg__ GHC.Base.op_zg____ GHC.Base.op_zgze__ GHC.Base.op_zgze____
-     GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlze__
-     GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.return_
-     GHC.Char.Char GHC.Err.error GHC.List.reverse GHC.Num.Integer GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.coerce GHC.Prim.seq
-     GHC.Real.Rational HsToCoq.DeferredFix.deferredFix1
-     HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     HsToCoq.Err.default HsToCoq.Wf.wfFix2 HsToCoq.Wf.wfFix3 Maybes.orElse
-     Module.Module Module.ModuleSet Module.emptyModuleSet Module.mkModuleSet
-     Name.Name Name.NamedThing Name.getName__ Name.getOccName__ Name.nameOccName
-     Name.nameUnique Name.setNameUnique NameEnv.NameEnv NameEnv.emptyNameEnv
-     OccName.HasOccName OccName.OccName OccName.TidyOccEnv OccName.emptyTidyOccEnv
-     OccName.occName__ Pair.Pair Panic.assertPanic Panic.panicStr Panic.someSDoc
-     Panic.warnPprTrace SrcLoc.RealSrcSpan SrcLoc.SrcSpan UniqFM.UniqFM
+     GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd____
+     GHC.Base.op_zlze__ GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
+     GHC.Base.return_ GHC.Char.Char GHC.Core.Rules.Config.RuleOpts
+     GHC.Core.TyCo.Subst.Subst GHC.Core.TyCon.RecWalk.RecTcChecker
+     GHC.Data.List.Infinite.Infinite GHC.Err.error GHC.Err.head GHC.List.reverse
+     GHC.Num.Integer GHC.Num.Word GHC.Num.fromInteger GHC.Num.op_zm__
+     GHC.Prim.HasCallStack GHC.Prim.rightSection GHC.Prim.seq GHC.Real.Rational
+     GHC.Stg.InferTags.TagSig.TagSig GHC.StgToCmm.Types.LambdaFormInfo
+     GHC.Types.Cpr.CprSig GHC.Types.Cpr.topCprSig GHC.Types.Tickish.CoreTickish
+     GHC.Types.TyThing.TyThing HsSyn.Boxity HsSyn.ConTag HsSyn.FieldLabelString
+     HsSyn.Role HsSyn.SrcStrictness HsSyn.SrcUnpackedness
+     HsToCoq.DeferredFix.deferredFix1 HsToCoq.DeferredFix.deferredFix2
+     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
+     HsToCoq.Wf.wfFix2 HsToCoq.Wf.wfFix3 Maybes.orElse Module.Module Name.Name
+     Name.NamedThing Name.getName Name.getName__ Name.getOccName Name.getOccName__
+     Name.nameOccName Name.nameUnique Name.setNameUnique NameEnv.NameEnv
+     OccName.HasOccName OccName.OccName OccName.TidyOccEnv OccName.delTidyOccEnvList
+     OccName.emptyTidyOccEnv OccName.occNameFS OccName.occName__ Pair.Pair
+     Panic.pprPanic Panic.someSDoc Platform.Platform SrcLoc.SrcSpan
+     TcType.ConcreteTyVars TcType.noConcreteTyVars UniqDFM.nonDetStrictFoldUDFM
+     UniqDSet.mapUniqDSet UniqDSet.nonDetStrictFoldUniqDSet UniqFM.UniqFM
      UniqFM.addListToUFM UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C
-     UniqFM.addToUFM_Directly UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM
-     UniqFM.delFromUFM_Directly UniqFM.delListFromUFM UniqFM.disjointUFM
-     UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.eltsUFM UniqFM.emptyUFM
-     UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.intersectUFM UniqFM.isNullUFM
-     UniqFM.listToUFM UniqFM.listToUFM_Directly UniqFM.lookupUFM
-     UniqFM.lookupUFM_Directly UniqFM.lookupWithDefaultUFM UniqFM.mapUFM
-     UniqFM.minusUFM UniqFM.nonDetFoldUFM UniqFM.nonDetUFMToList UniqFM.partitionUFM
-     UniqFM.plusMaybeUFM_C UniqFM.plusUFM UniqFM.plusUFMList UniqFM.plusUFM_C
-     UniqFM.plusUFM_CD UniqFM.unitUFM UniqSet.UniqSet UniqSet.addListToUniqSet
+     UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM UniqFM.delListFromUFM
+     UniqFM.disjointUFM UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.emptyUFM
+     UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.isNullUFM UniqFM.listToUFM
+     UniqFM.listToUFM_Directly UniqFM.lookupUFM UniqFM.lookupUFM_Directly
+     UniqFM.lookupWithDefaultUFM UniqFM.mapUFM UniqFM.minusUFM UniqFM.nonDetFoldUFM
+     UniqFM.nonDetStrictFoldUFM_Directly UniqFM.partitionUFM UniqFM.plusMaybeUFM_C
+     UniqFM.plusUFM UniqFM.plusUFMList UniqFM.plusUFM_C UniqFM.plusUFM_CD
+     UniqFM.ufmToIntMap UniqFM.unitUFM UniqSet.UniqSet UniqSet.addListToUniqSet
      UniqSet.addOneToUniqSet UniqSet.delListFromUniqSet UniqSet.delOneFromUniqSet
      UniqSet.delOneFromUniqSet_Directly UniqSet.elemUniqSet_Directly
      UniqSet.elementOfUniqSet UniqSet.emptyUniqSet UniqSet.filterUniqSet
      UniqSet.getUniqSet UniqSet.intersectUniqSets UniqSet.isEmptyUniqSet
      UniqSet.lookupUniqSet UniqSet.lookupUniqSet_Directly UniqSet.minusUniqSet
-     UniqSet.mkUniqSet UniqSet.nonDetEltsUniqSet UniqSet.nonDetFoldUniqSet
+     UniqSet.mkUniqSet UniqSet.nonDetEltsUniqSet UniqSet.nonDetStrictFoldUniqSet
      UniqSet.partitionUniqSet UniqSet.sizeUniqSet UniqSet.unionManyUniqSets
      UniqSet.unionUniqSets UniqSet.uniqSetAll UniqSet.uniqSetAny UniqSet.unitUniqSet
-     UniqSupply.UniqSupply Unique.Uniquable Unique.Unique Unique.deriveUnique
-     Unique.getKey Unique.getUnique Unique.getUnique__ Unique.isLocalUnique
-     Unique.mkUniqueGrimily Unique.nonDetCmpUnique Util.HasDebugCallStack Util.count
-     Util.debugIsOn Util.foldl2 Util.zipEqual
+     Unique.Uniquable Unique.Unique Unique.getKey Unique.getUnique Unique.getUnique__
+     Unique.incrUnique Unique.isLocalUnique Unique.ltUnique Unique.maxLocalUnique
+     Unique.minLocalUnique Unique.mkLocalUnique Unique.nonDetCmpUnique
+     Util.HasDebugCallStack Util.count Util.foldl2 Util.zipEqual
 *)

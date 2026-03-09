@@ -1,0 +1,13 @@
+# Coq 8.20: type and constructor cannot share the same name
+rename value GHC.Types.Name.Set.NonCaffySet = Mk_NonCaffySet
+
+# coerce for NonCaffySet triggers stack overflow
+skip NameSet.Semigroup__NonCaffySet_op_zlzlzgzg__
+skip NameSet.Semigroup__NonCaffySet
+skip NameSet.Monoid__NonCaffySet_mappend
+skip NameSet.Monoid__NonCaffySet_mconcat
+skip NameSet.Monoid__NonCaffySet_mempty
+skip NameSet.Monoid__NonCaffySet
+
+# uses skipped Name.stableNameCmp
+skip NameSet.nameSetElemsStable

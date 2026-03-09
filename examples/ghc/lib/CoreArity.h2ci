@@ -1,20 +1,28 @@
-constructors:
-  CoreArity.ArityType: ! '[Qualified "CoreArity" "ATop",Qualified "CoreArity" "ABot"]'
-  CoreArity.ArityEnv: ! '[Qualified "CoreArity" "AE"]'
-  CoreArity.EtaInfo: ! '[Qualified "CoreArity" "EtaVar",Qualified "CoreArity" "EtaCo"]'
 constructorFields:
-  CoreArity.ABot: NonRecordFields 1
-  CoreArity.AE: RecordFields [Qualified "CoreArity" "ae_cheap_fn",Qualified "CoreArity"
-    "ae_ped_bot"]
-  CoreArity.EtaVar: NonRecordFields 1
-  CoreArity.ATop: NonRecordFields 1
-  CoreArity.EtaCo: NonRecordFields 1
-recordFieldTypes:
-  CoreArity.ae_ped_bot: Qualified "CoreArity" "ArityEnv"
-  CoreArity.ae_cheap_fn: Qualified "CoreArity" "ArityEnv"
+  CoreArity.AE: RecordFields [Qualified "CoreArity" "am_opts",Qualified "CoreArity"
+    "am_sigs",Qualified "CoreArity" "am_free_joins"]
+  CoreArity.AT: NonRecordFields 2
+  CoreArity.EI: NonRecordFields 2
+  CoreArity.IsCheap: NonRecordFields 0
+  CoreArity.IsExpensive: NonRecordFields 0
+  CoreArity.Mk_ArityOpts: RecordFields [Qualified "CoreArity" "ao_ped_bot",Qualified
+    "CoreArity" "ao_dicts_cheap"]
 constructorTypes:
-  CoreArity.ABot: Qualified "CoreArity" "ArityType"
   CoreArity.AE: Qualified "CoreArity" "ArityEnv"
-  CoreArity.EtaVar: Qualified "CoreArity" "EtaInfo"
-  CoreArity.ATop: Qualified "CoreArity" "ArityType"
-  CoreArity.EtaCo: Qualified "CoreArity" "EtaInfo"
+  CoreArity.AT: Qualified "CoreArity" "ArityType"
+  CoreArity.EI: Qualified "CoreArity" "EtaInfo"
+  CoreArity.IsCheap: Qualified "CoreArity" "Cost"
+  CoreArity.IsExpensive: Qualified "CoreArity" "Cost"
+  CoreArity.Mk_ArityOpts: Qualified "CoreArity" "ArityOpts"
+constructors:
+  CoreArity.ArityEnv: '[Qualified "CoreArity" "AE"]'
+  CoreArity.ArityOpts: '[Qualified "CoreArity" "Mk_ArityOpts"]'
+  CoreArity.ArityType: '[Qualified "CoreArity" "AT"]'
+  CoreArity.Cost: '[Qualified "CoreArity" "IsCheap",Qualified "CoreArity" "IsExpensive"]'
+  CoreArity.EtaInfo: '[Qualified "CoreArity" "EI"]'
+recordFieldTypes:
+  CoreArity.am_free_joins: Qualified "CoreArity" "ArityEnv"
+  CoreArity.am_opts: Qualified "CoreArity" "ArityEnv"
+  CoreArity.am_sigs: Qualified "CoreArity" "ArityEnv"
+  CoreArity.ao_dicts_cheap: Qualified "CoreArity" "ArityOpts"
+  CoreArity.ao_ped_bot: Qualified "CoreArity" "ArityOpts"

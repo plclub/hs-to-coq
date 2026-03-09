@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Preamble *)
 
-Require Import Omega.
+Require Import Lia.
 Require Import Lists.List.
 Require Import Coq.Sorting.Permutation.
 Require Import Coq.NArith.BinNat.
@@ -280,7 +280,7 @@ Proof.
   assumption. unfold vIn in H8. unfold mem in H8.
   match goal with | [H: (if ?x then _ else _) = _ |- _] => destruct x end.
   assumption. inversion H8. pose proof (perm_remove (nodeList g') (nodeList g) v N.eq_dec H8 H5 H3 H6).
-  apply Permutation_length in H9. simpl in H9. omega.
+  apply Permutation_length in H9. simpl in H9. lia.
 Qed.
 
 Lemma matchAny_decr_size: forall {a b : Type} {gr} `{Graph gr} `{LawfulGraph gr} c g' (g: gr a b),

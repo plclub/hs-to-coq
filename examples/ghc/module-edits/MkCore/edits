@@ -1,57 +1,22 @@
 skip module HsUtils
 skip module HscTypes
 
-rewrite forall , Core.getRuntimeRep  = @Core.getRuntimeRep tt 
-rewrite forall , Core.piResultTy  = @Core.piResultTy tt 
+# GHC 9.10: axiomatize entire module due to many type issues
+axiomatize module MkCore
 
-# recursion through non-lambda value unsupported 
-axiomatize definition MkCore.err_nm
-axiomatize definition MkCore.mkRuntimeErrorId 
-axiomatize definition MkCore.rEC_SEL_ERROR_ID
-axiomatize definition MkCore.rUNTIME_ERROR_ID
-axiomatize definition MkCore.iRREFUT_PAT_ERROR_ID          
-axiomatize definition MkCore.rEC_CON_ERROR_ID              
-axiomatize definition MkCore.pAT_ERROR_ID                  
-axiomatize definition MkCore.nO_METHOD_BINDING_ERROR_ID    
-axiomatize definition MkCore.nON_EXHAUSTIVE_GUARDS_ERROR_ID
-axiomatize definition MkCore.tYPE_ERROR_ID
-axiomatize definition MkCore.aBSENT_SUM_FIELD_ERROR_ID
-axiomatize definition MkCore.aBSENT_ERROR_ID
+# GHC 9.10: Coq 8.20 doesn't allow same name for type and constructor
+rename value GHC.Core.Make.MkStringIds = MkCore.Mk_MkStringIds
 
-# partial pattern match in do 
-skip MkCore.mkBuildExpr
-
-# too much types stuff (HsUtils)
-axiomatize definition MkCore.mkBigCoreTupTy
-#axiomatize definition MkCore.mkBigCoreVarTupTy
-axiomatize definition MkCore.mkBigCoreTup
-axiomatize definition MkCore.runtimeErrorTy
-
-##
-add MkCore Axiom MkCore.chunkify : list Core.Id -> list (list Core.Id).
-rename value HsUtils.chunkify = MkCore.chunkify
-
-in MkCore.mkTupleSelector termination mk_tup_sel    deferred
-in MkCore.mkTupleCase     termination mk_tuple_case deferred
-
-
-# difficult type inference issue with Util.<||>
-axiomatize definition MkCore.sortQuantVars
+# need GHC.Types.Double and GHC.Types.Float
+skip MkCore.mkDoubleExpr
+skip MkCore.mkFloatExpr
 
 # needs HscTypes.MonadThings
-# if we really need this, might be able to specialize the monad
 skip MkCore.mkIntegerExpr
 skip MkCore.mkFoldrExpr
 skip MkCore.mkNaturalExpr
 skip MkCore.mkStringExprFS
 skip MkCore.mkStringExpr
 
-# need GHC.Types.Double and GHC.Types.Float
-skip MkCore.mkDoubleExpr
-skip MkCore.mkFloatExpr
-
-# need Core.mkIntLit, Core.mkIntLitInt, Core.mkWordLit
-axiomatize definition MkCore.mkIntExpr
-axiomatize definition MkCore.mkIntExprInt
-axiomatize definition MkCore.mkWordExpr
-axiomatize definition MkCore.mkWordExprWord
+# partial pattern match in do
+skip MkCore.mkBuildExpr

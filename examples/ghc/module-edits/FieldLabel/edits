@@ -1,3 +1,7 @@
 axiomatize module FieldLabel
 
 order FieldLabel.Functor__FieldLbl FieldLabel.Traversable__FieldLbl_traverse
+
+# Coq 8.20: type and constructor cannot share the same name
+rename value GHC.Types.FieldLabel.FieldSelectors = Mk_FieldSelectors
+rename value GHC.Types.FieldLabel.DuplicateRecordFields = Mk_DuplicateRecordFields

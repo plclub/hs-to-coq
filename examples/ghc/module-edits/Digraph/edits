@@ -1,10 +1,13 @@
 axiomatize module Digraph
 
+# GHC 9.10: Coq 8.20 doesn't allow same name for type and constructor
+rename value GHC.Data.Graph.Directed.Time = Digraph.Mk_Time
+
 skip module Data.Graph
 skip module Data.Tree
 skip module GHC.ST
 
-rename value Digraph.Edge = Digraph.Mk_Edge
+rename value GHC.Data.Graph.Directed.Edge = Digraph.Mk_Edge
 
 redefine Axiom Digraph.Set_ : Type -> Type.
 redefine Axiom Digraph.ReduceFn : Type -> (Type -> Type).
@@ -38,6 +41,9 @@ skip Digraph.mkEmpty
 #need data.tree.forest
 
 skip Digraph.preorderF
+
+# GHC 9.10: references skipped Data.Graph
+skip Digraph.scc
 
 
  

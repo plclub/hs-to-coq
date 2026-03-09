@@ -25,18 +25,18 @@ Import GHC.Base.Notations.
 Inductive StateT s m a : Type :=
   | Mk_StateT (runStateT : s -> m (a * s)%type) : StateT s m a.
 
-Definition State s :=
+#[global] Definition State s :=
   (StateT s Data.Functor.Identity.Identity)%type.
 
 Arguments Mk_StateT {_} {_} {_} _.
 
-Definition runStateT {s} {m} {a} (arg_0__ : StateT s m a) :=
+#[global] Definition runStateT {s} {m} {a} (arg_0__ : StateT s m a) :=
   let 'Mk_StateT runStateT := arg_0__ in
   runStateT.
 
 (* Converted value declarations: *)
 
-Local Definition Functor__StateT_fmap {inst_m : Type -> Type} {inst_s : Type}
+#[local] Definition Functor__StateT_fmap {inst_m : Type -> Type} {inst_s : Type}
   `{(GHC.Base.Functor inst_m)}
    : forall {a : Type},
      forall {b : Type},
@@ -46,12 +46,13 @@ Local Definition Functor__StateT_fmap {inst_m : Type -> Type} {inst_s : Type}
       Mk_StateT (fun s =>
                    GHC.Base.fmap (fun '(pair a s') => pair (f a) s') (runStateT m s)).
 
-Local Definition Functor__StateT_op_zlzd__ {inst_m : Type -> Type} {inst_s
+#[local] Definition Functor__StateT_op_zlzd__ {inst_m : Type -> Type} {inst_s
    : Type} `{(GHC.Base.Functor inst_m)}
    : forall {a : Type},
      forall {b : Type}, a -> StateT inst_s inst_m b -> StateT inst_s inst_m a :=
   fun {a : Type} {b : Type} => Functor__StateT_fmap GHC.Base.∘ GHC.Base.const.
 
+#[global]
 Program Instance Functor__StateT {m : Type -> Type} {s : Type}
   `{(GHC.Base.Functor m)}
    : GHC.Base.Functor (StateT s m) :=
@@ -60,8 +61,8 @@ Program Instance Functor__StateT {m : Type -> Type} {s : Type}
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
              Functor__StateT_op_zlzd__ |}.
 
-Local Definition Applicative__StateT_op_zlztzg__ {inst_m : Type -> Type} {inst_s
-   : Type} `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
+#[local] Definition Applicative__StateT_op_zlztzg__ {inst_m : Type -> Type}
+  {inst_s : Type} `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
    : forall {a : Type},
      forall {b : Type},
      StateT inst_s inst_m (a -> b) ->
@@ -80,7 +81,7 @@ Local Definition Applicative__StateT_op_zlztzg__ {inst_m : Type -> Type} {inst_s
                        mf s GHC.Base.>>= cont_2__)
       end.
 
-Local Definition Applicative__StateT_liftA2 {inst_m : Type -> Type} {inst_s
+#[local] Definition Applicative__StateT_liftA2 {inst_m : Type -> Type} {inst_s
    : Type} `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
    : forall {a : Type},
      forall {b : Type},
@@ -90,12 +91,12 @@ Local Definition Applicative__StateT_liftA2 {inst_m : Type -> Type} {inst_s
   fun {a : Type} {b : Type} {c : Type} =>
     fun f x => Applicative__StateT_op_zlztzg__ (GHC.Base.fmap f x).
 
-Local Definition Applicative__StateT_pure {inst_m : Type -> Type} {inst_s
+#[local] Definition Applicative__StateT_pure {inst_m : Type -> Type} {inst_s
    : Type} `{GHC.Base.Functor inst_m} `{GHC.Base.Monad inst_m}
    : forall {a : Type}, a -> StateT inst_s inst_m a :=
   fun {a : Type} => fun a => Mk_StateT (fun s => GHC.Base.return_ (pair a s)).
 
-Definition Applicative__StateT_op_ztzg__ {inst_m} {inst_s} `{_
+#[global] Definition Applicative__StateT_op_ztzg__ {inst_m} {inst_s} `{_
    : GHC.Base.Functor inst_m} `{_ : GHC.Base.Monad inst_m}
    : forall {a} {b},
      StateT inst_s inst_m a -> StateT inst_s inst_m b -> StateT inst_s inst_m b :=
@@ -104,6 +105,7 @@ Definition Applicative__StateT_op_ztzg__ {inst_m} {inst_s} `{_
       Applicative__StateT_op_zlztzg__ (Applicative__StateT_op_zlztzg__
                                        (Applicative__StateT_pure (fun x y => x)) k) m.
 
+#[global]
 Program Instance Applicative__StateT {m : Type -> Type} {s : Type}
   `{GHC.Base.Functor m} `{GHC.Base.Monad m}
    : GHC.Base.Applicative (StateT s m) :=
@@ -119,7 +121,7 @@ Program Instance Applicative__StateT {m : Type -> Type} {s : Type}
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Monad.Trans.State.Lazy.Alternative__StateT' *)
 
-Local Definition Monad__StateT_op_zgzgze__ {inst_m : Type -> Type} {inst_s
+#[local] Definition Monad__StateT_op_zgzgze__ {inst_m : Type -> Type} {inst_s
    : Type} `{(GHC.Base.Monad inst_m)}
    : forall {a : Type},
      forall {b : Type},
@@ -131,19 +133,20 @@ Local Definition Monad__StateT_op_zgzgze__ {inst_m : Type -> Type} {inst_s
                    let cont_0__ arg_1__ := let 'pair a s' := arg_1__ in runStateT (k a) s' in
                    runStateT m s GHC.Base.>>= cont_0__).
 
-Local Definition Monad__StateT_op_zgzg__ {inst_m : Type -> Type} {inst_s : Type}
-  `{(GHC.Base.Monad inst_m)}
+#[local] Definition Monad__StateT_op_zgzg__ {inst_m : Type -> Type} {inst_s
+   : Type} `{(GHC.Base.Monad inst_m)}
    : forall {a : Type},
      forall {b : Type},
      StateT inst_s inst_m a -> StateT inst_s inst_m b -> StateT inst_s inst_m b :=
   fun {a : Type} {b : Type} =>
     fun m k => Monad__StateT_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__StateT_return_ {inst_m : Type -> Type} {inst_s : Type}
-  `{(GHC.Base.Monad inst_m)}
+#[local] Definition Monad__StateT_return_ {inst_m : Type -> Type} {inst_s
+   : Type} `{(GHC.Base.Monad inst_m)}
    : forall {a : Type}, a -> StateT inst_s inst_m a :=
   fun {a : Type} => GHC.Base.pure.
 
+#[global]
 Program Instance Monad__StateT {m : Type -> Type} {s : Type} `{(GHC.Base.Monad
    m)}
    : GHC.Base.Monad (StateT s m) :=
@@ -154,12 +157,13 @@ Program Instance Monad__StateT {m : Type -> Type} {s : Type} `{(GHC.Base.Monad
              Monad__StateT_op_zgzgze__ ;
            GHC.Base.return___ := fun {a : Type} => Monad__StateT_return_ |}.
 
-Local Definition MonadFail__StateT_fail {inst_m : Type -> Type} {inst_s : Type}
-  `{(Control.Monad.Fail.MonadFail inst_m)}
+#[local] Definition MonadFail__StateT_fail {inst_m : Type -> Type} {inst_s
+   : Type} `{(Control.Monad.Fail.MonadFail inst_m)}
    : forall {a : Type}, GHC.Base.String -> StateT inst_s inst_m a :=
   fun {a : Type} =>
     fun str => Mk_StateT (fun arg_0__ => Control.Monad.Fail.fail str).
 
+#[global]
 Program Instance MonadFail__StateT {m : Type -> Type} {s : Type}
   `{(Control.Monad.Fail.MonadFail m)}
    : Control.Monad.Fail.MonadFail (StateT s m) :=
@@ -169,16 +173,17 @@ Program Instance MonadFail__StateT {m : Type -> Type} {s : Type}
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Control.Monad.Trans.State.Lazy.MonadPlus__StateT' *)
 
-(* Skipping all instances of class `Control.Monad.Fix.MonadFix', including
-   `Control.Monad.Trans.State.Lazy.MonadFix__StateT' *)
+(* Skipping all instances of class `GHC.Internal.Control.Monad.Fix.MonadFix',
+   including `Control.Monad.Trans.State.Lazy.MonadFix__StateT' *)
 
-Local Definition MonadTrans__StateT_lift {inst_s : Type}
+#[local] Definition MonadTrans__StateT_lift {inst_s : Type}
    : forall {m : Type -> Type},
      forall {a : Type}, forall `{GHC.Base.Monad m}, m a -> StateT inst_s m a :=
   fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
     fun m =>
       Mk_StateT (fun s => m GHC.Base.>>= (fun a => GHC.Base.return_ (pair a s))).
 
+#[global]
 Program Instance MonadTrans__StateT {s : Type}
    : Control.Monad.Trans.Class.MonadTrans (StateT s) :=
   fun _ k__ =>
@@ -190,73 +195,85 @@ Program Instance MonadTrans__StateT {s : Type}
 (* Skipping all instances of class `Control.Monad.IO.Class.MonadIO', including
    `Control.Monad.Trans.State.Lazy.MonadIO__StateT' *)
 
-Definition state {m : Type -> Type} {s : Type} {a : Type} `{GHC.Base.Monad m}
+(* Skipping all instances of class `Data.Functor.Contravariant.Contravariant',
+   including `Control.Monad.Trans.State.Lazy.Contravariant__StateT' *)
+
+#[global] Definition state {m : Type -> Type} {s : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : (s -> (a * s)%type) -> StateT s m a :=
   fun f => Mk_StateT (GHC.Base.return_ GHC.Base.∘ f).
 
-Definition runState {s : Type} {a : Type} : State s a -> s -> (a * s)%type :=
+#[global] Definition runState {s : Type} {a : Type}
+   : State s a -> s -> (a * s)%type :=
   fun m => Data.Functor.Identity.runIdentity GHC.Base.∘ runStateT m.
 
-Definition evalState {s : Type} {a : Type} : State s a -> s -> a :=
+#[global] Definition evalState {s : Type} {a : Type} : State s a -> s -> a :=
   fun m s => Data.Tuple.fst (runState m s).
 
-Definition execState {s : Type} {a : Type} : State s a -> s -> s :=
+#[global] Definition execState {s : Type} {a : Type} : State s a -> s -> s :=
   fun m s => Data.Tuple.snd (runState m s).
 
-Definition mapStateT {m : Type -> Type} {a : Type} {s : Type} {n : Type -> Type}
-  {b : Type}
+#[global] Definition mapStateT {m : Type -> Type} {a : Type} {s : Type} {n
+   : Type -> Type} {b : Type}
    : (m (a * s)%type -> n (b * s)%type) -> StateT s m a -> StateT s n b :=
   fun f m => Mk_StateT (f GHC.Base.∘ runStateT m).
 
-Definition mapState {a : Type} {s : Type} {b : Type}
+#[global] Definition mapState {a : Type} {s : Type} {b : Type}
    : ((a * s)%type -> (b * s)%type) -> State s a -> State s b :=
   fun f =>
     mapStateT (Data.Functor.Identity.Mk_Identity GHC.Base.∘
                (f GHC.Base.∘ Data.Functor.Identity.runIdentity)).
 
-Definition withStateT {s : Type} {m : Type -> Type} {a : Type}
+#[global] Definition withStateT {s : Type} {m : Type -> Type} {a : Type}
    : (s -> s) -> StateT s m a -> StateT s m a :=
   fun f m => Mk_StateT (runStateT m GHC.Base.∘ f).
 
-Definition withState {s : Type} {a : Type}
+#[global] Definition withState {s : Type} {a : Type}
    : (s -> s) -> State s a -> State s a :=
   withStateT.
 
-Definition evalStateT {m : Type -> Type} {s : Type} {a : Type} `{GHC.Base.Monad
-  m}
+#[global] Definition evalStateT {m : Type -> Type} {s : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : StateT s m a -> s -> m a :=
   fun m s =>
     let cont_0__ arg_1__ := let 'pair a _ := arg_1__ in GHC.Base.return_ a in
     runStateT m s GHC.Base.>>= cont_0__.
 
-Definition execStateT {m : Type -> Type} {s : Type} {a : Type} `{GHC.Base.Monad
-  m}
+#[global] Definition execStateT {m : Type -> Type} {s : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : StateT s m a -> s -> m s :=
   fun m s =>
     let cont_0__ arg_1__ := let 'pair _ s' := arg_1__ in GHC.Base.return_ s' in
     runStateT m s GHC.Base.>>= cont_0__.
 
-Definition get {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
+#[global] Definition get {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
    : StateT s m s :=
   state (fun s => pair s s).
 
-Definition put {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
+#[global] Definition put {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
    : s -> StateT s m unit :=
   fun s => state (fun arg_0__ => pair tt s).
 
-Definition modify {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
+#[global] Definition modify {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
    : (s -> s) -> StateT s m unit :=
   fun f => state (fun s => pair tt (f s)).
 
-Definition modify' {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
+#[global] Definition modify' {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
    : (s -> s) -> StateT s m unit :=
   fun f => get GHC.Base.>>= (fun s => put (f s)).
 
-Definition gets {m : Type -> Type} {s : Type} {a : Type} `{GHC.Base.Monad m}
+#[global] Definition modifyM {m : Type -> Type} {s : Type} `{GHC.Base.Monad m}
+   : (s -> m s) -> StateT s m unit :=
+  fun f =>
+    Mk_StateT (fun s => f s GHC.Base.>>= (fun s' => GHC.Base.return_ (pair tt s'))).
+
+#[global] Definition gets {m : Type -> Type} {s : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : (s -> a) -> StateT s m a :=
   fun f => state (fun s => pair (f s) s).
 
-Definition liftCallCC {m : Type -> Type} {a : Type} {s : Type} {b : Type}
+#[global] Definition liftCallCC {m : Type -> Type} {a : Type} {s : Type} {b
+   : Type}
    : Control.Monad.Signatures.CallCC m (a * s)%type (b * s)%type ->
      Control.Monad.Signatures.CallCC (StateT s m) a b :=
   fun callCC f =>
@@ -264,7 +281,8 @@ Definition liftCallCC {m : Type -> Type} {a : Type} {s : Type} {b : Type}
                  callCC (fun c =>
                            runStateT (f (fun a => Mk_StateT (fun arg_0__ => c (pair a s)))) s)).
 
-Definition liftCallCC' {m : Type -> Type} {a : Type} {s : Type} {b : Type}
+#[global] Definition liftCallCC' {m : Type -> Type} {a : Type} {s : Type} {b
+   : Type}
    : Control.Monad.Signatures.CallCC m (a * s)%type (b * s)%type ->
      Control.Monad.Signatures.CallCC (StateT s m) a b :=
   fun callCC f =>
@@ -274,8 +292,8 @@ Definition liftCallCC' {m : Type -> Type} {a : Type} {s : Type} {b : Type}
 
 (* Skipping definition `Control.Monad.Trans.State.Lazy.liftCatch' *)
 
-Definition liftListen {m : Type -> Type} {w : Type} {a : Type} {s : Type}
-  `{GHC.Base.Monad m}
+#[global] Definition liftListen {m : Type -> Type} {w : Type} {a : Type} {s
+   : Type} `{GHC.Base.Monad m}
    : Control.Monad.Signatures.Listen w m (a * s)%type ->
      Control.Monad.Signatures.Listen w (StateT s m) a :=
   fun listen m =>
@@ -285,8 +303,8 @@ Definition liftListen {m : Type -> Type} {w : Type} {a : Type} {s : Type}
                    GHC.Base.return_ (pair (pair a w) s') in
                  listen (runStateT m s) GHC.Base.>>= cont_0__).
 
-Definition liftPass {m : Type -> Type} {w : Type} {a : Type} {s : Type}
-  `{GHC.Base.Monad m}
+#[global] Definition liftPass {m : Type -> Type} {w : Type} {a : Type} {s
+   : Type} `{GHC.Base.Monad m}
    : Control.Monad.Signatures.Pass w m (a * s)%type ->
      Control.Monad.Signatures.Pass w (StateT s m) a :=
   fun pass m =>

@@ -1,8 +1,7 @@
 (* Disable notation conflict warnings *)
 Set Warnings "-notation-overridden".
 
-From mathcomp.ssreflect
-Require Import ssreflect ssrnat prime ssrbool eqtype.
+From Coq Require Import ssreflect ssrbool.
 
 Require Import Core.
 Require Import FV.
@@ -355,7 +354,7 @@ Lemma DenotesfvVarSet vs fv :
   Denotes vs fv -> fvVarSet fv [=] vs.
 Proof.
   move => [vs0 fv0 h1].
-  unfold fvVarSet, op_z2218U__, fvVarListVarSet, Tuple.snd.
+  unfold fvVarSet, op_z2218U__, fvVarAcc, Tuple.snd.
   specialize (h1 (const true) emptyVarSet emptyVarSet nil ltac:(eauto)). 
   destruct h1.
   rewrite extendVarSetList_nil.

@@ -5,6 +5,23 @@
 # redefine Local Definition SrcLoc.Eq___RealSrcSpan_op_zsze__ : RealSrcSpan -> (RealSrcSpan -> bool) := fun arg_176__ arg_177__ =>  match arg_176__ , arg_177__ with | a , b => negb (SrcLoc.Eq___RealSrcSpan_op_zeze__ a b) end.
 
 
+# GHC 9.10: type/constructor name clashes — Coq 8.20
+rename value GHC.Types.SrcLoc.NoComments = SrcLoc.Mk_NoComments
+rename value GHC.Types.SrcLoc.BufPos = SrcLoc.Mk_BufPos
+rename value GHC.Types.SrcLoc.BufSpan = SrcLoc.Mk_BufSpan
+rename value GHC.Types.SrcLoc.PsSpan = SrcLoc.Mk_PsSpan
+rename value GHC.Types.SrcLoc.PsLoc = SrcLoc.Mk_PsLoc
+
+# Auto-generated Default instances come before midamble and need Default RealSrcSpan
+# which is in midamble. Skip them and define in midamble instead.
+skip SrcLoc.Default__PsSpan
+skip SrcLoc.Default__PsLoc
+skip SrcLoc.Default__BufSpan
+
+# GHC 9.10: BufSpan has two fields but hs-to-coq drops the second one (UNPACK issue)
+redefine Inductive SrcLoc.BufSpan : Type := | Mk_BufSpan (bufSpanStart : BufPos) (bufSpanEnd : BufPos) : BufSpan.
+order SrcLoc.BufPos SrcLoc.BufSpan
+
 # orderings
 order SrcLoc.Eq___RealSrcLoc SrcLoc.Ord__RealSrcLoc_min SrcLoc.Ord__RealSrcLoc_max SrcLoc.Ord__RealSrcLoc SrcLoc.cmpSrcLoc  SrcLoc.Ord__SrcLoc_min SrcLoc.Ord__SrcLoc_max SrcLoc.Eq___SrcLoc SrcLoc.Ord__SrcLoc
 
@@ -20,6 +37,8 @@ order SrcLoc.Functor__GenLocated SrcLoc.Foldable__GenLocated SrcLoc.Traversable_
 
 # character constant
 skip SrcLoc.advanceSrcLoc
+skip SrcLoc.advancePsLoc
+skip SrcLoc.advance_tabstop
 
 # need Data.OldList.sortBy
 skip SrcLoc.sortLocated
@@ -27,9 +46,22 @@ skip SrcLoc.sortLocated
 # partial
 skip SrcLoc.spans
 
-# Outputtable
+# Outputable — module not translated
 skip SrcLoc.pprUserRealSpan
 skip SrcLoc.pprUserSpan
+skip SrcLoc.pprLocated
+skip SrcLoc.pprLocatedAlways
+
+# BufPos/BufSpan need Eq_/Ord instances (derived in Haskell, not generated)
+skip SrcLoc.combineBufSpans
+skip SrcLoc.Semigroup__BufSpan
+skip SrcLoc.cmpBufSpan
+
+# GHC 9.10: LexicalFastString newtype constructor in patterns/expressions
+# Since LexicalFastString = FastString in Coq, strip the constructor
+redefine Definition SrcLoc.mkRealSrcLoc : FastString.FastString -> GHC.Num.Int -> GHC.Num.Int -> RealSrcLoc := fun x line col => ASrcLoc x line col.
+redefine Definition SrcLoc.srcLocFile : RealSrcLoc -> FastString.FastString := fun loc => match loc with | ASrcLoc fname _ _ => fname end.
+redefine Definition SrcLoc.realSrcLocSpan : RealSrcLoc -> RealSrcSpan := fun loc => match loc with | ASrcLoc file line col => RealSrcSpan' file line col line col end.
 
 # need SrcLoc.Eq (Int * Int) and SrcLoc.Ord (Int * Int) instance in base
 skip SrcLoc.addCLoc
@@ -62,3 +94,7 @@ skip SrcLoc.Ord__SrcLoc
 skip SrcLoc.Ord__SrcSpan
 skip SrcLoc.Default__SrcSpan
 skip SrcLoc.Default__RealSrcSpan
+
+# Avoid <<>> (Semigroup for function types not available)
+# Use inline logic since realSrcSpanStart/End not yet defined at this point
+redefine Definition SrcLoc.Ord__RealSrcSpan_compare : RealSrcSpan -> RealSrcSpan -> comparison := fun a b => let 'RealSrcSpan' fa la ca la2 ca2 := a in let 'RealSrcSpan' fb lb cb lb2 cb2 := b in match Ord__RealSrcLoc_compare (ASrcLoc fa la ca) (ASrcLoc fb lb cb) with | Eq => Ord__RealSrcLoc_compare (ASrcLoc fa la2 ca2) (ASrcLoc fb lb2 cb2) | x => x end.

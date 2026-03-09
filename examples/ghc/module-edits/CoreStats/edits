@@ -14,3 +14,6 @@ inline mutual CoreStats.bindingStats
 
 # don't need these
 rewrite forall x, GHC.Num.fromInteger x = x
+
+# GHC 9.10: CoreTickish is axiomatized, constructors not available
+axiomatize definition CoreStats.tickSize

@@ -1,1 +1,11 @@
-{}
+constructorFields:
+  CoreFVs.BothSides: NonRecordFields 0
+  CoreFVs.LhsOnly: NonRecordFields 0
+  CoreFVs.RhsOnly: NonRecordFields 0
+constructorTypes:
+  CoreFVs.BothSides: Qualified "CoreFVs" "RuleFVsFrom"
+  CoreFVs.LhsOnly: Qualified "CoreFVs" "RuleFVsFrom"
+  CoreFVs.RhsOnly: Qualified "CoreFVs" "RuleFVsFrom"
+constructors:
+  CoreFVs.RuleFVsFrom: '[Qualified "CoreFVs" "LhsOnly",Qualified "CoreFVs" "RhsOnly",Qualified
+    "CoreFVs" "BothSides"]'

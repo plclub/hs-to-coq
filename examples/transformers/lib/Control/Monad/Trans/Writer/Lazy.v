@@ -31,12 +31,12 @@ Import GHC.Base.Notations.
 Inductive WriterT w m a : Type :=
   | Mk_WriterT (runWriterT : m (a * w)%type) : WriterT w m a.
 
-Definition Writer w :=
+#[global] Definition Writer w :=
   (WriterT w Data.Functor.Identity.Identity)%type.
 
 Arguments Mk_WriterT {_} {_} {_} _.
 
-Definition runWriterT {w} {m} {a} (arg_0__ : WriterT w m a) :=
+#[global] Definition runWriterT {w} {m} {a} (arg_0__ : WriterT w m a) :=
   let 'Mk_WriterT runWriterT := arg_0__ in
   runWriterT.
 
@@ -61,7 +61,7 @@ Local Definition Monad__WriterT_tmp {inst_w} {inst_m} `{GHC.Base.Monoid
 
 (* Converted value declarations: *)
 
-Local Definition Eq1__WriterT_liftEq {inst_w : Type} {inst_m : Type -> Type}
+#[local] Definition Eq1__WriterT_liftEq {inst_w : Type} {inst_m : Type -> Type}
   `{GHC.Base.Eq_ inst_w} `{Data.Functor.Classes.Eq1 inst_m}
    : forall {a : Type},
      forall {b : Type},
@@ -75,6 +75,7 @@ Local Definition Eq1__WriterT_liftEq {inst_w : Type} {inst_m : Type -> Type}
           m2
       end.
 
+#[global]
 Program Instance Eq1__WriterT {w : Type} {m : Type -> Type} `{GHC.Base.Eq_ w}
   `{Data.Functor.Classes.Eq1 m}
    : Data.Functor.Classes.Eq1 (WriterT w m) :=
@@ -82,7 +83,7 @@ Program Instance Eq1__WriterT {w : Type} {m : Type -> Type} `{GHC.Base.Eq_ w}
     k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
              Eq1__WriterT_liftEq |}.
 
-Local Definition Ord1__WriterT_liftCompare {inst_w : Type} {inst_m
+#[local] Definition Ord1__WriterT_liftCompare {inst_w : Type} {inst_m
    : Type -> Type} `{GHC.Base.Ord inst_w} `{Data.Functor.Classes.Ord1 inst_m}
    : forall {a : Type},
      forall {b : Type},
@@ -96,6 +97,7 @@ Local Definition Ord1__WriterT_liftCompare {inst_w : Type} {inst_m
                                             GHC.Base.compare) m1 m2
       end.
 
+#[global]
 Program Instance Ord1__WriterT {w : Type} {m : Type -> Type} `{GHC.Base.Ord w}
   `{Data.Functor.Classes.Ord1 m}
    : Data.Functor.Classes.Ord1 (WriterT w m) :=
@@ -109,18 +111,19 @@ Program Instance Ord1__WriterT {w : Type} {m : Type -> Type} `{GHC.Base.Ord w}
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including
    `Control.Monad.Trans.Writer.Lazy.Show1__WriterT' *)
 
-Local Definition Eq___WriterT_op_zeze__ {inst_w : Type} {inst_m : Type -> Type}
-  {inst_a : Type} `{GHC.Base.Eq_ inst_w} `{Data.Functor.Classes.Eq1 inst_m}
-  `{GHC.Base.Eq_ inst_a}
+#[local] Definition Eq___WriterT_op_zeze__ {inst_w : Type} {inst_m
+   : Type -> Type} {inst_a : Type} `{GHC.Base.Eq_ inst_w}
+  `{Data.Functor.Classes.Eq1 inst_m} `{GHC.Base.Eq_ inst_a}
    : WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a -> bool :=
   Data.Functor.Classes.eq1.
 
-Local Definition Eq___WriterT_op_zsze__ {inst_w : Type} {inst_m : Type -> Type}
-  {inst_a : Type} `{GHC.Base.Eq_ inst_w} `{Data.Functor.Classes.Eq1 inst_m}
-  `{GHC.Base.Eq_ inst_a}
+#[local] Definition Eq___WriterT_op_zsze__ {inst_w : Type} {inst_m
+   : Type -> Type} {inst_a : Type} `{GHC.Base.Eq_ inst_w}
+  `{Data.Functor.Classes.Eq1 inst_m} `{GHC.Base.Eq_ inst_a}
    : WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a -> bool :=
   fun x y => negb (Eq___WriterT_op_zeze__ x y).
 
+#[global]
 Program Instance Eq___WriterT {w : Type} {m : Type -> Type} {a : Type}
   `{GHC.Base.Eq_ w} `{Data.Functor.Classes.Eq1 m} `{GHC.Base.Eq_ a}
    : GHC.Base.Eq_ (WriterT w m a) :=
@@ -128,50 +131,51 @@ Program Instance Eq___WriterT {w : Type} {m : Type -> Type} {a : Type}
     k__ {| GHC.Base.op_zeze____ := Eq___WriterT_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___WriterT_op_zsze__ |}.
 
-Local Definition Ord__WriterT_compare {inst_w : Type} {inst_m : Type -> Type}
+#[local] Definition Ord__WriterT_compare {inst_w : Type} {inst_m : Type -> Type}
   {inst_a : Type} `{GHC.Base.Ord inst_w} `{Data.Functor.Classes.Ord1 inst_m}
   `{GHC.Base.Ord inst_a}
    : WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a -> comparison :=
   Data.Functor.Classes.compare1.
 
-Local Definition Ord__WriterT_op_zl__ {inst_w : Type} {inst_m : Type -> Type}
+#[local] Definition Ord__WriterT_op_zl__ {inst_w : Type} {inst_m : Type -> Type}
   {inst_a : Type} `{GHC.Base.Ord inst_w} `{Data.Functor.Classes.Ord1 inst_m}
   `{GHC.Base.Ord inst_a}
    : WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a -> bool :=
   fun x y => Ord__WriterT_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__WriterT_op_zlze__ {inst_w : Type} {inst_m : Type -> Type}
-  {inst_a : Type} `{GHC.Base.Ord inst_w} `{Data.Functor.Classes.Ord1 inst_m}
-  `{GHC.Base.Ord inst_a}
+#[local] Definition Ord__WriterT_op_zlze__ {inst_w : Type} {inst_m
+   : Type -> Type} {inst_a : Type} `{GHC.Base.Ord inst_w}
+  `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord inst_a}
    : WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a -> bool :=
   fun x y => Ord__WriterT_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__WriterT_op_zg__ {inst_w : Type} {inst_m : Type -> Type}
+#[local] Definition Ord__WriterT_op_zg__ {inst_w : Type} {inst_m : Type -> Type}
   {inst_a : Type} `{GHC.Base.Ord inst_w} `{Data.Functor.Classes.Ord1 inst_m}
   `{GHC.Base.Ord inst_a}
    : WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a -> bool :=
   fun x y => Ord__WriterT_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__WriterT_op_zgze__ {inst_w : Type} {inst_m : Type -> Type}
-  {inst_a : Type} `{GHC.Base.Ord inst_w} `{Data.Functor.Classes.Ord1 inst_m}
-  `{GHC.Base.Ord inst_a}
+#[local] Definition Ord__WriterT_op_zgze__ {inst_w : Type} {inst_m
+   : Type -> Type} {inst_a : Type} `{GHC.Base.Ord inst_w}
+  `{Data.Functor.Classes.Ord1 inst_m} `{GHC.Base.Ord inst_a}
    : WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a -> bool :=
   fun x y => Ord__WriterT_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__WriterT_max {inst_w : Type} {inst_m : Type -> Type}
+#[local] Definition Ord__WriterT_max {inst_w : Type} {inst_m : Type -> Type}
   {inst_a : Type} `{GHC.Base.Ord inst_w} `{Data.Functor.Classes.Ord1 inst_m}
   `{GHC.Base.Ord inst_a}
    : WriterT inst_w inst_m inst_a ->
      WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a :=
   fun x y => if Ord__WriterT_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__WriterT_min {inst_w : Type} {inst_m : Type -> Type}
+#[local] Definition Ord__WriterT_min {inst_w : Type} {inst_m : Type -> Type}
   {inst_a : Type} `{GHC.Base.Ord inst_w} `{Data.Functor.Classes.Ord1 inst_m}
   `{GHC.Base.Ord inst_a}
    : WriterT inst_w inst_m inst_a ->
      WriterT inst_w inst_m inst_a -> WriterT inst_w inst_m inst_a :=
   fun x y => if Ord__WriterT_op_zlze__ x y : bool then x else y.
 
+#[global]
 Program Instance Ord__WriterT {w : Type} {m : Type -> Type} {a : Type}
   `{GHC.Base.Ord w} `{Data.Functor.Classes.Ord1 m} `{GHC.Base.Ord a}
    : GHC.Base.Ord (WriterT w m a) :=
@@ -190,25 +194,26 @@ Program Instance Ord__WriterT {w : Type} {m : Type -> Type} {a : Type}
 (* Skipping all instances of class `GHC.Show.Show', including
    `Control.Monad.Trans.Writer.Lazy.Show__WriterT' *)
 
-Definition mapWriterT {m : Type -> Type} {a : Type} {w : Type} {n
+#[global] Definition mapWriterT {m : Type -> Type} {a : Type} {w : Type} {n
    : Type -> Type} {b : Type} {w' : Type}
    : (m (a * w)%type -> n (b * w')%type) -> WriterT w m a -> WriterT w' n b :=
   fun f m => Mk_WriterT (f (runWriterT m)).
 
-Local Definition Functor__WriterT_fmap {inst_m : Type -> Type} {inst_w : Type}
-  `{(GHC.Base.Functor inst_m)}
+#[local] Definition Functor__WriterT_fmap {inst_m : Type -> Type} {inst_w
+   : Type} `{(GHC.Base.Functor inst_m)}
    : forall {a : Type},
      forall {b : Type},
      (a -> b) -> WriterT inst_w inst_m a -> WriterT inst_w inst_m b :=
   fun {a : Type} {b : Type} =>
     fun f => mapWriterT (GHC.Base.fmap (fun '(pair a w) => pair (f a) w)).
 
-Local Definition Functor__WriterT_op_zlzd__ {inst_m : Type -> Type} {inst_w
+#[local] Definition Functor__WriterT_op_zlzd__ {inst_m : Type -> Type} {inst_w
    : Type} `{(GHC.Base.Functor inst_m)}
    : forall {a : Type},
      forall {b : Type}, a -> WriterT inst_w inst_m b -> WriterT inst_w inst_m a :=
   fun {a : Type} {b : Type} => Functor__WriterT_fmap GHC.Base.∘ GHC.Base.const.
 
+#[global]
 Program Instance Functor__WriterT {m : Type -> Type} {w : Type}
   `{(GHC.Base.Functor m)}
    : GHC.Base.Functor (WriterT w m) :=
@@ -217,7 +222,7 @@ Program Instance Functor__WriterT {m : Type -> Type} {w : Type}
            GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
              Functor__WriterT_op_zlzd__ |}.
 
-Local Definition Foldable__WriterT_foldMap {inst_f : Type -> Type} {inst_w
+#[local] Definition Foldable__WriterT_foldMap {inst_f : Type -> Type} {inst_w
    : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {m : Type},
      forall {a : Type},
@@ -226,14 +231,14 @@ Local Definition Foldable__WriterT_foldMap {inst_f : Type -> Type} {inst_w
     fun f =>
       Data.Foldable.foldMap (f GHC.Base.∘ Data.Tuple.fst) GHC.Base.∘ runWriterT.
 
-Local Definition Foldable__WriterT_fold {inst_f : Type -> Type} {inst_w : Type}
-  `{(Data.Foldable.Foldable inst_f)}
+#[local] Definition Foldable__WriterT_fold {inst_f : Type -> Type} {inst_w
+   : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {m : Type},
      forall `{GHC.Base.Monoid m}, WriterT inst_w inst_f m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__WriterT_foldMap GHC.Base.id.
 
-Local Definition Foldable__WriterT_foldl {inst_f : Type -> Type} {inst_w : Type}
-  `{(Data.Foldable.Foldable inst_f)}
+#[local] Definition Foldable__WriterT_foldl {inst_f : Type -> Type} {inst_w
+   : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {b : Type},
      forall {a : Type}, (b -> a -> b) -> b -> WriterT inst_w inst_f a -> b :=
   fun {b : Type} {a : Type} =>
@@ -243,8 +248,8 @@ Local Definition Foldable__WriterT_foldl {inst_f : Type -> Type} {inst_w : Type}
                                                                   (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                    GHC.Base.flip f)) t)) z.
 
-Local Definition Foldable__WriterT_foldr {inst_f : Type -> Type} {inst_w : Type}
-  `{(Data.Foldable.Foldable inst_f)}
+#[local] Definition Foldable__WriterT_foldr {inst_f : Type -> Type} {inst_w
+   : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> WriterT inst_w inst_f a -> b :=
   fun {a : Type} {b : Type} =>
@@ -252,54 +257,37 @@ Local Definition Foldable__WriterT_foldr {inst_f : Type -> Type} {inst_w : Type}
       Data.SemigroupInternal.appEndo (Foldable__WriterT_foldMap
                                       (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
-Local Definition Foldable__WriterT_foldl' {inst_f : Type -> Type} {inst_w
-   : Type} `{(Data.Foldable.Foldable inst_f)}
-   : forall {b : Type},
-     forall {a : Type}, (b -> a -> b) -> b -> WriterT inst_w inst_f a -> b :=
-  fun {b : Type} {a : Type} =>
-    fun f z0 xs =>
-      let f' := fun x k z => k (f z x) in
-      Foldable__WriterT_foldr f' GHC.Base.id xs z0.
-
-Local Definition Foldable__WriterT_foldr' {inst_f : Type -> Type} {inst_w
-   : Type} `{(Data.Foldable.Foldable inst_f)}
-   : forall {a : Type},
-     forall {b : Type}, (a -> b -> b) -> b -> WriterT inst_w inst_f a -> b :=
-  fun {a : Type} {b : Type} =>
-    fun f z0 xs =>
-      let f' := fun k x z => k (f x z) in
-      Foldable__WriterT_foldl f' GHC.Base.id xs z0.
-
-Local Definition Foldable__WriterT_length {inst_f : Type -> Type} {inst_w
+#[local] Definition Foldable__WriterT_length {inst_f : Type -> Type} {inst_w
    : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {a : Type}, WriterT inst_w inst_f a -> GHC.Num.Int :=
   fun {a : Type} => fun '(Mk_WriterT t) => Data.Foldable.length t.
 
-Local Definition Foldable__WriterT_null {inst_f : Type -> Type} {inst_w : Type}
-  `{(Data.Foldable.Foldable inst_f)}
+#[local] Definition Foldable__WriterT_null {inst_f : Type -> Type} {inst_w
+   : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {a : Type}, WriterT inst_w inst_f a -> bool :=
   fun {a : Type} => fun '(Mk_WriterT t) => Data.Foldable.null t.
 
-Local Definition Foldable__WriterT_product {inst_f : Type -> Type} {inst_w
+#[local] Definition Foldable__WriterT_product {inst_f : Type -> Type} {inst_w
    : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {a : Type}, forall `{GHC.Num.Num a}, WriterT inst_w inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
                                (Foldable__WriterT_foldMap Data.SemigroupInternal.Mk_Product).
 
-Local Definition Foldable__WriterT_sum {inst_f : Type -> Type} {inst_w : Type}
-  `{(Data.Foldable.Foldable inst_f)}
+#[local] Definition Foldable__WriterT_sum {inst_f : Type -> Type} {inst_w
+   : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {a : Type}, forall `{GHC.Num.Num a}, WriterT inst_w inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
                                (Foldable__WriterT_foldMap Data.SemigroupInternal.Mk_Sum).
 
-Local Definition Foldable__WriterT_toList {inst_f : Type -> Type} {inst_w
+#[local] Definition Foldable__WriterT_toList {inst_f : Type -> Type} {inst_w
    : Type} `{(Data.Foldable.Foldable inst_f)}
    : forall {a : Type}, WriterT inst_w inst_f a -> list a :=
   fun {a : Type} =>
     fun t => GHC.Base.build' (fun _ => (fun c n => Foldable__WriterT_foldr c n t)).
 
+#[global]
 Program Instance Foldable__WriterT {f : Type -> Type} {w : Type}
   `{(Data.Foldable.Foldable f)}
    : Data.Foldable.Foldable (WriterT w f) :=
@@ -309,11 +297,7 @@ Program Instance Foldable__WriterT {f : Type -> Type} {w : Type}
            Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
              Foldable__WriterT_foldMap ;
            Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__WriterT_foldl ;
-           Data.Foldable.foldl'__ := fun {b : Type} {a : Type} =>
-             Foldable__WriterT_foldl' ;
            Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__WriterT_foldr ;
-           Data.Foldable.foldr'__ := fun {a : Type} {b : Type} =>
-             Foldable__WriterT_foldr' ;
            Data.Foldable.length__ := fun {a : Type} => Foldable__WriterT_length ;
            Data.Foldable.null__ := fun {a : Type} => Foldable__WriterT_null ;
            Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
@@ -322,8 +306,8 @@ Program Instance Foldable__WriterT {f : Type -> Type} {w : Type}
              Foldable__WriterT_sum ;
            Data.Foldable.toList__ := fun {a : Type} => Foldable__WriterT_toList |}.
 
-Local Definition Traversable__WriterT_traverse {inst_f : Type -> Type} {inst_w
-   : Type} `{(Data.Traversable.Traversable inst_f)}
+#[local] Definition Traversable__WriterT_traverse {inst_f : Type -> Type}
+  {inst_w : Type} `{(Data.Traversable.Traversable inst_f)}
    : forall {f : Type -> Type},
      forall {a : Type},
      forall {b : Type},
@@ -335,7 +319,7 @@ Local Definition Traversable__WriterT_traverse {inst_f : Type -> Type} {inst_w
       GHC.Base.fmap Mk_WriterT GHC.Base.∘
       (Data.Traversable.traverse f' GHC.Base.∘ runWriterT).
 
-Local Definition Traversable__WriterT_mapM {inst_f : Type -> Type} {inst_w
+#[local] Definition Traversable__WriterT_mapM {inst_f : Type -> Type} {inst_w
    : Type} `{(Data.Traversable.Traversable inst_f)}
    : forall {m : Type -> Type},
      forall {a : Type},
@@ -345,8 +329,8 @@ Local Definition Traversable__WriterT_mapM {inst_f : Type -> Type} {inst_w
   fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
     Traversable__WriterT_traverse.
 
-Local Definition Traversable__WriterT_sequenceA {inst_f : Type -> Type} {inst_w
-   : Type} `{(Data.Traversable.Traversable inst_f)}
+#[local] Definition Traversable__WriterT_sequenceA {inst_f : Type -> Type}
+  {inst_w : Type} `{(Data.Traversable.Traversable inst_f)}
    : forall {f : Type -> Type},
      forall {a : Type},
      forall `{GHC.Base.Applicative f},
@@ -354,8 +338,8 @@ Local Definition Traversable__WriterT_sequenceA {inst_f : Type -> Type} {inst_w
   fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
     Traversable__WriterT_traverse GHC.Base.id.
 
-Local Definition Traversable__WriterT_sequence {inst_f : Type -> Type} {inst_w
-   : Type} `{(Data.Traversable.Traversable inst_f)}
+#[local] Definition Traversable__WriterT_sequence {inst_f : Type -> Type}
+  {inst_w : Type} `{(Data.Traversable.Traversable inst_f)}
    : forall {m : Type -> Type},
      forall {a : Type},
      forall `{GHC.Base.Monad m},
@@ -363,6 +347,7 @@ Local Definition Traversable__WriterT_sequence {inst_f : Type -> Type} {inst_w
   fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
     Traversable__WriterT_sequenceA.
 
+#[global]
 Program Instance Traversable__WriterT {f : Type -> Type} {w : Type}
   `{(Data.Traversable.Traversable f)}
    : Data.Traversable.Traversable (WriterT w f) :=
@@ -386,7 +371,7 @@ Program Instance Traversable__WriterT {f : Type -> Type} {w : Type}
            `{GHC.Base.Applicative f} =>
              Traversable__WriterT_traverse |}.
 
-Local Definition Applicative__WriterT_op_zlztzg__ {inst_w : Type} {inst_m
+#[local] Definition Applicative__WriterT_op_zlztzg__ {inst_w : Type} {inst_m
    : Type -> Type} `{GHC.Base.Monoid inst_w} `{GHC.Base.Applicative inst_m}
    : forall {a : Type},
      forall {b : Type},
@@ -401,7 +386,7 @@ Local Definition Applicative__WriterT_op_zlztzg__ {inst_w : Type} {inst_m
           end in
       Mk_WriterT (GHC.Base.liftA2 k (runWriterT f) (runWriterT v)).
 
-Local Definition Applicative__WriterT_liftA2 {inst_w : Type} {inst_m
+#[local] Definition Applicative__WriterT_liftA2 {inst_w : Type} {inst_m
    : Type -> Type} `{GHC.Base.Monoid inst_w} `{GHC.Base.Applicative inst_m}
    : forall {a : Type},
      forall {b : Type},
@@ -411,19 +396,21 @@ Local Definition Applicative__WriterT_liftA2 {inst_w : Type} {inst_m
   fun {a : Type} {b : Type} {c : Type} =>
     fun f x => Applicative__WriterT_op_zlztzg__ (GHC.Base.fmap f x).
 
-Local Definition Applicative__WriterT_pure {inst_w : Type} {inst_m
+#[local] Definition Applicative__WriterT_pure {inst_w : Type} {inst_m
    : Type -> Type} `{GHC.Base.Monoid inst_w} `{GHC.Base.Applicative inst_m}
    : forall {a : Type}, a -> WriterT inst_w inst_m a :=
   fun {a : Type} => fun a => Mk_WriterT (GHC.Base.pure (pair a GHC.Base.mempty)).
 
-Local Definition Applicative__WriterT_op_ztzg__ {inst_w : Type} {inst_m
+#[local] Definition Applicative__WriterT_op_ztzg__ {inst_w : Type} {inst_m
    : Type -> Type} `{GHC.Base.Monoid inst_w} `{GHC.Base.Applicative inst_m}
    : forall {a : Type},
      forall {b : Type},
      WriterT inst_w inst_m a -> WriterT inst_w inst_m b -> WriterT inst_w inst_m b :=
   fun {a : Type} {b : Type} =>
-    fun a1 a2 => Applicative__WriterT_op_zlztzg__ (GHC.Base.id GHC.Base.<$ a1) a2.
+    fun a1 a2 =>
+      Applicative__WriterT_op_zlztzg__ (GHC.Base.op_zlzd__ GHC.Base.id a1) a2.
 
+#[global]
 Program Instance Applicative__WriterT {w : Type} {m : Type -> Type}
   `{GHC.Base.Monoid w} `{GHC.Base.Applicative m}
    : GHC.Base.Applicative (WriterT w m) :=
@@ -439,14 +426,14 @@ Program Instance Applicative__WriterT {w : Type} {m : Type -> Type}
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Monad.Trans.Writer.Lazy.Alternative__WriterT' *)
 
-Definition Monad__WriterT_op_zgzgze__ {inst_w} {inst_m} `{_
+#[global] Definition Monad__WriterT_op_zgzgze__ {inst_w} {inst_m} `{_
    : GHC.Base.Monoid inst_w} `{_ : GHC.Base.Monad inst_m}
    : forall {a} {b},
      WriterT inst_w inst_m a ->
      (a -> WriterT inst_w inst_m b) -> WriterT inst_w inst_m b :=
   fun {a} {b} => Monad__WriterT_tmp.
 
-Local Definition Monad__WriterT_op_zgzg__ {inst_w : Type} {inst_m
+#[local] Definition Monad__WriterT_op_zgzg__ {inst_w : Type} {inst_m
    : Type -> Type} `{GHC.Base.Monoid inst_w} `{GHC.Base.Monad inst_m}
    : forall {a : Type},
      forall {b : Type},
@@ -454,11 +441,12 @@ Local Definition Monad__WriterT_op_zgzg__ {inst_w : Type} {inst_m
   fun {a : Type} {b : Type} =>
     fun m k => Monad__WriterT_op_zgzgze__ m (fun arg_0__ => k).
 
-Local Definition Monad__WriterT_return_ {inst_w : Type} {inst_m : Type -> Type}
-  `{GHC.Base.Monoid inst_w} `{GHC.Base.Monad inst_m}
+#[local] Definition Monad__WriterT_return_ {inst_w : Type} {inst_m
+   : Type -> Type} `{GHC.Base.Monoid inst_w} `{GHC.Base.Monad inst_m}
    : forall {a : Type}, a -> WriterT inst_w inst_m a :=
   fun {a : Type} => GHC.Base.pure.
 
+#[global]
 Program Instance Monad__WriterT {w : Type} {m : Type -> Type} `{GHC.Base.Monoid
   w} `{GHC.Base.Monad m}
    : GHC.Base.Monad (WriterT w m) :=
@@ -469,7 +457,7 @@ Program Instance Monad__WriterT {w : Type} {m : Type -> Type} `{GHC.Base.Monoid
              Monad__WriterT_op_zgzgze__ ;
            GHC.Base.return___ := fun {a : Type} => Monad__WriterT_return_ |}.
 
-Local Definition MonadTrans__WriterT_lift {inst_w : Type} `{(GHC.Base.Monoid
+#[local] Definition MonadTrans__WriterT_lift {inst_w : Type} `{(GHC.Base.Monoid
    inst_w)}
    : forall {m : Type -> Type},
      forall {a : Type}, forall `{GHC.Base.Monad m}, m a -> WriterT inst_w m a :=
@@ -478,6 +466,7 @@ Local Definition MonadTrans__WriterT_lift {inst_w : Type} `{(GHC.Base.Monoid
       Mk_WriterT (m GHC.Base.>>=
                   (fun a => GHC.Base.return_ (pair a GHC.Base.mempty))).
 
+#[global]
 Program Instance MonadTrans__WriterT {w : Type} `{(GHC.Base.Monoid w)}
    : Control.Monad.Trans.Class.MonadTrans (WriterT w) :=
   fun _ k__ =>
@@ -486,11 +475,13 @@ Program Instance MonadTrans__WriterT {w : Type} `{(GHC.Base.Monoid w)}
            `{GHC.Base.Monad m} =>
              MonadTrans__WriterT_lift |}.
 
-Local Definition MonadFail__WriterT_fail {inst_w : Type} {inst_m : Type -> Type}
-  `{GHC.Base.Monoid inst_w} `{Control.Monad.Fail.MonadFail inst_m}
+#[local] Definition MonadFail__WriterT_fail {inst_w : Type} {inst_m
+   : Type -> Type} `{GHC.Base.Monoid inst_w} `{Control.Monad.Fail.MonadFail
+  inst_m}
    : forall {a : Type}, GHC.Base.String -> WriterT inst_w inst_m a :=
   fun {a : Type} => fun msg => Mk_WriterT (Control.Monad.Fail.fail msg).
 
+#[global]
 Program Instance MonadFail__WriterT {w : Type} {m : Type -> Type}
   `{GHC.Base.Monoid w} `{Control.Monad.Fail.MonadFail m}
    : Control.Monad.Fail.MonadFail (WriterT w m) :=
@@ -501,8 +492,8 @@ Program Instance MonadFail__WriterT {w : Type} {m : Type -> Type}
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Control.Monad.Trans.Writer.Lazy.MonadPlus__WriterT' *)
 
-(* Skipping all instances of class `Control.Monad.Fix.MonadFix', including
-   `Control.Monad.Trans.Writer.Lazy.MonadFix__WriterT' *)
+(* Skipping all instances of class `GHC.Internal.Control.Monad.Fix.MonadFix',
+   including `Control.Monad.Trans.Writer.Lazy.MonadFix__WriterT' *)
 
 (* Skipping all instances of class `Control.Monad.IO.Class.MonadIO', including
    `Control.Monad.Trans.Writer.Lazy.MonadIO__WriterT' *)
@@ -510,34 +501,40 @@ Program Instance MonadFail__WriterT {w : Type} {m : Type -> Type}
 (* Skipping all instances of class `Control.Monad.Zip.MonadZip', including
    `Control.Monad.Trans.Writer.Lazy.MonadZip__WriterT' *)
 
-Definition writer {m : Type -> Type} {a : Type} {w : Type} `{GHC.Base.Monad m}
+(* Skipping all instances of class `Data.Functor.Contravariant.Contravariant',
+   including `Control.Monad.Trans.Writer.Lazy.Contravariant__WriterT' *)
+
+#[global] Definition writer {m : Type -> Type} {a : Type} {w : Type}
+  `{GHC.Base.Monad m}
    : (a * w)%type -> WriterT w m a :=
   Mk_WriterT GHC.Base.∘ GHC.Base.return_.
 
-Definition runWriter {w : Type} {a : Type} : Writer w a -> (a * w)%type :=
+#[global] Definition runWriter {w : Type} {a : Type}
+   : Writer w a -> (a * w)%type :=
   Data.Functor.Identity.runIdentity GHC.Base.∘ runWriterT.
 
-Definition execWriter {w : Type} {a : Type} : Writer w a -> w :=
+#[global] Definition execWriter {w : Type} {a : Type} : Writer w a -> w :=
   fun m => Data.Tuple.snd (runWriter m).
 
-Definition mapWriter {a : Type} {w : Type} {b : Type} {w' : Type}
+#[global] Definition mapWriter {a : Type} {w : Type} {b : Type} {w' : Type}
    : ((a * w)%type -> (b * w')%type) -> Writer w a -> Writer w' b :=
   fun f =>
     mapWriterT (Data.Functor.Identity.Mk_Identity GHC.Base.∘
                 (f GHC.Base.∘ Data.Functor.Identity.runIdentity)).
 
-Definition execWriterT {m : Type -> Type} {w : Type} {a : Type} `{GHC.Base.Monad
-  m}
+#[global] Definition execWriterT {m : Type -> Type} {w : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : WriterT w m a -> m w :=
   fun m =>
     let cont_0__ arg_1__ := let 'pair _ w := arg_1__ in GHC.Base.return_ w in
     runWriterT m GHC.Base.>>= cont_0__.
 
-Definition tell {m : Type -> Type} {w : Type} `{GHC.Base.Monad m}
+#[global] Definition tell {m : Type -> Type} {w : Type} `{GHC.Base.Monad m}
    : w -> WriterT w m unit :=
   fun w => writer (pair tt w).
 
-Definition listen {m : Type -> Type} {w : Type} {a : Type} `{GHC.Base.Monad m}
+#[global] Definition listen {m : Type -> Type} {w : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : WriterT w m a -> WriterT w m (a * w)%type :=
   fun m =>
     Mk_WriterT (let cont_0__ arg_1__ :=
@@ -545,7 +542,7 @@ Definition listen {m : Type -> Type} {w : Type} {a : Type} `{GHC.Base.Monad m}
                   GHC.Base.return_ (pair (pair a w) w) in
                 runWriterT m GHC.Base.>>= cont_0__).
 
-Definition listens {m : Type -> Type} {w : Type} {b : Type} {a : Type}
+#[global] Definition listens {m : Type -> Type} {w : Type} {b : Type} {a : Type}
   `{GHC.Base.Monad m}
    : (w -> b) -> WriterT w m a -> WriterT w m (a * b)%type :=
   fun f m =>
@@ -554,7 +551,8 @@ Definition listens {m : Type -> Type} {w : Type} {b : Type} {a : Type}
                   GHC.Base.return_ (pair (pair a (f w)) w) in
                 runWriterT m GHC.Base.>>= cont_0__).
 
-Definition pass {m : Type -> Type} {w : Type} {a : Type} `{GHC.Base.Monad m}
+#[global] Definition pass {m : Type -> Type} {w : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : WriterT w m (a * (w -> w))%type -> WriterT w m a :=
   fun m =>
     Mk_WriterT (let cont_0__ arg_1__ :=
@@ -562,7 +560,8 @@ Definition pass {m : Type -> Type} {w : Type} {a : Type} `{GHC.Base.Monad m}
                   GHC.Base.return_ (pair a (f w)) in
                 runWriterT m GHC.Base.>>= cont_0__).
 
-Definition censor {m : Type -> Type} {w : Type} {a : Type} `{GHC.Base.Monad m}
+#[global] Definition censor {m : Type -> Type} {w : Type} {a : Type}
+  `{GHC.Base.Monad m}
    : (w -> w) -> WriterT w m a -> WriterT w m a :=
   fun f m =>
     Mk_WriterT (let cont_0__ arg_1__ :=
@@ -570,8 +569,8 @@ Definition censor {m : Type -> Type} {w : Type} {a : Type} `{GHC.Base.Monad m}
                   GHC.Base.return_ (pair a (f w)) in
                 runWriterT m GHC.Base.>>= cont_0__).
 
-Definition liftCallCC {w : Type} {m : Type -> Type} {a : Type} {b : Type}
-  `{GHC.Base.Monoid w}
+#[global] Definition liftCallCC {w : Type} {m : Type -> Type} {a : Type} {b
+   : Type} `{GHC.Base.Monoid w}
    : Control.Monad.Signatures.CallCC m (a * w)%type (b * w)%type ->
      Control.Monad.Signatures.CallCC (WriterT w m) a b :=
   fun callCC f =>
@@ -586,22 +585,21 @@ Definition liftCallCC {w : Type} {m : Type -> Type} {a : Type} {b : Type}
      Control.Monad.Signatures.CallCC Control.Monad.Trans.Class.MonadTrans
      Control.Monad.Trans.Class.lift__ Coq.Program.Basics.compose
      Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
-     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length
-     Data.Foldable.length__ Data.Foldable.null Data.Foldable.null__
-     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
-     Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1 Data.Functor.Classes.compare1
-     Data.Functor.Classes.eq1 Data.Functor.Classes.liftCompare
-     Data.Functor.Classes.liftCompare2 Data.Functor.Classes.liftCompare__
-     Data.Functor.Classes.liftEq Data.Functor.Classes.liftEq2
-     Data.Functor.Classes.liftEq__ Data.Functor.Identity.Identity
-     Data.Functor.Identity.Mk_Identity Data.Functor.Identity.runIdentity
-     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
-     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
-     Data.SemigroupInternal.appEndo Data.SemigroupInternal.getDual
-     Data.SemigroupInternal.getProduct Data.SemigroupInternal.getSum
-     Data.Traversable.Traversable Data.Traversable.mapM__
-     Data.Traversable.sequenceA__ Data.Traversable.sequence__
+     Data.Foldable.fold__ Data.Foldable.foldl__ Data.Foldable.foldr__
+     Data.Foldable.length Data.Foldable.length__ Data.Foldable.null
+     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
+     Data.Foldable.toList__ Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1
+     Data.Functor.Classes.compare1 Data.Functor.Classes.eq1
+     Data.Functor.Classes.liftCompare Data.Functor.Classes.liftCompare2
+     Data.Functor.Classes.liftCompare__ Data.Functor.Classes.liftEq
+     Data.Functor.Classes.liftEq2 Data.Functor.Classes.liftEq__
+     Data.Functor.Identity.Identity Data.Functor.Identity.Mk_Identity
+     Data.Functor.Identity.runIdentity Data.SemigroupInternal.Mk_Dual
+     Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
+     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
+     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
+     Data.SemigroupInternal.getSum Data.Traversable.Traversable
+     Data.Traversable.mapM__ Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse Data.Traversable.traverse__ Data.Tuple.fst
      Data.Tuple.snd GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor GHC.Base.Monad
      GHC.Base.Monoid GHC.Base.Ord GHC.Base.String GHC.Base.build' GHC.Base.compare

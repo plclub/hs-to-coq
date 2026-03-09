@@ -7,7 +7,7 @@ Require Import Equations.Equations.
 Require Import Data.Graph.Inductive.Graph.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.SetoidList.
-Require Import Omega.
+Require Import Lia.
 Require Import Wellfounded.
 
 Require Import Path.
@@ -52,10 +52,10 @@ Proof.
   intros. eapply WF_lex.
   - apply f_nat_lt_wf.
   - apply f_nat_lt_wf.
-  - unfold Transitive. intros. unfold natNodes_eq in *; omega.
+  - unfold Transitive. intros. unfold natNodes_eq in *; lia.
   - intros. unfold natNodes_eq in *. unfold natNodes_lt in *. destruct H. destruct H.
-    omega.
-  - unfold Symmetric. intros. unfold natNodes_eq in *. omega.
+    lia.
+  - unfold Symmetric. intros. unfold natNodes_eq in *. lia.
 Qed. 
 
 Lemma well_founded_bf_measure_queue : forall a,  well_founded (bf_measure_queue a).
@@ -63,10 +63,10 @@ Proof.
   intros. eapply WF_lex.
   - apply f_nat_lt_wf.
   - apply f_nat_lt_wf.
-  - unfold Transitive. intros. unfold natNodes_eq in *; omega.
+  - unfold Transitive. intros. unfold natNodes_eq in *; lia.
   - intros. unfold natNodes_eq in *. unfold natNodes_lt in *. destruct H. destruct H.
-    omega.
-  - unfold Symmetric. intros. unfold natNodes_eq in *. omega.
+    lia.
+  - unfold Symmetric. intros. unfold natNodes_eq in *. lia.
 Qed. 
 
 (*A few properties of this relation*)
@@ -78,11 +78,11 @@ Proof.
   intros. unfold bf_measure_list in *.
   inversion H; subst.
   - inversion H0; subst.
-    + apply lex1. unfold natNodes_lt in *. omega.
-    + apply lex1. unfold natNodes_lt in *. unfold natNodes_eq in H4. omega.
+    + apply lex1. unfold natNodes_lt in *. lia.
+    + apply lex1. unfold natNodes_lt in *. unfold natNodes_eq in H4. lia.
   - inversion H0; subst.
-    + apply lex1. unfold natNodes_lt in *. unfold natNodes_eq in H1. omega.
-    + apply lex2. unfold natNodes_eq in *. omega. unfold list_length_lt in *. omega.
+    + apply lex1. unfold natNodes_lt in *. unfold natNodes_eq in H1. lia.
+    + apply lex2. unfold natNodes_eq in *. lia. unfold list_length_lt in *. lia.
 Qed. 
 
 Lemma measure_antisym: forall {a} x y,
@@ -91,17 +91,17 @@ Lemma measure_antisym: forall {a} x y,
 Proof.
   intros. intro. unfold bf_measure_list in *. 
   inversion H; inversion H0; subst; unfold natNodes_lt in *; unfold natNodes_eq in *.
-  - inversion H5; subst. inversion H6; subst. omega.
-  - inversion H6; subst. inversion H7; subst. omega.
-  - inversion H6; subst. inversion H7; subst. omega.
+  - inversion H5; subst. inversion H6; subst. lia.
+  - inversion H6; subst. inversion H7; subst. lia.
+  - inversion H6; subst. inversion H7; subst. lia.
   - inversion H7; subst. inversion H8; subst.
-    unfold list_length_lt in *. omega.
+    unfold list_length_lt in *. lia.
 Qed.
 
 Lemma measure_antirefl: forall {a} x,
   ~bf_measure_list a x x.
 Proof.
-  intros. intro. inversion H; subst; unfold natNodes_lt in *; unfold list_length_lt in *; try(omega).
+  intros. intro. inversion H; subst; unfold natNodes_lt in *; unfold list_length_lt in *; try(lia).
 Qed.
 
 
@@ -216,7 +216,7 @@ unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size. 
 Defined.
 Next Obligation.
 unfold bf_measure_list. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply H. unfold list_length_lt.
-simpl. omega.
+simpl. lia.
 Defined.
 
 Definition expand_bfs_tail := 
@@ -273,7 +273,7 @@ Proof.
       * eapply multi_step. apply bfs_skip. assumption. apply M. eapply H. unfold bf_measure_list.
         apply lex2. unfold natNodes_eq. assert (g = g0) by (eapply match_remain_none; apply M).
         subst. eapply match_none_size. simpl.  apply M. 
-        unfold list_length_lt. simpl. assert (length l < S(length l)) by omega. apply H0. simpl. 
+        unfold list_length_lt. simpl. assert (length l < S(length l)) by lia. apply H0. simpl. 
         assert (g = g0) by (eapply match_remain_none; apply M). subst. reflexivity.
 Qed.
 
@@ -292,7 +292,7 @@ Proof.
     symmetry; apply M. simpl. reflexivity. assert (g = g0) by (eapply match_remain_none; apply M). subst.
     eapply H. unfold bf_measure_list. apply lex2.
     unfold natNodes_eq. eapply match_none_size. simpl. apply M.  unfold list_length_lt. simpl.
-    assert (length l < S(length l)) by omega. apply H0. simpl. reflexivity.
+    assert (length l < S(length l)) by lia. apply H0. simpl. reflexivity.
 Qed. 
 
 End Exec.
@@ -309,7 +309,7 @@ Proof.
   intros. unfold bf_measure_list. unfold transp. inversion H; subst; simpl in *.
   - apply lex1. unfold natNodes_lt. eapply match_decr_size. symmetry. apply H1.
   - apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply H1.  unfold list_length_lt.
-simpl. omega.
+simpl. lia.
 Qed.
 
 (*The same for multistep*)
@@ -563,7 +563,7 @@ Proof.
   intros. 
   induction (Z.to_nat n); simpl; try(constructor).
   - assumption.
-  - apply In_InfA. intros. apply repeat_spec in H. subst. omega. 
+  - apply In_InfA. intros. apply repeat_spec in H. subst. lia. 
 Qed. 
 
 (*List.filter equivalence with Coq*)
@@ -584,8 +584,8 @@ Lemma len_acc_def: forall {a} (l : list a ) n,
   List.lenAcc l n = (n + Z.of_nat (length l))%Z.
 Proof.
   intros. revert n. induction l; intros; simpl.
-  - omega.
-  - rewrite IHl. rewrite Zpos_P_of_succ_nat. omega.
+  - lia.
+  - rewrite IHl. rewrite Zpos_P_of_succ_nat. lia.
 Qed. 
 
 Lemma length_equiv: forall {a} (l: list a),
@@ -595,7 +595,7 @@ Proof.
   - reflexivity.
   - unfold List.length. simpl. unfold List.length in IHl. rewrite len_acc_def. 
     rewrite len_acc_def in IHl. simpl in IHl.
-    rewrite Z2Nat.inj_add. simpl. omega. omega. omega.
+    rewrite Z2Nat.inj_add. simpl. lia. lia. lia.
 Qed.
 
 (*List.zip results*)
@@ -615,8 +615,8 @@ Lemma map_snd_zip: forall {a b} (l1: list a) (l2: list b),
   map snd (List.zip l1 l2) = l2.
 Proof.
   intros. generalize dependent l2. induction l1; intros; simpl.
-  - simpl in H. destruct l2; try(reflexivity). simpl in H. omega.
-  - simpl in H. destruct l2. simpl in H. omega. simpl in H. inversion H.
+  - simpl in H. destruct l2; try(reflexivity). simpl in H. lia.
+  - simpl in H. destruct l2. simpl in H. lia. simpl in H. inversion H.
     simpl. rewrite IHl1. reflexivity. assumption.
 Qed.
 
@@ -625,7 +625,7 @@ Lemma map_fst_zip: forall {a b} (l1: list a) (l2: list b),
   map fst (List.zip l1 l2) = l1.
 Proof.
   intros. generalize dependent l2. induction l1; intros. simpl. reflexivity.
-  simpl. destruct l2. simpl in H. omega. simpl in *. inversion H. apply IHl1 in H1. rewrite H1. reflexivity.
+  simpl. destruct l2. simpl in H. lia. simpl in *. inversion H. apply IHl1 in H1. rewrite H1. reflexivity.
 Qed.
 
 (*Need specialized lemma for zip with replicate*)
@@ -713,9 +713,9 @@ Proof.
         assert (length l = n0). eapply shortest_path_distance. apply D'. assumption. subst.
         apply distance_some in D. destruct_all. subst.
         unfold shortest_path in H3. destruct_all.
-        assert (forall n m, n <= m \/ m < n) by (intros; omega).
+        assert (forall n m, n <= m \/ m < n) by (intros; lia).
         specialize (H5 (length x) (length l + 1)). destruct H5. assumption.
-        assert (length l + 1 = length (v :: l)). simpl. omega.
+        assert (length l + 1 = length (v :: l)). simpl. lia.
         rewrite H6 in H5. apply H4 in H5. contradiction.
       * unfold distance in D'. rewrite distance_none in D'. unfold shortest_path in H1. destruct_all.
         exfalso. apply (D' l). assumption.
@@ -819,11 +819,11 @@ Lemma dist_geq_0: forall s g v v' d,
   (d >= 0)%Z.
 Proof.
   intros. generalize dependent v'. generalize dependent d. induction H; intros.
-  - unfold start in H0; simpl in *. destruct H0. inversion H0; subst. omega. destruct H0.
+  - unfold start in H0; simpl in *. destruct H0. inversion H0; subst. lia. destruct H0.
   - inversion H0; subst; simpl in *.
     +  apply in_app_or in H1. destruct H1. eapply IHvalid. right. apply H1.
       eapply (suci_def _ _ _ _ _ _ _ H3) in H1. destruct H1. 
-       assert ((j >=0)%Z). eapply IHvalid. left. reflexivity. omega.
+       assert ((j >=0)%Z). eapply IHvalid. left. reflexivity. lia.
      + eapply IHvalid. right. apply H1.
 Qed. 
 
@@ -839,7 +839,7 @@ Proof.
     + apply in_app_or in H0. destruct H0. apply IHvalid; assumption. simpl in H0. destruct H0.
       inversion H0; subst.
       pose proof (dist_geq_0 (g0, (v', d) :: vs, d0) g v v' d H). simpl in H4.
-      assert (d >= 0)%Z. apply H4. left. reflexivity. omega. destruct H0.
+      assert (d >= 0)%Z. apply H4. left. reflexivity. lia. destruct H0.
     + apply IHvalid; assumption.
 Qed.
 
@@ -879,9 +879,9 @@ Proof.
         destruct (distance g v v') eqn : ?. simpl in *. rewrite Nat.leb_le in *.
         assert ((j >= 0)%Z). eapply dist_geq_0. apply H. simpl. left. reflexivity.
         assert (Z.to_nat j + 1 = Z.to_nat (j + 1)). assert (Z.to_nat j + Z.to_nat (1%Z) = Z.to_nat (j + 1)).
-        rewrite <- Z2Nat.inj_add. reflexivity. omega. omega. 
+        rewrite <- Z2Nat.inj_add. reflexivity. lia. lia. 
         assert (Z.to_nat 1 = 1). unfold Z.to_nat. unfold Pos.to_nat. simpl. reflexivity.
-        rewrite H11 in H10. omega. omega. simpl. simpl in H7. inversion H7.
+        rewrite H11 in H10. lia. lia. simpl. simpl in H7. inversion H7.
         inversion H8.
     + apply IHvalid. right. assumption.
 Qed. 
@@ -911,7 +911,7 @@ Lemma queue_structure: forall s g v v' d tl,
 Proof.
   intros. generalize dependent v'. revert d. revert tl. induction H; intros; simpl.
   - unfold start; simpl in *. inversion H0; subst. split. constructor. constructor. constructor.
-    intros. destruct H1. inversion H1. subst. omega. destruct H1.
+    intros. destruct H1. inversion H1. subst. lia. destruct H1.
   - inversion H0; subst; simpl in *.
     + split. rewrite map_app. eapply SortA_app. apply eq_equivalence.
       assert (Sorted Z.le (j :: map snd vs)). { specialize (IHvalid vs j v0).
@@ -933,23 +933,23 @@ Proof.
       apply repeat_spec in H5. subst.
       assert (In (v', d) (suci c (j+1)%Z)). rewrite H1. solve_in.
       unfold suci in H5. apply zip_in in H5. destruct H5.
-      apply repeat_spec in H6. subst. omega.
+      apply repeat_spec in H6. subst. lia.
       (*other case*)
       simpl in H1. inversion H1. subst.
       specialize (IHvalid ((v', d) :: vs) j v0). destruct IHvalid.
       reflexivity. inversion H5. subst.
       inversion H10. subst. 
       destruct H4.
-      simpl in H4. destruct H4. inversion H4. subst. omega.
+      simpl in H4. destruct H4. inversion H4. subst. lia.
       assert (d' <= j + 1)%Z. eapply H6. right. right. apply H4.
-      omega.
+      lia.
       unfold suci in H4. apply zip_in in H4. destruct H4.
-      apply repeat_spec in H7. subst. omega.
+      apply repeat_spec in H7. subst. lia.
     + specialize (IHvalid vs j v0). destruct IHvalid. reflexivity.
       split. inversion H4. assumption. intros. rewrite H1 in H6.
-      destruct H6. inversion H6; subst. omega.
+      destruct H6. inversion H6; subst. lia.
       inversion H4; subst. inversion H10; subst.
-      assert (d' <= j + 1)%Z. eapply H5. right. right. apply H6. omega.
+      assert (d' <= j + 1)%Z. eapply H5. right. right. apply H6. lia.
 Qed. 
 
 (** Reachability **)
@@ -1152,7 +1152,7 @@ Proof.
   - exists (start g v'). split. constructor. assumption. simpl. left. reflexivity. 
   - rename v'0 into n. 
     assert (exists s : state, valid s g v /\ In n (map fst (get_queue s))). eapply H.
-    assert (length l0 < S(length l0)) by omega. simpl. apply H3. assumption.
+    assert (length l0 < S(length l0)) by lia. simpl. apply H3. assumption.
     destruct H3 as [s]. destruct H3. 
     assert (exists sd, done sd = true /\ bfs_multi s sd). exists (bfs_tail s).
     split. apply bfs_tail_done. apply bfs_tail_multi. destruct H5 as [sd]. destruct H5.
@@ -1435,12 +1435,12 @@ Proof.
     destruct H1. subst. pose proof (queue_structure _ _ _ v0 m vs H) .
     assert (get_queue (g0, (v0, m) :: vs, d) = (v0, m) :: vs) by reflexivity. specialize (H1 H5); clear H5.
     destruct H1. simpl in H1. apply Sorted_StronglySorted in H1. inversion H1; subst.
-    rewrite Forall_forall in H9. apply H9. assumption. unfold Relations_1.Transitive. intros. omega. 
+    rewrite Forall_forall in H9. apply H9. assumption. unfold Relations_1.Transitive. intros. lia. 
     destruct H1.  
     rewrite in_map_iff in H2. destruct H2. destruct x. simpl in *. destruct H2. subst.  
     rewrite (suci_def n0 n _ c v0 g0 g' H4) in H5. destruct H5. subst.
-    destruct H1. assert ( (m<=j)%Z). apply IHvalid. assumption. left. reflexivity. omega.
-    destruct H1. subst. omega. destruct H1.
+    destruct H1. assert ( (m<=j)%Z). apply IHvalid. assumption. left. reflexivity. lia.
+    destruct H1. subst. lia. destruct H1.
   - apply IHvalid. assumption. right. assumption.
 Qed.
 
@@ -1484,7 +1484,7 @@ Proof.
     rewrite find_dist_in in D'.
     pose proof (dist_upper_bound _ _ _ _ _ H D'). rewrite D in H2.
     rewrite Nat2Z.id in H2. simpl in H2.
-    rewrite Nat.leb_le in H2. assert (n = n' + 1 \/ n < n' + 1) by omega.
+    rewrite Nat.leb_le in H2. assert (n = n' + 1 \/ n < n' + 1) by lia.
     destruct H3. subst. reflexivity. clear H2.
     (*It cannot be the start node*)
     destruct (N.eq_dec v v'). subst. unfold distance in D. apply distance_some in D. destruct D as [l].
@@ -1494,7 +1494,7 @@ Proof.
     pose proof (start_0_dist _ _ _ H).
     assert (In (v', 0%Z) (get_dists s)). apply H5. intro. rewrite H6 in D'. destruct D'.
     assert (Z.of_nat n' = 0%Z). eapply NoDup_pairs. apply   (no_dups_output _ _ _ H).
-    apply D'. assumption. assert (n' = 0) by omega. subst. omega. assumption. 
+    apply D'. assumption. assert (n' = 0) by lia. subst. lia. assumption. 
     (*Get predecessor on shortest path*)
     assert (P := D). unfold distance in P. apply distance_some in P. destruct P as [l].
     destruct_all. assert (S:=H2). unfold shortest_path in H2. destruct_all.
@@ -1506,12 +1506,12 @@ Proof.
     assert (nw + 1 = length (v' :: l0)). { (*idea, since lw is sp from v -> w, we know that
     length l0 >= length lw, if greater, then can have shorter path to v, so must be equal, this proves claim*)
     assert (length lw <= length l0). { unfold shortest_path in H8. destruct_all.
-    assert (length lw <= length l0 \/ length l0 < length lw) by omega. destruct H11. assumption.
-    apply H10 in H11. contradiction. } assert (length lw < length l0 \/ length lw = length l0) by omega.
+    assert (length lw <= length l0 \/ length l0 < length lw) by lia. destruct H11. assumption.
+    apply H10 in H11. contradiction. } assert (length lw < length l0 \/ length lw = length l0) by lia.
     destruct H11. assert (path' g v v' (v' :: lw)). eapply p_multi. unfold shortest_path in H8.
-    apply H8. assumption. exfalso. apply (H5 (v' :: lw)). simpl. omega. assumption. subst. 
-    simpl. rewrite H11. omega. } rewrite <- H10. 
-    assert (dist_plus_one s w = Some nw). apply IHn. omega. apply edges_valid in H7. destruct H7. assumption.
+    apply H8. assumption. exfalso. apply (H5 (v' :: lw)). simpl. lia. assumption. subst. 
+    simpl. rewrite H11. lia. } rewrite <- H10. 
+    assert (dist_plus_one s w = Some nw). apply IHn. lia. apply edges_valid in H7. destruct H7. assumption.
     assumption. unfold dist_plus_one in H11. destruct (find_dist s w) eqn : F. 2 : { inversion H11. }
     inversion H11; subst. rewrite find_dist_in in F.
     (*we know that the predecessor has distance 1 less and is thus in the distances correctly. We now
@@ -1520,22 +1520,22 @@ Proof.
     destruct H9 as [g']. destruct H9. destruct H12. destruct H14. destruct H15. 
     destruct H16 as [l2]. destruct H14. destruct H14. 
     (*first case, v' is already finished *)
-    assert (L: n < n'). { assert (length l0 = length lw). simpl in H10; inversion H10. omega.
-    rewrite H18 in H3. rewrite <- H18 in H3. omega. }
+    assert (L: n < n'). { assert (length l0 = length lw). simpl in H10; inversion H10. lia.
+    rewrite H18 in H3. rewrite <- H18 in H3. lia. }
     destruct (In_dec N.eq_dec v' (map fst (get_dists sw))).
     rewrite H16 in i. rewrite map_app in i. apply in_app_or in i. destruct i.
     rewrite in_map_iff in H18. destruct H18. destruct x0. simpl in H18. destruct H18; subst.
     pose proof (dists_sorted _ _ _ H9). rewrite H16 in H18. rewrite map_app in H18. 
     simpl in H18. epose proof (sort_app (map snd l2) (Z.of_nat n :: nil) Z.le H18).
-    assert (Relations_1.Transitive Z.le). unfold Relations_1.Transitive. intros; omega.
+    assert (Relations_1.Transitive Z.le). unfold Relations_1.Transitive. intros; lia.
     specialize (H20 H21); clear H21. specialize (H20 i (Z.of_nat n)).
     assert (i <= Z.of_nat n)%Z.  apply H20. rewrite in_map_iff. exists (v', i).
     split. reflexivity. assumption. simpl. left. reflexivity. clear H20.
     pose proof (no_dups_output _ _ _ H). epose proof (NoDup_pairs _ v' i (Z.of_nat n') H20).
     assert (i = Z.of_nat n'). apply H22. eapply output_preserved_strong.
     apply H9. assumption. rewrite H16. solve_in. assumption. subst.
-     omega. 
-    simpl in H18. destruct H18. subst. exfalso. apply (H5 l0). simpl. omega. assumption. destruct H18.
+     lia. 
+    simpl in H18. destruct H18. subst. exfalso. apply (H5 l0). simpl. lia. assumption. destruct H18.
     (* Now we know that v' has not been finished already. Now we need to see if it was already in
         the queue or not*)
     (*Next case: v' not already done, but it is already on the queue*)
@@ -1572,7 +1572,7 @@ Proof.
     clear H26. clear H25. clear H24. destruct l''. rewrite H14 in H19.
     pose proof ( app_inj_tail  (x ++ x0) l' (n2, (Z.of_nat n + 1)%Z) (v', i)).
     assert (x ++ x0 = l' /\ (n2, (Z.of_nat n + 1)%Z) = (v', i)). apply H23. rewrite <- app_assoc.
-    apply H19. clear H23. destruct H24. inversion H24; subst. omega.
+    apply H19. clear H23. destruct H24. inversion H24; subst. lia.
     remember (p :: l'') as l'''. assert (l''' <> nil). subst. intro. inversion H23.
     pose proof (exists_last H23). destruct H24. destruct s0. rewrite e0 in H19.
     rewrite H14 in H19. destruct x2.
@@ -1581,13 +1581,13 @@ Proof.
     rewrite <- app_assoc. rewrite H19. rewrite <- app_assoc. simpl. reflexivity. clear H24.
     destruct H25. inversion H25; subst. rewrite app_assoc in H14. rewrite H24 in H14.
     rewrite H14 in H22. rewrite map_app in H22. eapply sort_app in H22.
-    apply H22. unfold Relations_1.Transitive. intros. omega. rewrite map_app.
+    apply H22. unfold Relations_1.Transitive. intros. lia. rewrite map_app.
     simpl. solve_in. simpl. left. reflexivity. }
     pose proof (first_queue_in_dists _ _ _ _ _ _ _ _ H9 H H19 H20 n1 H0).
     assert (i = Z.of_nat n'). eapply NoDup_pairs. eapply no_dups_output.
     apply H. apply H24. assumption. subst.
-    assert (n' <= n + 1). omega. assert (n' < n + 1 \/ n' = n + 1) by omega.
-    destruct H26. omega. subst. reflexivity. apply H.
+    assert (n' <= n + 1). lia. assert (n' < n + 1 \/ n' = n + 1) by lia.
+    destruct H26. lia. subst. reflexivity. apply H.
     (*The hard part is over! The rest of the cases are basically just showing that None cases give contradictions*)
     unfold distance in DW. rewrite distance_none in DW. exfalso.
     apply (DW l0). assumption. apply H. rewrite find_dist_not in D'.
@@ -1626,7 +1626,7 @@ unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size. 
 Defined.
 Next Obligation.
 unfold bf_measure_list. apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold list_length_lt.
-simpl. omega.
+simpl. lia.
 Defined.
 
 
@@ -1675,14 +1675,14 @@ Proof.
         reflexivity. unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size.
         symmetry. apply M. reflexivity.
       * erewrite IH. reflexivity. unfold bf_measure_list. apply lex2. unfold natNodes_eq.
-        symmetry. eapply match_none_size. apply M. unfold list_length_lt. simpl. omega. reflexivity.
+        symmetry. eapply match_none_size. apply M. unfold list_length_lt. simpl. lia. reflexivity.
   - eapply well_founded_bf_measure_list.
   - unfold recurses_on. intros. unfold uncurry. destruct x. destruct l eqn : ?. reflexivity. 
     destruct (isEmpty g1) eqn : ?. reflexivity. simpl. destruct p. 
     destruct (match_ n g1) eqn : ?. destruct m. rewrite H0. reflexivity. apply I.
     unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size. symmetry. apply Heqd.
     rewrite H0. reflexivity. apply I. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size.
-    apply Heqd. unfold list_length_lt. simpl. omega.
+    apply Heqd. unfold list_length_lt. simpl. lia.
   - apply I.
 Qed. 
 
@@ -1703,7 +1703,7 @@ Proof.
         unfold natNodes_lt. eapply match_decr_size. symmetry. inversion Heqx; subst. apply M.
         destruct x. inversion Heqx; subst. simpl. reflexivity.
       * erewrite H. reflexivity. unfold bf_measure_list.  apply lex2.
-        unfold natNodes_eq. symmetry. eapply match_none_size. apply M. unfold list_length_lt. simpl. omega.
+        unfold natNodes_eq. symmetry. eapply match_none_size. apply M. unfold list_length_lt. simpl. lia.
         simpl. reflexivity.
 Qed. 
 
@@ -1817,7 +1817,7 @@ unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size. 
 Defined.
 Next Obligation.
 unfold bf_measure_list. apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold list_length_lt.
-simpl. omega.
+simpl. lia.
 Defined.
 
 Definition expand_bfsnInternal' := 
@@ -1858,12 +1858,12 @@ Proof.
   - unfold bfs_two. apply WF_lex.
     + apply f_nat_lt_wf.
     + unfold well_founded. intros. apply Acc_intro. intros. destruct H.
-    + unfold Transitive. intros. omega.
-    + intros. unfold queue_length_lt in *. destruct_all. unfold list_length_lt in *. omega.
-    + unfold Symmetric. intros. omega.
-  - unfold Transitive. unfold natNodes_eq. intros. omega.
-  - intros. unfold natNodes_eq in *. unfold natNodes_lt in *. destruct_all. omega.
-  - unfold Symmetric. intros. unfold natNodes_eq in *. omega.
+    + unfold Transitive. intros. lia.
+    + intros. unfold queue_length_lt in *. destruct_all. unfold list_length_lt in *. lia.
+    + unfold Symmetric. intros. lia.
+  - unfold Transitive. unfold natNodes_eq. intros. lia.
+  - intros. unfold natNodes_eq in *. unfold natNodes_lt in *. destruct_all. lia.
+  - unfold Symmetric. intros. unfold natNodes_eq in *. lia.
 Qed.
 
 Lemma bfsnInternal_equiv: forall q g f,
@@ -1890,7 +1890,7 @@ Proof.
         rewrite toList_queuePutList . reflexivity.
       * unfold bfsnInternal in IH. unfold deferredFix3 in IH. unfold curry in IH. unfold deferredFix2 in IH.
         unfold curry in IH. erewrite IH. reflexivity. apply lex2. unfold natNodes_eq. symmetry. 
-        eapply match_none_size. apply M. unfold list_length_lt. simpl. omega. reflexivity.
+        eapply match_none_size. apply M. unfold list_length_lt. simpl. lia. reflexivity.
         reflexivity.
   - apply wf_bfs_three.
   - unfold recurses_on. intros. unfold uncurry. destruct x. destruct p. destruct (queueGet q0) eqn : Q'.
@@ -1902,7 +1902,7 @@ Proof.
     apply lex1. unfold queue_length_lt. destruct (toList _ q0) eqn : L'.
     rewrite <- toList_queueEmpty in L'. rewrite L' in QE'. inversion QE'.
     pose proof (toList_queueGet _ _ _ _ L'). rewrite Q' in H1. simpl in H1. destruct H1. subst.
-    unfold list_length_lt. simpl. omega.
+    unfold list_length_lt. simpl. lia.
   - apply I.
 Qed.
 
@@ -1928,7 +1928,7 @@ Proof.
       apply length_equiv . destruct c0. destruct p. destruct p. simpl. apply match_context in M.
       destruct_all. subst. reflexivity.
     + erewrite H0. reflexivity. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size.
-      apply M. unfold list_length_lt. simpl. omega. reflexivity. reflexivity.
+      apply M. unfold list_length_lt. simpl. lia. reflexivity. reflexivity.
 Qed.
 End Func.
 
@@ -1971,7 +1971,7 @@ unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size. 
 Defined.
 Next Obligation.
 unfold bf_measure_list. apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold list_length_lt.
-simpl. omega.
+simpl. lia.
 Defined.
 
 Definition expand_bf' := 
@@ -2028,7 +2028,7 @@ Proof.
       rewrite toList_queuePutList . reflexivity.
     + unfold bf in IH. unfold deferredFix2 in IH. unfold curry in IH. erewrite IH. reflexivity.
       apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M. unfold list_length_lt.
-      simpl. omega. reflexivity. reflexivity.
+      simpl. lia. reflexivity. reflexivity.
   - apply well_founded_bf_measure_queue.
   - unfold recurses_on. intros. unfold uncurry. destruct x. destruct (queueEmpty q0) eqn : QE. simpl.
     reflexivity. simpl. destruct (isEmpty g1); simpl; try(reflexivity). destruct (queueGet q0) eqn : Q''.
@@ -2038,7 +2038,7 @@ Proof.
     apply M'. unfold queue_length_lt. destruct (toList _ q0) eqn : L. rewrite <- toList_queueEmpty in L.
     rewrite L in QE. inversion QE.
     pose proof (toList_queueGet _ _ _ _ L). rewrite Q'' in H1; simpl in H1; destruct H1; subst.
-    unfold list_length_lt. simpl. omega.
+    unfold list_length_lt. simpl. lia.
   - auto.
 Qed.
 
@@ -2190,7 +2190,7 @@ unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size. 
 Defined.
 Next Obligation.
 unfold bf_measure_list. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply H. unfold list_length_lt.
-simpl. omega.
+simpl. lia.
 Defined.
 
 Definition expand_bf_tail := 
@@ -2250,7 +2250,7 @@ Proof.
       * eapply multi_step. apply bf_skip. assumption. apply M. eapply H. unfold bf_measure_list.
         apply lex2. unfold natNodes_eq. assert (g = g0) by (eapply match_remain_none; apply M).
         subst. eapply match_none_size. simpl.  apply M. 
-        unfold list_length_lt. simpl. assert (length l < S(length l)) by omega. apply H0. simpl. 
+        unfold list_length_lt. simpl. assert (length l < S(length l)) by lia. apply H0. simpl. 
         assert (g = g0) by (eapply match_remain_none; apply M). subst. reflexivity.
 Qed.
 
@@ -2273,7 +2273,7 @@ Proof.
         intro. simpl in H1. apply in_app_or in H1. destruct H1. apply H0. right. assumption.
         rewrite in_map_iff in H1. destruct_all. inversion H1.
       * erewrite H. reflexivity. unfold bf_measure_list.  apply lex2.
-        unfold natNodes_eq. symmetry. eapply match_none_size. apply M. unfold list_length_lt. simpl. omega.
+        unfold natNodes_eq. symmetry. eapply match_none_size. apply M. unfold list_length_lt. simpl. lia.
         simpl. reflexivity. simpl in *. intro. apply H0. right. assumption.
 Qed.
 
@@ -2315,7 +2315,7 @@ Lemma zip_fst_map: forall {A B} (l: list A) (l' : list B) l'',
 Proof. 
   intros. generalize dependent l'. revert l''. induction l. intros.
   simpl. reflexivity. intros.
-  simpl. destruct l'. simpl in H. omega. simpl in H. inversion H. eapply IHl in H1.
+  simpl. destruct l'. simpl in H. lia. simpl in H. inversion H. eapply IHl in H1.
   simpl. rewrite H1. reflexivity.
 Qed. 
   
@@ -2343,7 +2343,7 @@ Proof.
      rewrite repeat_length. rewrite length_equiv. reflexivity.
     rewrite H0. reflexivity.
   - erewrite IH. reflexivity. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M.
-    unfold list_length_lt. simpl. omega. apply H2. reflexivity.
+    unfold list_length_lt. simpl. lia. apply H2. reflexivity.
 Qed.
 
 Lemma bft_vertex_order: forall (g: gr a b) v,
@@ -2378,7 +2378,7 @@ Proof.
     rewrite repeat_length. apply length_equiv. rewrite map_app. rewrite map_app. rewrite H4.
     assert ( map snd (suci c (List.length (n :: l) - 1 + 1)%Z) = 
     map (fun x : list Node => (List.length x - 1)%Z) (map (fun x0 : Node => x0 :: n :: l) (suc' c))). {
-    unfold suci. assert ((List.length (n :: l) - 1 + 1)%Z = (List.length (n :: l))) by omega. rewrite H2. clear H2.
+    unfold suci. assert ((List.length (n :: l) - 1 + 1)%Z = (List.length (n :: l))) by lia. rewrite H2. clear H2.
     simpl. rewrite <- length_equiv. assert (forall {A} (l: list A) l' ,
     map snd (List.zip l (repeat (List.length l') (length l))) =
     map (fun x => ((List.length x - 1)%Z)) (map (fun x => x :: l') l)). { intros. generalize dependent l'.
@@ -2386,14 +2386,14 @@ Proof.
     assert (forall {B} (x : B) l, List.length (x :: l) = (List.length l + 1)%Z). { intros.
     assert (Z.to_nat (List.length (x :: l1)) = Z.to_nat (List.length l1 + 1)). rewrite <- length_equiv.
     rewrite Z2Nat.inj_add. rewrite <- length_equiv.  assert (Z.to_nat 1%Z = 1). unfold Z.to_nat. unfold Pos.to_nat.
-    unfold Pos.iter_op. reflexivity. rewrite H2. simpl. omega. unfold List.length. 
-    rewrite len_acc_def. simpl. omega. omega. 
+    unfold Pos.iter_op. reflexivity. rewrite H2. simpl. lia. unfold List.length. 
+    rewrite len_acc_def. simpl. lia. lia. 
     apply Z2Nat.inj. unfold List.length. rewrite len_acc_def. simpl. apply Zle_0_pos .
-    assert (0 <= List.length l1)%Z. unfold List.length. rewrite len_acc_def. simpl. omega.
-    omega. apply H2. } rewrite H2. assert ((List.length l' + 1 - 1)%Z = List.length l') by omega. rewrite H3.
+    assert (0 <= List.length l1)%Z. unfold List.length. rewrite len_acc_def. simpl. lia.
+    lia. apply H2. } rewrite H2. assert ((List.length l' + 1 - 1)%Z = List.length l') by lia. rewrite H3.
     reflexivity. } apply H2. } rewrite H2. reflexivity. 
   - rewrite M. erewrite IH. reflexivity. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size.
-    apply M. unfold list_length_lt. simpl. omega. intro. apply H. right. assumption.
+    apply M. unfold list_length_lt. simpl. lia. intro. apply H. right. assumption.
     apply H5. apply H4. reflexivity.
 Qed.
 
@@ -2424,7 +2424,7 @@ Proof.
   simpl. reflexivity. rewrite H2. clear H2.
   assert (length (u :: p) = (1 + length p)). simpl. reflexivity. rewrite H2. clear H2.
   rewrite Nat2Z.inj_add. assert (Z.of_nat 1 = 1%Z). simpl. reflexivity. rewrite H2.
-  assert (forall z1 z2, (z1 + z2 - z1)%Z = z2%Z). intros. omega. rewrite H4. reflexivity. }
+  assert (forall z1 z2, (z1 + z2 - z1)%Z = z2%Z). intros. lia. rewrite H4. reflexivity. }
   assert (V': valid (bfs_tail (start g v)) g v). destruct (vIn g v) eqn : V.
   eapply multi_valid. apply v_start. apply V. apply bfs_tail_multi. 
   apply bf_invalid_v in V. rewrite V in H. inversion H.
@@ -2442,15 +2442,15 @@ Proof.
       destruct_all.
       eapply shortest_path_of_length. apply H5. apply bft_paths_valid.
       assumption. rewrite H8.
-      assert (forall z1 z2 z3, (z1 - z2)%Z = z3%Z -> z1 = (z3 + z2)%Z). intros. omega.
+      assert (forall z1 z2 z3, (z1 - z2)%Z = z3%Z -> z1 = (z3 + z2)%Z). intros. lia.
       assert (List.length (u :: p) = (Z.of_nat n + 1)%Z). apply H9. assumption.
       rewrite length_equiv. rewrite H10. rewrite Z2Nat.inj_add. rewrite Nat2Z.id.
-      simpl. unfold Pos.to_nat. simpl. reflexivity. omega. omega. apply V'.
+      simpl. unfold Pos.to_nat. simpl. reflexivity. lia. lia. apply V'.
     + symmetry in H5. pose proof (output_iff_reachable (bfs_tail (start g v)) g v u).
       unfold distance in H5. assert (exists l, path' g v u l). apply H6.
       assumption. apply bfs_tail_done. rewrite in_map_iff. exists (u, (List.length (u :: p) - 1)%Z).
       simpl. solve_assume. rewrite distance_none in H5. destruct_all. exfalso; apply (H5 x); assumption.
-  - rewrite H2. rewrite Nat2Z.id. simpl. omega.
+  - rewrite H2. rewrite Nat2Z.id. simpl. lia.
 Qed. 
 
 End Bft. 
@@ -2477,7 +2477,7 @@ unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size. 
 Defined.
 Next Obligation.
 unfold bf_measure_list. apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold list_length_lt.
-simpl. omega.
+simpl. lia.
 Defined.
 
 Definition expand_lbf' :=
@@ -2542,7 +2542,7 @@ Proof.
       rewrite toList_queuePutList . reflexivity.
     + unfold lbf in IH. unfold deferredFix2 in IH. unfold curry in IH. erewrite IH. reflexivity.
       apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M. unfold list_length_lt.
-      simpl. omega. reflexivity. reflexivity.
+      simpl. lia. reflexivity. reflexivity.
   - apply well_founded_bf_measure_queue.
   - unfold recurses_on. intros. unfold uncurry. destruct x. destruct (queueEmpty q0) eqn : QE. simpl.
     reflexivity. simpl. destruct (isEmpty g1); simpl; try(reflexivity). destruct (queueGet q0) eqn : Q''.
@@ -2553,7 +2553,7 @@ Proof.
     apply M'. unfold queue_length_lt. destruct (toList _ q0) eqn : L. rewrite <- toList_queueEmpty in L.
     rewrite L in QE. inversion QE.
     pose proof (toList_queueGet _ _ _ _ L). rewrite Q'' in H1; simpl in H1; destruct H1; subst.
-    unfold list_length_lt. simpl. omega.
+    unfold list_length_lt. simpl. lia.
   - auto.
 Qed.
 
@@ -2596,7 +2596,7 @@ Proof.
     unfold Base.map. unfold Graph.flip2. unfold Tuple.snd. induction (context4l' c).
     simpl. reflexivity. simpl. rewrite IHa0. destruct a0. simpl. reflexivity. rewrite H0. reflexivity.
   - erewrite IH. reflexivity. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size.
-    apply M. unfold list_length_lt. simpl. omega. intro. apply H. simpl. right. assumption.
+    apply M. unfold list_length_lt. simpl. lia. intro. apply H. simpl. right. assumption.
     reflexivity. reflexivity.
 Qed.
 
@@ -2642,7 +2642,7 @@ unfold bf_measure_list. apply lex1. unfold natNodes_lt. eapply match_decr_size. 
 Defined.
 Next Obligation.
 unfold bf_measure_list. apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold list_length_lt.
-simpl. omega.
+simpl. lia.
 Defined.
 
 Definition expand_bfenInternal' := 
@@ -2691,7 +2691,7 @@ Proof.
       unfold natNodes_lt. eapply match_decr_size. symmetry. apply M.
     + unfold bfenInternal in IH. unfold deferredFix2 in IH. unfold curry in IH. erewrite IH. reflexivity.
       2: { reflexivity. } apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M.
-      unfold queue_length_lt. rewrite Q. unfold list_length_lt. simpl. omega.
+      unfold queue_length_lt. rewrite Q. unfold list_length_lt. simpl. lia.
   - apply well_founded_bf_measure_queue.
   - unfold recurses_on. intros. unfold uncurry. destruct x. destruct (queueGet q0) eqn : Q.
     destruct e. destruct (queueEmpty q0) eqn : E. simpl. reflexivity. destruct (isEmpty g1) eqn : G.
@@ -2700,7 +2700,7 @@ Proof.
     symmetry. apply M'. apply H0. auto. apply lex2. unfold natNodes_eq. symmetry.
     eapply match_none_size. apply M'. unfold queue_length_lt. unfold list_length_lt.
     destruct (toList _ q0) eqn : L. rewrite <- toList_queueEmpty in L. rewrite L in E. inversion E.
-    pose proof (toList_queueGet _ _ _ _ L). rewrite Q in H1. simpl in H1. destruct H1. destruct e. inversion H1; subst. simpl. omega.
+    pose proof (toList_queueGet _ _ _ _ L). rewrite Q in H1. simpl in H1. destruct H1. destruct e. inversion H1; subst. simpl. lia.
   - auto.
 Qed.
 
@@ -2742,7 +2742,7 @@ Proof.
     reflexivity. rewrite IHl0. destruct a3. simpl. eapply match_context in M. destruct M. subst. reflexivity.
     rewrite H1. reflexivity.
   - erewrite IH. reflexivity. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M.
-    unfold list_length_lt. simpl. omega. 3: { reflexivity. } intros. apply H. right. assumption.
+    unfold list_length_lt. simpl. lia. 3: { reflexivity. } intros. apply H. right. assumption.
     assumption.
 Qed.
 

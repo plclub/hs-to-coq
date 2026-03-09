@@ -43,6 +43,13 @@ cd examples && ./boot.sh
 make -C examples/containers          # lib + theories
 make -C examples/containers/lib      # just the generated library
 make -C examples/containers/theories # just the proofs (depends on lib)
+
+# Build GHC core example (depends on base, base-thy, containers)
+make -C examples/ghc clean && make -C examples/ghc  # regenerate lib/*.v and compile
+cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j  # theories
+
+# Regenerate GHC lib/*.v from GHC 9.10 source (needs ghc submodule + xutils-dev for lndir)
+make -C examples/ghc clean && make -C examples/ghc
 ```
 
 Use relative path instead of absolute path when `cd` to a directory.
@@ -95,6 +102,12 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 - Each Coq directory uses `_CoqProject` + `coq_makefile` to generate its Makefile
 - `.h2ci` files store interface information for cross-module translation
 
+### Stale .vo recovery
+If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the full chain: `base` → `base-thy` → `examples/containers/lib` → `examples/containers/theories` → `examples/ghc/lib` → `examples/ghc/theories`. Each needs `make clean && make -j`.
+
+### Axiomatized lib functions
+When lib/*.v functions are `Axiom`, theories/*.v proofs that unfold them must be `Admitted`. Check with `grep "^Axiom" lib/Module.v` before attempting computation-based proofs. See "GHC example" section for the full list of axiomatized functions.
+
 ## Test Structure
 
 - `examples/tests/` — Unit tests: each `.hs` file is translated to `.v` and type-checked with `coqc`. Tests categorized as `PASS`, `TODO_PASS` (known failures), `TODO_TRANSLATE`.
@@ -103,7 +116,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 
 ## CI (`.github/workflows/hs-to-coq.yml`)
 
-Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker), `tests` (haskell-actions + opam for Coq), `test-translation` (haskell:9.10.3 Docker, verifies base/ regeneration matches). Sets `LANG=C.utf8` globally for Unicode support.
+Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker, builds base+containers+ghc lib and theories), `tests` (haskell-actions + opam for Coq), `test-translation` (haskell:9.10.3 Docker, verifies base/containers/ghc regeneration matches). Sets `LANG=C.utf8` globally for Unicode support.
 
 **Container job gotcha**: Container jobs use `--allow-different-user` for stack commands (ownership mismatch between host-mounted workspace and container user). For docker-coq-action, use `before_script` with `sudo chown -R coq:coq .` (not `custom_script`, which bypasses permission setup). `common.mk` already includes `--allow-different-user` in the `HS_TO_COQ` variable.
 
@@ -135,15 +148,13 @@ Previously broken modules now regenerable:
 ### Deriving pipeline (GHC 9.10)
 GHC's `load LoadAllTargets` processes standalone `deriving instance` declarations during typechecking — before `addDerivedInstances` runs. If any fail (e.g. types from skipped modules), `load` returns `Failed`. The fallback in `ProcessFiles.hs` strips all standalone deriving decls from the **parsed** AST, then typechecks, then uses `addDerivedInstances` to re-derive the ones we want.
 
-### Locale for hs-to-coq
-Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before running hs-to-coq or the output will fail with encoding errors on systems with POSIX locale.
-
 ### Common edit patterns for GHC 9.10
 - **`skip` vs `skip method`**: Never use `skip Mod.func` for class methods — use `skip method Mod.Class func` only. Using both causes "skipping a binding" errors.
 - **`SigPat` in GHC 9.10**: `foldl'`/`foldr'`/`foldMap'` default implementations use `SigPat` which hs-to-coq doesn't support. Skip via `skip method`.
 - **mconcat `foldl' (<>) mempty`**: GHC 9.10 generates this but it creates circular deps. Fix: `redefine` to use `foldr mappend mempty` + `order mempty mconcat`
 - **`GHC.Prim.coerce` with abstract types**: Coq can't resolve `Coercible` for newtypes with abstract type vars. Fix: replace with explicit pattern matching
 - **`rightSection`**: GHC 9.10 desugars `(op x)` to `rightSection op x`. Defined in `base/GHC/Prim.v`. Operators with invalid Coq chars (like `$`) are rendered as z-encoded names (e.g. `op_zd__`) instead of notation form. Proofs involving `rightSection` need `unfold GHC.Prim.rightSection` before `lia`
+- **`<*` operator ambiguity**: `GHC.Base.<*` parses as `GHC.Base.<` followed by `*`. Excluded from `qualidHasValidCoqOp` in `Gallina/Util.hs` — renders as `op_zlzt__` instead. Definition added via `add` directive in base-src edits.
 - **`foldMap'` in Foldable**: GHC 9.10 added this to the Foldable class. Old restored .v files need the field added manually
 
 ### Edits system gotchas
@@ -152,30 +163,50 @@ Generated `.v` files contain Unicode (e.g. `∘`). Set `LANG=C.utf8` before runn
 - **`order` with `redefine`**: When `redefine` introduces definition dependencies, add explicit `order` directives to ensure correct output ordering.
 - **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
 
+### GHC example (examples/ghc/)
+Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories/*.v files compile (many proofs Admitted). `make clean && make` regenerates lib/ from scratch (removes entire lib/ dir, then rebuilds via hs-to-coq + lndir for manual files). Theories built separately: `cd theories && coq_makefile -f _CoqProject -o Makefile && make -j`. Key GHC 9.10 changes affecting theories:
+- `Alt` type: tuple → `Mk_Alt` constructor. Intro patterns change from `[[dc pats] rhs]` to `[dc pats rhs]`.
+- `Mk_Id` has 7 fields (added `varMult : Mult` as 4th field). Pattern matches need extra wildcard.
+- `realUnique` type: `N` → `Unique`. Breaks proofs using `N.eqb_neq`, `N.compare_refl`.
+- `lookupIdSubst`: no longer takes `String` doc parameter.
+- `mkVarApps`: uses `foldl'` not `foldl`. Use `hs_coq_foldl'_list`.
+- State monad: bare function type (`s -> (a * s)`) not newtype wrapper. `StateLogic.v` rewritten.
+- `substExpr`, `cseExpr`, `cseBind`, `try_for_cse`: axiomatized. Computation proofs Admitted.
+- GoDom strict positivity: use `alt_rhs` projection function, not pattern-match lambda.
+- `Var` has single constructor (`Mk_Id` only, no `TyVar`).
+- `cse_bind` has 5 args (added `env_rhs` parameter).
+- Makefile uses explicit GHC 9.10 path mappings (e.g., `SRCPATH_Var = ghc/compiler/GHC/Types/Var.hs`).
+- `manual/` files (~60) are symlinked into `lib/` via `lndir`. Edit `manual/*.v` directly (not `lib/*.v` symlinks).
+- `manual/AxiomatizedTypes.v`: All instances must be `#[global]` — downstream modules need Default/Eq/Ord resolution.
+- `axiomatize module OccurAnal`: Fully axiomatized. Needs `preamble.v` (Require Import Outputable, String scope) and `midamble.v` (Default instances for types defined after auto-generated defaults).
+- Midamble placement: inserted AFTER type declarations AND auto-generated Default instances, but BEFORE value declarations. Can't provide instances needed by auto-generated Defaults — use `skip` + midamble instead.
+- Makefile sed post-processing: BasicTypes + Literal (`#[global]` Default instances), UniqFM (phantom kind params), Core.v (mutual type ball fixes). Check Makefile when adding new post-processing.
+- `Subst` type axiomatized (in `GHC.Core.TyCo.Subst`): theories can't pattern-match `Mk_Subst`. Use `getSubstInScopeVars` accessor or Admit.
+- `exitifyRec`, `floatExpr`/`floatBind`/`floatRhs`, `fiExpr`/`fiBinds`/`fiRhs`: all axiomatized. Proofs using `cbv beta delta [func]` must be Admitted.
+- `Id.idJoinPointHood`: skipped (uses `Outputable.JoinPointHood`). Axioms/lemmas referencing it must be Admitted or removed.
+
 ### Containers submodule
-Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI. The Makefile's `clean` target preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything. IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList` all use native v0.7 definitions with rewritten proofs. Map `fromList` proofs are `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing issue). `hs-spec/IntSetProperties.v` is auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps). The manual `Test/QuickCheck/Property.v` provides z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
+Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI.
+- Makefile `clean` preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything.
+- IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList`: native v0.7 definitions with rewritten proofs.
+- Map `fromList` proofs: `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing).
+- `hs-spec/IntSetProperties.v`: auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps).
+- `manual/Test/QuickCheck/Property.v`: z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
+
+### Transformers example (examples/transformers/)
+Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../ghc/ghc/libraries/transformers`. Makefile strips MonadTrans quantified superclass constraint via sed post-processing. Uses `skip class` for `Contravariant` and `Foldable1` (not in base).
 
 ### Coq 8.20 compatibility
-- `Program Instance` needs `#[global]` prefix for cross-module visibility
-- `Program Definition` with `#[global]` needs locality before `Program` (i.e., `#[global] Program Definition`, not `Program #[global] Definition`)
+- `#[global]` required: `Program Instance` and `Program Definition` need `#[global]` prefix. Locality goes before `Program` (i.e., `#[global] Program Definition`).
 - Type and constructor cannot share the same name (e.g., `StateT`)
-- `omega` tactic replaced by `lia`; `le_lt_n_Sm` removed (use `lia` instead)
-- `intuition` solves more goals — proof bullet structures may need adjustment
-- `f_solver` may solve different/more goals, changing remaining goal structure
-- `auto` no longer solves `E.eq` reflexivity goals from OrderedType — use explicit `apply E.eq_refl`/`apply E.eq_sym`
-- `zify` handles `Z.of_N (Z.to_N ...)` differently — use `try rewrite Z2N.id` instead of `rewrite Z2N.id`
-- Section `Variable` hypotheses now generate side conditions in `rewrite` that weren't needed before
-- `Require Import` inside sections may not export notations after section ends (e.g., `==>` from Morphisms)
-- Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
-- `Program Definition` obligation ordering may differ (e.g., fst before snd)
-- Bound variable naming in goals may change (e.g., `bm0` → `bm`) — use explicit `with` clauses
+- `omega` → `lia`; `le_lt_n_Sm` removed (use `lia` instead)
+- `intuition`/`f_equal`/`auto` solve more goals — proof bullet structures may break. `auto` no longer resolves `E.eq` goals — use explicit `apply E.eq_refl`.
+- Section `Variable` hypotheses generate side conditions in `rewrite`. `clear -H1 H2` clears section variables — add them to keep list (e.g., `clear -H1 H2 HEqLaws HOrdLaws`).
+- `Program Fixpoint ... := _.` obligations may have all variables pre-introduced (no products to `intros`). Use `match goal with` to find hypotheses.
 - Typeclass resolution may not unfold definition chains (`Key→N→Word`) — add explicit instances
-- `setoid_rewrite` under binders may fail with `UNDEFINED EVARS` — replace with explicit `replace`+`funext` or direct monad law rewrites
-- `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — proofs unfolding Foldable for lists need different unfolding chains
-- `eval unfold f` in sections with implicit args: use `let x := constr:(@f explicit_args) in let rhs := eval unfold f in x` — plain `eval unfold f in f` can't infer implicit params
-- `f_equal` is more aggressive — may fully solve goals that previously required `extensionality` or further tactics, causing "No such goal" errors on dead proof code
-- `Program Fixpoint ... := _.` with `Next Obligation.`: obligations may have all variables pre-introduced (no products to `intros`). The CPS pattern `intros X HX. apply HX. clear HX.` needs replacing with direct `apply HK` using already-in-context hypotheses. Use `match goal with` to find and rename hypotheses robustly.
-- `clear -H1 H2` in sections: only keeps named hypotheses and their transitive dependencies. Section variables like `HEqLaws`/`HOrdLaws` are cleared if no kept hypothesis depends on them. This breaks tactics like `order e` that need them. Fix: `clear -H1 H2 HEqLaws HOrdLaws`.
+- Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
+- `eval unfold f` in sections: use `let x := constr:(@f args) in let rhs := eval unfold f in x`
+- `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — different unfolding chains needed
 
 ## Workflow
 

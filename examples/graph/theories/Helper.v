@@ -3,7 +3,7 @@ Require Import Coq.Lists.List.
 Require Import Coq.Lists.ListDec.
 Require Import Coq.Lists.SetoidList.
 Require Import Coq.Wellfounded.Inverse_Image.
-Require Import Omega.
+Require Import Lia.
 
 
 (*Helper Lemmas and tactics*)
@@ -230,7 +230,7 @@ Proof.
     rewrite HeqS in H0. apply H in H0. destruct_all.
     exists (a :: x0). exists x1.
     split. simpl. rewrite H0. reflexivity. repeat(split; try(assumption)).  intros.
-    simpl in H4. destruct H4. subst. assumption. apply H3. assumption. simpl. omega.
+    simpl in H4. destruct H4. subst. assumption. apply H3. assumption. simpl. lia.
     simpl in H0. inversion H0; subst. exists nil. exists l. split. reflexivity.
     repeat(split; try assumption). intros. inversion H1. inversion H0.
   - destruct H0 as [l1]. destruct H0 as [l2]. destruct_all. destruct l. destruct l1; inversion H0.
@@ -239,11 +239,11 @@ Proof.
     reflexivity. assert (f a = true). apply H3. inversion H0; subst. left. reflexivity. rewrite H4.
     destruct l1. simpl in H0; inversion H0; subst. rewrite H1. 
     destruct (negb true) eqn : N. inversion N. clear N. rewrite H. exists nil. exists l2.
-    split. reflexivity. repeat(split; try assumption). intros. inversion H5. simpl. omega.
+    split. reflexivity. repeat(split; try assumption). intros. inversion H5. simpl. lia.
     assert (f a0 = true). apply H3. inversion H0; subst. right. left. reflexivity. rewrite H5.
     destruct (negb true) eqn : F. inversion F. clear F. rewrite H. inversion H0; subst.
     exists (a2 :: l1). exists l2. split. simpl. reflexivity. simplify'.
-    simpl. omega.
+    simpl. lia.
 Qed.
 
 Definition rev_split_function {A : Type} (f: A -> bool) (l: list A) :=
@@ -278,7 +278,7 @@ Proof.
      + destruct (negb true) eqn : N. inversion N. clear N.
        assert (exists x y, split_function f (a :: t) = Some (x,y)). exists x. exists y. assumption.
        rewrite H in H2. 3 : { apply F. } 3 : { reflexivity. } destruct_all. exists x0. simplify'.
-       simpl. omega.
+       simpl. lia.
      + destruct (negb false) eqn : N. inversion H1; subst. exists y. simplify'.
        inversion N.
   - subst. destruct_all. destruct t. inversion H1. simpl in H1. destruct H1. subst.
@@ -286,7 +286,7 @@ Proof.
     rewrite rewrite_split_function. rewrite H0. 
     destruct (negb (f a)) eqn : N. exists h. exists a. reflexivity. assert (f a = true).
     destruct (f a) eqn : F. reflexivity. inversion N. clear N. 
-    rewrite H. 3 : { apply H3. } 3 : { reflexivity. } exists x. simplify'. simpl. omega.
+    rewrite H. 3 : { apply H3. } 3 : { reflexivity. } exists x. simplify'. simpl. lia.
 Qed.
 
 Lemma rev_split_function_exists: forall {A} (f: A -> bool) h t,
@@ -380,7 +380,7 @@ Lemma zip_spec: forall {A B} (l: list A) (l': list B) x y,
 Proof.
   intros. generalize dependent l'. induction l; intros.
   - simpl in H0. destruct H0.
-  - destruct l'. simpl in H. omega. simpl in H. inversion H.
+  - destruct l'. simpl in H. lia. simpl in H. inversion H.
     simpl in H0. destruct H0. inversion H0; subst.
     exists nil. exists l. exists nil. exists l'. split. reflexivity.
     split. reflexivity. split. reflexivity. assumption.
@@ -397,7 +397,7 @@ Lemma in_zip_map_weak: forall {A B C} (l: list A) (l': list B) x y (f: A -> C) f
 Proof.
   intros. generalize dependent l'. induction l; intros.
   - simpl in H0. inversion H0.
-  - destruct l'. simpl in H. omega.
+  - destruct l'. simpl in H. lia.
     simpl in H. inversion H. simpl in H1. simpl in H0. inversion H1.
     destruct H0. inversion H0; subst. assumption.
     eapply IHl. apply H3. assumption. assumption.
@@ -428,7 +428,7 @@ Lemma in_zip_reverse: forall {A} {B} (l: list A) (l' : list B) x,
 Proof.
   intros. generalize dependent l'. induction l; intros.
   - inversion H0.
-  - simpl in H. destruct l'. simpl in H. omega.
+  - simpl in H. destruct l'. simpl in H. lia.
     simpl in H. inversion H. simpl in H0. destruct H0. subst. exists b. simpl.
     left. reflexivity. specialize (IHl H0 _ H2). destruct_all. exists x0. simpl. right. assumption.
 Qed.
@@ -440,7 +440,7 @@ Lemma in_zip_reverse_snd: forall {A} {B} (l: list A) (l' : list B) x,
 Proof.
   intros. generalize dependent l. induction l'; intros.
   - inversion H0.
-  - simpl in H. destruct l. simpl in H. omega.
+  - simpl in H. destruct l. simpl in H. lia.
     simpl in H. inversion H. simpl in H0. destruct H0. subst. exists a0. simpl.
     left. reflexivity. specialize (IHl' H0 _ H2). destruct_all. exists x0. simpl. right. assumption.
 Qed.
