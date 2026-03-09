@@ -91,6 +91,6 @@ Proof.
   reflexivity.
 Qed.
 
-Hint Rewrite words_nil lines_nil words_cons lines_cons : hs_simpl.
+#[export] Hint Rewrite words_nil lines_nil words_cons lines_cons : hs_simpl.
 
 

@@ -134,17 +134,17 @@ Module OrdTheories(E: OrderedType).
       move=>Hcontra; inversion Hcontra.
   Qed.
 
-  Hint Resolve elt_eqP.
-  Hint Resolve elt_ltP.
-  Hint Resolve elt_gtP.
-  Hint Resolve elt_leP.
-  Hint Resolve elt_geP.
-  Hint Resolve elt_compare_ltP.
-  Hint Resolve elt_compare_lt'P.
-  Hint Resolve elt_compare_gtP.
-  Hint Resolve elt_compare_gt'P.
-  Hint Resolve elt_compare_eqP.
-  Hint Resolve elt_compare_eq'P.
+  #[export] Hint Resolve elt_eqP.
+  #[export] Hint Resolve elt_ltP.
+  #[export] Hint Resolve elt_gtP.
+  #[export] Hint Resolve elt_leP.
+  #[export] Hint Resolve elt_geP.
+  #[export] Hint Resolve elt_compare_ltP.
+  #[export] Hint Resolve elt_compare_lt'P.
+  #[export] Hint Resolve elt_compare_gtP.
+  #[export] Hint Resolve elt_compare_gt'P.
+  #[export] Hint Resolve elt_compare_eqP.
+  #[export] Hint Resolve elt_compare_eq'P.
 
   Lemma elt_eq : forall e1 e2, E.eq e1 e2 <-> e1 GHC.Base.== e2.
   Proof. move=>e1 e2. apply rwP =>//. Qed.
@@ -182,14 +182,14 @@ Module OrdTheories(E: OrderedType).
     apply rwP2 with (b:=eq_comparison (compare e1 e2) Eq) =>//.
   Qed.
 
-  Hint Rewrite <- elt_eq : elt_compare.
-  Hint Rewrite <- elt_lt : elt_compare.
-  Hint Rewrite <- elt_gt : elt_compare.
-  Hint Rewrite <- elt_le : elt_compare.
-  Hint Rewrite <- elt_ge : elt_compare.
-  Hint Rewrite <- elt_compare_lt : elt_compare.
-  Hint Rewrite <- elt_compare_gt : elt_compare.
-  Hint Rewrite <- elt_compare_eq : elt_compare.
+  #[export] Hint Rewrite <- elt_eq : elt_compare.
+  #[export] Hint Rewrite <- elt_lt : elt_compare.
+  #[export] Hint Rewrite <- elt_gt : elt_compare.
+  #[export] Hint Rewrite <- elt_le : elt_compare.
+  #[export] Hint Rewrite <- elt_ge : elt_compare.
+  #[export] Hint Rewrite <- elt_compare_lt : elt_compare.
+  #[export] Hint Rewrite <- elt_compare_gt : elt_compare.
+  #[export] Hint Rewrite <- elt_compare_eq : elt_compare.
 
   Instance EqLaws_elt : EqLaws elt.
   Proof.

@@ -154,9 +154,9 @@ Ltac nonconst_bool_eq_to_iff :=
     not_bool_const b1; not_bool_const b2; rewrite ->eq_iff_eq_true
   end.
 
-Hint Rewrite -> andb_true_iff : bool_to_prop.
-Hint Rewrite -> orb_true_iff  : bool_to_prop.
-Hint Rewrite -> negb_true_iff : bool_to_prop.
+#[export] Hint Rewrite -> andb_true_iff : bool_to_prop.
+#[export] Hint Rewrite -> orb_true_iff  : bool_to_prop.
+#[export] Hint Rewrite -> negb_true_iff : bool_to_prop.
 
 Ltac bool_to_prop :=
   nonconst_bool_eq_to_iff;

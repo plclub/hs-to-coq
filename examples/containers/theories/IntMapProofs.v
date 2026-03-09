@@ -1190,7 +1190,7 @@ Qed.
 
 Lemma empty_WF {a} : WF (empty : IntMap a).
 Proof. now exists (fun _ => None); constructor. Qed.
-Hint Resolve empty_WF.
+#[export] Hint Resolve empty_WF.
 
 
 (** *** Verification of [insert] *)
@@ -1304,7 +1304,7 @@ Helpful lemmas for the proofs of insert functions
 
 Lemma rPrefix_singletonRange e : rPrefix (singletonRange e) = e.
 Proof. unfold rPrefix, singletonRange. rewrite N.shiftl_0_r. auto. Qed.
-Hint Rewrite rPrefix_singletonRange.
+#[export] Hint Rewrite rPrefix_singletonRange.
 
 
  Lemma isSubrangeSingeltons:

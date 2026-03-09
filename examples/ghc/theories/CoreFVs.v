@@ -175,7 +175,7 @@ Proof.
   intro. reflexivity.
 Qed.
 
-Hint Rewrite exprFreeVars_Lit : hs_simpl.
+#[export] Hint Rewrite exprFreeVars_Lit : hs_simpl.
 
 Lemma exprFreeVars_App:
   forall e1 e2,
@@ -202,7 +202,7 @@ Proof.
   apply (filterVarSet_equal RespectsVar_isLocalVar E).
 Qed.
 
-Hint Rewrite exprFreeVars_App : hs_simpl.
+#[export] Hint Rewrite exprFreeVars_App : hs_simpl.
 
 
 Lemma exprFreeVars_mkLams_rev:
@@ -228,7 +228,7 @@ Proof.
   - simpl. unfold mkLams. rewrite hs_coq_foldr_list. reflexivity.
 Qed.
 
-Hint Rewrite exprFreeVars_Lam : hs_simpl.
+#[export] Hint Rewrite exprFreeVars_Lam : hs_simpl.
 
 (* If h0 : Denote vs fv, then specialize h0 and rewrite with the second version. *)
 Ltac denote h0 h5:=
@@ -519,7 +519,7 @@ Proof.
   simpl.
   reflexivity.
 Qed.
-Hint Rewrite exprsFreeVars_nil : hs_simpl.
+#[export] Hint Rewrite exprsFreeVars_nil : hs_simpl.
 
 
 Lemma exprsFreeVars_cons x xs : exprsFreeVars (x :: xs) [=] 
@@ -553,7 +553,7 @@ Proof.
   rewrite unionVarSet_sym.
   reflexivity.
 Qed.
-Hint Rewrite exprsFreeVars_cons : hs_simpl.
+#[export] Hint Rewrite exprsFreeVars_cons : hs_simpl.
 
 
 Lemma subVarSet_exprFreeVars_exprsFreeVars:

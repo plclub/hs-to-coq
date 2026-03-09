@@ -63,19 +63,19 @@ Lemma log2_ones: forall n, 0 < n -> Z.log2 (Z.ones n) = Z.pred n.
 Qed.
 
 Create HintDb nonneg.
-Hint Immediate N2Z.is_nonneg : nonneg.
-Hint Immediate pos_nonneg : nonneg.
-Hint Resolve N.le_0_l : nonneg.
-Hint Resolve Z.log2_nonneg : nonneg.
-Hint Resolve ones_nonneg : nonneg.
-Hint Resolve succ_nonneg : nonneg.
-Hint Resolve <- Z.shiftl_nonneg : nonneg.
-Hint Resolve <- Z.shiftr_nonneg : nonneg.
-Hint Resolve <- Z.land_nonneg : nonneg.
-Hint Resolve Z.pow_nonneg : nonneg.
-Hint Extern 1 (0 <= Z.succ (Z.pred (Z.of_N _))) => rewrite Z.succ_pred : nonneg.
-Hint Resolve <- Z.lxor_nonneg : nonneg.
-Hint Extern 0 => lia : nonneg.
+#[export] Hint Immediate N2Z.is_nonneg : nonneg.
+#[export] Hint Immediate pos_nonneg : nonneg.
+#[export] Hint Resolve N.le_0_l : nonneg.
+#[export] Hint Resolve Z.log2_nonneg : nonneg.
+#[export] Hint Resolve ones_nonneg : nonneg.
+#[export] Hint Resolve succ_nonneg : nonneg.
+#[export] Hint Resolve <- Z.shiftl_nonneg : nonneg.
+#[export] Hint Resolve <- Z.shiftr_nonneg : nonneg.
+#[export] Hint Resolve <- Z.land_nonneg : nonneg.
+#[export] Hint Resolve Z.pow_nonneg : nonneg.
+#[export] Hint Extern 1 (0 <= Z.succ (Z.pred (Z.of_N _))) => rewrite Z.succ_pred : nonneg.
+#[export] Hint Resolve <- Z.lxor_nonneg : nonneg.
+#[export] Hint Extern 0 => lia : nonneg.
 
 Ltac nonneg := solve [auto with nonneg].
 

@@ -308,7 +308,7 @@ Proof.
   f_equal.
   erewrite elemVarEnv_eq; try done.
 Qed.
-Hint Resolve RespectsVar_negbElemVarEnv.
+#[export] Hint Resolve RespectsVar_negbElemVarEnv.
 
 Lemma StrongSubset_minusDom {a} : forall vs1 vs2 (e: VarEnv a), 
     vs1 {<=} vs2 ->

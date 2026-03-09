@@ -225,7 +225,7 @@ Section CoreLT.
 End CoreLT.
 
 (* For fewer obligations from [Program Fixpoint]: *)
-Hint Resolve CoreLT_wf : arith.
+#[export] Hint Resolve CoreLT_wf : arith.
 
 (* This is a bit plump yet *)
 Ltac Core_termination :=
@@ -317,7 +317,7 @@ Section AnnCoreLT.
 End AnnCoreLT.
 
 (* For less obligations from [Program Fixpoint]: *)
-Hint Resolve AnnCoreLT_wf : arith.
+#[export] Hint Resolve AnnCoreLT_wf : arith.
 
 (* This is a bit plump yet *)
 Ltac AnnCore_termination :=

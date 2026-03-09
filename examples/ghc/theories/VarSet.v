@@ -219,7 +219,7 @@ Proof.
 Qed.
 
 
-Hint Rewrite mkVarSet_extendVarSetList : hs_simpl.
+#[export] Hint Rewrite mkVarSet_extendVarSetList : hs_simpl.
 
 
 (** ** [lookupVarSet] and [elemVarSet] correspondence *)
@@ -332,7 +332,7 @@ Proof.
   apply lookup_insert.
 Qed.
 
-Hint Rewrite lookupVarSet_extendVarSet_self : hs_simpl.
+#[export] Hint Rewrite lookupVarSet_extendVarSet_self : hs_simpl.
 
 Lemma lookupVarSet_extendVarSet_eq :
       forall v1 v2 vs,
@@ -468,7 +468,7 @@ Proof.
   reflexivity.
 Qed.
 
-Hint Rewrite extendVarSetList_nil 
+#[export] Hint Rewrite extendVarSetList_nil
              extendVarSetList_cons
              extendVarSetList_singleton
              extendVarSetList_append : hs_simpl.
@@ -512,7 +512,7 @@ Proof.
   reflexivity.
 Qed.
 
-Hint Rewrite delVarSetList_nil 
+#[export] Hint Rewrite delVarSetList_nil
              delVarSetList_cons
              delVarSetList_single
              delVarSetList_app : hs_simpl.
@@ -535,7 +535,7 @@ Proof.
   auto.
 Qed.
 
-Hint Rewrite elemVarSet_emptyVarSet elemVarSet_unionVarSet : hs_simpl.
+#[export] Hint Rewrite elemVarSet_emptyVarSet elemVarSet_unionVarSet : hs_simpl.
 
 
 (** ** [extendVarSet]  *)
@@ -569,7 +569,7 @@ Proof.
       rewrite ne. auto.
 Qed.
 
-Hint Rewrite elemVarSet_extendVarSet : hs_simpl.
+#[export] Hint Rewrite elemVarSet_extendVarSet : hs_simpl.
 
 Lemma elemVarSet_extendVarSetList:
   forall v vs vs',
@@ -589,7 +589,7 @@ Proof.
     reflexivity.
 Qed.
 
-Hint Rewrite elemVarSet_extendVarSetList : hs_simpl.
+#[export] Hint Rewrite elemVarSet_extendVarSetList : hs_simpl.
 
 Lemma extendVarSet_commute : forall x y vs, 
     extendVarSet (extendVarSet vs y) x  [=] extendVarSet (extendVarSet vs x) y.
@@ -1028,7 +1028,7 @@ Proof.
   unfold UniqFM.delFromUFM, UniqFM.emptyUFM.
   repeat f_equal.
 Qed.
-Hint Rewrite delVarSet_emptyVarSet : hs_simpl. 
+#[export] Hint Rewrite delVarSet_emptyVarSet : hs_simpl.
 
 
 Lemma delVarSet_extendVarSet : 
@@ -1071,7 +1071,7 @@ Proof.
     inversion H0.
 Qed.
 
-Hint Rewrite elemVarSet_delVarSet : hs_simpl.
+#[export] Hint Rewrite elemVarSet_delVarSet : hs_simpl.
 
 Lemma lookupVarSet_delVarSet_neq :
       forall v1 v2 vs,
@@ -1660,7 +1660,7 @@ Proof.
   unfold UniqFM.disjointUFM, UniqFM.emptyUFM.
   apply disjoint_empty_r.
 Qed.
-Hint Rewrite disjointVarSet_empytVarSet:hs_simpl.
+#[export] Hint Rewrite disjointVarSet_empytVarSet:hs_simpl.
 
 Lemma disjointVarSet_mkVarSet_nil:
   forall vs,
@@ -1793,7 +1793,7 @@ Proof.
   simpl. unfold empty, emptyVarSet, UniqSet.emptyUniqSet.
   repeat f_equal; try apply proof_irrelevance.
 Qed.
-Hint Rewrite filterVarSet_emptyVarSet : hs_simpl.
+#[export] Hint Rewrite filterVarSet_emptyVarSet : hs_simpl.
 
 
 Lemma filterVarSet_constTrue vs : 
@@ -1805,7 +1805,7 @@ Proof.
   simpl. apply IntMapEq_VarSetEq.
   apply filter_true, EqLaws_Var.
 Qed.
-Hint Rewrite filterVarSet_constTrue : hs_simpl.
+#[export] Hint Rewrite filterVarSet_constTrue : hs_simpl.
 
 Lemma elemVarSet_filterVarSet x f vs :
   RespectsVar f ->
@@ -1951,7 +1951,7 @@ Lemma unionSingle_r : forall x s,
     unionVarSet s (unitVarSet x) [=] extendVarSet s x.
 Proof. intros. set_b_iff. fsetdec. Qed.
 
-Hint Rewrite unionEmpty_l unionEmpty_r 
+#[export] Hint Rewrite unionEmpty_l unionEmpty_r
      unionSingle_l unionSingle_r :
   hs_simpl.
 
@@ -1979,7 +1979,7 @@ Proof.
   + hs_simpl. rewrite unionVarSet_commute.
     reflexivity.
 Qed.
-Hint Rewrite unionVarSets_cons : hs_simpl.
+#[export] Hint Rewrite unionVarSets_cons : hs_simpl.
 
 
 Lemma unionVarSets_def ss : 
@@ -2059,7 +2059,7 @@ Proof.
   reflexivity.
 Qed.
 
-Hint Rewrite minusVarSet_emptyVarSet : hs_simpl.
+#[export] Hint Rewrite minusVarSet_emptyVarSet : hs_simpl.
 
 Lemma minusVarSet_emptyVarSet_l vs : 
   minusVarSet emptyVarSet vs = emptyVarSet.
@@ -2076,7 +2076,7 @@ Proof.
   reflexivity.
 Qed.
 
-Hint Rewrite minusVarSet_emptyVarSet_l : hs_simpl.
+#[export] Hint Rewrite minusVarSet_emptyVarSet_l : hs_simpl.
 
 
 

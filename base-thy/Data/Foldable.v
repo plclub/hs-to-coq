@@ -169,14 +169,14 @@ Qed.
 
 
 
-Hint Rewrite
-     Foldable_foldl'_nil Foldable_foldr_nil 
+#[export] Hint Rewrite
+     Foldable_foldl'_nil Foldable_foldr_nil
      Foldable_foldl_nil
 
-     Foldable_foldl'_cons Foldable_foldr_cons 
+     Foldable_foldl'_cons Foldable_foldr_cons
      Foldable_foldl_cons
 
-     Foldable_foldl'_app Foldable_foldr_app 
+     Foldable_foldl'_app Foldable_foldr_app
      Foldable_foldl_app : hs_simpl.
 
 
@@ -242,7 +242,7 @@ Proof.
     auto.
 Qed.
 
-Hint Rewrite @Foldable_any_nil @Foldable_any_cons @Foldable_any_app : hs_simpl.
+#[export] Hint Rewrite @Foldable_any_nil @Foldable_any_cons @Foldable_any_app : hs_simpl.
 
 Lemma elem_nil : forall {A} `{Eq_ A}  (x:A),  
   Foldable.elem x nil = false.
@@ -265,7 +265,7 @@ Proof.
   intros. apply Foldable_any_app.
 Qed.
 
-Hint Rewrite @elem_nil @elem_cons @Foldable_elem_app : hs_simpl.
+#[export] Hint Rewrite @elem_nil @elem_cons @Foldable_elem_app : hs_simpl.
 
 Lemma Foldable_length_nil {a} :
   length (@nil a) = 0%Z.
@@ -275,7 +275,7 @@ Lemma Foldable_length_cons {a} (x : a) (xs : list a) :
   length (cons x xs) = Z.succ (length xs).
 Proof. by rewrite !hs_coq_length_list Zlength_cons. Qed.
 
-Hint Rewrite @Foldable_length_nil @Foldable_length_cons : hs_simpl.
+#[export] Hint Rewrite @Foldable_length_nil @Foldable_length_cons : hs_simpl.
 
 
 

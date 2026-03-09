@@ -83,9 +83,9 @@ Proof.
   rewrite app_length. rewrite Nat2Z.inj_add. reflexivity.
 Qed. 
 
-Hint Rewrite @length_nil @length_cons @length_app : hs_simpl.
-
 End Length.
+
+#[export] Hint Rewrite @length_nil @length_cons @length_app : hs_simpl.
 
 (* ------------------------- reverse ----------------------------------- *)
 
@@ -102,9 +102,9 @@ Proof. intros. rewrite !hs_coq_reverse. rewrite rev_unit. reflexivity. Qed.
 Lemma reverse_involutive : forall l:list A, List.reverse (List.reverse l) = l.
 Proof. intros. rewrite !hs_coq_reverse. rewrite rev_involutive. reflexivity. Qed.
 
-Hint Rewrite @reverse_nil @reverse_unit @reverse_involutive : hs_simpl.
-
 End Reverse.
+
+#[export] Hint Rewrite @reverse_nil @reverse_unit @reverse_involutive : hs_simpl.
 
 (* -------------------------------------------------------------------- *)
 
@@ -351,9 +351,9 @@ Lemma map_app : forall l l',
     map (l++l') = (map l)++(map l').
 Proof. Admitted.
 
-Hint Rewrite
-  rev_involutive 
-  rev_unit 
+#[export] Hint Rewrite
+  rev_involutive
+  rev_unit
   map_nth 
   map_length 
   seq_length 

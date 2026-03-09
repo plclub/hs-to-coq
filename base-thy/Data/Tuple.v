@@ -11,7 +11,7 @@ Proof. reflexivity. Qed.
 
 Lemma fst_pair A B (x:A) (y:B) : Tuple.fst (x,y) = x.
 Proof. simpl. reflexivity. Qed.
-Hint Rewrite fst_pair : hs_simpl.
+#[export] Hint Rewrite fst_pair : hs_simpl.
 Lemma snd_pair A B (x:A) (y:B) : Tuple.snd (x,y) = y.
 Proof. simpl. reflexivity. Qed.
-Hint Rewrite snd_pair : hs_simpl.
+#[export] Hint Rewrite snd_pair : hs_simpl.

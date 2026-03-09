@@ -154,7 +154,7 @@ Axiom substExpr_Cast : forall subst e co,
    Cast (substExpr subst e) (substCo subst co).
 
 
-Hint Rewrite substExpr_App substExpr_Case substExpr_Cast
+#[export] Hint Rewrite substExpr_App substExpr_Case substExpr_Cast
      substBind_NonRec substBind_Rec substExpr_Let substExpr_Lam
      (* substExpr_Tick *) : hs_simpl.
 
@@ -236,7 +236,7 @@ Proof.
   inversion H. subst.  eapply Forall_cons; eauto.
 Qed.
 
-Hint Constructors NoDup.
+#[export] Hint Constructors NoDup.
 
 Lemma NoDup_app_1 : forall (a : Type)`{Eq_ a} (l1 l2 : list a), 
     NoDup l1 ->

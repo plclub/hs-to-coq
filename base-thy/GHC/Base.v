@@ -51,7 +51,7 @@ Proof. by rewrite /foldl; move: z; elim: l => //=. Qed.
 
 Lemma foldr_initial {A} (x : list A) : foldr (_::_) nil x = x.
 Proof. by elim: x => //= x xs ->. Qed.
-Hint Rewrite @foldr_initial : hs_simpl.
+#[export] Hint Rewrite @foldr_initial : hs_simpl.
 
 Lemma foldr_single {A B} (k : A -> B -> B) z x : foldr k z (x :: nil) = k x z.
 Proof. done. Qed.
@@ -59,7 +59,7 @@ Proof. done. Qed.
 Lemma foldr_nil {A B} (k : A -> B -> B) z : foldr k z nil = z.
 Proof. done. Qed.
 
-Hint Rewrite @foldr_initial @foldr_single @foldr_nil : hs_simpl.
+#[export] Hint Rewrite @foldr_initial @foldr_single @foldr_nil : hs_simpl.
 
 Lemma foldr_id {A B} (a : A) (bs : list B) : foldr (fun _ => id) a bs = a.
 Proof. by elim: bs. Qed.
@@ -70,13 +70,13 @@ Proof. by elim: bs. Qed.
    Coq theorems are automatically available. However, we make these
    automatically available to hs_simpl. *)
 
-Hint Rewrite @app_nil_r @app_length : hs_simpl.
+#[export] Hint Rewrite @app_nil_r @app_length : hs_simpl.
 
 (* ---------- map ------------------------------ *)
 
 Lemma map_id {a} (x : list a) : map id x = x.
 Proof. by rewrite hs_coq_map Coq.Lists.List.map_id. Qed.
-Hint Rewrite @map_id : hs_simpl.
+#[export] Hint Rewrite @map_id : hs_simpl.
 
 Lemma map_map {a b c} (f : a -> b) (g : b -> c) (x : list a) :
   map g (map f x) = map (g ∘ f) x.
@@ -86,7 +86,7 @@ Lemma map_append {a b} (f : a -> b) (x y : list a) :
   map f (x ++ y) = map f x ++ map f y.
 Proof. by rewrite !hs_coq_map Coq.Lists.List.map_app. Qed.
 
-Hint Rewrite @map_append : hs_simpl.
+#[export] Hint Rewrite @map_append : hs_simpl.
 
 Lemma map_cong {a b} (f g : a -> b) (x : list a) :
   f =1 g -> map f x = map g x.
@@ -326,7 +326,7 @@ Proof.
     auto.
 Qed.
 
-Hint Rewrite @simpl_option_some_eq @simpl_option_none_eq
+#[export] Hint Rewrite @simpl_option_some_eq @simpl_option_none_eq
              @simpl_list_cons_eq @simpl_list_nil_eq : hs_simpl.
 
 
@@ -777,8 +777,8 @@ Qed.
 
  *)
 
-Hint Rewrite andb_diag andb_false_r andb_true_r andb_false_l andb_true_l : hs_simpl.
-Hint Rewrite orb_diag orb_false_r orb_true_r orb_false_l orb_true_l : hs_simpl.
-Hint Rewrite negb_involutive : hs_simpl.
+#[export] Hint Rewrite andb_diag andb_false_r andb_true_r andb_false_l andb_true_l : hs_simpl.
+#[export] Hint Rewrite orb_diag orb_false_r orb_true_r orb_false_l orb_true_l : hs_simpl.
+#[export] Hint Rewrite negb_involutive : hs_simpl.
 
-Hint Rewrite andb_true_iff orb_true_iff negb_true_iff negb_false_iff : hs_simpl.
+#[export] Hint Rewrite andb_true_iff orb_true_iff negb_true_iff negb_false_iff : hs_simpl.

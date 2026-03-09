@@ -681,7 +681,7 @@ Ltac isBitMask := solve [auto with isBitMask].
 Lemma isBitMask_isBitMask0:
   forall bm, isBitMask bm -> isBitMask0 bm.
 Proof. intros. unfold isBitMask0, isBitMask in *. intuition. Qed.
-Hint Resolve isBitMask_isBitMask0 : isBitMask.
+#[export] Hint Resolve isBitMask_isBitMask0 : isBitMask.
 
 Lemma isBitMask0_zero_or_isBitMask:
   forall bm, isBitMask0 bm <-> (bm = 0%N \/ isBitMask bm).
@@ -736,7 +736,7 @@ Proof.
     rewrite H2, H3 by assumption.
     reflexivity.
 Qed.
-Hint Resolve isBitMask_lor : isBitMask.
+#[export] Hint Resolve isBitMask_lor : isBitMask.
 
 Lemma isBitMask0_land:
   forall bm1 bm2, isBitMask0 bm1 -> isBitMask0 bm2 -> isBitMask0 (N.land bm1 bm2).
@@ -749,7 +749,7 @@ Proof.
   rewrite H, H0 by assumption.
   reflexivity.
 Qed.
-Hint Resolve isBitMask0_land : isBitMask.
+#[export] Hint Resolve isBitMask0_land : isBitMask.
 
 Lemma isBitMask0_lxor:
   forall bm1 bm2, isBitMask0 bm1 -> isBitMask0 bm2 -> isBitMask0 (N.lxor bm1 bm2).
@@ -762,7 +762,7 @@ Proof.
   rewrite H, H0 by assumption.
   reflexivity.
 Qed.
-Hint Resolve isBitMask0_lxor : isBitMask.
+#[export] Hint Resolve isBitMask0_lxor : isBitMask.
 
 
 Lemma isBitMask0_ldiff:
@@ -776,7 +776,7 @@ Proof.
   rewrite H by assumption.
   reflexivity.
 Qed.
-Hint Resolve isBitMask0_ldiff : isBitMask.
+#[export] Hint Resolve isBitMask0_ldiff : isBitMask.
 
 Lemma isBitMask0_lor:
   forall bm1 bm2, isBitMask0 bm1 -> isBitMask0 bm2 -> isBitMask0 (N.lor bm1 bm2).
@@ -789,7 +789,7 @@ Proof.
   rewrite H, H0 by assumption.
   reflexivity.
 Qed.
-Hint Resolve isBitMask0_lor : isBitMask.
+#[export] Hint Resolve isBitMask0_lor : isBitMask.
 
 Lemma isBitMask0_ones:
   forall n, (n <= WIDTH)%N ->
@@ -806,7 +806,7 @@ Proof.
     constructor.
   Nomega.
 Qed.
-Hint Resolve isBitMask0_ones : isBitMask.
+#[export] Hint Resolve isBitMask0_ones : isBitMask.
 
 
 Lemma isBitMask_bitmapOf: forall e, isBitMask (bitmapOf e).
@@ -822,7 +822,7 @@ Proof.
   * apply N.pow_lt_mono_r. reflexivity.
     apply N.mod_upper_bound; compute; congruence.
 Qed.
-Hint Resolve isBitMask_bitmapOf : isBitMask.
+#[export] Hint Resolve isBitMask_bitmapOf : isBitMask.
 
 Lemma isBitMask0_outside:
   forall bm i,
@@ -838,7 +838,7 @@ Lemma isBitMask_log2_lt_WIDTH:
   forall bm,
   isBitMask bm -> (N.log2 bm < WIDTH)%N.
 Proof. intros. apply N.log2_lt_pow2; apply H. Qed.
-Hint Resolve isBitMask_log2_lt_WIDTH : isBitMask.
+#[export] Hint Resolve isBitMask_log2_lt_WIDTH : isBitMask.
 
 Lemma isBitMask_ctz_lt_WIDTH:
   forall bm,
@@ -857,7 +857,7 @@ Proof.
   simpl in H0.
   Nomega.
 Qed.
-Hint Resolve isBitMask_ctz_lt_WIDTH : isBitMask.
+#[export] Hint Resolve isBitMask_ctz_lt_WIDTH : isBitMask.
 
 
 (** *** Verification of [revNat] *)
@@ -877,7 +877,7 @@ Lemma isBitMask0_revNat:
 Proof.
   exact (RevNatSlowProofs.isBitMask0_revNat).
 Qed.
-Hint Resolve isBitMask0_revNat : isBitMask.
+#[export] Hint Resolve isBitMask0_revNat : isBitMask.
 
 
 Lemma isBitMask0_clearbit:
@@ -890,7 +890,7 @@ Proof.
   apply clearbit_le.
   assumption.
 Qed.
-Hint Resolve isBitMask0_clearbit : isBitMask.
+#[export] Hint Resolve isBitMask0_clearbit : isBitMask.
 
 Lemma clearbit_revNat:
   forall n i, (i < WIDTH)%N ->
@@ -946,7 +946,7 @@ Proof.
   intuition.
   rewrite revNat_eq_0 in H by assumption. intuition.
 Qed.
-Hint Resolve isBitMask_revNat : isBitMask.
+#[export] Hint Resolve isBitMask_revNat : isBitMask.
 
 Lemma revNat_revNat:
   forall n, isBitMask0 n -> revNatSafe (revNatSafe n) = n.
@@ -993,7 +993,7 @@ Proof.
   * apply N_pow_pos_nonneg; Nomega.
   * apply N.pow_lt_mono_r; Nomega.
 Qed.
-Hint Resolve pow_isBitMask : isBitMask.
+#[export] Hint Resolve pow_isBitMask : isBitMask.
 
 Lemma revNat_pow:
   forall i,
@@ -1058,7 +1058,7 @@ Proof.
   apply N.pow_lt_mono_r; try Nomega.
   isBitMask.
 Qed.
-Hint Resolve isBitMask0_lowestBitMask : isBitMask.
+#[export] Hint Resolve isBitMask0_lowestBitMask : isBitMask.
 
 
 Lemma isBitMask_highestBitMask:
@@ -1072,7 +1072,7 @@ Proof.
     Nomega.
     isBitMask.
 Qed.
-Hint Resolve isBitMask_highestBitMask : isBitMask.
+#[export] Hint Resolve isBitMask_highestBitMask : isBitMask.
 
 Lemma lxor_pow2_clearbit:
   forall a i,
@@ -1167,7 +1167,7 @@ Lemma isBitMask_twoBits:
   forall bm,
   hasTwoBits bm -> isBitMask bm.
 Proof. intros. apply H. Qed.
-Hint Immediate isBitMask_twoBits : isBitMask.
+#[export] Hint Immediate isBitMask_twoBits : isBitMask.
 
 Lemma hasTwoBits_revNat:
   forall bm,
@@ -1275,7 +1275,7 @@ Proof.
     apply clearbit_pow2_0.
   * destruct H. isBitMask.
 Qed.
-Hint Resolve isBitMask_clearbit_twoBits : isBitMask.
+#[export] Hint Resolve isBitMask_clearbit_twoBits : isBitMask.
 
 (** *** Induction along a bitmask *)
 
@@ -2425,7 +2425,7 @@ Qed.
 
 Lemma empty_WF : WF empty.
 Proof. now exists (fun _ => false); constructor. Qed.
-Hint Resolve empty_WF.
+#[export] Hint Resolve empty_WF.
 
 (** *** Verification of [singleton] *)
 
@@ -5340,7 +5340,7 @@ Proof.
   rewrite andb_false_l.
   reflexivity.
 Qed.
-Hint Resolve isBitMask_filterBits : isBitMask.
+#[export] Hint Resolve isBitMask_filterBits : isBitMask.
 
 Lemma filter_Desc:
   forall p s r f f',

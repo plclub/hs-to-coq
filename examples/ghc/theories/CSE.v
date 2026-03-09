@@ -45,13 +45,13 @@ Opaque GHC.Base.hs_string__.
 Lemma cseExpr_App env f a :
   cseExpr env (App f a) = App (cseExpr env f) (tryForCSE env a).
 Proof. Admitted.
-Hint Rewrite cseExpr_App : hs_simpl.
+#[export] Hint Rewrite cseExpr_App : hs_simpl.
 
 Lemma cseExpr_Let env bind e :
   cseExpr env (Let bind e) = let: (env', bind') := cseBind NotTopLevel env bind
                              in Let bind' (cseExpr env' e).
 Proof. Admitted.
-Hint Rewrite cseExpr_Let : hs_simpl.
+#[export] Hint Rewrite cseExpr_Let : hs_simpl.
 
 (* GHC 9.10: cse_bind signature changed (added env_rhs parameter).
    cseBind is axiomatized so this lemma is not provable. *)
@@ -61,7 +61,7 @@ Lemma cseBind_NonRec toplevel env b e :
     let: (env2, (b2, e2)) := cse_bind toplevel env env1 (b,e) b1 in
     (env2, NonRec b2 e2).
 Proof. Admitted.
-Hint Rewrite cseBind_NonRec : hs_simpl.
+#[export] Hint Rewrite cseBind_NonRec : hs_simpl.
 
 (** * Stripping ticks *)
 
@@ -71,8 +71,8 @@ Proof.
   (* GHC 9.10: Alt changed from tuple to Mk_Alt; proof needs reworking *)
 Admitted.
 
-Hint Rewrite @stripTicksE_id : hs_simpl.
-Hint Rewrite (@stripTicksE_id CoreBndr) : hs_simpl.
+#[export] Hint Rewrite @stripTicksE_id : hs_simpl.
+#[export] Hint Rewrite (@stripTicksE_id CoreBndr) : hs_simpl.
 
 Lemma stripTicksT_nil {b} p (e : Expr b) :
   stripTicksT p e = nil.
@@ -80,8 +80,8 @@ Proof.
   (* GHC 9.10: Alt changed from tuple to Mk_Alt; proof needs reworking *)
 Admitted.
 
-Hint Rewrite @stripTicksT_nil : hs_simpl.
-Hint Rewrite (@stripTicksT_nil CoreBndr) : hs_simpl.
+#[export] Hint Rewrite @stripTicksT_nil : hs_simpl.
+#[export] Hint Rewrite (@stripTicksT_nil CoreBndr) : hs_simpl.
 
 (** * Well-scopedness for CSE *)
 
