@@ -86,7 +86,7 @@ Lemma path_no_dups: forall g u v l,
     - exists l. solve_assume.
     - rewrite no_no_dup in n. destruct_all. subst. 
       apply path_remove_cycle in H. specialize (H0 (x0 ++ x :: x2)). destruct H0 as [l].
-      repeat(rewrite app_length; simpl). lia. apply H. exists l. destruct_all; solve_assume.
+      repeat(rewrite length_app; simpl). lia. apply H. exists l. destruct_all; solve_assume.
       apply H2 in H3. apply in_app_or in H3. destruct H3. solve_in. simpl in H3; solve_in.
       apply N.eq_dec.
 Qed.
@@ -258,7 +258,7 @@ Proof.
     specialize (H (length x)).
     assert (paths_of_length g u v (length x) = nil). apply H.
     apply in_seq. simpl. split. lia. unfold natNodes. rewrite noNodes_def. unfold nodeList in H1.
-    unfold ulabNodes in H1. rewrite map_length in H1.
+    unfold ulabNodes in H1. rewrite length_map in H1.
     assert (forall n m, n <= m -> n < m + 1). intros. lia. apply H2. assumption.
     pose proof (paths_of_length_def g u v (length x) x). 
     destruct H3. rewrite H2 in H4. simpl in H4. apply H4. solve_assume.
@@ -847,7 +847,7 @@ Lemma path_no_dups_strong: forall u v l,
         * exists (x ++ u :: nil). split. assumption. split. assumption. split. intros.
           assumption. unfold le_weight. right. destruct (eq_weight_equiv) as [E1 E2 E3]. apply E1.
         * specialize (H0 (x ++ u :: nil)). destruct H0 as [l]. 
-          repeat(rewrite app_length). simpl. lia. assumption. 
+          repeat(rewrite length_app). simpl. lia. assumption. 
           exists l. destruct_all. repeat(split; try(assumption)). intros.
           apply H3 in H5. apply in_app_or in H5. destruct H5; simpl in H5. apply in_or_app.
           left. assumption. destruct H5; subst. apply in_or_app. right. solve_in. destruct H5.
@@ -927,7 +927,7 @@ Lemma path_no_dups_strong: forall u v l,
               simpl. split; intros. assumption. unfold le_weight. right. 
               destruct (eq_weight_equiv) as [E1 E2 E3]. apply E1.
           -- specialize (H0 (v :: x0 )). destruct H0 as [l]. 
-             repeat(rewrite app_length). simpl.
+             repeat(rewrite length_app). simpl.
              assert (forall m n, lt (S(n))  (S(m + S(n)))). intros. lia.
              apply H0. assumption. 
             exists l. destruct_all. repeat(split; try(assumption)). intros.
@@ -966,7 +966,7 @@ Lemma path_no_dups_strong: forall u v l,
       * exists l. simplify'. unfold le_weight. right. destruct (eq_weight_equiv) as [E1 E2 E3]; apply E1.
   - rewrite no_no_dup in n. destruct_all. subst. assert (A:= H). 
       apply path_remove_cycle in H. specialize (H0 (x0 ++ x :: x2)). destruct H0 as [l].
-      repeat(rewrite app_length; simpl). lia. apply H. exists l. simplify'. apply H2 in H3.
+      repeat(rewrite length_app; simpl). lia. apply H. exists l. simplify'. apply H2 in H3.
       apply in_app_or in H3. destruct H3. apply in_or_app. left. assumption. simpl in H3.
       destruct H3. subst. solve_in. solve_in. eapply le_weight_trans. apply H4.
       unfold le_weight. unfold lt_weight. unfold lt_weight_b. unfold eq_weight. unfold eq_weight_b.
@@ -1119,7 +1119,7 @@ Proof.
   - intro. pose proof (shortest_path_leq_n _ _ _ H0). destruct H1. destruct H1.
     destruct H2.  assert (In (length x) (List.seq 0 (natNodes g + 1))). apply in_seq.
     split. lia. simpl. unfold natNodes. rewrite noNodes_def.
-    unfold nodeList in H2. unfold ulabNodes in H2. rewrite map_length in H2.
+    unfold nodeList in H2. unfold ulabNodes in H2. rewrite length_map in H2.
     assert (Haux: forall n m, Peano.le n m -> Peano.lt n (m + 1)) by (intros; lia).
     apply Haux. apply H2. apply H in H4.
     unfold min_weight_size_n in H4. rewrite min_list_empty in H4.
@@ -1211,7 +1211,7 @@ Proof.
   intros. pose proof (shortest_path_leq_n _ _ _ H1). destruct_all. eapply le_weight_trans.
   2 : { apply H4. } eapply H0. 3 : { reflexivity. } rewrite in_seq. split. lia.
   simpl. unfold natNodes. rewrite noNodes_def.
-  unfold nodeList in H3. unfold ulabNodes in H3. rewrite map_length in H3.
+  unfold nodeList in H3. unfold ulabNodes in H3. rewrite length_map in H3.
   assert (Haux: forall n m, Peano.le n m -> Peano.lt n (m + 1)) by (intros; lia).
   apply Haux. apply H3.
   assumption.

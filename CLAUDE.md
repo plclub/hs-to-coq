@@ -12,44 +12,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build Commands
 
 ```bash
-# Build the hs-to-coq Haskell executable
-stack build
-
-# Run hs-to-coq on a Haskell file
-stack exec hs-to-coq -- -e edits -o output/ Input.hs
-
-# Build Coq base library (must build before tests)
-cd base && coq_makefile -f _CoqProject -o Makefile && make -j
-
-# Build base-thy proofs (depends on base)
-cd base-thy && coq_makefile -f _CoqProject -o Makefile && make -j
-
-# Build everything (base + base-thy + containers)
-make
-
-# Re-generate base/ from Haskell sources
-make -C examples/base-src vfiles
-
-# Run unit tests (translates .hs → .v, then type-checks with coqc)
-make -C examples/tests
-
-# Run base-dependent tests
-make -C examples/base-tests
-
-# Run all examples (full bootstrap)
-cd examples && ./boot.sh
-
-# Build a specific example (e.g., containers)
-make -C examples/containers          # lib + theories
-make -C examples/containers/lib      # just the generated library
-make -C examples/containers/theories # just the proofs (depends on lib)
-
-# Build GHC core example (depends on base, base-thy, containers)
-make -C examples/ghc clean && make -C examples/ghc  # regenerate lib/*.v and compile
-cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j  # theories
-
-# Regenerate GHC lib/*.v from GHC 9.10 source (needs ghc submodule + xutils-dev for lndir)
-make -C examples/ghc clean && make -C examples/ghc
+stack build                                    # Build hs-to-coq executable
+stack exec hs-to-coq -- -e edits -o output/ Input.hs  # Run on a file
+make                                           # Build base + base-thy + containers
+make -C examples/base-src vfiles               # Re-generate base/ from Haskell sources
+make -C examples/tests                         # Unit tests (.hs → .v → coqc)
+make -C examples/base-tests                    # Tests requiring base/
+make -C examples/containers                    # containers lib + theories
+make -C examples/ghc clean && make -C examples/ghc  # Regenerate+compile GHC lib/*.v
+cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j
+cd examples && ./boot.sh                       # Full bootstrap (all examples)
+# Individual Coq dirs: cd <dir> && coq_makefile -f _CoqProject -o Makefile && make -j
 ```
 
 Use relative path instead of absolute path when `cd` to a directory.
@@ -164,34 +137,16 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
 
 ### GHC example (examples/ghc/)
-Translated from GHC 9.10.3. All lib/*.v regenerated and compile. All 28 theories/*.v files compile (many proofs Admitted). `make clean && make` regenerates lib/ from scratch (removes entire lib/ dir, then rebuilds via hs-to-coq + lndir for manual files). Theories built separately: `cd theories && coq_makefile -f _CoqProject -o Makefile && make -j`. Key GHC 9.10 changes affecting theories:
-- `Alt` type: tuple → `Mk_Alt` constructor. Intro patterns change from `[[dc pats] rhs]` to `[dc pats rhs]`.
-- `Mk_Id` has 7 fields (added `varMult : Mult` as 4th field). Pattern matches need extra wildcard.
-- `realUnique` type: `N` → `Unique`. Breaks proofs using `N.eqb_neq`, `N.compare_refl`.
-- `lookupIdSubst`: no longer takes `String` doc parameter.
-- `mkVarApps`: uses `foldl'` not `foldl`. Use `hs_coq_foldl'_list`.
-- State monad: bare function type (`s -> (a * s)`) not newtype wrapper. `StateLogic.v` rewritten.
-- `substExpr`, `cseExpr`, `cseBind`, `try_for_cse`: axiomatized. Computation proofs Admitted.
-- GoDom strict positivity: use `alt_rhs` projection function, not pattern-match lambda.
-- `Var` has single constructor (`Mk_Id` only, no `TyVar`).
-- `cse_bind` has 5 args (added `env_rhs` parameter).
-- Makefile uses explicit GHC 9.10 path mappings (e.g., `SRCPATH_Var = ghc/compiler/GHC/Types/Var.hs`).
-- `manual/` files (~60) are symlinked into `lib/` via `lndir`. Edit `manual/*.v` directly (not `lib/*.v` symlinks).
-- `manual/AxiomatizedTypes.v`: All instances must be `#[global]` — downstream modules need Default/Eq/Ord resolution.
-- `axiomatize module OccurAnal`: Fully axiomatized. Needs `preamble.v` (Require Import Outputable, String scope) and `midamble.v` (Default instances for types defined after auto-generated defaults).
-- Midamble placement: inserted AFTER type declarations AND auto-generated Default instances, but BEFORE value declarations. Can't provide instances needed by auto-generated Defaults — use `skip` + midamble instead.
-- Makefile sed post-processing: BasicTypes + Literal (`#[global]` Default instances), UniqFM (phantom kind params), Core.v (mutual type ball fixes). Check Makefile when adding new post-processing.
-- `Subst` type axiomatized (in `GHC.Core.TyCo.Subst`): theories can't pattern-match `Mk_Subst`. Use `getSubstInScopeVars` accessor or Admit.
-- `exitifyRec`, `floatExpr`/`floatBind`/`floatRhs`, `fiExpr`/`fiBinds`/`fiRhs`: all axiomatized. Proofs using `cbv beta delta [func]` must be Admitted.
-- `Id.idJoinPointHood`: skipped (uses `Outputable.JoinPointHood`). Axioms/lemmas referencing it must be Admitted or removed.
+Translated from GHC 9.10.3. All lib/*.v and 28 theories/*.v compile. `make clean && make` regenerates lib/ (removes dir, rebuilds via hs-to-coq + lndir for ~60 manual files). Edit `manual/*.v` directly (not `lib/*.v` symlinks).
+
+Key GHC 9.10 type changes: `Alt` uses `Mk_Alt` constructor (not tuple); `Mk_Id` has 7 fields (`varMult : Mult` added 4th); `realUnique` is `Unique` not `N`; `Var` has single constructor `Mk_Id` (no `TyVar`); `cse_bind` has 5 args; `lookupIdSubst` dropped `String` doc param; State monad is bare function type; `mkVarApps` uses `foldl'`. GoDom: use `alt_rhs` projection (strict positivity).
+
+Axiomatized: `substExpr`, `cseExpr`, `cseBind`, `try_for_cse`, `exitifyRec`, `floatExpr`/`floatBind`/`floatRhs`, `fiExpr`/`fiBinds`/`fiRhs`, `Subst` type. Proofs unfolding these must be Admitted. `Id.idJoinPointHood` skipped.
+
+Build details: `manual/AxiomatizedTypes.v` instances must be `#[global]`. `axiomatize module OccurAnal` needs preamble.v + midamble.v. Midamble placed AFTER types+auto-Defaults, BEFORE values — use `skip` + midamble for custom Defaults. Makefile sed post-processing: BasicTypes/Literal (`#[global]`), UniqFM (phantom kinds), Core.v (mutual type fixes).
 
 ### Containers submodule
-Containers is at v0.7. The `.v` files in `examples/containers/lib/` were translated with an older GHC and are stable. Regeneration is tested in CI.
-- Makefile `clean` preserves `.v` source files (only removes build artifacts); use `distclean` to remove everything.
-- IntSet `split`/`splitMember`, Set and Map `fromDistinctAscList`/`fromDistinctDescList`/`fromAscList`/`fromDescList`: native v0.7 definitions with rewritten proofs.
-- Map `fromList` proofs: `Admitted` due to Coq 8.20 `Program Fixpoint` obligation structure changes (pre-existing).
-- `hs-spec/IntSetProperties.v`: auto-generated from v0.7 `intset-properties.hs` (`tasty-quickcheck`/`tasty-hunit` added to cabal deps).
-- `manual/Test/QuickCheck/Property.v`: z-encoded operator aliases (`op_zizazazi__` etc.) for auto-generated code.
+Containers v0.7. `clean` preserves `.v` source; `distclean` removes everything. Map `fromList` proofs Admitted (Coq 8.20 `Program Fixpoint` change, pre-existing). IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources.
 
 ### Transformers example (examples/transformers/)
 Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../ghc/ghc/libraries/transformers`. Makefile strips MonadTrans quantified superclass constraint via sed post-processing. Uses `skip class` for `Contravariant` and `Foldable1` (not in base).

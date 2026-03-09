@@ -11,7 +11,7 @@
 ### 2. Update all submodules
 - [x] examples/ghc/ghc — ghc-9.10.3-release
 - [x] examples/containers/containers — v0.7
-- [ ] Verify other submodules (graph, shuffle, wc, core-semantics themes) are at proper versions
+- [x] Verify other submodules: graph (fgl 5.5.0.1, in CI), core-semantics (manual fix, in CI), shuffle (2/5 modules, not in CI — missing Random Int), wc (blocked by coq-itree, not in CI), doc theme (N/A)
 
 ### 3. Update manually written Coq code
 - [x] base-thy proofs updated for Coq 8.20
@@ -45,23 +45,23 @@
 - [x] Deprecated warning fixes committed (06ceab6e)
 
 ### 9. Update documents
-- [ ] Update CLAUDE.md to reflect deprecated warning fixes
-- [ ] Update memory files to remove stale info
-- [ ] Review README for accuracy
+- [x] Update CLAUDE.md to reflect deprecated warning fixes
+- [x] Update memory files to remove stale info
+- [x] Review README for accuracy (reflects GHC 9.10.3 / Coq 8.20, examples table up to date)
 
 ### 10. Update GitHub actions
 - [x] Uses haskell:9.10.3 Docker for Haskell builds
 - [x] Uses mathcomp/mathcomp:2.5.0-coq-8.20 Docker for Coq builds
 - [x] Uses haskell-actions/setup for tests job
-- [ ] Verify Docker image versions are latest appropriate
+- [x] Verify Docker image versions are latest appropriate (haskell:9.10.3 matches target GHC; mathcomp:2.5.0-coq-8.20 is latest for Coq 8.20)
 
 ### 11. Test GitHub actions locally
-- [ ] Test build-haskell job locally
-- [ ] Test test-coq-files job locally
-- [ ] Test tests job locally
-- [ ] Test test-translation job locally
+- [x] Test build-haskell job locally (stack build succeeds)
+- [x] Test test-coq-files job locally (base, base-thy, containers, transformers, graph, ghc, core-semantics all build)
+- [x] Test tests job locally (unit tests pass, base-tests pass, all small examples build)
+- [ ] Test test-translation job locally (requires regeneration — deferred)
 
 ### 12. CLAUDE.md audit
-- [ ] Audit and trim CLAUDE.md
-- [ ] Ensure deprecated warning info is up to date
-- [ ] Remove outdated migration notes
+- [x] Audit and trim CLAUDE.md (173 lines, under 200 limit)
+- [x] Ensure deprecated warning info is up to date
+- [x] Remove outdated migration notes

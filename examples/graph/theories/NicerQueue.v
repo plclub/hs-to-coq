@@ -111,7 +111,7 @@ Proof.
     * unfold recurses_on. intros. destruct x0. destruct l1. destruct l0. simpl in H1. inversion H1. 
       apply H2. simpl. rewrite_rev. unfold_null. 
       destruct (rev l0);  reflexivity.
-      simpl. rewrite_rev. rewrite app_nil_r. rewrite app_length. simpl.  rewrite rev_length. lia. 
+      simpl. rewrite_rev. rewrite app_nil_r. rewrite length_app. simpl.  rewrite rev_length. lia. 
       reflexivity.
     * simpl. unfold_null. destruct (rev l); reflexivity.
     + apply queue_order_wf.
@@ -119,7 +119,7 @@ Proof.
       unfold queueEmpty. simpl. unfold_null.
       destruct l0. intuition. rewrite_rev. 
       destruct (rev l0); reflexivity. simpl. destruct l0. unfold queueEmpty in H1; unfold_null. inversion H1.
-      simpl. rewrite_rev. rewrite app_nil_r. rewrite app_length; rewrite rev_length. simpl. lia. reflexivity.
+      simpl. rewrite_rev. rewrite app_nil_r. rewrite length_app; rewrite rev_length. simpl. lia. reflexivity.
      + apply H0.
   - rewrite (deferredFix_eq_on _ (fun x => queueEmpty x = false) 
   (fun x y => queue_size' x < queue_size' y)).
@@ -127,7 +127,7 @@ Proof.
     + apply queue_order_wf.
     + unfold recurses_on. intros. destruct x0. destruct l1. destruct l2. unfold queueEmpty in H1.
       unfold_null. inversion H1. reflexivity. destruct l2. apply H2. unfold queueEmpty. unfold_null.
-      rewrite_rev. destruct (rev l1); reflexivity. rewrite_rev. rewrite app_nil_r. rewrite app_length.
+      rewrite_rev. destruct (rev l1); reflexivity. rewrite_rev. rewrite app_nil_r. rewrite length_app.
       rewrite rev_length. simpl. lia. reflexivity.
     + assumption.
 Qed.

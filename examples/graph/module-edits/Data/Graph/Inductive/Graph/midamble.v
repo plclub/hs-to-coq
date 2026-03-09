@@ -93,8 +93,8 @@ Proof.
   intros. rewrite noNodes_def. rewrite noNodes_def. 
   pose proof (vertices_valid g'). 
   assert (length (labNodes g') = length(nodeList g')). unfold nodeList. unfold ulabNodes.
-  rewrite map_length. reflexivity. rewrite H4. clear H4. assert (length (labNodes g) = length (nodeList g)).
-  unfold nodeList. unfold ulabNodes. rewrite map_length. reflexivity. rewrite H4. clear H4.
+  rewrite length_map. reflexivity. rewrite H4. clear H4. assert (length (labNodes g) = length (nodeList g)).
+  unfold nodeList. unfold ulabNodes. rewrite length_map. reflexivity. rewrite H4. clear H4.
    symmetry in H2.
   pose proof (match_remain_some g v c g' H2). destruct H4. clear H5.
   assert (forall u, In u (nodeList g') <-> In u (nodeList g) /\ u <> v). { intros.
