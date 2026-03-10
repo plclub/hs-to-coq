@@ -321,7 +321,7 @@ rewrite forall ts e, CoreUtils.mkTicks ts e = e
 
 # Redefine RuleInfo so that it is always empty. This is *safe*
 # these redefines are for definitions in IdInfo
-redefine Inductive  Core.RuleInfo : Type := Core.EmptyRuleInfo.
+redefine Inductive  Core.RuleInfo : Set := Core.EmptyRuleInfo.
 redefine Definition Core.emptyRuleInfo   := Core.EmptyRuleInfo.
 redefine Definition Core.isEmptyRuleInfo  : Core.RuleInfo -> bool
    := fun x => true.

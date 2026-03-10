@@ -475,22 +475,9 @@ $(OUTFILES_CORESYN) : edits $(CORE_EDITS) $(CORESYN_PRE) $(CORESYN_MID) $(wildca
 	sed -i '/^   : PatSyn$$/a with ConLike : Type :=\n  | RealDataCon : DataCon -> ConLike\n  | PatSynCon : PatSyn -> ConLike' $@
 	@# Insert type definitions and Admitted Default instances before Arguments
 	@# (needed by partial record accessors; some types only defined in commented-out block)
-	sed -i '/^Arguments Bndr/i \
-Definition RuleBase := (NameEnv.NameEnv (list CoreRule))%type.\n\
-Axiom RuleEnv : Type.\n\
-\#[global] Instance Default__TyFamEqnValidityInfo : HsToCoq.Err.Default TyFamEqnValidityInfo. Admitted.\n\
-\#[global] Instance Default__AlgTyConRhs : HsToCoq.Err.Default AlgTyConRhs. Admitted.\n\
-\#[global] Instance Default__TyConDetails : HsToCoq.Err.Default TyConDetails. Admitted.\n\
-\#[global] Instance Default__TyCon : HsToCoq.Err.Default TyCon. Admitted.\n\
-\#[global] Instance Default__DmdType : HsToCoq.Err.Default DmdType. Admitted.\n\
-\#[global] Instance Default__IdInfo : HsToCoq.Err.Default IdInfo. Admitted.\n\
-\#[global] Instance Default__Var : HsToCoq.Err.Default Var. Admitted.\n\
-\#[global] Instance Default__DataCon : HsToCoq.Err.Default DataCon. Admitted.\n\
-\#[global] Instance Default__CoreRule : HsToCoq.Err.Default CoreRule. Admitted.\n\
-\#[global] Instance Default__RuleEnv : HsToCoq.Err.Default RuleEnv. Admitted.\n' $@
+	sed -i -e '/^Arguments Bndr/e cat fix-files/Core_defaults.v' $@
 	@# GHC 9.10: Eq___AltCon not auto-generated; inject after Eq___DataCon closing
-	sed -i '/Eq___DataCon_op_zsze__.*|}\./a \
-\n\#[local] Definition Eq___AltCon_op_zeze__ : AltCon -> AltCon -> bool :=\n  fun a b => match a, b with\n    | DataAlt dc1, DataAlt dc2 => dc1 GHC.Base.== dc2\n    | LitAlt l1, LitAlt l2 => l1 GHC.Base.== l2\n    | DEFAULT, DEFAULT => true\n    | _, _ => false\n  end.\n\n\#[local] Definition Eq___AltCon_op_zsze__ : AltCon -> AltCon -> bool :=\n  fun a b => negb (Eq___AltCon_op_zeze__ a b).\n\n\#[global]\nProgram Instance Eq___AltCon : GHC.Base.Eq_ AltCon :=\n  fun _ k__ =>\n    k__ {| GHC.Base.op_zeze____ := Eq___AltCon_op_zeze__ ;\n           GHC.Base.op_zsze____ := Eq___AltCon_op_zsze__ |}.' $@
+	sed -i '/Eq___DataCon_op_zsze__.*|}\./r fix-files/Eq___AltCon.v' $@
 	@# GHC 9.10: Var has single constructor Mk_Id — remove redundant wildcard branches
 	@# Match when Mk_Id has 7 args (all positions filled, whether _ or named)
 	sed -i '/| Mk_Id [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* =>/{n;/| _ =>/d}' $@

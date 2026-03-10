@@ -7219,10 +7219,10 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
 (* External variables:
      BranchFlag BranchIndex Branched BuiltInSynFamily CType CoAxBranch CoAxiom
      CoAxiomRule Coercion DataConBoxer Eq ForeignCall Gt Kind Literal Lt None
-     PredType PrimOp Some ThetaType Type Type_ Unbranched andb bool comparison cons
-     false list mkLitChar mkLitDouble mkLitFloat mkLitIntWrap mkLitString mkLitWord8
-     mkLitWordWrap nat negb nil op_zt__ option orb pair size_AnnExpr' snd true tt
-     unit BasicTypes.Activation BasicTypes.AlwaysActive BasicTypes.Arity
+     PredType PrimOp Set Some ThetaType Type Type_ Unbranched andb bool comparison
+     cons false list mkLitChar mkLitDouble mkLitFloat mkLitIntWrap mkLitString
+     mkLitWord8 mkLitWordWrap nat negb nil op_zt__ option orb pair size_AnnExpr' snd
+     true tt unit BasicTypes.Activation BasicTypes.AlwaysActive BasicTypes.Arity
      BasicTypes.CbvMark BasicTypes.ConTagZ BasicTypes.ConstraintLike
      BasicTypes.DefMethSpec BasicTypes.IAmALoopBreaker BasicTypes.IAmDead
      BasicTypes.InlinePragma BasicTypes.IsInsideLam BasicTypes.JoinArity
