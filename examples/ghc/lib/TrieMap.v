@@ -130,11 +130,11 @@ Definition CoercionMapG : Type -> Type := GenMap CoercionMapX.
 Program Instance TrieMap__IntMap : TrieMap IntMap.IntMap :=
   {
   Key := TrieMap__IntMap_Key ;
-  alterTM := fun {b : Type} => TrieMap__IntMap_alterTM ;
-  emptyTM := fun {a : Type} => TrieMap__IntMap_emptyTM ;
-  filterTM := fun {a : Type} => TrieMap__IntMap_filterTM ;
-  foldTM := fun {a : Type} {b : Type} => TrieMap__IntMap_foldTM ;
-  lookupTM := fun {b : Type} => TrieMap__IntMap_lookupTM }.
+  alterTM := fun (b : Type) => TrieMap__IntMap_alterTM ;
+  emptyTM := fun (a : Type) => TrieMap__IntMap_emptyTM ;
+  filterTM := fun (a : Type) => TrieMap__IntMap_filterTM ;
+  foldTM := fun (a : Type) (b : Type) => TrieMap__IntMap_foldTM ;
+  lookupTM := fun (b : Type) => TrieMap__IntMap_lookupTM }.
 
 #[local] Definition TrieMap__Map_Key {k : Type} `{GHC.Base.Ord k} : Type :=
   k.
@@ -170,11 +170,11 @@ Program Instance TrieMap__Map {k : Type} `{GHC.Base.Ord k}
    : TrieMap (Data.Map.Internal.Map k) :=
   {
   Key := TrieMap__Map_Key ;
-  alterTM := fun {b : Type} => TrieMap__Map_alterTM ;
-  emptyTM := fun {a : Type} => TrieMap__Map_emptyTM ;
-  filterTM := fun {a : Type} => TrieMap__Map_filterTM ;
-  foldTM := fun {a : Type} {b : Type} => TrieMap__Map_foldTM ;
-  lookupTM := fun {b : Type} => TrieMap__Map_lookupTM }.
+  alterTM := fun (b : Type) => TrieMap__Map_alterTM ;
+  emptyTM := fun (a : Type) => TrieMap__Map_emptyTM ;
+  filterTM := fun (a : Type) => TrieMap__Map_filterTM ;
+  foldTM := fun (a : Type) (b : Type) => TrieMap__Map_foldTM ;
+  lookupTM := fun (b : Type) => TrieMap__Map_lookupTM }.
 
 #[local] Definition TrieMap__UniqFM_Key {key : Type} `{Unique.Uniquable key}
    : Type :=
@@ -215,11 +215,11 @@ Program Instance TrieMap__UniqFM {key : Type} `{Unique.Uniquable key}
    : TrieMap (UniqFM.UniqFM key) :=
   {
   Key := TrieMap__UniqFM_Key ;
-  alterTM := fun {b : Type} => TrieMap__UniqFM_alterTM ;
-  emptyTM := fun {a : Type} => TrieMap__UniqFM_emptyTM ;
-  filterTM := fun {a : Type} => TrieMap__UniqFM_filterTM ;
-  foldTM := fun {a : Type} {b : Type} => TrieMap__UniqFM_foldTM ;
-  lookupTM := fun {b : Type} => TrieMap__UniqFM_lookupTM }.
+  alterTM := fun (b : Type) => TrieMap__UniqFM_alterTM ;
+  emptyTM := fun (a : Type) => TrieMap__UniqFM_emptyTM ;
+  filterTM := fun (a : Type) => TrieMap__UniqFM_filterTM ;
+  foldTM := fun (a : Type) (b : Type) => TrieMap__UniqFM_foldTM ;
+  lookupTM := fun (b : Type) => TrieMap__UniqFM_lookupTM }.
 
 #[local] Definition Functor__MaybeMap_fmap {inst_m : Type -> Type}
   `{GHC.Base.Functor inst_m}
@@ -241,8 +241,8 @@ Program Instance TrieMap__UniqFM {key : Type} `{Unique.Uniquable key}
 Program Instance Functor__MaybeMap {m : Type -> Type} `{GHC.Base.Functor m}
    : GHC.Base.Functor (MaybeMap m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__MaybeMap_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__MaybeMap_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__MaybeMap_op_zlzd__ |}.
 
 #[local] Definition TrieMap__MaybeMap_Key {m : Type -> Type} `{TrieMap m}
@@ -273,7 +273,7 @@ Infix "|>" := (_|>_) (at level 99).
   inst_m}
    : forall {b : Type},
      TrieMap__MaybeMap_Key -> XT b -> MaybeMap inst_m b -> MaybeMap inst_m b :=
-  fun {b : Type} => xtMaybe (fun {b} => alterTM).
+  fun {b : Type} => xtMaybe (fun b => alterTM).
 
 #[local] Definition TrieMap__MaybeMap_emptyTM {inst_m : Type -> Type} `{TrieMap
   inst_m}
@@ -337,18 +337,18 @@ Infix ">.>" := (op_zgzizg__) (at level 99).
 #[local] Definition TrieMap__MaybeMap_lookupTM {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {b : Type}, TrieMap__MaybeMap_Key -> MaybeMap inst_m b -> option b :=
-  fun {b : Type} => lkMaybe (fun {b} => lookupTM).
+  fun {b : Type} => lkMaybe (fun b => lookupTM).
 
 #[global]
 Program Instance TrieMap__MaybeMap {m : Type -> Type} `{TrieMap m}
    : TrieMap (MaybeMap m) :=
   {
   Key := TrieMap__MaybeMap_Key ;
-  alterTM := fun {b : Type} => TrieMap__MaybeMap_alterTM ;
-  emptyTM := fun {a : Type} => TrieMap__MaybeMap_emptyTM ;
-  filterTM := fun {a : Type} => TrieMap__MaybeMap_filterTM ;
-  foldTM := fun {a : Type} {b : Type} => TrieMap__MaybeMap_foldTM ;
-  lookupTM := fun {b : Type} => TrieMap__MaybeMap_lookupTM }.
+  alterTM := fun (b : Type) => TrieMap__MaybeMap_alterTM ;
+  emptyTM := fun (a : Type) => TrieMap__MaybeMap_emptyTM ;
+  filterTM := fun (a : Type) => TrieMap__MaybeMap_filterTM ;
+  foldTM := fun (a : Type) (b : Type) => TrieMap__MaybeMap_foldTM ;
+  lookupTM := fun (b : Type) => TrieMap__MaybeMap_lookupTM }.
 
 #[global] Definition foldMapTM {m : Type -> Type} {r : Type} {a : Type}
   `{TrieMap m} `{GHC.Base.Monoid r}
@@ -425,19 +425,19 @@ Program Instance TrieMap__MaybeMap {m : Type -> Type} `{TrieMap m}
 Program Instance Foldable__MaybeMap {m : Type -> Type} `{TrieMap m}
    : Data.Foldable.Foldable (MaybeMap m) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__MaybeMap_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__MaybeMap_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__MaybeMap_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__MaybeMap_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__MaybeMap_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__MaybeMap_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__MaybeMap_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__MaybeMap_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__MaybeMap_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__MaybeMap_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__MaybeMap_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__MaybeMap_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__MaybeMap_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__MaybeMap_toList |}.
 
 Instance Functor__ListMap
    : forall {m}, forall `{GHC.Base.Functor m}, GHC.Base.Functor (ListMap m).
@@ -459,7 +459,7 @@ Axiom xtList : forall {m : Type -> Type},
   inst_m}
    : forall {b : Type},
      TrieMap__ListMap_Key -> XT b -> ListMap inst_m b -> ListMap inst_m b :=
-  fun {b : Type} => xtList (fun {b} => alterTM).
+  fun {b : Type} => xtList (fun b => alterTM).
 
 Axiom TrieMap__ListMap_emptyTM : forall {m} {a} `{TrieMap m}, ListMap m a.
 
@@ -489,18 +489,18 @@ Axiom lkList : forall {m : Type -> Type},
 #[local] Definition TrieMap__ListMap_lookupTM {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {b : Type}, TrieMap__ListMap_Key -> ListMap inst_m b -> option b :=
-  fun {b : Type} => lkList (fun {b} => lookupTM).
+  fun {b : Type} => lkList (fun b => lookupTM).
 
 #[global]
 Program Instance TrieMap__ListMap {m : Type -> Type} `{TrieMap m}
    : TrieMap (ListMap m) :=
   {
   Key := TrieMap__ListMap_Key ;
-  alterTM := fun {b : Type} => TrieMap__ListMap_alterTM ;
-  emptyTM := fun {a : Type} => TrieMap__ListMap_emptyTM ;
-  filterTM := fun {a : Type} => TrieMap__ListMap_filterTM ;
-  foldTM := fun {a : Type} {b : Type} => TrieMap__ListMap_foldTM ;
-  lookupTM := fun {b : Type} => TrieMap__ListMap_lookupTM }.
+  alterTM := fun (b : Type) => TrieMap__ListMap_alterTM ;
+  emptyTM := fun (a : Type) => TrieMap__ListMap_emptyTM ;
+  filterTM := fun (a : Type) => TrieMap__ListMap_filterTM ;
+  foldTM := fun (a : Type) (b : Type) => TrieMap__ListMap_foldTM ;
+  lookupTM := fun (b : Type) => TrieMap__ListMap_lookupTM }.
 
 #[local] Definition Foldable__ListMap_foldMap {inst_m : Type -> Type} `{TrieMap
   inst_m}
@@ -572,19 +572,19 @@ Program Instance TrieMap__ListMap {m : Type -> Type} `{TrieMap m}
 Program Instance Foldable__ListMap {m : Type -> Type} `{TrieMap m}
    : Data.Foldable.Foldable (ListMap m) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__ListMap_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__ListMap_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__ListMap_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__ListMap_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__ListMap_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__ListMap_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__ListMap_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__ListMap_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__ListMap_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__ListMap_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__ListMap_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__ListMap_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__ListMap_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__ListMap_toList |}.
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `TrieMap.Outputable__ListMap' *)

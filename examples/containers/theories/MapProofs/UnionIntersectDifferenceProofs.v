@@ -5,6 +5,8 @@ Require Import MapProofs.Tactics.
 Require Import MapProofs.InsertProofs.
 Require Import MapProofs.DeleteUpdateProofs.
 Require Import Coq.Classes.Morphisms.
+Require Proofs.Data.Foldable.
+Require Import Coq.Program.Tactics.
 
 Section WF_Part1.
 Context {e : Type} {a : Type} {HEq : Eq_ e} {HOrd : Ord e} {HEqLaws : EqLaws e}  {HOrdLaws : OrdLaws e}.
@@ -140,7 +142,6 @@ Proof.
   - simpl. rewrite IHl1. rewrite oro_assoc. reflexivity.
 Qed.
 
-Require Proofs.Data.Foldable.
 
 Lemma unions_Desc:
   forall (ss: list (Map e a)) lb ub,
@@ -389,7 +390,6 @@ intros ????? HB1 HB2.
         solve_Bounded e. f_solver e; rewrite H5 in Hsem0; rewrite <-Hsem1; assumption.
 Qed.
 
-Require Import Coq.Classes.Morphisms.
 (** ** Verification of [insertWithKeyR] *)
 (*Need to add assumption that f is proper*)
 Lemma insertWithKeyR_Desc:
@@ -885,7 +885,6 @@ Proof.
         ].
 Qed.
 
-Require Import Coq.Program.Tactics.
 
 Open Scope Z_scope.
 

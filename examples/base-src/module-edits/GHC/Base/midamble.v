@@ -413,6 +413,8 @@ Definition build' : forall {a}, (forall {b}, (a -> b -> b) -> b -> b) -> list a 
 
 (** Qualified notation for the notation defined here **)
 
+Require String Ascii.
+
 Module ManualNotations.
 Infix "GHC.Base./=" := (op_zsze__) (no associativity, at level 70).
 Notation "'_GHC.Base./=_'" := (op_zsze__).
@@ -427,7 +429,6 @@ Notation "'_GHC.Base.>_'" := (op_zg__).
 Infix "GHC.Base.>=" := (op_zgze__) (no associativity, at level 70).
 Notation "'_GHC.Base.>=_'" := (op_zgze__).
 
-Require String Ascii.
 Export String.StringSyntax Ascii.AsciiSyntax.
 End ManualNotations.
 

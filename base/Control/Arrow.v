@@ -245,8 +245,8 @@ Program Instance Functor__Kleisli {m : Type -> Type} {a : Type}
   `{GHC.Base.Functor m}
    : GHC.Base.Functor (Kleisli m a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Kleisli_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Kleisli_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Kleisli_op_zlzd__ |}.
 
 #[local] Definition Arrow__arrow_arr
@@ -295,13 +295,13 @@ Program Instance Functor__Kleisli {m : Type -> Type} {a : Type}
 #[global]
 Program Instance Arrow__arrow : Arrow GHC.Prim.arrow :=
   fun _ k__ =>
-    k__ {| arr__ := fun {b : Type} {c : Type} => Arrow__arrow_arr ;
-           first__ := fun {b : Type} {c : Type} {d : Type} => Arrow__arrow_first ;
-           op_zazaza____ := fun {b : Type} {c : Type} {c' : Type} =>
+    k__ {| arr__ := fun (b : Type) (c : Type) => Arrow__arrow_arr ;
+           first__ := fun (b : Type) (c : Type) (d : Type) => Arrow__arrow_first ;
+           op_zazaza____ := fun (b : Type) (c : Type) (c' : Type) =>
              Arrow__arrow_op_zazaza__ ;
-           op_ztztzt____ := fun {b : Type} {c : Type} {b' : Type} {c' : Type} =>
+           op_ztztzt____ := fun (b : Type) (c : Type) (b' : Type) (c' : Type) =>
              Arrow__arrow_op_ztztzt__ ;
-           second__ := fun {b : Type} {c : Type} {d : Type} => Arrow__arrow_second |}.
+           second__ := fun (b : Type) (c : Type) (d : Type) => Arrow__arrow_second |}.
 
 #[local] Definition Applicative__Kleisli_op_zlztzg__ {inst_m : Type -> Type}
   {inst_a : Type} `{GHC.Base.Applicative inst_m}
@@ -347,13 +347,13 @@ Program Instance Applicative__Kleisli {m : Type -> Type} {a : Type}
   `{GHC.Base.Applicative m}
    : GHC.Base.Applicative (Kleisli m a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Kleisli_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Kleisli_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Kleisli_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Kleisli_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Kleisli_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Arrow.Alternative__Kleisli' *)
@@ -389,11 +389,11 @@ Program Instance Monad__Kleisli {m : Type -> Type} {a : Type} `{GHC.Base.Monad
   m}
    : GHC.Base.Monad (Kleisli m a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Kleisli_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__Kleisli_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Kleisli_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__Kleisli_return_ |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Control.Arrow.MonadPlus__Kleisli' *)
@@ -424,7 +424,7 @@ Program Instance Monad__Kleisli {m : Type -> Type} {a : Type} `{GHC.Base.Monad
 #[global]
 Program Instance ArrowApply__arrow : ArrowApply GHC.Prim.arrow :=
   fun _ k__ =>
-    k__ {| app__ := fun {b : Type} {c : Type} => ArrowApply__arrow_app |}.
+    k__ {| app__ := fun (b : Type) (c : Type) => ArrowApply__arrow_app |}.
 
 (* Skipping instance `Control.Arrow.ArrowApply__Kleisli' of class
    `Control.Arrow.ArrowApply' *)
@@ -449,9 +449,9 @@ Program Instance ArrowApply__arrow : ArrowApply GHC.Prim.arrow :=
 Program Instance Functor__ArrowMonad {a : Type -> Type -> Type} `{Arrow a}
    : GHC.Base.Functor (ArrowMonad a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__ArrowMonad_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__ArrowMonad_op_zlzd__ |}.
 
 (* Skipping instance `Control.Arrow.Applicative__ArrowMonad' of class

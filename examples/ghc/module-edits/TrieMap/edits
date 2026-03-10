@@ -66,11 +66,11 @@ in TrieMap.xtBndr                         rewrite forall, TrieMap.xtG          =
 in TrieMap.xtMaybe rewrite forall, tr = tr _
 in TrieMap.lkMaybe rewrite forall, lk = lk _
 
-in TrieMap.TrieMap__MaybeMap_alterTM  rewrite forall, TrieMap.alterTM  = (fun {b} => TrieMap.alterTM)
-in TrieMap.TrieMap__MaybeMap_lookupTM rewrite forall, TrieMap.lookupTM = (fun {b} => TrieMap.lookupTM)
+in TrieMap.TrieMap__MaybeMap_alterTM  rewrite forall, TrieMap.alterTM  = (fun b => TrieMap.alterTM)
+in TrieMap.TrieMap__MaybeMap_lookupTM rewrite forall, TrieMap.lookupTM = (fun b => TrieMap.lookupTM)
 
-in TrieMap.TrieMap__ListMap_alterTM  rewrite forall, TrieMap.alterTM  = (fun {b} => TrieMap.alterTM)
-in TrieMap.TrieMap__ListMap_lookupTM rewrite forall, TrieMap.lookupTM = (fun {b} => TrieMap.lookupTM)
+in TrieMap.TrieMap__ListMap_alterTM  rewrite forall, TrieMap.alterTM  = (fun b => TrieMap.alterTM)
+in TrieMap.TrieMap__ListMap_lookupTM rewrite forall, TrieMap.lookupTM = (fun b => TrieMap.lookupTM)
 
 ################################################################################
 ## Instances that require complicated handling (TODO)

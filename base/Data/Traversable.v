@@ -107,19 +107,19 @@ Existing Class Traversable.
 #[global]
 Program Instance Traversable__option : Traversable option :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__option_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__option_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__option_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__option_traverse |}.
 
 #[local] Definition Traversable__list_traverse
@@ -155,19 +155,19 @@ Program Instance Traversable__option : Traversable option :=
 #[global]
 Program Instance Traversable__list : Traversable list :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__list_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__list_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__list_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__list_traverse |}.
 
 #[local] Definition Traversable__NonEmpty_traverse
@@ -211,19 +211,19 @@ Program Instance Traversable__list : Traversable list :=
 #[global]
 Program Instance Traversable__NonEmpty : Traversable GHC.Base.NonEmpty :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__NonEmpty_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__NonEmpty_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__NonEmpty_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__NonEmpty_traverse |}.
 
 #[local] Definition Traversable__Either_traverse {inst_a : Type}
@@ -268,19 +268,19 @@ Program Instance Traversable__NonEmpty : Traversable GHC.Base.NonEmpty :=
 Program Instance Traversable__Either {a : Type}
    : Traversable (Data.Either.Either a) :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Either_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__Either_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__Either_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Either_traverse |}.
 
 #[local] Definition Traversable__pair_type_traverse {inst_a : Type}
@@ -326,19 +326,19 @@ Program Instance Traversable__Either {a : Type}
 Program Instance Traversable__pair_type {a : Type}
    : Traversable (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__pair_type_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__pair_type_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__pair_type_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__pair_type_traverse |}.
 
 (* Skipping instance `Data.Traversable.Traversable__Array' of class
@@ -380,19 +380,19 @@ Program Instance Traversable__pair_type {a : Type}
 #[global]
 Program Instance Traversable__Proxy : Traversable Data.Proxy.Proxy :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Proxy_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__Proxy_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__Proxy_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Proxy_traverse |}.
 
 #[local] Definition Traversable__Const_traverse {inst_m : Type}
@@ -441,19 +441,19 @@ Program Instance Traversable__Proxy : Traversable Data.Proxy.Proxy :=
 Program Instance Traversable__Const {m : Type}
    : Traversable (Data.Functor.Const.Const m) :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Const_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__Const_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__Const_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Const_traverse |}.
 
 #[local] Definition Traversable__Dual_traverse
@@ -499,19 +499,19 @@ Program Instance Traversable__Const {m : Type}
 #[global]
 Program Instance Traversable__Dual : Traversable Data.SemigroupInternal.Dual :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Dual_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__Dual_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__Dual_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Dual_traverse |}.
 
 #[local] Definition Traversable__Sum_traverse
@@ -557,19 +557,19 @@ Program Instance Traversable__Dual : Traversable Data.SemigroupInternal.Dual :=
 #[global]
 Program Instance Traversable__Sum : Traversable Data.SemigroupInternal.Sum :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Sum_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__Sum_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__Sum_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Sum_traverse |}.
 
 #[local] Definition Traversable__Product_traverse
@@ -616,19 +616,19 @@ Program Instance Traversable__Sum : Traversable Data.SemigroupInternal.Sum :=
 Program Instance Traversable__Product
    : Traversable Data.SemigroupInternal.Product :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Product_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__Product_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__Product_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Product_traverse |}.
 
 (* Skipping instance `Data.Traversable.Traversable__First' of class
@@ -689,19 +689,19 @@ Program Instance Traversable__Product
 Program Instance Traversable__Alt {f : Type -> Type} `{(Traversable f)}
    : Traversable (Data.SemigroupInternal.Alt f) :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Alt_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__Alt_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__Alt_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Alt_traverse |}.
 
 #[local] Definition Traversable__Ap_traverse {inst_f : Type -> Type}
@@ -750,19 +750,19 @@ Program Instance Traversable__Alt {f : Type -> Type} `{(Traversable f)}
 Program Instance Traversable__Ap {f : Type -> Type} `{(Traversable f)}
    : Traversable (Data.Monoid.Ap f) :=
   fun _ k__ =>
-    k__ {| mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Ap_mapM ;
-           sequence__ := fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
              Traversable__Ap_sequence ;
-           sequenceA__ := fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
              Traversable__Ap_sequenceA ;
-           traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Ap_traverse |}.
 
 (* Skipping instance `Data.Traversable.Traversable__U1' of class

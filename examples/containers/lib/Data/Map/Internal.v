@@ -453,8 +453,8 @@ Program Instance Monoid__Map {k : Type} {v : Type} `{(GHC.Base.Ord k)}
 #[global]
 Program Instance Functor__Map {k : Type} : GHC.Base.Functor (Map k) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Map_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Map_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Map_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Map_op_zlzd__ |}.
 
 #[global] Definition mapWhenMissing {f : Type -> Type} {a : Type} {b : Type} {k
    : Type} {x : Type} `{GHC.Base.Applicative f} `{GHC.Base.Monad f}
@@ -487,9 +487,9 @@ Program Instance Functor__WhenMissing {f : Type -> Type} {k : Type} {x : Type}
   `{GHC.Base.Applicative f} `{GHC.Base.Monad f}
    : GHC.Base.Functor (WhenMissing f k x) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__WhenMissing_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__WhenMissing_op_zlzd__ |}.
 
 (* Skipping instance `Data.Map.Internal.Category__WhenMissing' of class
@@ -534,9 +534,9 @@ Program Instance Functor__WhenMatched {f : Type -> Type} {k : Type} {x : Type}
   {y : Type} `{GHC.Base.Functor f}
    : GHC.Base.Functor (WhenMatched f k x y) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__WhenMatched_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__WhenMatched_op_zlzd__ |}.
 
 (* Skipping instance `Data.Map.Internal.Category__WhenMatched' of class
@@ -650,10 +650,10 @@ Program Instance Ord__Map {k : Type} {v : Type} `{GHC.Base.Ord k} `{GHC.Base.Ord
 #[global]
 Program Instance Eq2__Map : Data.Functor.Classes.Eq2 Map :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq2__ := fun {a : Type}
-           {b : Type}
-           {c : Type}
-           {d : Type} =>
+    k__ {| Data.Functor.Classes.liftEq2__ := fun (a : Type)
+           (b : Type)
+           (c : Type)
+           (d : Type) =>
              Eq2__Map_liftEq2 |}.
 
 (* Skipping instance `Data.Map.Internal.Eq1__Map' of class
@@ -674,10 +674,10 @@ Program Instance Eq2__Map : Data.Functor.Classes.Eq2 Map :=
 #[global]
 Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare2__ := fun {a : Type}
-           {b : Type}
-           {c : Type}
-           {d : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare2__ := fun (a : Type)
+           (b : Type)
+           (c : Type)
+           (d : Type) =>
              Ord2__Map_liftCompare2 |}.
 
 (* Skipping instance `Data.Map.Internal.Ord1__Map' of class
@@ -842,40 +842,40 @@ Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
 #[global]
 Program Instance Foldable__Map {k : Type} : Data.Foldable.Foldable (Map k) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Map_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Map_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Map_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Map_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Map_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Map_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Map_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Map_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Map_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Map_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Map_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Map_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Map_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Map_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Map_toList |}.
 
 #[global]
 Program Instance Traversable__Map {k : Type}
    : Data.Traversable.Traversable (Map k) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Map_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Map_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Map_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Map_traverse |}.
 
 (* Skipping instance `Data.Map.Internal.Bifoldable__Map' of class

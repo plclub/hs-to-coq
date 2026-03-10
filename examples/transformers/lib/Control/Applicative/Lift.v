@@ -56,7 +56,7 @@ Arguments Other {_} {_} _.
 Program Instance Eq1__Lift {f : Type -> Type} `{(Data.Functor.Classes.Eq1 f)}
    : Data.Functor.Classes.Eq1 (Lift f) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftEq__ := fun (a : Type) (b : Type) =>
              Eq1__Lift_liftEq |}.
 
 #[local] Definition Ord1__Lift_liftCompare {inst_f : Type -> Type}
@@ -77,7 +77,7 @@ Program Instance Eq1__Lift {f : Type -> Type} `{(Data.Functor.Classes.Eq1 f)}
 Program Instance Ord1__Lift {f : Type -> Type} `{(Data.Functor.Classes.Ord1 f)}
    : Data.Functor.Classes.Ord1 (Lift f) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun (a : Type) (b : Type) =>
              Ord1__Lift_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
@@ -178,8 +178,8 @@ Program Instance Ord__Lift {f : Type -> Type} {a : Type}
 Program Instance Functor__Lift {f : Type -> Type} `{(GHC.Base.Functor f)}
    : GHC.Base.Functor (Lift f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Lift_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Lift_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Lift_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Lift_op_zlzd__ |}.
 
 #[local] Definition Foldable__Lift_foldMap {inst_f : Type -> Type}
   `{(Data.Foldable.Foldable inst_f)}
@@ -256,18 +256,18 @@ Program Instance Functor__Lift {f : Type -> Type} `{(GHC.Base.Functor f)}
 Program Instance Foldable__Lift {f : Type -> Type} `{(Data.Foldable.Foldable f)}
    : Data.Foldable.Foldable (Lift f) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Lift_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Lift_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Lift_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Lift_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Lift_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Lift_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Lift_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Lift_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Lift_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Lift_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Lift_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Lift_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Lift_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Lift_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Lift_toList |}.
 
 #[local] Definition Traversable__Lift_traverse {inst_f : Type -> Type}
   `{(Data.Traversable.Traversable inst_f)}
@@ -313,23 +313,23 @@ Program Instance Traversable__Lift {f : Type -> Type}
   `{(Data.Traversable.Traversable f)}
    : Data.Traversable.Traversable (Lift f) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Lift_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Lift_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Lift_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Lift_traverse |}.
 
 #[global] Definition unLift {f : Type -> Type} {a : Type} `{GHC.Base.Applicative
@@ -379,13 +379,13 @@ Program Instance Applicative__Lift {f : Type -> Type} `{(GHC.Base.Applicative
    f)}
    : GHC.Base.Applicative (Lift f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Lift_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Lift_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Lift_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Lift_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Lift_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Applicative.Lift.Alternative__Lift' *)

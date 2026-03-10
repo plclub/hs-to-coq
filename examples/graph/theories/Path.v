@@ -9,6 +9,14 @@ Require Import Coq.NArith.BinNat.
 Require Import Lia.
 Require Import Crush.
 Require Import WeightedGraphs.
+Require Import GHC.Base.
+Require Import OrdTactic.
+Require Import Coq.micromega.OrderedRing.
+Require Import Coq.Classes.RelationClasses.
+Require Import Coq.Classes.Morphisms.
+Require Import Coq.Classes.SetoidTactics.
+Require Import RealRing.
+Require Import Proofs.GHC.Base.
 Import GHC.Num.Notations.
 
 
@@ -385,13 +393,6 @@ End AllPaths.
 
 (** Weighted Paths **)
 
-Require Import GHC.Base.
-Require Import OrdTactic.
-Require Import Coq.micromega.OrderedRing.
-Require Import Coq.Classes.RelationClasses.
-Require Import Coq.Classes.Morphisms.
-Require Import Coq.Classes.SetoidTactics.
-Require Import RealRing.
 (*Paths and shortest paths in weighted graphs*)
 Section Weighted.
 
@@ -784,7 +785,6 @@ Proof.
   left. apply H0. assumption. apply paths_of_length_def. apply H1.
 Qed.
 
-Require Import Proofs.GHC.Base.
 (*Now we can find the shortest path for a given length. We want to show that if all the edge weights
   are nonnegative, if there is a shortest path of size > n, then there is a shortest path of size at most n*)
 Lemma path_app_strong: forall u v w l1 l2 ,

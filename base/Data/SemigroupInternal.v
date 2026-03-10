@@ -153,29 +153,29 @@ Instance Unpeel_Alt (k : Type) (f : k -> Type) (a : k) : HsToCoq.Unpeel.Unpeel (
 Program Instance Functor__Alt {f : Type -> Type} `{GHC.Base.Functor f}
    : GHC.Base.Functor (Alt f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Alt_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Alt_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Alt_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Alt_op_zlzd__ |}.
 
 #[global]
 Program Instance Applicative__Alt {f : Type -> Type} `{GHC.Base.Applicative f}
    : GHC.Base.Applicative (Alt f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Alt_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Alt_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Alt_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Alt_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Alt_pure |}.
 
 #[global]
 Program Instance Monad__Alt {f : Type -> Type} `{GHC.Base.Monad f}
    : GHC.Base.Monad (Alt f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Alt_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Alt_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Alt_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Alt_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Alt_return_ |}.
 
 Instance Unpeel_Dual a : HsToCoq.Unpeel.Unpeel (Dual a) a :=
   HsToCoq.Unpeel.Build_Unpeel _ _ getDual Mk_Dual.
@@ -229,8 +229,8 @@ Program Instance Monoid__Dual {a : Type} `{GHC.Base.Monoid a}
 #[global]
 Program Instance Functor__Dual : GHC.Base.Functor Dual :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Dual_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Dual_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Dual_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Dual_op_zlzd__ |}.
 
 #[local] Definition Applicative__Dual_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Dual (a -> b) -> Dual a -> Dual b :=
@@ -256,13 +256,13 @@ Program Instance Functor__Dual : GHC.Base.Functor Dual :=
 #[global]
 Program Instance Applicative__Dual : GHC.Base.Applicative Dual :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Dual_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Dual_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Dual_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Dual_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Dual_pure |}.
 
 #[local] Definition Monad__Dual_op_zgzgze__
    : forall {a : Type}, forall {b : Type}, Dual a -> (a -> Dual b) -> Dual b :=
@@ -279,10 +279,10 @@ Program Instance Applicative__Dual : GHC.Base.Applicative Dual :=
 #[global]
 Program Instance Monad__Dual : GHC.Base.Monad Dual :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Dual_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Dual_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Dual_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Dual_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Dual_return_ |}.
 
 Instance Unpeel_Endo a : HsToCoq.Unpeel.Unpeel (Endo a) (a -> a) :=
   HsToCoq.Unpeel.Build_Unpeel _ _ appEndo Mk_Endo.
@@ -412,8 +412,8 @@ Program Instance Monoid__Sum {a : Type} `{GHC.Num.Num a}
 #[global]
 Program Instance Functor__Sum : GHC.Base.Functor Sum :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Sum_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Sum_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Sum_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Sum_op_zlzd__ |}.
 
 #[local] Definition Applicative__Sum_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Sum (a -> b) -> Sum a -> Sum b :=
@@ -439,13 +439,13 @@ Program Instance Functor__Sum : GHC.Base.Functor Sum :=
 #[global]
 Program Instance Applicative__Sum : GHC.Base.Applicative Sum :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Sum_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Sum_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Sum_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Sum_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Sum_pure |}.
 
 #[local] Definition Monad__Sum_op_zgzgze__
    : forall {a : Type}, forall {b : Type}, Sum a -> (a -> Sum b) -> Sum b :=
@@ -462,10 +462,10 @@ Program Instance Applicative__Sum : GHC.Base.Applicative Sum :=
 #[global]
 Program Instance Monad__Sum : GHC.Base.Monad Sum :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Sum_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Sum_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Sum_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Sum_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Sum_return_ |}.
 
 Instance Unpeel_Product a : HsToCoq.Unpeel.Unpeel (Product a) a :=
   HsToCoq.Unpeel.Build_Unpeel _ _ getProduct Mk_Product.
@@ -516,8 +516,8 @@ Program Instance Monoid__Product {a : Type} `{GHC.Num.Num a}
 #[global]
 Program Instance Functor__Product : GHC.Base.Functor Product :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Product_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Product_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Product_op_zlzd__ |}.
 
 #[local] Definition Applicative__Product_op_zlztzg__
@@ -546,13 +546,13 @@ Program Instance Functor__Product : GHC.Base.Functor Product :=
 #[global]
 Program Instance Applicative__Product : GHC.Base.Applicative Product :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Product_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Product_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Product_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Product_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Product_pure |}.
 
 #[local] Definition Monad__Product_op_zgzgze__
    : forall {a : Type},
@@ -571,11 +571,11 @@ Program Instance Applicative__Product : GHC.Base.Applicative Product :=
 #[global]
 Program Instance Monad__Product : GHC.Base.Monad Product :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Product_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__Product_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Product_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__Product_return_ |}.
 
 (* Skipping instance `Data.SemigroupInternal.Semigroup__Alt' of class
    `GHC.Base.Semigroup' *)

@@ -50,7 +50,7 @@ Arguments Mk_Reverse {_} {_} {_} _.
 Program Instance Eq1__Reverse {f : Type -> Type} `{(Data.Functor.Classes.Eq1 f)}
    : Data.Functor.Classes.Eq1 (Reverse f) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftEq__ := fun (a : Type) (b : Type) =>
              Eq1__Reverse_liftEq |}.
 
 #[local] Definition Ord1__Reverse_liftCompare {inst_f : Type -> Type}
@@ -69,7 +69,7 @@ Program Instance Ord1__Reverse {f : Type -> Type} `{(Data.Functor.Classes.Ord1
    f)}
    : Data.Functor.Classes.Ord1 (Reverse f) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun (a : Type) (b : Type) =>
              Ord1__Reverse_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
@@ -170,8 +170,8 @@ Program Instance Ord__Reverse {f : Type -> Type} {a : Type}
 Program Instance Functor__Reverse {f : Type -> Type} `{(GHC.Base.Functor f)}
    : GHC.Base.Functor (Reverse f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Reverse_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Reverse_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Reverse_op_zlzd__ |}.
 
 #[local] Definition Applicative__Reverse_op_zlztzg__ {inst_f : Type -> Type}
@@ -212,13 +212,13 @@ Program Instance Applicative__Reverse {f : Type -> Type} `{(GHC.Base.Applicative
    f)}
    : GHC.Base.Applicative (Reverse f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Reverse_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Reverse_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Reverse_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Reverse_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Reverse_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Data.Functor.Reverse.Alternative__Reverse' *)
@@ -247,11 +247,11 @@ Program Instance Applicative__Reverse {f : Type -> Type} `{(GHC.Base.Applicative
 Program Instance Monad__Reverse {m : Type -> Type} `{(GHC.Base.Monad m)}
    : GHC.Base.Monad (Reverse m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Reverse_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__Reverse_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Reverse_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__Reverse_return_ |}.
 
 #[local] Definition MonadFail__Reverse_fail {inst_m : Type -> Type}
   `{(Control.Monad.Fail.MonadFail inst_m)}
@@ -263,7 +263,7 @@ Program Instance MonadFail__Reverse {m : Type -> Type}
   `{(Control.Monad.Fail.MonadFail m)}
    : Control.Monad.Fail.MonadFail (Reverse m) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} =>
+    k__ {| Control.Monad.Fail.fail__ := fun (a : Type) =>
              MonadFail__Reverse_fail |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
@@ -342,19 +342,19 @@ Program Instance Foldable__Reverse {f : Type -> Type} `{(Data.Foldable.Foldable
    f)}
    : Data.Foldable.Foldable (Reverse f) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Reverse_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Reverse_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Reverse_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Reverse_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Reverse_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Reverse_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Reverse_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Reverse_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Reverse_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Reverse_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Reverse_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Reverse_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Reverse_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Reverse_toList |}.
 
 (* Skipping all instances of class `Data.Foldable1.Foldable1', including
    `Data.Functor.Reverse.Foldable1__Reverse' *)

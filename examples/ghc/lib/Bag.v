@@ -123,18 +123,18 @@ Fixpoint Foldable__Bag_null {a : Type} (arg_0__ : Bag a) : bool
 #[global]
 Program Instance Foldable__Bag : Data.Foldable.Foldable Bag :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Bag_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Bag_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Bag_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Bag_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Bag_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Bag_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Bag_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Bag_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Bag_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Bag_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Bag_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Bag_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Bag_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Bag_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Bag_toList |}.
 
 Fixpoint Functor__Bag_fmap {a : Type} {b : Type} (f : a -> b) (arg_1__ : Bag a)
   : Bag b
@@ -158,8 +158,8 @@ Fixpoint Functor__Bag_op_zlzd__ {a : Type} {b : Type} (z : a) (arg_1__ : Bag b)
 #[global]
 Program Instance Functor__Bag : GHC.Base.Functor Bag :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Bag_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Bag_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Bag_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Bag_op_zlzd__ |}.
 
 Fixpoint Traversable__Bag_traverse {f : Type -> Type} {a : Type} {b : Type}
                                    `{GHC.Base.Applicative f} (fn : a -> f b) (arg_1__ : Bag a) : f (Bag b)
@@ -196,23 +196,23 @@ Fixpoint Traversable__Bag_traverse {f : Type -> Type} {a : Type} {b : Type}
 #[global]
 Program Instance Traversable__Bag : Data.Traversable.Traversable Bag :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Bag_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Bag_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Bag_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Bag_traverse |}.
 
 (* Skipping all instances of class `Control.DeepSeq.NFData', including

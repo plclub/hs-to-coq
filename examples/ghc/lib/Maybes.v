@@ -56,8 +56,8 @@ Arguments Failed {_} {_} _.
 Program Instance Functor__MaybeErr {err : Type}
    : GHC.Base.Functor (MaybeErr err) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__MaybeErr_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__MaybeErr_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__MaybeErr_op_zlzd__ |}.
 
 #[local] Definition Applicative__MaybeErr_op_zlztzg__ {inst_err}
@@ -99,13 +99,13 @@ Program Instance Functor__MaybeErr {err : Type}
 Program Instance Applicative__MaybeErr {err : Type}
    : GHC.Base.Applicative (MaybeErr err) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__MaybeErr_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__MaybeErr_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__MaybeErr_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__MaybeErr_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__MaybeErr_pure |}.
 
 #[local] Definition Monad__MaybeErr_op_zgzgze__ {inst_err : Type}
    : forall {a : Type},
@@ -132,11 +132,11 @@ Program Instance Applicative__MaybeErr {err : Type}
 #[global]
 Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__MaybeErr_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__MaybeErr_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__MaybeErr_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__MaybeErr_return_ |}.
 
 (* Skipping definition `Maybes.firstJust' *)
 

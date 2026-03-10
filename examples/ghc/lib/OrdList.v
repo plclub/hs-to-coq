@@ -153,19 +153,19 @@ Fixpoint foldrOL {a : Type} {b : Type} (arg_0__ : a -> b -> b) (arg_1__ : b)
 #[global]
 Program Instance Foldable__OrdList : Data.Foldable.Foldable OrdList :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__OrdList_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__OrdList_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__OrdList_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__OrdList_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__OrdList_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__OrdList_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__OrdList_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__OrdList_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__OrdList_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__OrdList_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__OrdList_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__OrdList_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__OrdList_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__OrdList_toList |}.
 
 Fixpoint mapOL {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__ : OrdList a)
   : OrdList b
@@ -188,8 +188,8 @@ Fixpoint mapOL {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__ : OrdList a)
 #[global]
 Program Instance Functor__OrdList : GHC.Base.Functor OrdList :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__OrdList_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__OrdList_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__OrdList_op_zlzd__ |}.
 
 #[global] Definition fromOL {a : Type} : OrdList a -> list a :=
@@ -244,23 +244,23 @@ Fixpoint toOL {a : Type} (arg_0__ : list a) : OrdList a
 #[global]
 Program Instance Traversable__OrdList : Data.Traversable.Traversable OrdList :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__OrdList_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__OrdList_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__OrdList_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__OrdList_traverse |}.
 
 #[global] Definition unitOL {a : Type} : a -> OrdList a :=

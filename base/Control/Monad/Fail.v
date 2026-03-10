@@ -35,7 +35,7 @@ Existing Class MonadFail.
 
 #[global]
 Program Instance MonadFail__option : MonadFail option :=
-  fun _ k__ => k__ {| fail__ := fun {a : Type} => MonadFail__option_fail |}.
+  fun _ k__ => k__ {| fail__ := fun (a : Type) => MonadFail__option_fail |}.
 
 #[local] Definition MonadFail__list_fail
    : forall {a : Type}, GHC.Base.String -> list a :=
@@ -43,7 +43,7 @@ Program Instance MonadFail__option : MonadFail option :=
 
 #[global]
 Program Instance MonadFail__list : MonadFail list :=
-  fun _ k__ => k__ {| fail__ := fun {a : Type} => MonadFail__list_fail |}.
+  fun _ k__ => k__ {| fail__ := fun (a : Type) => MonadFail__list_fail |}.
 
 (* Skipping instance `Control.Monad.Fail.MonadFail__IO' of class
    `Control.Monad.Fail.MonadFail' *)

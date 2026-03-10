@@ -56,7 +56,7 @@ Program Instance Eq1__IdentityT {f : Type -> Type} `{(Data.Functor.Classes.Eq1
    f)}
    : Data.Functor.Classes.Eq1 (IdentityT f) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftEq__ := fun (a : Type) (b : Type) =>
              Eq1__IdentityT_liftEq |}.
 
 #[local] Definition Ord1__IdentityT_liftCompare {inst_f : Type -> Type}
@@ -77,7 +77,7 @@ Program Instance Ord1__IdentityT {f : Type -> Type} `{(Data.Functor.Classes.Ord1
    f)}
    : Data.Functor.Classes.Ord1 (IdentityT f) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun (a : Type) (b : Type) =>
              Ord1__IdentityT_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
@@ -181,8 +181,8 @@ Program Instance Ord__IdentityT {f : Type -> Type} {a : Type}
 Program Instance Functor__IdentityT {m : Type -> Type} `{(GHC.Base.Functor m)}
    : GHC.Base.Functor (IdentityT m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__IdentityT_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__IdentityT_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__IdentityT_op_zlzd__ |}.
 
 #[local] Definition Foldable__IdentityT_foldMap {inst_f : Type -> Type}
@@ -257,21 +257,21 @@ Program Instance Foldable__IdentityT {f : Type -> Type}
   `{(Data.Foldable.Foldable f)}
    : Data.Foldable.Foldable (IdentityT f) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__IdentityT_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__IdentityT_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) =>
              Foldable__IdentityT_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} =>
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) =>
              Foldable__IdentityT_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__IdentityT_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__IdentityT_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.length__ := fun (a : Type) => Foldable__IdentityT_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__IdentityT_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__IdentityT_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__IdentityT_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__IdentityT_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__IdentityT_toList |}.
 
 (* Skipping all instances of class `Data.Foldable1.Foldable1', including
    `Control.Monad.Trans.Identity.Foldable1__IdentityT' *)
@@ -322,23 +322,23 @@ Program Instance Traversable__IdentityT {f : Type -> Type}
   `{(Data.Traversable.Traversable f)}
    : Data.Traversable.Traversable (IdentityT f) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__IdentityT_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__IdentityT_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__IdentityT_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__IdentityT_traverse |}.
 
 #[global] Definition lift2IdentityT {m n p : Type -> Type} {a b c : Type}
@@ -379,13 +379,13 @@ Program Instance Applicative__IdentityT {m : Type -> Type}
   `{(GHC.Base.Applicative m)}
    : GHC.Base.Applicative (IdentityT m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__IdentityT_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__IdentityT_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__IdentityT_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__IdentityT_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__IdentityT_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Monad.Trans.Identity.Alternative__IdentityT' *)
@@ -416,11 +416,11 @@ Program Instance Applicative__IdentityT {m : Type -> Type}
 Program Instance Monad__IdentityT {m : Type -> Type} `{(GHC.Base.Monad m)}
    : GHC.Base.Monad (IdentityT m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__IdentityT_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__IdentityT_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__IdentityT_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__IdentityT_return_ |}.
 
 #[local] Definition MonadFail__IdentityT_fail {inst_m : Type -> Type}
   `{(Control.Monad.Fail.MonadFail inst_m)}
@@ -432,7 +432,7 @@ Program Instance MonadFail__IdentityT {m : Type -> Type}
   `{(Control.Monad.Fail.MonadFail m)}
    : Control.Monad.Fail.MonadFail (IdentityT m) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} =>
+    k__ {| Control.Monad.Fail.fail__ := fun (a : Type) =>
              MonadFail__IdentityT_fail |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
@@ -456,9 +456,9 @@ Program Instance MonadFail__IdentityT {m : Type -> Type}
 Program Instance MonadTrans__IdentityT
    : Control.Monad.Trans.Class.MonadTrans IdentityT :=
   fun _ k__ =>
-    k__ {| Control.Monad.Trans.Class.lift__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Control.Monad.Trans.Class.lift__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              MonadTrans__IdentityT_lift |}.
 
 (* Skipping all instances of class `Data.Functor.Contravariant.Contravariant',

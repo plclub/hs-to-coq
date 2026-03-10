@@ -53,8 +53,8 @@ Arguments Mk_ContT {_} {_} {_} {_} _.
 Program Instance Functor__ContT {k : Type} {r : k} {m : k -> Type}
    : GHC.Base.Functor (ContT r m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__ContT_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__ContT_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__ContT_op_zlzd__ |}.
 
 #[local] Definition Applicative__ContT_op_zlztzg__ {inst_k : Type} {inst_r
@@ -95,13 +95,13 @@ Program Instance Functor__ContT {k : Type} {r : k} {m : k -> Type}
 Program Instance Applicative__ContT {k : Type} {r : k} {m : k -> Type}
    : GHC.Base.Applicative (ContT r m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__ContT_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__ContT_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__ContT_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__ContT_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__ContT_pure |}.
 
 #[local] Definition Monad__ContT_op_zgzgze__ {inst_k : Type} {inst_r : inst_k}
   {inst_m : inst_k -> Type}
@@ -129,11 +129,11 @@ Program Instance Applicative__ContT {k : Type} {r : k} {m : k -> Type}
 Program Instance Monad__ContT {k : Type} {r : k} {m : k -> Type}
    : GHC.Base.Monad (ContT r m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__ContT_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__ContT_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__ContT_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__ContT_return_ |}.
 
 #[local] Definition MonadFail__ContT_fail {inst_m : Type -> Type} {inst_r
    : Type} `{(Control.Monad.Fail.MonadFail inst_m)}
@@ -146,7 +146,7 @@ Program Instance MonadFail__ContT {m : Type -> Type} {r : Type}
   `{(Control.Monad.Fail.MonadFail m)}
    : Control.Monad.Fail.MonadFail (ContT r m) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} => MonadFail__ContT_fail |}.
+    k__ {| Control.Monad.Fail.fail__ := fun (a : Type) => MonadFail__ContT_fail |}.
 
 #[local] Definition MonadTrans__ContT_lift {inst_r : Type}
    : forall {m : Type -> Type},
@@ -158,9 +158,9 @@ Program Instance MonadFail__ContT {m : Type -> Type} {r : Type}
 Program Instance MonadTrans__ContT {r : Type}
    : Control.Monad.Trans.Class.MonadTrans (ContT r) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Trans.Class.lift__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Control.Monad.Trans.Class.lift__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              MonadTrans__ContT_lift |}.
 
 (* Skipping all instances of class `Control.Monad.IO.Class.MonadIO', including

@@ -134,8 +134,8 @@ Program Instance Monoid__Proxy {k : Type} {s : k} : GHC.Base.Monoid (Proxy s) :=
 #[global]
 Program Instance Functor__Proxy : GHC.Base.Functor Proxy :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Proxy_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Proxy_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Proxy_op_zlzd__ |}.
 
 #[local] Definition Applicative__Proxy_op_zlztzg__
@@ -161,13 +161,13 @@ Program Instance Functor__Proxy : GHC.Base.Functor Proxy :=
 #[global]
 Program Instance Applicative__Proxy : GHC.Base.Applicative Proxy :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Proxy_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Proxy_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Proxy_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Proxy_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Proxy_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Data.Proxy.Alternative__Proxy' *)
@@ -187,11 +187,11 @@ Program Instance Applicative__Proxy : GHC.Base.Applicative Proxy :=
 #[global]
 Program Instance Monad__Proxy : GHC.Base.Monad Proxy :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Proxy_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__Proxy_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Proxy_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__Proxy_return_ |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Data.Proxy.MonadPlus__Proxy' *)

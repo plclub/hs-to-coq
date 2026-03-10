@@ -4,6 +4,7 @@ Require Import MapProofs.Bounds.
 Require Import MapProofs.Tactics.
 Require Import MapProofs.MaxMinProofs.
 Require Import MapProofs.InsertProofs.
+Require Import Coq.Classes.Morphisms.
 
 Section WF.
 Context {e : Type} {a : Type} {HEq : Eq_ e} {HOrd : Ord e} {HEqLaws : EqLaws e}  {HOrdLaws : OrdLaws e}.
@@ -153,7 +154,6 @@ Proof.
 Qed.
 
 (** ** Verification of [adjustWithKey *)
-Require Import Coq.Classes.Morphisms. (* For [Proper] *)
 
 (*TODO: Had to add assumption that f is proper*)
 Lemma adjustWithKey_Desc :

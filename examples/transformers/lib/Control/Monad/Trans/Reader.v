@@ -59,8 +59,8 @@ Program Instance Functor__ReaderT {m : Type -> Type} {r : Type}
   `{(GHC.Base.Functor m)}
    : GHC.Base.Functor (ReaderT r m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__ReaderT_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__ReaderT_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__ReaderT_op_zlzd__ |}.
 
 #[local] Definition Applicative__ReaderT_liftA2 {inst_m : Type -> Type} {inst_r
@@ -105,13 +105,13 @@ Program Instance Applicative__ReaderT {m : Type -> Type} {r : Type}
   `{(GHC.Base.Applicative m)}
    : GHC.Base.Applicative (ReaderT r m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__ReaderT_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__ReaderT_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__ReaderT_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__ReaderT_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__ReaderT_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Monad.Trans.Reader.Alternative__ReaderT' *)
@@ -143,11 +143,11 @@ Program Instance Monad__ReaderT {m : Type -> Type} {r : Type} `{(GHC.Base.Monad
    m)}
    : GHC.Base.Monad (ReaderT r m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__ReaderT_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__ReaderT_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__ReaderT_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__ReaderT_return_ |}.
 
 #[local] Definition MonadTrans__ReaderT_lift {inst_r : Type}
    : forall {m : Type -> Type},
@@ -158,9 +158,9 @@ Program Instance Monad__ReaderT {m : Type -> Type} {r : Type} `{(GHC.Base.Monad
 Program Instance MonadTrans__ReaderT {r : Type}
    : Control.Monad.Trans.Class.MonadTrans (ReaderT r) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Trans.Class.lift__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Control.Monad.Trans.Class.lift__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              MonadTrans__ReaderT_lift |}.
 
 #[local] Definition MonadFail__ReaderT_fail {inst_m : Type -> Type} {inst_r
@@ -174,7 +174,7 @@ Program Instance MonadFail__ReaderT {m : Type -> Type} {r : Type}
   `{(Control.Monad.Fail.MonadFail m)}
    : Control.Monad.Fail.MonadFail (ReaderT r m) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} =>
+    k__ {| Control.Monad.Fail.fail__ := fun (a : Type) =>
              MonadFail__ReaderT_fail |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including

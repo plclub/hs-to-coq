@@ -1,4 +1,5 @@
 Require Import MapProofs.Common.
+Require Import Coq.Program.Tactics.
 Set Bullet Behavior "Strict Subproofs".
 
 (** ** Tactics for pointer equality *)
@@ -962,7 +963,6 @@ Ltac find_Tip :=
     subst
   end.
 
-Require Import Coq.Program.Tactics.
 
 Open Scope Z_scope.
 

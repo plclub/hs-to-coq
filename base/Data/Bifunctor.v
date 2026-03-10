@@ -81,10 +81,10 @@ Existing Class Bifunctor.
 #[global]
 Program Instance Bifunctor__pair_type : Bifunctor GHC.Tuple.pair_type :=
   fun _ k__ =>
-    k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    k__ {| bimap__ := fun (a : Type) (b : Type) (c : Type) (d : Type) =>
              Bifunctor__pair_type_bimap ;
-           first__ := fun {a : Type} {b : Type} {c : Type} => Bifunctor__pair_type_first ;
-           second__ := fun {b : Type} {c : Type} {a : Type} =>
+           first__ := fun (a : Type) (b : Type) (c : Type) => Bifunctor__pair_type_first ;
+           second__ := fun (b : Type) (c : Type) (a : Type) =>
              Bifunctor__pair_type_second |}.
 
 #[local] Definition Bifunctor__triple_type_bimap {inst_x1 : Type}
@@ -123,11 +123,11 @@ Program Instance Bifunctor__pair_type : Bifunctor GHC.Tuple.pair_type :=
 Program Instance Bifunctor__triple_type {x1 : Type}
    : Bifunctor (GHC.Tuple.triple_type x1) :=
   fun _ k__ =>
-    k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    k__ {| bimap__ := fun (a : Type) (b : Type) (c : Type) (d : Type) =>
              Bifunctor__triple_type_bimap ;
-           first__ := fun {a : Type} {b : Type} {c : Type} =>
+           first__ := fun (a : Type) (b : Type) (c : Type) =>
              Bifunctor__triple_type_first ;
-           second__ := fun {b : Type} {c : Type} {a : Type} =>
+           second__ := fun (b : Type) (c : Type) (a : Type) =>
              Bifunctor__triple_type_second |}.
 
 #[local] Definition Bifunctor__quad_type_bimap {inst_x1 : Type} {inst_x2 : Type}
@@ -169,10 +169,10 @@ Program Instance Bifunctor__triple_type {x1 : Type}
 Program Instance Bifunctor__quad_type {x1 : Type} {x2 : Type}
    : Bifunctor (GHC.Tuple.quad_type x1 x2) :=
   fun _ k__ =>
-    k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    k__ {| bimap__ := fun (a : Type) (b : Type) (c : Type) (d : Type) =>
              Bifunctor__quad_type_bimap ;
-           first__ := fun {a : Type} {b : Type} {c : Type} => Bifunctor__quad_type_first ;
-           second__ := fun {b : Type} {c : Type} {a : Type} =>
+           first__ := fun (a : Type) (b : Type) (c : Type) => Bifunctor__quad_type_first ;
+           second__ := fun (b : Type) (c : Type) (a : Type) =>
              Bifunctor__quad_type_second |}.
 
 #[local] Definition Bifunctor__quint_type_bimap {inst_x1 : Type} {inst_x2
@@ -217,10 +217,10 @@ Program Instance Bifunctor__quad_type {x1 : Type} {x2 : Type}
 Program Instance Bifunctor__quint_type {x1 : Type} {x2 : Type} {x3 : Type}
    : Bifunctor (GHC.Tuple.quint_type x1 x2 x3) :=
   fun _ k__ =>
-    k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    k__ {| bimap__ := fun (a : Type) (b : Type) (c : Type) (d : Type) =>
              Bifunctor__quint_type_bimap ;
-           first__ := fun {a : Type} {b : Type} {c : Type} => Bifunctor__quint_type_first ;
-           second__ := fun {b : Type} {c : Type} {a : Type} =>
+           first__ := fun (a : Type) (b : Type) (c : Type) => Bifunctor__quint_type_first ;
+           second__ := fun (b : Type) (c : Type) (a : Type) =>
              Bifunctor__quint_type_second |}.
 
 #[local] Definition Bifunctor__sext_type_bimap {inst_x1 : Type} {inst_x2 : Type}
@@ -266,10 +266,10 @@ Program Instance Bifunctor__sext_type {x1 : Type} {x2 : Type} {x3 : Type} {x4
    : Type}
    : Bifunctor (GHC.Tuple.sext_type x1 x2 x3 x4) :=
   fun _ k__ =>
-    k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    k__ {| bimap__ := fun (a : Type) (b : Type) (c : Type) (d : Type) =>
              Bifunctor__sext_type_bimap ;
-           first__ := fun {a : Type} {b : Type} {c : Type} => Bifunctor__sext_type_first ;
-           second__ := fun {b : Type} {c : Type} {a : Type} =>
+           first__ := fun (a : Type) (b : Type) (c : Type) => Bifunctor__sext_type_first ;
+           second__ := fun (b : Type) (c : Type) (a : Type) =>
              Bifunctor__sext_type_second |}.
 
 #[local] Definition Bifunctor__sept_type_bimap {inst_x1 : Type} {inst_x2 : Type}
@@ -315,10 +315,10 @@ Program Instance Bifunctor__sept_type {x1 : Type} {x2 : Type} {x3 : Type} {x4
    : Type} {x5 : Type}
    : Bifunctor (GHC.Tuple.sept_type x1 x2 x3 x4 x5) :=
   fun _ k__ =>
-    k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    k__ {| bimap__ := fun (a : Type) (b : Type) (c : Type) (d : Type) =>
              Bifunctor__sept_type_bimap ;
-           first__ := fun {a : Type} {b : Type} {c : Type} => Bifunctor__sept_type_first ;
-           second__ := fun {b : Type} {c : Type} {a : Type} =>
+           first__ := fun (a : Type) (b : Type) (c : Type) => Bifunctor__sept_type_first ;
+           second__ := fun (b : Type) (c : Type) (a : Type) =>
              Bifunctor__sept_type_second |}.
 
 #[local] Definition Bifunctor__Either_bimap
@@ -352,10 +352,10 @@ Program Instance Bifunctor__sept_type {x1 : Type} {x2 : Type} {x3 : Type} {x4
 #[global]
 Program Instance Bifunctor__Either : Bifunctor Data.Either.Either :=
   fun _ k__ =>
-    k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    k__ {| bimap__ := fun (a : Type) (b : Type) (c : Type) (d : Type) =>
              Bifunctor__Either_bimap ;
-           first__ := fun {a : Type} {b : Type} {c : Type} => Bifunctor__Either_first ;
-           second__ := fun {b : Type} {c : Type} {a : Type} => Bifunctor__Either_second |}.
+           first__ := fun (a : Type) (b : Type) (c : Type) => Bifunctor__Either_first ;
+           second__ := fun (b : Type) (c : Type) (a : Type) => Bifunctor__Either_second |}.
 
 #[local] Definition Bifunctor__Const_bimap
    : forall {a : Type},
@@ -388,10 +388,10 @@ Program Instance Bifunctor__Either : Bifunctor Data.Either.Either :=
 #[global]
 Program Instance Bifunctor__Const : Bifunctor Data.Functor.Const.Const :=
   fun _ k__ =>
-    k__ {| bimap__ := fun {a : Type} {b : Type} {c : Type} {d : Type} =>
+    k__ {| bimap__ := fun (a : Type) (b : Type) (c : Type) (d : Type) =>
              Bifunctor__Const_bimap ;
-           first__ := fun {a : Type} {b : Type} {c : Type} => Bifunctor__Const_first ;
-           second__ := fun {b : Type} {c : Type} {a : Type} => Bifunctor__Const_second |}.
+           first__ := fun (a : Type) (b : Type) (c : Type) => Bifunctor__Const_first ;
+           second__ := fun (b : Type) (c : Type) (a : Type) => Bifunctor__Const_second |}.
 
 (* Skipping instance `Data.Bifunctor.Bifunctor__K1' of class
    `Data.Bifunctor.Bifunctor' *)

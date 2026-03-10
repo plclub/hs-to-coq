@@ -80,8 +80,8 @@ Admitted.
 #[global]
 Program Instance Functor__UniqSM : GHC.Base.Functor UniqSM :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__UniqSM_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__UniqSM_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__UniqSM_op_zlzd__ |}.
 
 #[local] Definition Applicative__UniqSM_op_zlztzg__
@@ -125,13 +125,13 @@ Program Instance Functor__UniqSM : GHC.Base.Functor UniqSM :=
 #[global]
 Program Instance Applicative__UniqSM : GHC.Base.Applicative UniqSM :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__UniqSM_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__UniqSM_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__UniqSM_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__UniqSM_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__UniqSM_pure |}.
 
 #[local] Definition Monad__UniqSM_op_zgzg__
    : forall {a : Type}, forall {b : Type}, UniqSM a -> UniqSM b -> UniqSM b :=
@@ -157,11 +157,11 @@ Program Instance Applicative__UniqSM : GHC.Base.Applicative UniqSM :=
 #[global]
 Program Instance Monad__UniqSM : GHC.Base.Monad UniqSM :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__UniqSM_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__UniqSM_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__UniqSM_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__UniqSM_return_ |}.
 
 (* Skipping instance `UniqSupply.MonadFail__UniqSM' of class
    `Control.Monad.Fail.MonadFail' *)

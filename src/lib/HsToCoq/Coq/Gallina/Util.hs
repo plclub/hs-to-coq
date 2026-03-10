@@ -27,7 +27,7 @@ module HsToCoq.Coq.Gallina.Util (
   -- ** Optics
   _Ident, _UnderscoreName, nameToIdent,
   binderNames, binderIdents, binderExplicitness, binderGeneralizability,
-  mkBinder, mkBinders, mkTypedBinder, toImplicitBinder,
+  mkBinder, mkBinders, mkTypedBinder, toImplicitBinder, toExplicitBinder,
   -- ** Functions
   qualidBase, qualidModule, qualidMapBase, qualidExtendBase,
   splitModule,
@@ -191,6 +191,12 @@ toImplicitBinder (ExplicitBinder name) = ImplicitBinders (pure name)
 toImplicitBinder b@(ImplicitBinders _) = b
 toImplicitBinder (Typed ex _ei names ty) = Typed ex Implicit names ty
 toImplicitBinder (Generalized _ei ty) = Generalized Implicit ty
+
+toExplicitBinder :: Binder -> Binder
+toExplicitBinder b@(ExplicitBinder _) = b
+toExplicitBinder (ImplicitBinders names) = ImplicitBinders names  -- no type info; keep as-is
+toExplicitBinder (Typed ex _ei names ty) = Typed ex Explicit names ty
+toExplicitBinder (Generalized _ei ty) = Generalized Explicit ty
 
 -- | Single-name binder with inferred type. (Drops parentheses if Explicit.)
 mkBinder :: Explicitness -> Name -> Binder

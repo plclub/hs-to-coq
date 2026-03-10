@@ -57,8 +57,8 @@ Program Instance Functor__StateT {m : Type -> Type} {s : Type}
   `{(GHC.Base.Functor m)}
    : GHC.Base.Functor (StateT s m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__StateT_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__StateT_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__StateT_op_zlzd__ |}.
 
 #[local] Definition Applicative__StateT_op_zlztzg__ {inst_m : Type -> Type}
@@ -110,13 +110,13 @@ Program Instance Applicative__StateT {m : Type -> Type} {s : Type}
   `{GHC.Base.Functor m} `{GHC.Base.Monad m}
    : GHC.Base.Applicative (StateT s m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__StateT_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__StateT_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__StateT_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__StateT_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__StateT_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Monad.Trans.State.Lazy.Alternative__StateT' *)
@@ -151,11 +151,11 @@ Program Instance Monad__StateT {m : Type -> Type} {s : Type} `{(GHC.Base.Monad
    m)}
    : GHC.Base.Monad (StateT s m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__StateT_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__StateT_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__StateT_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__StateT_return_ |}.
 
 #[local] Definition MonadFail__StateT_fail {inst_m : Type -> Type} {inst_s
    : Type} `{(Control.Monad.Fail.MonadFail inst_m)}
@@ -168,7 +168,7 @@ Program Instance MonadFail__StateT {m : Type -> Type} {s : Type}
   `{(Control.Monad.Fail.MonadFail m)}
    : Control.Monad.Fail.MonadFail (StateT s m) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} => MonadFail__StateT_fail |}.
+    k__ {| Control.Monad.Fail.fail__ := fun (a : Type) => MonadFail__StateT_fail |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Control.Monad.Trans.State.Lazy.MonadPlus__StateT' *)
@@ -187,9 +187,9 @@ Program Instance MonadFail__StateT {m : Type -> Type} {s : Type}
 Program Instance MonadTrans__StateT {s : Type}
    : Control.Monad.Trans.Class.MonadTrans (StateT s) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Trans.Class.lift__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Control.Monad.Trans.Class.lift__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              MonadTrans__StateT_lift |}.
 
 (* Skipping all instances of class `Control.Monad.IO.Class.MonadIO', including

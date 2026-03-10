@@ -59,8 +59,8 @@ Infix "∘" := (_∘_) (left associativity, at level 40).
 #[global]
 Program Instance Category__arrow : Category GHC.Prim.arrow :=
   fun _ k__ =>
-    k__ {| id__ := fun {a : Type} => Category__arrow_id ;
-           op_z2218U____ := fun {b : Type} {c : Type} {a : Type} =>
+    k__ {| id__ := fun (a : Type) => Category__arrow_id ;
+           op_z2218U____ := fun (b : Type) (c : Type) (a : Type) =>
              Category__arrow_op_z2218U__ |}.
 
 (* Skipping instance `Control.Category.Category__op_ZCz7eUZC__' of class

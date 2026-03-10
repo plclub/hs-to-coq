@@ -58,8 +58,8 @@ Require Data.IntMap.Internal.
 #[global]
 Program Instance Functor__UniqFM {key : Type} : GHC.Base.Functor (UniqFM key) :=
   fun _ k__ => k__ {|
-    GHC.Base.fmap__ := fun {a} {b} f '(UFM m) => UFM (GHC.Base.fmap f m) ;
-    GHC.Base.op_zlzd____ := fun {a} {b} x '(UFM m) => UFM (GHC.Base.op_zlzd__ x m)
+    GHC.Base.fmap__ := fun (a : Type) (b : Type) f '(UFM m) => UFM (GHC.Base.fmap f m) ;
+    GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) x '(UFM m) => UFM (GHC.Base.op_zlzd__ x m)
   |}.
 
 #[global]

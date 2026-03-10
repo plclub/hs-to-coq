@@ -12,6 +12,9 @@ Require Import CustomTactics.
 Require Import SortedUtil.
 Require Import Coq.Classes.Morphisms. (* For [Proper] *)
 Require Import Coq.Wellfounded.Inverse_Image.
+Require Import Coq.Program.Tactics.
+Require Import Coq.Sorting.Sorted.
+Require Import MapProofs.Tactics.
 Set Bullet Behavior "Strict Subproofs".
 
 (** This file contains our specifications and proofs for [Data.Set]. The file
@@ -800,7 +803,6 @@ Proof.
 Qed.
 
 
-Require Import Coq.Program.Tactics.
 
 Open Scope Z_scope.
 
@@ -2350,8 +2352,6 @@ Qed.
 
 
 (** *** Sortedness of [toList] *)
-
-Require Import Coq.Sorting.Sorted.
 
 Close Scope Z.
 Local Definition lt : e -> e -> Prop
@@ -4823,7 +4823,6 @@ Proof.
   * reflexivity.
 Qed.
 
-Require Import MapProofs.Tactics.
 
 (* This is a copy of the local fixpoint from Haskell's [validsize] function. *)
 

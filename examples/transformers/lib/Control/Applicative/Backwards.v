@@ -51,7 +51,7 @@ Program Instance Eq1__Backwards {f : Type -> Type} `{(Data.Functor.Classes.Eq1
    f)}
    : Data.Functor.Classes.Eq1 (Backwards f) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftEq__ := fun (a : Type) (b : Type) =>
              Eq1__Backwards_liftEq |}.
 
 #[local] Definition Ord1__Backwards_liftCompare {inst_f : Type -> Type}
@@ -72,7 +72,7 @@ Program Instance Ord1__Backwards {f : Type -> Type} `{(Data.Functor.Classes.Ord1
    f)}
    : Data.Functor.Classes.Ord1 (Backwards f) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun (a : Type) (b : Type) =>
              Ord1__Backwards_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
@@ -179,8 +179,8 @@ Program Instance Ord__Backwards {f : Type -> Type} {a : Type}
 Program Instance Functor__Backwards {f : Type -> Type} `{(GHC.Base.Functor f)}
    : GHC.Base.Functor (Backwards f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Backwards_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Backwards_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Backwards_op_zlzd__ |}.
 
 #[local] Definition Applicative__Backwards_liftA2 {inst_f : Type -> Type}
@@ -229,13 +229,13 @@ Program Instance Applicative__Backwards {f : Type -> Type}
   `{(GHC.Base.Applicative f)}
    : GHC.Base.Applicative (Backwards f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Backwards_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Backwards_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Backwards_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Backwards_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Backwards_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Applicative.Backwards.Alternative__Backwards' *)
@@ -312,21 +312,21 @@ Program Instance Foldable__Backwards {f : Type -> Type}
   `{(Data.Foldable.Foldable f)}
    : Data.Foldable.Foldable (Backwards f) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Backwards_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Backwards_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) =>
              Foldable__Backwards_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} =>
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) =>
              Foldable__Backwards_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Backwards_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Backwards_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Backwards_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Backwards_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Backwards_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Backwards_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Backwards_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Backwards_toList |}.
 
 (* Skipping all instances of class `Data.Foldable1.Foldable1', including
    `Control.Applicative.Backwards.Foldable1__Backwards' *)
@@ -378,23 +378,23 @@ Program Instance Traversable__Backwards {f : Type -> Type}
   `{(Data.Traversable.Traversable f)}
    : Data.Traversable.Traversable (Backwards f) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Backwards_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Backwards_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Backwards_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Backwards_traverse |}.
 
 (* Skipping all instances of class `Data.Functor.Contravariant.Contravariant',

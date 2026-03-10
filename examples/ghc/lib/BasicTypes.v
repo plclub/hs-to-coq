@@ -538,9 +538,9 @@ Instance Eq__IntWithInf : GHC.Base.Eq_ IntWithInf :=
 #[global]
 Program Instance Functor__TyConFlavour : GHC.Base.Functor TyConFlavour :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__TyConFlavour_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__TyConFlavour_op_zlzd__ |}.
 
 (* Skipping all instances of class `Outputable.Outputable', including

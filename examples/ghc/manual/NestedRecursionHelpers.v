@@ -49,7 +49,7 @@ Ltac red_within outer :=
   match goal with
   | |- context[outer ?inner] =>
     match type of outer with
-    | forall {a}, _ => red_within (outer inner)
+    | forall a, _ => red_within (outer inner)
     | _             => let f := term_head inner
                        in rewrite /f /= || fail 2 "nothing to reduce"
     end

@@ -435,18 +435,18 @@ Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
 #[global]
 Program Instance Foldable__Set_ : Data.Foldable.Foldable Set_ :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Set__fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Set__foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Set__foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Set__foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Set__length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Set__null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Set__foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Set__foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Set__length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Set__null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Set__product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Set__sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Set__toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Set__sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Set__toList |}.
 
 (* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `Data.Set.Internal.Data__Set_' *)
@@ -527,7 +527,7 @@ Program Instance Ord__Set_ {a : Type} `{GHC.Base.Ord a}
 #[global]
 Program Instance Eq1__Set_ : Data.Functor.Classes.Eq1 Set_ :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftEq__ := fun (a : Type) (b : Type) =>
              Eq1__Set__liftEq |}.
 
 #[local] Definition Ord1__Set__liftCompare
@@ -539,7 +539,7 @@ Program Instance Eq1__Set_ : Data.Functor.Classes.Eq1 Set_ :=
 #[global]
 Program Instance Ord1__Set_ : Data.Functor.Classes.Ord1 Set_ :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun (a : Type) (b : Type) =>
              Ord1__Set__liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Show1', including

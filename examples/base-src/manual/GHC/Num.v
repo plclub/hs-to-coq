@@ -88,8 +88,10 @@ Instance Num_Word__ : Num Word := {
   negate      := fun _ => 0%N;
   signum      := fun x => match x with | N0 => N0 | _ => 1%N  end }.
 
+Require BinInt.
+
 Module Notations.
-Require Export BinInt.
+Export BinInt.
 
 Infix    "GHC.Num.+"     := op_zp__ (at level 50, left associativity).
 Notation "'_GHC.Num.+_'" := op_zp__.

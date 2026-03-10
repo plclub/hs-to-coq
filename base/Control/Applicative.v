@@ -116,9 +116,9 @@ Instance Unpeel_WrappedMonad {m} {a}
 Program Instance Functor__WrappedMonad {m : Type -> Type} `{GHC.Base.Monad m}
    : GHC.Base.Functor (WrappedMonad m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__WrappedMonad_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__WrappedMonad_op_zlzd__ |}.
 
 #[local] Definition Applicative__WrappedMonad_op_ztzg__ {inst_m : Type -> Type}
@@ -140,23 +140,23 @@ Program Instance Applicative__WrappedMonad {m : Type -> Type} `{GHC.Base.Monad
   m}
    : GHC.Base.Applicative (WrappedMonad m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__WrappedMonad_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__WrappedMonad_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__WrappedMonad_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__WrappedMonad_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__WrappedMonad_pure |}.
 
 #[global]
 Program Instance Monad__WrappedMonad {m : Type -> Type} `{GHC.Base.Monad m}
    : GHC.Base.Monad (WrappedMonad m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__WrappedMonad_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__WrappedMonad_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__WrappedMonad_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__WrappedMonad_return_ |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Applicative.Alternative__WrappedMonad' *)
@@ -185,9 +185,9 @@ Program Instance Functor__WrappedArrow {a : Type -> Type -> Type} {b : Type}
   `{Control.Arrow.Arrow a}
    : GHC.Base.Functor (WrappedArrow a b) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__WrappedArrow_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__WrappedArrow_op_zlzd__ |}.
 
 #[local] Definition Applicative__WrappedArrow_liftA2 {inst_a
@@ -234,13 +234,13 @@ Program Instance Applicative__WrappedArrow {a : Type -> Type -> Type} {b : Type}
   `{Control.Arrow.Arrow a}
    : GHC.Base.Applicative (WrappedArrow a b) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__WrappedArrow_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__WrappedArrow_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__WrappedArrow_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__WrappedArrow_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__WrappedArrow_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Applicative.Alternative__WrappedArrow' *)

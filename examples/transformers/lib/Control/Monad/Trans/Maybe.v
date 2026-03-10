@@ -73,7 +73,7 @@ Local Definition Monad_tmp {inst_m} `{(GHC.Base.Monad inst_m)}
 Program Instance Eq1__MaybeT {m : Type -> Type} `{(Data.Functor.Classes.Eq1 m)}
    : Data.Functor.Classes.Eq1 (MaybeT m) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftEq__ := fun (a : Type) (b : Type) =>
              Eq1__MaybeT_liftEq |}.
 
 #[local] Definition Ord1__MaybeT_liftCompare {inst_m : Type -> Type}
@@ -93,7 +93,7 @@ Program Instance Ord1__MaybeT {m : Type -> Type} `{(Data.Functor.Classes.Ord1
    m)}
    : Data.Functor.Classes.Ord1 (MaybeT m) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun (a : Type) (b : Type) =>
              Ord1__MaybeT_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
@@ -196,8 +196,8 @@ Program Instance Ord__MaybeT {m : Type -> Type} {a : Type}
 Program Instance Functor__MaybeT {m : Type -> Type} `{(GHC.Base.Functor m)}
    : GHC.Base.Functor (MaybeT m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__MaybeT_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__MaybeT_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__MaybeT_op_zlzd__ |}.
 
 #[local] Definition Foldable__MaybeT_foldMap {inst_f : Type -> Type}
@@ -276,18 +276,18 @@ Program Instance Foldable__MaybeT {f : Type -> Type} `{(Data.Foldable.Foldable
    f)}
    : Data.Foldable.Foldable (MaybeT f) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__MaybeT_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__MaybeT_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__MaybeT_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__MaybeT_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__MaybeT_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__MaybeT_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__MaybeT_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__MaybeT_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__MaybeT_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__MaybeT_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__MaybeT_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__MaybeT_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__MaybeT_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__MaybeT_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__MaybeT_toList |}.
 
 #[local] Definition Traversable__MaybeT_traverse {inst_f : Type -> Type}
   `{(Data.Traversable.Traversable inst_f)}
@@ -335,23 +335,23 @@ Program Instance Traversable__MaybeT {f : Type -> Type}
   `{(Data.Traversable.Traversable f)}
    : Data.Traversable.Traversable (MaybeT f) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__MaybeT_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__MaybeT_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__MaybeT_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__MaybeT_traverse |}.
 
 #[local] Definition Applicative__MaybeT_op_zlztzg__ {inst_m : Type -> Type}
@@ -398,13 +398,13 @@ Program Instance Applicative__MaybeT {m : Type -> Type} `{GHC.Base.Functor m}
   `{GHC.Base.Monad m}
    : GHC.Base.Applicative (MaybeT m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__MaybeT_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__MaybeT_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__MaybeT_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__MaybeT_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__MaybeT_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Monad.Trans.Maybe.Alternative__MaybeT' *)
@@ -429,11 +429,11 @@ Program Instance Applicative__MaybeT {m : Type -> Type} `{GHC.Base.Functor m}
 Program Instance Monad__MaybeT {m : Type -> Type} `{(GHC.Base.Monad m)}
    : GHC.Base.Monad (MaybeT m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__MaybeT_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__MaybeT_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__MaybeT_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__MaybeT_return_ |}.
 
 #[local] Definition MonadTrans__MaybeT_lift
    : forall {m : Type -> Type},
@@ -445,9 +445,9 @@ Program Instance Monad__MaybeT {m : Type -> Type} `{(GHC.Base.Monad m)}
 Program Instance MonadTrans__MaybeT
    : Control.Monad.Trans.Class.MonadTrans MaybeT :=
   fun _ k__ =>
-    k__ {| Control.Monad.Trans.Class.lift__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Control.Monad.Trans.Class.lift__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              MonadTrans__MaybeT_lift |}.
 
 #[local] Definition MonadFail__MaybeT_fail {inst_m : Type -> Type}
@@ -459,7 +459,7 @@ Program Instance MonadTrans__MaybeT
 Program Instance MonadFail__MaybeT {m : Type -> Type} `{(GHC.Base.Monad m)}
    : Control.Monad.Fail.MonadFail (MaybeT m) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} => MonadFail__MaybeT_fail |}.
+    k__ {| Control.Monad.Fail.fail__ := fun (a : Type) => MonadFail__MaybeT_fail |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Control.Monad.Trans.Maybe.MonadPlus__MaybeT' *)

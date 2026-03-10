@@ -125,19 +125,19 @@ Program Instance Monoid__Identity {a : Type} `{GHC.Base.Monoid a}
 #[global]
 Program Instance Foldable__Identity : Data.Foldable.Foldable Identity :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Identity_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Identity_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Identity_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Identity_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Identity_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Identity_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Identity_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Identity_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Identity_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Identity_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Identity_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Identity_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Identity_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Identity_toList |}.
 
 #[local] Definition Functor__Identity_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Identity a -> Identity b :=
@@ -151,8 +151,8 @@ Program Instance Foldable__Identity : Data.Foldable.Foldable Identity :=
 #[global]
 Program Instance Functor__Identity : GHC.Base.Functor Identity :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Identity_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Identity_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Identity_op_zlzd__ |}.
 
 #[local] Definition Applicative__Identity_liftA2
@@ -183,13 +183,13 @@ Program Instance Functor__Identity : GHC.Base.Functor Identity :=
 #[global]
 Program Instance Applicative__Identity : GHC.Base.Applicative Identity :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Identity_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Identity_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Identity_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Identity_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Identity_pure |}.
 
 #[local] Definition Monad__Identity_op_zgzgze__
    : forall {a : Type},
@@ -209,11 +209,11 @@ Program Instance Applicative__Identity : GHC.Base.Applicative Identity :=
 #[global]
 Program Instance Monad__Identity : GHC.Base.Monad Identity :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Identity_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__Identity_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Identity_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__Identity_return_ |}.
 
 (* Skipping all instances of class `GHC.Internal.Control.Monad.Fix.MonadFix',
    including `Data.Functor.Identity.MonadFix__Identity' *)

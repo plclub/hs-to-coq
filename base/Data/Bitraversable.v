@@ -77,12 +77,12 @@ Existing Class Bitraversable.
 #[global]
 Program Instance Bitraversable__pair_type : Bitraversable GHC.Tuple.pair_type :=
   fun _ k__ =>
-    k__ {| bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__pair_type_bitraverse |}.
 
 #[local] Definition Bitraversable__triple_type_bitraverse {inst_x : Type}
@@ -110,12 +110,12 @@ Program Instance Bitraversable__pair_type : Bitraversable GHC.Tuple.pair_type :=
 Program Instance Bitraversable__triple_type {x : Type}
    : Bitraversable (GHC.Tuple.triple_type x) :=
   fun _ k__ =>
-    k__ {| bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__triple_type_bitraverse |}.
 
 #[local] Definition Bitraversable__quad_type_bitraverse {inst_x : Type} {inst_y
@@ -146,12 +146,12 @@ Program Instance Bitraversable__triple_type {x : Type}
 Program Instance Bitraversable__quad_type {x : Type} {y : Type}
    : Bitraversable (GHC.Tuple.quad_type x y) :=
   fun _ k__ =>
-    k__ {| bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__quad_type_bitraverse |}.
 
 #[local] Definition Bitraversable__quint_type_bitraverse {inst_x : Type} {inst_y
@@ -182,12 +182,12 @@ Program Instance Bitraversable__quad_type {x : Type} {y : Type}
 Program Instance Bitraversable__quint_type {x : Type} {y : Type} {z : Type}
    : Bitraversable (GHC.Tuple.quint_type x y z) :=
   fun _ k__ =>
-    k__ {| bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__quint_type_bitraverse |}.
 
 #[local] Definition Bitraversable__sext_type_bitraverse {inst_x : Type} {inst_y
@@ -219,12 +219,12 @@ Program Instance Bitraversable__sext_type {x : Type} {y : Type} {z : Type} {w
    : Type}
    : Bitraversable (GHC.Tuple.sext_type x y z w) :=
   fun _ k__ =>
-    k__ {| bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__sext_type_bitraverse |}.
 
 #[local] Definition Bitraversable__sept_type_bitraverse {inst_x : Type} {inst_y
@@ -256,12 +256,12 @@ Program Instance Bitraversable__sept_type {x : Type} {y : Type} {z : Type} {w
    : Type} {v : Type}
    : Bitraversable (GHC.Tuple.sept_type x y z w v) :=
   fun _ k__ =>
-    k__ {| bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__sept_type_bitraverse |}.
 
 #[local] Definition Bitraversable__Either_bitraverse
@@ -288,12 +288,12 @@ Program Instance Bitraversable__sept_type {x : Type} {y : Type} {z : Type} {w
 #[global]
 Program Instance Bitraversable__Either : Bitraversable Data.Either.Either :=
   fun _ k__ =>
-    k__ {| bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__Either_bitraverse |}.
 
 #[local] Definition Bitraversable__Const_bitraverse
@@ -322,12 +322,12 @@ Program Instance Bitraversable__Either : Bitraversable Data.Either.Either :=
 Program Instance Bitraversable__Const
    : Bitraversable Data.Functor.Const.Const :=
   fun _ k__ =>
-    k__ {| bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__Const_bitraverse |}.
 
 (* Skipping instance `Data.Bitraversable.Bitraversable__K1' of class

@@ -71,9 +71,9 @@ Existing Class MonadZip.
 #[global]
 Program Instance MonadZip__list : MonadZip list :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__list_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__list_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__list_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__list_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__list_mzipWith |}.
 
 #[local] Definition MonadZip__NonEmpty_munzip
@@ -100,9 +100,9 @@ Program Instance MonadZip__list : MonadZip list :=
 #[global]
 Program Instance MonadZip__NonEmpty : MonadZip GHC.Base.NonEmpty :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__NonEmpty_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__NonEmpty_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__NonEmpty_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__NonEmpty_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__NonEmpty_mzipWith |}.
 
 #[local] Definition MonadZip__Identity_munzip
@@ -135,9 +135,9 @@ Program Instance MonadZip__NonEmpty : MonadZip GHC.Base.NonEmpty :=
 #[global]
 Program Instance MonadZip__Identity : MonadZip Data.Functor.Identity.Identity :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Identity_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__Identity_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__Identity_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__Identity_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__Identity_mzipWith |}.
 
 (* Skipping instance `Control.Monad.Zip.MonadZip__Solo' of class
@@ -171,9 +171,9 @@ Program Instance MonadZip__Identity : MonadZip Data.Functor.Identity.Identity :=
 #[global]
 Program Instance MonadZip__Dual : MonadZip Data.SemigroupInternal.Dual :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Dual_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__Dual_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__Dual_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__Dual_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__Dual_mzipWith |}.
 
 #[local] Definition MonadZip__Sum_munzip
@@ -204,9 +204,9 @@ Program Instance MonadZip__Dual : MonadZip Data.SemigroupInternal.Dual :=
 #[global]
 Program Instance MonadZip__Sum : MonadZip Data.SemigroupInternal.Sum :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Sum_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__Sum_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} => MonadZip__Sum_mzipWith |}.
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__Sum_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__Sum_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) => MonadZip__Sum_mzipWith |}.
 
 #[local] Definition MonadZip__Product_munzip
    : forall {a : Type},
@@ -237,9 +237,9 @@ Program Instance MonadZip__Sum : MonadZip Data.SemigroupInternal.Sum :=
 #[global]
 Program Instance MonadZip__Product : MonadZip Data.SemigroupInternal.Product :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Product_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__Product_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__Product_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__Product_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__Product_mzipWith |}.
 
 #[local] Definition MonadZip__option_munzip
@@ -263,9 +263,9 @@ Program Instance MonadZip__Product : MonadZip Data.SemigroupInternal.Product :=
 #[global]
 Program Instance MonadZip__option : MonadZip option :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__option_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__option_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__option_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__option_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__option_mzipWith |}.
 
 #[local] Definition MonadZip__First_munzip
@@ -294,9 +294,9 @@ Program Instance MonadZip__option : MonadZip option :=
 #[global]
 Program Instance MonadZip__First : MonadZip Data.Monoid.First :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__First_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__First_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__First_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__First_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__First_mzipWith |}.
 
 #[local] Definition MonadZip__Last_munzip
@@ -325,9 +325,9 @@ Program Instance MonadZip__First : MonadZip Data.Monoid.First :=
 #[global]
 Program Instance MonadZip__Last : MonadZip Data.Monoid.Last :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Last_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__Last_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__Last_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__Last_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__Last_mzipWith |}.
 
 #[local] Definition MonadZip__Alt_munzip {inst_f : Type -> Type} `{MonadZip
@@ -369,9 +369,9 @@ Program Instance MonadZip__Last : MonadZip Data.Monoid.Last :=
 Program Instance MonadZip__Alt {f : Type -> Type} `{MonadZip f}
    : MonadZip (Data.SemigroupInternal.Alt f) :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Alt_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__Alt_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} => MonadZip__Alt_mzipWith |}.
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__Alt_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__Alt_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) => MonadZip__Alt_mzipWith |}.
 
 #[local] Definition MonadZip__Proxy_munzip
    : forall {a : Type},
@@ -400,9 +400,9 @@ Program Instance MonadZip__Alt {f : Type -> Type} `{MonadZip f}
 #[global]
 Program Instance MonadZip__Proxy : MonadZip Data.Proxy.Proxy :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Proxy_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__Proxy_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__Proxy_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__Proxy_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__Proxy_mzipWith |}.
 
 (* Skipping instance `Control.Monad.Zip.MonadZip__U1' of class
@@ -444,9 +444,9 @@ Program Instance MonadZip__Proxy : MonadZip Data.Proxy.Proxy :=
 #[global]
 Program Instance MonadZip__Down : MonadZip Data.Ord.Down :=
   fun _ k__ =>
-    k__ {| munzip__ := fun {a : Type} {b : Type} => MonadZip__Down_munzip ;
-           mzip__ := fun {a : Type} {b : Type} => MonadZip__Down_mzip ;
-           mzipWith__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| munzip__ := fun (a : Type) (b : Type) => MonadZip__Down_munzip ;
+           mzip__ := fun (a : Type) (b : Type) => MonadZip__Down_mzip ;
+           mzipWith__ := fun (a : Type) (b : Type) (c : Type) =>
              MonadZip__Down_mzipWith |}.
 
 (* External variables:

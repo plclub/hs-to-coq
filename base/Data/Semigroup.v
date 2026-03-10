@@ -169,8 +169,8 @@ Program Instance Semigroup__Min {a : Type} `{GHC.Base.Ord a}
 #[global]
 Program Instance Functor__Min : GHC.Base.Functor Min :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Min_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Min_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Min_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Min_op_zlzd__ |}.
 
 #[local] Definition Foldable__Min_foldMap
    : forall {m : Type},
@@ -228,18 +228,18 @@ Program Instance Functor__Min : GHC.Base.Functor Min :=
 #[global]
 Program Instance Foldable__Min : Data.Foldable.Foldable Min :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Min_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Min_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Min_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Min_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Min_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Min_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Min_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Min_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Min_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Min_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Min_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Min_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Min_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Min_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Min_toList |}.
 
 #[local] Definition Traversable__Min_traverse
    : forall {f : Type -> Type},
@@ -275,23 +275,23 @@ Program Instance Foldable__Min : Data.Foldable.Foldable Min :=
 #[global]
 Program Instance Traversable__Min : Data.Traversable.Traversable Min :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Min_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Min_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Min_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Min_traverse |}.
 
 #[local] Definition Applicative__Min_liftA2
@@ -318,13 +318,13 @@ Program Instance Traversable__Min : Data.Traversable.Traversable Min :=
 #[global]
 Program Instance Applicative__Min : GHC.Base.Applicative Min :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Min_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Min_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Min_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Min_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Min_pure |}.
 
 #[local] Definition Monad__Min_op_zgzg__
    : forall {a : Type}, forall {b : Type}, Min a -> Min b -> Min b :=
@@ -341,10 +341,10 @@ Program Instance Applicative__Min : GHC.Base.Applicative Min :=
 #[global]
 Program Instance Monad__Min : GHC.Base.Monad Min :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Min_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Min_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Min_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Min_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Min_return_ |}.
 
 (* Skipping all instances of class `GHC.Internal.Control.Monad.Fix.MonadFix',
    including `Data.Semigroup.MonadFix__Min' *)
@@ -382,8 +382,8 @@ Program Instance Semigroup__Max {a : Type} `{GHC.Base.Ord a}
 #[global]
 Program Instance Functor__Max : GHC.Base.Functor Max :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Max_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Max_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Max_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Max_op_zlzd__ |}.
 
 #[local] Definition Foldable__Max_foldMap
    : forall {m : Type},
@@ -441,18 +441,18 @@ Program Instance Functor__Max : GHC.Base.Functor Max :=
 #[global]
 Program Instance Foldable__Max : Data.Foldable.Foldable Max :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Max_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Max_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Max_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Max_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Max_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Max_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Max_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Max_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Max_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Max_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Max_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Max_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Max_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Max_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Max_toList |}.
 
 #[local] Definition Traversable__Max_traverse
    : forall {f : Type -> Type},
@@ -488,23 +488,23 @@ Program Instance Foldable__Max : Data.Foldable.Foldable Max :=
 #[global]
 Program Instance Traversable__Max : Data.Traversable.Traversable Max :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Max_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Max_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Max_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Max_traverse |}.
 
 #[local] Definition Applicative__Max_liftA2
@@ -531,13 +531,13 @@ Program Instance Traversable__Max : Data.Traversable.Traversable Max :=
 #[global]
 Program Instance Applicative__Max : GHC.Base.Applicative Max :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Max_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Max_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Max_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Max_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Max_pure |}.
 
 #[local] Definition Monad__Max_op_zgzg__
    : forall {a : Type}, forall {b : Type}, Max a -> Max b -> Max b :=
@@ -554,10 +554,10 @@ Program Instance Applicative__Max : GHC.Base.Applicative Max :=
 #[global]
 Program Instance Monad__Max : GHC.Base.Monad Max :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Max_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Max_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Max_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Max_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Max_return_ |}.
 
 (* Skipping all instances of class `GHC.Internal.Control.Monad.Fix.MonadFix',
    including `Data.Semigroup.MonadFix__Max' *)
@@ -581,8 +581,8 @@ Program Instance Monad__Max : GHC.Base.Monad Max :=
 #[global]
 Program Instance Functor__Arg {a : Type} : GHC.Base.Functor (Arg a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Arg_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Arg_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Arg_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Arg_op_zlzd__ |}.
 
 #[local] Definition Foldable__Arg_foldMap {inst_a : Type}
    : forall {m : Type},
@@ -644,18 +644,18 @@ Program Instance Functor__Arg {a : Type} : GHC.Base.Functor (Arg a) :=
 #[global]
 Program Instance Foldable__Arg {a : Type} : Data.Foldable.Foldable (Arg a) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Arg_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Arg_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Arg_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Arg_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Arg_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Arg_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Arg_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Arg_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Arg_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Arg_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Arg_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Arg_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Arg_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Arg_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Arg_toList |}.
 
 #[local] Definition Traversable__Arg_traverse {inst_a : Type}
    : forall {f : Type -> Type},
@@ -695,23 +695,23 @@ Program Instance Foldable__Arg {a : Type} : Data.Foldable.Foldable (Arg a) :=
 Program Instance Traversable__Arg {a : Type}
    : Data.Traversable.Traversable (Arg a) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Arg_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Arg_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Arg_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Arg_traverse |}.
 
 #[local] Definition Eq___Arg_op_zeze__ {inst_a : Type} {inst_b : Type}
@@ -761,14 +761,14 @@ Program Instance Eq___Arg {a : Type} {b : Type} `{GHC.Base.Eq_ a}
 #[global]
 Program Instance Bifunctor__Arg : Data.Bifunctor.Bifunctor Arg :=
   fun _ k__ =>
-    k__ {| Data.Bifunctor.bimap__ := fun {a : Type}
-           {b : Type}
-           {c : Type}
-           {d : Type} =>
+    k__ {| Data.Bifunctor.bimap__ := fun (a : Type)
+           (b : Type)
+           (c : Type)
+           (d : Type) =>
              Bifunctor__Arg_bimap ;
-           Data.Bifunctor.first__ := fun {a : Type} {b : Type} {c : Type} =>
+           Data.Bifunctor.first__ := fun (a : Type) (b : Type) (c : Type) =>
              Bifunctor__Arg_first ;
-           Data.Bifunctor.second__ := fun {b : Type} {c : Type} {a : Type} =>
+           Data.Bifunctor.second__ := fun (b : Type) (c : Type) (a : Type) =>
              Bifunctor__Arg_second |}.
 
 #[local] Definition Bitraversable__Arg_bitraverse
@@ -834,27 +834,27 @@ Program Instance Bifunctor__Arg : Data.Bifunctor.Bifunctor Arg :=
 #[global]
 Program Instance Bifoldable__Arg : Data.Bifoldable.Bifoldable Arg :=
   fun _ k__ =>
-    k__ {| Data.Bifoldable.bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Bifoldable.bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__Arg_bifold ;
-           Data.Bifoldable.bifoldMap__ := fun {m : Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monoid m} =>
+           Data.Bifoldable.bifoldMap__ := fun (m : Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monoid m) =>
              Bifoldable__Arg_bifoldMap ;
-           Data.Bifoldable.bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           Data.Bifoldable.bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__Arg_bifoldl ;
-           Data.Bifoldable.bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           Data.Bifoldable.bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__Arg_bifoldr |}.
 
 #[global]
 Program Instance Bitraversable__Arg : Data.Bitraversable.Bitraversable Arg :=
   fun _ k__ =>
-    k__ {| Data.Bitraversable.bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| Data.Bitraversable.bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__Arg_bitraverse |}.
 
 (* Skipping all instances of class `GHC.Enum.Enum', including
@@ -884,8 +884,8 @@ Program Instance Semigroup__First {a : Type} : GHC.Base.Semigroup (First a) :=
 #[global]
 Program Instance Functor__First : GHC.Base.Functor First :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__First_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__First_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__First_op_zlzd__ |}.
 
 #[local] Definition Foldable__First_foldMap
@@ -945,18 +945,18 @@ Program Instance Functor__First : GHC.Base.Functor First :=
 #[global]
 Program Instance Foldable__First : Data.Foldable.Foldable First :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__First_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__First_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__First_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__First_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__First_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__First_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__First_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__First_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__First_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__First_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__First_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__First_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__First_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__First_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__First_toList |}.
 
 #[local] Definition Traversable__First_traverse
    : forall {f : Type -> Type},
@@ -993,23 +993,23 @@ Program Instance Foldable__First : Data.Foldable.Foldable First :=
 #[global]
 Program Instance Traversable__First : Data.Traversable.Traversable First :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__First_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__First_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__First_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__First_traverse |}.
 
 #[local] Definition Applicative__First_liftA2
@@ -1036,13 +1036,13 @@ Program Instance Traversable__First : Data.Traversable.Traversable First :=
 #[global]
 Program Instance Applicative__First : GHC.Base.Applicative First :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__First_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__First_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__First_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__First_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__First_pure |}.
 
 #[local] Definition Monad__First_op_zgzg__
    : forall {a : Type}, forall {b : Type}, First a -> First b -> First b :=
@@ -1059,11 +1059,11 @@ Program Instance Applicative__First : GHC.Base.Applicative First :=
 #[global]
 Program Instance Monad__First : GHC.Base.Monad First :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__First_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__First_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__First_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__First_return_ |}.
 
 (* Skipping all instances of class `GHC.Internal.Control.Monad.Fix.MonadFix',
    including `Data.Semigroup.MonadFix__First' *)
@@ -1096,8 +1096,8 @@ Program Instance Semigroup__Last {a : Type} : GHC.Base.Semigroup (Last a) :=
 #[global]
 Program Instance Functor__Last : GHC.Base.Functor Last :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Last_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Last_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Last_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Last_op_zlzd__ |}.
 
 #[local] Definition Foldable__Last_foldMap
    : forall {m : Type},
@@ -1156,18 +1156,18 @@ Program Instance Functor__Last : GHC.Base.Functor Last :=
 #[global]
 Program Instance Foldable__Last : Data.Foldable.Foldable Last :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Last_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Last_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Last_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Last_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Last_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Last_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Last_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Last_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Last_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Last_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Last_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Last_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Last_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Last_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Last_toList |}.
 
 #[local] Definition Traversable__Last_traverse
    : forall {f : Type -> Type},
@@ -1203,23 +1203,23 @@ Program Instance Foldable__Last : Data.Foldable.Foldable Last :=
 #[global]
 Program Instance Traversable__Last : Data.Traversable.Traversable Last :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Last_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Last_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Last_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Last_traverse |}.
 
 #[local] Definition Applicative__Last_liftA2
@@ -1246,13 +1246,13 @@ Program Instance Traversable__Last : Data.Traversable.Traversable Last :=
 #[global]
 Program Instance Applicative__Last : GHC.Base.Applicative Last :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Last_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Last_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Last_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Last_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Last_pure |}.
 
 #[local] Definition Monad__Last_op_zgzg__
    : forall {a : Type}, forall {b : Type}, Last a -> Last b -> Last b :=
@@ -1269,10 +1269,10 @@ Program Instance Applicative__Last : GHC.Base.Applicative Last :=
 #[global]
 Program Instance Monad__Last : GHC.Base.Monad Last :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Last_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Last_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Last_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Last_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Last_return_ |}.
 
 (* Skipping all instances of class `GHC.Internal.Control.Monad.Fix.MonadFix',
    including `Data.Semigroup.MonadFix__Last' *)

@@ -2736,9 +2736,9 @@ Ltac solve_dmdTransform := Tactics.program_simpl; try solve_mkWorkerDemand; try 
 Program Instance Functor__NormaliseStepResult
    : GHC.Base.Functor NormaliseStepResult :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__NormaliseStepResult_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__NormaliseStepResult_op_zlzd__ |}.
 
 Axiom dataConTag : DataCon -> HsSyn.ConTag.

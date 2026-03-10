@@ -157,8 +157,8 @@ Program Instance Monoid__Min {a : Type} `{GHC.Base.Ord a}
 #[global]
 Program Instance Functor__StateL {s : Type} : GHC.Base.Functor (StateL s) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__StateL_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__StateL_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__StateL_op_zlzd__ |}.
 
 #[local] Definition Applicative__StateL_liftA2 {inst_s : Type}
@@ -205,13 +205,13 @@ Program Instance Functor__StateL {s : Type} : GHC.Base.Functor (StateL s) :=
 Program Instance Applicative__StateL {s : Type}
    : GHC.Base.Applicative (StateL s) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__StateL_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__StateL_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__StateL_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__StateL_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__StateL_pure |}.
 
 #[local] Definition Functor__StateR_fmap {inst_s : Type}
    : forall {a : Type},
@@ -230,8 +230,8 @@ Program Instance Applicative__StateL {s : Type}
 #[global]
 Program Instance Functor__StateR {s : Type} : GHC.Base.Functor (StateR s) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__StateR_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__StateR_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__StateR_op_zlzd__ |}.
 
 #[local] Definition Applicative__StateR_liftA2 {inst_s : Type}
@@ -278,13 +278,13 @@ Program Instance Functor__StateR {s : Type} : GHC.Base.Functor (StateR s) :=
 Program Instance Applicative__StateR {s : Type}
    : GHC.Base.Applicative (StateR s) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__StateR_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__StateR_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__StateR_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__StateR_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__StateR_pure |}.
 
 (* Skipping instance `Data.Functor.Utils.Functor__StateT' of class
    `GHC.Base.Functor' *)

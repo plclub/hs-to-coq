@@ -153,8 +153,8 @@ Instance Uniquable__NameSpace : Unique.Uniquable NameSpace :=
 #[global]
 Program Instance Functor__OccEnv : GHC.Base.Functor OccEnv :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__OccEnv_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__OccEnv_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__OccEnv_op_zlzd__ |}.
 
 #[local] Definition Ord__NameSpace_compare

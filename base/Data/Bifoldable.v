@@ -114,13 +114,13 @@ Existing Class Bifoldable.
 #[global]
 Program Instance Bifoldable__pair_type : Bifoldable GHC.Tuple.pair_type :=
   fun _ k__ =>
-    k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__pair_type_bifold ;
-           bifoldMap__ := fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
+           bifoldMap__ := fun (m : Type) (a : Type) (b : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__pair_type_bifoldMap ;
-           bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__pair_type_bifoldl ;
-           bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__pair_type_bifoldr |}.
 
 #[local] Definition Bifoldable__Const_bifoldMap
@@ -171,12 +171,12 @@ Program Instance Bifoldable__pair_type : Bifoldable GHC.Tuple.pair_type :=
 #[global]
 Program Instance Bifoldable__Const : Bifoldable Data.Functor.Const.Const :=
   fun _ k__ =>
-    k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__Const_bifold ;
-           bifoldMap__ := fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
+           bifoldMap__ := fun (m : Type) (a : Type) (b : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__Const_bifoldMap ;
-           bifoldl__ := fun {c : Type} {a : Type} {b : Type} => Bifoldable__Const_bifoldl ;
-           bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           bifoldl__ := fun (c : Type) (a : Type) (b : Type) => Bifoldable__Const_bifoldl ;
+           bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__Const_bifoldr |}.
 
 (* Skipping instance `Data.Bifoldable.Bifoldable__K1' of class
@@ -229,13 +229,13 @@ Program Instance Bifoldable__Const : Bifoldable Data.Functor.Const.Const :=
 Program Instance Bifoldable__triple_type {x : Type}
    : Bifoldable (GHC.Tuple.triple_type x) :=
   fun _ k__ =>
-    k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__triple_type_bifold ;
-           bifoldMap__ := fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
+           bifoldMap__ := fun (m : Type) (a : Type) (b : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__triple_type_bifoldMap ;
-           bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__triple_type_bifoldl ;
-           bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__triple_type_bifoldr |}.
 
 #[local] Definition Bifoldable__quad_type_bifoldMap {inst_x : Type} {inst_y
@@ -290,13 +290,13 @@ Program Instance Bifoldable__triple_type {x : Type}
 Program Instance Bifoldable__quad_type {x : Type} {y : Type}
    : Bifoldable (GHC.Tuple.quad_type x y) :=
   fun _ k__ =>
-    k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__quad_type_bifold ;
-           bifoldMap__ := fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
+           bifoldMap__ := fun (m : Type) (a : Type) (b : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__quad_type_bifoldMap ;
-           bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__quad_type_bifoldl ;
-           bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__quad_type_bifoldr |}.
 
 #[local] Definition Bifoldable__quint_type_bifoldMap {inst_x : Type} {inst_y
@@ -353,13 +353,13 @@ Program Instance Bifoldable__quad_type {x : Type} {y : Type}
 Program Instance Bifoldable__quint_type {x : Type} {y : Type} {z : Type}
    : Bifoldable (GHC.Tuple.quint_type x y z) :=
   fun _ k__ =>
-    k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__quint_type_bifold ;
-           bifoldMap__ := fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
+           bifoldMap__ := fun (m : Type) (a : Type) (b : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__quint_type_bifoldMap ;
-           bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__quint_type_bifoldl ;
-           bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__quint_type_bifoldr |}.
 
 #[local] Definition Bifoldable__sext_type_bifoldMap {inst_x : Type} {inst_y
@@ -421,13 +421,13 @@ Program Instance Bifoldable__sext_type {x : Type} {y : Type} {z : Type} {w
    : Type}
    : Bifoldable (GHC.Tuple.sext_type x y z w) :=
   fun _ k__ =>
-    k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__sext_type_bifold ;
-           bifoldMap__ := fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
+           bifoldMap__ := fun (m : Type) (a : Type) (b : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__sext_type_bifoldMap ;
-           bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__sext_type_bifoldl ;
-           bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__sext_type_bifoldr |}.
 
 #[local] Definition Bifoldable__sept_type_bifoldMap {inst_x : Type} {inst_y
@@ -489,13 +489,13 @@ Program Instance Bifoldable__sept_type {x : Type} {y : Type} {z : Type} {w
    : Type} {v : Type}
    : Bifoldable (GHC.Tuple.sept_type x y z w v) :=
   fun _ k__ =>
-    k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__sept_type_bifold ;
-           bifoldMap__ := fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
+           bifoldMap__ := fun (m : Type) (a : Type) (b : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__sept_type_bifoldMap ;
-           bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__sept_type_bifoldl ;
-           bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__sept_type_bifoldr |}.
 
 #[local] Definition Bifoldable__Either_bifoldMap
@@ -547,13 +547,13 @@ Program Instance Bifoldable__sept_type {x : Type} {y : Type} {z : Type} {w
 #[global]
 Program Instance Bifoldable__Either : Bifoldable Data.Either.Either :=
   fun _ k__ =>
-    k__ {| bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__Either_bifold ;
-           bifoldMap__ := fun {m : Type} {a : Type} {b : Type} `{GHC.Base.Monoid m} =>
+           bifoldMap__ := fun (m : Type) (a : Type) (b : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__Either_bifoldMap ;
-           bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__Either_bifoldl ;
-           bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__Either_bifoldr |}.
 
 #[global] Definition bifoldr' {t : Type -> Type -> Type} {a : Type} {c : Type}

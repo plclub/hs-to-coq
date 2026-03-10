@@ -561,6 +561,8 @@ Definition build' : forall {a}, (forall {b}, (a -> b -> b) -> b -> b) -> list a 
 
 (** Qualified notation for the notation defined here **)
 
+Require String Ascii.
+
 Module ManualNotations.
 Infix "GHC.Base./=" := (op_zsze__) (no associativity, at level 70).
 Notation "'_GHC.Base./=_'" := (op_zsze__).
@@ -575,7 +577,6 @@ Notation "'_GHC.Base.>_'" := (op_zg__).
 Infix "GHC.Base.>=" := (op_zgze__) (no associativity, at level 70).
 Notation "'_GHC.Base.>=_'" := (op_zgze__).
 
-Require String Ascii.
 Export String.StringSyntax Ascii.AsciiSyntax.
 End ManualNotations.
 
@@ -875,8 +876,8 @@ Infix "∘" := (_∘_) (left associativity, at level 40).
 Program Instance Functor__pair_type {a : Type}
    : Functor (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__pair_type_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__pair_type_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__pair_type_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__pair_type_op_zlzd__ |}.
 
 #[local] Definition Applicative__pair_type_op_ztzg__ {inst_a : Type} `{Monoid
   inst_a}
@@ -895,12 +896,12 @@ Program Instance Functor__pair_type {a : Type}
 Program Instance Applicative__pair_type {a : Type} `{Monoid a}
    : Applicative (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
-    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__pair_type_liftA2 ;
-           op_zlztzg____ := fun {a : Type} {b : Type} =>
+           op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__pair_type_op_zlztzg__ ;
-           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__pair_type_op_ztzg__ ;
-           pure__ := fun {a : Type} => Applicative__pair_type_pure |}.
+           op_ztzg____ := fun (a : Type) (b : Type) => Applicative__pair_type_op_ztzg__ ;
+           pure__ := fun (a : Type) => Applicative__pair_type_pure |}.
 
 (* Skipping instance `GHC.Base.Monad__Solo' of class `GHC.Base.Monad' *)
 
@@ -932,9 +933,9 @@ Program Instance Applicative__pair_type {a : Type} `{Monoid a}
 Program Instance Monad__pair_type {a : Type} `{Monoid a}
    : Monad (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
-    k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__pair_type_op_zgzg__ ;
-           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__pair_type_op_zgzgze__ ;
-           return___ := fun {a : Type} => Monad__pair_type_return_ |}.
+    k__ {| op_zgzg____ := fun (a : Type) (b : Type) => Monad__pair_type_op_zgzg__ ;
+           op_zgzgze____ := fun (a : Type) (b : Type) => Monad__pair_type_op_zgzgze__ ;
+           return___ := fun (a : Type) => Monad__pair_type_return_ |}.
 
 #[local] Definition Functor__triple_type_fmap {inst_a : Type} {inst_b : Type}
    : forall {a : Type},
@@ -961,8 +962,8 @@ Program Instance Monad__pair_type {a : Type} `{Monoid a}
 Program Instance Functor__triple_type {a : Type} {b : Type}
    : Functor (GHC.Tuple.triple_type a b) :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__triple_type_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__triple_type_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__triple_type_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__triple_type_op_zlzd__ |}.
 
 #[local] Definition Applicative__triple_type_op_zlztzg__ {inst_a : Type} {inst_b
    : Type} `{Monoid inst_a} `{Monoid inst_b}
@@ -1010,12 +1011,12 @@ Program Instance Applicative__triple_type {a : Type} {b : Type} `{Monoid a}
   `{Monoid b}
    : Applicative (GHC.Tuple.triple_type a b) :=
   fun _ k__ =>
-    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__triple_type_liftA2 ;
-           op_zlztzg____ := fun {a : Type} {b : Type} =>
+           op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__triple_type_op_zlztzg__ ;
-           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__triple_type_op_ztzg__ ;
-           pure__ := fun {a : Type} => Applicative__triple_type_pure |}.
+           op_ztzg____ := fun (a : Type) (b : Type) => Applicative__triple_type_op_ztzg__ ;
+           pure__ := fun (a : Type) => Applicative__triple_type_pure |}.
 
 #[local] Definition Monad__triple_type_op_zgzgze__ {inst_a : Type} {inst_b
    : Type} `{Monoid inst_a} `{Monoid inst_b}
@@ -1052,10 +1053,10 @@ Program Instance Monad__triple_type {a : Type} {b : Type} `{Monoid a} `{Monoid
   b}
    : Monad (GHC.Tuple.triple_type a b) :=
   fun _ k__ =>
-    k__ {| op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__triple_type_op_zgzg__ ;
-           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__triple_type_op_zgzgze__ ;
-           return___ := fun {a : Type} => Monad__triple_type_return_ |}.
+           op_zgzgze____ := fun (a : Type) (b : Type) => Monad__triple_type_op_zgzgze__ ;
+           return___ := fun (a : Type) => Monad__triple_type_return_ |}.
 
 #[local] Definition Functor__quad_type_fmap {inst_a : Type} {inst_b : Type}
   {inst_c : Type}
@@ -1083,8 +1084,8 @@ Program Instance Monad__triple_type {a : Type} {b : Type} `{Monoid a} `{Monoid
 Program Instance Functor__quad_type {a : Type} {b : Type} {c : Type}
    : Functor (GHC.Tuple.quad_type a b c) :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__quad_type_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__quad_type_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__quad_type_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__quad_type_op_zlzd__ |}.
 
 #[local] Definition Applicative__quad_type_op_zlztzg__ {inst_a : Type} {inst_b
    : Type} {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
@@ -1132,12 +1133,12 @@ Program Instance Applicative__quad_type {a : Type} {b : Type} {c : Type}
   `{Monoid a} `{Monoid b} `{Monoid c}
    : Applicative (GHC.Tuple.quad_type a b c) :=
   fun _ k__ =>
-    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__quad_type_liftA2 ;
-           op_zlztzg____ := fun {a : Type} {b : Type} =>
+           op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__quad_type_op_zlztzg__ ;
-           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__quad_type_op_ztzg__ ;
-           pure__ := fun {a : Type} => Applicative__quad_type_pure |}.
+           op_ztzg____ := fun (a : Type) (b : Type) => Applicative__quad_type_op_ztzg__ ;
+           pure__ := fun (a : Type) => Applicative__quad_type_pure |}.
 
 #[local] Definition Monad__quad_type_op_zgzgze__ {inst_a : Type} {inst_b : Type}
   {inst_c : Type} `{Monoid inst_a} `{Monoid inst_b} `{Monoid inst_c}
@@ -1174,9 +1175,9 @@ Program Instance Monad__quad_type {a : Type} {b : Type} {c : Type} `{Monoid a}
   `{Monoid b} `{Monoid c}
    : Monad (GHC.Tuple.quad_type a b c) :=
   fun _ k__ =>
-    k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__quad_type_op_zgzg__ ;
-           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__quad_type_op_zgzgze__ ;
-           return___ := fun {a : Type} => Monad__quad_type_return_ |}.
+    k__ {| op_zgzg____ := fun (a : Type) (b : Type) => Monad__quad_type_op_zgzg__ ;
+           op_zgzgze____ := fun (a : Type) (b : Type) => Monad__quad_type_op_zgzgze__ ;
+           return___ := fun (a : Type) => Monad__quad_type_return_ |}.
 
 #[local] Definition Functor__quint_type_fmap {inst_a : Type} {inst_b : Type}
   {inst_c : Type} {inst_d : Type}
@@ -1205,8 +1206,8 @@ Program Instance Monad__quad_type {a : Type} {b : Type} {c : Type} `{Monoid a}
 Program Instance Functor__quint_type {a : Type} {b : Type} {c : Type} {d : Type}
    : Functor (GHC.Tuple.quint_type a b c d) :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__quint_type_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__quint_type_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__quint_type_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__quint_type_op_zlzd__ |}.
 
 #[local] Definition Functor__sext_type_fmap {inst_a : Type} {inst_b : Type}
   {inst_c : Type} {inst_d : Type} {inst_e : Type}
@@ -1236,8 +1237,8 @@ Program Instance Functor__sext_type {a : Type} {b : Type} {c : Type} {d : Type}
   {e : Type}
    : Functor (GHC.Tuple.sext_type a b c d e) :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__sext_type_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__sext_type_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__sext_type_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__sext_type_op_zlzd__ |}.
 
 #[local] Definition Functor__sept_type_fmap {inst_a : Type} {inst_b : Type}
   {inst_c : Type} {inst_d : Type} {inst_e : Type} {inst_f : Type}
@@ -1267,8 +1268,8 @@ Program Instance Functor__sept_type {a : Type} {b : Type} {c : Type} {d : Type}
   {e : Type} {f : Type}
    : Functor (GHC.Tuple.sept_type a b c d e f) :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__sept_type_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__sept_type_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__sept_type_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__sept_type_op_zlzd__ |}.
 
 (* Skipping instance `GHC.Base.Semigroup__IO' of class `GHC.Base.Semigroup' *)
 
@@ -1299,8 +1300,8 @@ Program Instance Functor__sept_type {a : Type} {b : Type} {c : Type} {d : Type}
 #[global]
 Program Instance Functor__option : Functor option :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__option_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__option_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__option_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__option_op_zlzd__ |}.
 
 #[local] Definition Applicative__option_liftA2
    : forall {a : Type},
@@ -1339,11 +1340,11 @@ Program Instance Functor__option : Functor option :=
 #[global]
 Program Instance Applicative__option : Applicative option :=
   fun _ k__ =>
-    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__option_liftA2 ;
-           op_zlztzg____ := fun {a : Type} {b : Type} => Applicative__option_op_zlztzg__ ;
-           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__option_op_ztzg__ ;
-           pure__ := fun {a : Type} => Applicative__option_pure |}.
+           op_zlztzg____ := fun (a : Type) (b : Type) => Applicative__option_op_zlztzg__ ;
+           op_ztzg____ := fun (a : Type) (b : Type) => Applicative__option_op_ztzg__ ;
+           pure__ := fun (a : Type) => Applicative__option_pure |}.
 
 #[local] Definition Monad__option_op_zgzg__
    : forall {a : Type}, forall {b : Type}, option a -> option b -> option b :=
@@ -1365,9 +1366,9 @@ Program Instance Applicative__option : Applicative option :=
 #[global]
 Program Instance Monad__option : Monad option :=
   fun _ k__ =>
-    k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__option_op_zgzg__ ;
-           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__option_op_zgzgze__ ;
-           return___ := fun {a : Type} => Monad__option_return_ |}.
+    k__ {| op_zgzg____ := fun (a : Type) (b : Type) => Monad__option_op_zgzg__ ;
+           op_zgzgze____ := fun (a : Type) (b : Type) => Monad__option_op_zgzgze__ ;
+           return___ := fun (a : Type) => Monad__option_return_ |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `GHC.Base.Alternative__option' *)
@@ -1389,8 +1390,8 @@ Program Instance Monad__option : Monad option :=
 #[global]
 Program Instance Functor__list : Functor list :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__list_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__list_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__list_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__list_op_zlzd__ |}.
 
 #[local] Definition Functor__NonEmpty_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> NonEmpty a -> NonEmpty b :=
@@ -1411,8 +1412,8 @@ Program Instance Functor__list : Functor list :=
 #[global]
 Program Instance Functor__NonEmpty : Functor NonEmpty :=
   fun _ k__ =>
-    k__ {| fmap__ := fun {a : Type} {b : Type} => Functor__NonEmpty_fmap ;
-           op_zlzd____ := fun {a : Type} {b : Type} => Functor__NonEmpty_op_zlzd__ |}.
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__NonEmpty_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__NonEmpty_op_zlzd__ |}.
 
 #[local] Definition Applicative__NonEmpty_pure
    : forall {a : Type}, a -> NonEmpty a :=
@@ -1447,11 +1448,11 @@ Program Instance Functor__NonEmpty : Functor NonEmpty :=
 #[global]
 Program Instance Applicative__list : Applicative list :=
   fun _ k__ =>
-    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__list_liftA2 ;
-           op_zlztzg____ := fun {a : Type} {b : Type} => Applicative__list_op_zlztzg__ ;
-           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__list_op_ztzg__ ;
-           pure__ := fun {a : Type} => Applicative__list_pure |}.
+           op_zlztzg____ := fun (a : Type) (b : Type) => Applicative__list_op_zlztzg__ ;
+           op_ztzg____ := fun (a : Type) (b : Type) => Applicative__list_op_ztzg__ ;
+           pure__ := fun (a : Type) => Applicative__list_pure |}.
 
 #[local] Definition Monad__list_return_ : forall {a : Type}, a -> list a :=
   fun {a : Type} => pure.
@@ -1470,9 +1471,9 @@ Program Instance Applicative__list : Applicative list :=
 #[global]
 Program Instance Monad__list : Monad list :=
   fun _ k__ =>
-    k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__list_op_zgzg__ ;
-           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__list_op_zgzgze__ ;
-           return___ := fun {a : Type} => Monad__list_return_ |}.
+    k__ {| op_zgzg____ := fun (a : Type) (b : Type) => Monad__list_op_zgzg__ ;
+           op_zgzgze____ := fun (a : Type) (b : Type) => Monad__list_op_zgzgze__ ;
+           return___ := fun (a : Type) => Monad__list_return_ |}.
 
 #[local] Definition Monad__NonEmpty_op_zgzgze__
    : forall {a : Type},
@@ -1509,12 +1510,12 @@ Program Instance Monad__list : Monad list :=
 #[global]
 Program Instance Applicative__NonEmpty : Applicative NonEmpty :=
   fun _ k__ =>
-    k__ {| liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__NonEmpty_liftA2 ;
-           op_zlztzg____ := fun {a : Type} {b : Type} =>
+           op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__NonEmpty_op_zlztzg__ ;
-           op_ztzg____ := fun {a : Type} {b : Type} => Applicative__NonEmpty_op_ztzg__ ;
-           pure__ := fun {a : Type} => Applicative__NonEmpty_pure |}.
+           op_ztzg____ := fun (a : Type) (b : Type) => Applicative__NonEmpty_op_ztzg__ ;
+           pure__ := fun (a : Type) => Applicative__NonEmpty_pure |}.
 
 #[local] Definition Monad__NonEmpty_return_
    : forall {a : Type}, a -> NonEmpty a :=
@@ -1529,9 +1530,9 @@ Program Instance Applicative__NonEmpty : Applicative NonEmpty :=
 #[global]
 Program Instance Monad__NonEmpty : Monad NonEmpty :=
   fun _ k__ =>
-    k__ {| op_zgzg____ := fun {a : Type} {b : Type} => Monad__NonEmpty_op_zgzg__ ;
-           op_zgzgze____ := fun {a : Type} {b : Type} => Monad__NonEmpty_op_zgzgze__ ;
-           return___ := fun {a : Type} => Monad__NonEmpty_return_ |}.
+    k__ {| op_zgzg____ := fun (a : Type) (b : Type) => Monad__NonEmpty_op_zgzg__ ;
+           op_zgzgze____ := fun (a : Type) (b : Type) => Monad__NonEmpty_op_zgzgze__ ;
+           return___ := fun (a : Type) => Monad__NonEmpty_return_ |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `GHC.Base.Alternative__list' *)

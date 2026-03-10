@@ -79,8 +79,8 @@ Program Instance Functor__RWST {m : Type -> Type} {r : Type} {w : Type} {s
    : Type} `{(GHC.Base.Functor m)}
    : GHC.Base.Functor (RWST r w s m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__RWST_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__RWST_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__RWST_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__RWST_op_zlzd__ |}.
 
 #[local] Definition Applicative__RWST_op_zlztzg__ {inst_w : Type} {inst_m
    : Type -> Type} {inst_r : Type} {inst_s : Type} `{GHC.Base.Monoid inst_w}
@@ -142,13 +142,13 @@ Program Instance Applicative__RWST {w : Type} {m : Type -> Type} {r : Type} {s
    : Type} `{GHC.Base.Monoid w} `{GHC.Base.Functor m} `{GHC.Base.Monad m}
    : GHC.Base.Applicative (RWST r w s m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__RWST_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__RWST_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__RWST_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__RWST_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__RWST_pure |}.
 
 (* Skipping all instances of class `GHC.Base.Alternative', including
    `Control.Monad.Trans.RWS.Lazy.Alternative__RWST' *)
@@ -182,10 +182,10 @@ Program Instance Monad__RWST {w : Type} {m : Type -> Type} {r : Type} {s : Type}
   `{GHC.Base.Monoid w} `{GHC.Base.Monad m}
    : GHC.Base.Monad (RWST r w s m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__RWST_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__RWST_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__RWST_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__RWST_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__RWST_return_ |}.
 
 #[local] Definition MonadTrans__RWST_lift {inst_w : Type} {inst_r : Type}
   {inst_s : Type} `{(GHC.Base.Monoid inst_w)}
@@ -205,9 +205,9 @@ Program Instance MonadTrans__RWST {w : Type} {r : Type} {s : Type}
   `{(GHC.Base.Monoid w)}
    : Control.Monad.Trans.Class.MonadTrans (RWST r w s) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Trans.Class.lift__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Control.Monad.Trans.Class.lift__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              MonadTrans__RWST_lift |}.
 
 #[local] Definition MonadFail__RWST_fail {inst_w : Type} {inst_m : Type -> Type}
@@ -222,7 +222,7 @@ Program Instance MonadFail__RWST {w : Type} {m : Type -> Type} {r : Type} {s
    : Type} `{GHC.Base.Monoid w} `{Control.Monad.Fail.MonadFail m}
    : Control.Monad.Fail.MonadFail (RWST r w s m) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} => MonadFail__RWST_fail |}.
+    k__ {| Control.Monad.Fail.fail__ := fun (a : Type) => MonadFail__RWST_fail |}.
 
 (* Skipping all instances of class `GHC.Base.MonadPlus', including
    `Control.Monad.Trans.RWS.Lazy.MonadPlus__RWST' *)

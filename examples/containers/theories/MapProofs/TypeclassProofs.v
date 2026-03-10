@@ -5,6 +5,8 @@ Require Import MapProofs.MapFunctionProofs.
 Require Import MapProofs.ToListProofs.
 Require Import MapProofs.UnionIntersectDifferenceProofs.
 Require Import Coq.Logic.ProofIrrelevance.
+Require Import Data.Functor.Classes.
+Require Import Proofs.Data.Functor.Classes.
 (** ** [Maps]s with [WF] *)
 
 Definition WFMap  (e : Type) `{Ord e} (a: Type)  : Type := {m : Map e a | WF m}.
@@ -329,8 +331,8 @@ Qed.
 
 Global Program Instance Functor_Map : Functor (WFMap e) :=
   fun _ k =>
-  k {| GHC.Base.fmap__ := fun {a} => @fmap (Map e) _ _ ;
-        GHC.Base.op_zlzd____ := fun {a} {b} x => @fmap (Map e) _ b a (@const a b _) |}.
+  k {| GHC.Base.fmap__ := fun (a : Type) => @fmap (Map e) _ _ ;
+        GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) x => @fmap (Map e) _ b a (@const a b _) |}.
 Next Obligation.
   unfold proj1_sig. destruct x1. apply map_preserves_WF. apply w.
 Qed.
@@ -356,8 +358,6 @@ Qed.
 
 
 (** ** Verification of [Eq1] - NOT COMPLETE*)
-Require Import Data.Functor.Classes.
-Require Import Proofs.Data.Functor.Classes.
 Global Instance Eq1Laws_list: Eq1Laws list (@Eq_list).
 Proof.
   constructor.

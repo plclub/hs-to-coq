@@ -183,9 +183,9 @@ Local Definition BooleanFormula_foldr
 #[global]
 Program Instance Functor__BooleanFormula : GHC.Base.Functor BooleanFormula :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__BooleanFormula_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__BooleanFormula_op_zlzd__ |}.
 
 #[local] Definition Foldable__BooleanFormula_foldMap {m} {a} `{_
@@ -246,21 +246,21 @@ Program Instance Functor__BooleanFormula : GHC.Base.Functor BooleanFormula :=
 Program Instance Foldable__BooleanFormula
    : Data.Foldable.Foldable BooleanFormula :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__BooleanFormula_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__BooleanFormula_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) =>
              Foldable__BooleanFormula_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} =>
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) =>
              Foldable__BooleanFormula_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__BooleanFormula_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__BooleanFormula_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.length__ := fun (a : Type) => Foldable__BooleanFormula_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__BooleanFormula_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__BooleanFormula_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__BooleanFormula_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__BooleanFormula_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__BooleanFormula_toList |}.
 
 #[local] Definition Traversable__BooleanFormula_traverse {f} {a} {b} `{_
    : GHC.Base.Applicative f}
@@ -295,23 +295,23 @@ Program Instance Foldable__BooleanFormula
 Program Instance Traversable__BooleanFormula
    : Data.Traversable.Traversable BooleanFormula :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__BooleanFormula_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__BooleanFormula_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__BooleanFormula_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__BooleanFormula_traverse |}.
 
 (* Skipping all instances of class `Outputable.Outputable', including

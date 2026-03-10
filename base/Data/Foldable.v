@@ -99,7 +99,7 @@ Definition default_foldable {f:Type -> Type}
                                       (GHC.Base.flip f))) t)) z)
   in
   let foldl' : forall b a, (b -> a -> b) -> b -> f a -> b :=
-      (fun {b} {a} =>
+      (fun b a =>
          fun f  z0  xs =>
            let f' :=  fun  x  k  z => GHC.Base.op_zdzn__ k (f z x)
            in foldr _ _ f' GHC.Base.id xs z0)
@@ -120,11 +120,11 @@ Definition default_foldable {f:Type -> Type}
     (* null *)
     (fun a => @foldr _ _ (fun arg_61__ arg_62__ => false) true)
     (* product *)
-    (fun a `{GHC.Num.Num a} =>
+    (fun a (H : GHC.Num.Num a) =>
        Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
                                   (foldMap _ _ _ _ Data.SemigroupInternal.Mk_Product))
     (* sum *)
-    (fun a `{GHC.Num.Num a} =>
+    (fun a (H : GHC.Num.Num a) =>
        Coq.Program.Basics.compose Data.SemigroupInternal.getSum
                                   (foldMap _ _ _ _ Data.SemigroupInternal.Mk_Sum))
     (* toList *)
@@ -139,7 +139,7 @@ Definition default_foldable_foldMap {f : Type -> Type}
       (foldMap
          (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z
   in
-  default_foldable (fun {m}{a} `{GHC.Base.Monoid m} => foldMap) foldr.
+  default_foldable (fun m a (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) => foldMap) foldr.
 
 Definition default_foldable_foldr (f : Type -> Type)
   (foldr : forall {a} {b}, (a -> b -> b) -> b -> f a -> b) :=
@@ -149,7 +149,7 @@ Definition default_foldable_foldr (f : Type -> Type)
             (Coq.Program.Basics.compose GHC.Base.mappend
                                         f) GHC.Base.mempty
   in
-  default_foldable foldMap (fun {a} {b} => foldr).
+  default_foldable foldMap (fun a b => foldr).
 
 
 (* Converted value declarations: *)
@@ -212,16 +212,16 @@ Definition default_foldable_foldr (f : Type -> Type)
 #[global]
 Program Instance Foldable__option : Foldable option :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__option_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__option_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__option_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__option_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__option_foldr ;
-           length__ := fun {a : Type} => Foldable__option_length ;
-           null__ := fun {a : Type} => Foldable__option_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__option_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__option_sum ;
-           toList__ := fun {a : Type} => Foldable__option_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__option_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__option_foldr ;
+           length__ := fun (a : Type) => Foldable__option_length ;
+           null__ := fun (a : Type) => Foldable__option_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__option_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__option_sum ;
+           toList__ := fun (a : Type) => Foldable__option_toList |}.
 
 #[local] Definition Foldable__list_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, list m -> m :=
@@ -263,16 +263,16 @@ Program Instance Foldable__option : Foldable option :=
 #[global]
 Program Instance Foldable__list : Foldable list :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__list_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__list_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__list_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__list_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__list_foldr ;
-           length__ := fun {a : Type} => Foldable__list_length ;
-           null__ := fun {a : Type} => Foldable__list_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__list_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__list_sum ;
-           toList__ := fun {a : Type} => Foldable__list_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__list_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__list_foldr ;
+           length__ := fun (a : Type) => Foldable__list_length ;
+           null__ := fun (a : Type) => Foldable__list_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__list_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__list_sum ;
+           toList__ := fun (a : Type) => Foldable__list_toList |}.
 
 #[local] Definition Foldable__NonEmpty_fold
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, GHC.Base.NonEmpty m -> m :=
@@ -336,17 +336,17 @@ Program Instance Foldable__list : Foldable list :=
 #[global]
 Program Instance Foldable__NonEmpty : Foldable GHC.Base.NonEmpty :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__NonEmpty_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__NonEmpty_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__NonEmpty_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__NonEmpty_foldr ;
-           length__ := fun {a : Type} => Foldable__NonEmpty_length ;
-           null__ := fun {a : Type} => Foldable__NonEmpty_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__NonEmpty_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__NonEmpty_sum ;
-           toList__ := fun {a : Type} => Foldable__NonEmpty_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__NonEmpty_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__NonEmpty_foldr ;
+           length__ := fun (a : Type) => Foldable__NonEmpty_length ;
+           null__ := fun (a : Type) => Foldable__NonEmpty_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__NonEmpty_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__NonEmpty_sum ;
+           toList__ := fun (a : Type) => Foldable__NonEmpty_toList |}.
 
 #[local] Definition Foldable__Either_foldMap {inst_a : Type}
    : forall {m : Type},
@@ -416,16 +416,16 @@ Program Instance Foldable__NonEmpty : Foldable GHC.Base.NonEmpty :=
 Program Instance Foldable__Either {a : Type}
    : Foldable (Data.Either.Either a) :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Either_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__Either_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Either_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__Either_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__Either_foldr ;
-           length__ := fun {a : Type} => Foldable__Either_length ;
-           null__ := fun {a : Type} => Foldable__Either_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Either_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Either_sum ;
-           toList__ := fun {a : Type} => Foldable__Either_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__Either_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__Either_foldr ;
+           length__ := fun (a : Type) => Foldable__Either_length ;
+           null__ := fun (a : Type) => Foldable__Either_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Either_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Either_sum ;
+           toList__ := fun (a : Type) => Foldable__Either_toList |}.
 
 #[local] Definition Foldable__pair_type_foldMap {inst_a : Type}
    : forall {m : Type},
@@ -486,17 +486,17 @@ Program Instance Foldable__Either {a : Type}
 Program Instance Foldable__pair_type {a : Type}
    : Foldable (GHC.Tuple.pair_type a) :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__pair_type_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__pair_type_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__pair_type_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__pair_type_foldr ;
-           length__ := fun {a : Type} => Foldable__pair_type_length ;
-           null__ := fun {a : Type} => Foldable__pair_type_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__pair_type_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__pair_type_sum ;
-           toList__ := fun {a : Type} => Foldable__pair_type_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__pair_type_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__pair_type_foldr ;
+           length__ := fun (a : Type) => Foldable__pair_type_length ;
+           null__ := fun (a : Type) => Foldable__pair_type_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__pair_type_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__pair_type_sum ;
+           toList__ := fun (a : Type) => Foldable__pair_type_toList |}.
 
 (* Skipping instance `Data.Foldable.Foldable__Array' of class
    `Data.Foldable.Foldable' *)
@@ -554,16 +554,16 @@ Program Instance Foldable__pair_type {a : Type}
 #[global]
 Program Instance Foldable__Proxy : Foldable Data.Proxy.Proxy :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Proxy_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__Proxy_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Proxy_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__Proxy_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__Proxy_foldr ;
-           length__ := fun {a : Type} => Foldable__Proxy_length ;
-           null__ := fun {a : Type} => Foldable__Proxy_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Proxy_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Proxy_sum ;
-           toList__ := fun {a : Type} => Foldable__Proxy_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__Proxy_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__Proxy_foldr ;
+           length__ := fun (a : Type) => Foldable__Proxy_length ;
+           null__ := fun (a : Type) => Foldable__Proxy_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Proxy_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Proxy_sum ;
+           toList__ := fun (a : Type) => Foldable__Proxy_toList |}.
 
 #[local] Definition Foldable__Dual_foldMap
    : forall {m : Type},
@@ -610,16 +610,16 @@ Program Instance Foldable__Proxy : Foldable Data.Proxy.Proxy :=
 #[global]
 Program Instance Foldable__Dual : Foldable Dual :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Dual_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__Dual_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Dual_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__Dual_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__Dual_foldr ;
-           length__ := fun {a : Type} => Foldable__Dual_length ;
-           null__ := fun {a : Type} => Foldable__Dual_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Dual_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Dual_sum ;
-           toList__ := fun {a : Type} => Foldable__Dual_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__Dual_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__Dual_foldr ;
+           length__ := fun (a : Type) => Foldable__Dual_length ;
+           null__ := fun (a : Type) => Foldable__Dual_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Dual_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Dual_sum ;
+           toList__ := fun (a : Type) => Foldable__Dual_toList |}.
 
 #[local] Definition Foldable__Sum_foldMap
    : forall {m : Type},
@@ -665,16 +665,16 @@ Program Instance Foldable__Dual : Foldable Dual :=
 #[global]
 Program Instance Foldable__Sum : Foldable Sum :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Sum_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__Sum_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Sum_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__Sum_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__Sum_foldr ;
-           length__ := fun {a : Type} => Foldable__Sum_length ;
-           null__ := fun {a : Type} => Foldable__Sum_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Sum_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Sum_sum ;
-           toList__ := fun {a : Type} => Foldable__Sum_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__Sum_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__Sum_foldr ;
+           length__ := fun (a : Type) => Foldable__Sum_length ;
+           null__ := fun (a : Type) => Foldable__Sum_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Sum_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Sum_sum ;
+           toList__ := fun (a : Type) => Foldable__Sum_toList |}.
 
 #[local] Definition Foldable__Product_foldMap
    : forall {m : Type},
@@ -722,16 +722,16 @@ Program Instance Foldable__Sum : Foldable Sum :=
 #[global]
 Program Instance Foldable__Product : Foldable Product :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Product_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__Product_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Product_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__Product_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__Product_foldr ;
-           length__ := fun {a : Type} => Foldable__Product_length ;
-           null__ := fun {a : Type} => Foldable__Product_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Product_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Product_sum ;
-           toList__ := fun {a : Type} => Foldable__Product_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__Product_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__Product_foldr ;
+           length__ := fun (a : Type) => Foldable__Product_length ;
+           null__ := fun (a : Type) => Foldable__Product_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Product_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Product_sum ;
+           toList__ := fun (a : Type) => Foldable__Product_toList |}.
 
 (* Skipping instance `Data.Foldable.Foldable__First' of class
    `Data.Foldable.Foldable' *)
@@ -804,16 +804,16 @@ Program Instance Foldable__Product : Foldable Product :=
 Program Instance Foldable__Alt {f : Type -> Type} `{(Foldable f)}
    : Foldable (Alt f) :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Alt_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__Alt_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Alt_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__Alt_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__Alt_foldr ;
-           length__ := fun {a : Type} => Foldable__Alt_length ;
-           null__ := fun {a : Type} => Foldable__Alt_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Alt_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Alt_sum ;
-           toList__ := fun {a : Type} => Foldable__Alt_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__Alt_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__Alt_foldr ;
+           length__ := fun (a : Type) => Foldable__Alt_length ;
+           null__ := fun (a : Type) => Foldable__Alt_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Alt_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Alt_sum ;
+           toList__ := fun (a : Type) => Foldable__Alt_toList |}.
 
 #[local] Definition Foldable__Ap_foldMap {inst_f : Type -> Type} `{(Foldable
    inst_f)}
@@ -882,16 +882,16 @@ Program Instance Foldable__Alt {f : Type -> Type} `{(Foldable f)}
 Program Instance Foldable__Ap {f : Type -> Type} `{(Foldable f)}
    : Foldable (Data.Monoid.Ap f) :=
   fun _ k__ =>
-    k__ {| fold__ := fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Ap_fold ;
-           foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    k__ {| fold__ := fun (m : Type) `(GHC.Base.Monoid m) => Foldable__Ap_fold ;
+           foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Ap_foldMap ;
-           foldl__ := fun {b : Type} {a : Type} => Foldable__Ap_foldl ;
-           foldr__ := fun {a : Type} {b : Type} => Foldable__Ap_foldr ;
-           length__ := fun {a : Type} => Foldable__Ap_length ;
-           null__ := fun {a : Type} => Foldable__Ap_null ;
-           product__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Ap_product ;
-           sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Ap_sum ;
-           toList__ := fun {a : Type} => Foldable__Ap_toList |}.
+           foldl__ := fun (b : Type) (a : Type) => Foldable__Ap_foldl ;
+           foldr__ := fun (a : Type) (b : Type) => Foldable__Ap_foldr ;
+           length__ := fun (a : Type) => Foldable__Ap_length ;
+           null__ := fun (a : Type) => Foldable__Ap_null ;
+           product__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Ap_product ;
+           sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Ap_sum ;
+           toList__ := fun (a : Type) => Foldable__Ap_toList |}.
 
 (* Skipping instance `Data.Foldable.Foldable__U1' of class
    `Data.Foldable.Foldable' *)

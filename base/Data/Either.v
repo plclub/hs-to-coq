@@ -78,8 +78,8 @@ Instance Ord__Either {a} {b} `{GHC.Base.Ord a} `{GHC.Base.Ord b}
 #[global]
 Program Instance Functor__Either {a : Type} : GHC.Base.Functor (Either a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Either_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Either_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Either_op_zlzd__ |}.
 
 #[local] Definition Semigroup__Either_op_zlzlzgzg__ {inst_a : Type} {inst_b
@@ -131,13 +131,13 @@ Program Instance Semigroup__Either {a : Type} {b : Type}
 Program Instance Applicative__Either {e : Type}
    : GHC.Base.Applicative (Either e) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Either_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Either_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Either_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Either_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Either_pure |}.
 
 #[local] Definition Monad__Either_op_zgzgze__ {inst_e : Type}
    : forall {a : Type},
@@ -163,11 +163,11 @@ Program Instance Applicative__Either {e : Type}
 #[global]
 Program Instance Monad__Either {e : Type} : GHC.Base.Monad (Either e) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Either_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__Either_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Either_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__Either_return_ |}.
 
 #[global] Definition either {a : Type} {c : Type} {b : Type}
    : (a -> c) -> (b -> c) -> Either a b -> c :=

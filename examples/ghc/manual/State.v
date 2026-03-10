@@ -42,8 +42,8 @@ Arguments Mk_State {_} {_} _.
 #[global]
 Program Instance Functor__State {s : Type} : GHC.Base.Functor (State s) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__State_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__State_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__State_op_zlzd__ |}.
 
 #[local] Definition Applicative__State_op_zlztzg__ {inst_s : Type}
@@ -78,13 +78,13 @@ Program Instance Functor__State {s : Type} : GHC.Base.Functor (State s) :=
 Program Instance Applicative__State {s : Type}
    : GHC.Base.Applicative (State s) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__State_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__State_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__State_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__State_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__State_pure |}.
 
 #[local] Definition Monad__State_op_zgzgze__ {inst_s : Type}
    : forall {a : Type},
@@ -106,11 +106,11 @@ Program Instance Applicative__State {s : Type}
 #[global]
 Program Instance Monad__State {s : Type} : GHC.Base.Monad (State s) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__State_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__State_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__State_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__State_return_ |}.
 
 #[global] Definition get {s : Type} : State s s :=
   Mk_State (fun s => pair s s).

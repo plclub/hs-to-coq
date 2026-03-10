@@ -156,18 +156,18 @@ Program Instance Monoid__Const {a : Type} {k : Type} {b : k} `{GHC.Base.Monoid
 Program Instance Foldable__Const {m : Type}
    : Data.Foldable.Foldable (Const m) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Const_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Const_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Const_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Const_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Const_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Const_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Const_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Const_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Const_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Const_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Const_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Const_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Const_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Const_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Const_toList |}.
 
 #[local] Definition Functor__Const_fmap {inst_m : Type}
    : forall {a : Type},
@@ -186,8 +186,8 @@ Program Instance Foldable__Const {m : Type}
 #[global]
 Program Instance Functor__Const {m : Type} : GHC.Base.Functor (Const m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Const_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Const_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Const_op_zlzd__ |}.
 
 #[local] Definition Applicative__Const_liftA2 {inst_m : Type} `{GHC.Base.Monoid
@@ -228,13 +228,13 @@ Program Instance Functor__Const {m : Type} : GHC.Base.Functor (Const m) :=
 Program Instance Applicative__Const {m : Type} `{GHC.Base.Monoid m}
    : GHC.Base.Applicative (Const m) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Const_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Const_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Const_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Const_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Const_pure |}.
 
 Instance Unpeel_Const (k a : Type) (b : k)
    : HsToCoq.Unpeel.Unpeel (Const a b) a :=

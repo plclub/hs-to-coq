@@ -71,10 +71,10 @@ Instance Unpeel_Constant {k} {a : Type} {b : k} : HsToCoq.Unpeel.Unpeel (Constan
 #[global]
 Program Instance Eq2__Constant : Data.Functor.Classes.Eq2 Constant :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq2__ := fun {a : Type}
-           {b : Type}
-           {c : Type}
-           {d : Type} =>
+    k__ {| Data.Functor.Classes.liftEq2__ := fun (a : Type)
+           (b : Type)
+           (c : Type)
+           (d : Type) =>
              Eq2__Constant_liftEq2 |}.
 
 #[local] Definition Ord2__Constant_liftCompare2
@@ -93,10 +93,10 @@ Program Instance Eq2__Constant : Data.Functor.Classes.Eq2 Constant :=
 #[global]
 Program Instance Ord2__Constant : Data.Functor.Classes.Ord2 Constant :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare2__ := fun {a : Type}
-           {b : Type}
-           {c : Type}
-           {d : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare2__ := fun (a : Type)
+           (b : Type)
+           (c : Type)
+           (d : Type) =>
              Ord2__Constant_liftCompare2 |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read2', including
@@ -116,7 +116,7 @@ Program Instance Ord2__Constant : Data.Functor.Classes.Ord2 Constant :=
 Program Instance Eq1__Constant {a : Type} `{(GHC.Base.Eq_ a)}
    : Data.Functor.Classes.Eq1 (Constant a) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftEq__ := fun (a : Type) (b : Type) =>
              Eq1__Constant_liftEq |}.
 
 #[local] Definition Ord1__Constant_liftCompare {inst_a : Type} `{(GHC.Base.Ord
@@ -131,7 +131,7 @@ Program Instance Eq1__Constant {a : Type} `{(GHC.Base.Eq_ a)}
 Program Instance Ord1__Constant {a : Type} `{(GHC.Base.Ord a)}
    : Data.Functor.Classes.Ord1 (Constant a) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun (a : Type) (b : Type) =>
              Ord1__Constant_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
@@ -157,8 +157,8 @@ Program Instance Ord1__Constant {a : Type} `{(GHC.Base.Ord a)}
 #[global]
 Program Instance Functor__Constant {a : Type} : GHC.Base.Functor (Constant a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Constant_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Constant_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__Constant_op_zlzd__ |}.
 
 #[local] Definition Foldable__Constant_foldMap {inst_a : Type}
@@ -222,19 +222,19 @@ Program Instance Functor__Constant {a : Type} : GHC.Base.Functor (Constant a) :=
 Program Instance Foldable__Constant {a : Type}
    : Data.Foldable.Foldable (Constant a) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Constant_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Constant_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Constant_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Constant_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Constant_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Constant_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Constant_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Constant_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Constant_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Constant_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Constant_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Constant_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Constant_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Constant_toList |}.
 
 #[local] Definition Traversable__Constant_traverse {inst_a : Type}
    : forall {f : Type -> Type},
@@ -276,23 +276,23 @@ Program Instance Foldable__Constant {a : Type}
 Program Instance Traversable__Constant {a : Type}
    : Data.Traversable.Traversable (Constant a) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Constant_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Constant_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Constant_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Constant_traverse |}.
 
 #[local] Definition Semigroup__Constant_op_zlzlzgzg__ {inst_k : Type} {inst_a
@@ -348,13 +348,13 @@ Program Instance Semigroup__Constant {k : Type} {a : Type} {b : k}
 Program Instance Applicative__Constant {a : Type} `{(GHC.Base.Monoid a)}
    : GHC.Base.Applicative (Constant a) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Constant_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Constant_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Constant_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Constant_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Constant_pure |}.
 
 #[local] Definition Monoid__Constant_mappend {inst_k : Type} {inst_a : Type}
   {inst_b : inst_k} `{(GHC.Base.Monoid inst_a)}
@@ -411,14 +411,14 @@ Program Instance Monoid__Constant {k : Type} {a : Type} {b : k}
 #[global]
 Program Instance Bifunctor__Constant : Data.Bifunctor.Bifunctor Constant :=
   fun _ k__ =>
-    k__ {| Data.Bifunctor.bimap__ := fun {a : Type}
-           {b : Type}
-           {c : Type}
-           {d : Type} =>
+    k__ {| Data.Bifunctor.bimap__ := fun (a : Type)
+           (b : Type)
+           (c : Type)
+           (d : Type) =>
              Bifunctor__Constant_bimap ;
-           Data.Bifunctor.first__ := fun {a : Type} {b : Type} {c : Type} =>
+           Data.Bifunctor.first__ := fun (a : Type) (b : Type) (c : Type) =>
              Bifunctor__Constant_first ;
-           Data.Bifunctor.second__ := fun {b : Type} {c : Type} {a : Type} =>
+           Data.Bifunctor.second__ := fun (b : Type) (c : Type) (a : Type) =>
              Bifunctor__Constant_second |}.
 
 #[local] Definition Bifoldable__Constant_bifoldMap
@@ -463,16 +463,16 @@ Program Instance Bifunctor__Constant : Data.Bifunctor.Bifunctor Constant :=
 #[global]
 Program Instance Bifoldable__Constant : Data.Bifoldable.Bifoldable Constant :=
   fun _ k__ =>
-    k__ {| Data.Bifoldable.bifold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Bifoldable.bifold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Bifoldable__Constant_bifold ;
-           Data.Bifoldable.bifoldMap__ := fun {m : Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monoid m} =>
+           Data.Bifoldable.bifoldMap__ := fun (m : Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monoid m) =>
              Bifoldable__Constant_bifoldMap ;
-           Data.Bifoldable.bifoldl__ := fun {c : Type} {a : Type} {b : Type} =>
+           Data.Bifoldable.bifoldl__ := fun (c : Type) (a : Type) (b : Type) =>
              Bifoldable__Constant_bifoldl ;
-           Data.Bifoldable.bifoldr__ := fun {a : Type} {c : Type} {b : Type} =>
+           Data.Bifoldable.bifoldr__ := fun (a : Type) (c : Type) (b : Type) =>
              Bifoldable__Constant_bifoldr |}.
 
 #[local] Definition Bitraversable__Constant_bitraverse
@@ -498,12 +498,12 @@ Program Instance Bifoldable__Constant : Data.Bifoldable.Bifoldable Constant :=
 Program Instance Bitraversable__Constant
    : Data.Bitraversable.Bitraversable Constant :=
   fun _ k__ =>
-    k__ {| Data.Bitraversable.bitraverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {c : Type}
-           {b : Type}
-           {d : Type}
-           `{GHC.Base.Applicative f} =>
+    k__ {| Data.Bitraversable.bitraverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (c : Type)
+           (b : Type)
+           (d : Type)
+           `(GHC.Base.Applicative f) =>
              Bitraversable__Constant_bitraverse |}.
 
 (* Skipping all instances of class `Data.Functor.Contravariant.Contravariant',

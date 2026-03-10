@@ -56,7 +56,7 @@ Program Instance Eq1__Sum {f : Type -> Type} {g : Type -> Type}
   `{Data.Functor.Classes.Eq1 f} `{Data.Functor.Classes.Eq1 g}
    : Data.Functor.Classes.Eq1 (Sum f g) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftEq__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftEq__ := fun (a : Type) (b : Type) =>
              Eq1__Sum_liftEq |}.
 
 #[local] Definition Ord1__Sum_liftCompare {inst_f : Type -> Type} {inst_g
@@ -80,7 +80,7 @@ Program Instance Ord1__Sum {f : Type -> Type} {g : Type -> Type}
   `{Data.Functor.Classes.Ord1 f} `{Data.Functor.Classes.Ord1 g}
    : Data.Functor.Classes.Ord1 (Sum f g) :=
   fun _ k__ =>
-    k__ {| Data.Functor.Classes.liftCompare__ := fun {a : Type} {b : Type} =>
+    k__ {| Data.Functor.Classes.liftCompare__ := fun (a : Type) (b : Type) =>
              Ord1__Sum_liftCompare |}.
 
 (* Skipping all instances of class `Data.Functor.Classes.Read1', including
@@ -116,8 +116,8 @@ Program Instance Functor__Sum {f : Type -> Type} {g : Type -> Type}
   `{GHC.Base.Functor f} `{GHC.Base.Functor g}
    : GHC.Base.Functor (Sum f g) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Sum_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Sum_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Sum_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Sum_op_zlzd__ |}.
 
 #[local] Definition Foldable__Sum_foldMap {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -204,18 +204,18 @@ Program Instance Foldable__Sum {f : Type -> Type} {g : Type -> Type}
   `{Data.Foldable.Foldable f} `{Data.Foldable.Foldable g}
    : Data.Foldable.Foldable (Sum f g) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Sum_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Sum_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Sum_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Sum_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Sum_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Sum_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Sum_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Sum_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Sum_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Sum_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Sum_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Sum_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Sum_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Sum_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Sum_toList |}.
 
 #[local] Definition Traversable__Sum_traverse {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Traversable.Traversable inst_f}
@@ -268,23 +268,23 @@ Program Instance Traversable__Sum {f : Type -> Type} {g : Type -> Type}
   `{Data.Traversable.Traversable f} `{Data.Traversable.Traversable g}
    : Data.Traversable.Traversable (Sum f g) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Sum_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Sum_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Sum_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Sum_traverse |}.
 
 (* External variables:

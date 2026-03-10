@@ -275,9 +275,9 @@ Program Instance Eq__RealSrcSpan : GHC.Base.Eq_ RealSrcSpan :=
 Program Instance Functor__GenLocated {l : Type}
    : GHC.Base.Functor (GenLocated l) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) =>
              Functor__GenLocated_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__GenLocated_op_zlzd__ |}.
 
 #[local] Definition Foldable__GenLocated_foldMap {inst_l : Type}
@@ -344,21 +344,21 @@ Program Instance Functor__GenLocated {l : Type}
 Program Instance Foldable__GenLocated {l : Type}
    : Data.Foldable.Foldable (GenLocated l) :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__GenLocated_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__GenLocated_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) =>
              Foldable__GenLocated_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} =>
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) =>
              Foldable__GenLocated_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__GenLocated_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__GenLocated_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.length__ := fun (a : Type) => Foldable__GenLocated_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__GenLocated_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__GenLocated_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__GenLocated_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__GenLocated_toList |}.
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__GenLocated_toList |}.
 
 #[local] Definition Traversable__GenLocated_traverse {inst_l : Type}
    : forall {f : Type -> Type},
@@ -401,23 +401,23 @@ Program Instance Foldable__GenLocated {l : Type}
 Program Instance Traversable__GenLocated {l : Type}
    : Data.Traversable.Traversable (GenLocated l) :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__GenLocated_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__GenLocated_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__GenLocated_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__GenLocated_traverse |}.
 
 (* Skipping all instances of class `Outputable.Outputable', including

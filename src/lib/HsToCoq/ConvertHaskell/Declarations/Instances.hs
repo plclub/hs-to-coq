@@ -490,6 +490,9 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
       let allLocalNames = M.fromList $  [ (m, Qualid (localNameFor m)) | m <- classMethods ]
 
       let quantify sub meth body = (maybeFun ?? body) . subst sub <$> getImplicitBindersForClassMember className meth
+          -- Like quantify, but makes binders explicit (not implicit).
+          -- Used inside record literals where {a : Type} is meaningless and triggers warnings.
+          quantifyExplicit sub meth body = (maybeFun ?? body) . map toExplicitBinder . subst sub <$> getImplicitBindersForClassMember className meth
 
       -- For each method, look for
       --  * explicit definitions
@@ -571,14 +574,14 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             (PosArg <$> filterVisibleVars convertedInstanceClass convertedInstanceTypes)
       instance_sentence <- view (edits.simpleClasses.contains className) >>= \case
         True  -> do
-          methods <- traverse (\m -> (m,) <$> quantify M.empty m (Qualid $ localNameFor m)) classMethods
+          methods <- traverse (\m -> (m,) <$> quantifyExplicit M.empty m (Qualid $ localNameFor m)) classMethods
           pure $ ProgramSentence
                    (InstanceSentence $ InstanceDefinition instanceName binds instHeadTy methods Nothing)
                    Nothing
         False -> do
           -- Assemble the actual record
           instRHS <- fmap Record $ forM classMethods $ \m -> do
-                       method_body <- subst convertedInstanceSubst $ quantify M.empty m $ Qualid (localNameFor m)
+                       method_body <- subst convertedInstanceSubst $ quantifyExplicit M.empty m $ Qualid (localNameFor m)
                        return (qualidMapBase (<> "__") m, method_body)
           -- TODO: This should probably be created with 'gensym'/'genqid', but then I
           -- have to be within a 'LocalConvMonad' and then I have to think exactly about

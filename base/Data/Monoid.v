@@ -136,19 +136,19 @@ Instance Ord__Last {a} `{GHC.Base.Ord a} : GHC.Base.Ord (Last a) :=
 Program Instance Functor__Ap {f : Type -> Type} `{GHC.Base.Functor f}
    : GHC.Base.Functor (Ap f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Ap_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Ap_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Ap_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Ap_op_zlzd__ |}.
 
 #[global]
 Program Instance Applicative__Ap {f : Type -> Type} `{GHC.Base.Applicative f}
    : GHC.Base.Applicative (Ap f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Ap_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Ap_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} => Applicative__Ap_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Ap_pure |}.
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) => Applicative__Ap_op_ztzg__ ;
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Ap_pure |}.
 
 #[global] Definition Monad__Ap_op_zgzg__ {inst_f : Type -> Type}
   `{GHC.Base.Monad inst_f}
@@ -176,10 +176,10 @@ Program Instance Applicative__Ap {f : Type -> Type} `{GHC.Base.Applicative f}
 Program Instance Monad__Ap {f : Type -> Type} `{GHC.Base.Monad f}
    : GHC.Base.Monad (Ap f) :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Ap_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Ap_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Ap_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Ap_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Ap_return_ |}.
 
 #[global] Definition MonadFail__Ap_fail {inst_f : Type -> Type}
   `{Control.Monad.Fail.MonadFail inst_f}
@@ -191,7 +191,7 @@ Program Instance MonadFail__Ap {f : Type -> Type} `{Control.Monad.Fail.MonadFail
   f}
    : Control.Monad.Fail.MonadFail (Ap f) :=
   fun _ k__ =>
-    k__ {| Control.Monad.Fail.fail__ := fun {a : Type} => MonadFail__Ap_fail |}.
+    k__ {| Control.Monad.Fail.fail__ := fun (a : Type) => MonadFail__Ap_fail |}.
 
 #[global] Definition Functor__Last_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Last a -> Last b :=
@@ -204,8 +204,8 @@ Program Instance MonadFail__Ap {f : Type -> Type} `{Control.Monad.Fail.MonadFail
 #[global]
 Program Instance Functor__Last : GHC.Base.Functor Last :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Last_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Last_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Last_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Last_op_zlzd__ |}.
 
 #[global] Definition Applicative__Last_liftA2
    : forall {a : Type},
@@ -236,13 +236,13 @@ Program Instance Functor__Last : GHC.Base.Functor Last :=
 #[global]
 Program Instance Applicative__Last : GHC.Base.Applicative Last :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Last_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Last_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Last_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Last_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Last_pure |}.
 
 #[global] Definition Monad__Last_op_zgzg__
    : forall {a : Type}, forall {b : Type}, Last a -> Last b -> Last b :=
@@ -263,10 +263,10 @@ Program Instance Applicative__Last : GHC.Base.Applicative Last :=
 #[global]
 Program Instance Monad__Last : GHC.Base.Monad Last :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Last_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Last_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Last_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Last_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Last_return_ |}.
 
 #[global] Definition Functor__First_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> First a -> First b :=
@@ -279,8 +279,8 @@ Program Instance Monad__Last : GHC.Base.Monad Last :=
 #[global]
 Program Instance Functor__First : GHC.Base.Functor First :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__First_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__First_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__First_op_zlzd__ |}.
 
 #[global] Definition Applicative__First_liftA2
@@ -313,13 +313,13 @@ Program Instance Functor__First : GHC.Base.Functor First :=
 #[global]
 Program Instance Applicative__First : GHC.Base.Applicative First :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__First_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__First_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__First_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__First_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__First_pure |}.
 
 #[global] Definition Monad__First_op_zgzg__
    : forall {a : Type}, forall {b : Type}, First a -> First b -> First b :=
@@ -340,11 +340,11 @@ Program Instance Applicative__First : GHC.Base.Applicative First :=
 #[global]
 Program Instance Monad__First : GHC.Base.Monad First :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__First_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) =>
              Monad__First_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__First_return_ |}.
+           GHC.Base.return___ := fun (a : Type) => Monad__First_return_ |}.
 
 #[local] Definition Semigroup__First_op_zlzlzgzg__ {inst_a : Type}
    : First inst_a -> First inst_a -> First inst_a :=

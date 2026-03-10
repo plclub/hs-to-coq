@@ -167,8 +167,8 @@ Program Instance Ord__Down {a : Type} `{GHC.Base.Ord a}
 #[global]
 Program Instance Functor__Down : GHC.Base.Functor Down :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Down_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Down_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Down_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Down_op_zlzd__ |}.
 
 #[local] Definition Applicative__Down_op_zlztzg__
    : forall {a : Type}, forall {b : Type}, Down (a -> b) -> Down a -> Down b :=
@@ -194,13 +194,13 @@ Program Instance Functor__Down : GHC.Base.Functor Down :=
 #[global]
 Program Instance Applicative__Down : GHC.Base.Applicative Down :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Down_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Down_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Down_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Down_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Down_pure |}.
 
 #[local] Definition Monad__Down_op_zgzgze__
    : forall {a : Type}, forall {b : Type}, Down a -> (a -> Down b) -> Down b :=
@@ -218,10 +218,10 @@ Program Instance Applicative__Down : GHC.Base.Applicative Down :=
 #[global]
 Program Instance Monad__Down : GHC.Base.Monad Down :=
   fun _ k__ =>
-    k__ {| GHC.Base.op_zgzg____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.op_zgzg____ := fun (a : Type) (b : Type) =>
              Monad__Down_op_zgzg__ ;
-           GHC.Base.op_zgzgze____ := fun {a : Type} {b : Type} => Monad__Down_op_zgzgze__ ;
-           GHC.Base.return___ := fun {a : Type} => Monad__Down_return_ |}.
+           GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Down_op_zgzgze__ ;
+           GHC.Base.return___ := fun (a : Type) => Monad__Down_return_ |}.
 
 #[global] Definition comparing {a : Type} {b : Type} `{GHC.Base.Ord a}
    : (b -> a) -> b -> b -> comparison :=

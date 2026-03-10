@@ -98,18 +98,18 @@ Arguments Mk_Pair {_} _ _.
 #[global]
 Program Instance Foldable__Pair : Data.Foldable.Foldable Pair :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__Pair_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Pair_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__Pair_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__Pair_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__Pair_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__Pair_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Pair_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Pair_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__Pair_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__Pair_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__Pair_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__Pair_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__Pair_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__Pair_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__Pair_toList |}.
 
 #[local] Definition Functor__Pair_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> Pair a -> Pair b :=
@@ -130,8 +130,8 @@ Program Instance Foldable__Pair : Data.Foldable.Foldable Pair :=
 #[global]
 Program Instance Functor__Pair : GHC.Base.Functor Pair :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__Pair_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} => Functor__Pair_op_zlzd__ |}.
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__Pair_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) => Functor__Pair_op_zlzd__ |}.
 
 #[local] Definition Traversable__Pair_traverse
    : forall {f : Type -> Type},
@@ -167,23 +167,23 @@ Program Instance Functor__Pair : GHC.Base.Functor Pair :=
 #[global]
 Program Instance Traversable__Pair : Data.Traversable.Traversable Pair :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Pair_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__Pair_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Pair_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__Pair_traverse |}.
 
 #[local] Definition Applicative__Pair_op_zlztzg__
@@ -213,13 +213,13 @@ Program Instance Traversable__Pair : Data.Traversable.Traversable Pair :=
 #[global]
 Program Instance Applicative__Pair : GHC.Base.Applicative Pair :=
   fun _ k__ =>
-    k__ {| GHC.Base.liftA2__ := fun {a : Type} {b : Type} {c : Type} =>
+    k__ {| GHC.Base.liftA2__ := fun (a : Type) (b : Type) (c : Type) =>
              Applicative__Pair_liftA2 ;
-           GHC.Base.op_zlztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_zlztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Pair_op_zlztzg__ ;
-           GHC.Base.op_ztzg____ := fun {a : Type} {b : Type} =>
+           GHC.Base.op_ztzg____ := fun (a : Type) (b : Type) =>
              Applicative__Pair_op_ztzg__ ;
-           GHC.Base.pure__ := fun {a : Type} => Applicative__Pair_pure |}.
+           GHC.Base.pure__ := fun (a : Type) => Applicative__Pair_pure |}.
 
 #[local] Definition Semigroup__Pair_op_zlzlzgzg__ {inst_a : Type}
   `{GHC.Base.Semigroup inst_a}

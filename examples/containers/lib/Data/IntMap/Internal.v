@@ -389,18 +389,18 @@ Program Instance Monoid__IntMap {a : Type} : GHC.Base.Monoid (IntMap a) :=
 #[global]
 Program Instance Foldable__IntMap : Data.Foldable.Foldable IntMap :=
   fun _ k__ =>
-    k__ {| Data.Foldable.fold__ := fun {m : Type} `{GHC.Base.Monoid m} =>
+    k__ {| Data.Foldable.fold__ := fun (m : Type) `(GHC.Base.Monoid m) =>
              Foldable__IntMap_fold ;
-           Data.Foldable.foldMap__ := fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+           Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__IntMap_foldMap ;
-           Data.Foldable.foldl__ := fun {b : Type} {a : Type} => Foldable__IntMap_foldl ;
-           Data.Foldable.foldr__ := fun {a : Type} {b : Type} => Foldable__IntMap_foldr ;
-           Data.Foldable.length__ := fun {a : Type} => Foldable__IntMap_length ;
-           Data.Foldable.null__ := fun {a : Type} => Foldable__IntMap_null ;
-           Data.Foldable.product__ := fun {a : Type} `{GHC.Num.Num a} =>
+           Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__IntMap_foldl ;
+           Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__IntMap_foldr ;
+           Data.Foldable.length__ := fun (a : Type) => Foldable__IntMap_length ;
+           Data.Foldable.null__ := fun (a : Type) => Foldable__IntMap_null ;
+           Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
              Foldable__IntMap_product ;
-           Data.Foldable.sum__ := fun {a : Type} `{GHC.Num.Num a} => Foldable__IntMap_sum ;
-           Data.Foldable.toList__ := fun {a : Type} => Foldable__IntMap_toList |}.
+           Data.Foldable.sum__ := fun (a : Type) `(GHC.Num.Num a) => Foldable__IntMap_sum ;
+           Data.Foldable.toList__ := fun (a : Type) => Foldable__IntMap_toList |}.
 
 #[global] Definition traverseWithKey {t : Type -> Type} {a : Type} {b : Type}
   `{GHC.Base.Applicative t}
@@ -467,30 +467,30 @@ Program Instance Foldable__IntMap : Data.Foldable.Foldable IntMap :=
 #[global]
 Program Instance Functor__IntMap : GHC.Base.Functor IntMap :=
   fun _ k__ =>
-    k__ {| GHC.Base.fmap__ := fun {a : Type} {b : Type} => Functor__IntMap_fmap ;
-           GHC.Base.op_zlzd____ := fun {a : Type} {b : Type} =>
+    k__ {| GHC.Base.fmap__ := fun (a : Type) (b : Type) => Functor__IntMap_fmap ;
+           GHC.Base.op_zlzd____ := fun (a : Type) (b : Type) =>
              Functor__IntMap_op_zlzd__ |}.
 
 #[global]
 Program Instance Traversable__IntMap : Data.Traversable.Traversable IntMap :=
   fun _ k__ =>
-    k__ {| Data.Traversable.mapM__ := fun {m : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Monad m} =>
+    k__ {| Data.Traversable.mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__IntMap_mapM ;
-           Data.Traversable.sequence__ := fun {m : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Monad m} =>
+           Data.Traversable.sequence__ := fun (m : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Monad m) =>
              Traversable__IntMap_sequence ;
-           Data.Traversable.sequenceA__ := fun {f : Type -> Type}
-           {a : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.sequenceA__ := fun (f : Type -> Type)
+           (a : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__IntMap_sequenceA ;
-           Data.Traversable.traverse__ := fun {f : Type -> Type}
-           {a : Type}
-           {b : Type}
-           `{GHC.Base.Applicative f} =>
+           Data.Traversable.traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
              Traversable__IntMap_traverse |}.
 
 (* Skipping all instances of class `Control.DeepSeq.NFData', including

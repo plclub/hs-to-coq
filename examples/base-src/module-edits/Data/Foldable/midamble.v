@@ -12,7 +12,7 @@ Definition default_foldable {f:Type -> Type}
                                       (GHC.Base.flip f))) t)) z)
   in
   let foldl' : forall b a, (b -> a -> b) -> b -> f a -> b :=
-      (fun {b} {a} =>
+      (fun b a =>
          fun f  z0  xs =>
            let f' :=  fun  x  k  z => GHC.Base.op_zdzn__ k (f z x)
            in foldr _ _ f' GHC.Base.id xs z0)
@@ -33,11 +33,11 @@ Definition default_foldable {f:Type -> Type}
     (* null *)
     (fun a => @foldr _ _ (fun arg_61__ arg_62__ => false) true)
     (* product *)
-    (fun a `{GHC.Num.Num a} =>
+    (fun a (H : GHC.Num.Num a) =>
        Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
                                   (foldMap _ _ _ _ Data.SemigroupInternal.Mk_Product))
     (* sum *)
-    (fun a `{GHC.Num.Num a} =>
+    (fun a (H : GHC.Num.Num a) =>
        Coq.Program.Basics.compose Data.SemigroupInternal.getSum
                                   (foldMap _ _ _ _ Data.SemigroupInternal.Mk_Sum))
     (* toList *)
@@ -52,7 +52,7 @@ Definition default_foldable_foldMap {f : Type -> Type}
       (foldMap
          (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z
   in
-  default_foldable (fun {m}{a} `{GHC.Base.Monoid m} => foldMap) foldr.
+  default_foldable (fun m a (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) => foldMap) foldr.
 
 Definition default_foldable_foldr (f : Type -> Type)
   (foldr : forall {a} {b}, (a -> b -> b) -> b -> f a -> b) :=
@@ -62,5 +62,5 @@ Definition default_foldable_foldr (f : Type -> Type)
             (Coq.Program.Basics.compose GHC.Base.mappend
                                         f) GHC.Base.mempty
   in
-  default_foldable foldMap (fun {a} {b} => foldr).
+  default_foldable foldMap (fun a b => foldr).
 
