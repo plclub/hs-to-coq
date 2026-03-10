@@ -59,7 +59,7 @@
 - [x] Test build-haskell job locally (stack build succeeds)
 - [x] Test test-coq-files job locally (base, base-thy, containers, transformers, graph, ghc, core-semantics all build)
 - [x] Test tests job locally (unit tests pass, base-tests pass, all small examples build)
-- [ ] Test test-translation job locally (requires regeneration — deferred)
+- [x] Test test-translation job locally (base, containers, ghc all regenerate with zero diff)
 
 ### 12. CLAUDE.md audit
 - [x] Audit and trim CLAUDE.md (173 lines, under 200 limit)
