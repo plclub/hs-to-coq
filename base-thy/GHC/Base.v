@@ -407,11 +407,13 @@ Instance EqExact_unit : EqExact unit.
 Proof. by split; repeat case; constructor. Qed.
 
 
+#[local] Set Warnings "-spurious-ssr-injection".
 Instance EqLaws_comparison : EqLaws comparison.
 Proof. by split; repeat case. Qed.
 
 Instance EqExact_comparison : EqExact comparison.
 Proof. by split; repeat case; constructor. Qed.
+#[local] Set Warnings "spurious-ssr-injection".
 
 
 Instance EqLaws_list {a} `{EqLaws a} : EqLaws (list a).

@@ -341,10 +341,10 @@ Proof.
   split.
   - move=> /disjoint_iff is_disjoint k.
     erewrite !member_Sem; try eassumption.
-    case: (is_disjoint k) => -> /=; intuition.
+    move: (is_disjoint k) => ->; simpl; intuition.
   - move=> is_disjoint; apply disjoint_iff => k.
     erewrite <-!member_Sem; try eassumption.
-    move: (is_disjoint k) => [] /negbTE ->; tauto.
+    move: (is_disjoint k) => /negbTE ->; tauto.
 Qed.
 
 Theorem isSubsetOf_member (s1 s2 : IntSet) :

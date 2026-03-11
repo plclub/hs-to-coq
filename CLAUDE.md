@@ -19,6 +19,8 @@ make -C examples/base-src vfiles               # Re-generate base/ from Haskell 
 make -C examples/tests                         # Unit tests (.hs → .v → coqc)
 make -C examples/base-tests                    # Tests requiring base/
 make -C examples/containers                    # containers lib + theories
+# containers: `make clean` preserves .v; use `make distclean` for full regeneration
+make -C examples/transformers                   # transformers lib
 make -C examples/ghc clean && make -C examples/ghc  # Regenerate+compile GHC lib/*.v
 cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j
 cd examples && ./boot.sh                       # Full bootstrap (all examples)

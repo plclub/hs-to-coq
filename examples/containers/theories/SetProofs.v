@@ -14,7 +14,6 @@ Require Import Coq.Classes.Morphisms. (* For [Proper] *)
 Require Import Coq.Wellfounded.Inverse_Image.
 Require Import Coq.Program.Tactics.
 Require Import Coq.Sorting.Sorted.
-Require Import MapProofs.Tactics.
 Set Bullet Behavior "Strict Subproofs".
 
 (** This file contains our specifications and proofs for [Data.Set]. The file
@@ -4823,6 +4822,9 @@ Proof.
   * reflexivity.
 Qed.
 
+#[local] Set Warnings "-require-in-section".
+Require Import MapProofs.Tactics.
+#[local] Set Warnings "require-in-section".
 
 (* This is a copy of the local fixpoint from Haskell's [validsize] function. *)
 
