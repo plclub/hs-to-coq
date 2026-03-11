@@ -289,7 +289,7 @@ HSFILES     = $(foreach m,$(MODULES) $(CORESYN) $(CORE_MODULES),$(SRC_$(m)))
 EDITPATHS = $(addprefix module-edits/,$(MODULES) $(CORESYN) $(CORE_MODULES))
 EDITFILES = edits $(CORE_EDITS) $(addsuffix /edits,$(EDITPATHS)) $(addsuffix /*.v, $(EDITPATHS))
 
-all: vfiles coq
+all: vfiles coq theories
 
 vfiles: $(OUT)/edits  $(OUT)/README.md $(OUT)/_CoqProject $(OUTFILES)
 
@@ -372,6 +372,11 @@ $(OUT)/Makefile: $(OUT)/README.md $(OUT)/_CoqProject $(OUTFILES) Makefile
 coq: $(OUT)/Makefile $(OUTFILES)
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
 
+theories: coq
+	if test -f theories/_CoqProject; then \
+	  cd theories && coq_makefile -f _CoqProject -o Makefile && \
+	  $(MAKE) -f Makefile OPT=$(COQFLAGS); \
+	fi
 
 HS_TO_COQ_GHC_OPTS=\
      --ghc-tree ghc \
@@ -520,6 +525,8 @@ $(OUTFILES_MAN): $(OUT)/%.v : manual/%.v
 
 clean:
 	rm -rf $(OUT)
+	cd theories 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
+	rm -f theories/Makefile
 	rm -f *.aux *.log
 
 cleancore:

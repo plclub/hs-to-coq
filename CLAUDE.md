@@ -20,8 +20,7 @@ make -C examples/tests                         # Unit tests (.hs → .v → coqc
 make -C examples/base-tests                    # Tests requiring base/
 make -C examples/containers                    # containers lib + theories (regenerates + builds)
 make -C examples/transformers                   # transformers lib
-make -C examples/ghc clean && make -C examples/ghc  # Regenerate+compile GHC lib/*.v
-cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j
+make -C examples/ghc clean && make -C examples/ghc  # Regenerate+compile GHC lib + theories
 cd examples && ./boot.sh                       # Full bootstrap (all examples)
 # Individual Coq dirs: cd <dir> && coq_makefile -f _CoqProject -o Makefile && make -j
 ```
@@ -77,7 +76,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 - `.h2ci` files store interface information for cross-module translation
 
 ### Stale .vo recovery
-If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the full chain: `base` → `base-thy` → `examples/containers/lib` → `examples/containers/theories` → `examples/ghc/lib` → `examples/ghc/theories`. Each needs `make clean && make -j`.
+If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the full chain: `base` → `base-thy` → `examples/containers` → `examples/ghc`. Each needs `make clean && make -j`.
 
 ### Axiomatized lib functions
 When lib/*.v functions are `Axiom`, theories/*.v proofs that unfold them must be `Admitted`. Check with `grep "^Axiom" lib/Module.v` before attempting computation-based proofs. See "GHC example" section for the full list of axiomatized functions.
@@ -167,7 +166,7 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 - `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — different unfolding chains needed
 - **Deprecated warnings (all fixed)**: `Hint` needs `#[export]` or `: core`; `Arguments` scope uses `%_` not `%`; empty/singleton-constructor inductives use `Set` not `Type` to avoid auto-prop-lowering; `app_length` → `length_app`, `map_length` → `length_map`, `seq_length` → `length_seq`; `N.mod_eq` etc. → `N.Div0.*`; `Declare Scope` before `Bind Scope`
 - **Implicit binders in record literals (all fixed)**: `fun {a : Type}` inside `{| field := ... |}` triggers `unexpected-implicit-declaration` — use `fun (a : Type)` (explicit) instead. Code generator uses `quantifyExplicit` (Instances.hs) + `toExplicitBinder` (Gallina/Util.hs) for this. Same applies to midambles, edits, and manual .v files.
-- **Require inside Module/Section (all fixed)**: Triggers `require-in-section` warning. Move `Require` to file top-level; use `Export`/`Import` inside the block if needed.
+- **Require inside Module/Section (all fixed)**: Triggers `require-in-section` warning. Move `Require` to file top-level; use `Export`/`Import` inside the block if needed. If moving causes name shadowing, keep in place and suppress with `#[local] Set Warnings "-require-in-section".` / `#[local] Set Warnings "require-in-section".`
 
 ## Workflow
 
