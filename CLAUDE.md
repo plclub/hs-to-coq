@@ -165,6 +165,8 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 - `eval unfold f` in sections: use `let x := constr:(@f args) in let rhs := eval unfold f in x`
 - `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — different unfolding chains needed
 - **Deprecated warnings (all fixed)**: `Hint` needs `#[export]` or `: core`; `Arguments` scope uses `%_` not `%`; empty/singleton-constructor inductives use `Set` not `Type` to avoid auto-prop-lowering; `app_length` → `length_app`, `map_length` → `length_map`, `seq_length` → `length_seq`; `N.mod_eq` etc. → `N.Div0.*`; `Declare Scope` before `Bind Scope`
+- **Implicit binders in record literals (all fixed)**: `fun {a : Type}` inside `{| field := ... |}` triggers `unexpected-implicit-declaration` — use `fun (a : Type)` (explicit) instead. Code generator uses `quantifyExplicit` (Instances.hs) + `toExplicitBinder` (Gallina/Util.hs) for this. Same applies to midambles, edits, and manual .v files.
+- **Require inside Module/Section (all fixed)**: Triggers `require-in-section` warning. Move `Require` to file top-level; use `Export`/`Import` inside the block if needed.
 
 ## Workflow
 
