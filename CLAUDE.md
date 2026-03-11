@@ -167,6 +167,8 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 - **Deprecated warnings (all fixed)**: `Hint` needs `#[export]` or `: core`; `Arguments` scope uses `%_` not `%`; empty/singleton-constructor inductives use `Set` not `Type` to avoid auto-prop-lowering; `app_length` → `length_app`, `map_length` → `length_map`, `seq_length` → `length_seq`; `N.mod_eq` etc. → `N.Div0.*`; `Declare Scope` before `Bind Scope`
 - **Implicit binders in record literals (all fixed)**: `fun {a : Type}` inside `{| field := ... |}` triggers `unexpected-implicit-declaration` — use `fun (a : Type)` (explicit) instead. Code generator uses `quantifyExplicit` (Instances.hs) + `toExplicitBinder` (Gallina/Util.hs) for this. Same applies to midambles, edits, and manual .v files.
 - **Require inside Module/Section (all fixed)**: Triggers `require-in-section` warning. Move `Require` to file top-level; use `Export`/`Import` inside the block if needed. If moving causes name shadowing, keep in place and suppress with `#[local] Set Warnings "-require-in-section".` / `#[local] Set Warnings "require-in-section".`
+  - **Danger**: Moving `Require Import GHC.Base` to top shadows `Nat.le` (Prop) with bool-valued `<=`, breaking proofs that use `length x <= length y`. Always verify moved imports don't change notation scope.
+- **SSReflect `spurious-ssr-injection` (all fixed)**: `repeat case` on enum types with `==` triggers this. Suppress with `#[local] Set Warnings "-spurious-ssr-injection"`, or replace `[]` intro patterns with named wildcards.
 
 ## Workflow
 
