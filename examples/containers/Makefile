@@ -63,9 +63,8 @@ VFILES_DROPIN = $(addprefix $(OUT)/,$(addsuffix .v,$(DROPIN)))
 
 VFILES = $(VFILES_GEN_TEST) $(VFILES_GEN) $(VFILES_HS_SPEC_GEN) $(VFILES_MAN) $(VFILES_SPECIAL) $(VFILES_DROPIN)
 
-# Default target: if lib/ already has .v files (pre-translated), just build Coq.
-# Use 'make vfiles' to regenerate from Haskell (requires compatible GHC).
-all: coq theories
+# Default target: regenerate .v files from Haskell, then build Coq.
+all: vfiles coq theories
 
 vfiles: $(OUT)/edits  $(HS_SPEC)/README.md $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
 
@@ -160,16 +159,9 @@ $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preambl
 	       drop-in/$*.hs
 
 clean:
-	# Clean build artifacts but keep .v source files
-	cd $(OUT) 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
-	rm -f $(OUT)/Makefile $(OUT)/_CoqProject
+	rm -rf $(OUT) $(HS_SPEC)
 	cd theories 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
 	rm -f theories/Makefile
-	cd $(HS_SPEC) 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
-	rm -f counts.pdf *.aux *.log
-
-distclean:
-	rm -rf $(OUT) $(HS_SPEC)
 	rm -f counts.pdf *.aux *.log
 
 todo:

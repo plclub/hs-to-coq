@@ -18,8 +18,7 @@ make                                           # Build base + base-thy + contain
 make -C examples/base-src vfiles               # Re-generate base/ from Haskell sources
 make -C examples/tests                         # Unit tests (.hs → .v → coqc)
 make -C examples/base-tests                    # Tests requiring base/
-make -C examples/containers                    # containers lib + theories
-# containers: `make clean` preserves .v; use `make distclean` for full regeneration
+make -C examples/containers                    # containers lib + theories (regenerates + builds)
 make -C examples/transformers                   # transformers lib
 make -C examples/ghc clean && make -C examples/ghc  # Regenerate+compile GHC lib/*.v
 cd examples/ghc/theories && coq_makefile -f _CoqProject -o Makefile && make -j
@@ -150,7 +149,7 @@ Build details: `manual/AxiomatizedTypes.v` instances must be `#[global]`. `axiom
 Core.v post-processing uses `fix-files/` for multi-line insertions (portable across GNU/BSD sed). GHC regeneration on macOS requires GNU sed: `brew install gnu-sed && PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH" make -C examples/ghc vfiles`.
 
 ### Containers submodule
-Containers v0.7. `clean` preserves `.v` source; `distclean` removes everything. Map `fromList` proofs Admitted (Coq 8.20 `Program Fixpoint` change, pre-existing). IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources.
+Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates and builds everything. Map `fromList` proofs Admitted (Coq 8.20 `Program Fixpoint` change, pre-existing). IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources.
 
 ### Transformers example (examples/transformers/)
 Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../ghc/ghc/libraries/transformers`. Makefile strips MonadTrans quantified superclass constraint via sed post-processing. Uses `skip class` for `Contravariant` and `Foldable1` (not in base).
