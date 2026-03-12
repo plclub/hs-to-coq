@@ -183,6 +183,25 @@ Axiom disjoint_difference: forall b (i1 i2 i3 : IntMap.IntMap b),
   Data.IntMap.Internal.null (Data.IntMap.Internal.difference i1 i2) ->
   Data.IntMap.Internal.disjoint i1 i3 = true.
 
-Axiom Eq_membership : forall (A : Type) (HeqA : Eq_ A) (HlawsA : EqLaws A) (m1 m2 : IntMap.IntMap A),
+Lemma Eq_membership : forall (A : Type) (HeqA : Eq_ A) (HlawsA : EqLaws A) (m1 m2 : IntMap.IntMap A),
   m1 == m2 ->
   forall k, Data.IntMap.Internal.member k m1 = Data.IntMap.Internal.member k m2.
+Proof.
+  intros A HeqA HlawsA.
+  induction m1 as [p1 mask1 l1 IHl r1 IHr | kx vx | ]; destruct m2 as [p2 mask2 l2 r2 | ky vy | ];
+    intros Heq k; simpl in Heq; try discriminate.
+  - apply andb_true_iff in Heq. destruct Heq as [Hmask Hrest].
+    apply andb_true_iff in Hrest. destruct Hrest as [Hprefix Hchildren].
+    apply andb_true_iff in Hchildren. destruct Hchildren as [Heql Heqr].
+    move: Hmask => /Eq_eq_Word Hmask. move: Hprefix => /Eq_eq_Word Hprefix.
+    subst.
+    unfold Data.IntMap.Internal.member. simpl.
+    destruct (Data.IntMap.Internal.nomatch k p2 mask2); [reflexivity|].
+    destruct (Data.IntSet.Internal.zero k mask2).
+    + apply IHl. exact Heql.
+    + apply IHr. exact Heqr.
+  - apply andb_true_iff in Heq. destruct Heq as [Hkey Hval].
+    move: Hkey => /Eq_eq_Word Hkey. subst.
+    unfold Data.IntMap.Internal.member. simpl. reflexivity.
+  - reflexivity.
+Qed.
