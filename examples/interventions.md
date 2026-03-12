@@ -80,6 +80,37 @@
 - Added resources/list_monad.v to both `test-coq-files` and `tests` jobs
 - Updated job name to "Testing all Coq examples (Coq 8.20)"
 
+## Phase 5: Proof Regression Fixes (ghc910-coq820)
+
+### examples/ghc/manual/GHC/Utils/Monad/State/Strict.v
+- Replaced 3 `Admitted` typeclass instances (`Functor__State`, `Applicative__State`, `Monad__State`) with concrete CPS implementations matching hs-to-coq encoding. State is bare function type `s -> (a * s)` in GHC 9.10.
+
+### examples/ghc/theories/StateLogic.v
+- Restored all 14 Admitted proofs to Qed. Key proof patterns: unfold `op_zgzgze__`/`State.Monad__State`/`State.Monad__State_op_zgzgze__` chain, then `simpl` + `expand_pairs`. The `liftA2` proofs need similar `Applicative__State_liftA2` unfolding.
+
+### examples/ghc/theories/ContainerProofs.v
+- Added `Eq_membership` axiom (IntMap equality implies pointwise member equality). Uses explicit named parameters `(A : Type) (HeqA : Eq_ A) (HlawsA : EqLaws A)` — backtick syntax makes `A` implicit in a way that `(A:=Var)` syntax doesn't work.
+
+### examples/ghc/theories/CoreFVs.v
+- Added 4 axioms for `tyCoFVsOfType`/`tyCoFVsOfCo` well-formedness and locality
+- Proved `varTypeTyCoFVs_WF` lemma from axioms
+- Fixed `addBndr_WF`: now independently proven (was unsoundly relying on Admitted `addBndr_fv`)
+- Restored `expr_fvs_WF`: structural induction on `core_induct`, destruct `binds` for Let case
+- Restored `exprFreeVars_Cast`: uses `change` to expose `unionFV`, then `unionVarSet_unionFV` (swaps FV args!), `filterVarSet_equal`, `tyCoFVsOfCo_not_local`
+
+### examples/ghc/theories/VarSet.v
+- Restored `IntMapEq_VarSetEq`: uses `Eq_membership` from ContainerProofs.v
+- Restored `elemVarSet_minusVarSetTrue`/`elemVarSet_minusVarSetFalse`: uses `eqE` then `set_b_iff`, `F.diff_iff`, `singleton_1`
+- Restored `elemVarSet_unitVarSet_is_eq`: destruct 7-field `Mk_Id` + `MkUnique` wrappers then `reflexivity`
+
+### Not fixable
+- `addBndr_fv`, `exprFreeVars_mkLams_rev/mkLams`: varTypeTyCoFVs no longer emptyFV, Denotes set changed
+- `exprFreeVars_Type/Coercion`: need `=` not `[=]`
+- `no_TyCoVars`: statement is false in GHC 9.10
+- `exprFreeVars_Case`, `freeVarsOf_freeVars_revised`, `deAnnotate_freeVars`: depend on above
+- All Exitify/CoreSubst/Var.v isJoinId proofs: axiomatized definitions
+- FromListProofs.v: Coq 8.20 Program Fixpoint obligations (~250 lines each, deferred)
+
 ## Summary of Results
 - **23 examples fully compile** (base, base-thy, containers lib+theories, ghc lib+theories, transformers, graph/lib, core-semantics, bag, compiler, coinduction, dlist, intervals, successors, rle, quicksort, lambda, simple, resources)
 - **1 partial**: graph/theories (8/11, 3 need coq-equations)

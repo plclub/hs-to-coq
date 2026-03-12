@@ -42,7 +42,11 @@ Lemma IntMapEq_VarSetEq : forall x y,
     x == y ->
     UniqSet.Mk_UniqSet (UniqFM.UFM x) [=] UniqSet.Mk_UniqSet (UniqFM.UFM y).
 Proof.
-Admitted.
+  intros x y Heq.
+  unfold Equal. intro a. unfold In.
+  unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+  rewrite (Eq_membership Var _ EqLaws_Var _ _ Heq). tauto.
+Qed.
 
 (* Stephanie's hack. *)
 Lemma fold_is_true : forall b, b = true <-> b.
@@ -2084,16 +2088,35 @@ Lemma elemVarSet_minusVarSetTrue : forall x s,
   elemVarSet x s = true ->
   minusVarSet (unitVarSet x) s [=] emptyVarSet.
 Proof.
-  (* Internal IntMap representation changed in containers v0.7 *)
-Admitted.
+  intros x s H.
+  intro a.
+  set_b_iff.
+  rewrite F.diff_iff.
+  rewrite F.empty_iff.
+  split; [|tauto].
+  intros [H1 H2].
+  exfalso. apply H2.
+  rewrite F.singleton_iff in H1.
+  apply In_1 with (x := x); [exact H1 | exact H].
+Qed.
 
 
 Lemma elemVarSet_minusVarSetFalse : forall x s,
   elemVarSet x s = false ->
   minusVarSet (unitVarSet x) s [=] unitVarSet x.
 Proof.
-  (* Internal IntMap representation changed in containers v0.7 *)
-Admitted.
+  intros x s H.
+  intro a.
+  set_b_iff.
+  rewrite F.diff_iff.
+  split.
+  - intros [H1 H2]. auto.
+  - intro H1.
+    split; [auto|].
+    intro Habs.
+    rewrite F.singleton_iff in H1.
+    apply H. apply In_1 with (x := a); [symmetry; exact H1 | exact Habs].
+Qed.
 
 
 
@@ -2265,8 +2288,12 @@ Qed.
 Lemma elemVarSet_unitVarSet_is_eq :
   forall x v, elemVarSet x (unitVarSet v) = GHC.Base.op_zeze__ x v.
 Proof.
-  (* Proof adapted for realUnique : Unique instead of N *)
-Admitted.
+  intros x v.
+  destruct x as [xn xu xt xm xs xd xi].
+  destruct v as [vn vu vt vm vs vd vi].
+  destruct xu as [xk]. destruct vu as [vk].
+  reflexivity.
+Qed.
 
 
 (** A very specialized [Proper] instance, written for the sole purpose

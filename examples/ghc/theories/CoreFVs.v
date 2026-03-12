@@ -47,6 +47,33 @@ Require Import Proofs.ScopeInvariant.
 
 Set Bullet Behavior "Strict Subproofs".
 
+Require GHC.Core.TyCo.FVs.
+Require NestedRecursionHelpers.
+
+(* tyCoFVsOfType and tyCoFVsOfCo are axiomatized in the lib.
+   We axiomatize their well-formedness and the fact that they
+   don't contain local Ids (type variables live in a separate namespace). *)
+
+Axiom tyCoFVsOfType_WF : forall ty, WF_fv (GHC.Core.TyCo.FVs.tyCoFVsOfType ty).
+Axiom tyCoFVsOfCo_WF : forall co, WF_fv (GHC.Core.TyCo.FVs.tyCoFVsOfCo co).
+
+Axiom tyCoFVsOfType_not_local : forall ty,
+  filterVarSet isLocalVar (FV.fvVarSet (GHC.Core.TyCo.FVs.tyCoFVsOfType ty)) [=] emptyVarSet.
+Axiom tyCoFVsOfCo_not_local : forall co,
+  filterVarSet isLocalVar (FV.fvVarSet (GHC.Core.TyCo.FVs.tyCoFVsOfCo co)) [=] emptyVarSet.
+
+Lemma varTypeTyCoFVs_WF : forall v, WF_fv (varTypeTyCoFVs v).
+Proof.
+  intros v. unfold varTypeTyCoFVs.
+  apply union_FV_WF.
+  - apply tyCoFVsOfType_WF.
+  - destruct (Core.varMultMaybe v); [apply tyCoFVsOfType_WF | apply empty_FV_WF].
+Qed.
+
+#[export] Hint Resolve tyCoFVsOfType_WF : core.
+#[export] Hint Resolve tyCoFVsOfCo_WF : core.
+#[export] Hint Resolve varTypeTyCoFVs_WF : core.
+
 Lemma unzip_fst {A B} l : forall (l0 : list A) (l1 : list B), List.unzip l = (l0, l1) -> List.map fst l = l0.
 Proof. 
   induction l. 
@@ -84,9 +111,11 @@ Lemma addBndr_WF : forall fv bndr,
     WF_fv fv ->
     WF_fv (addBndr bndr fv).
 Proof.
-  move=> fv bndr [vs D].
-  eexists.
-  eauto using addBndr_fv.
+  move=> fv bndr H.
+  unfold addBndr.
+  apply union_FV_WF.
+  - apply varTypeTyCoFVs_WF.
+  - apply del_FV_WF. exact H.
 Qed.
 
 
@@ -128,9 +157,33 @@ Qed.
 Lemma expr_fvs_WF : forall e,
     WF_fv (expr_fvs e).
 Proof.
-  (* Proof needs restructuring for Coq 8.20 (auto solves more goals, changing
-     bullet structure) and GHC 9.10 (Alt is Mk_Alt, varTypeTyCoFVs changed) *)
-Admitted.
+  intro e.
+  apply (core_induct e); intros.
+  - simpl. auto.
+  - simpl. auto.
+  - simpl. apply union_FV_WF; auto.
+  - simpl. apply addBndr_WF; auto.
+  - destruct binds.
+    + simpl. apply union_FV_WF.
+      * apply union_FV_WF; auto. apply bndrRuleAndUnfoldingFVs_WF.
+      * apply addBndr_WF; auto.
+    + simpl. apply addBndrs_WF.
+      apply union_FV_WF; auto.
+      apply unions_FV_WF. intros fv Hin.
+      rewrite in_map_iff in Hin. destruct Hin as [[v rhs] [Heq Hin]].
+      subst. apply union_FV_WF.
+      * eapply H. eauto.
+      * apply bndrRuleAndUnfoldingFVs_WF.
+  - simpl. apply union_FV_WF.
+    + apply union_FV_WF; auto.
+    + apply addBndr_WF. apply unions_FV_WF.
+      intros fv Hin. rewrite in_map_iff in Hin.
+      destruct Hin as [a [Heq Hin]]. destruct a as [dc pats rhs].
+      subst. apply addBndrs_WF. eauto.
+  - simpl. apply union_FV_WF; auto.
+  - simpl. auto.
+  - simpl. auto.
+Qed.
 
 (** Unfolding tactics *)
 
@@ -426,8 +479,24 @@ Lemma exprFreeVars_Cast:
   forall e co,
   exprFreeVars (Cast e co) [=] exprFreeVars e.
 Proof.
-  (* GHC 9.10: expr_fvs for Cast now includes tyCoFVsOfCo (axiomatized) *)
-Admitted.
+  intros e co.
+  unfold exprFreeVars, exprFVs, Base.op_z2218U__.
+  change (expr_fvs (Cast e co)) with (FV.unionFV (expr_fvs e) (GHC.Core.TyCo.FVs.tyCoFVsOfCo co)).
+  move: (expr_fvs_WF e) => [vs1 D1].
+  move: (tyCoFVsOfCo_WF co) => [vs2 D2].
+  (* unionVarSet_unionFV swaps FV args: Denotes (vs ∪ vs') (unionFV fv' fv) *)
+  move: (unionVarSet_unionFV _ _ _ _ D2 D1) => D3.
+  move: (DenotesfvVarSet _ _ (filterVarSet_filterFV isLocalVar _ _ RespectsVar_isLocalVar D3)) => E1.
+  move: (DenotesfvVarSet _ _ (filterVarSet_filterFV isLocalVar _ _ RespectsVar_isLocalVar D1)) => E2.
+  rewrite E1 E2.
+  rewrite <- unionVarSet_filterVarSet; try done.
+  move: (DenotesfvVarSet _ _ D2) => E3.
+  have E3' : vs2 [=] FV.fvVarSet (GHC.Core.TyCo.FVs.tyCoFVsOfCo co) by symmetry.
+  rewrite (filterVarSet_equal RespectsVar_isLocalVar E3').
+  rewrite tyCoFVsOfCo_not_local.
+  rewrite unionEmpty_l.
+  reflexivity.
+Qed.
 
 (*
 
@@ -642,12 +711,91 @@ Admitted.
 
 (* Original proof Admitted due to varTypeTyCoFVs changes in GHC 9.10. *)
 
+(* Helper for the Rec case of deAnnotate_freeVars *)
+Lemma rec_roundtrip :
+  forall (l : list (CoreBndr * CoreExpr)),
+    (forall v rhs, List.In (v, rhs) l -> deAnnotate (freeVars rhs) = rhs) ->
+    forall l0 l1,
+      List.unzip l = (l0, l1) ->
+      Coq.Lists.List.flat_map
+        (fun '(pair v rhs) => cons (pair v (deAnnotate rhs)) nil)
+        (List.zip l0 (GHC.Base.map (fun x : CoreBndr * CoreExpr => freeVars x.2) l)) = l.
+Proof.
+  induction l as [|[v0 rhs0] l' IHl']; simpl; intros.
+  - inversion H0. reflexivity.
+  - destruct (List.unzip l') as [ls rs] eqn:Hl'.
+    injection H0 as Hl0eq Hl1eq. subst l0 l1. simpl.
+    assert (Hrhs: deAnnotate (freeVars rhs0) = rhs0).
+    { eapply H. left; reflexivity. }
+    rewrite Hrhs.
+    assert (Htail: flat_map (fun '(v, rhs) => [(v, deAnnotate rhs)])
+                            (List.zip ls (GHC.Base.map (fun x : CoreBndr * CoreExpr => freeVars x.2) l')) = l').
+    { specialize (IHl' (fun v rhs Hin => H v rhs (or_intror Hin)) ls rs Logic.eq_refl).
+      exact IHl'. }
+    rewrite Htail. reflexivity.
+Qed.
+
+(* Helper for the Case case of deAnnotate_freeVars *)
+Lemma case_alts_roundtrip' :
+  forall (alts : list (Alt CoreBndr)),
+    (forall dc pats rhs, List.In (Mk_Alt dc pats rhs) alts -> deAnnotate (freeVars rhs) = rhs) ->
+    GHC.Base.map deAnnAlt
+      (snd (NestedRecursionHelpers.mapAndUnzipFix
+        (fun '(Mk_Alt con args rhs) =>
+           let rhs2 := freeVars rhs in
+           (delBindersFV args (freeVarsOf rhs2), Mk_AnnAlt con args rhs2)) alts)) = alts.
+Proof.
+  induction alts as [|[con pats rhs] alts' IHalts']; simpl; intros.
+  - reflexivity.
+  - destruct (NestedRecursionHelpers.mapAndUnzipFix
+                (fun '(Mk_Alt con0 args rhs0) =>
+                   let rhs2 := freeVars rhs0 in
+                   (delBindersFV args (freeVarsOf rhs2), Mk_AnnAlt con0 args rhs2))
+                alts') as [ls2 as2] eqn:Hmu'.
+    simpl.
+    assert (Hrhs : deAnnotate (freeVars rhs) = rhs).
+    { eapply H. left. reflexivity. }
+    unfold deAnnAlt. unfold deAnnotate in Hrhs |- *.
+    destruct (freeVars rhs) as [fa aa]. simpl. simpl in Hrhs.
+    rewrite Hrhs. f_equal.
+    apply IHalts'. intros. eapply H. right. eassumption.
+Qed.
+
 Lemma deAnnotate_freeVars:
   forall e, deAnnotate (freeVars e) = e.
 Proof.
-  (* GHC 9.10: Alt changed from tuple to Mk_Alt, freeVars Case branch uses
-     Mk_AnnAlt. Proof structure needs full rewrite. Admitted for now. *)
-Admitted.
+  intro e; apply (core_induct e);
+    intros; simpl; try reflexivity;
+      try solve [destruct (freeVars e0) eqn:Hfv; simpl in H; rewrite H; reflexivity].
+  - (* Var *) destruct (isLocalVar v); reflexivity.
+  - (* App *) symmetry. f_equal.
+    + destruct (freeVars e1) eqn:fv. rewrite <- H; reflexivity.
+    + destruct (freeVars e2) eqn:fv. rewrite <- H0; reflexivity.
+  - (* Lam *) destruct (freeVars e0) eqn:Hfv.
+    unfold deAnnotate in H. simpl; rewrite H; reflexivity.
+  - (* Let *) destruct binds; simpl.
+    + (* NonRec *)
+      destruct (freeVars body) eqn:Hfv. rewrite <- H0.
+      destruct (freeVars e0) eqn:Hfv'. rewrite <- H. reflexivity.
+    + (* Rec *)
+      destruct (List.unzip l) eqn:Hl.
+      simpl.
+      f_equal.
+      * f_equal. exact (rec_roundtrip l H l0 l1 Hl).
+      * exact H0.
+  - (* Case *)
+    destruct NestedRecursionHelpers.mapAndUnzipFix eqn:Hmu. simpl.
+    destruct (freeVars scrut) eqn:Hfv. simpl in H. rewrite H.
+    f_equal.
+    (* Goal: GHC.Base.map deAnnAlt l0 = alts *)
+    assert (l0 = snd (NestedRecursionHelpers.mapAndUnzipFix
+        (fun '(Mk_Alt con args rhs) =>
+           let rhs2 := freeVars rhs in
+           (delBindersFV args (freeVarsOf rhs2), Mk_AnnAlt con args rhs2)) alts)) as Hl0.
+    { rewrite Hmu. reflexivity. }
+    rewrite Hl0.
+    apply case_alts_roundtrip'. exact H0.
+Qed.
 
 Lemma deAnnotate'_snd_freeVars:
   forall e, deAnnotate' (snd (freeVars e)) = e.

@@ -182,3 +182,7 @@ Axiom disjoint_difference: forall b (i1 i2 i3 : IntMap.IntMap b),
   Data.IntMap.Internal.disjoint i2 i3 = true ->
   Data.IntMap.Internal.null (Data.IntMap.Internal.difference i1 i2) ->
   Data.IntMap.Internal.disjoint i1 i3 = true.
+
+Axiom Eq_membership : forall (A : Type) (HeqA : Eq_ A) (HlawsA : EqLaws A) (m1 m2 : IntMap.IntMap A),
+  m1 == m2 ->
+  forall k, Data.IntMap.Internal.member k m1 = Data.IntMap.Internal.member k m2.
