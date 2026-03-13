@@ -1,11 +1,10 @@
 (* Properties of IntMap operations.
-   These are axiomatized since IntMap is now a transparent wrapper
-   around Data.IntMap.Internal, and the old WFMap-based proofs
-   no longer apply directly. All axioms are straightforward
-   consequences of the IntMap implementation correctness.
+   Some lemmas are proved directly (structural induction or computation).
+   Others remain axiomatized because they depend on well-formedness
+   invariants of the IntMap (patricia trie bit structure).
 
-   Axioms are stated in terms of Data.IntMap.Internal operations
-   directly, since VarSet/UniqFM unfolds to Internal operations. *)
+   Stated in terms of Data.IntMap.Internal operations directly,
+   since VarSet/UniqFM unfolds to Internal operations. *)
 
 From Coq Require Import ssreflect ssrfun ssrbool.
 
@@ -15,21 +14,127 @@ Require Import Proofs.Prelude.
 Require Import Data.IntMap.Internal.
 Require IntMap.
 
-(* IntMap.IntMap = Data.IntMap.Internal.IntMap, so we state axioms
-   using IntMap.IntMap for types but Internal operations for functions *)
+(* Local copy of deferredFix2_eq to avoid importing IntMapProofs
+   (which transitively loads mathcomp/MapProofs/etc. that break
+   downstream proofs via Asymmetric Patterns and name ambiguity). *)
+Local Axiom deferredFix2_eq : forall a b r `{HsToCoq.Err.Default r}
+  (f : (a -> b -> r) -> (a -> b -> r)),
+  HsToCoq.DeferredFix.deferredFix2 f = f (HsToCoq.DeferredFix.deferredFix2 f).
 
-Axiom member_eq : forall A k k' (i : IntMap.IntMap A),
+Set Bullet Behavior "Strict Subproofs".
+
+(* ============================================================ *)
+(* Proved lemmas: universally true (no WF needed)               *)
+(* ============================================================ *)
+
+Lemma null_empty : forall A,
+    (@Data.IntMap.Internal.null A Data.IntMap.Internal.empty).
+Proof. intros. reflexivity. Qed.
+
+Lemma lookup_eq : forall A k k' (i : IntMap.IntMap A),
+    k == k' ->
+    Data.IntMap.Internal.lookup k i = Data.IntMap.Internal.lookup k' i.
+Proof. intros A k k' i. move => /Eq_eq_Word ->. reflexivity. Qed.
+
+Lemma member_eq : forall A k k' (i : IntMap.IntMap A),
     k == k' ->
     Data.IntMap.Internal.member k i = Data.IntMap.Internal.member k' i.
+Proof. intros A k k' i. move => /Eq_eq_Word ->. reflexivity. Qed.
 
-Axiom lookup_insert : forall A key (val:A) i,
-    Data.IntMap.Internal.lookup key (Data.IntMap.Internal.insert key val i) = Some val.
+Lemma member_singleton : forall A k k' (v : A),
+    Data.IntMap.Internal.member k (Data.IntMap.Internal.singleton k' v) = (k == k').
+Proof. intros. simpl. reflexivity. Qed.
 
-Axiom lookup_singleton_key : forall {A} x y (a b : A),
+Lemma lookup_singleton_key : forall {A} x y (a b : A),
     Data.IntMap.Internal.lookup x (Data.IntMap.Internal.singleton y a) = Some b -> x == y.
+Proof.
+  intros A x y a b. simpl.
+  destruct (x == y) eqn:Heq; [auto | intros H; discriminate].
+Qed.
 
-Axiom lookup_singleton_val : forall {A} x y (a b : A),
+Lemma lookup_singleton_val : forall {A} x y (a b : A),
     Data.IntMap.Internal.lookup x (Data.IntMap.Internal.singleton y a) = Some b -> a = b.
+Proof.
+  intros A x y a b. simpl.
+  destruct (x == y) eqn:Heq; [intros H; congruence | intros H; discriminate].
+Qed.
+
+(* Helper: lookup through link always finds the linked key.
+   This works because linkWithMask places t1 on the side matching
+   zero p1 m, and lookup follows zero key m — with key=p1 they agree. *)
+Local Lemma lookup_link_self : forall A key (val : A) p2 t2,
+  Data.IntMap.Internal.lookup key (link key (Tip key val) p2 t2) = Some val.
+Proof.
+  intros. unfold link, linkWithMask.
+  destruct (Data.IntSet.Internal.zero key (branchMask key p2)) eqn:Hz;
+  simpl; rewrite Hz; rewrite Eq_refl; reflexivity.
+Qed.
+
+Lemma lookup_insert : forall A key (val:A) i,
+    Data.IntMap.Internal.lookup key (Data.IntMap.Internal.insert key val i) = Some val.
+Proof.
+  intros A key val.
+  induction i as [p m l IHl r IHr | ky vy | ].
+  - simpl. destruct (nomatch key p m) eqn:Hnm.
+    + apply lookup_link_self.
+    + destruct (Data.IntSet.Internal.zero key m) eqn:Hz; simpl; rewrite Hz; auto.
+  - simpl. destruct (key == ky) eqn:Heq.
+    + simpl. rewrite Eq_refl. reflexivity.
+    + apply lookup_link_self.
+  - simpl. rewrite Eq_refl. reflexivity.
+Qed.
+
+(* deferredFix2-based lemmas with Nil arguments *)
+
+Lemma difference_nil_l : forall B A (i : IntMap.IntMap A),
+    Data.IntMap.Internal.difference (@Data.IntMap.Internal.empty B) i =
+    (@Data.IntMap.Internal.empty B).
+Proof.
+  intros. unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.empty.
+  unfold mergeWithKey. unfold mergeWithKey'.
+  rewrite deferredFix2_eq. reflexivity.
+Qed.
+
+Lemma difference_nil_r : forall A B (i : IntMap.IntMap A),
+    Data.IntMap.Internal.difference i (@Data.IntMap.Internal.empty B) = i.
+Proof.
+  intros. unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.empty.
+  unfold mergeWithKey. unfold mergeWithKey'.
+  rewrite deferredFix2_eq.
+  destruct i; reflexivity.
+Qed.
+
+Lemma disjoint_empty_l : forall A B (j : IntMap.IntMap B),
+  Data.IntMap.Internal.disjoint (@Data.IntMap.Internal.empty A) j = true.
+Proof.
+  intros. unfold Data.IntMap.Internal.disjoint, Data.IntMap.Internal.empty.
+  rewrite deferredFix2_eq. reflexivity.
+Qed.
+
+Lemma disjoint_empty_r : forall A B (i : IntMap.IntMap A),
+  Data.IntMap.Internal.disjoint i (@Data.IntMap.Internal.empty B) = true.
+Proof.
+  intros. unfold Data.IntMap.Internal.disjoint, Data.IntMap.Internal.empty.
+  rewrite deferredFix2_eq. destruct i; reflexivity.
+Qed.
+
+Lemma intersection_empty :
+  forall A B (i : IntMap.IntMap A) (j : IntMap.IntMap B),
+    (j = Data.IntMap.Internal.empty) ->
+    Data.IntMap.Internal.null (Data.IntMap.Internal.intersection i j).
+Proof.
+  intros A B i j Hj. subst.
+  unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.empty.
+  unfold mergeWithKey'.
+  rewrite deferredFix2_eq.
+  destruct i; reflexivity.
+Qed.
+
+(* ============================================================ *)
+(* Admitted lemmas: depend on IntMap well-formedness (WF)        *)
+(* These hold for all IntMaps constructed from                   *)
+(* empty/insert/delete/union etc. (i.e., valid patricia tries). *)
+(* ============================================================ *)
 
 Axiom lookup_insert_neq :
   forall b key1 key2 (val:b) m,
@@ -37,7 +142,7 @@ Axiom lookup_insert_neq :
     Data.IntMap.Internal.lookup key1 (Data.IntMap.Internal.insert key2 val m) = Data.IntMap.Internal.lookup key1 m.
 
 Axiom member_insert : forall A k k' v (i : IntMap.IntMap A),
-Data.IntMap.Internal.member k (Data.IntMap.Internal.insert k' v i) =
+  Data.IntMap.Internal.member k (Data.IntMap.Internal.insert k' v i) =
   (k == k') || Data.IntMap.Internal.member k i.
 
 Axiom delete_eq : forall key b (i : IntMap.IntMap b),
@@ -57,18 +162,18 @@ Axiom non_member_lookup :
      (i : IntMap.IntMap A),
    (Data.IntMap.Internal.member key i = false) <-> (Data.IntMap.Internal.lookup key i = None).
 
-Axiom lookup_eq : forall A k k' (i : IntMap.IntMap A),
-    k == k'->
-    Data.IntMap.Internal.lookup k i = Data.IntMap.Internal.lookup k' i.
-
 Axiom member_lookup :
    forall (A : Type)
      (key : Internal.Key)
      (i : IntMap.IntMap A),
    (is_true (Data.IntMap.Internal.member key i)) <-> (exists val, Data.IntMap.Internal.lookup key i = Some val).
 
-Axiom null_empty : forall A,
-    (@Data.IntMap.Internal.null A Data.IntMap.Internal.empty).
+Axiom null_member : forall A (m : IntMap.IntMap A),
+    Data.IntMap.Internal.null m = true <-> (forall k, Data.IntMap.Internal.member k m = false).
+
+Axiom member_delete : forall A k k' (m : IntMap.IntMap A),
+    Data.IntMap.Internal.member k (Data.IntMap.Internal.delete k' m) =
+    negb (k == k') && Data.IntMap.Internal.member k m.
 
 Axiom member_union :
    forall (A : Type)
@@ -76,13 +181,6 @@ Axiom member_union :
      (i i0 : IntMap.IntMap A),
    (Data.IntMap.Internal.member key (Data.IntMap.Internal.union i i0)) =
    (Data.IntMap.Internal.member key i0 || Data.IntMap.Internal.member key i).
-
-Axiom difference_nil_r : forall A B (i : IntMap.IntMap A),
-    Data.IntMap.Internal.difference i (@Data.IntMap.Internal.empty B) = i.
-
-Axiom difference_nil_l : forall B A (i : IntMap.IntMap A),
-    Data.IntMap.Internal.difference (@Data.IntMap.Internal.empty B) i =
-    (@Data.IntMap.Internal.empty B).
 
 Axiom filter_comp : forall A `{EqLaws A} f f' (i : IntMap.IntMap A),
     Data.IntMap.Internal.filter f (Data.IntMap.Internal.filter f' i) ==
@@ -131,11 +229,6 @@ Axiom delete_commute :
   Data.IntMap.Internal.delete ky (Data.IntMap.Internal.delete kx i) ==
   Data.IntMap.Internal.delete kx (Data.IntMap.Internal.delete ky i).
 
-Axiom intersection_empty :
-  forall A B (i : IntMap.IntMap A) (j : IntMap.IntMap B),
-    (j = Data.IntMap.Internal.empty) ->
-    Data.IntMap.Internal.null (Data.IntMap.Internal.intersection i j).
-
 Axiom null_intersection_non_member: forall b k (v : b)(i1 i2 : IntMap.IntMap b),
   Data.IntMap.Internal.null
     (Data.IntMap.Internal.intersection i1 (Data.IntMap.Internal.insert k v i2)) <->
@@ -158,12 +251,6 @@ Axiom null_intersection_eq : forall b (x1 x2 y1 y2 : IntMap.IntMap b),
 Axiom disjoint_sym : forall A B (i : IntMap.IntMap A) (j : IntMap.IntMap B),
   Data.IntMap.Internal.disjoint i j = Data.IntMap.Internal.disjoint j i.
 
-Axiom disjoint_empty_r : forall A B (i : IntMap.IntMap A),
-  Data.IntMap.Internal.disjoint i (@Data.IntMap.Internal.empty B) = true.
-
-Axiom disjoint_empty_l : forall A B (j : IntMap.IntMap B),
-  Data.IntMap.Internal.disjoint (@Data.IntMap.Internal.empty A) j = true.
-
 Axiom disjoint_insert : forall b k (v : b)(i1 i2 : IntMap.IntMap b),
   Data.IntMap.Internal.disjoint i1 (Data.IntMap.Internal.insert k v i2) =
   (negb (Data.IntMap.Internal.member k i1) && Data.IntMap.Internal.disjoint i1 i2).
@@ -183,9 +270,6 @@ Axiom disjoint_difference: forall b (i1 i2 i3 : IntMap.IntMap b),
   Data.IntMap.Internal.null (Data.IntMap.Internal.difference i1 i2) ->
   Data.IntMap.Internal.disjoint i1 i3 = true.
 
-Axiom member_singleton : forall A k k' (v : A),
-    Data.IntMap.Internal.member k (Data.IntMap.Internal.singleton k' v) = (k == k').
-
 Axiom member_difference : forall A B k (m1 : IntMap.IntMap A) (m2 : IntMap.IntMap B),
     Data.IntMap.Internal.member k (Data.IntMap.Internal.difference m1 m2) =
     Data.IntMap.Internal.member k m1 && negb (Data.IntMap.Internal.member k m2).
@@ -194,12 +278,9 @@ Axiom member_intersection : forall A B k (m1 : IntMap.IntMap A) (m2 : IntMap.Int
     Data.IntMap.Internal.member k (Data.IntMap.Internal.intersection m1 m2) =
     Data.IntMap.Internal.member k m1 && Data.IntMap.Internal.member k m2.
 
-Axiom null_member : forall A (m : IntMap.IntMap A),
-    Data.IntMap.Internal.null m = true <-> (forall k, Data.IntMap.Internal.member k m = false).
-
-Axiom member_delete : forall A k k' (m : IntMap.IntMap A),
-    Data.IntMap.Internal.member k (Data.IntMap.Internal.delete k' m) =
-    negb (k == k') && Data.IntMap.Internal.member k m.
+(* ============================================================ *)
+(* Proved lemma: Eq_membership (structural equality -> member)  *)
+(* ============================================================ *)
 
 Lemma Eq_membership : forall (A : Type) (HeqA : Eq_ A) (HlawsA : EqLaws A) (m1 m2 : IntMap.IntMap A),
   m1 == m2 ->
