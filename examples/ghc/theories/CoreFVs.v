@@ -833,15 +833,169 @@ Proof.
   reflexivity.
 Qed.
 
+(* Helper tactic: reduce freeVarsOf (freeVars ...) without over-unfolding.
+   simpl aggressively unfolds unionDVarSet/unionFVs merging VarSet internals;
+   instead we use cbn with delta exclusions to keep DVarSet operations opaque. *)
+Local Ltac reduce_freeVars :=
+  unfold freeVarsOf; simpl fst;
+  cbn -[dVarTypeTyCoVars GHC.Core.TyCo.FVs.tyCoVarsOfTypeDSet
+         GHC.Core.TyCo.FVs.tyCoVarsOfCoDSet
+         unionFVs unionDVarSet aFreeVar emptyDVarSet
+         delBinderFV delBindersFV bndrRuleAndUnfoldingVarsDSet
+         unionFVss freeVarsBind].
+
 Lemma freeVarsOf_freeVars_revised:
   forall e,
   (freeVarsOf (freeVars e)) [=] exprFreeVars e.
 Proof.
-  (* GHC 9.10: varTypeTyCoFVs is no longer emptyFV, breaking no_TyCoVars
-     and many subgoals throughout this proof. Admitted for now. *)
-Admitted.
+  intro e; apply (core_induct e).
+  - (* Var *)
+    intros x.
+    destruct (isLocalVar x) eqn:IS.
+    + rewrite exprFreeVars_Var; [|auto].
+      reduce_freeVars. rewrite IS. cbv beta iota.
+      unfold unionFVs, aFreeVar. DVarToVar.
+      rewrite no_TyCoVars tyCoVarsOfTypeDSet_empty !unionEmpty_r.
+      reflexivity.
+    + rewrite exprFreeVars_global_Var; [|auto].
+      reduce_freeVars. rewrite IS. cbv beta iota. reflexivity.
+  - (* Lit *)
+    intros l. rewrite exprFreeVars_Lit. reflexivity.
+  - (* App *)
+    intros e1 e2 h1 h2. rewrite exprFreeVars_App.
+    unfold freeVars; fold freeVars.
+    rewrite <- h1. rewrite <- h2.
+    simpl. DVarToVar. reflexivity.
+  - (* Lam *)
+    intros v e0 H.
+    rewrite exprFreeVars_Lam.
+    unfold freeVars; fold freeVars.
+    destruct (freeVars e0). unfold freeVarsOf.
+    rewrite <- H. unfold freeVarsOf.
+    unfold unionFVs, delBinderFV. DVarToVar.
+    rewrite no_TyCoVars tyCoVarsOfTypeDSet_empty.
+    fsetdec.
+  - (* Let *)
+    intros binds body H H0.
+    destruct binds.
+    + (* NonRec *)
+      rewrite exprFreeVars_Let_NonRec.
+      unfold freeVars; fold freeVars.
+      unfold freeVarsOf.
+      destruct (freeVars e0).
+      destruct (freeVars body).
+      rewrite <- H0. rewrite <- H. unfold freeVarsOf.
+      unfold delBinderFV. rewrite no_TyCoVars.
+      unfold bndrRuleAndUnfoldingVarsDSet.
+      unfold bndrRuleAndUnfoldingFVs.
+      DVarToVar.
+      replace (isId c) with true; try (destruct c; reflexivity).
+      fsetdec.
+    + (* Rec *)
+      rewrite exprFreeVars_Let_Rec.
+      unfold freeVarsOf in H0.
+      destruct (freeVars body) eqn:h.
+      unfold freeVars. fold freeVars. simpl.
+      rewrite h. rewrite <- H0. simpl.
+      destruct List.unzip eqn:h0. simpl.
+      unfold delBindersFV.
+      rewrite <- snd_unzip. rewrite h0. simpl.
+      unfold delBinderFV. unfold unionFVs.
+      unfold dVarTypeTyCoVars.
+      DVarToVar.
+      rewrite delVarSetList_foldr.
 
-(* Original proof Admitted due to varTypeTyCoFVs changes in GHC 9.10. *)
+      move: (unzip_fst _ _ _ h0) => h1. rewrite h1.
+      rewrite <- Foldable_foldr_map. unfold Base.op_z2218U__.
+      eapply foldr_m; auto.
+      ++ move => x1 x2 Ex s1 s2 Ev.
+         change FV.fvDVarSet with FV.fvVarSet.
+         rewrite varTypeTyCoFVs_emptyFV.
+         rewrite fvVarSet_emptyFV.
+         rewrite unionEmpty_r.
+         rewrite Ev. rewrite -> Ex.
+         reflexivity.
+      ++ rewrite no_RuleAndUnfoldingFVs.
+         rewrite unionEmpty_r.
+         clear h1.
+         move: l1 l0 h0 H.
+         induction l.
+         simpl. move=> l1 l0 [] e1 e2. subst. hs_simpl. reflexivity.
+         move=> l1 l0 UZ IH.
+         destruct a0 as [c e0]. simpl in UZ. destruct (List.unzip l) eqn:hl.  inversion UZ. subst.
+         hs_simpl. rewrite IHl; eauto.
+         +++ move: (IH c e0) => hh. rewrite hh; simpl; eauto.
+             set_b_iff. fsetdec.
+         +++ intros v rhs In0. eapply (IH v). simpl. right. auto.
+  - (* Case *)
+    intros scrut bndr ty alts H H0.
+    rewrite exprFreeVars_Case.
+    unfold freeVars; fold freeVars.
+    rewrite NestedRecursionHelpers.map_unzip.
+    destruct List.unzip as [alt_fvs_s alts2] eqn:Z.
+    simpl.
+    unfold unionFVs, delBinderFV, unionFVss in *.
+    DVarToVar.
+    rewrite tyCoVarsOfTypeDSet_empty.
+    rewrite unionEmpty_r.
+    rewrite unionVarSet_sym.
+    rewrite H.
+    eapply union_equal_2.
+    rewrite no_TyCoVars.
+    unfold unionFVs. DVarToVar.
+    rewrite unionEmpty_r.
+
+    rewrite delVarSet_unionVarSets.
+    rewrite mapUnionVarSets_unionVarSets.
+    rewrite unionVarSets_def.
+    rewrite unionVarSets_def.
+    eapply foldr_mE; try reflexivity.
+    eapply unionVarSet_m.
+
+    move: alts alt_fvs_s alts2 Z H0.
+    induction alts.
+    ++ intros. simpl in Z. inversion Z. simpl. auto.
+    ++ intros.
+       destruct a as [dc pats rhs0]. simpl in Z.
+       destruct List.unzip eqn:ZZ.
+       simpl.
+       inversion Z. destruct alt_fvs_s; inversion H2.
+       destruct alts2; inversion H3. subst.
+       simpl. clear H2. clear H3.
+       eapply Forall2_cons.
+       +++ move: (H0 dc pats rhs0 ltac:(simpl; eauto)) => h1.
+           unfold delBindersFV.
+           hs_simpl.
+           eapply delVarSet_m; try reflexivity.
+           unfold delBinderFV.
+           rewrite delVarSetList_foldr.
+           eapply foldr_m; eauto.
+           move=> x1 x2 Ex y1 y2 Ey.
+           rewrite no_TyCoVars.
+           unfold unionFVs. DVarToVar.
+           rewrite unionEmpty_r.
+           rewrite -> Ex.
+           rewrite Ey.
+           reflexivity.
+       +++ eapply IHalts; eauto.
+           move=> dc' pats' rhs' In0. eapply H0. simpl. right. eauto.
+
+  - (* Cast *)
+    intros e0 co H. rewrite exprFreeVars_Cast.
+    unfold freeVars; fold freeVars. unfold freeVarsOf.
+    destruct (freeVars e0). simpl.
+    rewrite <- H. unfold freeVarsOf.
+    unfold unionFVs. DVarToVar.
+    rewrite tyCoVarsOfCoDSet_empty unionEmpty_r. reflexivity.
+  - (* Type *)
+    intros t. rewrite exprFreeVars_Type.
+    unfold freeVars, freeVarsOf. simpl.
+    rewrite tyCoVarsOfTypeDSet_empty. reflexivity.
+  - (* Coercion *)
+    intros co. rewrite exprFreeVars_Coercion.
+    unfold freeVars, freeVarsOf. simpl.
+    rewrite tyCoVarsOfCoDSet_empty. reflexivity.
+Qed.
 
 (* Helper for the Rec case of deAnnotate_freeVars *)
 Lemma rec_roundtrip :
