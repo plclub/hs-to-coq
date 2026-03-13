@@ -537,12 +537,54 @@ Proof.
     apply bindersOf_ep_goTopLvl.
 Qed.
 
-(* foldBindersOfBindsStrict extendVarSet over empty = mkVarSet of bindersOfBinds.
-   Provable by induction on the bind list structure, but tedious.
-   Since top_go_WellScoped_JPI is already Admitted, this is acceptable. *)
+(* Each bind: foldBindersOfBindStrict = foldl' over bindersOf *)
+Lemma foldBindersOfBindStrict_bindersOf :
+  forall (s : VarSet) (bind : CoreBind),
+  foldBindersOfBindStrict extendVarSet s bind =
+  Data.Foldable.foldl' extendVarSet s (bindersOf bind).
+Proof.
+  intros s [v rhs | pairs0].
+  - (* NonRec *)
+    simpl. rewrite Foldable_foldl'_cons. rewrite Foldable_foldl'_nil. reflexivity.
+  - (* Rec *)
+    simpl. f_equal. symmetry. apply bindersOf_Rec_cleanup.
+Qed.
+
+(* Generalized: folding bind-by-bind = folding over flat binder list *)
+Lemma foldBindersOfBindsStrict_bindersOfBinds :
+  forall (s : VarSet) (pgm : CoreProgram),
+  foldBindersOfBindsStrict extendVarSet s pgm =
+  Data.Foldable.foldl' extendVarSet s (bindersOfBinds pgm).
+Proof.
+  intros s pgm. revert s.
+  induction pgm as [|bind rest IH]; intro s.
+  - (* nil *)
+    unfold foldBindersOfBindsStrict. rewrite Foldable_foldl'_nil.
+    replace (bindersOfBinds (@nil CoreBind)) with (@nil Var) by reflexivity.
+    rewrite Foldable_foldl'_nil. reflexivity.
+  - (* cons *)
+    unfold foldBindersOfBindsStrict.
+    rewrite Foldable_foldl'_cons.
+    rewrite bindersOfBinds_cons.
+    rewrite Foldable_foldl'_app.
+    change (Data.Foldable.foldl' (foldBindersOfBindStrict extendVarSet)
+              (foldBindersOfBindStrict extendVarSet s bind) rest)
+      with (foldBindersOfBindsStrict extendVarSet
+              (foldBindersOfBindStrict extendVarSet s bind) rest).
+    rewrite IH.
+    f_equal.
+    apply foldBindersOfBindStrict_bindersOf.
+Qed.
+
 Lemma getInScopeVars_ep_in_scope pgm :
   getInScopeVars (ep_in_scope pgm) = mkVarSet (bindersOfBinds pgm).
-Proof. Admitted.
+Proof.
+  unfold ep_in_scope, CoreUtils.extendInScopeSetBndrs, emptyInScopeSet.
+  simpl.
+  unfold mkVarSet, UniqSet.mkUniqSet, emptyVarSet, extendVarSet.
+  rewrite foldBindersOfBindsStrict_bindersOfBinds.
+  reflexivity.
+Qed.
 
 (** At last, the final result. *)
 
