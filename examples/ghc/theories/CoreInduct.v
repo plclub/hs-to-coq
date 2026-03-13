@@ -215,13 +215,22 @@ Section CoreLT.
 
 
   (* Needs a precondition that there are enough lambdas *)
-  (* GHC 9.10: error_sub removed, solve_error_sub tactic broken *)
   Lemma CoreLT_collectNBinders:
     forall n e e',
     HasNLams n e ->
     CoreLT e e' ->
     CoreLT (snd (collectNBinders n e)) e'.
-  Admitted.
+  Proof.
+    intros n.
+    unfold collectNBinders.
+    generalize (@nil v); intro args.
+    revert args.
+    induction n; intros args e e' HLams Hlt.
+    * destruct e; simpl; apply Hlt.
+    * destruct e; simpl in HLams; try contradiction.
+      simpl. apply IHn; auto.
+      unfold CoreLT in *. simpl in *. lia.
+  Qed.
 End CoreLT.
 
 (* For fewer obligations from [Program Fixpoint]: *)

@@ -51,24 +51,56 @@ Require GHC.Core.TyCo.FVs.
 Require NestedRecursionHelpers.
 
 (* tyCoFVsOfType and tyCoFVsOfCo are axiomatized in the lib.
-   We axiomatize their well-formedness and the fact that they
-   don't contain local Ids (type variables live in a separate namespace). *)
+   Since types/coercions are fully axiomatized (AxiomatizedTypes.v) and
+   type substitution is identity (substTyUnchecked_id), type/coercion
+   free variables are effectively empty — there are no capturable variables. *)
 
-Axiom tyCoFVsOfType_WF : forall ty, WF_fv (GHC.Core.TyCo.FVs.tyCoFVsOfType ty).
-Axiom tyCoFVsOfCo_WF : forall co, WF_fv (GHC.Core.TyCo.FVs.tyCoFVsOfCo co).
+Axiom tyCoFVsOfType_is_emptyFV : forall ty,
+  GHC.Core.TyCo.FVs.tyCoFVsOfType ty = FV.emptyFV.
+Axiom tyCoFVsOfCo_is_emptyFV : forall co,
+  GHC.Core.TyCo.FVs.tyCoFVsOfCo co = FV.emptyFV.
 
-Axiom tyCoFVsOfType_not_local : forall ty,
+(* The DSet variants are independently axiomatized but consistently empty *)
+Axiom tyCoVarsOfTypeDSet_empty : forall ty,
+  GHC.Core.TyCo.FVs.tyCoVarsOfTypeDSet ty [=] emptyVarSet.
+Axiom tyCoVarsOfCoDSet_empty : forall co,
+  GHC.Core.TyCo.FVs.tyCoVarsOfCoDSet co [=] emptyVarSet.
+
+Lemma tyCoFVsOfType_WF : forall ty, WF_fv (GHC.Core.TyCo.FVs.tyCoFVsOfType ty).
+Proof. intros. rewrite tyCoFVsOfType_is_emptyFV. apply empty_FV_WF. Qed.
+
+Lemma tyCoFVsOfCo_WF : forall co, WF_fv (GHC.Core.TyCo.FVs.tyCoFVsOfCo co).
+Proof. intros. rewrite tyCoFVsOfCo_is_emptyFV. apply empty_FV_WF. Qed.
+
+(* Derived: no local vars (follows from emptyFV) *)
+Lemma fvVarSet_emptyFV : FV.fvVarSet FV.emptyFV = emptyVarSet.
+Proof. reflexivity. Qed.
+
+Lemma tyCoFVsOfType_not_local : forall ty,
   filterVarSet isLocalVar (FV.fvVarSet (GHC.Core.TyCo.FVs.tyCoFVsOfType ty)) [=] emptyVarSet.
-Axiom tyCoFVsOfCo_not_local : forall co,
-  filterVarSet isLocalVar (FV.fvVarSet (GHC.Core.TyCo.FVs.tyCoFVsOfCo co)) [=] emptyVarSet.
+Proof.
+  intros. rewrite tyCoFVsOfType_is_emptyFV. rewrite fvVarSet_emptyFV.
+  rewrite filterVarSet_emptyVarSet. reflexivity.
+Qed.
 
-Lemma varTypeTyCoFVs_WF : forall v, WF_fv (varTypeTyCoFVs v).
+Lemma tyCoFVsOfCo_not_local : forall co,
+  filterVarSet isLocalVar (FV.fvVarSet (GHC.Core.TyCo.FVs.tyCoFVsOfCo co)) [=] emptyVarSet.
+Proof.
+  intros. rewrite tyCoFVsOfCo_is_emptyFV. rewrite fvVarSet_emptyFV.
+  rewrite filterVarSet_emptyVarSet. reflexivity.
+Qed.
+
+Lemma varTypeTyCoFVs_emptyFV : forall v, varTypeTyCoFVs v = FV.emptyFV.
 Proof.
   intros v. unfold varTypeTyCoFVs.
-  apply union_FV_WF.
-  - apply tyCoFVsOfType_WF.
-  - destruct (Core.varMultMaybe v); [apply tyCoFVsOfType_WF | apply empty_FV_WF].
+  rewrite tyCoFVsOfType_is_emptyFV.
+  destruct (Core.varMultMaybe v).
+  - rewrite tyCoFVsOfType_is_emptyFV. reflexivity.
+  - reflexivity.
 Qed.
+
+Lemma varTypeTyCoFVs_WF : forall v, WF_fv (varTypeTyCoFVs v).
+Proof. intros. rewrite varTypeTyCoFVs_emptyFV. apply empty_FV_WF. Qed.
 
 #[export] Hint Resolve tyCoFVsOfType_WF : core.
 #[export] Hint Resolve tyCoFVsOfCo_WF : core.
@@ -103,9 +135,13 @@ Lemma addBndr_fv fv bndr vs :
   Denotes vs fv ->
   Denotes (delVarSet vs bndr) (addBndr bndr fv).
 Proof.
-  (* varTypeTyCoFVs is no longer emptyFV in GHC 9.10 — it includes
-     tyCoFVsOfType (axiomatized), so union_empty_l doesn't apply *)
-Admitted.
+  move=> h.
+  unfold addBndr.
+  rewrite varTypeTyCoFVs_emptyFV.
+  rewrite union_empty_l.
+  eapply delVarSet_delFV.
+  eauto.
+Qed.
 
 Lemma addBndr_WF : forall fv bndr,
     WF_fv fv ->
@@ -261,14 +297,29 @@ Qed.
 Lemma exprFreeVars_mkLams_rev:
   forall vs e, exprFreeVars (mkLams (rev vs) e) [=] delVarSetList (exprFreeVars e) vs.
 Proof.
-  (* varTypeTyCoFVs is no longer emptyFV in GHC 9.10 *)
-Admitted.
+  intros vs e. revert vs. apply rev_ind; intros.
+  - unfold exprFreeVars, exprFVs, Base.op_z2218U__, mkLams.
+    unfold Foldable.foldr, Foldable.Foldable__list. simpl.
+    unfold delVarSetList, UniqSet.delListFromUniqSet.
+    destruct (FV.fvVarSet (FV.filterFV isLocalVar (expr_fvs e))); reflexivity.
+  - revert H; unfold exprFreeVars, exprFVs, Base.op_z2218U__, mkLams.
+    rewrite delVarSetList_app. rewrite delVarSetList_single.
+    rewrite rev_app_distr. repeat rewrite hs_coq_foldr_list.
+    rewrite fold_right_app. intros H. rewrite <- H. simpl.
+    unfold addBndr. rewrite varTypeTyCoFVs_emptyFV. rewrite union_empty_l.
+    rewrite delVarSet_fvVarSet; [reflexivity |].
+    apply filter_FV_WF.
+    apply RespectsVar_isLocalVar.
+    apply expr_fvs_WF.
+Qed.
 
 Lemma exprFreeVars_mkLams:
   forall vs e, exprFreeVars (mkLams vs e) [=] delVarSetList (exprFreeVars e) (rev vs).
 Proof.
-  (* depends on exprFreeVars_mkLams_rev *)
-Admitted.
+  intros vs e. replace vs with (rev (rev vs)) at 1.
+  - apply exprFreeVars_mkLams_rev.
+  - apply rev_involutive.
+Qed.
 
 
 
@@ -470,9 +521,84 @@ Lemma exprFreeVars_Case:
   exprFreeVars (Case scrut bndr ty alts) [=]
     unionVarSet (exprFreeVars scrut) (mapUnionVarSet (fun '(Mk_Alt dc pats rhs) => delVarSetList (exprFreeVars rhs) (pats ++ [bndr])) alts).
 Proof.
-  (* GHC 9.10: Alt changed from tuple to Mk_Alt constructor, expr_fvs Case
-     now includes tyCoFVsOfType (axiomatized), so union_empty_r doesn't apply *)
-Admitted.
+  move=> scrut bndr ty alts.
+  unfold exprFreeVars.
+  unfold_FV.
+  unfold exprFVs.
+  unfold_FV.
+  unfold expr_fvs. fold expr_fvs.
+  move: (expr_fvs_WF scrut) => [vscrut h1].
+  denote h1 h5. subst.
+  set f := (fun v : Var => Base.const true v && isLocalVar v).
+  have Hf: RespectsVar f by eapply RespectsVar_andb; eauto.
+
+  set f1 := fun rhs pat =>
+              delVarSetList
+                (FV.fvVarSet (expr_fvs rhs)) pat.
+
+  have k: forall rhs pat, filterVarSet [eta isLocalVar] (f1 rhs pat)
+                     [=] delVarSetList
+                     (filterVarSet f
+                                   (FV.fvVarSet (expr_fvs rhs))) pat.
+  { move => rhs pat.
+    unfold f1.
+    rewrite filterVarSet_delVarSetList => //.
+  }
+  (* GHC 9.10: tyCoFVsOfType is axiomatized as emptyFV *)
+  rewrite tyCoFVsOfType_is_emptyFV.
+  rewrite union_empty_r.
+
+  have h: Forall2 Denotes
+                  (map (fun '(Mk_Alt _ bndrs rhs) => f1 rhs bndrs) alts)
+                  (map (fun '(Mk_Alt _ bndrs rhs) => addBndrs bndrs (expr_fvs rhs)) alts).
+  {
+    elim: alts => [|alt alts IH].
+    - simpl. auto.
+    - simpl. destruct alt as [dc bndrs rhs].
+      econstructor; eauto.
+      unfold f1.
+      move: (Denotes_fvVarSet rhs) => h.
+      move: (addBndrs_fv _ bndrs _ h) => h2.
+      auto.
+  }
+  move: (unionsVarSet_unionsFV _ _ h) => h2.
+  move: (addBndr_fv _ bndr _ h2) => h3.
+  move: (unionVarSet_unionFV _ _ _ _ h3 h1) => h4.
+  denote h4 h6.
+
+  rewrite <- unionVarSet_filterVarSet => //.
+  rewrite unionVarSet_sym.
+  f_equiv.
+  rewrite filterVarSet_delVarSet => //.
+  rewrite push_foldable. 2:{  move=> x y. rewrite unionVarSet_filterVarSet; eauto.
+                              reflexivity. }
+  rewrite filterVarSet_emptyVarSet.
+  unfold mapUnionVarSet.
+  rewrite Foldable_foldr_map.
+  move: (push_foldable (fun x => delVarSet x bndr)) => p.
+  rewrite p. 2: {   move=> x y.
+  rewrite delVarSet_unionVarSet. reflexivity. }
+
+  rewrite List.map_map. rewrite List.map_map.
+  hs_simpl.
+
+  apply unionsVarSet_equal.
+  clear h h2 h3 h4 H0 H1.
+  elim: alts => [|[dc pat rhs] alts IH].
+  simpl. auto.
+  simpl.
+  econstructor; eauto.
+
+  move: (Denotes_fvVarSet rhs) => h5.
+  denote h5 h6.
+
+  hs_simpl.
+  f_equiv.
+
+  unfold f1.
+
+  rewrite filterVarSet_delVarSetList => //.
+Qed.
 
 
 Lemma exprFreeVars_Cast:
@@ -482,19 +608,8 @@ Proof.
   intros e co.
   unfold exprFreeVars, exprFVs, Base.op_z2218U__.
   change (expr_fvs (Cast e co)) with (FV.unionFV (expr_fvs e) (GHC.Core.TyCo.FVs.tyCoFVsOfCo co)).
-  move: (expr_fvs_WF e) => [vs1 D1].
-  move: (tyCoFVsOfCo_WF co) => [vs2 D2].
-  (* unionVarSet_unionFV swaps FV args: Denotes (vs ∪ vs') (unionFV fv' fv) *)
-  move: (unionVarSet_unionFV _ _ _ _ D2 D1) => D3.
-  move: (DenotesfvVarSet _ _ (filterVarSet_filterFV isLocalVar _ _ RespectsVar_isLocalVar D3)) => E1.
-  move: (DenotesfvVarSet _ _ (filterVarSet_filterFV isLocalVar _ _ RespectsVar_isLocalVar D1)) => E2.
-  rewrite E1 E2.
-  rewrite <- unionVarSet_filterVarSet; try done.
-  move: (DenotesfvVarSet _ _ D2) => E3.
-  have E3' : vs2 [=] FV.fvVarSet (GHC.Core.TyCo.FVs.tyCoFVsOfCo co) by symmetry.
-  rewrite (filterVarSet_equal RespectsVar_isLocalVar E3').
-  rewrite tyCoFVsOfCo_not_local.
-  rewrite unionEmpty_l.
+  rewrite tyCoFVsOfCo_is_emptyFV.
+  rewrite union_empty_r.
   reflexivity.
 Qed.
 
@@ -561,17 +676,23 @@ Proof. done. Qed.
 
 Lemma exprFreeVars_Type:
   forall t,
-  exprFreeVars (Mk_Type t) = emptyVarSet.
+  exprFreeVars (Mk_Type t) [=] emptyVarSet.
 Proof.
-  (* GHC 9.10: expr_fvs for Mk_Type now includes tyCoFVsOfType (axiomatized) *)
-Admitted.
+  intros t.
+  unfold exprFreeVars, exprFVs, Base.op_z2218U__.
+  change (expr_fvs (Mk_Type t)) with (GHC.Core.TyCo.FVs.tyCoFVsOfType t).
+  rewrite tyCoFVsOfType_is_emptyFV. reflexivity.
+Qed.
 
 Lemma exprFreeVars_Coercion:
   forall co,
-  exprFreeVars (Mk_Coercion co) = emptyVarSet.
+  exprFreeVars (Mk_Coercion co) [=] emptyVarSet.
 Proof.
-  (* GHC 9.10: expr_fvs for Mk_Coercion now includes tyCoFVsOfCo (axiomatized) *)
-Admitted.
+  intros co.
+  unfold exprFreeVars, exprFVs, Base.op_z2218U__.
+  change (expr_fvs (Mk_Coercion co)) with (GHC.Core.TyCo.FVs.tyCoFVsOfCo co).
+  rewrite tyCoFVsOfCo_is_emptyFV. reflexivity.
+Qed.
 
 
 (* ---------------------------------------------------------- *)
@@ -675,8 +796,10 @@ Ltac DVarToVar :=
 
 Lemma no_TyCoVars bndr: (dVarTypeTyCoVars bndr) [=] emptyVarSet.
 Proof.
-  (* varTypeTyCoFVs no longer emptyFV in GHC 9.10 *)
-Admitted.
+  unfold dVarTypeTyCoVars, FV.fvDVarSet.
+  rewrite varTypeTyCoFVs_emptyFV.
+  reflexivity.
+Qed.
 
 Lemma no_RuleAndUnfoldingFVs l0 : 
   (FV.fvVarSet (FV.mapUnionFV bndrRuleAndUnfoldingFVs l0)) [=] emptyVarSet.

@@ -12,6 +12,29 @@ skip module GHC.Core.TyCo.Subst
 # requires mkTyVarTy and mkCoVarCo
 skip CoreSubst.lookupTCvSubst
 
-# GHC 9.10: substBndrs needs Data.Traversable (imported above)
-
-
+# Functions provided by midamble (concrete definitions for proofs)
+skip CoreSubst.extendIdSubst
+skip CoreSubst.extendIdSubstWithClone
+skip CoreSubst.extendIdSubstList
+skip CoreSubst.extendSubst
+skip CoreSubst.extendSubstWithVar
+skip CoreSubst.extendSubstList
+skip CoreSubst.lookupIdSubst
+skip CoreSubst.lookupIdSubst_maybe
+skip CoreSubst.delBndr
+skip CoreSubst.delBndrs
+skip CoreSubst.mkOpenSubst
+skip CoreSubst.substExpr
+skip CoreSubst.substBind
+skip CoreSubst.substBndr
+skip CoreSubst.substBndrs
+skip CoreSubst.substRecBndrs
+skip CoreSubst.substIdBndr
+skip CoreSubst.substIdInfo
+skip CoreSubst.substUnfolding
+skip CoreSubst.substExprSC
+skip CoreSubst.substBindSC
+skip CoreSubst.substUnfoldingSC
+skip CoreSubst.substIdOcc
+skip CoreSubst.substIdType
+skip CoreSubst.isEmptySubst

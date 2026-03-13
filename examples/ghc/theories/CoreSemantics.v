@@ -10,6 +10,7 @@ Require Import Core CoreSubst Id.
 Require Import Proofs.Core Proofs.ScopeInvariant Proofs.CoreSubst Proofs.CoreInduct.
 Require Import GHC.Base GHC.List Data.Foldable Data.Bifunctor.
 Require Import Proofs.GHC.Base Proofs.GHC.List Proofs.Data.Foldable HSUtil.
+Require Import Proofs.Var.
 Import Data.Functor.Notations.
 
 Set Bullet Behavior "Strict Subproofs".
@@ -115,9 +116,28 @@ Qed.
 Theorem subst_substs e₀ n e' :
   subst e₀ n e' = substs e₀ [::(n,e')].
 Proof.
-  (* GHC 9.10: Alt changed from tuple to Mk_Alt, Eq_sym type class issue *)
-Admitted.
-(* Original proof removed — broken by GHC 9.10 Alt/Eq changes. *)
+  rewrite /subst /substs.
+  match goal with |- ?fix_subst e₀ = ?fix_substs e₀ => set subst := fix_subst; set substs := fix_substs end.
+  elim/core_induct: e₀ =>
+    [ n' | lit | e₁  e₂ IH₁ IH₂ | n' e IH | [n' e₁ | bs] e₂ IH₁ IH₂ | e n' τ alts IH₁ IH₂
+     | e γ IH (* | tick e IH *) | τ | γ ]
+    //=.
+  - by rewrite Eq_sym; case: (_ == _).
+  - by rewrite IH₁ IH₂.
+  - by rewrite IH Eq_sym; case: (_ == _).
+  - by rewrite IH₁ IH₂ Eq_sym; case: (_ == _).
+  - rewrite IH₂; if_equal.
+    + elim: bs {IH₁} => [|[n' e] bs IHbs] //=.
+      by rewrite elemC IHbs Eq_sym; case: (_ == _).
+    + do 2 f_equal; apply map_cong_in => - [n' e] IN /=.
+      by rewrite (IH₁ _ _ IN).
+  - rewrite IH₁ Eq_sym; case: (_ == _); f_equal.
+    apply map_cong_in => -[k ns u] IN; f_equal; if_equal.
+    + elim: ns {IN} => [|n'' ns IHns] //=.
+      by rewrite elemC IHns Eq_sym; case: (_ == _).
+    + by rewrite (IH₂ _ _ _ IN).
+   - by rewrite IH.
+Qed.
 
 (* GHC 9.10: substExpr is now axiomatized and no longer takes a doc string argument.
    The subst_expr' local definition and subst_ok theorem are removed since they

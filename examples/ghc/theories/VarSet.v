@@ -1242,6 +1242,17 @@ Proof.
   fsetdec.
 Qed.
 
+Lemma subVarSet_equal_empty:
+  forall s vs,
+  s [=] emptyVarSet ->
+  subVarSet s vs = true.
+Proof.
+  intros s vs Heq.
+  set_b_iff.
+  intros a Ha.
+  exfalso. rewrite Heq in Ha. fsetdec.
+Qed.
+
 Lemma subVarSet_unitVarSet:
   forall v vs,
   subVarSet (unitVarSet v) vs = elemVarSet v vs.

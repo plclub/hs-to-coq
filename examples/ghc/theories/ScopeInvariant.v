@@ -523,8 +523,8 @@ Proof.
     eapply lookupVarSet_elemVarSet; eauto.
     rewrite h in WSy. done.
     *)
-  - rewrite exprFreeVars_Type. apply subVarSet_emptyVarSet.
-  - rewrite exprFreeVars_Coercion. apply subVarSet_emptyVarSet.
+  - apply subVarSet_equal_empty. apply exprFreeVars_Type.
+  - apply subVarSet_equal_empty. apply exprFreeVars_Coercion.
 Qed.
 
 Print Assumptions WellScoped_subset.
@@ -990,8 +990,6 @@ Proof.
   - fold WellScoped in H. simpl in H0.
     rewrite exprFreeVars_Cast.
     eauto.
-  - rewrite exprFreeVars_Type.
-    fsetdec.
-  - rewrite exprFreeVars_Coercion.
-    fsetdec.
+  - setoid_rewrite exprFreeVars_Type. fsetdec.
+  - setoid_rewrite exprFreeVars_Coercion. fsetdec.
 Qed.

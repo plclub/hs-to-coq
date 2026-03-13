@@ -629,7 +629,7 @@ Proof.
 Qed.
 
 Require Import CoreFVs.
-(* Proofs.CoreFVs not currently available - freshness lemmas are Admitted *)
+Require Import Proofs.CoreFVs.
 Require Import Proofs.VarSetFSet.
 
 (* There is some worrying duplication/similarity with
@@ -645,8 +645,171 @@ Lemma isJoinPointsValid_fresh_updJPSs_aux:
   (forall v, isJoinRHS_aux v e (updJPSs jps (vs2 ++ vs3)) =
   isJoinRHS_aux v e (updJPSs jps vs3)).
 Proof.
-  (* Proof depends on Proofs.CoreFVs which does not currently compile *)
-Admitted.
+  intros.
+  rewrite <- delVarSetList_rev in H.
+  revert vs3 jps H.
+  apply (core_induct e); intros;
+    (split; intro; simpl; [| try solve[ destruct_match; reflexivity]] ).
+  - simpl.
+    destruct_match; only 2: reflexivity.
+    destruct (isLocalVar v) eqn:?; only 2: reflexivity.
+    f_equal.
+    rewrite updJPSs_append.
+    rewrite exprFreeVars_Var in H by assumption.
+    rewrite delVarSetList_rev in H.
+    clear -H.
+    induction vs3 using rev_ind.
+    + rewrite !updJPSs_nil.
+      rewrite delVarSetList_nil in H.
+      revert jps; induction vs2; intros.
+       * rewrite updJPSs_nil.
+         reflexivity.
+       * rewrite updJPSs_cons.
+         rewrite fold_is_true in H.
+         rewrite disjointVarSet_mkVarSet_cons in H.
+         destruct H.
+         rewrite IHvs2 by assumption.
+         apply elemVarSet_updJPS_l.
+         rewrite <- elemVarSet_unitVarSet_is_eq. apply H.
+    + rewrite delVarSetList_app, delVarSetList_cons, delVarSetList_nil in H.
+      rewrite !updJPSs_append, !updJPSs_cons, !updJPSs_nil.
+      apply elemVarSet_updJPS_cong. intros Hne.
+      apply IHvs3.
+      rewrite fold_is_true in *.
+      rewrite disjointVarSet_mkVarSet in *.
+      eapply Forall_impl; only 2: eapply H. intros v2 ?.
+      cbv beta in H0.
+      rewrite delVarSet_elemVarSet_false in H0; only 1: assumption.
+      clear -Hne.
+      apply elemVarSet_delVarSetList_false_l.
+      rewrite elemVarSet_unitVarSet_is_eq. apply Hne.
+  - reflexivity.
+  - f_equal.
+    apply H.
+    eapply disjointVarSet_subVarSet_l; only 1: apply H1.
+    apply subVarSet_delVarSetList_both.
+    rewrite exprFreeVars_App.
+    set_b_iff; fsetdec.
+  - reflexivity.
+  - destruct_match; only 1: reflexivity.
+    destruct (isJoinId v) eqn:?; only 1: reflexivity.
+    simpl.
+    rewrite <- !updJPS_not_joinId by assumption.
+    rewrite <- !updJPSs_singleton.
+    rewrite <- !updJPSs_append.
+    rewrite <- app_assoc.
+    destruct_match.
+    + apply H.
+      eapply disjointVarSet_subVarSet_l; only 1: apply H0.
+      rewrite rev_app_distr. simpl.
+      rewrite delVarSetList_cons.
+      apply subVarSet_delVarSetList_both.
+      rewrite exprFreeVars_Lam.
+      set_b_iff; fsetdec.
+    + apply H.
+      eapply disjointVarSet_subVarSet_l; only 1: apply H0.
+      rewrite rev_app_distr. simpl.
+      rewrite delVarSetList_cons.
+      apply subVarSet_delVarSetList_both.
+      rewrite exprFreeVars_Lam.
+      set_b_iff; fsetdec.
+  - destruct binds as [v rhs | pairs].
+    + f_equal.
+      ** unfold isJoinPointsValidPair_aux.
+         destruct_match; only 2: reflexivity.
+         destruct_match.
+         -- apply H.
+            eapply disjointVarSet_subVarSet_l; only 1: apply H1.
+            apply subVarSet_delVarSetList_both.
+            rewrite exprFreeVars_Let_NonRec.
+            set_b_iff; fsetdec.
+         -- apply H.
+            eapply disjointVarSet_subVarSet_l; only 1: apply H1.
+            apply subVarSet_delVarSetList_both.
+            rewrite exprFreeVars_Let_NonRec.
+            set_b_iff; fsetdec.
+      ** rewrite <- !updJPSs_singleton.
+         rewrite <- !updJPSs_append.
+         rewrite <- app_assoc.
+         apply H0.
+         eapply disjointVarSet_subVarSet_l; only 1: apply H1.
+         rewrite rev_app_distr; simpl.
+         rewrite delVarSetList_cons.
+         apply subVarSet_delVarSetList_both.
+         rewrite exprFreeVars_Let_NonRec.
+         set_b_iff; fsetdec.
+    + simpl.
+      rewrite <- !updJPSs_append.
+      rewrite <- app_assoc.
+      f_equal. f_equal.
+      ** apply forallb_conq.
+         rewrite Forall_forall.
+         intros [v rhs0] HIn.
+         specialize (H _ _ HIn).
+         unfold isJoinPointsValidPair_aux.
+         destruct_match; only 2: reflexivity.
+         destruct_match.
+         -- apply H.
+            eapply disjointVarSet_subVarSet_l; only 1: apply H1.
+            rewrite rev_app_distr; simpl.
+            rewrite delVarSetList_app.
+            apply subVarSet_delVarSetList_both.
+            rewrite exprFreeVars_Let_Rec.
+            pose proof (subVarSet_exprFreeVars_exprsFreeVars _ _ _ HIn).
+            rewrite delVarSetList_rev.
+            apply subVarSet_delVarSetList_both.
+            set_b_iff; fsetdec.
+         -- apply H.
+            eapply disjointVarSet_subVarSet_l; only 1: apply H1.
+            rewrite rev_app_distr; simpl.
+            rewrite delVarSetList_app.
+            apply subVarSet_delVarSetList_both.
+            rewrite exprFreeVars_Let_Rec.
+            rewrite delVarSetList_rev.
+            pose proof (subVarSet_exprFreeVars_exprsFreeVars _ _ _ HIn).
+            apply subVarSet_delVarSetList_both.
+            set_b_iff; fsetdec.
+      ** apply H0.
+         eapply disjointVarSet_subVarSet_l; only 1: apply H1.
+         rewrite rev_app_distr; simpl.
+         rewrite delVarSetList_app.
+         apply subVarSet_delVarSetList_both.
+         rewrite exprFreeVars_Let_Rec.
+         rewrite delVarSetList_rev.
+         apply subVarSet_delVarSetList_both.
+         set_b_iff; fsetdec.
+  - destruct (isJoinId bndr) eqn:?; only 1: reflexivity; simpl.
+    f_equal.
+    apply forallb_conq.
+    rewrite Forall_forall.
+    intros [dc pats rhs] HIn.
+    destruct (forallb (fun v : Var => negb (isJoinId v)) pats) eqn:?; only 2: reflexivity; simpl.
+    rewrite <- !updJPSs_not_joinId by assumption.
+    rewrite <- !updJPS_not_joinId by assumption.
+    rewrite <- !updJPSs_cons.
+    rewrite <- !updJPSs_append.
+    rewrite <- app_assoc.
+    specialize (H0 _ _ _ HIn).
+    apply H0.
+    eapply disjointVarSet_subVarSet_l; only 1: apply H1.
+    rewrite rev_app_distr; simpl.
+    rewrite !delVarSetList_app, delVarSetList_cons, delVarSetList_nil.
+    apply subVarSet_delVarSetList_both.
+    rewrite exprFreeVars_Case.
+    rewrite fold_is_true in *.
+    match goal with HIn : List.In _ ?xs |- context [mapUnionVarSet ?f ?xs] =>
+      let H := fresh in
+      epose proof (mapUnionVarSet_In_subVarSet f HIn) as H ; simpl in H end.
+    rewrite delVarSetList_rev, <- delVarSetList_single, <- delVarSetList_app.
+    set_b_iff; fsetdec.
+  - apply H.
+    eapply disjointVarSet_subVarSet_l; only 1: apply H0.
+    apply subVarSet_delVarSetList_both.
+    rewrite exprFreeVars_Cast.
+    set_b_iff; fsetdec.
+  - reflexivity.
+  - reflexivity.
+Qed.
 
 Lemma isJoinPointsValid_fresh_updJPSs:
   forall (vs2 vs3 : list Var) n (e : CoreExpr) (jps : VarSet),
