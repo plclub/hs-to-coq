@@ -10,8 +10,8 @@ Import GHC.Base.Notations.
 Import GHC.Base.ManualNotations.
 
 Require Import Core.
-Require Import CoreSubst.
 Require Import GHC.Core.TyCo.Subst.
+Require Import CoreSubst.  (* imported after GHC.Core.TyCo.Subst to shadow substCo/substTyUnchecked *)
 Require Import Coq.Lists.List.
 
 Require Import Proofs.GHC.Base.
@@ -30,6 +30,7 @@ Require Import Proofs.VarEnv.
 Require Import Proofs.Var.
 Require Import Proofs.ScopeInvariant.
 Require Import Proofs.Forall.
+Require Import Lia.
 
 
 
@@ -45,8 +46,8 @@ Set Bullet Behavior "Strict Subproofs".
 (* General purpose lemmas. *)
 
 
-Lemma map_snd_zip' : 
-  forall {a}{b}{c} (f:b -> c) (xs : list a) ys , 
+Lemma map_snd_zip' :
+  forall {a}{b}{c} (f:b -> c) (xs : list a) ys ,
     length xs = length ys ->
     (map (fun ps => f (snd ps)) (List.zip xs ys)) =
     (map f ys).
@@ -54,6 +55,22 @@ Proof.
   move=> a b c f xs ys Hle.
   rewrite <- (map_map (snd (A:=a)) f).
   rewrite -> map_snd_zip; auto.
+Qed.
+
+Lemma map_Tuple_snd_zip : forall {A B} (l1 : list A) (l2 : list B),
+  length l1 = length l2 ->
+  map Data.Tuple.snd (List.zip l1 l2) = l2.
+Proof.
+  induction l1; intros; destruct l2; simpl in *; try discriminate; auto.
+  f_equal. apply IHl1. auto.
+Qed.
+
+Lemma map_Tuple_fst_zip : forall {A B} (l1 : list A) (l2 : list B),
+  length l1 = length l2 ->
+  map Data.Tuple.fst (List.zip l1 l2) = l1.
+Proof.
+  induction l1; intros; destruct l2; simpl in *; try discriminate; auto.
+  f_equal. apply IHl1. auto.
 Qed.
 
 (* ---------------------------------------------------------------- *)
@@ -103,9 +120,10 @@ with UniqScopedBind (bind : CoreBind) (in_scope : VarSet) : Prop :=
    These simplification lemmas are axiomatized since the underlying
    functions are axioms. *)
 
-Axiom substExpr_App : forall subst e1 e2,
+Lemma substExpr_App : forall subst e1 e2,
     substExpr subst (App e1 e2) =
     App (substExpr subst e1) (substExpr subst e2).
+Proof. reflexivity. Qed.
 
 (*
 Lemma substExpr_Tick : forall subst tic e,
@@ -113,30 +131,44 @@ Lemma substExpr_Tick : forall subst tic e,
         CoreUtils.mkTick (substTickish subst tic) (substExpr subst e).
 *)
 
-Axiom substExpr_Lam : forall subst bndr body,
+Lemma substExpr_Lam : forall subst bndr body,
         substExpr subst (Lam bndr body) =
         let (subst', bndr') := substBndr subst bndr in
         Lam bndr' (substExpr subst' body).
+Proof. intros. unfold substExpr, substExpr_. destruct (substBndr subst bndr). reflexivity. Qed.
 
-Axiom substExpr_LetNonRec : forall subst c e0 body,
+Lemma substExpr_LetNonRec : forall subst c e0 body,
   substExpr subst (Let (NonRec c e0) body) =
     let (subst', bndr') := substBndr subst c in
     Let (NonRec bndr' (substExpr subst e0)) (substExpr subst' body).
+Proof. intros. unfold substExpr, substExpr_, substBind_. destruct (substBndr subst c). reflexivity. Qed.
 
-Axiom substExpr_Let : forall subst bind body,
+Lemma substExpr_Let : forall subst bind body,
   substExpr subst (Let bind body) =
    let '(subst', bind') := substBind subst bind in Let bind' (substExpr subst' body).
+Proof.
+  intros. unfold substExpr, substBind.
+  destruct bind as [v0 e0 | pairs0]; simpl.
+  - destruct (substBndr subst v0). reflexivity.
+  - destruct (substRecBndrs subst _). reflexivity.
+Qed.
 
-Axiom substBind_NonRec : forall subst c e0,
+Lemma substBind_NonRec : forall subst c e0,
     substBind subst (NonRec c e0) =
     let '(subst', bndr') := substBndr subst c in
     (subst', NonRec bndr' (substExpr subst e0)).
+Proof. intros. unfold substBind, substBind_, substExpr. destruct (substBndr subst c). reflexivity. Qed.
 
-Axiom substBind_Rec : forall subst pairs,
+Lemma substBind_Rec : forall subst pairs,
     substBind subst (Rec pairs) =
-    let '(bndrs, x)        := List.unzip pairs in
+    let bndrs := GHC.Base.map Data.Tuple.fst pairs in
     let '(subst'0, bndrs') := substRecBndrs subst bndrs in
-    (subst'0 , Rec (List.zip bndrs' (map (fun ps : Var * CoreExpr => substExpr subst'0 (snd ps)) pairs))).
+    (subst'0 , Rec (GHC.List.zip bndrs' ((fix go_rhss ps := match ps with
+       | nil => nil | cons (pair _ rhs) rest => cons (substExpr subst'0 rhs) (go_rhss rest) end) pairs))).
+Proof.
+  intros. unfold substBind, substBind_, substExpr.
+  destruct (substRecBndrs subst _). reflexivity.
+Qed.
 
 
 Definition substAlt subst (alt: Alt CoreBndr) :=
@@ -144,17 +176,94 @@ Definition substAlt subst (alt: Alt CoreBndr) :=
   let '(subst', bndrs') := substBndrs subst bndrs in
   Mk_Alt con bndrs' (substExpr subst' rhs).
 
-Axiom substExpr_Case : forall s e b u l,
+Lemma substExpr_Case : forall s e b u l,
+    substExpr s (Case e b u l) =
+    let '(subst', bndr') := substBndr s b in
+    Case (substExpr s e) bndr' (substTyUnchecked s u)
+         ((fix go_alts as' := match as' with
+            | nil => nil
+            | cons (Mk_Alt con bndrs rhs) rest =>
+                let '(subst'', bndrs') := substBndrs subst' bndrs in
+                cons (Mk_Alt con bndrs' (substExpr subst'' rhs)) (go_alts rest)
+            end) l).
+Proof.
+  intros. unfold substExpr, substExpr_.
+  destruct (substBndr s b). reflexivity.
+Qed.
+
+Lemma go_alts_eq_map_substAlt : forall subst' l,
+    (fix go_alts as' := match as' with
+        | nil => nil
+        | cons (Mk_Alt con bndrs rhs) rest =>
+            let '(subst'', bndrs') := substBndrs subst' bndrs in
+            cons (Mk_Alt con bndrs' (substExpr subst'' rhs)) (go_alts rest)
+        end) l = map (substAlt subst') l.
+Proof.
+  intros subst' l. induction l as [|a rest IH].
+  - reflexivity.
+  - simpl. destruct a as [con bndrs rhs].
+    unfold substAlt at 1.
+    destruct (substBndrs subst' bndrs) as [subst'' bndrs'].
+    f_equal. exact IH.
+Qed.
+
+Lemma go_rhss_eq_map : forall (subst' : Subst) (pairs : list (Var * CoreExpr)),
+    (fix go_rhss ps := match ps with
+      | nil => nil
+      | cons (pair _ rhs) rest => cons (substExpr subst' rhs) (go_rhss rest)
+      end) pairs = map (substExpr subst') (map Data.Tuple.snd pairs).
+Proof.
+  intros. induction pairs as [|[v rhs] rest IH].
+  - reflexivity.
+  - simpl. f_equal. exact IH.
+Qed.
+
+Lemma go_rhss_eq_map_substExpr : forall (s : Subst) (ps : list (Var * CoreExpr)),
+    (fix go_rhss (l : list (Var * CoreExpr)) : list CoreExpr :=
+      match l with
+      | nil => nil
+      | (_, rhs) :: rest => substExpr s rhs :: go_rhss rest
+      end) ps = map (substExpr s) (map Data.Tuple.snd ps).
+Proof.
+  intros s ps. induction ps as [|[v rhs] rest IHps]; simpl.
+  - reflexivity.
+  - f_equal. exact IHps.
+Qed.
+
+Lemma substBind_Rec' : forall (subst : Subst) (pairs : list (Var * CoreExpr)),
+    substBind subst (Rec pairs) =
+    let bndrs := GHC.Base.map Data.Tuple.fst pairs in
+    let '(subst', bndrs') := substRecBndrs subst bndrs in
+    (subst', Rec (GHC.List.zip bndrs' (map (substExpr subst') (map Data.Tuple.snd pairs)))).
+Proof.
+  intros.
+  transitivity
+    (let bndrs := GHC.Base.map Data.Tuple.fst pairs in
+     let '(subst', bndrs') := substRecBndrs subst bndrs in
+     (subst', Rec (GHC.List.zip bndrs' ((fix go_rhss ps := match ps with
+        | nil => nil | cons (pair _ rhs) rest => cons (substExpr subst' rhs) (go_rhss rest) end) pairs)))).
+  { apply substBind_Rec. }
+  cbv zeta.
+  destruct (substRecBndrs subst (GHC.Base.map Data.Tuple.fst pairs)) as [subst' bndrs'].
+  f_equal. f_equal. f_equal. apply go_rhss_eq_map.
+Qed.
+
+Lemma substExpr_Case' : forall s e b u l,
     substExpr s (Case e b u l) =
     let '(subst', bndr') := substBndr s b in
     Case (substExpr s e) bndr' (substTyUnchecked s u) (map (substAlt subst') l).
+Proof.
+  intros. rewrite substExpr_Case. destruct (substBndr s b).
+  f_equal. apply go_alts_eq_map_substAlt.
+Qed.
 
-Axiom substExpr_Cast : forall subst e co,
+Lemma substExpr_Cast : forall subst e co,
    substExpr subst (Cast e co) =
    Cast (substExpr subst e) (substCo subst co).
+Proof. reflexivity. Qed.
 
 
-#[export] Hint Rewrite substExpr_App substExpr_Case substExpr_Cast
+#[export] Hint Rewrite substExpr_App substExpr_Case' substExpr_Cast
      substBind_NonRec substBind_Rec substExpr_Let substExpr_Lam
      (* substExpr_Tick *) : hs_simpl.
 
@@ -164,8 +273,9 @@ Axiom substExpr_Cast : forall subst e co,
 
 (** ** [WellScoped_Subst] Substitution invariant *)
 
-(* GHC 9.10: Subst is axiomatized, can't pattern match Mk_Subst *)
-Axiom getSubstInScopeVars : Subst -> VarSet.
+(* GHC 9.10: Subst has structural axioms — use projections instead of pattern match *)
+Definition getSubstInScopeVars (s : Subst) : VarSet :=
+  getInScopeVars (substInScope s).
 
 
 
@@ -200,26 +310,36 @@ Axiom getSubstInScopeVars : Subst -> VarSet.
 *)
 
 
-(* GHC 9.10: Subst is axiomatized, can't pattern match Mk_Subst *)
-Axiom WellScoped_Subst : Subst -> VarSet -> Prop.
+(* Concrete definition using Subst structural axioms *)
+Definition WellScoped_Subst (s : Subst) (vs : VarSet) : Prop :=
+  minusDom vs (substIdEnv s) {<=} getInScopeVars (substInScope s)
+  /\
+  forall var,
+    match lookupVarEnv (substIdEnv s) var with
+    | Some expr => WellScoped expr (getInScopeVars (substInScope s))
+    | None => True
+    end.
 
-Ltac destruct_WellScoped_Subst := 
+Ltac destruct_WellScoped_Subst :=
     match goal with
-      | [H0 : WellScoped_Subst ?s ?vs |- _ ] => 
+      | [H0 : WellScoped_Subst ?s ?vs |- _ ] =>
          unfold WellScoped_Subst in H0;
-         try (is_var s ; destruct s);
          destruct H0 as [? ? ]
   end.
 
 
 (* Not actually used in this file. *)
 Lemma WellScoped_Subst_StrongSubset : forall vs1 s vs2,
-  vs2 {<=} vs1 -> 
+  vs2 {<=} vs1 ->
   WellScoped_Subst s vs1 ->
   WellScoped_Subst s vs2.
 Proof.
-  (* GHC 9.10 / Coq 8.20: Admitted due to Mk_Subst field changes *)
-Admitted.
+  move=> vs1 s vs2 h1 h2.
+  destruct_WellScoped_Subst.
+  repeat split; auto.
+  eapply (@StrongSubset_trans (minusDom vs2 (substIdEnv s))); eauto.
+  eapply StrongSubset_minusDom; eauto.
+Qed.
 
 
 (* ---------------------------------------- *)
@@ -398,17 +518,32 @@ Qed.
 *)
 
 
-(* GHC 9.10: Subst is axiomatized, can't pattern match Mk_Subst *)
-Axiom SubstExtends : Subst -> list Var -> Subst -> list Var -> Prop.
+(* Concrete definition using Subst structural axioms *)
+Definition SubstExtends (s1 : Subst) (vars : list Var)
+                        (s2 : Subst) (vars' : list Var) : Prop :=
+  length vars = length vars' /\
+  NoDup (map varUnique vars') /\
+  Forall GoodLocalVar vars' /\
+  (* The new variables are fresh for the original substitution. *)
+  freshList vars' (getInScopeVars (substInScope s1)) /\
+  (* For the in_scope_set: new = old + vars' *)
+  (getInScopeVars (substInScope s2)) {=}
+    (extendVarSetList (getInScopeVars (substInScope s1)) vars') /\
+  (* ... and we can subtract out the old binders. *)
+  (minusDom (extendVarSetList (getInScopeVars (substInScope s1)) vars)
+            (substIdEnv s2) {<=}
+   getInScopeVars (substInScope s2)) /\
+  (* Anything in the new substitution is either a renamed variable from
+     the old substitution or was already in the old substitution *)
+  VarEnvExtends (substIdEnv s1) vars (substIdEnv s2) vars'.
 
 
-Ltac destruct_SubstExtends := 
-  repeat 
-    match goal with 
-    | [ H : SubstExtends ?s1 ?vs ?s2 ?vs1 |- _ ] => 
-      try (is_var s1 ; destruct s1);
-      try (is_var s2 ; destruct s2);
-      unfold SubstExtends in H;  unfold StrongEquivalence in *; repeat (destruct_one_pair)
+Ltac destruct_SubstExtends :=
+  repeat
+    match goal with
+    | [ H : SubstExtends ?s1 ?vs ?s2 ?vs1 |- _ ] =>
+      unfold SubstExtends in H; unfold StrongEquivalence in *;
+      repeat (destruct_one_pair)
     end.
 
 
@@ -432,19 +567,126 @@ Ltac lookup_StrongSubset :=
     end.
 
 
-(* GHC 9.10: Subst axiomatized, can't destruct *)
 Lemma SubstExtends_refl : forall s,
     SubstExtends s nil s nil.
-Admitted.
+Proof.
+  intros.
+  unfold SubstExtends.
+  repeat split; simpl; try rewrite extendVarSetList_nil; auto.
+  apply freshList_nil.
+  eapply StrongSubset_refl.
+  eapply StrongSubset_refl.
+  eapply StrongSubset_minusDom_left.
+  unfold VarEnvExtends. intros var.
+  destruct (lookupVarEnv (substIdEnv s) var) eqn:LU; try tauto.
+  right. eexists.
+  repeat split; eauto.
+Qed.
 
     
-Lemma SubstExtends_trans : forall s2 s1 s3 vars1 vars2 vars1' vars2', 
+Lemma SubstExtends_trans : forall s2 s1 s3 vars1 vars2 vars1' vars2',
     Disjoint (map varUnique vars1') (map varUnique vars2') ->
-    SubstExtends s1 vars1 s2 vars1' -> SubstExtends s2 vars2 s3 vars2'-> 
+    SubstExtends s1 vars1 s2 vars1' -> SubstExtends s2 vars2 s3 vars2'->
     SubstExtends s1 (vars1 ++ vars2) s3 (vars1' ++ vars2').
 Proof.
-  (* GHC 9.10 / Coq 8.20: Admitted due to renamed variables *)
-Admitted.
+  intros s2 s1 s3 vars1 vars2 vars1' vars2' Hdisj HSE1 HSE2.
+  unfold SubstExtends in HSE1, HSE2.
+  destruct HSE1 as [LEN1 [ND1 [GLV1 [FR1 [SE1 [MD1 VE1]]]]]].
+  destruct HSE2 as [LEN2 [ND2 [GLV2 [FR2 [SE2 [MD2 VE2]]]]]].
+  unfold StrongEquivalence in SE1, SE2.
+  destruct SE1 as [SE1a SE1b]. destruct SE2 as [SE2a SE2b].
+
+  assert (k : VarEnvExtends (substIdEnv s1) (vars1 ++ vars2) (substIdEnv s3) (vars1' ++ vars2')).
+  eapply VarEnvExtends_trans; eauto.
+
+  unfold SubstExtends.
+  repeat split; auto.
+  - rewrite -> app_length. rewrite -> app_length. auto.
+  - rewrite -> map_app.
+    apply NoDup_app; auto.
+  - eauto using Forall_app.
+  - rewrite -> freshList_app.
+    split; auto.
+    unfold freshList in *.
+    intros v IN.
+    pose (m := FR2 _ IN); clearbody m.
+    lookup_StrongSubset.
+  - rewrite -> extendVarSetList_append.
+    eapply StrongSubset_trans; eauto.
+    eapply StrongSubset_extendVarSetList.
+    eauto.
+  - rewrite -> extendVarSetList_append.
+    eapply StrongSubset_trans with
+        (vs2 := extendVarSetList (getInScopeVars (substInScope s2)) vars2'); eauto.
+    eapply StrongSubset_extendVarSetList; eauto.
+  - (* This is the hard case: minusDom StrongSubset *)
+    intros var.
+    unfold StrongSubset, Subset, In, elt in *.
+    unfold VarEnvExtends in *.
+    specialize_all var.
+
+    case ELEM: (lookupVarEnv (substIdEnv s3) var) => [a|].
+    rewrite lookup_minusDom_inDom; auto.
+    rewrite lookupVarEnv_elemVarEnv_true. eauto.
+    rewrite lookupVarSet_minusDom_1 //.
+    rewrite lookupVarSet_minusDom_1 // in MD2.
+
+    rewrite -> ELEM in VE2.
+    rewrite -> ELEM in k.
+
+    (* Is var in the mid_env? *)
+    case ELEM2: (lookupVarEnv (substIdEnv s2) var) => [cc|].
+    + rewrite ELEM2 in VE2.
+      move: VE2 => /andP [Helem1 Helem2].
+      hs_simpl.
+      move: (lookupVarSet_extendVarSetList_self_exists_LastIn (extendVarSetList (getInScopeVars (substInScope s1)) vars1) Helem1) => [v' [-> q r]].
+      move: (lookupVarSet_extendVarSetList_self_exists_LastIn (getInScopeVars (substInScope s2)) Helem1) => [v'2 [p2 q2 r2]].
+      rewrite p2 in MD2.
+      case LF: (lookupVarSet (getInScopeVars (substInScope s3)) var) => [a0|] ;
+      rewrite LF // in MD2.
+      apply almostEqual_trans with (v2 := v'2); eauto.
+      eapply LastIn_inj in r; eauto. subst.
+      apply almostEqual_refl.
+      eapply Eq_trans; first rewrite Eq_sym; eassumption.
+    + clear VE2.
+      rewrite -> lookupVarSet_minusDom_1 in MD1; try done.
+      rewrite ELEM2 in VE1.
+      destruct (Foldable.elem var vars2) eqn:InV2; hs_simpl.
+      ++ move:(lookupVarSet_extendVarSetList_self_exists_LastIn
+                 (extendVarSetList (getInScopeVars (substInScope s1)) vars1) InV2) => [v1 [-> q1 r1]].
+         move:(lookupVarSet_extendVarSetList_self_exists_LastIn
+                 (getInScopeVars (substInScope s2)) InV2) => [v2 [p2 q2 r2]].
+         rewrite p2 in MD2.
+         destruct (lookupVarSet (getInScopeVars (substInScope s3)) var) eqn:InF; try done.
+         eapply LastIn_inj in r2; try eapply r1.
+         subst. auto.
+         eapply Eq_trans; first rewrite Eq_sym; eassumption.
+      ++ have InV2': ~~ Foldable.elem var vars2 by rewrite InV2.
+         rewrite lookupVarSet_extendVarSetList_false //.
+         rewrite lookupVarSet_extendVarSetList_false // in MD2.
+         destruct (Foldable.elem var vars1) eqn:InV1; hs_simpl.
+         ** move:(lookupVarSet_extendVarSetList_self_exists_LastIn
+                    (getInScopeVars (substInScope s1)) InV1) => [v1 [p1 q1 r1]].
+            rewrite p1.
+            rewrite p1 in MD1.
+            case InM1: (lookupVarSet (getInScopeVars (substInScope s2)) var) => [b|];
+                                                                         rewrite InM1 in MD1; try done.
+            rewrite InM1 in MD2.
+            case InF1: (lookupVarSet (getInScopeVars (substInScope s3)) var) => [cc0|];
+                                                                         rewrite InF1 in MD2; try done.
+            eapply almostEqual_trans; eauto.
+         ** have InV1': ~~ Foldable.elem var vars1 by rewrite InV1.
+            rewrite lookupVarSet_extendVarSetList_false //.
+            rewrite lookupVarSet_extendVarSetList_false // in MD1.
+            case InI1: (lookupVarSet (getInScopeVars (substInScope s1)) var) => [a0|] //.
+            rewrite InI1 in MD1.
+            case InM1: (lookupVarSet (getInScopeVars (substInScope s2)) var) => [b|] //;
+                                                                            rewrite InM1 // in MD1.
+            rewrite InM1 in MD2.
+            case InF1: (lookupVarSet (getInScopeVars (substInScope s3)) var) => [cc0|] //;
+                                                                             rewrite InF1 // in MD2.
+            eapply almostEqual_trans; eauto.
+Qed.
 
 Lemma Subset_VarEnvExtends : forall old_env vars new_env vars' vs1 vs2,
     VarEnvExtends old_env vars new_env vars' ->
@@ -490,12 +732,55 @@ Qed.
    we need to know that the new substitution is well-scoped with respect 
    to the *old* list of binders. *)
 
-Lemma SubstExtends_WellScoped_Subst : forall s1 s2 vs vars vars', 
+Lemma SubstExtends_WellScoped_Subst : forall s1 s2 vs vars vars',
     Forall GoodLocalVar vars ->
     SubstExtends s1 vars s2 vars' ->
     WellScoped_Subst s1 vs ->
     WellScoped_Subst s2 (extendVarSetList vs vars).
-Proof. (* GHC 9.10 / Coq 8.20: Admitted *) Admitted.
+Proof.
+  intros.
+  rewrite -> Forall_forall in H.
+  destruct_WellScoped_Subst.
+  unfold SubstExtends in H0.
+  destruct H0 as [LEN [ND [GLV [FR [SE [MD VE]]]]]].
+  unfold WellScoped_Subst.
+  repeat split.
+  + eapply StrongSubset_trans with
+        (vs2 := minusDom (extendVarSetList (getInScopeVars (substInScope s1)) vars) (substIdEnv s2)).
+    eapply Subset_VarEnvExtends; eauto.
+    auto.
+  + unfold StrongEquivalence in SE. destruct SE as [SEa SEb].
+    unfold VarEnvExtends in *.
+    intros var. specialize (VE var).
+    destruct (lookupVarEnv (substIdEnv s2) var) eqn:LU; auto.
+    destruct VE.
+    ++ destruct H0 as [var2 [Heq [HIn Helem]]].
+       subst.
+       eapply WellScoped_StrongSubset with
+       (vs1 := extendVarSetList (getInScopeVars (substInScope s1)) vars'); auto.
+       unfold WellScoped.
+       unfold WellScopedVar.
+       replace (isLocalVar var2) with true; swap 1 2. {
+        symmetry.
+        rewrite -> Forall_forall in GLV.
+        specialize (GLV _ HIn).
+        unfold GoodLocalVar in GLV. intuition.
+       }
+       rewrite -> lookupVarSet_extendVarSetList_self_in; auto.
+       split.
+       eapply almostEqual_refl; auto.
+       rewrite -> Forall_forall in GLV.
+       specialize (GLV _ HIn).
+       unfold GoodLocalVar in GLV.
+       apply GLV.
+    ++ destruct H0 as [val1 [Hlook Heq]].
+       specialize (H2 var). rewrite -> Hlook in H2. subst.
+       eapply WellScoped_StrongSubset with
+       (vs1 := extendVarSetList (getInScopeVars (substInScope s1)) vars'); auto.
+       eapply WellScoped_StrongSubset; eauto.
+       eapply StrongSubset_extendVarSetList_fresh.
+       auto.
+Qed.
 
 
 (* GHC 9.10: Subst axiomatized *)
@@ -508,7 +793,17 @@ Lemma WellScoped_substBody : forall vs vars vars' body s1 s2,
    WellScoped_Subst s1 vs ->
    WellScoped (substExpr s2 body)
               (extendVarSetList (getSubstInScopeVars s1) vars').
-Admitted.  
+Proof.
+  intros.
+  assert (HSE : SubstExtends s1 vars s2 vars') by auto.
+  unfold SubstExtends in HSE.
+  destruct HSE as [LEN [ND [GLV [FR [SE [MD VE]]]]]].
+  eapply WellScoped_StrongSubset.
+  eapply IH.
+  eapply SubstExtends_WellScoped_Subst; eauto.
+  unfold getSubstInScopeVars.
+  unfold StrongEquivalence in SE. destruct SE; auto.
+Qed.
 
 (*
 Lemma GoodLocalVar_setIdType : forall x t, GoodLocalVar x -> GoodLocalVar (Id.setIdType x t).
@@ -529,7 +824,183 @@ Lemma WellScoped_Subst_substIdBndr : forall s1 s2 subst subst' bndr' v vs,
   WellScoped_Subst subst vs ->
   SubstExtends subst (cons v nil) subst' (cons bndr' nil) /\
   WellScoped_Subst subst' (extendVarSet vs v).
-Proof. (* GHC 9.10 / Coq 8.20: Admitted *) Admitted.
+Proof.
+  intros s1 s2 subst subst' bndr' v vs SB GLVv WSS.
+  unfold substIdBndr in SB.
+  unfold substIdInfo in SB. simpl Id.maybeModifyIdInfo in SB.
+  set (in_scope := substInScope subst) in *.
+  set (env := substIdEnv subst) in *.
+  inversion SB; subst; clear SB.
+  unfold WellScoped_Subst in WSS.
+  change (substIdEnv subst) with env in WSS.
+  change (substInScope subst) with in_scope in WSS.
+  destruct WSS as [SS LVi].
+  (* Case analysis on whether we freshen the binder v. *)
+  destruct (uniqAway in_scope v == v) eqn:NC.
+  + (* Binder [v] is already fresh enough. *)
+    apply uniqAway_eq_same in NC.
+    unfold WellScoped_Subst, SubstExtends.
+    change (substIdEnv subst) with env.
+    change (substInScope subst) with in_scope.
+    repeat split.
+    all: try rewrite -getInScopeVars_extendInScopeSetList
+                      extendInScopeSetList_cons
+                      extendInScopeSetList_nil.
+    all: try rewrite /getSubstInScopeVars.
+    all: try rewrite substInScope_Mk_Subst.
+    -- econstructor.
+       inversion 1.
+       econstructor.
+    -- econstructor; eauto.
+       rewrite NC. auto.
+    --
+       rewrite /freshList => v1.
+       hs_simpl.
+       move => InV.
+       rewrite (lookupVarSet_eq (v2 := v)) -NC //.
+       apply uniqAway_lookupVarSet_fresh.
+    -- rewrite NC. apply StrongSubset_refl.
+    -- rewrite NC. apply StrongSubset_refl.
+    -- rewrite substIdEnv_Mk_Subst.
+       rewrite getInScopeVars_extendInScopeSet.
+       eapply StrongSubset_trans.
+       eapply minusDom_extend.
+       rewrite getInScopeVars_extendInScopeSet NC.
+       eapply StrongSubset_extend.
+       eapply StrongSubset_minusDom_left.
+    -- rewrite substIdEnv_Mk_Subst.
+       rewrite /VarEnvExtends => var.
+       pose proof (LVi var) as LVivar.
+       destruct (v == var) eqn:EQv.
+       ++ (* The arbitrary var is the same as the binder
+             which was sufficiently fresh. *)
+         move: (uniqAway_lookupVarSet_fresh v in_scope) => k0.
+         rewrite -> lookupVarEnv_delVarEnv_eq by auto.
+         destruct (lookupVarEnv env var) eqn:INSUBST; [|auto].
+         rewrite NC !elem_cons !elem_nil !orb_false_r.
+         rewrite andb_diag Eq_sym EQv //.
+       ++ unfold Id in *.
+          rewrite lookupVarEnv_delVarEnv_neq; last by rewrite EQv.
+          destruct (lookupVarEnv env var) eqn:LU.
+          ** right. exists c. auto.
+          ** auto.
+    -- rewrite substIdEnv_Mk_Subst.
+       rewrite -> getInScopeVars_extendInScopeSet.
+       eapply StrongSubset_trans with (vs2 := extendVarSet (minusDom vs env) v).
+       eapply minusDom_extend.
+       rewrite -> NC.
+       eapply StrongSubset_extend.
+       auto.
+    -- rewrite substIdEnv_Mk_Subst.
+       intro var.
+       destruct (v == var) eqn:Evvar.
+       rewrite -> lookupVarEnv_delVarEnv_eq; auto.
+       rewrite -> lookupVarEnv_delVarEnv_neq.
+       specialize (LVi var).
+       destruct (lookupVarEnv env var); auto.
+       rewrite -> getInScopeVars_extendInScopeSet.
+       eapply WellScoped_StrongSubset; eauto.
+       eapply StrongSubset_extend_fresh.
+       rewrite <- NC.
+       eapply uniqAway_lookupVarSet_fresh.
+       unfold CoreBndr in *. intro h. rewrite h in Evvar. discriminate.
+
+  + (* Binder needs to be freshened. *)
+    unfold WellScoped_Subst.
+    unfold SubstExtends.
+    change (substIdEnv subst) with env.
+    change (substInScope subst) with in_scope.
+    repeat split.
+    all: try rewrite /getSubstInScopeVars.
+    all: try rewrite substInScope_Mk_Subst.
+    -- simpl. eauto.
+    -- rewrite Forall.Forall_cons_iff.
+       split.
+       eapply GoodLocalVar_uniqAway; auto.
+       eauto.
+    -- unfold freshList.
+       intros v0 InV.
+       rewrite -> elem_cons, orE in InV.
+       destruct InV as [InV1 | InV2].
+       erewrite -> lookupVarSet_eq; eauto.
+       apply uniqAway_lookupVarSet_fresh.
+       rewrite -> elem_nil in InV2.
+       discriminate.
+    -- rewrite <- getInScopeVars_extendInScopeSetList.
+       rewrite -> extendInScopeSetList_cons.
+       rewrite -> extendInScopeSetList_nil.
+       eapply StrongSubset_refl.
+    -- rewrite <- getInScopeVars_extendInScopeSetList.
+       rewrite -> extendInScopeSetList_cons.
+       rewrite -> extendInScopeSetList_nil.
+       eapply StrongSubset_refl.
+    -- (* We have freshened binder v. *)
+       rewrite substIdEnv_Mk_Subst.
+       rewrite <- getInScopeVars_extendInScopeSetList.
+       rewrite -> extendInScopeSetList_cons.
+       rewrite -> extendInScopeSetList_nil.
+       rewrite -> getInScopeVars_extendInScopeSet.
+       rewrite -> getInScopeVars_extendInScopeSet.
+       pose (k0 := uniqAway_lookupVarSet_fresh v in_scope).
+       clearbody k0.
+       set (v' := uniqAway in_scope v) in *.
+
+       eapply StrongSubset_trans.
+       eapply StrongSubset_minusDom_extend_extend.
+       eapply StrongSubset_trans.
+       eapply StrongSubset_minusDom_left.
+       eapply StrongSubset_extendVarSet_fresh.
+       auto.
+    -- rewrite substIdEnv_Mk_Subst.
+       unfold VarEnvExtends.
+       intro var. specialize_all var.
+       destruct (v == var) eqn:EQ.
+       ++ rewrite -> lookupVarEnv_extendVarEnv_eq; auto.
+       left. exists (uniqAway in_scope v).
+       repeat split. econstructor; eauto.
+       rewrite -> elem_cons.
+       rewrite -> Base.Eq_sym.
+       rewrite -> orb_true_iff.
+       left. auto.
+       ++ rewrite -> lookupVarEnv_extendVarEnv_neq.
+          destruct (lookupVarEnv env var) eqn:LU.
+          ** right. exists c. auto.
+          ** auto.
+          ** unfold Id in *. intro h. rewrite -> h in EQ. auto.
+    -- rewrite substIdEnv_Mk_Subst.
+       eapply StrongSubset_trans; eauto.
+       eapply StrongSubset_minusDom_extend_extend.
+       eapply StrongSubset_trans; eauto.
+       rewrite -> getInScopeVars_extendInScopeSet.
+       eapply StrongSubset_extendVarSet_fresh.
+       eapply uniqAway_lookupVarSet_fresh.
+    -- rewrite substIdEnv_Mk_Subst.
+       intros var.
+       destruct (v == var) eqn:Eq_vvar.
+       - rewrite -> lookupVarEnv_extendVarEnv_eq; auto.
+         unfold WellScoped, WellScopedVar.
+         destruct_match.
+         rewrite -> getInScopeVars_extendInScopeSet.
+         rewrite -> lookupVarSet_extendVarSet_self.
+         split.
+         eapply almostEqual_refl.
+         eapply GoodLocalVar_uniqAway in GLVv.
+         unfold GoodLocalVar in GLVv.
+         eapply GLVv.
+         eapply GoodLocalVar_uniqAway in GLVv.
+         unfold GoodLocalVar in GLVv.
+         eapply GLVv.
+       - rewrite -> lookupVarEnv_extendVarEnv_neq; auto.
+         specialize (LVi var).
+         destruct lookupVarEnv eqn:LU.
+         rewrite -> getInScopeVars_extendInScopeSet.
+         eapply WellScoped_StrongSubset; eauto.
+         eapply StrongSubset_extendVarSet_fresh.
+         eapply uniqAway_lookupVarSet_fresh.
+         auto.
+         unfold Id in *.
+         intro h. rewrite -> h in Eq_vvar. discriminate.
+Qed.
 
 Lemma WellScoped_Subst_substBndr : forall subst subst' bndr' v vs,
   forall (SB : substBndr subst v = (subst', bndr')),
@@ -537,7 +1008,10 @@ Lemma WellScoped_Subst_substBndr : forall subst subst' bndr' v vs,
   WellScoped_Subst subst vs ->
   SubstExtends subst (cons v nil) subst' (cons bndr' nil) /\
   WellScoped_Subst subst' (extendVarSet vs v).
-Proof. (* GHC 9.10 / Coq 8.20: Admitted *) Admitted.
+Proof.
+  intros. unfold substBndr in SB.
+  eapply WellScoped_Subst_substIdBndr; eauto.
+Qed.
 
 Lemma WellScoped_substBndr : forall subst subst' bndr' body v vs,
   forall (IH : forall subst',
@@ -549,7 +1023,20 @@ Lemma WellScoped_substBndr : forall subst subst' bndr' body v vs,
   WellScoped_Subst subst vs ->
   WellScoped (substExpr subst' body)
              (extendVarSet (getSubstInScopeVars subst) bndr').
-Proof. (* GHC 9.10 / Coq 8.20: Admitted — Subst is axiomatized *) Admitted.
+Proof.
+  intros subst subst' bndr' body v vs IH SB GLV WSS.
+  destruct (WellScoped_Subst_substBndr _ _ _ _ _ SB GLV WSS) as [HSE HWS].
+  unfold SubstExtends in HSE.
+  destruct HSE as [LEN [ND [GLV' [FR [SE [MD VE]]]]]].
+  eapply WellScoped_StrongSubset.
+  eapply IH. eauto.
+  unfold getSubstInScopeVars.
+  unfold StrongEquivalence in SE. destruct SE as [SE1 SE2].
+  eapply StrongSubset_trans.
+  2: { exact SE1. }
+  simpl.
+  eapply StrongSubset_refl.
+Qed.
 
 
 Ltac lift_let_in_eq H :=
@@ -565,19 +1052,59 @@ Lemma GoodLocalVar_substIdBndr : forall s1 s2 bndr bndr' subst subst',
   GoodLocalVar bndr ->
   substIdBndr s1 s2 subst bndr = (subst', bndr') ->
   GoodLocalVar bndr'.
-Proof. (* GHC 9.10 / Coq 8.20: Admitted *) Admitted.
+Proof.
+  intros s1 s2 bndr bndr' subst subst' GLV SB.
+  unfold substIdBndr in SB.
+  (* substIdInfo always returns None; maybeModifyIdInfo None x = x *)
+  unfold substIdInfo in SB. simpl Id.maybeModifyIdInfo in SB.
+  inversion SB; clear SB; subst.
+  eapply GoodLocalVar_uniqAway; assumption.
+Qed.
 
 Lemma GoodLocalVar_substBndr : forall bndr bndr' subst subst',
   GoodLocalVar bndr ->
   substBndr subst bndr = (subst', bndr') ->
   GoodLocalVar bndr'.
-Proof. (* GHC 9.10 / Coq 8.20: Admitted *) Admitted.
+Proof.
+  intros. unfold substBndr in H0.
+  eapply GoodLocalVar_substIdBndr; eauto.
+Qed.
 
 Lemma SubstExtends_step : forall a s' y bndrs subst subst' ys,
   SubstExtends subst (a :: nil) s' (y :: nil) ->
   SubstExtends s' bndrs subst' ys ->
   SubstExtends subst ((a :: nil) ++ bndrs) subst' (y :: ys).
-Proof. (* GHC 9.10 / Coq 8.20: Admitted — SubstExtends is axiomatized *) Admitted.
+Proof.
+  intros.
+  replace (y :: ys) with (cons y nil ++ ys); try reflexivity.
+  eapply SubstExtends_trans with (s2 := s'); auto.
+  { simpl.
+    destruct_SubstExtends.
+    unfold Disjoint.
+    rewrite -> Forall_forall.
+    intros x I.
+    inversion I. subst. clear I.
+    + (* y is in the in-scope set of s', but ys are fresh for s' *)
+      match goal with
+        [ h1 : freshList ys (getInScopeVars ?i) ,
+          h2 : extendVarSetList (getInScopeVars ?i3) (y :: nil) {<=}
+                                getInScopeVars ?i |- _ ] =>
+        rename h1 into FrYs; rename h2 into InY
+      end.
+      intros not.
+      rewrite -> In_varUnique_elem in not.
+      specialize (InY y).
+      rewrite -> lookupVarSet_extendVarSetList_self_in in InY.
+      2: { econstructor. auto. }
+      destruct (lookupVarSet (getInScopeVars (substInScope s')) y) eqn:InScope;
+        try contradiction.
+      specialize (FrYs y not).
+      rewrite -> FrYs in InScope.
+      discriminate.
+      simpl. econstructor. move => h. elim h. auto.
+    + inversion H15.
+  }
+Qed.
 
 
 
@@ -617,7 +1144,10 @@ Lemma SubstExtends_substBndrs : forall bndrs subst subst' bndrs' vs,
     WellScoped_Subst subst vs ->
     SubstExtends subst bndrs subst' bndrs' /\
     WellScoped_Subst subst' (extendVarSetList vs bndrs).
-Proof. (* GHC 9.10 / Coq 8.20: Admitted *) Admitted.
+Proof.
+  intros. unfold substBndrs in SB.
+  eapply SubstExtends_mapAccumL_substBndr; eauto.
+Qed.
 
 Lemma SubstExtends_substRecBndrs : forall bndrs subst subst' bndrs' vs,
   forall (SB : substRecBndrs subst bndrs = (subst', bndrs')),
@@ -625,13 +1155,87 @@ Lemma SubstExtends_substRecBndrs : forall bndrs subst subst' bndrs' vs,
   WellScoped_Subst subst vs ->
   SubstExtends subst bndrs subst' bndrs'  /\
   WellScoped_Subst subst' (extendVarSetList vs bndrs).
-Proof. (* GHC 9.10 / Coq 8.20: Admitted *) Admitted.
+Proof.
+  unfold substRecBndrs.
+  intros.
+  destruct ( Traversable.mapAccumL
+           (substIdBndr (Datatypes.id &"rec-bndr") (Err.error Panic.someSDoc)) subst
+           bndrs) eqn:EQ.
+  inversion SB; subst; clear SB.
+  revert bndrs subst subst' bndrs' vs EQ H H0.
+  induction bndrs; intros.
+  + rewrite -> mapAccumL_nil in EQ.
+    inversion EQ; subst.
+    split. eapply SubstExtends_refl; eauto.
+    rewrite -> extendVarSetList_nil. auto.
+  + rewrite -> mapAccumL_cons in EQ.
+    lift_let_in_eq Hsb1.
+    lift_let_in_eq Hsb2.
+    inversion EQ; subst; clear EQ.
+    rewrite -> Forall.Forall_cons_iff in H.
+    destruct H.
+    eapply WellScoped_Subst_substIdBndr in Hsb1; eauto.
+    destruct Hsb1 as [? ?].
+
+    destruct (IHbndrs s' subst' _ (extendVarSet vs a) Hsb2) as [h2 h3]; auto.
+    replace (a :: bndrs) with (cons a nil ++ bndrs); try reflexivity.
+    split.
+    ++ eapply SubstExtends_step; eauto.
+    ++ simpl. rewrite -> extendVarSetList_cons.
+       auto.
+Qed.
   
 Lemma lookupIdSubst_ok v subst vs :
   WellScoped_Subst subst      vs ->
   WellScoped       (Mk_Var v) vs ->
   WellScoped (lookupIdSubst subst v) (getSubstInScopeVars subst).
-Proof. (* GHC 9.10 / Coq 8.20: Admitted *) Admitted.
+Proof.
+  rewrite /lookupIdSubst /getSubstInScopeVars => WSsubst WSvar.
+  destruct WSsubst as [ss vv]. specialize (vv v).
+  unfold WellScoped,WellScopedVar in WSvar.
+  destruct (isLocalId v) eqn:HLocal.
+  -- (* isLocalId v = true *)
+    cbn beta iota delta [negb].
+    destruct (lookupVarEnv (substIdEnv subst) v) eqn:HLookup.
+      + tauto.
+      + unfold StrongSubset in ss.
+        specialize (ss v).
+        rewrite lookupVarSet_minusDom_1 in ss ; try done.
+        apply isLocalVar_isLocalId in HLocal.
+        rewrite HLocal in WSvar.
+        destruct (lookupVarSet vs v) as [vvs|] eqn:LVS; try contradiction.
+        destruct (substInScope subst) as [in_scope_vs] eqn:Hsubst_is.
+        simpl lookupInScope. simpl getInScopeVars.
+        simpl getInScopeVars in ss.
+        destruct (lookupVarSet in_scope_vs v) as [vis|] eqn:LI; try contradiction.
+        move: WSvar => [v2_eq h].
+        assert (ae_v_vis : almostEqual v vis) by (eapply almostEqual_trans; eauto).
+        assert (HWS: WellScopedVar vis in_scope_vs).
+        { unfold WellScopedVar.
+          destruct (isLocalVar vis) eqn:Lv2.
+          - erewrite lookupVarSet_eq.
+            2: { move: (@ValidVarSet_Axiom in_scope_vs) => VV.
+                 unfold ValidVarSet in VV. rewrite -> Base.Eq_sym. eapply VV. exact LI. }
+            rewrite LI. split.
+            + apply almostEqual_refl.
+            + eapply GoodVar_almostEqual; eauto.
+          - exact (GoodVar_almostEqual v vis h ae_v_vis).
+        }
+        exact HWS.
+ -- (* isLocalId v = false - Impossible case *)
+    cbn beta iota delta [negb].
+    unfold WellScopedVar.
+    destruct (isLocalVar v) eqn:h.
+    + (* isLocalVar v = true, but isLocalId v = false *)
+      destruct (lookupVarSet vs v) eqn:h0; try contradiction.
+      unfold GoodVar in WSvar.
+      destruct WSvar as [ ? h1 ].
+      destruct v; simpl in *; try done.
+      unfold isLocalVar, isGlobalId in h. unfold isLocalId in HLocal.
+      rewrite HLocal in h. done.
+    + (* isLocalVar v = false *)
+      unfold WellScoped, WellScopedVar. rewrite h. exact WSvar.
+Qed.
 
 
  
@@ -640,8 +1244,189 @@ Lemma substExpr_ok : forall e vs subst,
     WellScoped e vs ->
     WellScoped (substExpr subst e)
                (getSubstInScopeVars subst).
-Proof. (* GHC 9.10 / Coq 8.20: Admitted - substExpr is axiomatized *)
-Admitted.
+Proof.
+  intros e.
+  apply (core_induct e).
+
+  - (* Var case *)
+    intros v vs subst WSS WSvar.
+    change (substExpr subst (Mk_Var v)) with (lookupIdSubst subst v).
+    eapply lookupIdSubst_ok; eassumption.
+
+  - (* Lit case *)
+    intros. unfold substExpr, substExpr_.
+    unfold WellScoped in *; auto.
+
+  - (* App case *)
+    intros e1 e2 IH1 IH2 vs subst WSS WSapp.
+    rewrite substExpr_App.
+    unfold WellScoped in *; fold WellScoped in *.
+    destruct WSapp as [WS1 WS2].
+    split; eauto.
+
+  - (* Lam case *)
+    intros v body IH vs subst WSS WSlam.
+    rewrite substExpr_Lam.
+    destruct (substBndr subst v) as [subst' bndr'] eqn:SB.
+    unfold WellScoped in *; fold WellScoped in *.
+    destruct WSlam as [GLV WSbody].
+    split.
+    + eapply GoodLocalVar_substBndr; eauto.
+    + eapply WellScoped_substBndr; eauto.
+
+  - (* Let case *)
+    destruct binds.
+    + (* NonRec *)
+      intros body He0 Hbody vs subst WSS WSlet.
+      rewrite substExpr_LetNonRec.
+      destruct (substBndr subst c) as [subst' bndr'] eqn:SB.
+
+      unfold WellScoped in *. fold WellScoped in *.
+      destruct WSlet as [[GLV WSe] WSb].
+
+      split; only 1: split; eauto.
+      ++ eapply GoodLocalVar_substBndr; eauto.
+      ++ unfold bindersOf in *.
+         hs_simpl.
+         hs_simpl in WSb.
+         eapply WellScoped_substBndr; eauto.
+
+    + (* Rec *)
+      intros body IHrhs IHbody vs subst WSvs WSe.
+      rewrite substExpr_Let.
+      rewrite substBind_Rec'.
+      cbv zeta.
+      destruct WSe as [[GLV [ND FF]] WSB].
+
+      unfold bindersOf in WSB.
+      rewrite -> bindersOf_Rec_cleanup in WSB.
+
+      destruct (List.unzip l) as [vars rhss] eqn:UZ.
+
+      assert (EQL : length vars = length rhss).
+      { eapply unzip_equal_length; eauto. }
+      apply unzip_zip in UZ.
+      subst l.
+
+      rewrite -> map_fst_zip in *; auto.
+      rewrite -> map_snd_zip in *; auto.
+
+      assert (NDV: NoDup vars). eapply NoDup_map_inv; eauto.
+
+      (* Save GLV as Forall GoodLocalVar vars before destructive rewrites *)
+      assert (GLVV : Forall GoodLocalVar vars).
+      { rewrite <- Forall.Forall_map with (f := fst) in GLV.
+        rewrite -> map_fst_zip in GLV; auto. }
+
+      destruct (substRecBndrs subst vars) as [subst' bndrs'] eqn:SRB.
+      eapply SubstExtends_substRecBndrs in SRB; eauto.
+      destruct_one_pair.
+      rewrite -> Forall.Forall'_Forall in FF.
+      rewrite -> Forall_forall in FF.
+      unfold WellScoped in *. fold WellScoped in *.
+
+      set (rhss' := map (substExpr subst') rhss).
+      assert (LRR : length bndrs' = length rhss').
+      { unfold rhss'. rewrite -> map_length. destruct_SubstExtends.
+        unfold CoreBndr, CoreExpr, Id in *. rewrite <- H. auto. }
+      assert (LBR : length bndrs' = length rhss).
+      { unfold rhss' in LRR. rewrite -> map_length in LRR. auto. }
+
+      repeat split.
+      ++ (* Forall GoodLocalVar (fst) on zipped pairs *)
+         destruct_SubstExtends.
+         rewrite <- Forall.Forall_map with (f := fst).
+         rewrite -> map_fst_zip; auto.
+      ++ (* NoDup varUnique *)
+         destruct_SubstExtends.
+         rewrite -> map_fst_zip; auto.
+      ++ (* Forall' WellScoped *)
+         rewrite -> Forall.Forall'_Forall.
+         rewrite -> Forall_forall.
+         intros x Hx.
+         destruct x as [bndr' rhs'].
+         simpl.
+         rewrite -> map_fst_zip; auto.
+         destruct (In_zip_snd rhss Hx) as [rhs InR]; auto.
+         destruct (In_zip_fst vars InR) as [bndr InB].
+         { unfold rhss'. rewrite -> map_length. auto. }
+         apply In_zip_swap in InB.
+         specialize (IHrhs bndr rhs InB).
+         assert (rhs' = substExpr subst' rhs).
+         { unfold rhss' in InR. apply In_zip_map in InR. auto. }
+         specialize (FF (bndr, rhs) InB).
+         subst rhs'.
+         eapply WellScoped_substBody with (vars := vars).
+         ** intros subst0 WS0. eapply IHrhs; eauto.
+         ** exact GLVV.
+         ** eauto.
+         ** auto.
+      ++ (* WellScoped body *)
+         unfold bindersOf.
+         rewrite -> bindersOf_Rec_cleanup.
+         rewrite -> map_fst_zip; auto.
+         eapply WellScoped_substBody with (vars := vars).
+         ** intros subst0 WS0. eapply IHbody; eauto.
+         ** exact GLVV.
+         ** eauto.
+         ** auto.
+
+  - (* Case *)
+    intros scrut bndr ty alts IHscrut IHalts vs subst WSS WScase.
+    rewrite substExpr_Case'.
+    destruct (substBndr subst bndr) as [subst' bndr'] eqn:SB.
+    unfold WellScoped in *. fold WellScoped in *.
+    destruct WScase as [WSscrut [GLV WSalts]].
+    rewrite -> Forall.Forall'_Forall in *.
+    rewrite -> Forall_forall in *.
+    split; [|split].
+    + eauto.
+    + eapply GoodLocalVar_substBndr; eauto.
+    + intros alt IA.
+      unfold substAlt in IA.
+      rewrite -> in_map_iff in IA.
+      destruct IA as [[dc pats rhs] [IAA IN]].
+      destruct (substBndrs subst' pats) as [subst'' bndr''] eqn:SB2.
+      destruct alt as [dc0 bdnr''0 ss0]. inversion IAA. subst. clear IAA.
+      pose (wf := WSalts _ IN). clearbody wf. simpl in wf.
+      simpl.
+      destruct_one_pair.
+
+      destruct (WellScoped_Subst_substBndr _ _ _ _ vs SB) as [h0 h1]; auto.
+
+      destruct (SubstExtends_substBndrs _ _ _ _ (extendVarSet vs bndr)
+                                        SB2) as [h2 h3]; auto.
+      split.
+      { destruct_SubstExtends. auto. }
+
+      eapply WellScoped_StrongSubset.
+      eapply IHalts. eapply IN.
+      eauto.
+      rewrite -> extendVarSetList_cons in *.
+      auto.
+      destruct_SubstExtends.
+      eapply StrongSubset_trans; eauto.
+      rewrite -> extendVarSetList_cons in *.
+      rewrite -> extendVarSetList_nil in *.
+      eapply StrongSubset_extendVarSetList.
+      eauto.
+
+  - (* Cast case *)
+    intros e0 co IH vs subst WSS WScast.
+    rewrite substExpr_Cast.
+    unfold WellScoped in *; fold WellScoped in *.
+    eauto.
+
+  - (* Type case *)
+    intros ty vs subst WSS WSty.
+    unfold substExpr, substExpr_.
+    unfold WellScoped in *; auto.
+
+  - (* Coercion case *)
+    intros co vs subst WSS WSco.
+    unfold substExpr, substExpr_.
+    unfold WellScoped in *; auto.
+Qed.
 
 Lemma WellScoped_substExpr : forall e vs subst,
     WellScoped_Subst subst vs ->
