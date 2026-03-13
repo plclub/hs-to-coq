@@ -106,6 +106,7 @@ rename module GHC.Core.TyCo.Rep Core
 axiomatize original module name GHC.Core.TyCo.Rep
 rename module GHC.Core.Coercion Core
 axiomatize original module name GHC.Core.Coercion
+rename module GHC.Core.TyCo.Subst Core
 
 #
 # Punned constructor values (in Core) — use GHC 9.10 module names
@@ -136,7 +137,7 @@ rename value GHC.Core.Coercion   = Core.Mk_Coercion
 ## Other punning
 
 rename value GHC.Core.FVs.FVAnn    = CoreFVs.Mk_FVAnn
-rename value GHC.Core.Subst.Subst  = CoreSubst.Mk_Subst
+rename value GHC.Core.TyCo.Subst.Subst = Core.Mk_Subst
 
 ###############################################################################
 #  General edits related to translating Core

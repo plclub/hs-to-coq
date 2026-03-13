@@ -117,7 +117,7 @@ MODULES = \
 
 ##
 CORESYN = \
-   IdInfo Class TyCon DataCon PatSyn Var VarSet VarEnv CoreSyn Demand Type TyCoRep Coercion  \
+   IdInfo Class TyCon DataCon PatSyn Var VarSet VarEnv CoreSyn Demand Type TyCoRep Coercion TyCoSubst \
 
 ##
 CONSTRUCTORS = \
@@ -220,6 +220,7 @@ SRC_Demand      = $(SRCPATH)/GHC/Types/Demand.hs
 SRC_Type        = $(SRCPATH)/GHC/Core/Type.hs
 SRC_TyCoRep     = $(SRCPATH)/GHC/Core/TyCo/Rep.hs
 SRC_Coercion    = $(SRCPATH)/GHC/Core/Coercion.hs
+SRC_TyCoSubst   = $(SRCPATH)/GHC/Core/TyCo/Subst.hs
 
 # CORE_MODULES
 SRC_FastStringEnv = $(SRCPATH)/GHC/Data/FastString/Env.hs
@@ -486,6 +487,8 @@ $(OUTFILES_CORESYN) : edits $(CORE_EDITS) $(CORESYN_PRE) $(CORESYN_MID) $(wildca
 	@# GHC 9.10: Var has single constructor Mk_Id — remove redundant wildcard branches
 	@# Match when Mk_Id has 7 args (all positions filled, whether _ or named)
 	sed -i '/| Mk_Id [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* [a-z_][a-z_]* =>/{n;/| _ =>/d}' $@
+	@# GHC 9.10 + Coq 8.20: make Default instances global (needed for cross-module resolution)
+	sed -i 's/^Instance Default__/#[global] Instance Default__/' $@
 	rm -f CoreSyn_preamble.v CoreSyn_midamble.v
 
 $(OUTFILES_TYPE) : edits $(CORE_EDITS) $$(wildcard module-edits/Type/preamble.v) $$(wildcard module-edits/Type/midamble.v)  $$(wildcard module-edits/Type/edits)

@@ -19,7 +19,6 @@ Require Core.
 Require CoreFVs.
 Require CoreMonad.
 Require GHC.Base.
-Require GHC.Core.TyCo.Subst.
 Require GHC.Types.Cpr.
 Require HsToCoq.Err.
 Require UniqSupply.
@@ -49,9 +48,8 @@ Inductive FloatSpec : Type :=
 
 Inductive LevelEnv : Type :=
   | LE (le_switches : CoreMonad.FloatOutSwitches) (le_ctxt_lvl : Level)
-  (le_lvl_env : Core.VarEnv Level) (le_join_ceil : Level) (le_subst
-    : GHC.Core.TyCo.Subst.Subst) (le_env
-    : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
+  (le_lvl_env : Core.VarEnv Level) (le_join_ceil : Level) (le_subst : Core.Subst)
+  (le_env : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
    : LevelEnv.
 
 Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
@@ -259,10 +257,9 @@ Instance Default__Level : HsToCoq.Err.Default Level :=
      bool list nat op_zt__ option AxiomatizedTypes.Type_ BasicTypes.Arity
      BasicTypes.RecFlag BinNums.N Core.Bind Core.CoreBndr Core.CoreExpr
      Core.CoreProgram Core.DVarSet Core.DmdSig Core.Expr Core.Id Core.IdEnv Core.InId
-     Core.InVar Core.OutId Core.OutVar Core.TaggedBind Core.TaggedBndr
+     Core.InVar Core.OutId Core.OutVar Core.Subst Core.TaggedBind Core.TaggedBndr
      Core.TaggedExpr Core.TyCoVarSet Core.Var Core.VarEnv CoreFVs.CoreAltWithFVs
      CoreFVs.CoreBindWithFVs CoreFVs.CoreExprWithFVs CoreMonad.FloatOutSwitches
-     GHC.Base.Eq_ GHC.Core.TyCo.Subst.Subst GHC.Types.Cpr.CprSig
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
-     UniqSupply.UniqSM UniqSupply.UniqSupply
+     GHC.Base.Eq_ GHC.Types.Cpr.CprSig HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default UniqSupply.UniqSM UniqSupply.UniqSupply
 *)

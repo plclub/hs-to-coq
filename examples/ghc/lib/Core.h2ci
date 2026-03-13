@@ -133,6 +133,7 @@ constructorFields:
   Core.Mk_KillFlags: RecordFields [Qualified "Core" "kf_abs",Qualified "Core" "kf_used_once",Qualified
     "Core" "kf_called_once"]
   Core.Mk_Scaled: NonRecordFields 2
+  Core.Mk_Subst: NonRecordFields 4
   Core.Mk_TyCoFolder: RecordFields [Qualified "Core" "tcf_view",Qualified "Core" "tcf_tyvar",Qualified
     "Core" "tcf_covar",Qualified "Core" "tcf_hole",Qualified "Core" "tcf_tycobinder"]
   Core.Mk_TyCoMapper: RecordFields [Qualified "Core" "tcm_tyvar",Qualified "Core"
@@ -342,6 +343,7 @@ constructorTypes:
   Core.Mk_JoinId: Qualified "Core" "IdDetails"
   Core.Mk_KillFlags: Qualified "Core" "KillFlags"
   Core.Mk_Scaled: Qualified "Core" "Scaled"
+  Core.Mk_Subst: Qualified "Core" "Subst"
   Core.Mk_TyCoFolder: Qualified "Core" "TyCoFolder"
   Core.Mk_TyCoMapper: Qualified "Core" "TyCoMapper"
   Core.Mk_TyCon: Qualified "Core" "TyCon"
@@ -512,6 +514,7 @@ constructors:
   Core.StrictnessMark: '[Qualified "Core" "MarkedStrict",Qualified "Core" "NotMarkedStrict"]'
   Core.SubDemand: '[Qualified "Core" "Poly",Qualified "Core" "Call",Qualified "Core"
     "Prod"]'
+  Core.Subst: '[Qualified "Core" "Mk_Subst"]'
   Core.TaggedBndr: '[Qualified "Core" "TB"]'
   Core.TickBoxOp: '[Qualified "Core" "TickBox"]'
   Core.TyCoFolder: '[Qualified "Core" "Mk_TyCoFolder"]'

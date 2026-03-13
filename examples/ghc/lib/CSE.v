@@ -21,14 +21,12 @@ Require BasicTypes.
 Require Core.
 Require Data.Traversable.
 Require GHC.Core.Map.Expr.
-Require GHC.Core.TyCo.Subst.
 
 (* Converted type declarations: *)
 
 Inductive CSEnv : Type :=
-  | CS (cs_subst : GHC.Core.TyCo.Subst.Subst) (cs_map
-    : GHC.Core.Map.Expr.CoreMap Core.OutExpr) (cs_rec_map
-    : GHC.Core.Map.Expr.CoreMap Core.OutExpr)
+  | CS (cs_subst : Core.Subst) (cs_map : GHC.Core.Map.Expr.CoreMap Core.OutExpr)
+  (cs_rec_map : GHC.Core.Map.Expr.CoreMap Core.OutExpr)
    : CSEnv.
 
 #[global] Definition cs_map (arg_0__ : CSEnv) :=
@@ -48,7 +46,7 @@ Inductive CSEnv : Type :=
 Require NestedRecursionHelpers.
 
 (* default = emptyCSEnv *)
-#[global] Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default := CS GHC.Core.TyCo.Subst.emptySubst GHC.Core.Map.Expr.emptyCoreMap GHC.Core.Map.Expr.emptyCoreMap |}.
+#[global] Instance Default__CSEnv : HsToCoq.Err.Default CSEnv := {| HsToCoq.Err.default := CS Core.emptySubst GHC.Core.Map.Expr.emptyCoreMap GHC.Core.Map.Expr.emptyCoreMap |}.
 
 (* Converted value declarations: *)
 
@@ -95,7 +93,7 @@ Axiom extendCSRecEnv : CSEnv ->
 Axiom lookupCSRecEnv : CSEnv ->
                        Core.OutId -> Core.OutExpr -> option Core.OutExpr.
 
-Axiom csEnvSubst : CSEnv -> GHC.Core.TyCo.Subst.Subst.
+Axiom csEnvSubst : CSEnv -> Core.Subst.
 
 Axiom lookupSubst : CSEnv -> Core.Id -> Core.OutExpr.
 
@@ -112,6 +110,6 @@ Axiom addRecBinders : forall {f},
 (* External variables:
      bool list op_zt__ option BasicTypes.TopLevelFlag Core.CoreBind Core.CoreExpr
      Core.CoreProgram Core.Id Core.InAlt Core.InExpr Core.InId Core.InType Core.InVar
-     Core.OutAlt Core.OutExpr Core.OutId Core.Var Data.Traversable.Traversable
-     GHC.Core.Map.Expr.CoreMap GHC.Core.TyCo.Subst.Subst
+     Core.OutAlt Core.OutExpr Core.OutId Core.Subst Core.Var
+     Data.Traversable.Traversable GHC.Core.Map.Expr.CoreMap
 *)

@@ -22,12 +22,12 @@ Require Import FastString.
 Require Import FieldLabel.
 Require Import GHC.Base.
 Require Import GHC.Char.
-Require Import GHC.Core.TyCo.Subst.
 Require Import GHC.Data.List.Infinite.
 Require Import GHC.Num.
 Require Import GHC.Prim.
 Require Import GHC.Types.TyThing.
 Require Import HsSyn.
+Require Import HsToCoq.Err.
 Require Import Module.
 Require Import Name.
 Require Import NameEnv.
@@ -56,7 +56,6 @@ Require Import GHC.StgToCmm.Types.
 Require Import GHC.Types.Cpr.
 Require Import GHC.Types.Tickish.
 Require Import HsToCoq.DeferredFix.
-Require Import HsToCoq.Err.
 Require Import HsToCoq.Wf.
 Require Import Literal.
 Require Import Maybes.
@@ -99,6 +98,9 @@ Inductive TyLit : Type :=
 
 #[global] Definition TyConRepName :=
   Name.Name%type.
+
+#[global] Definition TvSubstEnv :=
+  unit.
 
 #[global] Definition TickBoxId :=
   nat%type.
@@ -289,6 +291,9 @@ Inductive Divergence : Type :=
 
 #[global] Definition DefMethInfo :=
   (option (Name.Name * BasicTypes.DefMethSpec Type_)%type)%type.
+
+#[global] Definition CvSubstEnv :=
+  unit.
 
 #[global] Definition CoercionR :=
   Coercion%type.
@@ -691,6 +696,9 @@ with Bind b : Type :=
 #[global] Definition CoreExpr :=
   (Expr CoreBndr)%type.
 
+#[global] Definition IdSubstEnv :=
+  (IdEnv CoreExpr)%type.
+
 #[global] Definition InExpr :=
   CoreExpr%type.
 
@@ -780,9 +788,6 @@ Inductive TyCoFolder env a : Type :=
 #[global] Definition LiftCoEnv :=
   (VarEnv Coercion)%type.
 
-Inductive LiftingContext : Type :=
-  | LC : GHC.Core.TyCo.Subst.Subst -> LiftCoEnv -> LiftingContext.
-
 #[global] Definition TidyEnv :=
   (OccName.TidyOccEnv * VarEnv Var)%type%type.
 
@@ -810,6 +815,11 @@ Inductive CoreRule : Type :=
 
 Inductive RnEnv2 : Type :=
   | RV2 (envL : VarEnv Var) (envR : VarEnv Var) (in_scope : InScopeSet) : RnEnv2.
+
+Inductive Subst : Type :=
+  | Mk_Subst : InScopeSet -> IdSubstEnv -> TvSubstEnv -> CvSubstEnv -> Subst.
+
+Inductive LiftingContext : Type := | LC : Subst -> LiftCoEnv -> LiftingContext.
 
 Inductive TyCoMapper env m : Type :=
   | Mk_TyCoMapper (tcm_tyvar : env -> TyVar -> m Type_) (tcm_covar
@@ -911,103 +921,103 @@ Arguments Mk_TyCoFolder {_} {_} _ _ _ _ _.
 
 Arguments Mk_TyCoMapper {_} {_} _ _ _ _ _.
 
-Instance Default__UnfoldingGuidance : HsToCoq.Err.Default UnfoldingGuidance :=
+#[global] Instance Default__UnfoldingGuidance : HsToCoq.Err.Default UnfoldingGuidance :=
   HsToCoq.Err.Build_Default _ (UnfWhen HsToCoq.Err.default HsToCoq.Err.default
                              HsToCoq.Err.default).
 
-Instance Default__UnfoldingCache : HsToCoq.Err.Default UnfoldingCache :=
+#[global] Instance Default__UnfoldingCache : HsToCoq.Err.Default UnfoldingCache :=
   HsToCoq.Err.Build_Default _ (Mk_UnfoldingCache HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__Unfolding : HsToCoq.Err.Default Unfolding :=
+#[global] Instance Default__Unfolding : HsToCoq.Err.Default Unfolding :=
   HsToCoq.Err.Build_Default _ NoUnfolding.
 
-Instance Default__TypeShape : HsToCoq.Err.Default TypeShape :=
+#[global] Instance Default__TypeShape : HsToCoq.Err.Default TypeShape :=
   HsToCoq.Err.Build_Default _ TsUnk.
 
-Instance Default__StrictnessMark : HsToCoq.Err.Default StrictnessMark :=
+#[global] Instance Default__StrictnessMark : HsToCoq.Err.Default StrictnessMark :=
   HsToCoq.Err.Build_Default _ MarkedStrict.
 
-Instance Default__Specificity : HsToCoq.Err.Default Specificity :=
+#[global] Instance Default__Specificity : HsToCoq.Err.Default Specificity :=
   HsToCoq.Err.Build_Default _ InferredSpec.
 
-Instance Default__PrimElemRep : HsToCoq.Err.Default PrimElemRep :=
+#[global] Instance Default__PrimElemRep : HsToCoq.Err.Default PrimElemRep :=
   HsToCoq.Err.Build_Default _ Int8ElemRep.
 
-Instance Default__PrimRep : HsToCoq.Err.Default PrimRep :=
+#[global] Instance Default__PrimRep : HsToCoq.Err.Default PrimRep :=
   HsToCoq.Err.Build_Default _ Int8Rep.
 
-Instance Default__PrimOrVoidRep : HsToCoq.Err.Default PrimOrVoidRep :=
+#[global] Instance Default__PrimOrVoidRep : HsToCoq.Err.Default PrimOrVoidRep :=
   HsToCoq.Err.Build_Default _ VoidRep.
 
-Instance Default__PromDataConInfo : HsToCoq.Err.Default PromDataConInfo :=
+#[global] Instance Default__PromDataConInfo : HsToCoq.Err.Default PromDataConInfo :=
   HsToCoq.Err.Build_Default _ NoPromInfo.
 
-Instance Default__MCoercion : HsToCoq.Err.Default MCoercion :=
+#[global] Instance Default__MCoercion : HsToCoq.Err.Default MCoercion :=
   HsToCoq.Err.Build_Default _ MRefl.
 
-Instance Default__KillFlags : HsToCoq.Err.Default KillFlags :=
+#[global] Instance Default__KillFlags : HsToCoq.Err.Default KillFlags :=
   HsToCoq.Err.Build_Default _ (Mk_KillFlags HsToCoq.Err.default
                              HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__IsOrphan : HsToCoq.Err.Default IsOrphan :=
+#[global] Instance Default__IsOrphan : HsToCoq.Err.Default IsOrphan :=
   HsToCoq.Err.Build_Default _ Mk_IsOrphan.
 
-Instance Default__Injectivity : HsToCoq.Err.Default Injectivity :=
+#[global] Instance Default__Injectivity : HsToCoq.Err.Default Injectivity :=
   HsToCoq.Err.Build_Default _ NotInjective.
 
-Instance Default__HsImplBang : HsToCoq.Err.Default HsImplBang :=
+#[global] Instance Default__HsImplBang : HsToCoq.Err.Default HsImplBang :=
   HsToCoq.Err.Build_Default _ HsLazy.
 
-Instance Default__FunTyFlag : HsToCoq.Err.Default FunTyFlag :=
+#[global] Instance Default__FunTyFlag : HsToCoq.Err.Default FunTyFlag :=
   HsToCoq.Err.Build_Default _ FTF_T_T.
 
-Instance Default__FunSel : HsToCoq.Err.Default FunSel :=
+#[global] Instance Default__FunSel : HsToCoq.Err.Default FunSel :=
   HsToCoq.Err.Build_Default _ SelMult.
 
-Instance Default__ForAllTyFlag : HsToCoq.Err.Default ForAllTyFlag :=
+#[global] Instance Default__ForAllTyFlag : HsToCoq.Err.Default ForAllTyFlag :=
   HsToCoq.Err.Build_Default _ Required.
 
-Instance Default__TyConBndrVis : HsToCoq.Err.Default TyConBndrVis :=
+#[global] Instance Default__TyConBndrVis : HsToCoq.Err.Default TyConBndrVis :=
   HsToCoq.Err.Build_Default _ AnonTCB.
 
-Instance Default__FamTyConFlav : HsToCoq.Err.Default FamTyConFlav :=
+#[global] Instance Default__FamTyConFlav : HsToCoq.Err.Default FamTyConFlav :=
   HsToCoq.Err.Build_Default _ OpenSynFamilyTyCon.
 
-Instance Default__ExportFlag : HsToCoq.Err.Default ExportFlag :=
+#[global] Instance Default__ExportFlag : HsToCoq.Err.Default ExportFlag :=
   HsToCoq.Err.Build_Default _ NotExported.
 
-Instance Default__IdScope : HsToCoq.Err.Default IdScope :=
+#[global] Instance Default__IdScope : HsToCoq.Err.Default IdScope :=
   HsToCoq.Err.Build_Default _ GlobalId.
 
-Instance Default__Divergence : HsToCoq.Err.Default Divergence :=
+#[global] Instance Default__Divergence : HsToCoq.Err.Default Divergence :=
   HsToCoq.Err.Build_Default _ Diverges.
 
-Instance Default__CoSel : HsToCoq.Err.Default CoSel :=
+#[global] Instance Default__CoSel : HsToCoq.Err.Default CoSel :=
   HsToCoq.Err.Build_Default _ SelForAll.
 
-Instance Default__Demand : HsToCoq.Err.Default Demand :=
+#[global] Instance Default__Demand : HsToCoq.Err.Default Demand :=
   HsToCoq.Err.Build_Default _ BotDmd.
 
-Instance Default__CafInfo : HsToCoq.Err.Default CafInfo :=
+#[global] Instance Default__CafInfo : HsToCoq.Err.Default CafInfo :=
   HsToCoq.Err.Build_Default _ MayHaveCafRefs.
 
-Instance Default__AlgTyConFlav : HsToCoq.Err.Default AlgTyConFlav :=
+#[global] Instance Default__AlgTyConFlav : HsToCoq.Err.Default AlgTyConFlav :=
   HsToCoq.Err.Build_Default _ UnboxedSumTyCon.
 
-Instance Default__ClassBody : HsToCoq.Err.Default ClassBody :=
+#[global] Instance Default__ClassBody : HsToCoq.Err.Default ClassBody :=
   HsToCoq.Err.Build_Default _ AbstractClass.
 
-Instance Default__IdDetails : HsToCoq.Err.Default IdDetails :=
+#[global] Instance Default__IdDetails : HsToCoq.Err.Default IdDetails :=
   HsToCoq.Err.Build_Default _ VanillaId.
 
-Instance Default__DataConRep : HsToCoq.Err.Default DataConRep :=
+#[global] Instance Default__DataConRep : HsToCoq.Err.Default DataConRep :=
   HsToCoq.Err.Build_Default _ NoDataConRep.
 
-Instance Default__DmdEnv : HsToCoq.Err.Default DmdEnv :=
+#[global] Instance Default__DmdEnv : HsToCoq.Err.Default DmdEnv :=
   HsToCoq.Err.Build_Default _ (DE HsToCoq.Err.default HsToCoq.Err.default).
 
-Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
+#[global] Instance Default__AltCon : HsToCoq.Err.Default AltCon :=
   HsToCoq.Err.Build_Default _ DEFAULT.
 
 #[global] Definition ug_args (arg_0__ : UnfoldingGuidance) :=
@@ -3023,6 +3033,9 @@ Program Instance NamedThing__PatSyn : Name.NamedThing PatSyn :=
    `Core.Outputable__Scaled' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
+   `Core.Outputable__Subst' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
    `Core.Outputable__TyConBndrVis' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
@@ -3625,7 +3638,7 @@ Axiom emptyLiftingContext : InScopeSet -> LiftingContext.
 
 Axiom mkLiftingContext : list (TyCoVar * Coercion)%type -> LiftingContext.
 
-Axiom mkSubstLiftingContext : GHC.Core.TyCo.Subst.Subst -> LiftingContext.
+Axiom mkSubstLiftingContext : Subst -> LiftingContext.
 
 Axiom extendLiftingContext : LiftingContext ->
                              TyCoVar -> Coercion -> LiftingContext.
@@ -3677,18 +3690,16 @@ Axiom substRightCo : LiftingContext -> Coercion -> Coercion.
 
 Axiom swapLiftCoEnv : LiftCoEnv -> LiftCoEnv.
 
-Axiom lcSubstLeft : LiftingContext -> GHC.Core.TyCo.Subst.Subst.
+Axiom lcSubstLeft : LiftingContext -> Subst.
 
-Axiom lcSubstRight : LiftingContext -> GHC.Core.TyCo.Subst.Subst.
+Axiom lcSubstRight : LiftingContext -> Subst.
 
-Axiom liftEnvSubstLeft : GHC.Core.TyCo.Subst.Subst ->
-                         LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
+Axiom liftEnvSubstLeft : Subst -> LiftCoEnv -> Subst.
 
-Axiom liftEnvSubstRight : GHC.Core.TyCo.Subst.Subst ->
-                          LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
+Axiom liftEnvSubstRight : Subst -> LiftCoEnv -> Subst.
 
 Axiom liftEnvSubst : (forall {a}, Pair.Pair a -> a) ->
-                     GHC.Core.TyCo.Subst.Subst -> LiftCoEnv -> GHC.Core.TyCo.Subst.Subst.
+                     Subst -> LiftCoEnv -> Subst.
 
 Axiom lcLookupCoVar : LiftingContext -> CoVar -> option Coercion.
 
@@ -5708,6 +5719,206 @@ Solve Obligations with (solve_collectAnnArgsTicks).
 
 (* Skipping definition `Core.collectNAnnBndrs' *)
 
+(* Skipping definition `Core.emptyIdSubstEnv' *)
+
+(* Skipping definition `Core.emptyTvSubstEnv' *)
+
+(* Skipping definition `Core.emptyCvSubstEnv' *)
+
+(* Skipping definition `Core.composeTCvSubst' *)
+
+#[global] Definition emptyVarSet : VarSet :=
+  UniqSet.emptyUniqSet.
+
+#[global] Definition emptyInScopeSet : InScopeSet :=
+  InScope emptyVarSet.
+
+#[global] Definition emptyVarEnv {a : Type} : VarEnv a :=
+  UniqFM.emptyUFM.
+
+#[global] Instance Default__Subst : HsToCoq.Err.Default Subst :=
+  HsToCoq.Err.Build_Default _ (Mk_Subst (InScope emptyVarSet) emptyVarEnv tt tt).
+
+#[global] Definition emptySubst : Subst :=
+  Mk_Subst emptyInScopeSet emptyVarEnv tt tt.
+
+#[global] Definition mkEmptySubst (in_scope : InScopeSet) : Subst :=
+  Mk_Subst in_scope emptyVarEnv tt tt.
+
+(* Skipping definition `Core.isEmptySubst' *)
+
+(* Skipping definition `Core.isEmptyTCvSubst' *)
+
+(* Skipping definition `Core.mkTCvSubst' *)
+
+(* Skipping definition `Core.mkIdSubst' *)
+
+(* Skipping definition `Core.mkTvSubst' *)
+
+(* Skipping definition `Core.mkCvSubst' *)
+
+(* Skipping definition `Core.getIdSubstEnv' *)
+
+(* Skipping definition `Core.getTvSubstEnv' *)
+
+(* Skipping definition `Core.getCvSubstEnv' *)
+
+(* Skipping definition `Core.getSubstInScope' *)
+
+(* Skipping definition `Core.setInScope' *)
+
+(* Skipping definition `Core.getSubstRangeTyCoFVs' *)
+
+(* Skipping definition `Core.isInScope' *)
+
+(* Skipping definition `Core.elemSubst' *)
+
+(* Skipping definition `Core.notElemSubst' *)
+
+(* Skipping definition `Core.zapSubst' *)
+
+(* Skipping definition `Core.extendSubstInScope' *)
+
+(* Skipping definition `Core.extendSubstInScopeList' *)
+
+(* Skipping definition `Core.extendSubstInScopeSet' *)
+
+(* Skipping definition `Core.extendTCvSubst' *)
+
+(* Skipping definition `Core.extendTCvSubstWithClone' *)
+
+(* Skipping definition `Core.extendTvSubst' *)
+
+(* Skipping definition `Core.extendTvSubstWithClone' *)
+
+(* Skipping definition `Core.extendCvSubst' *)
+
+(* Skipping definition `Core.extendCvSubstWithClone' *)
+
+(* Skipping definition `Core.extendTvSubstAndInScope' *)
+
+(* Skipping definition `Core.extendTvSubstList' *)
+
+(* Skipping definition `Core.extendTCvSubstList' *)
+
+(* Skipping definition `Core.unionSubst' *)
+
+(* Skipping definition `Core.zipTvSubst' *)
+
+(* Skipping definition `Core.zipCvSubst' *)
+
+(* Skipping definition `Core.zipTCvSubst' *)
+
+(* Skipping definition `Core.mkTvSubstPrs' *)
+
+(* Skipping definition `Core.zipTyEnv' *)
+
+(* Skipping definition `Core.zipCoEnv' *)
+
+(* Skipping definition `Core.substTyWith' *)
+
+(* Skipping definition `Core.substTyWithUnchecked' *)
+
+(* Skipping definition `Core.substTyWithInScope' *)
+
+(* Skipping definition `Core.substCoWith' *)
+
+(* Skipping definition `Core.substCoWithUnchecked' *)
+
+(* Skipping definition `Core.substTyWithCoVars' *)
+
+(* Skipping definition `Core.substTysWith' *)
+
+(* Skipping definition `Core.substTysWithCoVars' *)
+
+(* Skipping definition `Core.substTyAddInScope' *)
+
+(* Skipping definition `Core.isValidTCvSubst' *)
+
+(* Skipping definition `Core.checkValidSubst' *)
+
+(* Skipping definition `Core.substTy' *)
+
+(* Skipping definition `Core.substTyUnchecked' *)
+
+(* Skipping definition `Core.substScaledTy' *)
+
+(* Skipping definition `Core.substScaledTyUnchecked' *)
+
+(* Skipping definition `Core.substTys' *)
+
+(* Skipping definition `Core.substScaledTys' *)
+
+(* Skipping definition `Core.substTysUnchecked' *)
+
+(* Skipping definition `Core.substScaledTysUnchecked' *)
+
+(* Skipping definition `Core.substTheta' *)
+
+(* Skipping definition `Core.substThetaUnchecked' *)
+
+(* Skipping definition `Core.subst_ty' *)
+
+(* Skipping definition `Core.substTyVar' *)
+
+(* Skipping definition `Core.substTyVarToTyVar' *)
+
+(* Skipping definition `Core.substTyVars' *)
+
+(* Skipping definition `Core.substTyCoVars' *)
+
+(* Skipping definition `Core.substTyCoVar' *)
+
+(* Skipping definition `Core.lookupTyVar' *)
+
+(* Skipping definition `Core.substCo' *)
+
+(* Skipping definition `Core.substCoUnchecked' *)
+
+(* Skipping definition `Core.substCos' *)
+
+(* Skipping definition `Core.subst_co' *)
+
+(* Skipping definition `Core.substForAllCoBndr' *)
+
+(* Skipping definition `Core.substForAllCoBndrUnchecked' *)
+
+(* Skipping definition `Core.substForAllCoBndrUsing' *)
+
+(* Skipping definition `Core.substForAllCoTyVarBndrUsing' *)
+
+(* Skipping definition `Core.substForAllCoCoVarBndrUsing' *)
+
+(* Skipping definition `Core.substCoVar' *)
+
+(* Skipping definition `Core.substCoVars' *)
+
+(* Skipping definition `Core.lookupCoVar' *)
+
+(* Skipping definition `Core.substTyVarBndr' *)
+
+(* Skipping definition `Core.substTyVarBndrs' *)
+
+(* Skipping definition `Core.substVarBndr' *)
+
+(* Skipping definition `Core.substVarBndrs' *)
+
+(* Skipping definition `Core.substCoVarBndr' *)
+
+(* Skipping definition `Core.substVarBndrUnchecked' *)
+
+(* Skipping definition `Core.substVarBndrUsing' *)
+
+(* Skipping definition `Core.substTyVarBndrUsing' *)
+
+(* Skipping definition `Core.substCoVarBndrUsing' *)
+
+(* Skipping definition `Core.cloneTyVarBndr' *)
+
+(* Skipping definition `Core.cloneTyVarBndrs' *)
+
+(* Skipping definition `Core.substTyCoBndr' *)
+
 #[global] Definition idDetailsConcreteTvs
    : IdDetails -> TcType.ConcreteTyVars :=
   fun arg_0__ =>
@@ -6510,12 +6721,6 @@ Axiom updateIdTypeAndMultM : forall {m : Type -> Type},
 
 Axiom isExportedId : Var -> bool.
 
-#[global] Definition emptyVarSet : VarSet :=
-  UniqSet.emptyUniqSet.
-
-#[global] Definition emptyInScopeSet : InScopeSet :=
-  InScope emptyVarSet.
-
 #[global] Definition getInScopeVars : InScopeSet -> VarSet :=
   fun '(InScope vs) => vs.
 
@@ -6724,9 +6929,6 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
 
 #[global] Definition uniqAway' : InScopeSet -> Var -> Var :=
   fun in_scope var => setVarUnique var (unsafeGetFreshLocalUnique in_scope).
-
-#[global] Definition emptyVarEnv {a : Type} : VarEnv a :=
-  UniqFM.emptyUFM.
 
 #[global] Definition mkRnEnv2 : InScopeSet -> RnEnv2 :=
   fun vars => RV2 emptyVarEnv emptyVarEnv vars.
@@ -7249,28 +7451,28 @@ Axiom uniqAway : InScopeSet -> Var -> Var.
      GHC.Base.op_zgzgze__ GHC.Base.op_zl__ GHC.Base.op_zl____ GHC.Base.op_zlzd____
      GHC.Base.op_zlze__ GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
      GHC.Base.return_ GHC.Char.Char GHC.Core.Rules.Config.RuleOpts
-     GHC.Core.TyCo.Subst.Subst GHC.Core.TyCon.RecWalk.RecTcChecker
-     GHC.Data.List.Infinite.Infinite GHC.Err.error GHC.Err.head GHC.List.reverse
-     GHC.Num.Integer GHC.Num.Word GHC.Num.fromInteger GHC.Num.op_zm__
-     GHC.Prim.HasCallStack GHC.Prim.rightSection GHC.Prim.seq GHC.Real.Rational
-     GHC.Stg.InferTags.TagSig.TagSig GHC.StgToCmm.Types.LambdaFormInfo
-     GHC.Types.Cpr.CprSig GHC.Types.Cpr.topCprSig GHC.Types.Tickish.CoreTickish
-     GHC.Types.TyThing.TyThing HsSyn.Boxity HsSyn.ConTag HsSyn.FieldLabelString
-     HsSyn.Role HsSyn.SrcStrictness HsSyn.SrcUnpackedness
-     HsToCoq.DeferredFix.deferredFix1 HsToCoq.DeferredFix.deferredFix2
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
-     HsToCoq.Wf.wfFix2 HsToCoq.Wf.wfFix3 Maybes.orElse Module.Module Name.Name
-     Name.NamedThing Name.getName Name.getName__ Name.getOccName Name.getOccName__
-     Name.nameOccName Name.nameUnique Name.setNameUnique NameEnv.NameEnv
-     OccName.HasOccName OccName.OccName OccName.TidyOccEnv OccName.delTidyOccEnvList
-     OccName.emptyTidyOccEnv OccName.occNameFS OccName.occName__ Pair.Pair
-     Panic.pprPanic Panic.someSDoc Platform.Platform SrcLoc.SrcSpan
-     TcType.ConcreteTyVars TcType.noConcreteTyVars UniqDFM.nonDetStrictFoldUDFM
-     UniqDSet.mapUniqDSet UniqDSet.nonDetStrictFoldUniqDSet UniqFM.UniqFM
-     UniqFM.addListToUFM UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C
-     UniqFM.alterUFM UniqFM.anyUFM UniqFM.delFromUFM UniqFM.delListFromUFM
-     UniqFM.disjointUFM UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.emptyUFM
-     UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.isNullUFM UniqFM.listToUFM
+     GHC.Core.TyCon.RecWalk.RecTcChecker GHC.Data.List.Infinite.Infinite
+     GHC.Err.error GHC.Err.head GHC.List.reverse GHC.Num.Integer GHC.Num.Word
+     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Prim.HasCallStack GHC.Prim.rightSection
+     GHC.Prim.seq GHC.Real.Rational GHC.Stg.InferTags.TagSig.TagSig
+     GHC.StgToCmm.Types.LambdaFormInfo GHC.Types.Cpr.CprSig GHC.Types.Cpr.topCprSig
+     GHC.Types.Tickish.CoreTickish GHC.Types.TyThing.TyThing HsSyn.Boxity
+     HsSyn.ConTag HsSyn.FieldLabelString HsSyn.Role HsSyn.SrcStrictness
+     HsSyn.SrcUnpackedness HsToCoq.DeferredFix.deferredFix1
+     HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     HsToCoq.Err.default HsToCoq.Wf.wfFix2 HsToCoq.Wf.wfFix3 Maybes.orElse
+     Module.Module Name.Name Name.NamedThing Name.getName Name.getName__
+     Name.getOccName Name.getOccName__ Name.nameOccName Name.nameUnique
+     Name.setNameUnique NameEnv.NameEnv OccName.HasOccName OccName.OccName
+     OccName.TidyOccEnv OccName.delTidyOccEnvList OccName.emptyTidyOccEnv
+     OccName.occNameFS OccName.occName__ Pair.Pair Panic.pprPanic Panic.someSDoc
+     Platform.Platform SrcLoc.SrcSpan TcType.ConcreteTyVars TcType.noConcreteTyVars
+     UniqDFM.nonDetStrictFoldUDFM UniqDSet.mapUniqDSet
+     UniqDSet.nonDetStrictFoldUniqDSet UniqFM.UniqFM UniqFM.addListToUFM
+     UniqFM.addToUFM UniqFM.addToUFM_Acc UniqFM.addToUFM_C UniqFM.alterUFM
+     UniqFM.anyUFM UniqFM.delFromUFM UniqFM.delListFromUFM UniqFM.disjointUFM
+     UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.emptyUFM UniqFM.filterUFM
+     UniqFM.filterUFM_Directly UniqFM.isNullUFM UniqFM.listToUFM
      UniqFM.listToUFM_Directly UniqFM.lookupUFM UniqFM.lookupUFM_Directly
      UniqFM.lookupWithDefaultUFM UniqFM.mapUFM UniqFM.minusUFM UniqFM.nonDetFoldUFM
      UniqFM.nonDetStrictFoldUFM_Directly UniqFM.partitionUFM UniqFM.plusMaybeUFM_C

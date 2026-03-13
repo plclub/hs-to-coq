@@ -3,38 +3,103 @@ import module GHC.List
 import module Data.Traversable
 import module Core
 
-# GHC 9.10: Subst is axiomatized — axiomatize entire module
-axiomatize module CoreSubst
-
-# GHC 9.10: types moved to GHC.Core.TyCo.Subst
+# GHC 9.10: Subst type merged into Core.v; skip the re-export module
 skip module GHC.Core.TyCo.Subst
 
 # requires mkTyVarTy and mkCoVarCo
 skip CoreSubst.lookupTCvSubst
 
-# Functions provided by midamble (concrete definitions for proofs)
-skip CoreSubst.extendIdSubst
-skip CoreSubst.extendIdSubstWithClone
-skip CoreSubst.extendIdSubstList
-skip CoreSubst.extendSubst
-skip CoreSubst.extendSubstWithVar
-skip CoreSubst.extendSubstList
-skip CoreSubst.lookupIdSubst
-skip CoreSubst.lookupIdSubst_maybe
-skip CoreSubst.delBndr
-skip CoreSubst.delBndrs
-skip CoreSubst.mkOpenSubst
-skip CoreSubst.substExpr
-skip CoreSubst.substBind
-skip CoreSubst.substBndr
+# === Auto-generated functions ===
+# These are generated from GHC 9.10 source by hs-to-coq.
+# They just pass tvs/cvs through without calling VarEnv operations on unit.
+# extendIdSubst, extendIdSubstList, extendSubstList, lookupIdSubst_maybe
+# substBndrs, substRecBndrs
+
+# substBndrs, substRecBndrs: defined in midamble (needed before substExpr_)
 skip CoreSubst.substBndrs
 skip CoreSubst.substRecBndrs
+
+# === Redefine: functions simplified for TvSubstEnv=CvSubstEnv=unit ===
+
+# extendIdSubstWithClone: GHC uses tyCoVarsOfType, varToCoreExpr (not available)
+redefine Definition CoreSubst.extendIdSubstWithClone (s : Core.Subst) (v1 v2 : Id) : Core.Subst := match s with | Core.Mk_Subst in_scope ids _ _ => Core.Mk_Subst in_scope (extendVarEnv ids v1 (Core.Mk_Var v2)) tt tt end.
+
+# extendSubst: GHC calls extendTvSubst/extendCvSubst (not available for unit TvSubstEnv)
+redefine Definition CoreSubst.extendSubst (s : Core.Subst) (v : Var) (arg : CoreArg) : Core.Subst := match arg with | Core.Mk_Type _ => s | Core.Mk_Coercion _ => s | _ => CoreSubst.extendIdSubst s v arg end.
+
+# extendSubstWithVar: GHC calls mkTyVarTy/mkCoVarCo (not available)
+redefine Definition CoreSubst.extendSubstWithVar (s : Core.Subst) (v1 v2 : Var) : Core.Subst := CoreSubst.extendIdSubst s v1 (Core.Mk_Var v2).
+
+# lookupIdSubst: defined in midamble (needed before substExpr_; GHC uses pprPanic, we use fallback)
+skip CoreSubst.lookupIdSubst
+
+# delBndr: GHC calls delVarEnv on tvs/cvs (unit types)
+redefine Definition CoreSubst.delBndr (s : Core.Subst) (v : Var) : Core.Subst := Core.Mk_Subst (CoreSubst.substInScope s) (delVarEnv (CoreSubst.substIdEnv s) v) tt tt.
+
+# delBndrs: same issue
+redefine Definition CoreSubst.delBndrs (s : Core.Subst) (vs : list Var) : Core.Subst := Core.Mk_Subst (CoreSubst.substInScope s) (delVarEnvList (CoreSubst.substIdEnv s) vs) tt tt.
+
+# mkOpenSubst: GHC uses list comprehensions + type/coercion env
+skip CoreSubst.mkOpenSubst
+
+# isEmptySubst: defined in midamble (GHC version is in TyCoSubst, not in this module)
+
+# substBndr: defined in midamble (needed before substExpr_)
+skip CoreSubst.substBndr
+
+# substIdBndr: defined in midamble (needed before substBndr)
 skip CoreSubst.substIdBndr
+
+# substIdInfo: defined in midamble (needed before substIdBndr)
 skip CoreSubst.substIdInfo
-skip CoreSubst.substUnfolding
+
+# substUnfolding: GHC does complex pattern matching; simplified to identity
+redefine Definition CoreSubst.substUnfolding (_ : Core.Subst) (unf : Unfolding) : Unfolding := unf.
+
+# substUnfoldingSC: GHC uses isEmptySubst; simplified to identity
+redefine Definition CoreSubst.substUnfoldingSC (_ : Core.Subst) (unf : Unfolding) : Unfolding := unf.
+
+# substIdOcc: GHC uses pprPanic
+redefine Definition CoreSubst.substIdOcc (subst : Core.Subst) (v : Id) : Id := match CoreSubst.lookupIdSubst subst v with | Core.Mk_Var v' => v' | _ => Panic.panicStr (GHC.Base.hs_string__ "substIdOcc") Panic.someSDoc end.
+
+# substIdType: GHC uses noFreeVarsOfType, updateIdTypeAndMult; simplified to identity
+redefine Definition CoreSubst.substIdType (_ : Core.Subst) (id : Id) : Id := id.
+
+# substExpr/substBind: mutually recursive; provided by midamble
+# (hs-to-coq can't handle the mutual recursion + Tick case properly)
+skip CoreSubst.substExpr
+skip CoreSubst.substBind
 skip CoreSubst.substExprSC
 skip CoreSubst.substBindSC
-skip CoreSubst.substUnfoldingSC
-skip CoreSubst.substIdOcc
-skip CoreSubst.substIdType
-skip CoreSubst.isEmptySubst
+
+# === Functions that depend on unavailable GHC modules ===
+skip CoreSubst.substDVarSet
+skip CoreSubst.substTickish
+skip CoreSubst.substRule
+skip CoreSubst.substRuleInfo
+skip CoreSubst.substRulesForImportedIds
+skip CoreSubst.deShadowBinds
+
+# Clone functions need UniqSupply operations
+skip CoreSubst.cloneIdBndr
+skip CoreSubst.cloneIdBndrs
+skip CoreSubst.cloneBndrs
+skip CoreSubst.cloneBndr
+skip CoreSubst.cloneRecIdBndrs
+skip CoreSubst.clone_id
+
+# Re-exported from TyCo.Subst (now in Core.v); skip to avoid duplication
+skip CoreSubst.extendTvSubst
+skip CoreSubst.extendCvSubst
+skip CoreSubst.extendTCvSubst
+skip CoreSubst.extendTvSubstList
+skip CoreSubst.extendSubstInScope
+skip CoreSubst.extendSubstInScopeList
+skip CoreSubst.extendSubstInScopeSet
+skip CoreSubst.isInScope
+skip CoreSubst.setInScope
+skip CoreSubst.getSubstInScope
+skip CoreSubst.mkTCvSubst
+skip CoreSubst.zapSubst
+skip CoreSubst.substTyVarBndr
+skip CoreSubst.substCoVarBndr
