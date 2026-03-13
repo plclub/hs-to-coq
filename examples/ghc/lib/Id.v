@@ -50,14 +50,30 @@ Import Core.
 (* GHC 9.10: some functions use GHC.Utils.Trace for debug tracing *)
 Require Import GHC.Utils.Trace.
 
-(* GHC 9.10: idJoinArity is used by Exitify but needs Outputable.JoinPointHood.
-   We provide it directly here since JoinArity = nat *)
+(* GHC 9.10: These functions are skipped because they use Outputable.JoinPointHood
+   from GHC.Types.Basic (a module we don't translate). We define them manually
+   using Core.idDetails and the Mk_JoinId constructor. *)
+
+Require Import Outputable.
+
+Definition idJoinPointHood : Core.Var -> Outputable.JoinPointHood :=
+  fun id =>
+    if Core.isId id then
+      match Core.idDetails id with
+      | Core.Mk_JoinId arity _ => Outputable.JoinPoint arity
+      | _ => Outputable.NotJoinPoint
+      end
+    else Outputable.NotJoinPoint.
+
 Definition idJoinArity : Core.JoinId -> BasicTypes.JoinArity :=
   fun id =>
     match Core.idDetails id with
     | Core.Mk_JoinId arity _ => arity
     | _ => Panic.panic (GHC.Base.hs_string__ "idJoinArity")
     end.
+
+Definition asJoinId : Core.Id -> BasicTypes.JoinArity -> Core.JoinId :=
+  fun id arity => Core.setIdDetails id (Core.Mk_JoinId arity None).
 
 (* Converted value declarations: *)
 
@@ -352,7 +368,7 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
          end else
     false.
 
-(* Skipping definition `Id.idJoinPointHood' *)
+(* Id.idJoinPointHood provided in midamble *)
 
 #[global] Definition idDataCon : Core.Id -> Core.DataCon :=
   fun id =>
@@ -396,7 +412,7 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
 
 (* Skipping definition `Id.idJoinArity' *)
 
-Axiom asJoinId : Core.Id -> BasicTypes.JoinArity -> Core.JoinId.
+(* Id.asJoinId provided in midamble *)
 
 #[global] Definition zapInfo
    : (Core.IdInfo -> option Core.IdInfo) -> Core.Id -> Core.Id :=

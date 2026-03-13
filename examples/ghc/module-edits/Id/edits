@@ -34,8 +34,8 @@ skip Id.idJoinPointHood
 skip Id.idJoinArity
 skip Id.asJoinId_maybe
 
-# GHC 9.10: uses GHC.Utils.Trace.pprTraceDebug not imported
-axiomatize definition Id.asJoinId
+# GHC 9.10: asJoinId uses pprTraceDebug; we provide it in midamble via setIdDetails
+skip Id.asJoinId
 
 # GHC 9.10: type error with Data.Maybe.maybe/length
 axiomatize definition Id.idCbvMarkArity

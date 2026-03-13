@@ -14,6 +14,7 @@ Require Import Coq.Classes.Morphisms.
 
 Require Import GHC.Base.
 
+Require Import Outputable.
 Require Import PrelNames.
 Require Import Id.
 Require Import Core.
@@ -118,10 +119,21 @@ Axiom isLocalId_uniqAway:
 
 
 
-(* GHC 9.10: Id.idJoinPointHood is skipped (uses Outputable.JoinPointHood) *)
-(* Axiom idJoinPointHood_uniqAway:
+(* GHC 9.10: Id.idJoinPointHood is now defined in the Id midamble.
+   This follows from id_details_uniqAway. *)
+Lemma idJoinPointHood_uniqAway:
   forall s v,
-  Id.idJoinPointHood (uniqAway s v) = Id.idJoinPointHood v. *)
+  Id.idJoinPointHood (uniqAway s v) = Id.idJoinPointHood v.
+Proof.
+  intros s v.
+  unfold Id.idJoinPointHood, Core.isId, Core.idDetails.
+  destruct v as [n u t m sc d i].
+  destruct (uniqAway s (Mk_Id n u t m sc d i)) as [n' u' t' m' sc' d' i'] eqn:E.
+  simpl.
+  move: (id_details_uniqAway s (Mk_Id n u t m sc d i)) => H.
+  simpl in H. rewrite E in H. simpl in H. rewrite H.
+  reflexivity.
+Qed.
 
 Lemma isLocalUnique_uniqAway:
   forall iss v,
@@ -172,15 +184,27 @@ Qed.
   
 (**** *)
 
-(* GHC 9.10: Id.idJoinPointHood is skipped (uses Outputable.JoinPointHood) *)
-(* Axiom idJoinPointHood_setIdOccInfo:
+(* GHC 9.10: Id.idJoinPointHood is now defined in the Id midamble.
+   These follow from the concrete definitions. *)
+Lemma idJoinPointHood_setIdOccInfo:
   forall v occ_info,
-  Id.idJoinPointHood (setIdOccInfo v occ_info) = Id.idJoinPointHood v. *)
+  Id.idJoinPointHood (setIdOccInfo v occ_info) = Id.idJoinPointHood v.
+Proof.
+  intros v occ_info.
+  unfold Id.idJoinPointHood, setIdOccInfo, Id.modifyIdInfo, Id.setIdInfo,
+         Id.lazySetIdInfo, Core.lazySetIdInfo.
+  destruct v as [n u t m s d i]. simpl. reflexivity.
+Qed.
 
-(* Axiom idJoinPointHood_asJoinId:
+Lemma idJoinPointHood_asJoinId:
   forall v a,
-  isLocalId v ->
-  Id.idJoinPointHood (asJoinId v a) = Outputable.JoinPoint a. *)  
+  isLocalId v = true ->
+  Id.idJoinPointHood (Id.asJoinId v a) = Outputable.JoinPoint a.
+Proof.
+  intros v a Hlocal.
+  unfold Id.idJoinPointHood, Id.asJoinId, Core.setIdDetails.
+  destruct v as [n u t m s d i]. simpl. reflexivity.
+Qed.  
 
 
   

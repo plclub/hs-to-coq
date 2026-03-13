@@ -198,11 +198,22 @@ Qed.
 Lemma GoodLocalVar_asJoinId_mkSysLocal:
   forall s u w ty n,
   Unique.isLocalUnique u = true ->
-  GoodLocalVar (asJoinId (mkSysLocal s u w ty) n).
+  GoodLocalVar (Id.asJoinId (mkSysLocal s u w ty) n).
 Proof.
-  (* GHC 9.10: mkSysLocal takes Mult, Mk_Id has 7 fields, realUnique is Unique not N.
-     Internal proof structure needs rework. *)
-Admitted.
+  intros s u w ty n Hlocal.
+  unfold GoodLocalVar, GoodVar.
+  unfold Id.asJoinId, Core.setIdDetails.
+  unfold mkSysLocal, Id.mkLocalId, Id.mkLocalIdWithInfo,
+         Core.mkLocalVar, Core.mk_id.
+  simpl.
+  unfold isLocalVar, isGlobalId, Core.isGlobalId, Core.isLocalVar.
+  unfold varUnique, Core.varUnique, Core.realUnique.
+  unfold Name.mkSystemVarName, Name.mkSystemName, Name.mkSystemNameAt.
+  simpl.
+  unfold isLocalScope.
+  rewrite Hlocal.
+  repeat split; reflexivity.
+Qed.
 
 
 Lemma GoodLocalVar_almostEqual:

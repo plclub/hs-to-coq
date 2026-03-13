@@ -283,29 +283,59 @@ Qed.
 
 (** ** [isJoinId] etc. *)
 
-(* GHC 9.10: Id.idJoinPointHood and Id.idJoinArity are skipped
-   (they use Outputable.JoinPointHood which is in skipped module).
-   isJoinId_maybe and related lemmas are Admitted. *)
+(* GHC 9.10: Id.idJoinPointHood and Id.idJoinArity are now provided
+   in the Id midamble. isJoinId_maybe is defined here concretely. *)
 
-Axiom isJoinId_maybe : Var -> option BasicTypes.JoinArity.
+Definition isJoinId_maybe (v : Var) : option BasicTypes.JoinArity :=
+  if Core.isId v then
+    match Core.idDetails v with
+    | Core.Mk_JoinId arity _ => Some arity
+    | _ => None
+    end
+  else None.
 
 Lemma isJoinId_eq : forall v,
-  Id.isJoinId v = match isJoinId_maybe v with | None => false |Some _ => true end.
-Admitted.
+  Id.isJoinId v = match isJoinId_maybe v with | None => false | Some _ => true end.
+Proof.
+  intros v.
+  unfold Id.isJoinId, isJoinId_maybe.
+  destruct v as [n u t m s d i].
+  simpl.
+  destruct d; reflexivity.
+Qed.
 
 Lemma isJoinId_ae: forall v1 v2,
   almostEqual v1 v2 ->
   Id.isJoinId v1 = Id.isJoinId v2.
-Admitted.
+Proof.
+  intros v1 v2 H.
+  inversion H; subst.
+  unfold Id.isJoinId. simpl. reflexivity.
+Qed.
 
 Lemma isJoinId_isJoinId_maybe: forall v,
   Id.isJoinId v = true ->
   isJoinId_maybe v = Some (Id.idJoinArity v).
-Admitted.
+Proof.
+  intros v H.
+  unfold Id.isJoinId in H.
+  unfold isJoinId_maybe, Id.idJoinArity.
+  destruct v as [n u t m s d i].
+  simpl in *.
+  destruct d; try discriminate; reflexivity.
+Qed.
 
 Lemma idJoinArity_join: forall v a,
   isJoinId_maybe v = Some a -> Id.idJoinArity v = a.
-Admitted.
+Proof.
+  intros v a H.
+  unfold isJoinId_maybe in H.
+  unfold Id.idJoinArity.
+  destruct v as [n u t m s d i].
+  simpl in *.
+  destruct d; try discriminate.
+  inversion H. reflexivity.
+Qed.
 
 
 (** ** [isLocalId] and [isLocalVar] *)
