@@ -779,8 +779,17 @@ Lemma elemVarSet_exprFreeVars_Var_false: forall v' v,
     varUnique v' <> varUnique v ->
     elemVarSet v' (exprFreeVars (Mk_Var v)) = false.
 Proof.
-  (* member_insert rewrite fails due to UniqFM 2-param unfolding mismatch *)
-Admitted.
+  intros v' v Hneq.
+  destruct (isLocalVar v) eqn:Hloc.
+  - rewrite exprFreeVars_Var; [|auto].
+    rewrite elemVarSet_unitVarSet_is_eq.
+    remember (GHC.Base.op_zeze__ v' v) as b eqn:Hb.
+    destruct b; [|reflexivity].
+    exfalso. apply Hneq. apply varUnique_iff.
+    unfold is_true. symmetry. exact Hb.
+  - rewrite exprFreeVars_global_Var; [|auto].
+    apply elemVarSet_emptyVarSet.
+Qed.
 
 (** Working with [exprFreeVars] *)
 
