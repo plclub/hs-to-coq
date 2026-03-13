@@ -47,7 +47,13 @@ Lemma isLocalId_mkLocalId : forall u s w ty,
   is_true
     (isLocalId
        (mkLocalId (Name.mkSystemVarName u s) w ty)).
-Admitted.        
+Proof.
+  intros u s w ty Hlocal.
+  unfold mkLocalId, Id.mkLocalIdWithInfo, mkLocalVar, mk_id.
+  unfold isLocalId.
+  unfold Name.mkSystemVarName, Name.mkSystemName, Name.mkSystemNameAt.
+  simpl. exact Hlocal.
+Qed.        
 
 
 
@@ -141,16 +147,26 @@ Lemma GoDom_JoinPair_JoinRHS:
   GoDom_JoinPair v rhs ->
   exists r, (v, rhs) = (fun '(MkJoinRHS j params body _) => (j, mkLams params body)) r.
 Proof.
-  (* GHC 9.10: Proof broken by State monad / Alt / Mk_Id changes. *)
-Admitted.
+  intros v rhs H.
+  inversion H; subst.
+  eexists (MkJoinRHS v params rhs0 _).
+  simpl. reflexivity.
+  Unshelve. assumption.
+Qed.
 
 Lemma GoDom_JoinPair_JoinRHS_pairs:
   forall pairs,
   Forall (fun p => GoDom_JoinPair (fst p) (snd p)) pairs ->
   exists pairs', pairs = map (fun '(MkJoinRHS j params body _) => (j, mkLams params body)) pairs'.
 Proof.
-  (* GHC 9.10: Proof broken by State monad / Alt / Mk_Id changes. *)
-Admitted.
+  intros pairs H. induction H.
+  - exists nil. reflexivity.
+  - destruct x as [v rhs]. simpl in H.
+    apply GoDom_JoinPair_JoinRHS in H. destruct H as [r Hr].
+    destruct IHForall as [pairs' Hpairs'].
+    exists (r :: pairs'). simpl. rewrite <- Hpairs'.
+    inversion Hr. reflexivity.
+Qed.
 
 (** The predicate is actually a corollary of being join-point valid.
 
@@ -251,8 +267,16 @@ Lemma isValidJoinPointsPair_GoDom_JoinPair:
   isValidJoinPointsPair v e jps = true ->
   GoDom_JoinPair v e.
 Proof.
-  (* GHC 9.10: Proof broken by State monad / Alt / Mk_Id changes. *)
-Admitted.
+  intros v e jps H.
+  unfold isValidJoinPointsPair in H.
+  destruct (isJoinId_maybe v) eqn:HiJI; try discriminate.
+  destruct (isJoinRHS_mkLams3 _ _ _ H) as [body [vs [Heq1 Heq2]]].
+  subst.
+  apply isJoinRHS_mkLams2 in H.
+  destruct H as [_ Hvalid].
+  apply isJoinPointsValid_GoDom in Hvalid.
+  constructor; assumption.
+Qed.
 
 (** * Working within [exitifyRec] *)
 
@@ -346,8 +370,20 @@ Lemma exitifyRec_WellScoped_JPI:
   isJoinPointsValid
     (mkLets (exitifyRec (extendInScopeSetList in_scope fst_pairs) pairs) body) n jps = true.
 Proof.
-  (* GHC 9.10: Proof broken by State monad / Alt / Mk_Id changes. *)
-Admitted.
+  intros in_scope0 pairs0 fst_pairs0 n0 jps0 Hfst Hjps_sub Hnodup Hne Hpairs body Hbody_WS Hbody_JPI.
+  subst fst_pairs0.
+  split.
+  - eapply (exitifyRec_WellScoped in_scope0 pairs0 jps0); auto.
+    + rewrite Forall_forall in *. intros [v rhs] HIn.
+      specialize (Hpairs _ HIn). simpl in *. tauto.
+    + rewrite Forall_forall in *. intros [v rhs] HIn.
+      specialize (Hpairs _ HIn). simpl in *. tauto.
+  - eapply (exitifyRec_JPI in_scope0 pairs0 jps0); auto.
+    + rewrite Forall_forall in *. intros [v rhs] HIn.
+      specialize (Hpairs _ HIn). simpl in *. tauto.
+    + rewrite Forall_forall in *. intros [v rhs] HIn.
+      specialize (Hpairs _ HIn). simpl in *. tauto.
+Qed.
 
 (** ** Verification of [go] in [exitifyProgram] *)
 
@@ -372,11 +408,21 @@ Proof. intros. induction xs. reflexivity. simpl. destruct a0. rewrite <- IHxs.  
 
 Lemma top_go_mkLams:
   forall in_scope body vs,
-  top_go in_scope (mkLams vs body) = 
+  top_go in_scope (mkLams vs body) =
   mkLams vs (top_go (extendInScopeSetList in_scope vs) body).
 Proof.
-  (* GHC 9.10: Proof broken by State monad / Alt / Mk_Id changes. *)
-Admitted.
+  intros in_scope0 body vs.
+  revert in_scope0 body.
+  induction vs as [|v vs' IH]; intros.
+  - simpl. rewrite extendInScopeSetList_nil. reflexivity.
+  - change (mkLams (v :: vs') body) with (Lam v (mkLams vs' body)).
+    change (mkLams (v :: vs') (top_go (extendInScopeSetList in_scope0 (v :: vs')) body))
+      with (Lam v (mkLams vs' (top_go (extendInScopeSetList in_scope0 (v :: vs')) body))).
+    simpl top_go at 1.
+    rewrite extendInScopeSetList_cons.
+    f_equal.
+    apply IH.
+Qed.
 
 Ltac solve_subVarSet :=
   unfold isvs;
@@ -404,29 +450,53 @@ lots of shifting around [VarSet]s and [InScopeSets], and eventually a call to
 [exififyRec]. This really should be simpler.
 *)
 
-Axiom top_go_WellScoped_JPI :
+Lemma top_go_WellScoped_JPI :
   forall e in_scope n jps,
   WellScoped e (getInScopeVars in_scope)->
   isJoinPointsValid e n jps = true ->
   subVarSet jps (isvs in_scope) = true ->
   WellScoped (top_go in_scope e) (getInScopeVars in_scope) /\
   isJoinPointsValid (top_go in_scope e) n jps = true.
-(* GHC 9.10: Program Fixpoint proof broken by Alt/State/congruence changes. *)
+Proof.
+  (* TODO: Program Fixpoint proof on CoreLT. Requires ~200 lines
+     of structural induction with exitifyRec_WellScoped_JPI at the
+     Let/Rec/join case. *)
+Admitted.
 
 Lemma Forall_flattenBinds:
   forall {b} P (binds : list (Bind b)),
   Forall P (flattenBinds binds) <->
   Forall (fun bind => Forall P (flattenBinds [bind])) binds.
 Proof.
-  (* GHC 9.10: Proof broken by State monad / Alt / Mk_Id changes. *)
-Admitted.
+  intros b P binds.
+  induction binds as [|bind binds' IH].
+  - simpl. split; constructor.
+  - destruct bind as [v rhs | pairs].
+    + simpl. split; intro H.
+      * inversion H; subst. constructor.
+        -- constructor; [assumption | constructor].
+        -- apply IH. assumption.
+      * inversion H; subst. inversion H2; subst.
+        constructor; [assumption | apply IH; assumption].
+    + simpl. split; intro H.
+      * apply Forall_app in H. destruct H as [H1 H2].
+        constructor; [|apply IH; assumption].
+        rewrite Forall_app. split; [assumption | constructor].
+      * inversion H; subst.
+        apply Forall_app. split.
+        -- rewrite Forall_app in H2. destruct H2. assumption.
+        -- apply IH. assumption.
+Qed.
 
 Lemma bindersOfBinds_cons:
   forall bind (pgm : CoreProgram),
   bindersOfBinds (bind :: pgm) = bindersOf bind ++ bindersOfBinds pgm.
 Proof.
-  (* GHC 9.10: Proof broken by State monad / Alt / Mk_Id changes. *)
-Admitted.
+  intros bind pgm.
+  unfold bindersOfBinds.
+  rewrite Foldable.hs_coq_foldr_list.
+  simpl. reflexivity.
+Qed.
 
 (** ** Verification of [exitifyProgram] *)
 
