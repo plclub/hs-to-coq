@@ -35,6 +35,9 @@ Require Proofs.GHC.List.
 Require Proofs.Data.Foldable.
 Require Import IntMap.
 Require Import Proofs.ContainerProofs.
+(* ContainerProofs loads IntMapProofs which transitively loads mathcomp,
+   setting Asymmetric Patterns globally. Undo it here. *)
+Unset Asymmetric Patterns.
 
 Require Import Proofs.GHC.Base.
 
@@ -87,17 +90,11 @@ Proof.
     intro C. inversion C.
   - apply eqUnique_neq in EQ.
     intro L.
-    rewrite delete_neq in L.
-    + unfold getWordKey.
-      unfold getKey.
-      unfold not in *.
-      intro h.
-      apply EQ.
-      destruct (getUnique x).
-      destruct (getUnique z).
-      subst.
-      auto.
-    + apply (Hu L).
+    assert (Hneq : getWordKey (getUnique x) <> getWordKey (getUnique z)).
+    { unfold getWordKey, getKey, not. intro h. apply EQ.
+      destruct (getUnique x). destruct (getUnique z). subst. auto. }
+    rewrite (delete_neq _ _ _ _ Hneq) in L.
+    apply (Hu L).
 Qed.
 
 Lemma lookup_fold_left_app_delFromUFM:
@@ -138,17 +135,11 @@ Proof.
     intro C. inversion C.
   - apply eqUnique_neq in EQ.
     intro L.
-    rewrite delete_neq in L.
-    + unfold getWordKey.
-      unfold getKey.
-      unfold not in *.
-      destruct (getUnique x).
-      destruct z as [n'].
-      intros Hg.
-      apply EQ.
-      f_equal.
-      assumption.
-    + apply (Hu L).
+    assert (Hneq : getWordKey (getUnique x) <> getWordKey z).
+    { unfold getWordKey, getKey, not. intro h. apply EQ.
+      destruct (getUnique x). destruct z as [n']. f_equal. assumption. }
+    rewrite (delete_neq _ _ _ _ Hneq) in L.
+    apply (Hu L).
 Qed.
 
 Lemma lookup_fold_left_app_delFromUFM_Directly:
@@ -282,18 +273,12 @@ destruct (eqUnique (getUnique z) (getUnique x)) eqn:EQ.
   inversion H0.
   auto.
 - apply eqUnique_neq in EQ.
-  rewrite lookup_insert_neq in H0.
-  + unfold getWordKey.
-    unfold getKey.
-    unfold not in *.
-    intro h.
-    apply EQ.
-    destruct (getUnique x).
-    destruct (getUnique z).
-    subst.
-    auto.
-  + apply wildcard'.
-    auto.
+  assert (Hneq : getWordKey (getUnique x) <> getWordKey (getUnique z)).
+  { unfold getWordKey, getKey, not. intro h. apply EQ.
+    destruct (getUnique x). destruct (getUnique z). subst. auto. }
+  rewrite (lookup_insert_neq _ _ _ _ _ Hneq) in H0.
+  apply wildcard'.
+  auto.
 Defined.
 
 Definition addListToUniqSet {a} `{Unique.Uniquable a}
@@ -508,7 +493,7 @@ Next Obligation.
   apply wildcard'.
   destruct s as [m].
   unfold partitionUFM in Heq_anonymous.
-  destruct (Internal.partition arg_0__ m) as [l r] eqn:Hp.
+  destruct (Data.IntMap.Internal.partition arg_0__ m) as [l r] eqn:Hp.
   destruct x as [m'].
   inversion Heq_anonymous; subst.
   unfold lookupUFM in *.
@@ -523,7 +508,7 @@ Next Obligation.
   apply wildcard'.
   destruct s as [m].
   unfold partitionUFM in Heq_anonymous.
-  destruct (Internal.partition arg_0__ m) as [l r] eqn:Hp.
+  destruct (Data.IntMap.Internal.partition arg_0__ m) as [l r] eqn:Hp.
   destruct y as [m'].
   inversion Heq_anonymous; subst.
   unfold lookupUFM in *.

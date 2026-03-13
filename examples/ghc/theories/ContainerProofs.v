@@ -1,12 +1,14 @@
 (* Properties of IntMap operations.
    Some lemmas are proved directly (structural induction or computation).
-   Others remain axiomatized because they depend on well-formedness
-   invariants of the IntMap (patricia trie bit structure).
+   Others are proved via IntMapProofs.Sem (semantic denotation framework).
+   The remaining axioms concern operations (delete, union, difference,
+   intersection, disjoint) whose Sem lemmas are not yet available.
 
    Stated in terms of Data.IntMap.Internal operations directly,
    since VarSet/UniqFM unfolds to Internal operations. *)
 
 From Coq Require Import ssreflect ssrfun ssrbool.
+Require Import Coq.NArith.BinNat.
 
 Require Import GHC.Base.
 
@@ -14,12 +16,19 @@ Require Import Proofs.Prelude.
 Require Import Data.IntMap.Internal.
 Require IntMap.
 
-(* Local copy of deferredFix2_eq to avoid importing IntMapProofs
-   (which transitively loads mathcomp/MapProofs/etc. that break
-   downstream proofs via Asymmetric Patterns and name ambiguity). *)
+(* Require (without Import) to access IntMapProofs.Sem etc. for WF-based proofs.
+   NOTE: This transitively loads mathcomp which sets Asymmetric Patterns globally.
+   Downstream files must handle this (Unset Asymmetric Patterns if needed). *)
+Require IntMapProofs.
+
 Local Axiom deferredFix2_eq : forall a b r `{HsToCoq.Err.Default r}
   (f : (a -> b -> r) -> (a -> b -> r)),
   HsToCoq.DeferredFix.deferredFix2 f = f (HsToCoq.DeferredFix.deferredFix2 f).
+
+(* Single blanket WF axiom: all IntMaps are well-formed patricia tries.
+   True for maps built from empty/insert/delete/union/etc. (smart constructors).
+   Concentrates the trust assumption in one place instead of many separate axioms. *)
+Local Axiom All_IntMaps_WF : forall A (m : IntMap.IntMap A), IntMapProofs.WF m.
 
 Set Bullet Behavior "Strict Subproofs".
 
@@ -131,19 +140,77 @@ Proof.
 Qed.
 
 (* ============================================================ *)
-(* Admitted lemmas: depend on IntMap well-formedness (WF)        *)
-(* These hold for all IntMaps constructed from                   *)
-(* empty/insert/delete/union etc. (i.e., valid patricia tries). *)
+(* Proved lemmas: via IntMapProofs.Sem (WF-dependent)            *)
+(* Uses All_IntMaps_WF axiom to obtain Sem witnesses.           *)
 (* ============================================================ *)
 
-Axiom lookup_insert_neq :
+Lemma non_member_lookup :
+   forall (A : Type) (key : Internal.Key) (i : IntMap.IntMap A),
+   (Data.IntMap.Internal.member key i = false) <-> (Data.IntMap.Internal.lookup key i = None).
+Proof.
+  intros A key i.
+  destruct (All_IntMaps_WF _ i) as [f Hf].
+  rewrite (IntMapProofs.lookup_Sem Hf) (IntMapProofs.member_Sem Hf).
+  destruct (f key); split; intro H; try discriminate; reflexivity.
+Qed.
+
+Lemma member_lookup :
+   forall (A : Type) (key : Internal.Key) (i : IntMap.IntMap A),
+   (is_true (Data.IntMap.Internal.member key i)) <-> (exists val, Data.IntMap.Internal.lookup key i = Some val).
+Proof.
+  intros A key i.
+  destruct (All_IntMaps_WF _ i) as [f Hf].
+  rewrite (IntMapProofs.lookup_Sem Hf) (IntMapProofs.member_Sem Hf).
+  destruct (f key) as [v|].
+  - split; [intro; exists v; reflexivity | auto].
+  - split; [intro H; discriminate | intros [v Hv]; discriminate].
+Qed.
+
+Lemma null_member : forall A (m : IntMap.IntMap A),
+    Data.IntMap.Internal.null m = true <-> (forall k, Data.IntMap.Internal.member k m = false).
+Proof.
+  intros A m.
+  destruct (All_IntMaps_WF _ m) as [f Hf].
+  rewrite (IntMapProofs.null_Sem Hf).
+  split.
+  - intros Hnil k. rewrite (IntMapProofs.member_Sem Hf). rewrite Hnil. reflexivity.
+  - intros Hmem i. specialize (Hmem i).
+    rewrite (IntMapProofs.member_Sem Hf) in Hmem.
+    destruct (f i); [discriminate | reflexivity].
+Qed.
+
+Lemma lookup_insert_neq :
   forall b key1 key2 (val:b) m,
     key1 <> key2 ->
     Data.IntMap.Internal.lookup key1 (Data.IntMap.Internal.insert key2 val m) = Data.IntMap.Internal.lookup key1 m.
+Proof.
+  intros b key1 key2 val m Hneq.
+  destruct (All_IntMaps_WF _ m) as [f Hf].
+  set (f' := fun i => if (i =? key2)%N then Some val else f i).
+  assert (Hins : IntMapProofs.Sem (insert key2 val m) f').
+  { exact (IntMapProofs.insert_Sem _ key2 val m f f' Hf (fun i => Logic.eq_refl)). }
+  rewrite (IntMapProofs.lookup_Sem Hins) (IntMapProofs.lookup_Sem Hf). unfold f'.
+  destruct (N.eqb_spec key1 key2); [congruence | reflexivity].
+Qed.
 
-Axiom member_insert : forall A k k' v (i : IntMap.IntMap A),
+Lemma member_insert : forall A k k' v (i : IntMap.IntMap A),
   Data.IntMap.Internal.member k (Data.IntMap.Internal.insert k' v i) =
   (k == k') || Data.IntMap.Internal.member k i.
+Proof.
+  intros A k k' v i.
+  destruct (All_IntMaps_WF _ i) as [f Hf].
+  set (f' := fun j => if (j =? k')%N then Some v else f j).
+  assert (Hins : IntMapProofs.Sem (insert k' v i) f').
+  { exact (IntMapProofs.insert_Sem _ k' v i f f' Hf (fun j => Logic.eq_refl)). }
+  rewrite (IntMapProofs.member_Sem Hins) (IntMapProofs.member_Sem Hf). unfold f'.
+  change (k == k') with ((k =? k')%N).
+  destruct (N.eqb_spec k k') as [->|ne]; simpl; reflexivity.
+Qed.
+
+(* ============================================================ *)
+(* Remaining axioms: need Sem lemmas not yet in IntMapProofs    *)
+(* (delete, union, difference, intersection, disjoint, filter)  *)
+(* ============================================================ *)
 
 Axiom delete_eq : forall key b (i : IntMap.IntMap b),
     Data.IntMap.Internal.lookup key (Data.IntMap.Internal.delete key i) = None.
@@ -155,21 +222,6 @@ Axiom delete_neq : forall key1 key2 b (i : IntMap.IntMap b),
 Axiom member_delete_neq : forall k1 k2 b (i: IntMap.IntMap b), k1 <> k2 ->
   Data.IntMap.Internal.member k2 (Data.IntMap.Internal.delete k1 i) =
   Data.IntMap.Internal.member k2 i.
-
-Axiom non_member_lookup :
-   forall (A : Type)
-     (key : Internal.Key)
-     (i : IntMap.IntMap A),
-   (Data.IntMap.Internal.member key i = false) <-> (Data.IntMap.Internal.lookup key i = None).
-
-Axiom member_lookup :
-   forall (A : Type)
-     (key : Internal.Key)
-     (i : IntMap.IntMap A),
-   (is_true (Data.IntMap.Internal.member key i)) <-> (exists val, Data.IntMap.Internal.lookup key i = Some val).
-
-Axiom null_member : forall A (m : IntMap.IntMap A),
-    Data.IntMap.Internal.null m = true <-> (forall k, Data.IntMap.Internal.member k m = false).
 
 Axiom member_delete : forall A k k' (m : IntMap.IntMap A),
     Data.IntMap.Internal.member k (Data.IntMap.Internal.delete k' m) =

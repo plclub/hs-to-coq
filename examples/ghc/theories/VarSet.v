@@ -60,16 +60,10 @@ Qed.
 
 (* Why is this not part of ssr? *)
 Lemma eqE : forall (a b:bool), a = b <-> (a <-> b).
-Proof.  
-  move=> a b.
-  elim Ea: a;
-  elim Eb: b;
-  try tauto.
-  intuition.
-  symmetry.
-  rewrite fold_is_true.
-  apply H0. auto.
-  intuition.
+Proof.
+  move=> [] []; split=> //; move=> [H1 H2].
+  - by move: (H1 isT).
+  - by move: (H2 isT).
 Qed.
 
 Lemma andE a b : a && b <-> a /\ b.
@@ -617,7 +611,6 @@ Proof.
   - intros x vs.
     hs_simpl.
     intuition.
-    inversion H0.
   - intros x vs.
     hs_simpl.
     rewrite IHl.
