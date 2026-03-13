@@ -207,6 +207,47 @@ Proof.
   destruct (N.eqb_spec k k') as [->|ne]; simpl; reflexivity.
 Qed.
 
+(* Helper: looking up in a filtered map implies the predicate holds *)
+Lemma lookup_filter_Some : forall A (p : A -> bool) key val (m : IntMap.IntMap A),
+  Data.IntMap.Internal.lookup key (Data.IntMap.Internal.filter p m) = Some val ->
+  p val = true /\ Data.IntMap.Internal.lookup key m = Some val.
+Proof.
+  intros A p key val m Hlook.
+  destruct (All_IntMaps_WF _ m) as [f Hf].
+  set (f' := fun i => match f i with
+                       | None => None
+                       | Some v => if p v then Some v else None
+                       end).
+  assert (Hfilt : IntMapProofs.Sem (Data.IntMap.Internal.filter p m) f').
+  { exact (IntMapProofs.filter_Sem p m f f' Hf (fun i => Logic.eq_refl)). }
+  rewrite (IntMapProofs.lookup_Sem Hfilt) in Hlook.
+  rewrite (IntMapProofs.lookup_Sem Hf).
+  unfold f' in Hlook. destruct (f key) as [v|] eqn:Hfk.
+  - destruct (p v) eqn:Hpv.
+    + inversion Hlook; subst. auto.
+    + discriminate.
+  - discriminate.
+Qed.
+
+(* Helper: if lookup finds val in m and p val = true, then member in filter *)
+Lemma member_filter : forall A (p : A -> bool) key val (m : IntMap.IntMap A),
+  Data.IntMap.Internal.lookup key m = Some val ->
+  p val = true ->
+  Data.IntMap.Internal.member key (Data.IntMap.Internal.filter p m) = true.
+Proof.
+  intros A p key val m Hlook Hpval.
+  destruct (All_IntMaps_WF _ m) as [f Hf].
+  set (f' := fun i => match f i with
+                       | None => None
+                       | Some v => if p v then Some v else None
+                       end).
+  assert (Hfilt : IntMapProofs.Sem (Data.IntMap.Internal.filter p m) f').
+  { exact (IntMapProofs.filter_Sem p m f f' Hf (fun i => Logic.eq_refl)). }
+  rewrite (IntMapProofs.member_Sem Hfilt).
+  rewrite (IntMapProofs.lookup_Sem Hf) in Hlook.
+  unfold f'. rewrite Hlook Hpval. reflexivity.
+Qed.
+
 (* ============================================================ *)
 (* Remaining axioms: need Sem lemmas not yet in IntMapProofs    *)
 (* (delete, union, difference, intersection, disjoint, filter)  *)

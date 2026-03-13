@@ -422,17 +422,63 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   Lemma filter_1 :
     forall (s : t) (x : elt) (f : elt -> bool),
     compat_bool E.eq f -> In x (filter f s) -> In x s.
-  Proof. Admitted.
+  Proof.
+    intros s x f _ Hin.
+    destruct s as [[m]].
+    unfold In, filter, filterVarSet, UniqSet.filterUniqSet, UniqFM.filterUFM in *.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in *.
+    set (key := Unique.getWordKey (Unique.getUnique x)) in *.
+    apply member_lookup in Hin. destruct Hin as [val Hval].
+    (* filter is filterWithKey, so lookup_filterWithKey applies *)
+    unfold Data.IntMap.Internal.filter in Hval.
+    apply lookup_filterWithKey in Hval.
+    apply member_lookup. exists val. exact Hval.
+  Qed.
 
   Lemma filter_2 :
     forall (s : t) (x : elt) (f : elt -> bool),
     compat_bool E.eq f -> In x (filter f s) -> f x = true.
-  Proof. Admitted.
+  Proof.
+    intros s x f Hcompat Hin.
+    destruct s as [[m]].
+    unfold In, filter, filterVarSet, UniqSet.filterUniqSet, UniqFM.filterUFM in *.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in *.
+    set (key := Unique.getWordKey (Unique.getUnique x)) in *.
+    apply member_lookup in Hin. destruct Hin as [val Hval].
+    apply lookup_filter_Some in Hval. destruct Hval as [Hpval Hlookup].
+    (* val is the Var stored at key in the original map.
+       ValidVarSet_Axiom: lookupVarSet s x = Some val -> x == val.
+       compat_bool: E.eq x val -> f x = f val. *)
+    assert (Heq : Var_as_DT.eq x val).
+    { unfold Var_as_DT.eq, Var_as_DT.eqb.
+      assert (Hlook : lookupVarSet (UniqSet.Mk_UniqSet (UniqFM.UFM m)) x = Some val)
+        by exact Hlookup.
+      apply ValidVarSet_Axiom in Hlook. exact Hlook. }
+    rewrite (Hcompat x val Heq). exact Hpval.
+  Qed.
 
   Lemma filter_3 :
     forall (s : t) (x : elt) (f : elt -> bool),
     compat_bool E.eq f -> In x s -> f x = true -> In x (filter f s).
-  Proof. Admitted.
+  Proof.
+    intros s x f Hcompat Hin Hfx.
+    destruct s as [[m]].
+    unfold In, filter, filterVarSet, UniqSet.filterUniqSet, UniqFM.filterUFM in *.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in *.
+    set (key := Unique.getWordKey (Unique.getUnique x)) in *.
+    (* Get val from member *)
+    apply member_lookup in Hin. destruct Hin as [val Hval].
+    (* ValidVarSet gives x == val *)
+    assert (Heq : Var_as_DT.eq x val).
+    { unfold Var_as_DT.eq, Var_as_DT.eqb.
+      assert (Hlook : lookupVarSet (UniqSet.Mk_UniqSet (UniqFM.UFM m)) x = Some val)
+        by exact Hval.
+      apply ValidVarSet_Axiom in Hlook. exact Hlook. }
+    (* f val = f x = true *)
+    assert (Hfval : f val = true) by (rewrite <- (Hcompat x val Heq); exact Hfx).
+    (* Use member_filter from ContainerProofs *)
+    exact (member_filter _ f key val m Hval Hfval).
+  Qed.
 
   Lemma for_all_1 :
     forall (s : t) (f : elt -> bool),
@@ -516,7 +562,12 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
 
   Lemma equal_2 : forall s s' : t, equal s s' = true -> Equal s s'.
   Proof.
-  Admitted.
+    intros s s' Heq a.
+    destruct s as [[i]], s' as [[i0]].
+    unfold equal in Heq. simpl in Heq.
+    unfold In, elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    rewrite (Eq_membership Var _ EqLaws_Var _ _ Heq). tauto.
+  Qed.
 
   Lemma fold_1 :
     forall (s : t) (A : Type) (i : A) (f : elt -> A -> A),
