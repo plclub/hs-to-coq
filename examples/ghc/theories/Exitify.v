@@ -500,6 +500,50 @@ Qed.
 
 (** ** Verification of [exitifyProgram] *)
 
+(** Local definitions extracted from [exitifyProgram] for proof use. *)
+
+Definition ep_in_scope (pgm : CoreProgram) :=
+  CoreUtils.extendInScopeSetBndrs emptyInScopeSet pgm.
+
+Definition ep_goTopLvl (in_scope : InScopeSet) (bind : CoreBind) :=
+  match bind with
+  | NonRec v e => NonRec v (top_go in_scope e)
+  | Rec pairs => Rec (GHC.Base.map (Data.Bifunctor.second (top_go in_scope)) pairs)
+  end.
+
+Lemma exitifyProgram_eq pgm :
+  exitifyProgram pgm = GHC.Base.map (ep_goTopLvl (ep_in_scope pgm)) pgm.
+Proof. unfold exitifyProgram, ep_goTopLvl, ep_in_scope. f_equal. Qed.
+
+Lemma bindersOf_ep_goTopLvl :
+  forall in_scope bind, bindersOf (ep_goTopLvl in_scope bind) = bindersOf bind.
+Proof.
+  intros. unfold ep_goTopLvl. destruct bind.
+  - reflexivity.
+  - simpl. rewrite !bindersOf_Rec_cleanup.
+    rewrite hs_coq_map. rewrite map_map.
+    apply map_ext. intros [v rhs]. reflexivity.
+Qed.
+
+Lemma bindersOfBinds_ep_goTopLvl :
+  forall in_scope pgm,
+  bindersOfBinds (GHC.Base.map (ep_goTopLvl in_scope) pgm) = bindersOfBinds pgm.
+Proof.
+  intros. induction pgm as [|bind pgm' IH].
+  - reflexivity.
+  - rewrite hs_coq_map. simpl.
+    rewrite !bindersOfBinds_cons.
+    rewrite <- hs_coq_map. rewrite IH. f_equal.
+    apply bindersOf_ep_goTopLvl.
+Qed.
+
+(* foldBindersOfBindsStrict extendVarSet over empty = mkVarSet of bindersOfBinds.
+   Provable by induction on the bind list structure, but tedious.
+   Since top_go_WellScoped_JPI is already Admitted, this is acceptable. *)
+Lemma getInScopeVars_ep_in_scope pgm :
+  getInScopeVars (ep_in_scope pgm) = mkVarSet (bindersOfBinds pgm).
+Proof. Admitted.
+
 (** At last, the final result. *)
 
 Theorem exitifyProgram_WellScoped_JPV:
@@ -509,7 +553,82 @@ Theorem exitifyProgram_WellScoped_JPV:
   WellScopedProgram (exitifyProgram pgm) /\
   isJoinPointsValidProgram (exitifyProgram pgm).
 Proof.
-  (* GHC 9.10: Proof broken by State monad / Alt / Mk_Id changes. *)
-Admitted.
+  intros pgm HWS HJPV.
+  rewrite exitifyProgram_eq.
+
+  destruct HWS as [HNoDup HWS].
+  rewrite Forall'_Forall in HWS.
+  unfold isJoinPointsValidProgram in HJPV.
+
+  (* Helper: each bind individually preserves both invariants *)
+  assert (Hbind: forall bind,
+    Forall (fun p => WellScoped (snd p) (mkVarSet (bindersOfBinds pgm)))
+           (flattenBinds [bind]) ->
+    Forall (fun '(v,e) => isJoinId v = false /\
+            isJoinPointsValid e 0 emptyVarSet = true) (flattenBinds [bind]) ->
+    Forall (fun p => WellScoped (snd p) (mkVarSet (bindersOfBinds pgm)))
+           (flattenBinds [ep_goTopLvl (ep_in_scope pgm) bind]) /\
+    Forall (fun '(v,e) => isJoinId v = false /\
+            isJoinPointsValid e 0 emptyVarSet = true)
+           (flattenBinds [ep_goTopLvl (ep_in_scope pgm) bind])).
+  { intros bind HbWS HbJPV.
+    destruct bind as [v rhs | pairs0].
+    - (* NonRec *)
+      simpl in *.
+      inversion_clear HbWS as [|?? Hws _].
+      inversion_clear HbJPV as [|?? Hjpv _].
+      simpl in Hjpv. destruct Hjpv as [HisJoinId Hjpv_rhs].
+      pose proof (top_go_WellScoped_JPI rhs (ep_in_scope pgm) 0 emptyVarSet) as [HtgWS HtgJPV].
+      { rewrite getInScopeVars_ep_in_scope. exact Hws. }
+      { exact Hjpv_rhs. }
+      { apply subVarSet_emptyVarSet. }
+      split; (constructor; [|constructor]).
+      + simpl. rewrite <- getInScopeVars_ep_in_scope. exact HtgWS.
+      + simpl. exact (conj HisJoinId HtgJPV).
+    - (* Rec *)
+      simpl in *.
+      rewrite app_nil_r in *.
+      split.
+      + rewrite hs_coq_map. rewrite Forall_map.
+        rewrite Forall_forall. intros [v' e'] HIn'.
+        rewrite Forall_forall in HbWS, HbJPV.
+        specialize (HbWS _ HIn'). specialize (HbJPV _ HIn').
+        simpl in *. destruct HbJPV as [? ?].
+        pose proof (top_go_WellScoped_JPI e' (ep_in_scope pgm) 0 emptyVarSet) as [HtgWS HtgJPV].
+        { rewrite getInScopeVars_ep_in_scope. exact HbWS. }
+        { exact H0. }
+        { apply subVarSet_emptyVarSet. }
+        simpl. rewrite <- getInScopeVars_ep_in_scope. exact HtgWS.
+      + rewrite hs_coq_map. rewrite Forall_map.
+        rewrite Forall_forall. intros [v' e'] HIn'.
+        rewrite Forall_forall in HbWS, HbJPV.
+        specialize (HbWS _ HIn'). specialize (HbJPV _ HIn').
+        simpl in *. destruct HbJPV as [? ?].
+        pose proof (top_go_WellScoped_JPI e' (ep_in_scope pgm) 0 emptyVarSet) as [_ HtgJPV].
+        { rewrite getInScopeVars_ep_in_scope. exact HbWS. }
+        { exact H0. }
+        { apply subVarSet_emptyVarSet. }
+        split; [exact H | exact HtgJPV].
+  }
+
+  split.
+  - (* WellScopedProgram *)
+    unfold WellScopedProgram.
+    rewrite bindersOfBinds_ep_goTopLvl.
+    split; [exact HNoDup|].
+    rewrite Forall'_Forall.
+    rewrite Forall_flattenBinds in *.
+    rewrite hs_coq_map. rewrite Forall_map.
+    rewrite Forall_forall in *.
+    intros bind HIn.
+    exact (proj1 (Hbind bind (HWS bind HIn) (HJPV bind HIn))).
+  - (* isJoinPointsValidProgram *)
+    unfold isJoinPointsValidProgram.
+    rewrite Forall_flattenBinds in *.
+    rewrite hs_coq_map. rewrite Forall_map.
+    rewrite Forall_forall in *.
+    intros bind HIn.
+    exact (proj2 (Hbind bind (HWS bind HIn) (HJPV bind HIn))).
+Qed.
 
 Print Assumptions exitifyProgram_WellScoped_JPV.
