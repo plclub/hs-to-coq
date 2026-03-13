@@ -166,86 +166,245 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   Qed.
 
   Lemma subset_1 : forall s s' : t, Subset s s' -> subset s s' = true.
-  Proof. Admitted.
+  Proof. Admitted. (* Requires key-surjectivity: all IntMap keys come from Vars *)
 
   Lemma subset_2 : forall s s' : t, subset s s' = true -> Subset s s'.
-  Proof. Admitted.
+  Proof.
+    unfold Subset, In, subset.
+    move => [[m1]] [[m2]].
+    unfold subVarSet, isEmptyVarSet, UniqSet.isEmptyUniqSet, UniqFM.isNullUFM.
+    unfold minusVarSet, UniqSet.minusUniqSet, UniqFM.minusUFM.
+    move => Hnull a.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    move => Hin.
+    have Hk : Data.IntMap.Internal.member (Unique.getWordKey (Unique.getUnique a))
+              (Data.IntMap.Internal.difference m1 m2) = false.
+    { apply null_member. exact Hnull. }
+    rewrite member_difference in Hk.
+    rewrite Hin in Hk. simpl in Hk.
+    (* Hk : negb (member ... m2) = false *)
+    destruct (Data.IntMap.Internal.member (Unique.getWordKey (Unique.getUnique a)) m2) eqn:E;
+      [exact E | discriminate Hk].
+  Qed.
 
   Lemma empty_1 : Empty empty.
   Proof. unfold Empty; intros a H. inversion H. Qed.
 
   Lemma is_empty_1 : forall s : t, Empty s -> is_empty s = true.
-  Proof. Admitted.
+  Proof. Admitted. (* Requires key-surjectivity: all IntMap keys come from Vars *)
 
   Lemma is_empty_2 : forall s : t, is_empty s = true -> Empty s.
-  Proof. Admitted.
+  Proof.
+    unfold Empty, In, is_empty.
+    move => [[m]].
+    unfold isEmptyVarSet, UniqSet.isEmptyUniqSet, UniqFM.isNullUFM.
+    move => Hnull a.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    have Hk : Data.IntMap.Internal.member (Unique.getWordKey (Unique.getUnique a)) m = false.
+    { apply null_member. exact Hnull. }
+    rewrite Hk. discriminate.
+  Qed.
 
   Lemma add_1 :
     forall (s : t) (x y : elt), E.eq x y -> In y (add x s).
-  Proof. Admitted.
+  Proof.
+    unfold E.eq, E.eqb, In, add.
+    move => [[m]] x y Eq.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold extendVarSet, UniqSet.addOneToUniqSet, UniqFM.addToUFM.
+    rewrite member_insert.
+    rewrite -> eq_unique in Eq.
+    rewrite Eq. rewrite Eq_refl. reflexivity.
+  Qed.
 
   Lemma add_2 : forall (s : t) (x y : elt), In y s -> In y (add x s).
-  Proof. Admitted.
+  Proof.
+    unfold In, add.
+    move => [[m]] x y.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold extendVarSet, UniqSet.addOneToUniqSet, UniqFM.addToUFM.
+    move => H. rewrite member_insert. rewrite H orbT. reflexivity.
+  Qed.
 
   Lemma add_3 :
     forall (s : t) (x y : elt), ~ E.eq x y -> In y (add x s) -> In y s.
-  Proof. Admitted.
+  Proof.
+    unfold E.eq, E.eqb, In, add.
+    move => [[m]] x y NEq.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold extendVarSet, UniqSet.addOneToUniqSet, UniqFM.addToUFM.
+    rewrite member_insert.
+    have Hneq: (Unique.getWordKey (Unique.getUnique y) ==
+                Unique.getWordKey (Unique.getUnique x)) = false.
+    { apply /Eq_eq. move => h. apply NEq. apply eq_unique. symmetry. exact h. }
+    rewrite Hneq. simpl. auto.
+  Qed.
 
   Lemma remove_1 :
     forall (s : t) (x y : elt), E.eq x y -> ~ In y (remove x s).
-  Proof. Admitted.
+  Proof.
+    unfold E.eq, E.eqb, In, remove.
+    move => [[m]] x y Eq.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold delVarSet, UniqSet.delOneFromUniqSet, UniqFM.delFromUFM.
+    rewrite member_delete.
+    rewrite -> eq_unique in Eq.
+    rewrite Eq. rewrite Eq_refl. simpl. discriminate.
+  Qed.
 
   Lemma remove_2 :
     forall (s : t) (x y : elt), ~ E.eq x y -> In y s -> In y (remove x s).
-  Proof. Admitted.
+  Proof.
+    unfold E.eq, E.eqb, In, remove.
+    move => [[m]] x y NEq.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold delVarSet, UniqSet.delOneFromUniqSet, UniqFM.delFromUFM.
+    rewrite member_delete.
+    move => H.
+    have Hneq: (Unique.getWordKey (Unique.getUnique y) ==
+                Unique.getWordKey (Unique.getUnique x)) = false.
+    { apply /Eq_eq. move => h. apply NEq. apply eq_unique. symmetry. exact h. }
+    rewrite Hneq. simpl. exact H.
+  Qed.
 
   Lemma remove_3 :
     forall (s : t) (x y : elt), In y (remove x s) -> In y s.
-  Proof. Admitted.
+  Proof.
+    unfold In, remove.
+    move => [[m]] x y.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold delVarSet, UniqSet.delOneFromUniqSet, UniqFM.delFromUFM.
+    rewrite member_delete.
+    move /andP => [_ H]. exact H.
+  Qed.
 
   Lemma singleton_1 :
     forall x y : elt, In y (singleton x) -> E.eq x y.
-  Proof. Admitted.
+  Proof.
+    unfold E.eq, E.eqb, In, singleton.
+    move => x y.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold unitVarSet, UniqSet.unitUniqSet, UniqFM.unitUFM.
+    rewrite member_singleton.
+    move /Eq_eq => H. apply eq_unique. symmetry. exact H.
+  Qed.
 
   Lemma singleton_2 :
     forall x y : elt, E.eq x y -> In y (singleton x).
-  Proof. Admitted.
+  Proof.
+    unfold E.eq, E.eqb, In, singleton.
+    move => x y.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold unitVarSet, UniqSet.unitUniqSet, UniqFM.unitUFM.
+    rewrite member_singleton.
+    move => Eq. rewrite -> eq_unique in Eq. rewrite Eq. rewrite Eq_refl.
+    reflexivity.
+  Qed.
 
   Lemma union_1 :
     forall (s s' : t) (x : elt), In x (union s s') -> In x s \/ In x s'.
-  Proof. Admitted.
+  Proof.
+    unfold In, union.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold unionVarSet, UniqSet.unionUniqSets, UniqFM.plusUFM.
+    rewrite member_union.
+    (* plusUFM swaps: union m2 m1, so member_union gives member k m1 || member k m2 *)
+    move /orP => [H | H].
+    - left. exact H.
+    - right. exact H.
+  Qed.
 
   Lemma union_2 :
     forall (s s' : t) (x : elt), In x s -> In x (union s s').
-  Proof. Admitted.
+  Proof.
+    unfold In, union.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold unionVarSet, UniqSet.unionUniqSets, UniqFM.plusUFM.
+    rewrite member_union.
+    move => H. apply /orP. left. exact H.
+  Qed.
 
   Lemma union_3 :
     forall (s s' : t) (x : elt), In x s' -> In x (union s s').
-  Proof. Admitted.
+  Proof.
+    unfold In, union.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold unionVarSet, UniqSet.unionUniqSets, UniqFM.plusUFM.
+    rewrite member_union.
+    move => H. apply /orP. right. exact H.
+  Qed.
 
   Lemma inter_1 :
     forall (s s' : t) (x : elt), In x (inter s s') -> In x s.
-  Proof. Admitted.
+  Proof.
+    unfold In, inter.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold intersectVarSet, UniqSet.intersectUniqSets, UniqFM.intersectUFM.
+    rewrite member_intersection.
+    move /andP => [H _]. exact H.
+  Qed.
 
   Lemma inter_2 :
     forall (s s' : t) (x : elt), In x (inter s s') -> In x s'.
-  Proof. Admitted.
+  Proof.
+    unfold In, inter.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold intersectVarSet, UniqSet.intersectUniqSets, UniqFM.intersectUFM.
+    rewrite member_intersection.
+    move /andP => [_ H]. exact H.
+  Qed.
 
   Lemma inter_3 :
     forall (s s' : t) (x : elt), In x s -> In x s' -> In x (inter s s').
-  Proof. Admitted.
+  Proof.
+    unfold In, inter.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold intersectVarSet, UniqSet.intersectUniqSets, UniqFM.intersectUFM.
+    rewrite member_intersection.
+    move => H1 H2. apply /andP. split; assumption.
+  Qed.
 
   Lemma diff_1 :
     forall (s s' : t) (x : elt), In x (diff s s') -> In x s.
-  Proof. Admitted.
+  Proof.
+    unfold In, diff.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold minusVarSet, UniqSet.minusUniqSet, UniqFM.minusUFM.
+    rewrite member_difference.
+    move /andP => [H _]. exact H.
+  Qed.
 
   Lemma diff_2 :
     forall (s s' : t) (x : elt), In x (diff s s') -> ~ In x s'.
-  Proof. Admitted.
+  Proof.
+    unfold In, diff.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold minusVarSet, UniqSet.minusUniqSet, UniqFM.minusUFM.
+    rewrite member_difference.
+    move /andP => [_ H] Hcontra.
+    move: H. rewrite Hcontra. done.
+  Qed.
 
   Lemma diff_3 :
     forall (s s' : t) (x : elt), In x s -> ~ In x s' -> In x (diff s s').
-  Proof. Admitted.
+  Proof.
+    unfold In, diff.
+    move => [[m1]] [[m2]] x.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    unfold minusVarSet, UniqSet.minusUniqSet, UniqFM.minusUFM.
+    rewrite member_difference.
+    move => H1 H2. apply /andP. split.
+    - exact H1.
+    - apply /negP. exact H2.
+  Qed.
 
   Lemma fold_left_map:
     forall {a b c} f (g : a -> b) (x : c) xs,

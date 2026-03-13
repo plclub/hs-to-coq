@@ -183,6 +183,24 @@ Axiom disjoint_difference: forall b (i1 i2 i3 : IntMap.IntMap b),
   Data.IntMap.Internal.null (Data.IntMap.Internal.difference i1 i2) ->
   Data.IntMap.Internal.disjoint i1 i3 = true.
 
+Axiom member_singleton : forall A k k' (v : A),
+    Data.IntMap.Internal.member k (Data.IntMap.Internal.singleton k' v) = (k == k').
+
+Axiom member_difference : forall A B k (m1 : IntMap.IntMap A) (m2 : IntMap.IntMap B),
+    Data.IntMap.Internal.member k (Data.IntMap.Internal.difference m1 m2) =
+    Data.IntMap.Internal.member k m1 && negb (Data.IntMap.Internal.member k m2).
+
+Axiom member_intersection : forall A B k (m1 : IntMap.IntMap A) (m2 : IntMap.IntMap B),
+    Data.IntMap.Internal.member k (Data.IntMap.Internal.intersection m1 m2) =
+    Data.IntMap.Internal.member k m1 && Data.IntMap.Internal.member k m2.
+
+Axiom null_member : forall A (m : IntMap.IntMap A),
+    Data.IntMap.Internal.null m = true <-> (forall k, Data.IntMap.Internal.member k m = false).
+
+Axiom member_delete : forall A k k' (m : IntMap.IntMap A),
+    Data.IntMap.Internal.member k (Data.IntMap.Internal.delete k' m) =
+    negb (k == k') && Data.IntMap.Internal.member k m.
+
 Lemma Eq_membership : forall (A : Type) (HeqA : Eq_ A) (HlawsA : EqLaws A) (m1 m2 : IntMap.IntMap A),
   m1 == m2 ->
   forall k, Data.IntMap.Internal.member k m1 = Data.IntMap.Internal.member k m2.
