@@ -217,4 +217,17 @@ Lemma deAnnotate_snd_collectNAnnBndrs:
   deAnnotate (snd (collectNAnnBndrs n e)) =
   snd (collectNBinders n (deAnnotate e)).
 Proof.
-Admitted. (* TODO: needs rework for GHC 9.10 + Coq 8.20 *)
+  intros a v n e Hdef Hlams.
+  name_collect collect. name_go go.
+  enough (H: forall m bs1 bs2 (e' : AnnExpr a v),
+    AnnHasNLams m e' ->
+    deAnnotate (snd (collect m bs1 e')) = snd (go m bs2 (deAnnotate e'))).
+  { apply H. exact Hlams. }
+  clear n e Hlams.
+  subst collect go.
+  induction m as [|m IHm]; intros bs1 bs2 e' Hlams.
+  - simpl. reflexivity.
+  - destruct e' as [fvs e'']. destruct e''; simpl in Hlams; try contradiction.
+    simpl.
+    apply IHm. exact Hlams.
+Qed.
