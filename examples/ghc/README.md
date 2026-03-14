@@ -150,8 +150,9 @@ Proved theorems
  * **ScopeInvariant.v** (0 Admitted, 27 Qed): Scope invariant preservation
  * **Var.v** (0 Admitted, 21 Qed): `isJoinId` lemmas, `EqLaws_Var`
  * **VarSet.v** (0 Admitted, 140 Qed): Comprehensive VarSet reasoning library
- * **ContainerProofs.v** (17 Qed + 24 Axioms): IntMap operation properties;
-   17 proved via structural induction or IntMapProofs.Sem framework
+ * **ContainerProofs.v** (63 Qed, 6 Local Axioms): IntMap operation properties;
+   all 16 previously-global axioms now proved as Lemmas; 4 new Local Axioms
+   (lookup characterizations for union/difference/intersection + disjoint spec)
  * **TrieMap.v** (1 Qed): `TrieMapLaws__MaybeMap` instance proved
  * **VarSetFSet.v** (31 Qed): FSet interface for VarSets including
    `equal_2`, `filter_1`/`filter_2`/`filter_3`
@@ -166,7 +167,7 @@ check mark.
 |------|-----|----------|-------|
 | Axioms.v | 7 | 0 | Behavioral axioms for `uniqAway`, `ValidVarSet` |
 | Base.v | 4 | 0 | |
-| ContainerProofs.v | 17 | 0 | 24 Axioms remain (delete, union, difference, intersection, disjoint) |
+| ContainerProofs.v | 63 | 0 | 6 Local Axioms (2 foundational + 4 lookup/disjoint characterizations) |
 | Core.v | 11 | 0 | `deAnnotate` lemmas |
 | CoreFVs.v | 42 | 0 | All exprFreeVars lemmas proved |
 | CoreInduct.v | 14 | 0 | |
