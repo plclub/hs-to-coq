@@ -368,7 +368,7 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
          end else
     false.
 
-(* Id.idJoinPointHood provided in midamble *)
+(* Skipping definition `Id.idJoinPointHood' *)
 
 #[global] Definition idDataCon : Core.Id -> Core.DataCon :=
   fun id =>
@@ -412,7 +412,7 @@ Axiom mkTemplateLocalsNum : nat -> list AxiomatizedTypes.Type_ -> list Core.Id.
 
 (* Skipping definition `Id.idJoinArity' *)
 
-(* Id.asJoinId provided in midamble *)
+(* Skipping definition `Id.asJoinId' *)
 
 #[global] Definition zapInfo
    : (Core.IdInfo -> option Core.IdInfo) -> Core.Id -> Core.Id :=
@@ -735,16 +735,16 @@ Axiom idCbvMarkArity : Core.Id -> BasicTypes.Arity.
      None Some Type andb bool false list nat negb nil option orb true
      AxiomatizedTypes.ForeignCall AxiomatizedTypes.Kind AxiomatizedTypes.PrimOp
      AxiomatizedTypes.Type_ BasicTypes.Activation BasicTypes.Arity BasicTypes.CbvMark
-     BasicTypes.InlinePragma BasicTypes.JoinArity BasicTypes.MarkedCbv
-     BasicTypes.NoOneShotInfo BasicTypes.NotMarkedCbv BasicTypes.OccInfo
-     BasicTypes.OneShotInfo BasicTypes.OneShotLam BasicTypes.RuleMatchInfo
-     BasicTypes.inlinePragmaActivation BasicTypes.inlinePragmaRuleMatchInfo
-     BasicTypes.isAlwaysActive BasicTypes.isConLike BasicTypes.isDeadOcc
-     BasicTypes.isMarkedCbv BasicTypes.noOccInfo BasicTypes.setInlinePragmaActivation
+     BasicTypes.InlinePragma BasicTypes.MarkedCbv BasicTypes.NoOneShotInfo
+     BasicTypes.NotMarkedCbv BasicTypes.OccInfo BasicTypes.OneShotInfo
+     BasicTypes.OneShotLam BasicTypes.RuleMatchInfo BasicTypes.inlinePragmaActivation
+     BasicTypes.inlinePragmaRuleMatchInfo BasicTypes.isAlwaysActive
+     BasicTypes.isConLike BasicTypes.isDeadOcc BasicTypes.isMarkedCbv
+     BasicTypes.noOccInfo BasicTypes.setInlinePragmaActivation
      BasicTypes.zapOccTailCallInfo Coq.Init.Datatypes.app Coq.Lists.List.firstn
      Coq.Lists.List.repeat Core.CafInfo Core.Class Core.ClassOpId Core.CoreRule
      Core.DataCon Core.DataConWorkId Core.DataConWrapId Core.Demand Core.DmdSig
-     Core.FCallId Core.Id Core.IdDetails Core.IdInfo Core.IdUnfoldingFun Core.JoinId
+     Core.FCallId Core.Id Core.IdDetails Core.IdInfo Core.IdUnfoldingFun
      Core.Mk_DFunId Core.Mk_JoinId Core.Mk_Scaled Core.Mult Core.NoUnfolding
      Core.PrimOpId Core.RecSelData Core.RecSelId Core.RecSelParent Core.RecSelPatSyn
      Core.RuleInfo Core.Scaled Core.Unfolding Core.VanillaId Core.Var
