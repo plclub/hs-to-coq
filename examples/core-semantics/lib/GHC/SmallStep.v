@@ -252,7 +252,7 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
       | pair (pair heap (LitVal l)) (cons (Alts b alts) s) =>
           Error (GHC.Base.hs_string__ "literal not found in alts")
       | pair (pair heap (DataConApp dc args as val)) (cons (Alts b alts) s) =>
-          let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+          let subst0 := Core.mkEmptySubst (in_scope heap) in
           let 'pair subst1 b' := CoreSubst.substBndr subst0 b in
           match CoreUtils.findAlt (Core.DataAlt dc) alts with
           | Some (Core.Mk_Alt _ pats rhs) =>
@@ -273,7 +273,7 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
             (GHC.Builtin.Uniques.mkBuiltinUnique #1) HsToCoq.Err.default (CoreUtils.exprType a) in
           let fresh := Core.uniqAway (in_scope heap) fresh_tmpl in
           let subst :=
-            CoreSubst.extendSubstWithVar (CoreSubst.mkEmptySubst (in_scope heap)) v fresh in
+            CoreSubst.extendSubstWithVar (Core.mkEmptySubst (in_scope heap)) v fresh in
           Mk_Step (pair (pair (addToHeap fresh a heap) (CoreSubst.substExpr
                                subst e)) s)
       | pair (pair heap val) (cons (ApplyTo a) s) =>
@@ -282,13 +282,13 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
           Error (GHC.Base.hs_string__ "empty case")
       | pair (pair heap val) (cons (Alts b (cons (Core.Mk_Alt Core.DEFAULT nil rhs)
          nil)) s) =>
-          let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+          let subst0 := Core.mkEmptySubst (in_scope heap) in
           let 'pair subst1 b' := CoreSubst.substBndr subst0 b in
           let heap' := addToHeap b' (valueToExpr val) heap in
           let rhs' := CoreSubst.substExpr subst1 rhs in
           Mk_Step (pair (pair heap' rhs') s)
       | pair (pair heap (LitVal l)) (cons (Alts b alts) s) =>
-          let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+          let subst0 := Core.mkEmptySubst (in_scope heap) in
           let 'pair subst1 b' := CoreSubst.substBndr subst0 b in
           match CoreUtils.findAlt (Core.LitAlt l) alts with
           | Some (Core.Mk_Alt _ nil rhs) =>
@@ -305,7 +305,7 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
         Mk_Step (pair (pair (addToHeap v (valueToExpr val) heap) (valueToExpr val)) s)
     | pair (pair heap (LamVal v e)) (cons (ApplyTo a) s) =>
         let subst :=
-          CoreSubst.extendSubst (CoreSubst.mkEmptySubst (in_scope heap)) v a in
+          CoreSubst.extendSubst (Core.mkEmptySubst (in_scope heap)) v a in
         if exprIsTrivial' a : bool
         then Mk_Step (pair (pair heap (CoreSubst.substExpr subst e))
                            s) else
@@ -322,13 +322,13 @@ Program Fixpoint step (arg_0__ : Conf) {measure (step_measure arg_0__)} : Step
        | pair (pair heap (Core.App e a)) s =>
            Mk_Step (pair (pair heap e) (cons (ApplyTo a) s))
        | pair (pair heap (Core.Let (Core.NonRec v rhs) e)) s =>
-           let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+           let subst0 := Core.mkEmptySubst (in_scope heap) in
            let 'pair subst1 v' := CoreSubst.substBndr subst0 v in
            let e' := CoreSubst.substExpr subst1 e in
            Mk_Step (pair (pair (addToHeap v' rhs heap) e') s)
        | pair (pair heap (Core.Let (Core.Rec pairs) e)) s =>
            let 'pair vars rhss := GHC.List.unzip pairs in
-           let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+           let subst0 := Core.mkEmptySubst (in_scope heap) in
            let 'pair subst1 vars' := CoreSubst.substRecBndrs subst0 vars in
            let rhss' := GHC.Base.map (CoreSubst.substExpr subst1) rhss in
            let e' := CoreSubst.substExpr subst1 e in
@@ -403,7 +403,7 @@ Admit Obligations.
      Core.Mk_Var Core.Mult
      Core.NonRec Core.Rec Core.Var Core.dataConRepArity Core.isId Core.isTypeArg
      Core.mkConApp Core.mkInScopeSet Core.mkLams Core.mkVarSet Core.uniqAway
-     CoreSubst.extendSubst CoreSubst.extendSubstWithVar CoreSubst.mkEmptySubst
+     CoreSubst.extendSubst CoreSubst.extendSubstWithVar Core.mkEmptySubst
      CoreSubst.substBndr CoreSubst.substBndrs CoreSubst.substExpr
      CoreSubst.substRecBndrs CoreUtils.exprType CoreUtils.findAlt Data.Foldable.all
      Data.Foldable.foldr Data.Maybe.isJust Data.Tuple.fst FastString.fsLit
