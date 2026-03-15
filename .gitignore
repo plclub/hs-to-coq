@@ -58,7 +58,9 @@ ghc-head
 *.DS_Store
 
 # Local tool config
-.claude/*
-!.claude/commands/
+**/.claude
+!/.claude/
+/.claude/*
+!/.claude/commands/
 .mcp.json
 
