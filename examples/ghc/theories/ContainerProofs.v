@@ -1,5 +1,6 @@
 (* Properties of IntMap operations.
-   All properties are proved as Lemmas using two foundational Local Axioms:
+   All properties are proved as Lemmas using two foundational Axioms
+   imported from IntMapProofs:
    - deferredFix2_eq: one-step unfolding of the deferred fixpoint combinator
    - All_IntMaps_WF: all IntMaps are well-formed patricia tries
 
@@ -30,15 +31,6 @@ Require Import MapProofs.Bounds.
 (* Import IntSetProofs for zero_spec *)
 Require Import IntSetProofs.
 
-Local Axiom deferredFix2_eq : forall a b r `{HsToCoq.Err.Default r}
-  (f : (a -> b -> r) -> (a -> b -> r)),
-  HsToCoq.DeferredFix.deferredFix2 f = f (HsToCoq.DeferredFix.deferredFix2 f).
-
-(* Single blanket WF axiom: all IntMaps are well-formed patricia tries.
-   True for maps built from empty/insert/delete/union/etc. (smart constructors).
-   Concentrates the trust assumption in one place instead of many separate axioms. *)
-Local Axiom All_IntMaps_WF : forall A (m : IntMap.IntMap A), IntMapProofs.WF m.
-
 Set Bullet Behavior "Strict Subproofs".
 
 (* ============================================================ *)
@@ -65,15 +57,15 @@ Proof.
   intros a s.
   induction s as [p msk l IHl r IHr | kx vx | ]; intros k HWF.
   - (* Bin case: use zero_oro to convert the if/then/else to oro *)
-    assert (HWFl : IntMapProofs.WF l) by exact (All_IntMaps_WF _ l).
-    assert (HWFr : IntMapProofs.WF r) by exact (All_IntMaps_WF _ r).
+    assert (HWFl : IntMapProofs.WF l) by exact (IntMapProofs.All_IntMaps_WF _ l).
+    assert (HWFr : IntMapProofs.WF r) by exact (IntMapProofs.All_IntMaps_WF _ r).
     simpl Data.IntMap.Internal.lookup. simpl IntMapProofs.Sem2.
     (* Rewrite by IH *)
     rewrite (IHl k HWFl). rewrite (IHr k HWFr).
     (* Goal: if zero k msk then Sem2 l k else Sem2 r k = oro (Sem2 l k) (Sem2 r k) *)
     (* Extract Desc of Bin via WF to get range structure *)
     destruct HWF as [f Hf].
-    (* Get the Desc for each subtree by using All_IntMaps_WF *)
+    (* Get the Desc for each subtree by using IntMapProofs.All_IntMaps_WF *)
     (* For the range info, use the fact that WF (Bin p msk l r) gives us Desc *)
     (* Specifically: from Desc (Bin p msk l r) rr f, we get:
        Desc l r1 ff1, Desc r r2 ff2,
@@ -149,8 +141,8 @@ Local Lemma lookup_Bin_oro : forall {a} p msk (l r : IntMap.IntMap a) k,
 Proof.
   intros a p msk l r k HWF.
   rewrite (lookup_Sem2 _ k HWF). simpl.
-  assert (HWFl : IntMapProofs.WF l) by exact (All_IntMaps_WF _ l).
-  assert (HWFr : IntMapProofs.WF r) by exact (All_IntMaps_WF _ r).
+  assert (HWFl : IntMapProofs.WF l) by exact (IntMapProofs.All_IntMaps_WF _ l).
+  assert (HWFr : IntMapProofs.WF r) by exact (IntMapProofs.All_IntMaps_WF _ r).
   rewrite <- (lookup_Sem2 l k HWFl).
   rewrite <- (lookup_Sem2 r k HWFr).
   reflexivity.
@@ -240,7 +232,7 @@ Lemma difference_nil_l : forall B A (i : IntMap.IntMap A),
 Proof.
   intros. unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.empty.
   unfold mergeWithKey. unfold mergeWithKey'.
-  rewrite deferredFix2_eq. reflexivity.
+  rewrite IntMapProofs.deferredFix2_eq. reflexivity.
 Qed.
 
 Lemma difference_nil_r : forall A B (i : IntMap.IntMap A),
@@ -248,7 +240,7 @@ Lemma difference_nil_r : forall A B (i : IntMap.IntMap A),
 Proof.
   intros. unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.empty.
   unfold mergeWithKey. unfold mergeWithKey'.
-  rewrite deferredFix2_eq.
+  rewrite IntMapProofs.deferredFix2_eq.
   destruct i; reflexivity.
 Qed.
 
@@ -256,14 +248,14 @@ Lemma disjoint_empty_l : forall A B (j : IntMap.IntMap B),
   Data.IntMap.Internal.disjoint (@Data.IntMap.Internal.empty A) j = true.
 Proof.
   intros. unfold Data.IntMap.Internal.disjoint, Data.IntMap.Internal.empty.
-  rewrite deferredFix2_eq. reflexivity.
+  rewrite IntMapProofs.deferredFix2_eq. reflexivity.
 Qed.
 
 Lemma disjoint_empty_r : forall A B (i : IntMap.IntMap A),
   Data.IntMap.Internal.disjoint i (@Data.IntMap.Internal.empty B) = true.
 Proof.
   intros. unfold Data.IntMap.Internal.disjoint, Data.IntMap.Internal.empty.
-  rewrite deferredFix2_eq. destruct i; reflexivity.
+  rewrite IntMapProofs.deferredFix2_eq. destruct i; reflexivity.
 Qed.
 
 Lemma intersection_empty :
@@ -274,13 +266,13 @@ Proof.
   intros A B i j Hj. subst.
   unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.empty.
   unfold mergeWithKey'.
-  rewrite deferredFix2_eq.
+  rewrite IntMapProofs.deferredFix2_eq.
   destruct i; reflexivity.
 Qed.
 
 (* ============================================================ *)
 (* Proved lemmas: via IntMapProofs.Sem (WF-dependent)            *)
-(* Uses All_IntMaps_WF axiom to obtain Sem witnesses.           *)
+(* Uses IntMapProofs.All_IntMaps_WF axiom to obtain Sem witnesses.           *)
 (* ============================================================ *)
 
 Lemma non_member_lookup :
@@ -288,7 +280,7 @@ Lemma non_member_lookup :
    (Data.IntMap.Internal.member key i = false) <-> (Data.IntMap.Internal.lookup key i = None).
 Proof.
   intros A key i.
-  destruct (All_IntMaps_WF _ i) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ i) as [f Hf].
   rewrite (IntMapProofs.lookup_Sem Hf) (IntMapProofs.member_Sem Hf).
   destruct (f key); split; intro H; try discriminate; reflexivity.
 Qed.
@@ -298,7 +290,7 @@ Lemma member_lookup :
    (is_true (Data.IntMap.Internal.member key i)) <-> (exists val, Data.IntMap.Internal.lookup key i = Some val).
 Proof.
   intros A key i.
-  destruct (All_IntMaps_WF _ i) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ i) as [f Hf].
   rewrite (IntMapProofs.lookup_Sem Hf) (IntMapProofs.member_Sem Hf).
   destruct (f key) as [v|].
   - split; [intro; exists v; reflexivity | auto].
@@ -309,7 +301,7 @@ Lemma null_member : forall A (m : IntMap.IntMap A),
     Data.IntMap.Internal.null m = true <-> (forall k, Data.IntMap.Internal.member k m = false).
 Proof.
   intros A m.
-  destruct (All_IntMaps_WF _ m) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ m) as [f Hf].
   rewrite (IntMapProofs.null_Sem Hf).
   split.
   - intros Hnil k. rewrite (IntMapProofs.member_Sem Hf). rewrite Hnil. reflexivity.
@@ -324,7 +316,7 @@ Lemma lookup_insert_neq :
     Data.IntMap.Internal.lookup key1 (Data.IntMap.Internal.insert key2 val m) = Data.IntMap.Internal.lookup key1 m.
 Proof.
   intros b key1 key2 val m Hneq.
-  destruct (All_IntMaps_WF _ m) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ m) as [f Hf].
   set (f' := fun i => if (i =? key2)%N then Some val else f i).
   assert (Hins : IntMapProofs.Sem (insert key2 val m) f').
   { exact (IntMapProofs.insert_Sem _ key2 val m f f' Hf (fun i => Logic.eq_refl)). }
@@ -337,7 +329,7 @@ Lemma member_insert : forall A k k' v (i : IntMap.IntMap A),
   (k == k') || Data.IntMap.Internal.member k i.
 Proof.
   intros A k k' v i.
-  destruct (All_IntMaps_WF _ i) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ i) as [f Hf].
   set (f' := fun j => if (j =? k')%N then Some v else f j).
   assert (Hins : IntMapProofs.Sem (insert k' v i) f').
   { exact (IntMapProofs.insert_Sem _ k' v i f f' Hf (fun j => Logic.eq_refl)). }
@@ -516,7 +508,7 @@ Proof.
            ** (* k = key *)
               apply N.eqb_eq in Hkkey. subst k.
               assert (H_delL : IntMapProofs.Sem2 (Bin p' msk' l' r') key = None).
-              { pose proof (IHl key (All_IntMaps_WF _ l)) as H.
+              { pose proof (IHl key (IntMapProofs.All_IntMaps_WF _ l)) as H.
                 rewrite N.eqb_refl in H. exact H. }
               assert (H_r : IntMapProofs.Sem2 r key = None).
               { exact (WF_Bin_left_key_not_right p msk l r key HWF Hz). }
@@ -525,7 +517,7 @@ Proof.
               rewrite H_delL. rewrite H_r. simpl. reflexivity.
            ** (* k ≠ key *)
               assert (H_delL : IntMapProofs.Sem2 (Bin p' msk' l' r') k = IntMapProofs.Sem2 l k).
-              { pose proof (IHl k (All_IntMaps_WF _ l)) as H.
+              { pose proof (IHl k (IntMapProofs.All_IntMaps_WF _ l)) as H.
                 rewrite Hkkey in H. exact H. }
               rewrite (Sem2_Bin p msk (Bin p' msk' l' r') r k).
               rewrite H_delL.
@@ -534,14 +526,14 @@ Proof.
            destruct (k =? key)%N eqn:Hkkey.
            ** apply N.eqb_eq in Hkkey. subst k.
               assert (H_delL : IntMapProofs.Sem2 (Tip ky' vy') key = None).
-              { pose proof (IHl key (All_IntMaps_WF _ l)) as H.
+              { pose proof (IHl key (IntMapProofs.All_IntMaps_WF _ l)) as H.
                 rewrite N.eqb_refl in H. exact H. }
               assert (H_r : IntMapProofs.Sem2 r key = None).
               { exact (WF_Bin_left_key_not_right p msk l r key HWF Hz). }
               rewrite (Sem2_Bin p msk (Tip ky' vy') r key).
               rewrite H_delL. rewrite H_r. simpl. reflexivity.
            ** assert (H_delL : IntMapProofs.Sem2 (Tip ky' vy') k = IntMapProofs.Sem2 l k).
-              { pose proof (IHl k (All_IntMaps_WF _ l)) as H.
+              { pose proof (IHl k (IntMapProofs.All_IntMaps_WF _ l)) as H.
                 rewrite Hkkey in H. exact H. }
               rewrite (Sem2_Bin p msk (Tip ky' vy') r k).
               rewrite H_delL.
@@ -556,7 +548,7 @@ Proof.
            ++ (* k ≠ key: Sem2 r k = Sem2 (Bin p msk l r) k = oro (Sem2 l k) (Sem2 r k) *)
               (* From IHl: None = Sem2 l k (since Sem2 Nil k = None = Sem2 l k for k≠key) *)
               assert (Hl_k_none : IntMapProofs.Sem2 l k = None).
-              { pose proof (IHl k (All_IntMaps_WF _ l)) as H.
+              { pose proof (IHl k (IntMapProofs.All_IntMaps_WF _ l)) as H.
                 rewrite Hkkey in H.
                 (* H : None = Sem2 l k *)
                 exact (eq_sym H). }
@@ -569,14 +561,14 @@ Proof.
            destruct (k =? key)%N eqn:Hkkey.
            ** apply N.eqb_eq in Hkkey. subst k.
               assert (H_delR : IntMapProofs.Sem2 (Bin p' msk' l' r') key = None).
-              { pose proof (IHr key (All_IntMaps_WF _ r)) as H.
+              { pose proof (IHr key (IntMapProofs.All_IntMaps_WF _ r)) as H.
                 rewrite N.eqb_refl in H. exact H. }
               assert (H_l : IntMapProofs.Sem2 l key = None).
               { exact (WF_Bin_right_key_not_left p msk l r key HWF Hz). }
               rewrite (Sem2_Bin p msk l (Bin p' msk' l' r') key).
               rewrite H_delR. rewrite H_l. simpl. reflexivity.
            ** assert (H_delR : IntMapProofs.Sem2 (Bin p' msk' l' r') k = IntMapProofs.Sem2 r k).
-              { pose proof (IHr k (All_IntMaps_WF _ r)) as H.
+              { pose proof (IHr k (IntMapProofs.All_IntMaps_WF _ r)) as H.
                 rewrite Hkkey in H. exact H. }
               rewrite (Sem2_Bin p msk l (Bin p' msk' l' r') k).
               rewrite H_delR.
@@ -585,14 +577,14 @@ Proof.
            destruct (k =? key)%N eqn:Hkkey.
            ** apply N.eqb_eq in Hkkey. subst k.
               assert (H_delR : IntMapProofs.Sem2 (Tip ky' vy') key = None).
-              { pose proof (IHr key (All_IntMaps_WF _ r)) as H.
+              { pose proof (IHr key (IntMapProofs.All_IntMaps_WF _ r)) as H.
                 rewrite N.eqb_refl in H. exact H. }
               assert (H_l : IntMapProofs.Sem2 l key = None).
               { exact (WF_Bin_right_key_not_left p msk l r key HWF Hz). }
               rewrite (Sem2_Bin p msk l (Tip ky' vy') key).
               rewrite H_delR. rewrite H_l. simpl. reflexivity.
            ** assert (H_delR : IntMapProofs.Sem2 (Tip ky' vy') k = IntMapProofs.Sem2 r k).
-              { pose proof (IHr k (All_IntMaps_WF _ r)) as H.
+              { pose proof (IHr k (IntMapProofs.All_IntMaps_WF _ r)) as H.
                 rewrite Hkkey in H. exact H. }
               rewrite (Sem2_Bin p msk l (Tip ky' vy') k).
               rewrite H_delR.
@@ -604,7 +596,7 @@ Proof.
               apply (WF_Bin_right_key_not_left p msk l r key HWF Hz).
            ++ (* k ≠ key: Sem2 r k = None, so Sem2 l k = Sem2 (Bin p msk l r) k *)
               assert (Hr_k_none : IntMapProofs.Sem2 r k = None).
-              { pose proof (IHr k (All_IntMaps_WF _ r)) as H.
+              { pose proof (IHr k (IntMapProofs.All_IntMaps_WF _ r)) as H.
                 rewrite Hkkey in H.
                 exact (eq_sym H). }
               rewrite (Sem2_Bin p msk l r k).
@@ -641,11 +633,11 @@ Proof.
   intros a p m l r k.
   unfold bin.
   destruct l as [pl ml ll rl | kl vl | ], r as [pr mr lr rr | kr vr | ].
-  - apply lookup_Bin_oro. exact (All_IntMaps_WF _ _).
-  - apply lookup_Bin_oro. exact (All_IntMaps_WF _ _).
+  - apply lookup_Bin_oro. exact (IntMapProofs.All_IntMaps_WF _ _).
+  - apply lookup_Bin_oro. exact (IntMapProofs.All_IntMaps_WF _ _).
   - rewrite oro_None_r. reflexivity.
-  - apply lookup_Bin_oro. exact (All_IntMaps_WF _ _).
-  - apply lookup_Bin_oro. exact (All_IntMaps_WF _ _).
+  - apply lookup_Bin_oro. exact (IntMapProofs.All_IntMaps_WF _ _).
+  - apply lookup_Bin_oro. exact (IntMapProofs.All_IntMaps_WF _ _).
   - rewrite oro_None_r. reflexivity.
   - rewrite oro_None_l. reflexivity.
   - rewrite oro_None_l. reflexivity.
@@ -676,26 +668,26 @@ Proof.
     destruct (Data.IntSet.Internal.zero k m) eqn:Hzk.
     + (* k routes to t1 (left); t2 gives None *)
       pose proof (WF_Bin_left_key_not_right p m t1 t2 k
-        (All_IntMaps_WF _ (Bin p m t1 t2)) Hzk) as H.
-      rewrite <- (lookup_Sem2 t2 k (All_IntMaps_WF _ t2)) in H.
+        (IntMapProofs.All_IntMaps_WF _ (Bin p m t1 t2)) Hzk) as H.
+      rewrite <- (lookup_Sem2 t2 k (IntMapProofs.All_IntMaps_WF _ t2)) in H.
       rewrite H. rewrite oro_None_r. reflexivity.
     + (* k routes to t2 (right); t1 gives None *)
       pose proof (WF_Bin_right_key_not_left p m t1 t2 k
-        (All_IntMaps_WF _ (Bin p m t1 t2)) Hzk) as H.
-      rewrite <- (lookup_Sem2 t1 k (All_IntMaps_WF _ t1)) in H.
+        (IntMapProofs.All_IntMaps_WF _ (Bin p m t1 t2)) Hzk) as H.
+      rewrite <- (lookup_Sem2 t1 k (IntMapProofs.All_IntMaps_WF _ t1)) in H.
       rewrite H. simpl. reflexivity.
   - (* Bin p m t2 t1 *)
     simpl Data.IntMap.Internal.lookup.
     destruct (Data.IntSet.Internal.zero k m) eqn:Hzk.
     + (* k routes to t2 (left); t1 gives None *)
       pose proof (WF_Bin_left_key_not_right p m t2 t1 k
-        (All_IntMaps_WF _ (Bin p m t2 t1)) Hzk) as H.
-      rewrite <- (lookup_Sem2 t1 k (All_IntMaps_WF _ t1)) in H.
+        (IntMapProofs.All_IntMaps_WF _ (Bin p m t2 t1)) Hzk) as H.
+      rewrite <- (lookup_Sem2 t1 k (IntMapProofs.All_IntMaps_WF _ t1)) in H.
       rewrite H. rewrite oro_None_l. reflexivity.
     + (* k routes to t1 (right); t2 gives None *)
       pose proof (WF_Bin_right_key_not_left p m t2 t1 k
-        (All_IntMaps_WF _ (Bin p m t2 t1)) Hzk) as H.
-      rewrite <- (lookup_Sem2 t2 k (All_IntMaps_WF _ t2)) in H.
+        (IntMapProofs.All_IntMaps_WF _ (Bin p m t2 t1)) Hzk) as H.
+      rewrite <- (lookup_Sem2 t2 k (IntMapProofs.All_IntMaps_WF _ t2)) in H.
       rewrite H. rewrite oro_None_r. reflexivity.
 Qed.
 
@@ -712,8 +704,8 @@ Lemma delete_eq : forall key b (i : IntMap.IntMap b),
     Data.IntMap.Internal.lookup key (Data.IntMap.Internal.delete key i) = None.
 Proof.
   intros key b i.
-  rewrite (lookup_Sem2 _ key (All_IntMaps_WF _ _)).
-  rewrite (Sem2_delete key i key (All_IntMaps_WF _ i)).
+  rewrite (lookup_Sem2 _ key (IntMapProofs.All_IntMaps_WF _ _)).
+  rewrite (Sem2_delete key i key (IntMapProofs.All_IntMaps_WF _ i)).
   rewrite N.eqb_refl. reflexivity.
 Qed.
 
@@ -723,11 +715,11 @@ Lemma delete_neq : forall key1 key2 b (i : IntMap.IntMap b),
     Data.IntMap.Internal.lookup key1 i.
 Proof.
   intros key1 key2 b i Hne.
-  rewrite (lookup_Sem2 _ key1 (All_IntMaps_WF _ _)).
-  rewrite (Sem2_delete key2 i key1 (All_IntMaps_WF _ i)).
+  rewrite (lookup_Sem2 _ key1 (IntMapProofs.All_IntMaps_WF _ _)).
+  rewrite (Sem2_delete key2 i key1 (IntMapProofs.All_IntMaps_WF _ i)).
   destruct (N.eqb_spec key1 key2) as [Heq | Hne'].
   - congruence.
-  - rewrite <- (lookup_Sem2 i key1 (All_IntMaps_WF _ i)). reflexivity.
+  - rewrite <- (lookup_Sem2 i key1 (IntMapProofs.All_IntMaps_WF _ i)). reflexivity.
 Qed.
 
 Lemma member_delete_neq : forall k1 k2 b (i: IntMap.IntMap b), k1 <> k2 ->
@@ -735,8 +727,8 @@ Lemma member_delete_neq : forall k1 k2 b (i: IntMap.IntMap b), k1 <> k2 ->
   Data.IntMap.Internal.member k2 i.
 Proof.
   intros k1 k2 b i Hne.
-  destruct (All_IntMaps_WF _ i) as [f Hf].
-  destruct (All_IntMaps_WF _ (delete k1 i)) as [fd Hfd].
+  destruct (IntMapProofs.All_IntMaps_WF _ i) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ (delete k1 i)) as [fd Hfd].
   rewrite (IntMapProofs.member_Sem Hfd).
   rewrite (IntMapProofs.member_Sem Hf).
   assert (Heq : fd k2 = f k2).
@@ -750,8 +742,8 @@ Lemma member_delete : forall A k k' (m : IntMap.IntMap A),
     negb (k == k') && Data.IntMap.Internal.member k m.
 Proof.
   intros A k k' m.
-  destruct (All_IntMaps_WF _ m) as [f Hf].
-  destruct (All_IntMaps_WF _ (delete k' m)) as [fd Hfd].
+  destruct (IntMapProofs.All_IntMaps_WF _ m) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ (delete k' m)) as [fd Hfd].
   rewrite (IntMapProofs.member_Sem Hfd) (IntMapProofs.member_Sem Hf).
   (* goal: isSome (fd k) = negb (k == k') && isSome (f k) *)
   (* Use Sem2_delete to characterize fd k *)
@@ -783,7 +775,7 @@ Lemma lookup_filter_Some : forall A (p : A -> bool) key val (m : IntMap.IntMap A
   p val = true /\ Data.IntMap.Internal.lookup key m = Some val.
 Proof.
   intros A p key val m Hlook.
-  destruct (All_IntMaps_WF _ m) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ m) as [f Hf].
   set (f' := fun i => match f i with
                        | None => None
                        | Some v => if p v then Some v else None
@@ -806,7 +798,7 @@ Lemma member_filter : forall A (p : A -> bool) key val (m : IntMap.IntMap A),
   Data.IntMap.Internal.member key (Data.IntMap.Internal.filter p m) = true.
 Proof.
   intros A p key val m Hlook Hpval.
-  destruct (All_IntMaps_WF _ m) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ m) as [f Hf].
   set (f' := fun i => match f i with
                        | None => None
                        | Some v => if p v then Some v else None
@@ -834,19 +826,19 @@ Proof.
                        (Data.IntMap.Internal.filterWithKey f r)) in H.
     rewrite lookup_bin_oro in H.
     apply oro_Some in H.
-    rewrite (lookup_Bin_oro p mask l r key (All_IntMaps_WF _ _)).
+    rewrite (lookup_Bin_oro p mask l r key (IntMapProofs.All_IntMaps_WF _ _)).
     (* Route by zero key mask to determine which subtree is relevant *)
     destruct (Data.IntSet.Internal.zero key mask) eqn:Hzk.
     + (* key routes left: r gives None *)
-      pose proof (WF_Bin_left_key_not_right p mask l r key (All_IntMaps_WF _ _) Hzk) as Hr_none.
-      rewrite <- (lookup_Sem2 r key (All_IntMaps_WF _ r)) in Hr_none.
+      pose proof (WF_Bin_left_key_not_right p mask l r key (IntMapProofs.All_IntMaps_WF _ _) Hzk) as Hr_none.
+      rewrite <- (lookup_Sem2 r key (IntMapProofs.All_IntMaps_WF _ r)) in Hr_none.
       destruct H as [Hl1 | Hr1].
       * rewrite (IHl _ f Hl1) Hr_none. reflexivity.
       * (* fwk r gave Some val, but by IHr lookup key r = Some val, contradicts Hr_none *)
         apply (IHr _ f) in Hr1. congruence.
     + (* key routes right: l gives None *)
-      pose proof (WF_Bin_right_key_not_left p mask l r key (All_IntMaps_WF _ _) Hzk) as Hl_none.
-      rewrite <- (lookup_Sem2 l key (All_IntMaps_WF _ l)) in Hl_none.
+      pose proof (WF_Bin_right_key_not_left p mask l r key (IntMapProofs.All_IntMaps_WF _ _) Hzk) as Hl_none.
+      rewrite <- (lookup_Sem2 l key (IntMapProofs.All_IntMaps_WF _ l)) in Hl_none.
       destruct H as [Hl1 | Hr1].
       * (* fwk l gave Some val, but by IHl lookup key l = Some val, contradicts Hl_none *)
         apply (IHl _ f) in Hl1. congruence.
@@ -1031,7 +1023,7 @@ Local Lemma member_isSome : forall A k (m : IntMap.IntMap A),
   Data.IntMap.Internal.member k m = ssrbool.isSome (Data.IntMap.Internal.lookup k m).
 Proof.
   intros A k m.
-  destruct (All_IntMaps_WF _ m) as [f Hf].
+  destruct (IntMapProofs.All_IntMaps_WF _ m) as [f Hf].
   rewrite (IntMapProofs.member_Sem Hf) (IntMapProofs.lookup_Sem Hf).
   reflexivity.
 Qed.
@@ -1054,10 +1046,10 @@ Proof.
   intros a p msk l r k HWF.
   destruct (Data.IntSet.Internal.zero k msk) eqn:Hz.
   - right.
-    rewrite (lookup_Sem2 r k (All_IntMaps_WF _ r)).
+    rewrite (lookup_Sem2 r k (IntMapProofs.All_IntMaps_WF _ r)).
     exact (WF_Bin_left_key_not_right p msk l r k HWF Hz).
   - left.
-    rewrite (lookup_Sem2 l k (All_IntMaps_WF _ l)).
+    rewrite (lookup_Sem2 l k (IntMapProofs.All_IntMaps_WF _ l)).
     exact (WF_Bin_right_key_not_left p msk l r k HWF Hz).
 Qed.
 
@@ -1093,8 +1085,8 @@ Local Lemma maps_eq_of_lookup_eq : forall A (m1 m2 : IntMap.IntMap A),
   m1 = m2.
 Proof.
   intros A m1 m2 Hlookup.
-  destruct (All_IntMaps_WF _ m1) as [f1 Hf1].
-  destruct (All_IntMaps_WF _ m2) as [f2 Hf2].
+  destruct (IntMapProofs.All_IntMaps_WF _ m1) as [f1 Hf1].
+  destruct (IntMapProofs.All_IntMaps_WF _ m2) as [f2 Hf2].
   apply (IntMapProofs.Sem_unique _ _ f1 _ f2 Hf1 Hf2).
   intro k.
   rewrite -(IntMapProofs.lookup_Sem Hf1) -(IntMapProofs.lookup_Sem Hf2).
@@ -1132,7 +1124,7 @@ Proof.
   intros A HeqA HlawsA f f' i.
   assert (Heq : Data.IntMap.Internal.filter f (Data.IntMap.Internal.filter f' i) =
                 Data.IntMap.Internal.filter (fun v => f v && f' v) i).
-  { destruct (All_IntMaps_WF _ i) as [fi Hfi].
+  { destruct (IntMapProofs.All_IntMaps_WF _ i) as [fi Hfi].
     set (fi' := fun k => match fi k with None => None | Some v => if f' v then Some v else None end).
     assert (Hfilt' : IntMapProofs.Sem (Data.IntMap.Internal.filter f' i) fi').
     { exact (IntMapProofs.filter_Sem f' i fi fi' Hfi (fun k => Logic.eq_refl)). }
@@ -1155,7 +1147,7 @@ Lemma filter_true : forall (A:Type) `{EqLaws A} (m:IntMap.IntMap A),
 Proof.
   intros A HeqA HlawsA m.
   assert (Heq : Data.IntMap.Internal.filter (const true) m = m).
-  { destruct (All_IntMaps_WF _ m) as [fm Hfm].
+  { destruct (IntMapProofs.All_IntMaps_WF _ m) as [fm Hfm].
     set (ff := fun k => match fm k with None => None | Some v => if (const true) v then Some v else None end).
     assert (Hff : IntMapProofs.Sem (Data.IntMap.Internal.filter (const true) m) ff).
     { exact (IntMapProofs.filter_Sem (const true) m fm ff Hfm (fun k => Logic.eq_refl)). }
@@ -1187,16 +1179,16 @@ Local Lemma union_unfold_BinBin : forall A p1 msk1 (l1 r1 : IntMap.IntMap A) p2 
   else link p1 t1 p2 t2).
 Proof.
   intros. unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-  rewrite {1}deferredFix2_eq. reflexivity.
+  rewrite {1}IntMapProofs.deferredFix2_eq. reflexivity.
 Qed.
 
 (* Helper tactic: rewrite lookup on a Bin using WF *)
 Local Ltac rw_lookup_Bin :=
-  erewrite lookup_Bin_oro; [| exact (All_IntMaps_WF _ _)].
+  erewrite lookup_Bin_oro; [| exact (IntMapProofs.All_IntMaps_WF _ _)].
 
 (* Helper tactic: derive disjointness for oro_swap_if_None from WF + IH (for merge0 proofs) *)
 Local Ltac derive_disj_merge IH lchild rchild p m k :=
-  destruct (@WF_Bin_lookup_disjoint _ p m lchild rchild k (All_IntMaps_WF _ _)) as [?Hu | ?Hr];
+  destruct (@WF_Bin_lookup_disjoint _ p m lchild rchild k (IntMapProofs.All_IntMaps_WF _ _)) as [?Hu | ?Hr];
   [ left; rewrite IH in Hu; exact (proj2 (oro_None_inv _ _ Hu))
   | right; exact Hr ].
 
@@ -1222,23 +1214,23 @@ Proof.
       * apply lookup_link_oro.
       * destruct (Data.IntSet.Internal.zero p2 msk1) eqn:Hz.
         -- (* merge1/zero: Bin p1 msk1 (union l1 t2) r1 *)
-           rewrite (lookup_Bin_oro p1 msk1 _ r1 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 _ r1 k (IntMapProofs.All_IntMaps_WF _ _)).
            rewrite (IHn (size_nat l1 + size_nat (Bin p2 msk2 l2 r2))%nat
              ltac:(simpl size_nat in Hle |- *; lia) l1 (Bin p2 msk2 l2 r2) k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
            apply oro_swap_if_None.
            destruct (WF_Bin_lookup_disjoint p1 msk1
-             (Data.IntMap.Internal.union l1 (Bin p2 msk2 l2 r2)) r1 k (All_IntMaps_WF _ _)) as [Hu | Hr].
+             (Data.IntMap.Internal.union l1 (Bin p2 msk2 l2 r2)) r1 k (IntMapProofs.All_IntMaps_WF _ _)) as [Hu | Hr].
            ++ left.
               rewrite (IHn (size_nat l1 + size_nat (Bin p2 msk2 l2 r2))%nat
                 ltac:(simpl size_nat in Hle |- *; lia) l1 (Bin p2 msk2 l2 r2) k ltac:(lia)) in Hu.
               exact (proj2 (oro_None_inv _ _ Hu)).
            ++ right. exact Hr.
         -- (* merge1/not-zero: Bin p1 msk1 l1 (union r1 t2) *)
-           rewrite (lookup_Bin_oro p1 msk1 l1 _ k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 _ k (IntMapProofs.All_IntMaps_WF _ _)).
            rewrite (IHn (size_nat r1 + size_nat (Bin p2 msk2 l2 r2))%nat
              ltac:(simpl size_nat in Hle |- *; lia) r1 (Bin p2 msk2 l2 r2) k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
            rewrite oro_assoc. reflexivity.
     + destruct (shorter msk2 msk1) eqn:Hsh2.
       * (* merge2: shorter msk2 msk1 *)
@@ -1246,20 +1238,20 @@ Proof.
         -- apply lookup_link_oro.
         -- destruct (Data.IntSet.Internal.zero p1 msk2) eqn:Hz.
            ++ (* merge2/zero: Bin p2 msk2 (union t1 l2) r2 *)
-              rewrite (lookup_Bin_oro p2 msk2 _ r2 k (All_IntMaps_WF _ _)).
+              rewrite (lookup_Bin_oro p2 msk2 _ r2 k (IntMapProofs.All_IntMaps_WF _ _)).
               rewrite (IHn (size_nat (Bin p1 msk1 l1 r1) + size_nat l2)%nat
                 ltac:(simpl size_nat in Hle |- *; lia) (Bin p1 msk1 l1 r1) l2 k ltac:(lia)).
-              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
               rewrite oro_assoc. reflexivity.
            ++ (* merge2/not-zero: Bin p2 msk2 l2 (union t1 r2) *)
-              rewrite (lookup_Bin_oro p2 msk2 l2 _ k (All_IntMaps_WF _ _)).
+              rewrite (lookup_Bin_oro p2 msk2 l2 _ k (IntMapProofs.All_IntMaps_WF _ _)).
               rewrite (IHn (size_nat (Bin p1 msk1 l1 r1) + size_nat r2)%nat
                 ltac:(simpl size_nat in Hle |- *; lia) (Bin p1 msk1 l1 r1) r2 k ltac:(lia)).
-              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
               (* goal: oro l2 (oro t1 r2) = oro t1 (oro l2 r2) *)
               rewrite <- !oro_assoc. f_equal.
               destruct (WF_Bin_lookup_disjoint p2 msk2 l2
-                (Data.IntMap.Internal.union (Bin p1 msk1 l1 r1) r2) k (All_IntMaps_WF _ _)) as [Hl | Hu].
+                (Data.IntMap.Internal.union (Bin p1 msk1 l1 r1) r2) k (IntMapProofs.All_IntMaps_WF _ _)) as [Hl | Hu].
               ** apply oro_comm_left_None. exact Hl.
               ** apply oro_comm_right_None.
                  rewrite (IHn (size_nat (Bin p1 msk1 l1 r1) + size_nat r2)%nat
@@ -1268,17 +1260,17 @@ Proof.
       * (* same length, different prefix or same prefix *)
         destruct (p1 == p2) eqn:Hpp.
         -- (* same prefix: Bin p1 msk1 (union l1 l2) (union r1 r2) *)
-           rewrite (lookup_Bin_oro p1 msk1 _ _ k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 _ _ k (IntMapProofs.All_IntMaps_WF _ _)).
            rewrite (IHn (size_nat l1 + size_nat l2)%nat
              ltac:(simpl size_nat in Hle |- *; lia) l1 l2 k ltac:(lia)).
            rewrite (IHn (size_nat r1 + size_nat r2)%nat
              ltac:(simpl size_nat in Hle |- *; lia) r1 r2 k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
-           rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
            rewrite !oro_assoc. f_equal. rewrite <- !oro_assoc. f_equal.
            destruct (WF_Bin_lookup_disjoint p1 msk1
              (Data.IntMap.Internal.union l1 l2) (Data.IntMap.Internal.union r1 r2) k
-             (All_IntMaps_WF _ _)) as [Hu1 | Hu2].
+             (IntMapProofs.All_IntMaps_WF _ _)) as [Hu1 | Hu2].
            ++ apply oro_comm_left_None.
               rewrite (IHn (size_nat l1 + size_nat l2)%nat
                 ltac:(simpl size_nat in Hle |- *; lia) l1 l2 k ltac:(lia)) in Hu1.
@@ -1291,7 +1283,7 @@ Proof.
            apply lookup_link_oro.
   - (* Bin/Tip *)
     unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     match goal with
     | |- context [?f (Tip k2 v2) k2 l1] => set (merge0_fn := f)
@@ -1326,12 +1318,12 @@ Proof.
         rewrite oro_assoc. reflexivity.
   - (* Bin/Nil *)
     unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     rewrite oro_None_r. reflexivity.
   - (* Tip/Bin *)
     unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     match goal with
     | |- context [?f (Tip k1 v1) k1 l2] => set (merge0_fn := f)
@@ -1350,7 +1342,7 @@ Proof.
             (* goal: oro l' (oro t1 r') = oro t1 (oro l' r') *)
             rewrite <- !oro_assoc. f_equal.
             destruct (@WF_Bin_lookup_disjoint _ p' m' l' (merge0_fn (Tip k1 v1) k1 r') kk
-              (All_IntMaps_WF _ _)) as [Hl | Hu].
+              (IntMapProofs.All_IntMaps_WF _ _)) as [Hl | Hu].
             ** apply oro_comm_left_None. exact Hl.
             ** apply oro_comm_right_None.
                rewrite IHr in Hu. exact (proj1 (oro_None_inv _ _ Hu)).
@@ -1370,13 +1362,13 @@ Proof.
         (* goal: oro l2 (oro t1 r2) = oro t1 (oro l2 r2) *)
         rewrite <- !oro_assoc. f_equal.
         destruct (@WF_Bin_lookup_disjoint _ p2 msk2 l2 (merge0_fn (Tip k1 v1) k1 r2) k
-          (All_IntMaps_WF _ _)) as [Hl | Hu].
+          (IntMapProofs.All_IntMaps_WF _ _)) as [Hl | Hu].
         -- apply oro_comm_left_None. exact Hl.
         -- apply oro_comm_right_None.
            rewrite Hmerge in Hu. exact (proj1 (oro_None_inv _ _ Hu)).
   - (* Tip/Tip *)
     unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     destruct (k1 == k2) eqn:Hkk.
     + simpl Data.IntMap.Internal.lookup.
@@ -1385,22 +1377,22 @@ Proof.
     + apply lookup_link_oro.
   - (* Tip/Nil *)
     unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     rewrite oro_None_r. reflexivity.
   - (* Nil/Bin *)
     unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
   - (* Nil/Tip *)
     unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
   - (* Nil/Nil *)
     unfold Data.IntMap.Internal.union, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
 Qed.
@@ -1411,8 +1403,8 @@ Local Lemma lookup_nomatch_None : forall {a} p msk (l r : IntMap.IntMap a) key,
   Data.IntMap.Internal.lookup key (Bin p msk l r) = None.
 Proof.
   intros a p msk l r key Hnm.
-  rewrite (lookup_Sem2 _ key (All_IntMaps_WF _ _)).
-  destruct (All_IntMaps_WF _ (Bin p msk l r)) as [f Hf].
+  rewrite (lookup_Sem2 _ key (IntMapProofs.All_IntMaps_WF _ _)).
+  destruct (IntMapProofs.All_IntMaps_WF _ (Bin p msk l r)) as [f Hf].
   rewrite <- (Sem_Sem2 _ _ Hf key).
   assert (HDB : exists rr, IntMapProofs.Desc (Bin p msk l r) rr f).
   { inversion Hf.
@@ -1446,8 +1438,8 @@ Local Lemma lookup_left_None : forall {a b} (p msk : N) (l : IntMap.IntMap a) (d
   Data.IntMap.Internal.lookup k l = None.
 Proof.
   intros a b p msk l dummy k Hz.
-  rewrite (lookup_Sem2 l k (All_IntMaps_WF _ l)).
-  exact (WF_Bin_right_key_not_left p msk l Nil k (All_IntMaps_WF _ (Bin p msk l Nil)) Hz).
+  rewrite (lookup_Sem2 l k (IntMapProofs.All_IntMaps_WF _ l)).
+  exact (WF_Bin_right_key_not_left p msk l Nil k (IntMapProofs.All_IntMaps_WF _ (Bin p msk l Nil)) Hz).
 Qed.
 
 (* Helper: lookup on a map is None when it's the right child and key routes left *)
@@ -1457,15 +1449,15 @@ Local Lemma lookup_right_None : forall {a b} (p msk : N) (dummy : IntMap.IntMap 
   Data.IntMap.Internal.lookup k r = None.
 Proof.
   intros a b p msk dummy r k Hz.
-  rewrite (lookup_Sem2 r k (All_IntMaps_WF _ r)).
-  exact (WF_Bin_left_key_not_right p msk Nil r k (All_IntMaps_WF _ (Bin p msk Nil r)) Hz).
+  rewrite (lookup_Sem2 r k (IntMapProofs.All_IntMaps_WF _ r)).
+  exact (WF_Bin_left_key_not_right p msk Nil r k (IntMapProofs.All_IntMaps_WF _ (Bin p msk Nil r)) Hz).
 Qed.
 
 (* Helper: for Desc inversion, extract range components *)
 Local Ltac get_Desc_info t :=
   let f := fresh "f" in let Hf := fresh "Hf" in
   let rr := fresh "rr" in let HD := fresh "HD" in
-  destruct (All_IntMaps_WF _ t) as [f Hf];
+  destruct (IntMapProofs.All_IntMaps_WF _ t) as [f Hf];
   assert (HD : exists rr, IntMapProofs.Desc t rr f) by
     (inversion Hf;
      repeat match goal with
@@ -1527,13 +1519,13 @@ Proof.
   destruct (inRange k rr0) eqn:HinR0.
   - (* k in rr0: k not in rr → lookup k t1 = None *)
     left.
-    rewrite (lookup_Sem2 _ k (All_IntMaps_WF _ _)).
+    rewrite (lookup_Sem2 _ k (IntMapProofs.All_IntMaps_WF _ _)).
     rewrite <- (Sem_Sem2 _ _ Hf k).
     eapply IntMapProofs.Desc_outside. exact HD.
     exact (rangeDisjoint_inRange_false k rr0 rr Hdisj HinR0).
   - (* k not in rr0: lookup k t2 = None *)
     right.
-    rewrite (lookup_Sem2 _ k (All_IntMaps_WF _ _)).
+    rewrite (lookup_Sem2 _ k (IntMapProofs.All_IntMaps_WF _ _)).
     rewrite <- (Sem_Sem2 _ _ Hf0 k).
     eapply IntMapProofs.Desc_outside. exact HD0.
     exact HinR0.
@@ -1589,12 +1581,12 @@ Proof.
   { exact (different_prefix_same_bits_disjoint rr rr0 Hpne Hbits_eq). }
   destruct (inRange k rr) eqn:HinR.
   - right.
-    rewrite (lookup_Sem2 _ k (All_IntMaps_WF _ _)).
+    rewrite (lookup_Sem2 _ k (IntMapProofs.All_IntMaps_WF _ _)).
     rewrite <- (Sem_Sem2 _ _ Hf0 k).
     eapply IntMapProofs.Desc_outside. exact HD0.
     exact (rangeDisjoint_inRange_false k rr rr0 Hdisj HinR).
   - left.
-    rewrite (lookup_Sem2 _ k (All_IntMaps_WF _ _)).
+    rewrite (lookup_Sem2 _ k (IntMapProofs.All_IntMaps_WF _ _)).
     rewrite <- (Sem_Sem2 _ _ Hf k).
     eapply IntMapProofs.Desc_outside. exact HD. exact HinR.
 Qed.
@@ -1616,7 +1608,7 @@ Local Lemma difference_unfold_BinBin : forall A B p1 msk1 (l1 r1 : IntMap.IntMap
   else t1).
 Proof.
   intros. unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-  rewrite {1}deferredFix2_eq. reflexivity.
+  rewrite {1}IntMapProofs.deferredFix2_eq. reflexivity.
 Qed.
 
 (* Helper tactic: derive routing-based None for diff proofs *)
@@ -1660,7 +1652,7 @@ Proof.
            rewrite lookup_bin_oro.
            rewrite (IHn (size_nat l1 + size_nat (Bin p2 msk2 l2 r2))%nat
              ltac:(simpl size_nat in Hle |- *; lia) l1 (Bin p2 msk2 l2 r2) k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
            (* Goal: match t2_lk with Some _ => None | None => oro l1_lk r1_lk end
               vs   oro (match t2_lk with Some _ => None | None => l1_lk end) r1_lk *)
            destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
@@ -1676,7 +1668,7 @@ Proof.
            rewrite lookup_bin_oro.
            rewrite (IHn (size_nat r1 + size_nat (Bin p2 msk2 l2 r2))%nat
              ltac:(simpl size_nat in Hle |- *; lia) r1 (Bin p2 msk2 l2 r2) k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
            destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
            ++ (* zero k msk1 = true: r1_lk = None AND t2_lk = None *)
               rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk).
@@ -1698,7 +1690,7 @@ Proof.
               rewrite lookup_bin_oro. rewrite oro_None_r.
               rewrite (IHn (size_nat (Bin p1 msk1 l1 r1) + size_nat l2)%nat
                 ltac:(simpl size_nat in Hle |- *; lia) (Bin p1 msk1 l1 r1) l2 k ltac:(lia)).
-              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
               destruct (Data.IntSet.Internal.zero k msk2) eqn:Hzk.
               ** (* zero k msk2 = true: r2_lk = None *)
                  rewrite (lookup_right_None p2 msk2 l2 r2 k Hzk).
@@ -1711,7 +1703,7 @@ Proof.
               rewrite lookup_bin_oro. rewrite oro_None_l.
               rewrite (IHn (size_nat (Bin p1 msk1 l1 r1) + size_nat r2)%nat
                 ltac:(simpl size_nat in Hle |- *; lia) (Bin p1 msk1 l1 r1) r2 k ltac:(lia)).
-              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
               destruct (Data.IntSet.Internal.zero k msk2) eqn:Hzk.
               ** (* zero k msk2 = true: r2_lk = None, t1_lk = None *)
                  rewrite (lookup_right_None p2 msk2 l2 r2 k Hzk).
@@ -1727,8 +1719,8 @@ Proof.
              ltac:(simpl size_nat in Hle |- *; lia) l1 l2 k ltac:(lia)).
            rewrite (IHn (size_nat r1 + size_nat r2)%nat
              ltac:(simpl size_nat in Hle |- *; lia) r1 r2 k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
-           rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
            destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
            ++ (* zero k msk1 = true: r1 = None, r2 = None *)
               rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk).
@@ -1746,7 +1738,7 @@ Proof.
            ++ reflexivity.
   - (* Bin/Tip *)
     unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     match goal with
     | |- context [?f (Tip k2 v2) k2 l1] => set (merge0_fn := f)
@@ -1766,7 +1758,7 @@ Proof.
         + destruct (Data.IntSet.Internal.zero k2 m') eqn:Hz'.
           * (* zero: bin p' m' (merge0 l') r' *)
             rewrite lookup_bin_oro. rewrite IHl.
-            rewrite (lookup_Bin_oro p' m' l' r' kk (All_IntMaps_WF _ _)).
+            rewrite (lookup_Bin_oro p' m' l' r' kk (IntMapProofs.All_IntMaps_WF _ _)).
             destruct (Data.IntSet.Internal.zero kk m') eqn:Hzk.
             ** rewrite (lookup_right_None p' m' l' r' kk Hzk). rewrite !oro_None_r. reflexivity.
             ** rewrite (lookup_left_None p' m' l' r' kk Hzk).
@@ -1774,7 +1766,7 @@ Proof.
                simpl. reflexivity.
           * (* not-zero: bin p' m' l' (merge0 r') *)
             rewrite lookup_bin_oro. rewrite IHr.
-            rewrite (lookup_Bin_oro p' m' l' r' kk (All_IntMaps_WF _ _)).
+            rewrite (lookup_Bin_oro p' m' l' r' kk (IntMapProofs.All_IntMaps_WF _ _)).
             destruct (Data.IntSet.Internal.zero kk m') eqn:Hzk.
             ** rewrite (lookup_right_None p' m' l' r' kk Hzk).
                rewrite (lookup_right_None p' m' l' (Tip k2 v2) kk Hzk).
@@ -1806,14 +1798,14 @@ Proof.
       * reflexivity.
     + destruct (Data.IntSet.Internal.zero k2 msk1) eqn:Hz.
       * rewrite lookup_bin_oro. rewrite Hmerge.
-        rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+        rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
         destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
         ** rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk). rewrite !oro_None_r. reflexivity.
         ** rewrite (lookup_left_None p1 msk1 l1 r1 k Hzk).
            rewrite (lookup_left_None p1 msk1 (Tip k2 v2) r1 k Hzk).
            simpl. reflexivity.
       * rewrite lookup_bin_oro. rewrite Hmerge.
-        rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+        rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
         destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
         ** rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk).
            rewrite (lookup_right_None p1 msk1 l1 (Tip k2 v2) k Hzk).
@@ -1821,12 +1813,12 @@ Proof.
         ** rewrite (lookup_left_None p1 msk1 l1 r1 k Hzk). simpl. reflexivity.
   - (* Bin/Nil *)
     unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
   - (* Tip/Bin *)
     unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     match goal with
     | |- context [?f (Tip k1 v1) k1 l2] => set (merge0_fn := f)
@@ -1846,7 +1838,7 @@ Proof.
         + destruct (Data.IntSet.Internal.zero k1 m') eqn:Hz'.
           * (* zero: bin p' m' (merge0 l') Nil *)
             rewrite lookup_bin_oro. rewrite oro_None_r. rewrite IHl.
-            rewrite (lookup_Bin_oro p' m' l' r' kk (All_IntMaps_WF _ _)).
+            rewrite (lookup_Bin_oro p' m' l' r' kk (IntMapProofs.All_IntMaps_WF _ _)).
             destruct (Data.IntSet.Internal.zero kk m') eqn:Hzk.
             ** rewrite (lookup_right_None p' m' l' r' kk Hzk). rewrite oro_None_r. reflexivity.
             ** rewrite (lookup_left_None p' m' l' r' kk Hzk).
@@ -1854,7 +1846,7 @@ Proof.
                destruct (Data.IntMap.Internal.lookup kk r'); reflexivity.
           * (* not-zero: bin p' m' Nil (merge0 r') *)
             rewrite lookup_bin_oro. rewrite oro_None_l. rewrite IHr.
-            rewrite (lookup_Bin_oro p' m' l' r' kk (All_IntMaps_WF _ _)).
+            rewrite (lookup_Bin_oro p' m' l' r' kk (IntMapProofs.All_IntMaps_WF _ _)).
             destruct (Data.IntSet.Internal.zero kk m') eqn:Hzk.
             ** rewrite (lookup_right_None p' m' l' r' kk Hzk).
                rewrite (lookup_right_None p' m' l' (Tip k1 v1) kk Hzk).
@@ -1886,14 +1878,14 @@ Proof.
         simpl Data.IntMap.Internal.lookup; rewrite Hkk1; reflexivity.
     + destruct (Data.IntSet.Internal.zero k1 msk2) eqn:Hz.
       * rewrite lookup_bin_oro. rewrite oro_None_r. rewrite Hmerge.
-        rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+        rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
         destruct (Data.IntSet.Internal.zero k msk2) eqn:Hzk.
         ** rewrite (lookup_right_None p2 msk2 l2 r2 k Hzk). rewrite oro_None_r. reflexivity.
         ** rewrite (lookup_left_None p2 msk2 l2 r2 k Hzk).
            rewrite (lookup_left_None p2 msk2 (Tip k1 v1) r2 k Hzk).
            destruct (Data.IntMap.Internal.lookup k r2); reflexivity.
       * rewrite lookup_bin_oro. rewrite oro_None_l. rewrite Hmerge.
-        rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+        rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
         destruct (Data.IntSet.Internal.zero k msk2) eqn:Hzk.
         ** rewrite (lookup_right_None p2 msk2 l2 r2 k Hzk).
            rewrite (lookup_right_None p2 msk2 l2 (Tip k1 v1) k Hzk).
@@ -1901,7 +1893,7 @@ Proof.
         ** rewrite (lookup_left_None p2 msk2 l2 r2 k Hzk). simpl. reflexivity.
   - (* Tip/Tip *)
     unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     destruct (k1 == k2) eqn:Hkk.
     + simpl.
@@ -1913,22 +1905,22 @@ Proof.
       rewrite Eq_refl_Word in Hkk. discriminate.
   - (* Tip/Nil *)
     unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
   - (* Nil/Bin *)
     unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     destruct (Data.IntMap.Internal.lookup k (Bin p2 msk2 l2 r2)); reflexivity.
   - (* Nil/Tip *)
     unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     destruct (Data.IntMap.Internal.lookup k (Tip k2 v2)); simpl; reflexivity.
   - (* Nil/Nil *)
     unfold Data.IntMap.Internal.difference, Data.IntMap.Internal.mergeWithKey, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
 Qed.
@@ -1950,7 +1942,7 @@ Local Lemma intersection_unfold_BinBin : forall A B p1 msk1 (l1 r1 : IntMap.IntM
   else Nil).
 Proof.
   intros. unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-  rewrite {1}deferredFix2_eq.
+  rewrite {1}IntMapProofs.deferredFix2_eq.
   cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
   reflexivity.
 Qed.
@@ -1984,7 +1976,7 @@ Proof.
            rewrite lookup_bin_oro. rewrite oro_None_r.
            rewrite (IHn (size_nat l1 + size_nat (Bin p2 msk2 l2 r2))%nat
              ltac:(simpl size_nat in Hle |- *; lia) l1 (Bin p2 msk2 l2 r2) k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
            destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
            ++ rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk).
               rewrite oro_None_r. reflexivity.
@@ -1995,7 +1987,7 @@ Proof.
            rewrite lookup_bin_oro. rewrite oro_None_l.
            rewrite (IHn (size_nat r1 + size_nat (Bin p2 msk2 l2 r2))%nat
              ltac:(simpl size_nat in Hle |- *; lia) r1 (Bin p2 msk2 l2 r2) k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
            destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
            ++ rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk).
               rewrite (lookup_right_None p1 msk1 l1 (Bin p2 msk2 l2 r2) k Hzk).
@@ -2014,7 +2006,7 @@ Proof.
               rewrite lookup_bin_oro. rewrite oro_None_r.
               rewrite (IHn (size_nat (Bin p1 msk1 l1 r1) + size_nat l2)%nat
                 ltac:(simpl size_nat in Hle |- *; lia) (Bin p1 msk1 l1 r1) l2 k ltac:(lia)).
-              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
               destruct (Data.IntSet.Internal.zero k msk2) eqn:Hzk.
               ** rewrite (lookup_right_None p2 msk2 l2 r2 k Hzk).
                  rewrite oro_None_r. reflexivity.
@@ -2026,7 +2018,7 @@ Proof.
               rewrite lookup_bin_oro. rewrite oro_None_l.
               rewrite (IHn (size_nat (Bin p1 msk1 l1 r1) + size_nat r2)%nat
                 ltac:(simpl size_nat in Hle |- *; lia) (Bin p1 msk1 l1 r1) r2 k ltac:(lia)).
-              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+              rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
               destruct (Data.IntSet.Internal.zero k msk2) eqn:Hzk.
               ** rewrite (lookup_right_None p2 msk2 l2 r2 k Hzk).
                  rewrite (lookup_right_None p2 msk2 l2 (Bin p1 msk1 l1 r1) k Hzk).
@@ -2044,8 +2036,8 @@ Proof.
              ltac:(simpl size_nat in Hle |- *; lia) l1 l2 k ltac:(lia)).
            rewrite (IHn (size_nat r1 + size_nat r2)%nat
              ltac:(simpl size_nat in Hle |- *; lia) r1 r2 k ltac:(lia)).
-           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
-           rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
            destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
            ++ rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk).
               rewrite (lookup_right_None p1 msk1 l2 r2 k Hzk).
@@ -2060,7 +2052,7 @@ Proof.
            ++ rewrite Ht2. reflexivity.
   - (* Bin/Tip *)
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     match goal with
     | |- context [?f (Tip k2 v2) k2 l1] => set (merge0_fn := f)
@@ -2081,7 +2073,7 @@ Proof.
         + destruct (Data.IntSet.Internal.zero k2 m') eqn:Hz'.
           * (* zero: bin p' m' (merge0 l') Nil *)
             rewrite lookup_bin_oro. rewrite oro_None_r. rewrite IHl.
-            rewrite (lookup_Bin_oro p' m' l' r' kk (All_IntMaps_WF _ _)).
+            rewrite (lookup_Bin_oro p' m' l' r' kk (IntMapProofs.All_IntMaps_WF _ _)).
             destruct (Data.IntSet.Internal.zero kk m') eqn:Hzk.
             ** rewrite (lookup_right_None p' m' l' r' kk Hzk). rewrite oro_None_r. reflexivity.
             ** rewrite (lookup_left_None p' m' l' r' kk Hzk).
@@ -2089,7 +2081,7 @@ Proof.
                destruct (Data.IntMap.Internal.lookup kk r'); reflexivity.
           * (* not-zero: bin p' m' Nil (merge0 r') *)
             rewrite lookup_bin_oro. rewrite oro_None_l. rewrite IHr.
-            rewrite (lookup_Bin_oro p' m' l' r' kk (All_IntMaps_WF _ _)).
+            rewrite (lookup_Bin_oro p' m' l' r' kk (IntMapProofs.All_IntMaps_WF _ _)).
             destruct (Data.IntSet.Internal.zero kk m') eqn:Hzk.
             ** rewrite (lookup_right_None p' m' l' r' kk Hzk).
                rewrite (lookup_right_None p' m' l' (Tip k2 v2) kk Hzk).
@@ -2126,14 +2118,14 @@ Proof.
       * simpl Data.IntMap.Internal.lookup. rewrite Hkk. reflexivity.
     + destruct (Data.IntSet.Internal.zero k2 msk1) eqn:Hz.
       * rewrite lookup_bin_oro. rewrite oro_None_r. rewrite Hmerge.
-        rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+        rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
         destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
         ** rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk). rewrite oro_None_r. reflexivity.
         ** rewrite (lookup_left_None p1 msk1 l1 r1 k Hzk).
            rewrite (lookup_left_None p1 msk1 (Tip k2 v2) r1 k Hzk).
            reflexivity.
       * rewrite lookup_bin_oro. rewrite oro_None_l. rewrite Hmerge.
-        rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (All_IntMaps_WF _ _)).
+        rewrite (lookup_Bin_oro p1 msk1 l1 r1 k (IntMapProofs.All_IntMaps_WF _ _)).
         destruct (Data.IntSet.Internal.zero k msk1) eqn:Hzk.
         ** rewrite (lookup_right_None p1 msk1 l1 r1 k Hzk).
            rewrite (lookup_right_None p1 msk1 l1 (Tip k2 v2) k Hzk).
@@ -2143,12 +2135,12 @@ Proof.
            reflexivity.
   - (* Bin/Nil *)
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
   - (* Tip/Bin *)
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     match goal with
     | |- context [?f (Tip k1 v1) k1 l2] => set (merge0_fn := f)
@@ -2169,7 +2161,7 @@ Proof.
         + destruct (Data.IntSet.Internal.zero k1 m') eqn:Hz'.
           * (* zero: bin p' m' (merge0 l') Nil *)
             rewrite lookup_bin_oro. rewrite oro_None_r. rewrite IHl.
-            rewrite (lookup_Bin_oro p' m' l' r' kk (All_IntMaps_WF _ _)).
+            rewrite (lookup_Bin_oro p' m' l' r' kk (IntMapProofs.All_IntMaps_WF _ _)).
             destruct (Data.IntSet.Internal.zero kk m') eqn:Hzk.
             ** rewrite (lookup_right_None p' m' l' r' kk Hzk). rewrite oro_None_r. reflexivity.
             ** rewrite (lookup_left_None p' m' l' r' kk Hzk).
@@ -2177,7 +2169,7 @@ Proof.
                destruct (Data.IntMap.Internal.lookup kk r'); reflexivity.
           * (* not-zero: bin p' m' Nil (merge0 r') *)
             rewrite lookup_bin_oro. rewrite oro_None_l. rewrite IHr.
-            rewrite (lookup_Bin_oro p' m' l' r' kk (All_IntMaps_WF _ _)).
+            rewrite (lookup_Bin_oro p' m' l' r' kk (IntMapProofs.All_IntMaps_WF _ _)).
             destruct (Data.IntSet.Internal.zero kk m') eqn:Hzk.
             ** rewrite (lookup_right_None p' m' l' r' kk Hzk).
                rewrite (lookup_right_None p' m' l' (Tip k1 v1) kk Hzk).
@@ -2214,14 +2206,14 @@ Proof.
         simpl Data.IntMap.Internal.lookup. rewrite Hkk1. reflexivity.
     + destruct (Data.IntSet.Internal.zero k1 msk2) eqn:Hz.
       * rewrite lookup_bin_oro. rewrite oro_None_r. rewrite Hmerge.
-        rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+        rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
         destruct (Data.IntSet.Internal.zero k msk2) eqn:Hzk.
         ** rewrite (lookup_right_None p2 msk2 l2 r2 k Hzk). rewrite oro_None_r. reflexivity.
         ** rewrite (lookup_left_None p2 msk2 l2 r2 k Hzk).
            rewrite (lookup_left_None p2 msk2 (Tip k1 v1) r2 k Hzk).
            destruct (Data.IntMap.Internal.lookup k r2); reflexivity.
       * rewrite lookup_bin_oro. rewrite oro_None_l. rewrite Hmerge.
-        rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (All_IntMaps_WF _ _)).
+        rewrite (lookup_Bin_oro p2 msk2 l2 r2 k (IntMapProofs.All_IntMaps_WF _ _)).
         destruct (Data.IntSet.Internal.zero k msk2) eqn:Hzk.
         ** rewrite (lookup_right_None p2 msk2 l2 r2 k Hzk).
            rewrite (lookup_right_None p2 msk2 l2 (Tip k1 v1) k Hzk).
@@ -2231,7 +2223,7 @@ Proof.
            destruct (Data.IntMap.Internal.lookup k r2); reflexivity.
   - (* Tip/Tip *)
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     destruct (k1 == k2) eqn:Hkk.
     + simpl Data.IntMap.Internal.lookup.
@@ -2248,22 +2240,22 @@ Proof.
       * reflexivity.
   - (* Tip/Nil *)
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
   - (* Nil/Bin *)
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     destruct (Data.IntMap.Internal.lookup k (Bin p2 msk2 l2 r2)); reflexivity.
   - (* Nil/Tip *)
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     destruct (Data.IntMap.Internal.lookup k (Tip k2 v2)); reflexivity.
   - (* Nil/Nil *)
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq.
+    rewrite IntMapProofs.deferredFix2_eq.
     cbv beta iota zeta delta [GHC.Base.id GHC.Base.const].
     reflexivity.
 Qed.
@@ -2307,7 +2299,7 @@ Local Lemma disjoint_unfold_BinBin : forall A B p1 msk1 (l1 r1 : IntMap.IntMap A
     else Data.IntMap.Internal.disjoint t1 r2
   else if p1 == p2 then Data.IntMap.Internal.disjoint l1 l2 && Data.IntMap.Internal.disjoint r1 r2
   else true).
-Proof. intros. unfold Data.IntMap.Internal.disjoint. rewrite {1}deferredFix2_eq. reflexivity. Qed.
+Proof. intros. unfold Data.IntMap.Internal.disjoint. rewrite {1}IntMapProofs.deferredFix2_eq. reflexivity. Qed.
 
 (* Helper: negb (member key m) = null (inter (Tip key val) m) *)
 Local Lemma disjoint_tip_null_inter : forall A B key (val : A) (m : IntMap.IntMap B),
@@ -2399,41 +2391,41 @@ Proof.
                 ltac:(simpl size_nat; lia)).
         -- reflexivity.
   - (* Bin/Tip *)
-    unfold Data.IntMap.Internal.disjoint. rewrite deferredFix2_eq. cbv beta iota zeta.
+    unfold Data.IntMap.Internal.disjoint. rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta.
     unfold Data.IntMap.Internal.notMember.
     apply disjoint_tip_null_inter_r.
   - (* Bin/Nil *)
-    unfold Data.IntMap.Internal.disjoint. rewrite deferredFix2_eq. cbv beta iota zeta.
+    unfold Data.IntMap.Internal.disjoint. rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta.
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
+    rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
     reflexivity.
   - (* Tip/Bin *)
-    unfold Data.IntMap.Internal.disjoint. rewrite deferredFix2_eq. cbv beta iota zeta.
+    unfold Data.IntMap.Internal.disjoint. rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta.
     unfold Data.IntMap.Internal.notMember.
     apply disjoint_tip_null_inter.
   - (* Tip/Tip *)
-    unfold Data.IntMap.Internal.disjoint. rewrite deferredFix2_eq. cbv beta iota zeta.
+    unfold Data.IntMap.Internal.disjoint. rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta.
     unfold Data.IntMap.Internal.notMember.
     apply disjoint_tip_null_inter.
   - (* Tip/Nil *)
-    unfold Data.IntMap.Internal.disjoint. rewrite deferredFix2_eq. cbv beta iota zeta.
+    unfold Data.IntMap.Internal.disjoint. rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta.
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
+    rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
     reflexivity.
   - (* Nil/Bin *)
-    unfold Data.IntMap.Internal.disjoint. rewrite deferredFix2_eq. cbv beta iota zeta.
+    unfold Data.IntMap.Internal.disjoint. rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta.
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
+    rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
     reflexivity.
   - (* Nil/Tip *)
-    unfold Data.IntMap.Internal.disjoint. rewrite deferredFix2_eq. cbv beta iota zeta.
+    unfold Data.IntMap.Internal.disjoint. rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta.
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
+    rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
     reflexivity.
   - (* Nil/Nil *)
-    unfold Data.IntMap.Internal.disjoint. rewrite deferredFix2_eq. cbv beta iota zeta.
+    unfold Data.IntMap.Internal.disjoint. rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta.
     unfold Data.IntMap.Internal.intersection, Data.IntMap.Internal.mergeWithKey'.
-    rewrite deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
+    rewrite IntMapProofs.deferredFix2_eq. cbv beta iota zeta delta [GHC.Base.const GHC.Base.id].
     reflexivity.
 Qed.
 

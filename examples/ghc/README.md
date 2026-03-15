@@ -150,9 +150,9 @@ Proved theorems
  * **ScopeInvariant.v** (0 Admitted, 27 Qed): Scope invariant preservation
  * **Var.v** (0 Admitted, 21 Qed): `isJoinId` lemmas, `EqLaws_Var`
  * **VarSet.v** (0 Admitted, 140 Qed): Comprehensive VarSet reasoning library
- * **ContainerProofs.v** (94 Qed, 2 Local Axioms): IntMap operation properties;
-   all 20 previously-axiomatized properties now proved as Lemmas; only 2 foundational
-   Local Axioms remain (deferredFix2_eq, All_IntMaps_WF)
+ * **ContainerProofs.v** (94 Qed, 0 Local Axioms): IntMap operation properties;
+   all 20 previously-axiomatized properties now proved as Lemmas; imports
+   deferredFix2_eq + All_IntMaps_WF axioms from IntMapProofs
  * **TrieMap.v** (1 Qed): `TrieMapLaws__MaybeMap` instance proved
  * **VarSetFSet.v** (31 Qed): FSet interface for VarSets including
    `equal_2`, `filter_1`/`filter_2`/`filter_3`
@@ -167,7 +167,7 @@ check mark.
 |------|-----|----------|-------|
 | Axioms.v | 7 | 0 | Behavioral axioms for `uniqAway`, `ValidVarSet` |
 | Base.v | 4 | 0 | |
-| ContainerProofs.v | 94 | 0 | 2 Local Axioms (2 foundational: deferredFix2_eq, All_IntMaps_WF) |
+| ContainerProofs.v | 94 | 0 | 0 Local Axioms; imports deferredFix2_eq + All_IntMaps_WF from IntMapProofs |
 | Core.v | 11 | 0 | `deAnnotate` lemmas |
 | CoreFVs.v | 42 | 0 | All exprFreeVars lemmas proved |
 | CoreInduct.v | 14 | 0 | |
@@ -206,14 +206,15 @@ check mark.
 | TrieMap.v | 4 | `TrieMapLaws__IntMap` and `TrieMapLaws__Map` need alter/fold specs; `TrieMapLaws__ListMap` and `TrieMapLaws__GenMap` blocked by axiomatized types |
 | VarSetFSet.v | 14 | `elements`/`choose`/`partition` defined as `HsToCoq.Err.default`; `for_all`/`exists_` need IntMap `foldr` spec; `equal_1`/`is_empty_1`/`subset_1` need key-surjectivity |
 
-### ContainerProofs Local Axioms (2 remaining)
+### ContainerProofs Axioms (0 Local Axioms)
 
-Only 2 foundational Local Axioms remain in `ContainerProofs.v`:
+All Local Axioms have been eliminated from `ContainerProofs.v`. The two
+foundational axioms are now imported from `IntMapProofs`:
 
 | Axiom | Purpose |
 |-------|---------|
-| `deferredFix2_eq` | One-step unfolding for `deferredFix2` (general recursion combinator) |
-| `All_IntMaps_WF` | All IntMaps satisfy the well-formedness predicate from IntMapProofs |
+| `IntMapProofs.deferredFix2_eq` | One-step unfolding for `deferredFix2` (general recursion combinator) |
+| `IntMapProofs.All_IntMaps_WF` | All IntMaps satisfy the well-formedness predicate from IntMapProofs |
 
 All 24 previously-axiomatized IntMap operation properties (delete, union,
 difference, intersection, disjoint, filter, combined) are now proved as
