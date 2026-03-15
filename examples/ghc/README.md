@@ -150,9 +150,9 @@ Proved theorems
  * **ScopeInvariant.v** (0 Admitted, 27 Qed): Scope invariant preservation
  * **Var.v** (0 Admitted, 21 Qed): `isJoinId` lemmas, `EqLaws_Var`
  * **VarSet.v** (0 Admitted, 140 Qed): Comprehensive VarSet reasoning library
- * **ContainerProofs.v** (63 Qed, 6 Local Axioms): IntMap operation properties;
-   all 16 previously-global axioms now proved as Lemmas; 4 new Local Axioms
-   (lookup characterizations for union/difference/intersection + disjoint spec)
+ * **ContainerProofs.v** (94 Qed, 2 Local Axioms): IntMap operation properties;
+   all 20 previously-axiomatized properties now proved as Lemmas; only 2 foundational
+   Local Axioms remain (deferredFix2_eq, All_IntMaps_WF)
  * **TrieMap.v** (1 Qed): `TrieMapLaws__MaybeMap` instance proved
  * **VarSetFSet.v** (31 Qed): FSet interface for VarSets including
    `equal_2`, `filter_1`/`filter_2`/`filter_3`
@@ -167,7 +167,7 @@ check mark.
 |------|-----|----------|-------|
 | Axioms.v | 7 | 0 | Behavioral axioms for `uniqAway`, `ValidVarSet` |
 | Base.v | 4 | 0 | |
-| ContainerProofs.v | 63 | 0 | 6 Local Axioms (2 foundational + 4 lookup/disjoint characterizations) |
+| ContainerProofs.v | 94 | 0 | 2 Local Axioms (2 foundational: deferredFix2_eq, All_IntMaps_WF) |
 | Core.v | 11 | 0 | `deAnnotate` lemmas |
 | CoreFVs.v | 42 | 0 | All exprFreeVars lemmas proved |
 | CoreInduct.v | 14 | 0 | |
@@ -195,7 +195,7 @@ check mark.
 | VarSetFSet.v | 31 | 14 | equal_2, filter_1/2/3 proved; rest blocked by `elements`/`choose`/`partition` = default |
 | VarSetStrong.v | 30 | 0 | |
 
-**Totals**: 506 Qed, 26 Admitted (across 5 files)
+**Totals**: 537 Qed, 26 Admitted (across 5 files)
 
 ### Remaining Admitted breakdown
 
@@ -206,23 +206,21 @@ check mark.
 | TrieMap.v | 4 | `TrieMapLaws__IntMap` and `TrieMapLaws__Map` need alter/fold specs; `TrieMapLaws__ListMap` and `TrieMapLaws__GenMap` blocked by axiomatized types |
 | VarSetFSet.v | 14 | `elements`/`choose`/`partition` defined as `HsToCoq.Err.default`; `for_all`/`exists_` need IntMap `foldr` spec; `equal_1`/`is_empty_1`/`subset_1` need key-surjectivity |
 
-### ContainerProofs axioms (24 remaining)
+### ContainerProofs Local Axioms (2 remaining)
 
-These axioms about IntMap operations are stated in `ContainerProofs.v` and
-used throughout the theory files. They are all provable given sufficient
-Sem lemma infrastructure in `examples/containers/theories/IntMapProofs.v`
-(currently missing `delete_Sem`, `union_Sem`, `difference_Sem`,
-`intersection_Sem`, `disjoint_Sem`).
+Only 2 foundational Local Axioms remain in `ContainerProofs.v`:
 
-| Category | Count | Examples |
-|----------|-------|---------|
-| Delete | 4 | `delete_eq`, `delete_neq`, `member_delete`, `delete_commute` |
-| Union | 2 | `member_union`, `lookup_union` |
-| Difference | 3 | `lookup_difference_in_snd`, `lookup_difference_not_in_snd`, `member_difference` |
-| Intersection | 2 | `lookup_intersection`, `member_intersection` |
-| Disjoint | 5 | `disjoint_sym`, `disjoint_insert`, `disjoint_non_member`, `disjoint_eq`, `disjoint_difference` |
-| Filter | 3 | `filter_comp`, `lookup_filterWithKey`, `filter_true` |
-| Combined | 5 | `null_intersection_non_member`, `null_intersection_difference`, `null_intersection_eq`, `lookup_partition` |
+| Axiom | Purpose |
+|-------|---------|
+| `deferredFix2_eq` | One-step unfolding for `deferredFix2` (general recursion combinator) |
+| `All_IntMaps_WF` | All IntMaps satisfy the well-formedness predicate from IntMapProofs |
+
+All 24 previously-axiomatized IntMap operation properties (delete, union,
+difference, intersection, disjoint, filter, combined) are now proved as
+Lemmas. The key characterization lemmas (`lookup_union_eq`,
+`lookup_difference_eq`, `lookup_intersection_eq`, `disjoint_spec`) were
+proved via well-founded induction on `size_nat m1 + size_nat m2` with
+`deferredFix2_eq` for one-step unfolding.
 
 GHC 9.10 migration details
 ---------------------------
