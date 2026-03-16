@@ -1770,9 +1770,113 @@ Program Fixpoint fromList_create_Desc
   ) ->
   P (fromList_create (2^sz)%Z xs) := _.
 Next Obligation.
-  (* TODO: Coq 8.20 changed Program Fixpoint obligation structure —
-     all variables are pre-introduced. Needs systematic rewrite. *)
-Admitted.
+  (* Coq 8.20 pre-introduces all obligation variables (sz, lb, xs, H, H0, P, H1).
+     Revert the CPS continuation to recover the original proof structure. *)
+  rename fromList_create_Desc into IH.
+  rename H into Hnonneg. rename H0 into HheadOrdered.
+  revert dependent P.
+  rewrite fromList_create_eq
+    by (enough (0 < 2^sz)%Z by lia; apply Z.pow_pos_nonneg; lia).
+  unfold fromList_create_f.
+  destruct xs.
+  * intros X HX. apply HX. clear HX.
+    - solve_Bounded e.
+    - reflexivity.
+    - reflexivity.
+    - left. reflexivity.
+  * repeat replace (#1) with 1%Z by reflexivity.
+    unfold op_zeze__, Eq_Integer___, op_zeze____.
+    simpl in HheadOrdered.
+    destruct (Z.eqb_spec (2^sz) 1) as [Heq_pow | Hneq_pow].
+    + destruct p as [kx vx].
+      destruct (not_ordered kx xs) eqn:Hord.
+      - intros X HX. apply HX; clear HX.
+        ++ solve_Bounded e.
+        ++ reflexivity.
+        ++ rewrite toList_Bin, toList_Tip, app_nil_r. reflexivity.
+        ++ left. reflexivity.
+      - intros X HX. apply HX; clear HX.
+        ++ destruct xs as [|[ky vy] xs']; simpl in Hord; solve_Bounded e.
+        ++ destruct xs as [|[ky vy] xs']; simpl in *; solve_Bounds e.
+        ++ rewrite toList_Bin, toList_Tip, !app_nil_r, !app_nil_l. reflexivity.
+        ++ right. split. rewrite size_Bin. rewrite Heq_pow. lia. reflexivity.
+    + assert (~ (sz = 0))%Z by (intro; subst; simpl in Hneq_pow; congruence).
+      assert (sz > 0)%Z by lia.
+      replace ((Bits.shiftR (2 ^ sz)%Z 1%Z)) with (2^(sz - 1))%Z.
+      Focus 2.
+        unfold Bits.shiftR, Bits.instance_Bits_Int.
+        rewrite Z.shiftr_div_pow2 by lia.
+        rewrite Z.pow_sub_r by lia.
+        reflexivity.
+      assert (Z.to_nat (sz - 1) < Z.to_nat sz)%nat.
+      { rewrite Z2Nat.inj_sub by lia.
+        apply Nat.sub_lt.
+        apply Z2Nat.inj_le.
+        lia.
+        lia.
+        lia.
+        replace (Z.to_nat 1) with 1 by reflexivity.
+        lia.
+      }
+      eapply IH.
+      ++ assumption.
+      ++ lia.
+      ++ eassumption.
+      ++ intros l ys zs HBounded_l HisUB_l Hlist_l Hsize_l.
+         destruct ys.
+         + intros X HX. apply HX. clear HX.
+           ** solve_Bounded e.
+           ** assumption.
+           ** assumption.
+           ** left; reflexivity.
+         + simpl in HBounded_l.
+           destruct Hsize_l as [Hys_nil | [Hsize_l_eq Hzs_nil]]; try congruence.
+           subst. rewrite app_nil_r in Hlist_l.
+           destruct p0 as [ky vy].
+           assert (isLB (Some lb) ky = true) by solve_Bounds e.
+           destruct ys as [| [kz vz] ys'].
+           -- intros X HX. apply HX; clear HX.
+              ** assert (isUB None ky = true) by reflexivity.
+                 applyDesc e (@insertMax_Desc e a).
+              ** reflexivity.
+              ** erewrite toList_insertMax by eassumption.
+                 rewrite app_nil_l, <- app_assoc.
+                 assumption.
+              ** left; reflexivity.
+           -- destruct (not_ordered ky ((kz, vz) :: ys')) eqn:Hord2.
+              ++ intros X HX. apply HX; clear HX.
+                 ** solve_Bounded e.
+                 ** reflexivity.
+                 ** rewrite app_nil_l. simpl in Hlist_l.
+                    assumption.
+                 ** left; reflexivity.
+              ++ eapply IH; clear IH.
+                 ** assumption.
+                 ** lia.
+                 ** eassumption.
+                 ** simpl in Hord2.
+                    intros r zs' zs'' HBounded_r HisUB_r Hlist_r Hsize_r.
+                    intros X HX. apply HX. clear HX.
+                    --- applyDesc e (@link_Desc e a).
+                    --- solve_Bounds e.
+                    --- erewrite toList_link by eassumption.
+                        rewrite Hlist_l. rewrite Hlist_r.
+                        rewrite <- !app_assoc.  reflexivity.
+                    --- destruct Hsize_r as [?|[Hsize_r_eq Hzs'_nil]]; [left; assumption| right].
+                        subst.
+                        split; only 2: reflexivity.
+                        applyDesc e (@link_Desc e a).
+                        change (match 2 ^ (sz - 1) with
+                                | 0 => 0 | Z.pos p => Z.pos p~0
+                                | Z.neg p => Z.neg p~0 end)%Z
+                          with (2 * 2 ^ (sz - 1))%Z in *.
+                        change (match 2 ^ sz with
+                                | 0 => 0 | Z.pos p => Z.pos p~0
+                                | Z.neg p => Z.neg p~0 end)%Z
+                          with (2 * 2 ^ sz)%Z in *.
+                        rewrite mul_pow_sub in * by lia.
+                        lia.
+Qed.
 
 Lemma foldl_foldl' : forall {b} f (x : b) (l: list (e * a)),
   Foldable.foldl f x l = Foldable.foldl' f x l.

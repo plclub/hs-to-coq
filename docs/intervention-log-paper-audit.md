@@ -53,37 +53,42 @@ Comprehensive claim-by-claim audit of all three papers with:
 - Added "Paper claims audit" section referencing `docs/paper-claims-audit.md`
 - Updated containers description to note MonoidLaws for Map
 
+### 4. fromList_create_Desc proof fixed (was Admitted)
+**File**: `examples/containers/theories/MapProofs/FromListProofs.v`
+
+Fixed the `fromList_create_Desc` obligation (was Admitted since Coq 8.20 upgrade).
+Key techniques:
+- `revert dependent P` to recover the CPS structure after Coq 8.20 pre-introduction
+- Explicit `destruct p as [kx vx]; destruct (not_ordered kx xs) eqn:Hord` instead of
+  generic `destruct_match` (which picks up wrong matches in hypotheses)
+- `change (match 2^x with 0=>0|Z.pos p=>Z.pos p~0|Z.neg p=>Z.neg p~0 end) with (2*2^x)`
+  to normalize Z multiplication that Coq 8.20 reduces to match form
+- Map-specific tactic annotations: `applyDesc e (@link_Desc e a)`, `solve_Bounded e`
+
+This reduces containers Admitted from 94 to 93.
+
 ## Attempted but Not Completed
 
-### FromListProofs.v (2 Admitted)
+### FromListProofs.v: fromList_go_Desc (1 remaining Admitted)
 **File**: `examples/containers/theories/MapProofs/FromListProofs.v`
-**Lines**: 1775 (`fromList_create_Desc`), 1861 (`fromList_go_Desc`)
+**Line**: 1961 (`fromList_go_Desc`)
 
 **Investigation findings**:
-- Root cause confirmed: Coq 8.20 `Program Fixpoint` pre-introduces ALL obligation
-  variables, including the CPS continuation `P` and its argument `H1`. This breaks
-  the original proof pattern `intros X HX. apply HX.`
-
-- **Fix approach discovered**: `revert dependent P` after renaming `H`/`H0` recovers
-  the original CPS goal structure. The `rewrite fromList_create_eq` side condition
-  also works after this revert.
-
-- **Remaining obstacle**: After recovering the CPS structure, the Map proof diverges
-  from the Set proof at pair destructuring. In the `2^sz = 1` case:
-  - Set: `fromList_create_f` matches on `not_ordered e0 xs` directly
-  - Map: `fromList_create_f` first destructures `let '(kx, vx) := p in ...`,
-    then matches on `not_ordered kx xs`
-  - The generic `destruct_match` tactic picks up matches in hypotheses (e.g.,
-    `Z.pow` matching on `sz`) before the intended goal match
-  - Fix requires explicit `destruct p as [kx vx]; destruct (not_ordered kx xs) eqn:Hord`
-    followed by adapting all subsequent `apply HX` calls for the Map pair structure
-
-- **Why reverted**: The cascading differences between Set and Map proofs require
-  adapting ~100 lines of intricate proof script. Each `intros X HX. apply HX.`
-  pattern needs conversion to either `apply HX` (with pre-introduced HX) or
-  local `intros/apply` blocks within IH callbacks. The `insertMax_Desc`,
-  `link_Desc`, and nested `eapply IH` calls all need Map-specific type annotations
-  (e.g., `@insertMax_Desc e a` vs bare `insertMax_Desc`).
+- The `fromList_go_Desc` obligation has `Desc'` as return type. In Coq 8.20,
+  the `Desc'` CPS (forall P, continuation -> P result) is pre-introduced,
+  making the goal just `P (fromList_go ...)` where P is a hypothesis.
+- The `eapply IH` call fails because the IH's `Desc'` return has a DIFFERENT
+  semantic function (`sem s0 i`) from the outer goal (`sem s i`). When `Desc'`
+  is already consumed by pre-introduction, `eapply` can't use higher-order
+  unification to defer the semantic reconciliation.
+- Additionally, `2 * 2^sz` in Z is reduced by Coq to a `match` form
+  (`match 2^sz with 0=>0|Z.pos p=>Z.pos p~0|...`), preventing `eapply IH`
+  from unifying the size constraint.
+- The Set version works because `Desc'` gets unfolded during `eapply` in
+  the Set context, but for Maps the pre-introduction blocks this.
+- Possible fix: manually unfold `Desc'`, apply the continuation hypothesis
+  explicitly, and use `fromList_create_Desc` via `pose proof + apply` pattern.
+  Requires restructuring the entire recursive call pattern (~50 lines).
 
 ## Verification Methodology
 
