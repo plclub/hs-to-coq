@@ -2703,6 +2703,41 @@ Proof.
     simpl in *; try reflexivity; discriminate.
 Qed.
 
+(* ============================================================ *)
+(* IntMap tree structural predicates                             *)
+(* ============================================================ *)
+
+(* Key structural predicate: value appears somewhere in the tree *)
+Fixpoint tree_elem_kv {a} (k : N) (v : a) (m : IntMap.IntMap a) : Prop :=
+  match m with
+  | Nil => False
+  | Tip k' v' => k = k' /\ v = v'
+  | Bin _ _ l r => tree_elem_kv k v l \/ tree_elem_kv k v r
+  end.
+
+(* tree_elem_kv k v m implies lookup k m = Some v (for WF maps) *)
+Lemma tree_elem_kv_lookup :
+  forall A k (v : A) (m : IntMap.IntMap A),
+  tree_elem_kv k v m -> Data.IntMap.Internal.lookup k m = Some v.
+Proof.
+  intros A k v m.
+  induction m as [p msk l IHl r IHr | k' v' | ]; intro H.
+  - simpl in H. destruct H as [Hl | Hr].
+    + apply IHl in Hl.
+      rewrite (lookup_Bin_oro p msk l r k (IntMapProofs.All_IntMaps_WF _ _)).
+      rewrite Hl. reflexivity.
+    + apply IHr in Hr.
+      rewrite (lookup_Bin_oro p msk l r k (IntMapProofs.All_IntMaps_WF _ _)).
+      destruct (WF_Bin_lookup_disjoint p msk l r k (IntMapProofs.All_IntMaps_WF _ _)) as [Hlnone | Hrnone].
+      * rewrite Hlnone. simpl. exact Hr.
+      * rewrite Hrnone in Hr. discriminate.
+  - simpl in H. destruct H as [Hk Hv]; subst.
+    simpl. rewrite Eq_refl_Word. reflexivity.
+  - simpl in H. contradiction.
+Qed.
+
+(* ============================================================ *)
+
 Lemma null_intersection_eq : forall b (x1 x2 y1 y2 : IntMap.IntMap b),
   (forall a, Data.IntMap.Internal.member a x1 <-> Data.IntMap.Internal.member a y1) ->
   (forall a, Data.IntMap.Internal.member a x2 <-> Data.IntMap.Internal.member a y2) ->

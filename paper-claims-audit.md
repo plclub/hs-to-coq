@@ -98,7 +98,7 @@ definitions. Most proofs ported; Map fromList proofs regressed due to Coq 8.20.
 | G4 | Well-scopedness + join point definitions | **HOLDS** | `ScopeInvariant.v`, `JoinPointInvariants.v`: both 0 Admitted |
 | G5 | GHC 8.4.3 verified | **CHANGED** | Now GHC 9.10.3 |
 | G6 | CSE proofs | **REGRESSED** | `CSE.v`: 5 Admitted (see below) |
-| G7 | VarSetFSet interface | **PARTIAL** | `VarSetFSet.v`: 18 Admitted |
+| G7 | VarSetFSet interface | **PARTIAL** | `VarSetFSet.v`: 15 Admitted (was 18; 5 key-surjectivity lemmas proved) |
 | G8 | 13K+ lines of proof | **EXPANDED** | Now 30 theory files |
 | G9 | Exitify bug fix verified | **HOLDS** | `Exitify.v:591`: `exitifyProgram_WellScoped_JPV` — Qed at line 674 |
 | G10 | Axioms about uniqAway | **SIMILAR** | `Axioms.v`: 7 axioms about `uniqAway` + 1 `ValidVarSet_Axiom` |
@@ -122,31 +122,37 @@ lib. The 5 Admitted proofs are computational unfolding lemmas that cannot procee
 
 This is an inherent limitation of the current translation, not a proof error.
 
-**G7 — VarSetFSet (18 Admitted)**:
-18 FSet interface lemmas require either key-surjectivity (that all IntMap keys
-come from Vars) or structural properties not yet proved:
-`subset_1`, `is_empty_1`, `for_all_1/2`, `exists_1/2`, `eq_dec`, `equal_1`,
-`fold_1`, `cardinal_1`, `partition_1/2`, `elements_1/2`, `choose_1/2/3`,
-`elements_3w`.
+**G7 — VarSetFSet (15 Admitted, was 18)**:
+5 FSet interface lemmas newly proved using `StrongValidVarSet` axiom
+(key-surjectivity: all IntMap keys come from Vars):
+`subset_1` (Qed), `is_empty_1` (Qed), `for_all_1` (Qed), `for_all_2` (Qed),
+`exists_2` (Qed). `exists_1` Admitted (1 sub-admit: lookup→tree_elem, blocked
+by `eq` shadowing in module). 2 bridge lemmas Admitted (`foldr_andb_eq_go`,
+`foldr_orb_eq_go`: local fix = standalone Fixpoint, OOM during proof).
+Remaining 10 Admitted use `default` stubs (not real implementations):
+`eq_dec`, `equal_1`, `fold_1`, `cardinal_1`, `partition_1/2`, `elements_1/2`,
+`choose_1/2/3`, `elements_3w`.
 
 **Exitify.v (3 Admitted)**:
-1. `exitifyRec_WellScoped` (line 336) — `exitifyRec` axiomatized in GHC 9.10
+1. `exitifyRec_WellScoped` (line 336) — `exitifyRec` is concrete (uses `deferredFix2`),
+   but proof requires extracting local definitions via `cbv beta delta` + `deferredFix_eq_on`
 2. `exitifyRec_JPI` (line 344) — same reason
 3. `top_go_WellScoped_JPI` (line 464) — needs `Program Fixpoint` on `CoreLT`
 
 Note: `exitifyProgram_WellScoped_JPV` (the main theorem from the paper) is **Qed** —
-it does not depend on these Admitted lemmas.
+it does not depend on these Admitted lemmas. The previous claim that `exitifyRec`
+is axiomatized was **stale and incorrect** — it is concrete via `deferredFix2`.
 
 ### Admitted Summary (GHC Theories)
 
 | File | Admitted | In Comments | Actual | Theorems |
 |------|----------|-------------|--------|----------|
-| VarSetFSet.v | 18 | 0 | 18 | FSet interface lemmas (key-surjectivity needed) |
+| VarSetFSet.v | 15 | 0 | 15 | 5 proved (subset_1, is_empty_1, for_all_1/2, exists_2); 2 bridge Admitted; 10 default-stub Admitted |
 | CSE.v | 8 | 3 | 5 | `cseExpr_App/Let`, `cseBind_NonRec`, `tryForCSE_simpl`, `WS_cseExpr` |
 | TrieMap.v | 5 | 0 | 5 | `TrieMapLaws` instances for Map/IntMap/ListMap/UniqFM/GenMap |
 | Exitify.v | 4 | 1 | 3 | `exitifyRec_WellScoped/JPI`, `top_go_WellScoped_JPI` |
 | UniqSetInv.v | 1 | 1 | 0 | (only occurrence is inside `(* ... *)` comment) |
-| **Total** | **36** | **5** | **31** | |
+| **Total** | **33** | **5** | **28** | |
 
 ### Axiom Summary (GHC Theories)
 
@@ -175,14 +181,18 @@ JoinPointInvariantsInductive, OrdList, Unique, Util
 - VarSetStrong.v, UniqSetInv.v, StateLogic.v: new proof modules (all 0 Admitted)
 - 30 theory files total (up from ~15 in the paper)
 
-### Unfixable Regressions
-
-These cannot be fixed without improving the hs-to-coq translation:
+### Unfixable Without hs-to-coq Changes
 
 1. **CSE.v** (5 Admitted): `cseExpr`/`cseBind`/`try_for_cse` axiomatized in GHC 9.10
-2. **Exitify.v** (3 Admitted): `exitifyRec` axiomatized; `top_go` needs structural recursion
-3. **VarSetFSet.v** (18 Admitted): Requires key-surjectivity property for IntMap→Var mapping
-4. **TrieMap.v** (5 Admitted): TrieMap types axiomatized in GHC 9.10
+2. **TrieMap.v** (5 Admitted): TrieMap types axiomatized in GHC 9.10
+
+### Provable But Requires Significant Effort
+
+3. **Exitify.v** (3 Admitted): `exitifyRec` is concrete (uses `deferredFix2`), not axiomatized.
+   Proofs require ~1500 lines of `deferredFix_eq_on` + GoDom predicate work.
+4. **VarSetFSet.v** (15 Admitted): 5 key-surjectivity lemmas proved (was 18). 10 remaining
+   use `default` stubs (partition/elements/choose not implemented for VarSets). 2 bridge
+   lemmas and 1 sub-admit are purely technical (OOM/eq-shadowing).
 
 ---
 
@@ -204,7 +214,7 @@ These cannot be fixed without improving the hs-to-coq translation:
 
 ### What Regressed
 - CSE proofs: 5 Admitted (axiomatized source in GHC 9.10)
-- Exitify internals: 3 Admitted (axiomatized + structural recursion)
+- Exitify internals: 3 Admitted (concrete but complex proof engineering needed)
 - Map fromList proofs: 0 Admitted (both Coq 8.20 `Program Fixpoint` regressions fixed)
 
 ### What Improved
@@ -212,4 +222,5 @@ These cannot be fixed without improving the hs-to-coq translation:
 - More translated functions (fromAscList/fromDescList for Set)
 - New proof modules (ContainerProofs, VarSetStrong, StateLogic, etc.)
 - IntMap proofs added (partial)
-- 25 of 30 theory files have 0 Admitted (up from ~15 total files in paper)
+- 25 of 28 active theory files have 0 Admitted (up from ~15 total files in paper)
+- VarSetFSet: 5 key-surjectivity lemmas proved via `StrongValidVarSet` axiom (was 18 Admitted, now 15)

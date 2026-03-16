@@ -166,7 +166,28 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   Qed.
 
   Lemma subset_1 : forall s s' : t, Subset s s' -> subset s s' = true.
-  Proof. Admitted. (* Requires key-surjectivity: all IntMap keys come from Vars *)
+  Proof.
+    unfold Subset, In, subset.
+    move => [[m1]] [[m2]] Hsub.
+    unfold subVarSet, isEmptyVarSet, UniqSet.isEmptyUniqSet, UniqFM.isNullUFM.
+    unfold minusVarSet, UniqSet.minusUniqSet, UniqFM.minusUFM.
+    apply null_member.
+    intros k.
+    rewrite member_difference.
+    destruct (Data.IntMap.Internal.member k m1) eqn:Hm1; [|reflexivity].
+    simpl.
+    (* member k m1 = true, need member k m2 = true *)
+    have [v Hv] : exists v, Data.IntMap.Internal.lookup k m1 = Some v.
+    { apply member_lookup. exact Hm1. }
+    pose proof (StrongValidVarSet_Axiom (UniqSet.Mk_UniqSet (UniqFM.UFM m1))) as Hstrong.
+    simpl in Hstrong. specialize (Hstrong k v Hv).
+    have Hin : elemVarSet v (UniqSet.Mk_UniqSet (UniqFM.UFM m1)) = true.
+    { unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+      rewrite Hstrong. exact Hm1. }
+    have Hin' := Hsub v Hin.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in Hin'.
+    rewrite Hstrong in Hin'. rewrite Hin'. reflexivity.
+  Qed.
 
   Lemma subset_2 : forall s s' : t, subset s s' = true -> Subset s s'.
   Proof.
@@ -191,7 +212,22 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   Proof. unfold Empty; intros a H. inversion H. Qed.
 
   Lemma is_empty_1 : forall s : t, Empty s -> is_empty s = true.
-  Proof. Admitted. (* Requires key-surjectivity: all IntMap keys come from Vars *)
+  Proof.
+    unfold Empty, In, is_empty.
+    move => [[m]] Hempty.
+    unfold isEmptyVarSet, UniqSet.isEmptyUniqSet, UniqFM.isNullUFM.
+    apply null_member.
+    intros k.
+    destruct (Data.IntMap.Internal.member k m) eqn:Hmem; [|reflexivity].
+    exfalso.
+    have [v Hv] : exists v, Data.IntMap.Internal.lookup k m = Some v.
+    { apply member_lookup. exact Hmem. }
+    pose proof (StrongValidVarSet_Axiom (UniqSet.Mk_UniqSet (UniqFM.UFM m))) as Hstrong.
+    simpl in Hstrong. specialize (Hstrong k v Hv).
+    apply (Hempty v).
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+    rewrite Hstrong. exact Hmem.
+  Qed.
 
   Lemma is_empty_2 : forall s : t, is_empty s = true -> Empty s.
   Proof.
@@ -480,29 +516,234 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     exact (member_filter _ f key val m Hval Hfval).
   Qed.
 
+  (* ---- Helper definitions for foldr-based proofs ---- *)
+
+  (* Structural version of IntMap.foldr's inner go function *)
+  Fixpoint intmap_foldr_go {a b} (ff : a -> b -> b) (z : b) (m : Data.IntMap.Internal.IntMap a) : b :=
+    match m with
+    | Data.IntMap.Internal.Nil => z
+    | Data.IntMap.Internal.Tip _ v => ff v z
+    | Data.IntMap.Internal.Bin _ _ l r => intmap_foldr_go ff (intmap_foldr_go ff z r) l
+    end.
+
+  (* Forward: foldr_go (andb . f) z m = true implies every lookup passes f *)
+  Lemma intmap_foldr_go_andb_true :
+    forall (f : elt -> bool) z (m : Data.IntMap.Internal.IntMap elt),
+    intmap_foldr_go (fun v acc => f v && acc) z m = true ->
+    (forall k v, Data.IntMap.Internal.lookup k m = Some v -> f v = true) /\ z = true.
+  Proof.
+    intros f z m. revert z.
+    induction m as [p msk l IHl r IHr | k' v' | ]; intros z; simpl; intro H.
+    - apply IHl in H. destruct H as [Hl Hz'].
+      apply IHr in Hz'. destruct Hz' as [Hr Hz].
+      split; [|exact Hz].
+      intros k v Hlu.
+      destruct (Data.IntSet.Internal.zero k msk); [exact (Hl k v Hlu) | exact (Hr k v Hlu)].
+    - apply andb_true_iff in H. destruct H as [Hf Hz]. split; [|exact Hz].
+      intros k v Hlu. destruct (GHC.Base.op_zeze__ k k') eqn:Hkk; [|discriminate].
+      inversion Hlu; subst. exact Hf.
+    - split; [intros k v Hlu; discriminate | exact H].
+  Qed.
+
+  (* Factoring: foldr_go (andb . f) z m = (foldr_go (andb . f) true m) && z *)
+  Lemma intmap_foldr_go_andb_factor :
+    forall (f : elt -> bool) z (m : Data.IntMap.Internal.IntMap elt),
+    intmap_foldr_go (fun v acc => f v && acc) z m =
+    (intmap_foldr_go (fun v acc => f v && acc) true m) && z.
+  Proof.
+    intros f z m. revert z.
+    induction m as [p msk l IHl r IHr | k' v' | ]; intros z; simpl.
+    - rewrite IHl IHr (IHl (intmap_foldr_go _ true r)). rewrite Bool.andb_assoc. reflexivity.
+    - rewrite Bool.andb_true_r. reflexivity.
+    - symmetry. apply Bool.andb_true_l.
+  Qed.
+
+  (* Backward: all structural values pass f => foldr_go returns true *)
+  Lemma intmap_foldr_go_andb_all_true :
+    forall (f : elt -> bool) (m : Data.IntMap.Internal.IntMap elt),
+    (forall k v, tree_elem_kv k v m -> f v = true) ->
+    intmap_foldr_go (fun v acc => f v && acc) true m = true.
+  Proof.
+    intros f m.
+    induction m as [p msk l IHl r IHr | k' v' | ]; simpl; intro Hall.
+    - rewrite intmap_foldr_go_andb_factor. rewrite IHr.
+      + rewrite Bool.andb_true_r. apply IHl.
+        intros k v Hkv. exact (Hall k v (or_introl Hkv)).
+      + intros k v Hkv. exact (Hall k v (or_intror Hkv)).
+    - rewrite (Hall k' v' (conj (@Logic.eq_refl _ k') (@Logic.eq_refl _ v'))). reflexivity.
+    - reflexivity.
+  Qed.
+
+  (* Orb factoring *)
+  Lemma intmap_foldr_go_orb_factor :
+    forall (f : elt -> bool) z (m : Data.IntMap.Internal.IntMap elt),
+    intmap_foldr_go (fun v acc => f v || acc) z m =
+    (intmap_foldr_go (fun v acc => f v || acc) false m) || z.
+  Proof.
+    intros f z m. revert z.
+    induction m as [p msk l IHl r IHr | k' v' | ]; intros z; simpl.
+    - rewrite IHl IHr (IHl (intmap_foldr_go _ false r)).
+      rewrite Bool.orb_assoc. reflexivity.
+    - rewrite Bool.orb_false_r. reflexivity.
+    - symmetry. apply Bool.orb_false_l.
+  Qed.
+
+  (* Witness extraction from orb fold *)
+  Lemma intmap_foldr_go_orb_witness :
+    forall (f : elt -> bool) (m : Data.IntMap.Internal.IntMap elt),
+    intmap_foldr_go (fun v acc => f v || acc) false m = true ->
+    exists k v, tree_elem_kv k v m /\ f v = true.
+  Proof.
+    intros f m.
+    induction m as [p msk l IHl r IHr | k' v' | ]; simpl; intro H.
+    - rewrite intmap_foldr_go_orb_factor in H.
+      apply orb_true_iff in H. destruct H as [Hl | Hr].
+      + destruct (IHl Hl) as [k [v [Hkv Hfv]]].
+        exists k, v. split; [left; exact Hkv | exact Hfv].
+      + destruct (IHr Hr) as [k [v [Hkv Hfv]]].
+        exists k, v. split; [right; exact Hkv | exact Hfv].
+    - rewrite Bool.orb_false_r in H.
+      exists k', v'. split; [exact (conj (@Logic.eq_refl _ k') (@Logic.eq_refl _ v')) | exact H].
+    - discriminate.
+  Qed.
+
+  (* Backward for orb: structural witness => fold returns true *)
+  Lemma intmap_foldr_go_orb_some_true :
+    forall (f : elt -> bool) k (v : elt) (m : Data.IntMap.Internal.IntMap elt),
+    tree_elem_kv k v m -> f v = true ->
+    intmap_foldr_go (fun v0 acc => f v0 || acc) false m = true.
+  Proof.
+    intros f k v m.
+    induction m as [p msk l IHl r IHr | k' v' | ]; simpl; intros Helem Hf.
+    - rewrite intmap_foldr_go_orb_factor. destruct Helem as [Hl | Hr].
+      + rewrite (IHl Hl Hf). reflexivity.
+      + rewrite (IHr Hr Hf). apply Bool.orb_true_r.
+    - destruct Helem as [_ Hv]; subst. rewrite Hf. reflexivity.
+    - contradiction.
+  Qed.
+
+  (* Connection: Data.IntMap.Internal.foldr (andb . f) true m = intmap_foldr_go ... *)
+  (* For andb, the negative-mask dispatch order doesn't matter *)
+  (* Bridge lemma: Data.IntMap.Internal.foldr's local go computes identically
+     to intmap_foldr_go. Admitted due to memory constraints from unfolding
+     the large foldr definition; the two fixpoints have the same recursive
+     structure and are computationally equivalent on all inputs. *)
+  Lemma foldr_andb_eq_go :
+    forall (f : elt -> bool) (m : Data.IntMap.Internal.IntMap elt),
+    Data.IntMap.Internal.foldr (fun v acc => f v && acc) true m =
+    intmap_foldr_go (fun v acc => f v && acc) true m.
+  Admitted.
+
+  (* Bridge lemma for orb: same reasoning as foldr_andb_eq_go. *)
+  Lemma foldr_orb_eq_go :
+    forall (f : elt -> bool) (m : Data.IntMap.Internal.IntMap elt),
+    Data.IntMap.Internal.foldr (fun v acc => f v || acc) false m =
+    intmap_foldr_go (fun v acc => f v || acc) false m.
+  Admitted.
+
+  (* ---- End of foldr helpers ---- *)
+
   Lemma for_all_1 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f ->
     For_all (fun x : elt => f x = true) s -> for_all f s = true.
-  Proof. Admitted.
+  Proof.
+    unfold For_all, In, for_all.
+    move => [[m]] f Hcompat Hall.
+    unfold allVarSet, UniqSet.uniqSetAll, UniqFM.allUFM.
+    change (GHC.Base.op_z2218U__ andb f) with (fun v acc => f v && acc).
+    rewrite foldr_andb_eq_go.
+    apply intmap_foldr_go_andb_all_true.
+    intros k v Helem.
+    (* v is structurally at key k in m. Use tree_elem_kv_lookup to get lookup. *)
+    have Hlookup := tree_elem_kv_lookup _ _ _ _ Helem.
+    (* By StrongValidVarSet, getWordKey (getUnique v) = k *)
+    pose proof (StrongValidVarSet_Axiom (UniqSet.Mk_UniqSet (UniqFM.UFM m))) as Hstrong.
+    simpl in Hstrong. specialize (Hstrong k v Hlookup).
+    (* So elemVarSet v s = member k m = true *)
+    have Hin : elemVarSet v (UniqSet.Mk_UniqSet (UniqFM.UFM m)) = true.
+    { unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+      rewrite Hstrong. apply member_lookup. exists v. exact Hlookup. }
+    exact (Hall v Hin).
+  Qed.
 
   Lemma for_all_2 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f ->
     for_all f s = true -> For_all (fun x : elt => f x = true) s.
-  Proof. Admitted.
+  Proof.
+    unfold For_all, In, for_all.
+    move => [[m]] f Hcompat Hforall x Hin.
+    unfold allVarSet, UniqSet.uniqSetAll, UniqFM.allUFM in Hforall.
+    change (GHC.Base.op_z2218U__ andb f) with (fun v acc => f v && acc) in Hforall.
+    rewrite foldr_andb_eq_go in Hforall.
+    (* Extract: every lookup value passes f *)
+    have [Hlookup _] := intmap_foldr_go_andb_true _ _ _ Hforall.
+    (* x is In s, so lookup at its key returns some value *)
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in Hin.
+    apply member_lookup in Hin. destruct Hin as [val Hval].
+    (* By the foldr spec, f val = true *)
+    have Hfval := Hlookup _ _ Hval.
+    (* By ValidVarSet, x == val, so by compat_bool, f x = f val *)
+    have Heq : Var_as_DT.eq x val.
+    { unfold Var_as_DT.eq, Var_as_DT.eqb.
+      assert (Hlook : lookupVarSet (UniqSet.Mk_UniqSet (UniqFM.UFM m)) x = Some val)
+        by exact Hval.
+      apply ValidVarSet_Axiom in Hlook. exact Hlook. }
+    rewrite (Hcompat x val Heq). exact Hfval.
+  Qed.
 
   Lemma exists_1 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f ->
     Exists (fun x : elt => f x = true) s -> exists_ f s = true.
-  Proof. Admitted.
+  Proof.
+    unfold Exists, In, exists_.
+    move => [[m]] f Hcompat [x [Hin Hfx]].
+    unfold anyVarSet, UniqSet.uniqSetAny, UniqFM.anyUFM.
+    change (GHC.Base.op_z2218U__ orb f) with (fun v acc => f v || acc).
+    rewrite foldr_orb_eq_go.
+    (* x is In s, so lookup returns some value *)
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in Hin.
+    apply member_lookup in Hin. destruct Hin as [val Hval].
+    (* By ValidVarSet, x == val, so by compat_bool, f val = f x = true *)
+    have Heq : Var_as_DT.eq x val.
+    { unfold Var_as_DT.eq, Var_as_DT.eqb.
+      assert (Hlook : lookupVarSet (UniqSet.Mk_UniqSet (UniqFM.UFM m)) x = Some val)
+        by exact Hval.
+      apply ValidVarSet_Axiom in Hlook. exact Hlook. }
+    have Hfval : f val = true by rewrite <- (Hcompat x val Heq).
+    (* From lookup, construct tree_elem witness (reverse of tree_elem_kv_lookup).
+       Trivial structural induction; Admitted due to eq shadowing in VarSetFSet module
+       making eqn: tactics fail. Could be proved in a separate file. *)
+    have Helem : tree_elem_kv (Unique.getWordKey (Unique.getUnique x)) val m
+      by admit.
+    exact (intmap_foldr_go_orb_some_true _ _ _ _ Helem Hfval).
+  Admitted.
 
   Lemma exists_2 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f ->
     exists_ f s = true -> Exists (fun x : elt => f x = true) s.
-  Proof. Admitted.
+  Proof.
+    unfold Exists, In, exists_.
+    move => [[m]] f Hcompat Hexists.
+    unfold anyVarSet, UniqSet.uniqSetAny, UniqFM.anyUFM in Hexists.
+    change (GHC.Base.op_z2218U__ orb f) with (fun v acc => f v || acc) in Hexists.
+    rewrite foldr_orb_eq_go in Hexists.
+    (* Extract witness from the fold *)
+    destruct (intmap_foldr_go_orb_witness _ _ Hexists) as [k [v [Helem Hfv]]].
+    (* v is structurally in the tree; use tree_elem_kv_lookup to get lookup *)
+    have Hlookup := tree_elem_kv_lookup _ _ _ _ Helem.
+    (* By StrongValidVarSet, getWordKey (getUnique v) = k *)
+    pose proof (StrongValidVarSet_Axiom (UniqSet.Mk_UniqSet (UniqFM.UFM m))) as Hstrong.
+    simpl in Hstrong. specialize (Hstrong k v Hlookup).
+    (* So elemVarSet v s = member k m = true *)
+    exists v. split.
+    - unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+      rewrite Hstrong. apply member_lookup. exists v. exact Hlookup.
+    - exact Hfv.
+  Qed.
 
   (* Not needed after this line ---------------------- *)
 

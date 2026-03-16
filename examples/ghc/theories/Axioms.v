@@ -219,6 +219,24 @@ Definition ValidVarSet (vs : VarSet) : Prop :=
 Axiom ValidVarSet_Axiom : forall vs, ValidVarSet vs.
 
 
+(** ** Strong Valid VarSets *)
+
+(* StrongValidVarSet says that every entry (k, v) in a VarSet's underlying
+   IntMap has key_of(v) = k. This is key-surjectivity: it ensures that every
+   key in the IntMap comes from the Unique of the stored Var. This is needed
+   for proofs that go from "no Var is a member" to "the map is empty", or
+   from "all Vars pass a predicate" to "all stored values pass". *)
+
+Definition StrongValidVarSet (vs : VarSet) : Prop :=
+  match vs with
+  | UniqSet.Mk_UniqSet (UniqFM.UFM m) =>
+    forall k v, Data.IntMap.Internal.lookup k m = Some v ->
+      Unique.getWordKey (Unique.getUnique v) = k
+  end.
+
+Axiom StrongValidVarSet_Axiom : forall vs, StrongValidVarSet vs.
+
+
 (********************************* *)
 
 

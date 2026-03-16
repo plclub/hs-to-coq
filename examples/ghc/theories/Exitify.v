@@ -311,8 +311,11 @@ Section in_exitifyRec.
      for more on that idiom.
    *)
 
-  (* GHC 9.10: exitifyRec is axiomatized, so we cannot unfold it to extract
-     local definitions. All definitions and proofs in this section are Admitted. *)
+  (* GHC 9.10: exitifyRec is concrete (uses deferredFix2), not axiomatized.
+     However, the proofs in this section require extracting local definitions
+     from exitifyRec via cbv beta delta + proving go_eq using deferredFix_eq_on
+     with the GoDom predicate, which is substantial proof engineering (~1500 lines).
+     These are Admitted pending that effort. *)
 
   Definition isvs := getInScopeVars in_scope.
   Definition fs := map fst pairs.
