@@ -98,7 +98,10 @@ proved. Key breakthroughs:
 `applyDesc e (@link_Desc e a)` consumed the outer Desc' via `try assumption`.
 The remaining goal is a side condition from `replace`. This explains why
 `rewrite Hlist_l'` couldn't find `(ky,vy)::xss` — the goal doesn't contain the
-original semantic function. Needs MCP/interactive tool to inspect the actual goal.
+original semantic function. `Hsize_l'` is also out of scope, confirming the goal
+is from a different proof context (likely an `eapply` precondition or `replace`
+side condition). Needs interactive Coq inspection to identify and close the
+remaining goal — likely a simple size or semantic equation.
 
 **Historical blocker (zs<>nil subcase only)**: The semantic reconciliation step requires
 proving that `sem s i`, `SomeIf (i==kx) vx`, and `sem l' i` have disjoint key
