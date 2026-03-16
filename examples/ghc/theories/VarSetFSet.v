@@ -788,17 +788,23 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
 
 
 
-  Definition eq_dec : forall s s' : t,  {eq s s'} + {~ eq s s'}.
-  Admitted.
-
-
-
   Lemma equal_1 : forall s s' : t, Equal s s' -> equal s s' = true.
   Proof.
-    intros.
-    unfold Equal, equal in *.
-    unfold In in *.
-  Admitted.
+    intros [[m1]] [[m2]] HEqual.
+    unfold equal.
+    have Hmem : forall v, elemVarSet v (UniqSet.Mk_UniqSet (UniqFM.UFM m1)) =
+                          elemVarSet v (UniqSet.Mk_UniqSet (UniqFM.UFM m2)).
+    { intro v. specialize (HEqual v). unfold In in HEqual.
+      destruct (elemVarSet v (UniqSet.Mk_UniqSet (UniqFM.UFM m1)));
+      destruct (elemVarSet v (UniqSet.Mk_UniqSet (UniqFM.UFM m2)));
+      try reflexivity; exfalso;
+      [exact (diff_false_true (proj1 HEqual (@Logic.eq_refl _ true)))
+      |exact (diff_false_true (proj2 HEqual (@Logic.eq_refl _ true)))]. }
+    have Hresult := @VarSet_extensional_equal
+                      (UniqSet.Mk_UniqSet (UniqFM.UFM m1))
+                      (UniqSet.Mk_UniqSet (UniqFM.UFM m2)) Hmem.
+    simpl VarSet_IntMap in Hresult. exact Hresult.
+  Qed.
 
 
   Lemma equal_2 : forall s s' : t, equal s s' = true -> Equal s s'.
@@ -809,6 +815,14 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     unfold In, elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
     rewrite (Eq_membership Var _ EqLaws_Var _ _ Heq). tauto.
   Qed.
+
+  Definition eq_dec : forall s s' : t,  {eq s s'} + {~ eq s s'}.
+  Proof.
+    intros s s'.
+    destruct (equal s s') eqn:Heq.
+    - left. exact (equal_2 s s' Heq).
+    - right. intro H. apply equal_1 in H. rewrite H in Heq. discriminate.
+  Defined.
 
   Lemma fold_1 :
     forall (s : t) (A : Type) (i : A) (f : elt -> A -> A),

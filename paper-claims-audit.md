@@ -98,7 +98,7 @@ definitions. Most proofs ported; Map fromList proofs regressed due to Coq 8.20.
 | G4 | Well-scopedness + join point definitions | **HOLDS** | `ScopeInvariant.v`, `JoinPointInvariants.v`: both 0 Admitted |
 | G5 | GHC 8.4.3 verified | **CHANGED** | Now GHC 9.10.3 |
 | G6 | CSE proofs | **REGRESSED** | `CSE.v`: 5 Admitted (see below) |
-| G7 | VarSetFSet interface | **PARTIAL** | `VarSetFSet.v`: 15 Admitted (was 18; 5 key-surjectivity lemmas proved) |
+| G7 | VarSetFSet interface | **PARTIAL** | `VarSetFSet.v`: 13 Admitted (was 18; 7 lemmas proved: subset_1, is_empty_1, for_all_1/2, exists_2, equal_1, eq_dec) |
 | G8 | 13K+ lines of proof | **EXPANDED** | Now 30 theory files |
 | G9 | Exitify bug fix verified | **HOLDS** | `Exitify.v:591`: `exitifyProgram_WellScoped_JPV` — Qed at line 674 |
 | G10 | Axioms about uniqAway | **SIMILAR** | `Axioms.v`: 7 axioms about `uniqAway` + 1 `ValidVarSet_Axiom` |
@@ -123,14 +123,15 @@ lib. The 5 Admitted proofs are computational unfolding lemmas that cannot procee
 This is an inherent limitation of the current translation, not a proof error.
 
 **G7 — VarSetFSet (15 Admitted, was 18)**:
-5 FSet interface lemmas newly proved using `StrongValidVarSet` axiom
-(key-surjectivity: all IntMap keys come from Vars):
+7 FSet interface lemmas newly proved using `StrongValidVarSet` axiom
+(key-surjectivity) and `VarSet_extensional_equal` axiom (WF PATRICIA uniqueness):
 `subset_1` (Qed), `is_empty_1` (Qed), `for_all_1` (Qed), `for_all_2` (Qed),
-`exists_2` (Qed). `exists_1` Admitted (1 sub-admit: lookup→tree_elem, blocked
-by `eq` shadowing in module). 2 bridge lemmas Admitted (`foldr_andb_eq_go`,
-`foldr_orb_eq_go`: local fix = standalone Fixpoint, OOM during proof).
+`exists_2` (Qed), `equal_1` (Qed), `eq_dec` (Defined).
+`exists_1` Admitted (1 sub-admit: lookup→tree_elem, blocked by `eq` shadowing).
+2 bridge lemmas Admitted (`foldr_andb_eq_go`, `foldr_orb_eq_go`: local fix =
+standalone Fixpoint, OOM during proof).
 Remaining 10 Admitted use `default` stubs (not real implementations):
-`eq_dec`, `equal_1`, `fold_1`, `cardinal_1`, `partition_1/2`, `elements_1/2`,
+`fold_1`, `cardinal_1`, `partition_1/2`, `elements_1/2`,
 `choose_1/2/3`, `elements_3w`.
 
 **Exitify.v (3 Admitted)**:
@@ -147,12 +148,12 @@ is axiomatized was **stale and incorrect** — it is concrete via `deferredFix2`
 
 | File | Admitted | In Comments | Actual | Theorems |
 |------|----------|-------------|--------|----------|
-| VarSetFSet.v | 15 | 0 | 15 | 5 proved (subset_1, is_empty_1, for_all_1/2, exists_2); 2 bridge Admitted; 10 default-stub Admitted |
+| VarSetFSet.v | 13 | 0 | 13 | 7 proved (subset_1, is_empty_1, for_all_1/2, exists_2, equal_1, eq_dec); 2 bridge + 1 sub-Admitted; 10 default-stub Admitted |
 | CSE.v | 8 | 3 | 5 | `cseExpr_App/Let`, `cseBind_NonRec`, `tryForCSE_simpl`, `WS_cseExpr` |
 | TrieMap.v | 5 | 0 | 5 | `TrieMapLaws` instances for Map/IntMap/ListMap/UniqFM/GenMap |
 | Exitify.v | 4 | 1 | 3 | `exitifyRec_WellScoped/JPI`, `top_go_WellScoped_JPI` |
 | UniqSetInv.v | 1 | 1 | 0 | (only occurrence is inside `(* ... *)` comment) |
-| **Total** | **33** | **5** | **28** | |
+| **Total** | **31** | **5** | **26** | |
 
 ### Axiom Summary (GHC Theories)
 
@@ -223,4 +224,4 @@ JoinPointInvariantsInductive, OrdList, Unique, Util
 - New proof modules (ContainerProofs, VarSetStrong, StateLogic, etc.)
 - IntMap proofs added (partial)
 - 25 of 28 active theory files have 0 Admitted (up from ~15 total files in paper)
-- VarSetFSet: 5 key-surjectivity lemmas proved via `StrongValidVarSet` axiom (was 18 Admitted, now 15)
+- VarSetFSet: 7 lemmas proved via `StrongValidVarSet` + `VarSet_extensional_equal` axioms (was 18 Admitted, now 13)

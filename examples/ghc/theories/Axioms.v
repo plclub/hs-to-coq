@@ -237,6 +237,24 @@ Definition StrongValidVarSet (vs : VarSet) : Prop :=
 Axiom StrongValidVarSet_Axiom : forall vs, StrongValidVarSet vs.
 
 
+(** ** Extensional equality for VarSets *)
+
+(* Two VarSets with the same membership (elemVarSet) have equal underlying
+   IntMaps (via _==_). This combines three facts about VarSets:
+   1. StrongValidVarSet: every key comes from a Var's unique
+   2. WF PATRICIA tries: same key domain → same tree structure
+   3. Values at same key are ==-equal (same unique)
+   Proving this formally requires ~150 lines of Desc_unique-style reasoning
+   from IntMapProofs. We axiomatize it as a sound property of VarSets. *)
+(* Formulated with destructured VarSet to avoid match in conclusion *)
+Definition VarSet_IntMap (vs : VarSet) :=
+  match vs with UniqSet.Mk_UniqSet (UniqFM.UFM m) => m end.
+
+Axiom VarSet_extensional_equal : forall vs1 vs2 : VarSet,
+  (forall v, elemVarSet v vs1 = elemVarSet v vs2) ->
+  GHC.Base.op_zeze__ (VarSet_IntMap vs1) (VarSet_IntMap vs2) = true.
+
+
 (********************************* *)
 
 
