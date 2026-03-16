@@ -36,7 +36,7 @@ against the actual source files.
 | C8 | Rewrite rules verified (toAscList, toDescList) | **HOLDS** | `SetProofs.v:6113`: `rule_toAscList` — Qed. `IntSetProofs.v:7041`: same — Qed |
 | C9 | Bounded_iff_valid for Set | **HOLDS** | `SetProofs.v:4935`: `Bounded_iff_valid` — Qed (line 4943) |
 | C10 | fromAscList/fromDistinctAscList skipped for IntSet | **STILL TRUE** | Still skipped in `IntSet/Internal.v` (mutual recursion unsupported) |
-| C11 | Data.Map.Strict verified (JFP only) | **MOSTLY HOLDS** | 1 Admitted in `FromListProofs.v` (`fromList_go_Desc` — 95% proved, 1 subcase remaining) |
+| C11 | Data.Map.Strict verified (JFP only) | **HOLDS** | 0 Admitted in `FromListProofs.v` (both obligations Qed) |
 | C12 | FMapInterface for Map | **HOLDS** | `InterfaceProofs.v:22`: `Module MapFMap <: WSfun <: WS <: Sfun <: S` — End at 1065 |
 | C13 | MonoidLaws for Map (JFP Fig 4) | **HOLDS** | `TypeclassProofs.v:417`: `MonoidLaws_Map` — Qed (line 461). Was a gap; fixed 2026-03-16 |
 | C14 | Containers v0.5.11.0 verified | **CHANGED** | Now v0.7; most proofs ported |
@@ -77,8 +77,8 @@ definitions. Most proofs ported; Map fromList proofs regressed due to Coq 8.20.
 |------|----------|--------|-------------------|
 | IntSetWordProofs.v | 80 | 0 | Bit-level properties; Int-based IntSet variant (new, WIP) |
 | IntMapProofs.v | 12 | 2 | `deferredFix2_eq`, `All_IntMaps_WF` axioms; partial coverage (new) |
-| FromListProofs.v | 1 | 0 | `fromList_go_Desc` (Coq 8.20 obligation regression; `fromList_create_Desc` fixed) |
-| **Total** | **93** | **2** | |
+| FromListProofs.v | 0 | 0 | Both obligations Qed (was 2 Admitted; Coq 8.20 obligation regression fixed) |
+| **Total** | **92** | **2** | |
 
 ---
 
@@ -201,7 +201,7 @@ These cannot be fixed without improving the hs-to-coq translation:
 ### What Regressed
 - CSE proofs: 5 Admitted (axiomatized source in GHC 9.10)
 - Exitify internals: 3 Admitted (axiomatized + structural recursion)
-- Map fromList proofs: 1 Admitted (Coq 8.20 `Program Fixpoint` change; 1 of 2 fixed)
+- Map fromList proofs: 0 Admitted (both Coq 8.20 `Program Fixpoint` regressions fixed)
 
 ### What Improved
 - MonoidLaws for Map proved (was missing vs JFP Fig 4 claim)

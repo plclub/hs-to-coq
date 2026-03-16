@@ -2060,8 +2060,8 @@ Next Obligation.
             rewrite !sem_list_app. simpl sem_for_lists. simpl_options.
             erewrite sem_toList_reverse by eassumption.
             erewrite <- toList_sem'' by eassumption.
-            (* Replace sem s0 i with its link definition *)
-            rewrite Hsem.
+            (* Replace sem s0 i with its link definition and unfold SomeIf *)
+            rewrite Hsem. unfold SomeIf.
             destruct (sem s i) eqn:Hs_i; destruct (i == kx) eqn:Hieq;
               destruct (sem l' i) eqn:Hl'_i;
               simpl; simpl_options;
@@ -2072,8 +2072,21 @@ Next Obligation.
                 (assert (isUB (Some kx) i = true) by (eapply sem_inside; eassumption);
                  assert (isLB (Some kx) i = true) by (eapply sem_inside; eassumption);
                  simpl isLB in *; simpl isUB in *; order e)).
-          all: admit.
-Admitted.
+          (* Handle remaining goals: reflexivity for reducible cases,
+             exfalso for impossible cases *)
+          all: try solve [unfold SomeIf; simpl; simpl_options; reflexivity].
+          all: try solve [unfold SomeIf, oro, "|||"; simpl; reflexivity].
+          all: try solve [cbv [SomeIf oro]; simpl; reflexivity].
+          all: try solve [exfalso; inside_bounds; simpl isLB in *; simpl isUB in *; order e].
+          all: try solve [exfalso; inside_bounds; simpl isLB in *; simpl isUB in *;
+            match goal with Heq : (_ == _) = true |- _ =>
+              assert (kx <= i = true) by (rewrite (Eq_le_r _ _ _ Heq); order e) end; order e].
+          all: try solve [exfalso;
+            assert (isUB (Some kx) i = true) by (eapply sem_inside; eassumption);
+            assert (isLB (Some kx) i = true) by (eapply sem_inside; eassumption);
+            simpl isLB in *; simpl isUB in *; order e].
+          all: rewrite sem_list_app; simpl sem_for_lists; destruct p; simpl; simpl_options; reflexivity.
+Qed.
 
 Lemma fromList_Desc:
   forall xs,
