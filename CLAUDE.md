@@ -27,6 +27,10 @@ cd examples && ./boot.sh                       # Full bootstrap (all examples)
 
 Use relative path instead of absolute path when `cd` to a directory.
 
+### CI commands
+- `/ci` — run CI checks locally, report pass/fail
+- `/ci-fix` — run CI checks, diagnose and fix failures, commit fixes
+
 ## Architecture
 
 ### Translation Pipeline
@@ -147,8 +151,11 @@ Un-axiomatized: `Subst` type (concrete inductive in Core.v, merged from GHC.Core
 Build details: `manual/AxiomatizedTypes.v` instances must be `#[global]`. `axiomatize module OccurAnal` needs preamble.v + midamble.v. Midamble placed AFTER types+auto-Defaults, BEFORE values — use `skip` + midamble for custom Defaults. Makefile sed post-processing: BasicTypes/Literal (`#[global]`), UniqFM (phantom kinds), Core.v (mutual type fixes via `fix-files/`).
 Core.v post-processing uses `fix-files/` for multi-line insertions (portable across GNU/BSD sed). GHC regeneration on macOS requires GNU sed: `brew install gnu-sed && PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH" make -C examples/ghc vfiles`.
 
+### Paper claims audit
+`docs/paper-claims-audit.md` documents the status of formal verification claims from three publications (JFP 2021, arxiv:1910.11724, ICFP 2018) against the current codebase. Key results: all core verification theorems (WellScoped_substExpr, exitifyProgram_WellScoped_JPV, FSet/FMapInterface, type class laws) still hold. MonoidLaws for Map proved in TypeclassProofs.v (was a gap vs JFP Fig 4). Regressions: CSE (8 Admitted, axiomatized source), Map fromList (2 Admitted, Coq 8.20 `Program Fixpoint` change).
+
 ### Containers submodule
-Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates and builds everything. Map `fromList` proofs Admitted (Coq 8.20 `Program Fixpoint` change, pre-existing). IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources.
+Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates and builds everything. Map `fromList` proofs Admitted (Coq 8.20 `Program Fixpoint` change, pre-existing). IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources. Full type class laws verified: EqLaws, OrdLaws, SemigroupLaws, MonoidLaws, FunctorLaws for Map (all Qed in TypeclassProofs.v).
 
 ### Transformers example (examples/transformers/)
 Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../ghc/ghc/libraries/transformers`. Makefile strips MonadTrans quantified superclass constraint via sed post-processing. Uses `skip class` for `Contravariant` and `Foldable1` (not in base).

@@ -390,4 +390,74 @@ intros. eapply Eq2__Map_liftEq2. apply X0. apply X1.
 apply X2. apply X3.
 Qed.
 
+(** ** Verification of [Monoid] laws *)
+
+Lemma unions_foldr_union `{EqLaws a}:
+  forall (ss : list (Map e a)),
+  Forall WF ss -> (unions ss == Base.foldr union empty ss) = true.
+Proof.
+  intros ss HForall.
+  assert (Hfoldr: Desc' (Base.foldr union empty ss) None None
+    (fun i => fold_right (fun h t => sem h i ||| t) None ss)). {
+    rewrite Proofs.Data.Foldable.hs_coq_foldr_list.
+    induction HForall as [| x l Hwf Hfa IH].
+    - simpl. eapply empty_Desc. intros. apply showDesc'. eauto.
+    - simpl.
+      eapply IH. intros sr HBr _ Hsemr.
+      eapply union_Desc; try eassumption. intros su HBu _ Hsemu.
+      apply showDesc'. split; [assumption | ].
+      intro i. rewrite Hsemu, Hsemr. reflexivity.
+  }
+  eapply Hfoldr. intros sf HBf _ Hsemf.
+  eapply unions_Desc; try eassumption. intros su HBu _ Hsemu.
+  eapply strong_eq1; try eassumption.
+  intro i. rewrite Hsemu, Hsemf. reflexivity.
+Qed.
+
+Global Instance MonoidLaws_Map `{EqLaws a} : MonoidLaws (WFMap e a).
+Proof.
+  constructor.
+  (* monoid_left_id: mappend mempty x == x *)
+  * intros. destruct x as [s Hs]; unfold proj1_sig.
+    unfold op_zeze__, Eq_Map_WF, op_zeze____; simpl.
+    unfold_Monoid_Map. unfold proj1_sig.
+    eapply empty_Desc. intros se HBe _ Hseme.
+    eapply union_Desc; try eassumption. intros su HBu _ Hsemu.
+    eapply strong_eq1; try eassumption.
+    intro i. rewrite Hsemu, Hseme. reflexivity.
+  (* monoid_right_id: mappend x mempty == x *)
+  * intros. destruct x as [s Hs]; unfold proj1_sig.
+    unfold op_zeze__, Eq_Map_WF, op_zeze____; simpl.
+    unfold_Monoid_Map. unfold proj1_sig.
+    eapply empty_Desc. intros se HBe _ Hseme.
+    eapply union_Desc; try eassumption. intros su HBu _ Hsemu.
+    eapply strong_eq1; try eassumption.
+    intro i. rewrite Hsemu, Hseme. rewrite oro_None_r. reflexivity.
+  (* monoid_semigroup: mappend x y == x <<>> y *)
+  * intros. destruct x as [s1 Hs1], y as [s2 Hs2].
+    unfold op_zeze__, Eq_Map_WF, op_zeze____; simpl.
+    unfold_Monoid_Map. unfold proj1_sig.
+    eapply (union_Desc s1 s2); try eassumption. intros su HBu _ Hsemu.
+    eapply strong_eq1; try eassumption.
+    reflexivity.
+  (* monoid_mconcat: mconcat xs == foldr mappend mempty xs *)
+  * intros.
+    rename x into xs.
+    unfold op_zeze__, Eq_Map_WF, op_zeze____; simpl.
+    unfold_Monoid_Map. unfold proj1_sig.
+    lazymatch goal with |- (_ == ?y) = true  =>
+      replace y with (Base.foldr union empty (List.map (fun x => unpack x) xs))
+    end.
+    + apply unions_foldr_union.
+      induction xs.
+      - constructor.
+      - destruct a0 as [s Hs]; unfold unpack.
+        constructor; assumption.
+    + induction xs as [| z zs IHzs].
+      - reflexivity.
+      - destruct z as [sz Hsz]. simpl.
+        unfold_Monoid_Map. simpl.
+        f_equal. apply IHzs.
+Qed.
+
 End TypeClassLaws.
