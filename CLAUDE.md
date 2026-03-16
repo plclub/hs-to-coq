@@ -177,6 +177,15 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
   - **Danger**: Moving `Require Import GHC.Base` to top shadows `Nat.le` (Prop) with bool-valued `<=`, breaking proofs that use `length x <= length y`. Always verify moved imports don't change notation scope.
 - **SSReflect `spurious-ssr-injection` (all fixed)**: `repeat case` on enum types with `==` triggers this. Suppress with `#[local] Set Warnings "-spurious-ssr-injection"`, or replace `[]` intro patterns with named wildcards.
 
+### Coq 8.20 proof tactics
+- **`Program Fixpoint` obligations**: Coq 8.20 pre-introduces ALL obligation variables. Use `revert dependent P` to recover CPS structure, or work with auto-named `H`/`H0`/`H1`.
+- **`order e` + `==`**: `order e` can't handle `Eq_` class `==`. Convert `(x == y) = true` to `(y <= x) = true` via `Eq_le_r` first.
+- **Z multiplication match form**: `2 * 2^x` reduces to `match 2^x with 0=>0|Z.pos p=>Z.pos p~0|Z.neg p=>Z.neg p~0 end`. Use `change (match ...) with (2 * 2^x)%Z in *` to normalize before `lia`/`rewrite`.
+- **`applyDesc` consumes `Hsem`**: `try replace (sem s) in *` clears `Hsem`. If you need `Hsem` later, use manual CPS: `eapply lem. exact HB. intros s HB _ Hsem. apply showDesc'. split; [assumption|].`
+- **`SomeIf` opacity**: `unfold SomeIf` before `destruct`/`simpl` to enable `if`-reduction.
+- **`destruct_match` in Map proofs**: Picks up wrong matches (e.g. `Z.pow` in hypotheses). Use explicit `destruct p as [kx vx]; destruct (not_ordered ...) eqn:Hord` instead.
+- **`++` associativity**: Coq `++` is right-associative. `A ++ nil ++ B` is `A ++ (nil ++ B)` — use `app_nil_l`, not `app_nil_r`.
+
 ## Workflow
 
 - Keep a record (as a markdown file) of every time the user intervene
