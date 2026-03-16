@@ -36,33 +36,34 @@ Coq Requirements
 ----------------
 
 This repository comes with a Coq version of the Haskell `base
-<https://github.com/antalsz/hs-to-coq/tree/master/base>`_ library, used by the
+<https://github.com/plclub/hs-to-coq/tree/ghc910-coq820/base>`_ library, used by the
 output of ``hs-to-coq``.
 
-You must have `Coq 8.10.2` and `ssreflect` to build the base library. You can install
-these tools using `opam <https://opam.ocaml.org/>`_.
+You must have `Coq 8.20` and `MathComp` (with Hierarchy Builder) to build
+the base library and containers proofs. You can install these tools using
+`opam <https://opam.ocaml.org/>`_.
 
 .. code-block::  shell
 
-    $ opam repo add coq-released https://coq.inria.fr/opam/released 
+    $ opam repo add coq-released https://coq.inria.fr/opam/released
     $ opam update
-    $ opam install coq.8.10.2 coq-mathcomp-ssreflect.1.10.0
+    $ opam install coq.8.20.1 coq-mathcomp-ssreflect coq-hierarchy-builder
 
 
 Once installed, you can build the base library from the project root with
 
 .. code-block:: shell
 
-    $ make -C base
+    $ cd base && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
-Th directory `base-thy
-<https://github.com/antalsz/hs-to-coq/tree/master/base-thy>`_ contains auxillary
+The directory `base-thy
+<https://github.com/plclub/hs-to-coq/tree/ghc910-coq820/base-thy>`_ contains auxiliary
 definitions and lemmas, such as lawful type-class instances. You can build
 these with
 
 .. code-block:: shell
 
-    $ make -C base-thy
+    $ cd base-thy && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
 Test your hs-to-coq installation
 --------------------------------
@@ -116,7 +117,7 @@ The following commands will install XQuartz and imake through `brew`:
 
 .. code-block:: shell
 
-    $ brew cask install xquartz
+    $ brew install --cask xquartz
     $ brew install imake
     
 Depending on your `brew cask` setup, you may also need to update your $PATH

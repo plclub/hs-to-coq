@@ -26,6 +26,9 @@ Breitner, Antal Spector-Zabusky, Yao Li, Christine Rizkallah, John
 Wiegley, and Stephanie Weirich.  This paper describes the verification
 of the [containers](examples/containers) library.
 
+See [paper-claims-audit.md](paper-claims-audit.md) for a detailed audit of which
+paper claims still hold on the current codebase (GHC 9.10.3, Coq 8.20,
+containers v0.7).
 
 [**Documentation for the `hs-to-coq` tool is
 available!**](https://hs-to-coq.readthedocs.io/en/latest/)
@@ -145,13 +148,13 @@ base → base-thy → containers/lib → containers/theories
 | Example | Type | Status | Files | Notes |
 |---------|------|--------|-------|-------|
 | **Core libraries** | | | | |
-| `base/` | Generated lib | **PASS** | 54/54 .v | GHC 9.10 base library |
+| `base/` | Generated lib | **PASS** | 57/57 .v | GHC 9.10 base library |
 | `base-thy/` | Hand-written proofs | **PASS** | 15/15 .v | Lawful instances |
 | **Major verified examples** | | | | |
-| `containers/lib` | Generated lib | **PASS** | 47/47 .v | Containers v0.7 |
+| `containers/lib` | Generated lib | **PASS** | 16/16 .v | Containers v0.7 |
 | `containers/theories` | Proofs | **PASS** | 34/34 .v | Verified Set/IntSet/Map |
 | `ghc/lib` | Generated lib | **PASS** | 99/99 .v | GHC 9.10.3 core |
-| `ghc/theories` | Proofs | **PASS** | 28/28 .v | Many proofs Admitted |
+| `ghc/theories` | Proofs | **PASS** | 29/29 .v | 25 files 0 Admitted; 31 actual Admitted across 4 files |
 | `transformers/lib` | Generated lib | **PASS** | 14/14 .v | Regenerated for GHC 9.10 |
 | `graph/lib` | Generated lib + proofs | **PASS** | 6/6 .v | Omega→Lia fixed |
 | `graph/theories` | Proofs | **PARTIAL** | 8/11 .v | 3 files need `coq-equations` |
