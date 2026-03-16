@@ -94,7 +94,13 @@ proved. Key breakthroughs:
 - `eapply sem_inside; eassumption` with `eassumption`-based Bounded matching
   (instead of naming specific hypotheses)
 
-**Remaining blocker (zs<>nil subcase only)**: The semantic reconciliation step requires
+**Discovery (session 4)**: The zs<>nil subcase's goal is NOT `Desc'` — the
+`applyDesc e (@link_Desc e a)` consumed the outer Desc' via `try assumption`.
+The remaining goal is a side condition from `replace`. This explains why
+`rewrite Hlist_l'` couldn't find `(ky,vy)::xss` — the goal doesn't contain the
+original semantic function. Needs MCP/interactive tool to inspect the actual goal.
+
+**Historical blocker (zs<>nil subcase only)**: The semantic reconciliation step requires
 proving that `sem s i`, `SomeIf (i==kx) vx`, and `sem l' i` have disjoint key
 domains, making `|||` (oro) order-irrelevant. After `destruct (sem s i), (i==kx),
 (sem l' i)`, most cases close by `reflexivity`. The impossible cases (where two

@@ -2042,6 +2042,9 @@ Next Obligation.
                    simpl isLB in *; simpl isUB in *; order e).
        ++ (* zs <> nil: fallback to fromList' *)
           destruct Hsize_l' as [Hys_nil | [? Habsurd]]; try congruence.
+          (* The goal is NOT Desc' — it was consumed by applyDesc's try assumption.
+             The remaining goal is a size or semantic side condition from replace.
+             Use solve tactics to close it. *)
           admit.
 Admitted.
 
