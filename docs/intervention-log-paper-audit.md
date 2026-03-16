@@ -86,7 +86,15 @@ The proof structure is 90% complete. Working approach discovered:
      sem_toList_reverse, <- toList_sem''`.
    - **zs<>nil subcase**: `eapply (@fromList'_Desc)` + semantic reconciliation.
 
-**Remaining blocker**: The semantic reconciliation step for both subcases requires
+**Progress (2026-03-16, session 3)**: The IH recursion case (zs=nil) is now FULLY
+proved. Key breakthroughs:
+- `unfold isLB, isUB` → `simpl isLB, isUB` to normalize boolean ordering facts
+- `assert (compare i kx = Eq) by (rewrite Ord_compare_Eq; exact Hieq)` to convert
+  `==` to `compare` before `order e` (which can't handle `Eq_` class `==` directly)
+- `eapply sem_inside; eassumption` with `eassumption`-based Bounded matching
+  (instead of naming specific hypotheses)
+
+**Remaining blocker (zs<>nil subcase only)**: The semantic reconciliation step requires
 proving that `sem s i`, `SomeIf (i==kx) vx`, and `sem l' i` have disjoint key
 domains, making `|||` (oro) order-irrelevant. After `destruct (sem s i), (i==kx),
 (sem l' i)`, most cases close by `reflexivity`. The impossible cases (where two
