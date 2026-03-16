@@ -2044,18 +2044,7 @@ Next Obligation.
                 (assert (isUB (Some kx) i = true) by (eapply sem_inside; eassumption);
                  assert (isLB (Some kx) i = true) by (eapply sem_inside; eassumption);
                  simpl isLB in *; simpl isUB in *; order e)).
-       ++ (* zs <> nil *)
-          (* Check if goal is Desc' *)
-          (* Identify and close the remaining goal *)
-          lazymatch goal with
-          | |- ?G => tryif (is_evar G) then (idtac "GOAL IS evar") else idtac
-          end.
-          try assumption.
-          try reflexivity.
-          try lia.
-          try (simpl; lia).
-          try (simpl; reflexivity).
-          (* Same approach as zs=nil case *)
+       ++ (* zs <> nil: fromList' fallback with ys=nil *)
           destruct Hsize_l' as [Hys_nil | [? Habsurd]]; try congruence.
           rewrite Hys_nil in Hlist_l'. rewrite app_nil_l in Hlist_l'.
           rewrite Hlist_l'.
@@ -2064,15 +2053,26 @@ Next Obligation.
           eapply (@fromList'_Desc). exact HB.
           intros s_fl HB_fl _ Hsem_fl.
           apply showDesc'. split; [assumption|].
-          (* Semantic reconciliation for zs<>nil case:
-             f_solver handles the intro, specialization, rewriting, and case splitting *)
-          f_solver e; try congruence; try order e;
-            (* Remaining: False goals from exfalso with == + < *)
-            simpl; simpl_options; try reflexivity;
-            try congruence; try order e;
-            (* Catch remaining: there are oro chains that need rewriting *)
-            repeat (rewrite ?oro_None_l, ?oro_None_r, ?oro_Some_l);
-            try reflexivity; try congruence; try order e; admit.
+          (* Manual semantic proof — same pattern as zs=nil case *)
+          intro i.
+            rewrite Hsem_fl.
+            simpl rev. rewrite !rev_app_distr.
+            rewrite !sem_list_app. simpl sem_for_lists. simpl_options.
+            erewrite sem_toList_reverse by eassumption.
+            erewrite <- toList_sem'' by eassumption.
+            (* Replace sem s0 i with its link definition *)
+            rewrite Hsem.
+            destruct (sem s i) eqn:Hs_i; destruct (i == kx) eqn:Hieq;
+              destruct (sem l' i) eqn:Hl'_i;
+              simpl; simpl_options;
+              try reflexivity;
+              try (exfalso; inside_bounds; simpl isLB in *; simpl isUB in *;
+                try order e;
+                try (assert (kx <= i = true) by (rewrite (Eq_le_r i kx kx Hieq); order e); order e);
+                (assert (isUB (Some kx) i = true) by (eapply sem_inside; eassumption);
+                 assert (isLB (Some kx) i = true) by (eapply sem_inside; eassumption);
+                 simpl isLB in *; simpl isUB in *; order e)).
+          all: admit.
 Admitted.
 
 Lemma fromList_Desc:
