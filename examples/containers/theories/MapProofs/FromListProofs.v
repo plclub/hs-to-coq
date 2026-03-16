@@ -2032,20 +2032,47 @@ Next Obligation.
             rewrite !sem_list_app. simpl sem_for_lists. simpl_options.
             erewrite sem_toList_reverse by (try eassumption; eapply HBounded_l').
             erewrite <- toList_sem'' by (try eassumption; eapply HBounded_l').
+            (* Replace sem s0 i with its definition to enable reflexivity *)
+            try (match goal with H : forall i0, sem s0 i0 = _ |- _ => rewrite H end).
             destruct (sem s i) eqn:Hs_i; destruct (i == kx) eqn:Hieq;
-              destruct (sem l' i) eqn:Hl'_i; simpl; simpl_options; try reflexivity.
-            all: exfalso; inside_bounds; simpl isLB in *; simpl isUB in *;
-              try order e;
-              try (assert (kx <= i = true) by (rewrite (Eq_le_r i kx kx Hieq); order e); order e);
-              try (assert (isUB (Some kx) i = true) by (eapply sem_inside; eassumption);
-                   assert (isLB (Some kx) i = true) by (eapply sem_inside; eassumption);
-                   simpl isLB in *; simpl isUB in *; order e).
-       ++ (* zs <> nil: fallback to fromList' *)
+              destruct (sem l' i) eqn:Hl'_i;
+              simpl; simpl_options;
+              try reflexivity;
+              try (exfalso; inside_bounds; simpl isLB in *; simpl isUB in *;
+                try order e;
+                try (assert (kx <= i = true) by (rewrite (Eq_le_r i kx kx Hieq); order e); order e);
+                (assert (isUB (Some kx) i = true) by (eapply sem_inside; eassumption);
+                 assert (isLB (Some kx) i = true) by (eapply sem_inside; eassumption);
+                 simpl isLB in *; simpl isUB in *; order e)).
+       ++ (* zs <> nil *)
+          (* Check if goal is Desc' *)
+          (* Identify and close the remaining goal *)
+          lazymatch goal with
+          | |- ?G => tryif (is_evar G) then (idtac "GOAL IS evar") else idtac
+          end.
+          try assumption.
+          try reflexivity.
+          try lia.
+          try (simpl; lia).
+          try (simpl; reflexivity).
+          (* Same approach as zs=nil case *)
           destruct Hsize_l' as [Hys_nil | [? Habsurd]]; try congruence.
-          (* The goal is NOT Desc' — it was consumed by applyDesc's try assumption.
-             The remaining goal is a size or semantic side condition from replace.
-             Use solve tactics to close it. *)
-          admit.
+          rewrite Hys_nil in Hlist_l'. rewrite app_nil_l in Hlist_l'.
+          rewrite Hlist_l'.
+          apply Bounded_relax_ub_None in HB.
+          (* Use fromList'_Desc via CPS to preserve outer Desc' structure *)
+          eapply (@fromList'_Desc). exact HB.
+          intros s_fl HB_fl _ Hsem_fl.
+          apply showDesc'. split; [assumption|].
+          (* Semantic reconciliation for zs<>nil case:
+             f_solver handles the intro, specialization, rewriting, and case splitting *)
+          f_solver e; try congruence; try order e;
+            (* Remaining: False goals from exfalso with == + < *)
+            simpl; simpl_options; try reflexivity;
+            try congruence; try order e;
+            (* Catch remaining: there are oro chains that need rewriting *)
+            repeat (rewrite ?oro_None_l, ?oro_None_r, ?oro_Some_l);
+            try reflexivity; try congruence; try order e; admit.
 Admitted.
 
 Lemma fromList_Desc:
