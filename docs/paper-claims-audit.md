@@ -4,7 +4,8 @@
 **Branch**: ghc910-coq820 (GHC 9.10.3, Coq 8.20, containers v0.7)
 
 This document audits the formal verification claims made in three publications
-against the current codebase.
+against the current codebase. All claim statuses were verified by grep/search
+against the actual source files.
 
 ## Papers Audited
 
@@ -17,39 +18,51 @@ against the current codebase.
 3. **"Ready, Set, Verify!" (ICFP 2018)** — doi:10.1145/3167092
    Conference version of paper 1 (Set, IntSet only; no Map)
 
+---
+
 ## Paper 1 & 3: "Ready, Set, Verify!" — Containers
 
 ### Claim Status
 
-| # | Claim | Status | File | Notes |
-|---|-------|--------|------|-------|
-| C1 | Data.Set fully verified, 0 Admitted | **HOLDS** | SetProofs.v | 0 Admitted, complete FSetInterface |
-| C2 | Data.IntSet (N-based) fully verified, 0 Admitted | **HOLDS** | IntSetProofs.v | 0 Admitted, complete FSetInterface |
-| C3 | All QuickCheck properties proved as theorems | **HOLDS** | IntSetPropertyProofs.v | 0 Admitted |
-| C4 | EqLaws/OrdLaws/MonoidLaws for Set | **HOLDS** | SetProofs.v:5043-5272 | All Qed |
-| C5 | EqLaws/OrdLaws/MonoidLaws for IntSet | **HOLDS** | IntSetProofs.v | All Qed |
-| C6 | FSetInterface (WSfun, WS, Sfun, S) for Set and IntSet | **HOLDS** | SetFSet.v, IntSetFSet.v | Complete |
-| C7 | Type class laws for base types (Z, unit, list, option, etc.) | **HOLDS** | base-thy/GHC/Base.v | All Qed |
-| C8 | Rewrite rules verified (toAscList, toDescList) | **HOLDS** | SetProofs.v:6102-6123, IntSetProofs.v:7029-7051 | All Qed |
-| C9 | Bounded_iff_valid for Set | **HOLDS** | SetProofs.v | Present |
-| C10 | fromAscList/fromDistinctAscList skipped for IntSet | **STILL TRUE** | IntSet/Internal.v | Still skipped (mutual recursion unsupported) |
-| C11 | Data.Map.Strict verified (JFP only) | **MOSTLY HOLDS** | MapProofs/ | 2 Admitted in FromListProofs.v |
-| C12 | FMapInterface for Map | **HOLDS** | InterfaceProofs.v | Complete |
-| C13 | MonoidLaws for Map (JFP Fig 4) | **HOLDS** | TypeclassProofs.v | Proved (was a gap, now fixed) |
-| C14 | Containers v0.5.11.0 verified | **CHANGED** | — | Now v0.7; most proofs ported |
+| # | Claim | Status | Evidence |
+|---|-------|--------|----------|
+| C1 | Data.Set fully verified, 0 Admitted | **HOLDS** | `SetProofs.v`: 0 Admitted (verified by grep) |
+| C2 | Data.IntSet (N-based) fully verified, 0 Admitted | **HOLDS** | `IntSetProofs.v`: 0 Admitted (verified by grep) |
+| C3 | All QuickCheck properties proved as theorems | **HOLDS** | `IntSetPropertyProofs.v`: 0 Admitted (verified by grep) |
+| C4 | EqLaws/OrdLaws/MonoidLaws for Set | **HOLDS** | `SetProofs.v:5233`: `MonoidLaws_Set` — Qed (line 5272) |
+| C5 | EqLaws/OrdLaws/MonoidLaws for IntSet | **HOLDS** | `IntSetProofs.v:6112`: `MonoidLaws_WFIntSet` — Qed (line 6127) |
+| C6 | FSetInterface (WSfun, WS, Sfun, S) for Set and IntSet | **HOLDS** | `SetProofs.v:5333`: `Module SetFSet <: WSfun <: WS <: Sfun <: S` — End at 6100. `IntSetFSet.v`: complete |
+| C7 | Type class laws for base types | **HOLDS** | `base-thy/GHC/Base.v`: EqLaws for Int/Word/bool/unit/comparison/list/option/pair, MonoidLaws for unit/comparison/option/list — all Qed |
+| C8 | Rewrite rules verified (toAscList, toDescList) | **HOLDS** | `SetProofs.v:6113`: `rule_toAscList` — Qed. `IntSetProofs.v:7041`: same — Qed |
+| C9 | Bounded_iff_valid for Set | **HOLDS** | `SetProofs.v:4935`: `Bounded_iff_valid` — Qed (line 4943) |
+| C10 | fromAscList/fromDistinctAscList skipped for IntSet | **STILL TRUE** | Still skipped in `IntSet/Internal.v` (mutual recursion unsupported) |
+| C11 | Data.Map.Strict verified (JFP only) | **MOSTLY HOLDS** | 2 Admitted in `FromListProofs.v` (lines 1775, 1861) |
+| C12 | FMapInterface for Map | **HOLDS** | `InterfaceProofs.v:22`: `Module MapFMap <: WSfun <: WS <: Sfun <: S` — End at 1065 |
+| C13 | MonoidLaws for Map (JFP Fig 4) | **HOLDS** | `TypeclassProofs.v:417`: `MonoidLaws_Map` — Qed (line 461). Was a gap; fixed 2026-03-16 |
+| C14 | Containers v0.5.11.0 verified | **CHANGED** | Now v0.7; most proofs ported |
 
 ### Detailed Notes
 
 **C11 — Map fromList proofs (2 Admitted)**:
-- `FromListProofs.v` lines 1775, 1861: `fromList_create_Desc` and `fromList_go_Desc`
+- `fromList_create_Desc` obligation (line 1775): `Program Fixpoint` with CPS-style spec
+- `fromList_go_Desc` obligation (line 1861): same structure
 - Root cause: Coq 8.20 changed `Program Fixpoint` obligation structure — all variables
-  are pre-introduced, breaking proof scripts that start with `intros`
-- These are *proof engineering* issues (the theorems are true), not logical gaps
+  (including the CPS continuation `P` and its argument) are pre-introduced, breaking
+  proof scripts that start with `intros X HX`. The analogous Set proof in `SetProofs.v`
+  works because Set elements are not pairs, avoiding cascading `destruct_match` issues.
+- These are *proof engineering* issues (the theorems are true), not logical gaps.
 
-**C14 — Version change**: The codebase now uses containers v0.7 instead of v0.5.11.0.
+**C13 — MonoidLaws_Map (fixed)**:
+- JFP paper Fig 4 explicitly lists "Map Instances: Eq, Eq1, Monoid, Semigroup"
+- Before this audit: only EqLaws, OrdLaws, SemigroupLaws, FunctorLaws were proved
+- Fix: added `MonoidLaws_Map` with helper lemma `unions_foldr_union` relating
+  `foldl'`-based `unions` to `foldr`-based union chain
+- Proof approach: CPS-style `union_Desc`/`empty_Desc` + `strong_eq1` for identity laws;
+  `replace` + induction for mconcat law (matching Set proof pattern)
+
+**C14 — Version change**: containers v0.5.11.0 → v0.7.
 Key changes: native v0.7 `split`/`fromAscList`/`fromDescList`/`fromDistinctAscList`
-definitions for Set/IntSet/Map. Most proofs were ported; Map fromList proofs regressed
-due to the Coq 8.20 obligation issue.
+definitions. Most proofs ported; Map fromList proofs regressed due to Coq 8.20.
 
 ### Improvements Over Papers
 
@@ -60,101 +73,139 @@ due to the Coq 8.20 obligation issue.
 
 ### Admitted Summary (Containers)
 
-| File | Count | Category |
-|------|-------|----------|
-| IntSetWordProofs.v | 80 | Work in progress (Int-based variant) |
-| IntMapProofs.v | 12 | Partial coverage (new) |
-| FromListProofs.v | 2 | Coq 8.20 regression (fixable) |
-| **Total** | **94** | |
+| File | Admitted | Axioms | Theorems Affected |
+|------|----------|--------|-------------------|
+| IntSetWordProofs.v | 80 | 0 | Bit-level properties; Int-based IntSet variant (new, WIP) |
+| IntMapProofs.v | 12 | 2 | `deferredFix2_eq`, `All_IntMaps_WF` axioms; partial coverage (new) |
+| FromListProofs.v | 2 | 0 | `fromList_create_Desc`, `fromList_go_Desc` (Coq 8.20 obligation regression) |
+| **Total** | **94** | **2** | |
+
+---
 
 ## Paper 2: "Embracing a Mechanized Formalization Gap" — GHC
 
 ### Claim Status
 
-| # | Claim | Status | File | Notes |
-|---|-------|--------|------|-------|
-| G1 | WellScoped_substExpr (Qed) | **HOLDS** | CoreSubst.v:1431 | Qed |
-| G2 | exitifyProgram_WellScoped_JPV (Qed) | **HOLDS** | Exitify.v:591-674 | Qed |
-| G3 | 0 Admitted in CoreSubst proofs | **HOLDS** | CoreSubst.v | 0 Admitted |
-| G4 | Well-scopedness + join point definitions | **HOLDS** | ScopeInvariant.v, JoinPointInvariants.v | Present |
-| G5 | GHC 8.4.3 verified | **CHANGED** | — | Now GHC 9.10.3 |
-| G6 | CSE proofs | **REGRESSED** | CSE.v | 8 Admitted (cseExpr axiomatized) |
-| G7 | VarSetFSet interface | **PARTIAL** | VarSetFSet.v | 18 Admitted |
-| G8 | 13K+ lines of proof | **EXPANDED** | theories/ | Now 29 theory files |
-| G9 | Exitify bug fix verified | **HOLDS** | Exitify.v | exitifyProgram_WellScoped_JPV is Qed |
-| G10 | Axioms about uniqAway | **SIMILAR** | Axioms.v | 7 axioms (expected, documented) |
-| G11 | Type FVs axiomatized as empty | **HOLDS** | CoreFVs.v | 4 axioms |
+| # | Claim | Status | Evidence |
+|---|-------|--------|----------|
+| G1 | WellScoped_substExpr (Qed) | **HOLDS** | `CoreSubst.v:1431`: Lemma — Qed at line 1436 |
+| G2 | exitifyProgram_WellScoped_JPV (Qed) | **HOLDS** | `Exitify.v:591`: Theorem — Qed at line 674 |
+| G3 | 0 Admitted in CoreSubst proofs | **HOLDS** | `CoreSubst.v`: 0 Admitted (verified by grep) |
+| G4 | Well-scopedness + join point definitions | **HOLDS** | `ScopeInvariant.v`, `JoinPointInvariants.v`: both 0 Admitted |
+| G5 | GHC 8.4.3 verified | **CHANGED** | Now GHC 9.10.3 |
+| G6 | CSE proofs | **REGRESSED** | `CSE.v`: 5 Admitted (see below) |
+| G7 | VarSetFSet interface | **PARTIAL** | `VarSetFSet.v`: 18 Admitted |
+| G8 | 13K+ lines of proof | **EXPANDED** | Now 30 theory files |
+| G9 | Exitify bug fix verified | **HOLDS** | `Exitify.v:591`: `exitifyProgram_WellScoped_JPV` — Qed at line 674 |
+| G10 | Axioms about uniqAway | **SIMILAR** | `Axioms.v`: 7 axioms about `uniqAway` + 1 `ValidVarSet_Axiom` |
+| G11 | Type FVs axiomatized as empty | **HOLDS** | `CoreFVs.v`: 4 axioms (`tyCoFVsOfType_is_emptyFV`, `tyCoFVsOfCo_is_emptyFV`, `tyCoVarsOfTypeDSet_empty`, `tyCoVarsOfCoDSet_empty`) |
 
 ### Detailed Notes
 
-**G5 — GHC version change**: The codebase now translates GHC 9.10.3 instead of 8.4.3.
-Major type changes include `Alt` using `Mk_Alt` constructor, `Mk_Id` having 7 fields,
-and `Var` having a single `Mk_Id` constructor. Despite these changes, the core
-verification results (G1, G2, G3, G9) are preserved.
+**G5 — GHC version change**: GHC 8.4.3 → 9.10.3. Major type changes:
+`Alt` uses `Mk_Alt` constructor (not tuple); `Mk_Id` has 7 fields (`varMult : Mult`
+added 4th); `Var` has single `Mk_Id` constructor (no `TyVar`). Despite these changes,
+the core verification results (G1, G2, G3, G9) are preserved.
 
-**G6 — CSE regression**: In GHC 9.10, `cseExpr`, `cseBind`, and `try_for_cse` are
-axiomatized in the generated lib (the translation cannot handle the GHC 9.10 source
-for these functions). Since the proofs need to unfold these functions, they cannot
-proceed. This is an inherent limitation of the current translation, not a proof error.
+**G6 — CSE regression (5 Admitted)**:
+In GHC 9.10, `cseExpr`, `cseBind`, and `try_for_cse` are axiomatized in the generated
+lib. The 5 Admitted proofs are computational unfolding lemmas that cannot proceed:
+1. `cseExpr_App` (line 47)
+2. `cseExpr_Let` (line 53)
+3. `cseBind_NonRec` (line 63)
+4. `tryForCSE_simpl` (line 179)
+5. `WS_cseExpr` (line 187)
 
-**G7 — VarSetFSet**: 18 Admitted lemmas requiring key-surjectivity (that all IntMap
-keys come from Vars) and FSet compliance. These require external invariant guarantees
-that are difficult to prove without additional infrastructure.
+This is an inherent limitation of the current translation, not a proof error.
 
-### Admitted Summary (GHC)
+**G7 — VarSetFSet (18 Admitted)**:
+18 FSet interface lemmas require either key-surjectivity (that all IntMap keys
+come from Vars) or structural properties not yet proved:
+`subset_1`, `is_empty_1`, `for_all_1/2`, `exists_1/2`, `eq_dec`, `equal_1`,
+`fold_1`, `cardinal_1`, `partition_1/2`, `elements_1/2`, `choose_1/2/3`,
+`elements_3w`.
 
-| File | Count | Category |
-|------|-------|----------|
-| VarSetFSet.v | 18 | FSet interface compliance |
-| CSE.v | 8 | Axiomatized source functions |
-| TrieMap.v | 5 | Axiomatized source functions |
-| Exitify.v | 4 | Axiomatized internals |
-| UniqSetInv.v | 1 | Minor obligation |
-| **Total** | **36** | |
+**Exitify.v (3 Admitted)**:
+1. `exitifyRec_WellScoped` (line 336) — `exitifyRec` axiomatized in GHC 9.10
+2. `exitifyRec_JPI` (line 344) — same reason
+3. `top_go_WellScoped_JPI` (line 464) — needs `Program Fixpoint` on `CoreLT`
 
-### Zero-Admitted Theory Files
+Note: `exitifyProgram_WellScoped_JPV` (the main theorem from the paper) is **Qed** —
+it does not depend on these Admitted lemmas.
 
-The following theory files have 0 Admitted:
+### Admitted Summary (GHC Theories)
+
+| File | Admitted | In Comments | Actual | Theorems |
+|------|----------|-------------|--------|----------|
+| VarSetFSet.v | 18 | 0 | 18 | FSet interface lemmas (key-surjectivity needed) |
+| CSE.v | 8 | 3 | 5 | `cseExpr_App/Let`, `cseBind_NonRec`, `tryForCSE_simpl`, `WS_cseExpr` |
+| TrieMap.v | 5 | 0 | 5 | `TrieMapLaws` instances for Map/IntMap/ListMap/UniqFM/GenMap |
+| Exitify.v | 4 | 1 | 3 | `exitifyRec_WellScoped/JPI`, `top_go_WellScoped_JPI` |
+| UniqSetInv.v | 1 | 1 | 0 | (only occurrence is inside `(* ... *)` comment) |
+| **Total** | **36** | **5** | **31** | |
+
+### Axiom Summary (GHC Theories)
+
+| File | Count | Axioms |
+|------|-------|--------|
+| Axioms.v | 8 | 7 about `uniqAway` properties + `ValidVarSet_Axiom` |
+| CoreFVs.v | 4 | Type FVs are empty (types axiomatized) |
+| JoinPointInvariantsInductive.v | 3 | `isJoinId_eq`, `delVarList_singleton`, `extendVarList_singleton` (in unused code) |
+| **Total** | **15** | |
+
+### Zero-Admitted Theory Files (verified by grep)
+
 CoreInduct, CoreFVs, CoreSemantics, JoinPointInvariants, CoreSubst,
 ScopeInvariant, Var, VarSet, VarSetStrong, UniqSetInv, StateLogic, FV, VarEnv
 
+Additional zero-Admitted files:
+Axioms, Base, ContainerProofs, Core, CoreStats, Forall, GhcTactics, GhcUtils,
+JoinPointInvariantsInductive, OrdList, Unique, Util
+
+**25 of 30 theory files have 0 Admitted.**
+
 ### New Since Papers
 
-- TrieMap.v: 5 Admitted (TrieMap axiomatized)
-- ContainerProofs.v: 94 proved lemmas for IntMap (used by GHC proofs)
-- VarSetStrong.v, UniqSetInv.v, StateLogic.v: new proof modules
-- 29 theory files total (up from ~15 in the paper)
+- TrieMap.v: 5 Admitted (TrieMap axiomatized in GHC 9.10)
+- ContainerProofs.v: 94 proved lemmas for IntMap (used by GHC proofs), 0 Admitted
+- VarSetStrong.v, UniqSetInv.v, StateLogic.v: new proof modules (all 0 Admitted)
+- 30 theory files total (up from ~15 in the paper)
 
 ### Unfixable Regressions
 
 These cannot be fixed without improving the hs-to-coq translation:
 
-1. **CSE.v** (8 Admitted): `cseExpr`/`cseBind`/`try_for_cse` axiomatized in GHC 9.10
-2. **Exitify.v** (4 Admitted): `exitifyRec` internals axiomatized
-3. **VarSetFSet.v** (18 Admitted): Requires key-surjectivity property
-4. **TrieMap.v** (5 Admitted): TrieMap axiomatized
+1. **CSE.v** (5 Admitted): `cseExpr`/`cseBind`/`try_for_cse` axiomatized in GHC 9.10
+2. **Exitify.v** (3 Admitted): `exitifyRec` axiomatized; `top_go` needs structural recursion
+3. **VarSetFSet.v** (18 Admitted): Requires key-surjectivity property for IntMap→Var mapping
+4. **TrieMap.v** (5 Admitted): TrieMap types axiomatized in GHC 9.10
+
+---
 
 ## Summary
 
 ### What Holds
 - All core verification results from both papers are preserved
-- WellScoped_substExpr (Qed), exitifyProgram_WellScoped_JPV (Qed)
+- `WellScoped_substExpr` (Qed), `exitifyProgram_WellScoped_JPV` (Qed)
 - Complete FSetInterface for Set, IntSet; FMapInterface for Map
 - All type class laws (Eq, Ord, Semigroup, Monoid, Functor) for Set, IntSet, Map
-- QuickCheck property proofs for IntSet
-- Rewrite rules verified
+- QuickCheck property proofs for IntSet (0 Admitted)
+- Rewrite rules verified (toAscList, toDescList)
+- `Bounded_iff_valid` for Set
 
 ### What Changed
-- GHC version: 8.4.3 -> 9.10.3 (substantial source code changes)
-- Containers version: 0.5.11.0 -> 0.7
-- Coq version: 8.10 -> 8.20 (proof engineering changes)
+- GHC version: 8.4.3 → 9.10.3 (substantial source code changes)
+- Containers version: 0.5.11.0 → 0.7
+- Coq version: 8.10 → 8.20 (proof engineering changes)
 
 ### What Regressed
-- CSE proofs: 8 Admitted (axiomatized source in GHC 9.10)
+- CSE proofs: 5 Admitted (axiomatized source in GHC 9.10)
+- Exitify internals: 3 Admitted (axiomatized + structural recursion)
 - Map fromList proofs: 2 Admitted (Coq 8.20 `Program Fixpoint` change)
 
 ### What Improved
+- MonoidLaws for Map proved (was missing vs JFP Fig 4 claim)
 - More translated functions (fromAscList/fromDescList for Set)
 - New proof modules (ContainerProofs, VarSetStrong, StateLogic, etc.)
 - IntMap proofs added (partial)
-- 29 theory files (expanded from ~15)
+- 25 of 30 theory files have 0 Admitted (up from ~15 total files in paper)
