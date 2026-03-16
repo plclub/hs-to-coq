@@ -1960,8 +1960,92 @@ Program Fixpoint fromList_go_Desc
   Desc' (fromList_go (2^sz)%Z s xs) None None
     (fun i => sem_for_lists (rev xs) i ||| sem s i) := _.
 Next Obligation.
-  (* TODO: Coq 8.20 changed Program Fixpoint obligation structure —
-     all variables are pre-introduced. Needs systematic rewrite. *)
+  (* Coq 8.20 pre-introduces sz, s, xs, H:(0<=sz), H0:Bounded, H1:disjunction.
+     Desc' return type is NOT unfolded (no P pre-introduction). *)
+  rename fromList_go_Desc into IH.
+  rewrite fromList_go_eq by (apply Z.pow_pos_nonneg; lia).
+  unfold fromList_go_f.
+  destruct xs as [| [kx vx] [| [ky vy] xss]].
+  * (* nil case *)
+    solve_Desc e. reflexivity.
+  * (* singleton case *)
+    destruct H1; try congruence.
+    simpl safeHd in *.
+    assert (isUB None kx = true) by reflexivity.
+    applyDesc e (@insertMax_Desc e a).
+    solve_Desc e.
+    intro i. rewrite Hsem. simpl.
+    destruct (i == kx) eqn:Hieq; simpl.
+    + assert (sem s i = None)
+        by (eapply sem_outside_above; [eassumption | unfold isUB; order e]).
+      rewrite H3. reflexivity.
+    + rewrite oro_None_r. reflexivity.
+  * (* 2+ case *)
+    destruct H1; try congruence.
+    repeat replace (#1) with 1%Z by reflexivity.
+    replace ((Bits.shiftL (2 ^ sz)%Z 1))%Z with (2 ^ (1 + sz))%Z.
+    Focus 2.
+      unfold Bits.shiftL, Bits.instance_Bits_Int.
+      rewrite Z.shiftl_mul_pow2 by lia.
+      rewrite Z.pow_add_r by lia.
+      lia.
+    destruct (not_ordered kx ((ky,vy) :: xss)) eqn:Hord.
+    -- (* not_ordered = true: use fromList' *)
+       apply Bounded_relax_ub_None in H0.
+       applyDesc e (@fromList'_Desc).
+       solve_Desc e.
+       intro i. rewrite Hsem. reflexivity.
+    -- (* not_ordered = false: use fromList_create + recursive call *)
+       pose proof (fromList_create_Desc sz kx ((ky,vy)::xss) H Hord) as Hcreate.
+       apply Hcreate. clear Hcreate.
+       intros l' ys zs HBounded_l' HisUB_l' Hlist_l' Hsize_l'.
+       subst.
+       simpl safeHd in *.
+       applyDesc e (@link_Desc e a).
+       destruct zs.
+       ++ (* zs = nil: recursive IH call *)
+          rewrite app_nil_r in Hlist_l'.
+          assert (HIH : Desc' (fromList_go (2 ^ (1 + sz))%Z s0 ys) None None
+                    (fun i => sem_for_lists (rev ys) i ||| sem s0 i)).
+          { eapply IH.
+            - rewrite Hlist_l'. simpl. rewrite length_app. lia.
+            - lia.
+            - assumption.
+            - destruct Hsize_l' as [?|[Hsize_l'_eq ?]]; [left; assumption | right].
+              subst. rewrite Hsz.
+              change (match 2 ^ sz with
+                      | 0 => 0 | Z.pos p => Z.pos p~0
+                      | Z.neg p => Z.neg p~0 end)%Z
+                with (2 * 2 ^ sz)%Z in *.
+              change (match 2 ^ (1 + sz) with
+                      | 0 => 0 | Z.pos p => Z.pos p~0
+                      | Z.neg p => Z.neg p~0 end)%Z
+                with (2 * 2 ^ (1 + sz))%Z in *.
+              assert (Hpow_add: (2 ^ (1 + sz) = 2 * 2 ^ sz)%Z)
+                by (rewrite Z.pow_add_r by lia; lia).
+              lia. }
+          eapply HIH. intros s_go HB_go _ Hsem_go.
+          apply showDesc'. split; [assumption|].
+          intro i.
+            rewrite Hsem_go. rewrite Hlist_l'.
+            simpl rev. rewrite rev_app_distr.
+            rewrite !sem_list_app. simpl sem_for_lists. simpl_options.
+            erewrite sem_toList_reverse by (try eassumption; eapply HBounded_l').
+            erewrite <- toList_sem'' by (try eassumption; eapply HBounded_l').
+            destruct (sem s i) eqn:Hs_i; destruct (i == kx) eqn:Hieq;
+              destruct (sem l' i) eqn:Hl'_i; simpl; simpl_options; try reflexivity.
+            all: exfalso; inside_bounds; simpl isLB in *; simpl isUB in *;
+              try order e;
+              try (assert (compare i kx = Eq) by (rewrite Ord_compare_Eq; exact Hieq); order e);
+              (* For sem s Some + sem l' Some with i != kx: use both Bounded *)
+              try (assert (isUB (Some kx) i = true) by (eapply sem_inside; eassumption);
+                   assert (isLB (Some kx) i = true) by (eapply sem_inside; eassumption);
+                   simpl isLB in *; simpl isUB in *; order e).
+       ++ (* zs <> nil: fallback to fromList' with ys=nil.
+            Same semantic structure as zs=nil case but with Bounded relaxation.
+            TODO: complete this subcase — needs interactive goal inspection to fix
+            the rewrite Hlist_l' target after applyDesc consumed the Desc' CPS. *)
+          admit.
 Admitted.
 
 Lemma fromList_Desc:
