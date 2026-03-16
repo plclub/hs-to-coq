@@ -71,24 +71,34 @@ This reduces containers Admitted from 94 to 93.
 
 ### FromListProofs.v: fromList_go_Desc (1 remaining Admitted)
 **File**: `examples/containers/theories/MapProofs/FromListProofs.v`
-**Line**: 1961 (`fromList_go_Desc`)
+**Line**: 1965 (`fromList_go_Desc`)
 
-**Investigation findings**:
-- The `fromList_go_Desc` obligation has `Desc'` as return type. In Coq 8.20,
-  the `Desc'` CPS (forall P, continuation -> P result) is pre-introduced,
-  making the goal just `P (fromList_go ...)` where P is a hypothesis.
-- The `eapply IH` call fails because the IH's `Desc'` return has a DIFFERENT
-  semantic function (`sem s0 i`) from the outer goal (`sem s i`). When `Desc'`
-  is already consumed by pre-introduction, `eapply` can't use higher-order
-  unification to defer the semantic reconciliation.
-- Additionally, `2 * 2^sz` in Z is reduced by Coq to a `match` form
-  (`match 2^sz with 0=>0|Z.pos p=>Z.pos p~0|...`), preventing `eapply IH`
-  from unifying the size constraint.
-- The Set version works because `Desc'` gets unfolded during `eapply` in
-  the Set context, but for Maps the pre-introduction blocks this.
-- Possible fix: manually unfold `Desc'`, apply the continuation hypothesis
-  explicitly, and use `fromList_create_Desc` via `pose proof + apply` pattern.
-  Requires restructuring the entire recursive call pattern (~50 lines).
+**Extensive investigation (2026-03-16, continued)**:
+
+The proof structure is 90% complete. Working approach discovered:
+1. **Nil/singleton cases**: work directly with `solve_Desc e` + manual semantic proofs
+2. **2+ case, not_ordered=true**: `applyDesc e (@fromList'_Desc)` + `solve_Desc e` + semantic
+3. **2+ case, not_ordered=false**: `pose proof (fromList_create_Desc ...) + apply` to
+   eliminate the `fromList_create` call, then `applyDesc e (@link_Desc e a)`, then:
+   - **zs=nil subcase**: `assert HIH : Desc' ...` with `eapply IH; [measure|lia|assumption|
+     size proof with change/lia|]` works. Semantic reconciliation via `rewrite Hsem_go,
+     Hsem, Hlist_l'; simpl rev; rewrite rev_app_distr, !sem_list_app; erewrite
+     sem_toList_reverse, <- toList_sem''`.
+   - **zs<>nil subcase**: `eapply (@fromList'_Desc)` + semantic reconciliation.
+
+**Remaining blocker**: The semantic reconciliation step for both subcases requires
+proving that `sem s i`, `SomeIf (i==kx) vx`, and `sem l' i` have disjoint key
+domains, making `|||` (oro) order-irrelevant. After `destruct (sem s i), (i==kx),
+(sem l' i)`, most cases close by `reflexivity`. The impossible cases (where two
+sources both have `Some`) need `exfalso` via:
+```
+apply (sem_inside HBounded_l') in Hl'_i; destruct Hl'_i;
+apply (sem_inside H0) in Hs_i; destruct Hs_i; order e.
+```
+But `order e` fails because it can't combine boolean `isUB`/`isLB` facts with
+`==` to derive ordering contradictions. The `solve_Bounds e` tactic also fails.
+Possible fix: unfold `isUB`/`isLB` before calling `order e`, or add a dedicated
+tactic for combining Eq_ and Ord bounds.
 
 ## Verification Methodology
 
