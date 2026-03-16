@@ -2036,15 +2036,12 @@ Next Obligation.
               destruct (sem l' i) eqn:Hl'_i; simpl; simpl_options; try reflexivity.
             all: exfalso; inside_bounds; simpl isLB in *; simpl isUB in *;
               try order e;
-              try (assert (compare i kx = Eq) by (rewrite Ord_compare_Eq; exact Hieq); order e);
-              (* For sem s Some + sem l' Some with i != kx: use both Bounded *)
+              try (assert (kx <= i = true) by (rewrite (Eq_le_r i kx kx Hieq); order e); order e);
               try (assert (isUB (Some kx) i = true) by (eapply sem_inside; eassumption);
                    assert (isLB (Some kx) i = true) by (eapply sem_inside; eassumption);
                    simpl isLB in *; simpl isUB in *; order e).
-       ++ (* zs <> nil: fallback to fromList' with ys=nil.
-            Same semantic structure as zs=nil case but with Bounded relaxation.
-            TODO: complete this subcase — needs interactive goal inspection to fix
-            the rewrite Hlist_l' target after applyDesc consumed the Desc' CPS. *)
+       ++ (* zs <> nil: fallback to fromList' *)
+          destruct Hsize_l' as [Hys_nil | [? Habsurd]]; try congruence.
           admit.
 Admitted.
 
