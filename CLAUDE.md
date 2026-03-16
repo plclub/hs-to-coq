@@ -155,7 +155,7 @@ Core.v post-processing uses `fix-files/` for multi-line insertions (portable acr
 `paper-claims-audit.md` (project root) documents the status of formal verification claims from three publications (JFP 2021, arxiv:1910.11724, ICFP 2018) against the current codebase. Key results: all core verification theorems (WellScoped_substExpr, exitifyProgram_WellScoped_JPV, FSet/FMapInterface, type class laws) still hold. MonoidLaws for Map proved in TypeclassProofs.v (was a gap vs JFP Fig 4). Map fromList `Program Fixpoint` regressions from Coq 8.20 fixed (0 Admitted). Regressions: CSE (5 Admitted, axiomatized source).
 
 ### Containers submodule
-Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates and builds everything. Map `fromList` proofs Admitted (Coq 8.20 `Program Fixpoint` change, pre-existing). IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources. Full type class laws verified: EqLaws, OrdLaws, SemigroupLaws, MonoidLaws, FunctorLaws for Map (all Qed in TypeclassProofs.v).
+Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates and builds everything. IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources. Full type class laws verified: EqLaws, OrdLaws, SemigroupLaws, MonoidLaws, FunctorLaws for Map (all Qed in TypeclassProofs.v). Map fromList proofs fully verified (0 Admitted in FromListProofs.v).
 
 ### Transformers example (examples/transformers/)
 Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../ghc/ghc/libraries/transformers`. Makefile strips MonadTrans quantified superclass constraint via sed post-processing. Uses `skip class` for `Contravariant` and `Foldable1` (not in base).
@@ -166,7 +166,7 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 - `omega` → `lia`; `le_lt_n_Sm` removed (use `lia` instead)
 - `intuition`/`f_equal`/`auto` solve more goals — proof bullet structures may break. `auto` no longer resolves `E.eq` goals — use explicit `apply E.eq_refl`.
 - Section `Variable` hypotheses generate side conditions in `rewrite`. `clear -H1 H2` clears section variables — add them to keep list (e.g., `clear -H1 H2 HEqLaws HOrdLaws`).
-- `Program Fixpoint ... := _.` obligations may have all variables pre-introduced (no products to `intros`). Use `match goal with` to find hypotheses.
+- `Program Fixpoint ... := _.` obligations: see "Coq 8.20 proof tactics" section below.
 - Typeclass resolution may not unfold definition chains (`Key→N→Word`) — add explicit instances
 - Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
 - `eval unfold f` in sections: use `let x := constr:(@f args) in let rhs := eval unfold f in x`
@@ -188,7 +188,6 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 
 ## Workflow
 
-- Keep a record (as a markdown file) of every time the user intervene
 - Every time before you commit, you should also check if other modules have been broken due to this change. For example, check `examples/test` even if you have only been working on `examples/containers`.
 - After significant functional changes (e.g., replacing `redefine` with native implementations), update README files, CLAUDE.md, and any plan documents to reflect the new state before committing.
 - Commit to git at each milestone with `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
