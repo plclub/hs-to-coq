@@ -43,14 +43,16 @@ against the actual source files.
 
 ### Detailed Notes
 
-**C11 — Map fromList proofs (1 Admitted, was 2)**:
+**C11 — Map fromList proofs (0 Admitted, was 2)**:
 - `fromList_create_Desc` obligation: **FIXED** (2026-03-16). Used `revert dependent P`
   to recover CPS structure, explicit pair destructuring, and `change` to normalize
   Z multiplication match forms.
-- `fromList_go_Desc` obligation (line 1961): still Admitted. The `eapply IH` call
-  fails because Coq 8.20 pre-introduces the `Desc'` CPS, and Z multiplication
-  `(2*2^sz)` is reduced to a `match` form that prevents `eapply` unification.
-- These are *proof engineering* issues (the theorems are true), not logical gaps.
+- `fromList_go_Desc` obligation: **FIXED** (2026-03-16). Used manual CPS via
+  `eapply (@fromList'_Desc) + apply showDesc'`, `Eq_le_r` for `order e` compatibility,
+  `unfold SomeIf` for proper reduction, and `rewrite sem_list_app; destruct p` for
+  residual oro chains.
+- Both were *proof engineering* issues (Coq 8.20 `Program Fixpoint` changes), not
+  logical gaps.
 
 **C13 — MonoidLaws_Map (fixed)**:
 - JFP paper Fig 4 explicitly lists "Map Instances: Eq, Eq1, Monoid, Semigroup"

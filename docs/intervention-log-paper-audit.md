@@ -67,55 +67,33 @@ Key techniques:
 
 This reduces containers Admitted from 94 to 93.
 
-## Attempted but Not Completed
-
-### FromListProofs.v: fromList_go_Desc (1 remaining Admitted)
+### 5. fromList_go_Desc proof COMPLETED (was Admitted)
 **File**: `examples/containers/theories/MapProofs/FromListProofs.v`
-**Line**: 1965 (`fromList_go_Desc`)
 
-**Extensive investigation (2026-03-16, continued)**:
+Fixed the `fromList_go_Desc` obligation (was Admitted since Coq 8.20 upgrade).
+This required solving 6 distinct technical issues across 5 sessions:
 
-The proof structure is 90% complete. Working approach discovered:
-1. **Nil/singleton cases**: work directly with `solve_Desc e` + manual semantic proofs
-2. **2+ case, not_ordered=true**: `applyDesc e (@fromList'_Desc)` + `solve_Desc e` + semantic
-3. **2+ case, not_ordered=false**: `pose proof (fromList_create_Desc ...) + apply` to
-   eliminate the `fromList_create` call, then `applyDesc e (@link_Desc e a)`, then:
-   - **zs=nil subcase**: `assert HIH : Desc' ...` with `eapply IH; [measure|lia|assumption|
-     size proof with change/lia|]` works. Semantic reconciliation via `rewrite Hsem_go,
-     Hsem, Hlist_l'; simpl rev; rewrite rev_app_distr, !sem_list_app; erewrite
-     sem_toList_reverse, <- toList_sem''`.
-   - **zs<>nil subcase**: `eapply (@fromList'_Desc)` + semantic reconciliation.
+1. **Coq 8.20 pre-introduction**: `revert dependent P` not needed (Desc' return
+   type is NOT pre-introduced), but scalar hypotheses H/H0/H1 are
+2. **Pair destructuring**: `destruct p as [kx vx]` + explicit `destruct (not_ordered ...)`
+   instead of generic `destruct_match`
+3. **Z multiplication normalization**: `change (match 2^x with ...) with (2*2^x)` +
+   `Z.pow_add_r` for size proofs
+4. **`order e` + `==` incompatibility**: Convert `(i == kx) = true` to `(kx <= i) = true`
+   via `Eq_le_r` lemma before `order e`
+5. **`SomeIf` opacity**: `unfold SomeIf` before `destruct` to enable `simpl` reduction
+6. **Residual oro chain**: `rewrite sem_list_app; destruct p` to close the final case
+   where `sem_for_lists (rev zs ++ p :: nil)` didn't match `sem_for_lists (rev zs) ||| ...`
 
-**Progress (2026-03-16, session 3)**: The IH recursion case (zs=nil) is now FULLY
-proved. Key breakthroughs:
-- `unfold isLB, isUB` → `simpl isLB, isUB` to normalize boolean ordering facts
-- `assert (compare i kx = Eq) by (rewrite Ord_compare_Eq; exact Hieq)` to convert
-  `==` to `compare` before `order e` (which can't handle `Eq_` class `==` directly)
-- `eapply sem_inside; eassumption` with `eassumption`-based Bounded matching
-  (instead of naming specific hypotheses)
+Key architectural insight: use `eapply (@fromList'_Desc). exact HB.` for the zs<>nil
+case (manual CPS) + `apply showDesc'. split; [assumption|].` to preserve the outer
+Desc' structure, avoiding `applyDesc` which would consume it via `try assumption`.
 
-**Discovery (session 4)**: The zs<>nil subcase's goal is NOT `Desc'` — the
-`applyDesc e (@link_Desc e a)` consumed the outer Desc' via `try assumption`.
-The remaining goal is a side condition from `replace`. This explains why
-`rewrite Hlist_l'` couldn't find `(ky,vy)::xss` — the goal doesn't contain the
-original semantic function. `Hsize_l'` is also out of scope, confirming the goal
-is from a different proof context (likely an `eapply` precondition or `replace`
-side condition). Needs interactive Coq inspection to identify and close the
-remaining goal — likely a simple size or semantic equation.
+This reduces containers Admitted from 94 to 92.
 
-**Historical blocker (zs<>nil subcase only)**: The semantic reconciliation step requires
-proving that `sem s i`, `SomeIf (i==kx) vx`, and `sem l' i` have disjoint key
-domains, making `|||` (oro) order-irrelevant. After `destruct (sem s i), (i==kx),
-(sem l' i)`, most cases close by `reflexivity`. The impossible cases (where two
-sources both have `Some`) need `exfalso` via:
-```
-apply (sem_inside HBounded_l') in Hl'_i; destruct Hl'_i;
-apply (sem_inside H0) in Hs_i; destruct Hs_i; order e.
-```
-But `order e` fails because it can't combine boolean `isUB`/`isLB` facts with
-`==` to derive ordering contradictions. The `solve_Bounds e` tactic also fails.
-Possible fix: unfold `isUB`/`isLB` before calling `order e`, or add a dedicated
-tactic for combining Eq_ and Ord bounds.
+## No Remaining Unfinished Tasks
+
+All tasks from the paper claims audit are now complete.
 
 ## Verification Methodology
 
