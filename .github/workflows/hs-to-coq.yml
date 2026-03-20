@@ -110,7 +110,9 @@ jobs:
           sudo apt-get install -y opam
           opam init -j 2 -n -y -c ocaml-base-compiler.4.14.2
           opam repo add coq-released https://coq.inria.fr/opam/released || true
-          opam install -y coq.8.20.1 coq-mathcomp-ssreflect
+          # Only install coq (not coq-mathcomp-ssreflect) to avoid
+          # rocq-elpi build failures. mathcomp is tested in test-coq-files.
+          opam install -y coq.8.20.1
       - name: Build base
         run: |
           eval $(opam env)
@@ -142,7 +144,7 @@ jobs:
           make -C examples/simple
           (cd examples/bag; coq_makefile -f _CoqProject -o Makefile)
           make -C examples/bag
-          coqc -Q base "" examples/resources/list_monad.v
+          # resources/list_monad.v needs mathcomp; tested in test-coq-files job
 
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)
