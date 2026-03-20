@@ -474,18 +474,43 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
       let localNameFor :: Qualid -> Qualid
           localNameFor meth = qualidMapBase (<> ("_" <> qualidBase meth)) instanceName
 
+      -- Build inverse of renamedModules (old->new) to get (new->[old]).
+      -- This lets envFor also register pre-module-rename keys, so that
+      -- GHC.Internal.* references match before renameModule runs.
+      inverseModRenames <- do
+          rmMap <- view (edits.renamedModules)
+          pure $ M.fromListWith (++)
+            [ (moduleNameText newM, [moduleNameText oldM])
+            | (oldM, newM) <- M.toList rmMap, oldM /= newM ]
+
+      let preRenameVariants :: Qualid -> [Qualid]
+          preRenameVariants (Qualified modName ident) =
+            case M.lookup modName inverseModRenames of
+              Just oldMods -> [Qualified om ident | om <- oldMods]
+              Nothing      -> []
+          preRenameVariants _ = []
+
       -- In the translation of meth1, we want all _other_ methods to be renamed
       -- to the concrete methods of the current instance (because type class methods
       -- usually refer to each other).
       -- We don’t do this for the current method (because type class methods are usually
       -- not recursive.)
       -- This is a heuristic, and the user can override it using `rewrite` rules.
+      -- Note: we register both post-rename and pre-rename module names so that
+      -- GHC.Internal.* references are caught before renameModule runs.
       let envFor :: Qualid -> r -> r
-          envFor meth = appEndo $ foldMap Endo
+          envFor meth = appEndo $ foldMap Endo $
             [ edits.renamings.at (NamespacedIdent ns m) ?~ localNameFor m
             | m <- classMethods
             , m /= meth
-            , let ns = if m `elem` classTypes then TypeNS else ExprNS]
+            , let ns = if m `elem` classTypes then TypeNS else ExprNS
+            ] ++
+            [ edits.renamings.at (NamespacedIdent ns preM) ?~ localNameFor m
+            | m <- classMethods
+            , m /= meth
+            , preM <- preRenameVariants m
+            , let ns = if m `elem` classTypes then TypeNS else ExprNS
+            ]
 
       let allLocalNames = M.fromList $  [ (m, Qualid (localNameFor m)) | m <- classMethods ]
 

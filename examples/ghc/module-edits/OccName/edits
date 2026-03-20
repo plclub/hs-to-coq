@@ -5,6 +5,10 @@ skip module GHC.Utils.Lexeme
 # Coq 8.20: type/constructor name clash
 rename value GHC.Types.Name.Occurrence.OccSet = OccName.Mk_OccSet
 
+# envFor cross-type limitation: OccEnv is a newtype over FastStringEnv (UniqFM NameSpace a),
+# so <$ needs GHC.Base.fmap for the inner type, not the local Functor__OccEnv_fmap.
+redefine Local Definition OccName.Functor__OccEnv_op_zlzd__ {a} {b} : a -> OccEnv b -> OccEnv a := fun z arg => match arg with | MkOccEnv a1 => MkOccEnv (GHC.Base.fmap (fun b1 => GHC.Base.op_zlzd__ z b1) a1) end.
+
 # GHC 9.10: FldName constructor added, Eq instance provided in midamble
 skip OccName.Eq___NameSpace
 

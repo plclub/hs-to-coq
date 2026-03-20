@@ -60,12 +60,5 @@ skip Data.Foldable.Foldable__UAddr
 skip Data.Foldable.Foldable__Solo
 skip Data.Foldable.Foldable__Down
 
-# GHC 9.10: foldr' = foldr creates circular reference because envFor renames
-# foldr to the local instance method, but GHC.Internal.* module names don't
-# match the post-module-rename names used in the renaming table.
-# Redefine to use the local foldr definition directly.
-redefine Local Definition Data.Foldable.Foldable__Dual_foldr' {a} {b} : (a -> b -> b) -> b -> Data.SemigroupInternal.Dual a -> b := fun f z x => f (Data.SemigroupInternal.getDual x) z.
-redefine Local Definition Data.Foldable.Foldable__Sum_foldr' {a} {b} : (a -> b -> b) -> b -> Data.SemigroupInternal.Sum a -> b := fun f z x => f (Data.SemigroupInternal.getSum x) z.
-redefine Local Definition Data.Foldable.Foldable__Product_foldr' {a} {b} : (a -> b -> b) -> b -> Data.SemigroupInternal.Product a -> b := fun f z x => f (Data.SemigroupInternal.getProduct x) z.
 
 

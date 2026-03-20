@@ -821,9 +821,9 @@ Program Instance Foldable__Proxy : Foldable Data.Proxy.Proxy :=
       | f, z, Mk_Dual x => f x z
       end.
 
-#[local] Definition Foldable__Dual_foldr' {a} {b}
-   : (a -> b -> b) -> b -> Dual a -> b :=
-  fun f z x => f (getDual x) z.
+#[local] Definition Foldable__Dual_foldr'
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Dual a -> b :=
+  fun {a : Type} {b : Type} => Foldable__Dual_foldr.
 
 #[local] Definition Foldable__Dual_length
    : forall {a : Type}, Dual a -> GHC.Num.Int :=
@@ -897,9 +897,9 @@ Program Instance Foldable__Dual : Foldable Dual :=
       | f, z, Mk_Sum x => f x z
       end.
 
-#[local] Definition Foldable__Sum_foldr' {a} {b}
-   : (a -> b -> b) -> b -> Sum a -> b :=
-  fun f z x => f (getSum x) z.
+#[local] Definition Foldable__Sum_foldr'
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Sum a -> b :=
+  fun {a : Type} {b : Type} => Foldable__Sum_foldr.
 
 #[local] Definition Foldable__Sum_length
    : forall {a : Type}, Sum a -> GHC.Num.Int :=
@@ -972,9 +972,9 @@ Program Instance Foldable__Sum : Foldable Sum :=
       | f, z, Mk_Product x => f x z
       end.
 
-#[local] Definition Foldable__Product_foldr' {a} {b}
-   : (a -> b -> b) -> b -> Product a -> b :=
-  fun f z x => f (getProduct x) z.
+#[local] Definition Foldable__Product_foldr'
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Product a -> b :=
+  fun {a : Type} {b : Type} => Foldable__Product_foldr.
 
 #[local] Definition Foldable__Product_length
    : forall {a : Type}, Product a -> GHC.Num.Int :=

@@ -141,14 +141,11 @@ Instance Uniquable__NameSpace : Unique.Uniquable NameSpace :=
       | f, MkOccEnv a1 => MkOccEnv (GHC.Base.fmap (fun b1 => GHC.Base.fmap f b1) a1)
       end.
 
-#[local] Definition Functor__OccEnv_op_zlzd__
-   : forall {a : Type}, forall {b : Type}, a -> OccEnv b -> OccEnv a :=
-  fun {a : Type} {b : Type} =>
-    fun arg_0__ arg_1__ =>
-      match arg_0__, arg_1__ with
-      | z, MkOccEnv a1 =>
-          MkOccEnv (GHC.Base.fmap (fun b1 => GHC.Base.op_zlzd__ z b1) a1)
-      end.
+#[local] Definition Functor__OccEnv_op_zlzd__ {a} {b}
+   : a -> OccEnv b -> OccEnv a :=
+  fun z arg =>
+    let 'MkOccEnv a1 := arg in
+    MkOccEnv (GHC.Base.fmap (fun b1 => GHC.Base.op_zlzd__ z b1) a1).
 
 #[global]
 Program Instance Functor__OccEnv : GHC.Base.Functor OccEnv :=

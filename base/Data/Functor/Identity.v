@@ -115,9 +115,10 @@ Program Instance Monoid__Identity {a : Type} `{GHC.Base.Monoid a}
       | f, z, Mk_Identity x => f x z
       end.
 
-#[local] Definition Foldable__Identity_foldr' {a} {b}
-   : (a -> b -> b) -> b -> Identity a -> b :=
-  fun f z x => f (runIdentity x) z.
+#[local] Definition Foldable__Identity_foldr'
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> Identity a -> b :=
+  fun {a : Type} {b : Type} => Foldable__Identity_foldr.
 
 #[local] Definition Foldable__Identity_length
    : forall {a : Type}, Identity a -> GHC.Num.Int :=

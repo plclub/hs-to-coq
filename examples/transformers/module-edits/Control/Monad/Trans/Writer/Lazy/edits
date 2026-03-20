@@ -8,9 +8,8 @@ order Control.Monad.Trans.Writer.Lazy.Ord1__WriterT         Control.Monad.Trans.
 order Control.Monad.Trans.Writer.Lazy.Eq1__WriterT          Control.Monad.Trans.Writer.Lazy.Ord1__WriterT
 order Control.Monad.Trans.Writer.Lazy.Eq___WriterT          Control.Monad.Trans.Writer.Lazy.Ord__WriterT
 
-# hs-to-coq fails to translate the Applicative instance, because it thinks
-# that <*> is mutually recursive with liftA2
-
-# Therefore, lets override its heuristic here.
+# envFor cross-type limitation: <*> calls liftA2 for the inner monad m, not WriterT.
+# Override the heuristic for both post-rename and pre-rename module names.
 in Control.Monad.Trans.Writer.Lazy.Applicative__WriterT_op_zlztzg__ rename value GHC.Base.liftA2 = GHC.Base.liftA2
+in Control.Monad.Trans.Writer.Lazy.Applicative__WriterT_op_zlztzg__ rename value GHC.Internal.Base.liftA2 = GHC.Base.liftA2
 
