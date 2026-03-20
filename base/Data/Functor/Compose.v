@@ -180,8 +180,9 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
   inst_g}
    : forall {m : Type},
      forall `{GHC.Base.Monoid m}, Compose inst_f inst_g m -> m :=
-  fun {m : Type} `{GHC.Base.Monoid m} =>
-    fun '(Mk_Compose t) => Data.Foldable.foldMap Data.Foldable.fold t.
+  fun {m : Type} `{GHC.Base.Monoid m} arg =>
+    let 'Mk_Compose t := arg in
+    Data.Foldable.foldMap Data.Foldable.fold t.
 
 #[local] Definition Foldable__Compose_foldMap {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -193,6 +194,18 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
     fun arg_0__ arg_1__ =>
       match arg_0__, arg_1__ with
       | f, Mk_Compose t => Data.Foldable.foldMap (Data.Foldable.foldMap f) t
+      end.
+
+#[local] Definition Foldable__Compose_foldMap' {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {m : Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monoid m}, (a -> m) -> Compose inst_f inst_g a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, Mk_Compose t => Data.Foldable.foldMap' (Data.Foldable.foldMap' f) t
       end.
 
 #[local] Definition Foldable__Compose_foldl {inst_f : Type -> Type} {inst_g
@@ -207,6 +220,18 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
           Data.Foldable.foldl (fun acc ga => Data.Foldable.foldl f acc ga) b fga
       end.
 
+#[local] Definition Foldable__Compose_foldl' {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Compose inst_f inst_g a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | f, b, Mk_Compose fga =>
+          Data.Foldable.foldl' (fun acc ga => Data.Foldable.foldl' f acc ga) b fga
+      end.
+
 #[local] Definition Foldable__Compose_foldr {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
@@ -217,6 +242,18 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
       match arg_0__, arg_1__, arg_2__ with
       | f, b, Mk_Compose fga =>
           Data.Foldable.foldr (fun ga acc => Data.Foldable.foldr f acc ga) b fga
+      end.
+
+#[local] Definition Foldable__Compose_foldr' {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> Compose inst_f inst_g a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      match arg_0__, arg_1__, arg_2__ with
+      | f, b, Mk_Compose fga =>
+          Data.Foldable.foldr' (fun ga acc => Data.Foldable.foldr' f acc ga) b fga
       end.
 
 #[local] Definition Foldable__Compose_length {inst_f : Type -> Type} {inst_g
@@ -232,11 +269,11 @@ Program Instance Functor__Compose {f : Type -> Type} {g : Type -> Type}
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, Compose inst_f inst_g a -> bool :=
-  fun {a : Type} =>
-    fun '(Mk_Compose t) =>
-      orb (Data.Foldable.null t) (Data.SemigroupInternal.getAll (Data.Foldable.foldMap
-                                                                 (Data.SemigroupInternal.Mk_All GHC.Base.∘
-                                                                  Data.Foldable.null) t)).
+  fun {a : Type} arg =>
+    let 'Mk_Compose t := arg in
+    orb (Data.Foldable.null t) (Data.SemigroupInternal.getAll (Data.Foldable.foldMap
+                                                               (Data.SemigroupInternal.Mk_All GHC.Base.∘
+                                                                Data.Foldable.null) t)).
 
 #[local] Definition Foldable__Compose_product {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -273,8 +310,14 @@ Program Instance Foldable__Compose {f : Type -> Type} {g : Type -> Type}
              Foldable__Compose_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Compose_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__Compose_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Compose_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) =>
+             Foldable__Compose_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Compose_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) =>
+             Foldable__Compose_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__Compose_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__Compose_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -422,8 +465,10 @@ Program Instance Applicative__Compose {f : Type -> Type} {g : Type -> Type}
 
 (* External variables:
      Type bool comparison list orb Data.Foldable.Foldable Data.Foldable.fold
-     Data.Foldable.foldMap Data.Foldable.foldMap__ Data.Foldable.fold__
-     Data.Foldable.foldl Data.Foldable.foldl__ Data.Foldable.foldr
+     Data.Foldable.foldMap Data.Foldable.foldMap' Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl
+     Data.Foldable.foldl' Data.Foldable.foldl'__ Data.Foldable.foldl__
+     Data.Foldable.foldr Data.Foldable.foldr' Data.Foldable.foldr'__
      Data.Foldable.foldr__ Data.Foldable.length Data.Foldable.length__
      Data.Foldable.null Data.Foldable.null__ Data.Foldable.product
      Data.Foldable.product__ Data.Foldable.sum Data.Foldable.sum__

@@ -541,6 +541,7 @@ Lemma isJoinPointsValid_mkVarApps:
 Proof.
   intros ???? Hnot_iJI HiJPV.
   unfold mkVarApps.
+  rewrite Foldable.foldl'_is_foldl.
   rewrite Foldable.hs_coq_foldl_list.
   revert e HiJPV.
   induction Hnot_iJI; intros.

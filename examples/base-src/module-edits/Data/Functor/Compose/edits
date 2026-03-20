@@ -15,7 +15,13 @@ order Data.Functor.Compose.Eq___Compose Data.Functor.Compose.Ord__Compose
 skip Data.Functor.Compose.liftReadPrecCompose
 skip Data.Functor.Compose.liftShowsPrecCompose
 
-# GHC 9.10: foldMap' not available in our Foldable; redefine length to use foldMap
+# GHC 9.10: envFor renames foldMap to local Compose version, but Compose instance
+# methods need foldMap for the *component* functors (inst_f/inst_g), not Compose.
+# Redefine affected methods to use the class method Data.Foldable.foldMap directly.
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_fold {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {m : Type}, forall `{GHC.Base.Monoid m}, Compose inst_f inst_g m -> m := fun {m : Type} `{GHC.Base.Monoid m} arg => match arg with | Mk_Compose t => Data.Foldable.foldMap Data.Foldable.fold t end.
+
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_null {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, Compose inst_f inst_g a -> bool := fun {a : Type} arg => match arg with | Mk_Compose t => orb (Data.Foldable.null t) (Data.SemigroupInternal.getAll (Data.Foldable.foldMap (Data.SemigroupInternal.Mk_All GHC.Base.∘ Data.Foldable.null) t)) end.
+
 redefine Local Definition Data.Functor.Compose.Foldable__Compose_length {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, Compose inst_f inst_g a -> GHC.Num.Int := fun {a : Type} arg => match arg with | Mk_Compose t => Data.SemigroupInternal.getSum (Data.Foldable.foldMap (fun x => Data.SemigroupInternal.Mk_Sum (Data.Foldable.length x)) t) end.
 
 redefine Local Definition Data.Functor.Compose.Foldable__Compose_product {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a := fun {a : Type} `{GHC.Num.Num a} arg => match arg with | Mk_Compose t => Data.SemigroupInternal.getProduct (Data.Foldable.foldMap (fun x => Data.SemigroupInternal.Mk_Product (Data.Foldable.product x)) t) end.

@@ -60,17 +60,12 @@ skip Data.Foldable.Foldable__UAddr
 skip Data.Foldable.Foldable__Solo
 skip Data.Foldable.Foldable__Down
 
-# foldr', foldl', and foldMap' use SigPat which hs-to-coq doesn't support
-skip method Data.Foldable.Foldable foldr'
-skip method Data.Foldable.Foldable foldl'
-skip method Data.Foldable.Foldable foldMap'
+# GHC 9.10: foldr' = foldr creates circular reference because envFor renames
+# foldr to the local instance method, but GHC.Internal.* module names don't
+# match the post-module-rename names used in the renaming table.
+# Redefine to use the local foldr definition directly.
+redefine Local Definition Data.Foldable.Foldable__Dual_foldr' {a} {b} : (a -> b -> b) -> b -> Data.SemigroupInternal.Dual a -> b := fun f z x => f (Data.SemigroupInternal.getDual x) z.
+redefine Local Definition Data.Foldable.Foldable__Sum_foldr' {a} {b} : (a -> b -> b) -> b -> Data.SemigroupInternal.Sum a -> b := fun f z x => f (Data.SemigroupInternal.getSum x) z.
+redefine Local Definition Data.Foldable.Foldable__Product_foldr' {a} {b} : (a -> b -> b) -> b -> Data.SemigroupInternal.Product a -> b := fun f z x => f (Data.SemigroupInternal.getProduct x) z.
 
-# In Coq, there's no strictness distinction. Rewrite strict variants to lazy ones
-# so generated code that references foldl'/foldMap' uses the available class methods.
-rewrite forall x, Data.Foldable.foldl' x = Data.Foldable.foldl x
-rewrite forall x, Data.Foldable.foldMap' x = Data.Foldable.foldMap x
-
-# Provide standalone foldl' as alias for foldl (no strictness distinction in Coq)
-add Data.Foldable Definition Data.Foldable.foldl' {t : Type -> Type} `{Foldable t}
-  : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> t a -> b := @foldl t _.
 

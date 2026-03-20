@@ -507,13 +507,23 @@ convertExpr_ (RecordUpd recVal fields PlaceHolder PlaceHolder PlaceHolder PlaceH
 
 
 #if __GLASGOW_HASKELL__ >= 808
-convertExpr_ (ExprWithTySig NOEXTP e sigWcTy) =
+convertExpr_ (ExprWithTySig NOEXTP e sigWcTy) = do
 #elif __GLASGOW_HASKELL__ == 806
-convertExpr_ (ExprWithTySig sigWcTy e) =
+convertExpr_ (ExprWithTySig sigWcTy e) = do
 #else
-convertExpr_ (ExprWithTySig e sigWcTy) =
+convertExpr_ (ExprWithTySig e sigWcTy) = do
 #endif
-  HasType <$> convertLExpr e <*> convertLHsSigWcType PreserveUnusedTyVars sigWcTy
+  -- Keep expression type annotations only when the type has no free
+  -- variables to quantify.  When there are free type variables (e.g.
+  -- (id :: b -> b) producing (forall b, b -> b)), the quantifier
+  -- changes the type and prevents Coq from instantiating implicit args.
+  -- When there are none (e.g. coerce (bitraverse :: (a -> Identity b) -> ...)),
+  -- the annotation is needed for disambiguation.
+  expr <- convertLExpr e
+  ty <- convertLHsSigWcType PreserveUnusedTyVars sigWcTy
+  case ty of
+    Forall _ _ -> pure expr
+    _          -> pure $ HasType expr ty
 
 convertExpr_ (ArithSeq _postTc _overloadedLists info) =
   -- TODO: Special-case infinite lists?
@@ -616,8 +626,12 @@ convertExpr_ (XExpr v) = noExtCon v
 convertExpr_ (HsAppTypeOut _ _) =
   convUnsupported "`HsAppTypeOut' constructor"
 
-convertExpr_ (ExprWithTySigOut e sigWcTy) =
-  HasType <$> convertLExpr e <*> convertLHsSigWcType PreserveUnusedTyVars sigWcTy
+convertExpr_ (ExprWithTySigOut e sigWcTy) = do
+  expr <- convertLExpr e
+  ty <- convertLHsSigWcType PreserveUnusedTyVars sigWcTy
+  case ty of
+    Forall _ _ -> pure expr
+    _          -> pure $ HasType expr ty
 
 convertExpr_ (ExplicitPArr _ _) =
   convUnsupported "explicit parallel arrays"

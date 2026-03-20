@@ -47,6 +47,10 @@ Theorem hs_coq_foldl_base {A B} (f : B -> A -> B) (z : B) (l : list A) :
   foldl f z l = Coq.Lists.List.fold_left f l z.
 Proof. by rewrite /foldl; move: z; elim: l => //=. Qed.
 
+Theorem hs_coq_foldl'_base {A B} (f : B -> A -> B) (z : B) (l : list A) :
+  foldl' f z l = Coq.Lists.List.fold_left f l z.
+Proof. rewrite /foldl'; move: z; elim: l => //=. Qed.
+
 (* ---------- foldr ------------------------------ *)
 
 Lemma foldr_initial {A} (x : list A) : foldr (_::_) nil x = x.

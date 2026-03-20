@@ -298,6 +298,32 @@ Program Instance Monoid__IntMap {a : Type} : GHC.Base.Monoid (IntMap a) :=
            end in
       go t.
 
+#[global] Definition foldl' {a : Type} {b : Type}
+   : (a -> b -> a) -> a -> IntMap b -> a :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Nil => z'
+         | z', Tip _ x => f z' x
+         | z', Bin _ _ l r => go (go z' l) r
+         end in
+    fun t =>
+      match t with
+      | Bin _ m l r => if m GHC.Base.< #0 : bool then go (go z r) l else go (go z l) r
+      | _ => go z t
+      end.
+
+#[local] Definition Foldable__IntMap_foldl'
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> IntMap a -> b :=
+  fun {b : Type} {a : Type} => foldl'.
+
+#[local] Definition Foldable__IntMap_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> IntMap a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__IntMap_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[global] Definition foldl {a : Type} {b : Type}
    : (a -> b -> a) -> a -> IntMap b -> a :=
   fun f z =>
@@ -336,6 +362,25 @@ Program Instance Monoid__IntMap {a : Type} : GHC.Base.Monoid (IntMap a) :=
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> IntMap a -> b :=
   fun {a : Type} {b : Type} => foldr.
 
+#[global] Definition foldr' {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> IntMap a -> b :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Nil => z'
+         | z', Tip _ x => f x z'
+         | z', Bin _ _ l r => go (go z' r) l
+         end in
+    fun t =>
+      match t with
+      | Bin _ m l r => if m GHC.Base.< #0 : bool then go (go z l) r else go (go z r) l
+      | _ => go z t
+      end.
+
+#[local] Definition Foldable__IntMap_foldr'
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> IntMap a -> b :=
+  fun {a : Type} {b : Type} => foldr'.
+
 #[global] Definition size {a : Type} : IntMap a -> Coq.Numbers.BinNums.N :=
   let fix go arg_0__ arg_1__
     := match arg_0__, arg_1__ with
@@ -355,21 +400,6 @@ Program Instance Monoid__IntMap {a : Type} : GHC.Base.Monoid (IntMap a) :=
 #[local] Definition Foldable__IntMap_null
    : forall {a : Type}, IntMap a -> bool :=
   fun {a : Type} => null.
-
-#[global] Definition foldl' {a : Type} {b : Type}
-   : (a -> b -> a) -> a -> IntMap b -> a :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Nil => z'
-         | z', Tip _ x => f z' x
-         | z', Bin _ _ l r => go (go z' l) r
-         end in
-    fun t =>
-      match t with
-      | Bin _ m l r => if m GHC.Base.< #0 : bool then go (go z r) l else go (go z l) r
-      | _ => go z t
-      end.
 
 #[local] Definition Foldable__IntMap_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, IntMap a -> a :=
@@ -393,8 +423,12 @@ Program Instance Foldable__IntMap : Data.Foldable.Foldable IntMap :=
              Foldable__IntMap_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__IntMap_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__IntMap_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__IntMap_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) => Foldable__IntMap_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__IntMap_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) => Foldable__IntMap_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__IntMap_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__IntMap_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -1919,21 +1953,6 @@ Fixpoint mapAccumRWithKey {a : Type} {b : Type} {c : Type} (f
                                         end) in
     pair (pair lt fnd) gt.
 
-#[global] Definition foldr' {a : Type} {b : Type}
-   : (a -> b -> b) -> b -> IntMap a -> b :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Nil => z'
-         | z', Tip _ x => f x z'
-         | z', Bin _ _ l r => go (go z' r) l
-         end in
-    fun t =>
-      match t with
-      | Bin _ m l r => if m GHC.Base.< #0 : bool then go (go z l) r else go (go z r) l
-      | _ => go z t
-      end.
-
 #[global] Definition foldrWithKey' {a : Type} {b : Type}
    : (Data.IntSet.Internal.Key -> a -> b -> b) -> b -> IntMap a -> b :=
   fun f z =>
@@ -2126,8 +2145,9 @@ End Notations.
      false id list negb nil op_zt__ option orb pair true Coq.NArith.BinNat.N.ldiff
      Coq.Numbers.BinNums.N Coq.ZArith.BinInt.Z.of_N Data.Bits.op_zizazi__
      Data.Bits.op_zizbzi__ Data.Bits.xor Data.Either.Either Data.Either.Left
-     Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl' Data.Foldable.foldl__
+     Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'
+     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
      Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
      Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
      Data.Functor.op_zlzdzg__ Data.Functor.Identity.Identity Data.IntSet.Internal.Bin

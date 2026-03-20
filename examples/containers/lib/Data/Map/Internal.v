@@ -773,6 +773,28 @@ Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
            end in
       go t.
 
+#[global] Definition foldl' {a : Type} {b : Type} {k : Type}
+   : (a -> b -> a) -> a -> Map k b -> a :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Tip => z'
+         | z', Bin _ _ x l r => let z'' := go z' l in go (f z'' x) r
+         end in
+    go z.
+
+#[local] Definition Foldable__Map_foldl' {inst_k : Type}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Map inst_k a -> b :=
+  fun {b : Type} {a : Type} => foldl'.
+
+#[local] Definition Foldable__Map_foldMap' {inst_k : Type}
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Map inst_k a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Map_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[global] Definition foldl {a : Type} {b : Type} {k : Type}
    : (a -> b -> a) -> a -> Map k b -> a :=
   fun f z =>
@@ -803,6 +825,21 @@ Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
      forall {b : Type}, (a -> b -> b) -> b -> Map inst_k a -> b :=
   fun {a : Type} {b : Type} => foldr.
 
+#[global] Definition foldr' {a : Type} {b : Type} {k : Type}
+   : (a -> b -> b) -> b -> Map k a -> b :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Tip => z'
+         | z', Bin _ _ x l r => go (f x (go z' r)) l
+         end in
+    go z.
+
+#[local] Definition Foldable__Map_foldr' {inst_k : Type}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> Map inst_k a -> b :=
+  fun {a : Type} {b : Type} => foldr'.
+
 #[local] Definition Foldable__Map_length {inst_k : Type}
    : forall {a : Type}, Map inst_k a -> GHC.Num.Int :=
   fun {a : Type} => size.
@@ -813,16 +850,6 @@ Program Instance Ord2__Map : Data.Functor.Classes.Ord2 Map :=
 #[local] Definition Foldable__Map_null {inst_k : Type}
    : forall {a : Type}, Map inst_k a -> bool :=
   fun {a : Type} => null.
-
-#[global] Definition foldl' {a : Type} {b : Type} {k : Type}
-   : (a -> b -> a) -> a -> Map k b -> a :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Tip => z'
-         | z', Bin _ _ x l r => let z'' := go z' l in go (f z'' x) r
-         end in
-    go z.
 
 #[local] Definition Foldable__Map_product {inst_k : Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Map inst_k a -> a :=
@@ -846,8 +873,12 @@ Program Instance Foldable__Map {k : Type} : Data.Foldable.Foldable (Map k) :=
              Foldable__Map_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Map_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__Map_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Map_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) => Foldable__Map_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Map_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) => Foldable__Map_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__Map_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__Map_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -2457,16 +2488,6 @@ Fixpoint mapKeysMonotonic {k1 : Type} {k2 : Type} {a : Type} (arg_0__
          Bin sz (f k) x (mapKeysMonotonic f l) (mapKeysMonotonic f r)
      end.
 
-#[global] Definition foldr' {a : Type} {b : Type} {k : Type}
-   : (a -> b -> b) -> b -> Map k a -> b :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Tip => z'
-         | z', Bin _ _ x l r => go (f x (go z' r)) l
-         end in
-    go z.
-
 #[global] Definition foldrWithKey' {k : Type} {a : Type} {b : Type}
    : (k -> a -> b -> b) -> b -> Map k a -> b :=
   fun f z =>
@@ -2749,8 +2770,9 @@ End Notations.
      false functor__Map_op_zlzd__ id list map_size negb nil op_zt__ option pair prod
      true tt unit Data.Bits.shiftL Data.Bits.shiftR Data.Either.Either
      Data.Either.Left Data.Either.Right Data.Foldable.Foldable
-     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'
-     Data.Foldable.foldl__ Data.Foldable.foldr__ Data.Foldable.length__
+     Data.Foldable.foldMap'__ Data.Foldable.foldMap__ Data.Foldable.fold__
+     Data.Foldable.foldl' Data.Foldable.foldl'__ Data.Foldable.foldl__
+     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
      Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
      Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.Functor.Classes.Eq2
      Data.Functor.Classes.Ord2 Data.Functor.Classes.liftCompare

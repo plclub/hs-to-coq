@@ -22,6 +22,7 @@ Require Data.SemigroupInternal.
 Require Data.Traversable.
 Require GHC.Base.
 Require GHC.Num.
+Require GHC.Prim.
 Require HsToCoq.Unpeel.
 Import Data.Functor.Notations.
 Import GHC.Base.Notations.
@@ -182,6 +183,30 @@ Program Instance Functor__Min : GHC.Base.Functor Min :=
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Min m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Min_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__Min_foldr
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Min a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__Min_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+
+#[local] Definition Foldable__Min_foldl'
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Min a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__Min_foldr (fun arg_0__ arg_1__ =>
+                               match arg_0__, arg_1__ with
+                               | x, k => (fun '(z) => GHC.Prim.seq z (k (f z x)))
+                               end) (GHC.Base.id) xs z0.
+
+#[local] Definition Foldable__Min_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Min a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Min_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__Min_foldl
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Min a -> b :=
   fun {b : Type} {a : Type} =>
@@ -191,20 +216,23 @@ Program Instance Functor__Min : GHC.Base.Functor Min :=
                                                               (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__Min_foldr
+#[local] Definition Foldable__Min_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Min a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Min_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+    fun f z0 =>
+      fun xs =>
+        Foldable__Min_foldl (fun arg_0__ arg_1__ =>
+                               match arg_0__, arg_1__ with
+                               | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                               end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__Min_length
    : forall {a : Type}, Min a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__Min_foldl (fun arg_0__ arg_1__ =>
-                           match arg_0__, arg_1__ with
-                           | c, _ => c GHC.Num.+ #1
-                           end) #0.
+    Foldable__Min_foldl' (fun arg_0__ arg_1__ =>
+                            match arg_0__, arg_1__ with
+                            | c, _ => c GHC.Num.+ #1
+                            end) #0.
 
 #[local] Definition Foldable__Min_null : forall {a : Type}, Min a -> bool :=
   fun {a : Type} => Foldable__Min_foldr (fun arg_0__ arg_1__ => false) true.
@@ -213,12 +241,12 @@ Program Instance Functor__Min : GHC.Base.Functor Min :=
    : forall {a : Type}, forall `{GHC.Num.Num a}, Min a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Min_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__Min_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Min_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, Min a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Min_foldMap
+    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Min_foldMap'
                                 Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Min_toList : forall {a : Type}, Min a -> list a :=
@@ -232,8 +260,12 @@ Program Instance Foldable__Min : Data.Foldable.Foldable Min :=
              Foldable__Min_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Min_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__Min_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Min_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) => Foldable__Min_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Min_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) => Foldable__Min_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__Min_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__Min_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -395,6 +427,30 @@ Program Instance Functor__Max : GHC.Base.Functor Max :=
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Max m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Max_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__Max_foldr
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Max a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__Max_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+
+#[local] Definition Foldable__Max_foldl'
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Max a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__Max_foldr (fun arg_0__ arg_1__ =>
+                               match arg_0__, arg_1__ with
+                               | x, k => (fun '(z) => GHC.Prim.seq z (k (f z x)))
+                               end) (GHC.Base.id) xs z0.
+
+#[local] Definition Foldable__Max_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Max a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Max_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__Max_foldl
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Max a -> b :=
   fun {b : Type} {a : Type} =>
@@ -404,20 +460,23 @@ Program Instance Functor__Max : GHC.Base.Functor Max :=
                                                               (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__Max_foldr
+#[local] Definition Foldable__Max_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Max a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Max_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+    fun f z0 =>
+      fun xs =>
+        Foldable__Max_foldl (fun arg_0__ arg_1__ =>
+                               match arg_0__, arg_1__ with
+                               | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                               end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__Max_length
    : forall {a : Type}, Max a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__Max_foldl (fun arg_0__ arg_1__ =>
-                           match arg_0__, arg_1__ with
-                           | c, _ => c GHC.Num.+ #1
-                           end) #0.
+    Foldable__Max_foldl' (fun arg_0__ arg_1__ =>
+                            match arg_0__, arg_1__ with
+                            | c, _ => c GHC.Num.+ #1
+                            end) #0.
 
 #[local] Definition Foldable__Max_null : forall {a : Type}, Max a -> bool :=
   fun {a : Type} => Foldable__Max_foldr (fun arg_0__ arg_1__ => false) true.
@@ -426,12 +485,12 @@ Program Instance Functor__Max : GHC.Base.Functor Max :=
    : forall {a : Type}, forall `{GHC.Num.Num a}, Max a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Max_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__Max_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Max_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, Max a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Max_foldMap
+    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Max_foldMap'
                                 Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Max_toList : forall {a : Type}, Max a -> list a :=
@@ -445,8 +504,12 @@ Program Instance Foldable__Max : Data.Foldable.Foldable Max :=
              Foldable__Max_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Max_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__Max_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Max_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) => Foldable__Max_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Max_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) => Foldable__Max_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__Max_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__Max_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -594,6 +657,32 @@ Program Instance Functor__Arg {a : Type} : GHC.Base.Functor (Arg a) :=
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Arg inst_a m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Arg_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__Arg_foldr {inst_a : Type}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> Arg inst_a a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__Arg_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+
+#[local] Definition Foldable__Arg_foldl' {inst_a : Type}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Arg inst_a a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__Arg_foldr (fun arg_0__ arg_1__ =>
+                               match arg_0__, arg_1__ with
+                               | x, k => (fun '(z) => GHC.Prim.seq z (k (f z x)))
+                               end) (GHC.Base.id) xs z0.
+
+#[local] Definition Foldable__Arg_foldMap' {inst_a : Type}
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Arg inst_a a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Arg_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__Arg_foldl {inst_a : Type}
    : forall {b : Type},
      forall {a : Type}, (b -> a -> b) -> b -> Arg inst_a a -> b :=
@@ -604,21 +693,24 @@ Program Instance Functor__Arg {a : Type} : GHC.Base.Functor (Arg a) :=
                                                               (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__Arg_foldr {inst_a : Type}
+#[local] Definition Foldable__Arg_foldr' {inst_a : Type}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> Arg inst_a a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Arg_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+    fun f z0 =>
+      fun xs =>
+        Foldable__Arg_foldl (fun arg_0__ arg_1__ =>
+                               match arg_0__, arg_1__ with
+                               | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                               end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__Arg_length {inst_a : Type}
    : forall {a : Type}, Arg inst_a a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__Arg_foldl (fun arg_0__ arg_1__ =>
-                           match arg_0__, arg_1__ with
-                           | c, _ => c GHC.Num.+ #1
-                           end) #0.
+    Foldable__Arg_foldl' (fun arg_0__ arg_1__ =>
+                            match arg_0__, arg_1__ with
+                            | c, _ => c GHC.Num.+ #1
+                            end) #0.
 
 #[local] Definition Foldable__Arg_null {inst_a : Type}
    : forall {a : Type}, Arg inst_a a -> bool :=
@@ -628,12 +720,12 @@ Program Instance Functor__Arg {a : Type} : GHC.Base.Functor (Arg a) :=
    : forall {a : Type}, forall `{GHC.Num.Num a}, Arg inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Arg_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__Arg_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Arg_sum {inst_a : Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Arg inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Arg_foldMap
+    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Arg_foldMap'
                                 Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Arg_toList {inst_a : Type}
@@ -648,8 +740,12 @@ Program Instance Foldable__Arg {a : Type} : Data.Foldable.Foldable (Arg a) :=
              Foldable__Arg_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Arg_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__Arg_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Arg_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) => Foldable__Arg_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Arg_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) => Foldable__Arg_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__Arg_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__Arg_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -898,6 +994,30 @@ Program Instance Functor__First : GHC.Base.Functor First :=
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, First m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__First_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__First_foldr
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> First a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__First_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+
+#[local] Definition Foldable__First_foldl'
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> First a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__First_foldr (fun arg_0__ arg_1__ =>
+                                 match arg_0__, arg_1__ with
+                                 | x, k => (fun '(z) => GHC.Prim.seq z (k (f z x)))
+                                 end) (GHC.Base.id) xs z0.
+
+#[local] Definition Foldable__First_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> First a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__First_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__First_foldl
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> First a -> b :=
   fun {b : Type} {a : Type} =>
@@ -907,20 +1027,23 @@ Program Instance Functor__First : GHC.Base.Functor First :=
                                                                 (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                  GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__First_foldr
+#[local] Definition Foldable__First_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> First a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__First_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+    fun f z0 =>
+      fun xs =>
+        Foldable__First_foldl (fun arg_0__ arg_1__ =>
+                                 match arg_0__, arg_1__ with
+                                 | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                                 end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__First_length
    : forall {a : Type}, First a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__First_foldl (fun arg_0__ arg_1__ =>
-                             match arg_0__, arg_1__ with
-                             | c, _ => c GHC.Num.+ #1
-                             end) #0.
+    Foldable__First_foldl' (fun arg_0__ arg_1__ =>
+                              match arg_0__, arg_1__ with
+                              | c, _ => c GHC.Num.+ #1
+                              end) #0.
 
 #[local] Definition Foldable__First_null : forall {a : Type}, First a -> bool :=
   fun {a : Type} => Foldable__First_foldr (fun arg_0__ arg_1__ => false) true.
@@ -929,13 +1052,13 @@ Program Instance Functor__First : GHC.Base.Functor First :=
    : forall {a : Type}, forall `{GHC.Num.Num a}, First a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__First_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__First_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__First_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, First a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__First_foldMap Data.SemigroupInternal.Mk_Sum).
+                               (Foldable__First_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__First_toList
    : forall {a : Type}, First a -> list a :=
@@ -949,8 +1072,12 @@ Program Instance Foldable__First : Data.Foldable.Foldable First :=
              Foldable__First_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__First_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__First_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__First_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) => Foldable__First_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__First_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) => Foldable__First_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__First_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__First_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -1109,6 +1236,30 @@ Program Instance Functor__Last : GHC.Base.Functor Last :=
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, Last m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Last_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__Last_foldr
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Last a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__Last_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+
+#[local] Definition Foldable__Last_foldl'
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Last a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__Last_foldr (fun arg_0__ arg_1__ =>
+                                match arg_0__, arg_1__ with
+                                | x, k => (fun '(z) => GHC.Prim.seq z (k (f z x)))
+                                end) (GHC.Base.id) xs z0.
+
+#[local] Definition Foldable__Last_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Last a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Last_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__Last_foldl
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Last a -> b :=
   fun {b : Type} {a : Type} =>
@@ -1118,20 +1269,23 @@ Program Instance Functor__Last : GHC.Base.Functor Last :=
                                                                (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                 GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__Last_foldr
+#[local] Definition Foldable__Last_foldr'
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Last a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Last_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+    fun f z0 =>
+      fun xs =>
+        Foldable__Last_foldl (fun arg_0__ arg_1__ =>
+                                match arg_0__, arg_1__ with
+                                | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                                end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__Last_length
    : forall {a : Type}, Last a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__Last_foldl (fun arg_0__ arg_1__ =>
-                            match arg_0__, arg_1__ with
-                            | c, _ => c GHC.Num.+ #1
-                            end) #0.
+    Foldable__Last_foldl' (fun arg_0__ arg_1__ =>
+                             match arg_0__, arg_1__ with
+                             | c, _ => c GHC.Num.+ #1
+                             end) #0.
 
 #[local] Definition Foldable__Last_null : forall {a : Type}, Last a -> bool :=
   fun {a : Type} => Foldable__Last_foldr (fun arg_0__ arg_1__ => false) true.
@@ -1140,13 +1294,13 @@ Program Instance Functor__Last : GHC.Base.Functor Last :=
    : forall {a : Type}, forall `{GHC.Num.Num a}, Last a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Last_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__Last_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Last_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, Last a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Coq.Program.Basics.compose Data.SemigroupInternal.getSum (Foldable__Last_foldMap
-                                Data.SemigroupInternal.Mk_Sum).
+    Coq.Program.Basics.compose Data.SemigroupInternal.getSum
+                               (Foldable__Last_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Last_toList
    : forall {a : Type}, Last a -> list a :=
@@ -1160,8 +1314,12 @@ Program Instance Foldable__Last : Data.Foldable.Foldable Last :=
              Foldable__Last_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Last_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__Last_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Last_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) => Foldable__Last_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Last_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) => Foldable__Last_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__Last_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__Last_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -1345,8 +1503,9 @@ Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
      Data.Bifoldable.bifoldl__ Data.Bifoldable.bifoldr__ Data.Bifunctor.Bifunctor
      Data.Bifunctor.bimap__ Data.Bifunctor.first__ Data.Bifunctor.second__
      Data.Bitraversable.Bitraversable Data.Bitraversable.bitraverse__
-     Data.Foldable.Foldable Data.Foldable.foldMap__ Data.Foldable.fold__
-     Data.Foldable.foldl__ Data.Foldable.foldr__ Data.Foldable.length__
+     Data.Foldable.Foldable Data.Foldable.foldMap'__ Data.Foldable.foldMap__
+     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
+     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
      Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
      Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.SemigroupInternal.Endo
      Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
@@ -1365,6 +1524,6 @@ Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
      GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg__
      GHC.Base.op_zlztzg____ GHC.Base.op_zsze____ GHC.Base.op_ztzg__
      GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return___
-     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
+     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.seq
      HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
 *)

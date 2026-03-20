@@ -21,6 +21,7 @@ Require Data.Traversable.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Num.
+Require GHC.Prim.
 Require GHC.Tuple.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -136,6 +137,39 @@ Program Instance Functor__Product {f : Type -> Type} {g : Type -> Type}
      forall `{GHC.Base.Monoid m}, Product inst_f inst_g m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__Product_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__Product_foldr {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> Product inst_f inst_g a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__Product_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+
+#[local] Definition Foldable__Product_foldl' {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> Product inst_f inst_g a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__Product_foldr (fun arg_0__ arg_1__ =>
+                                   match arg_0__, arg_1__ with
+                                   | x, k => (fun '(z) => GHC.Prim.seq z (k (f z x)))
+                                   end) (GHC.Base.id) xs z0.
+
+#[local] Definition Foldable__Product_foldMap' {inst_f : Type -> Type} {inst_g
+   : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
+  inst_g}
+   : forall {m : Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monoid m}, (a -> m) -> Product inst_f inst_g a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Product_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__Product_foldl {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
@@ -148,25 +182,28 @@ Program Instance Functor__Product {f : Type -> Type} {g : Type -> Type}
                                                                   (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                    GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__Product_foldr {inst_f : Type -> Type} {inst_g
+#[local] Definition Foldable__Product_foldr' {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> Product inst_f inst_g a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__Product_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+    fun f z0 =>
+      fun xs =>
+        Foldable__Product_foldl (fun arg_0__ arg_1__ =>
+                                   match arg_0__, arg_1__ with
+                                   | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                                   end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__Product_length {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, Product inst_f inst_g a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__Product_foldl (fun arg_0__ arg_1__ =>
-                               match arg_0__, arg_1__ with
-                               | c, _ => c GHC.Num.+ #1
-                               end) #0.
+    Foldable__Product_foldl' (fun arg_0__ arg_1__ =>
+                                match arg_0__, arg_1__ with
+                                | c, _ => c GHC.Num.+ #1
+                                end) #0.
 
 #[local] Definition Foldable__Product_null {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -180,7 +217,7 @@ Program Instance Functor__Product {f : Type -> Type} {g : Type -> Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Product inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__Product_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__Product_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Product_sum {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -188,7 +225,7 @@ Program Instance Functor__Product {f : Type -> Type} {g : Type -> Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Product inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__Product_foldMap Data.SemigroupInternal.Mk_Sum).
+                               (Foldable__Product_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Product_toList {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -206,8 +243,14 @@ Program Instance Foldable__Product {f : Type -> Type} {g : Type -> Type}
              Foldable__Product_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Product_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__Product_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Product_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) =>
+             Foldable__Product_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Product_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) =>
+             Foldable__Product_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__Product_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__Product_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -485,8 +528,9 @@ Program Instance Monoid__Product {k : Type} {f : k -> Type} {a : k} {g
      Type andb bool comparison false list op_zt__ pair true
      Control.Monad.Zip.MonadZip Control.Monad.Zip.munzip__ Control.Monad.Zip.mzipWith
      Control.Monad.Zip.mzipWith__ Control.Monad.Zip.mzip__ Coq.Program.Basics.compose
-     Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl__ Data.Foldable.foldr__
+     Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
+     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
      Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
      Data.Foldable.sum__ Data.Foldable.toList__ Data.Functor.Classes.Eq1
      Data.Functor.Classes.Ord1 Data.Functor.Classes.liftCompare
@@ -507,5 +551,5 @@ Program Instance Monoid__Product {k : Type} {f : k -> Type} {a : k} {g
      GHC.Base.op_zlzd____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
      GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
      GHC.Base.pure__ GHC.Base.return___ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zp__ GHC.Tuple.pair2
+     GHC.Num.op_zp__ GHC.Prim.seq GHC.Tuple.pair2
 *)

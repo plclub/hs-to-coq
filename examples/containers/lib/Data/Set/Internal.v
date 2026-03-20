@@ -366,6 +366,27 @@ Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
            end in
       go t.
 
+#[global] Definition foldl' {a : Type} {b : Type}
+   : (a -> b -> a) -> a -> Set_ b -> a :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Tip => z'
+         | z', Bin _ x l r => let z'' := go z' l in go (f z'' x) r
+         end in
+    go z.
+
+#[local] Definition Foldable__Set__foldl'
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Set_ a -> b :=
+  fun {b : Type} {a : Type} => foldl'.
+
+#[local] Definition Foldable__Set__foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> Set_ a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__Set__foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[global] Definition foldl {a : Type} {b : Type}
    : (a -> b -> a) -> a -> Set_ b -> a :=
   fun f z =>
@@ -394,6 +415,20 @@ Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
    : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Set_ a -> b :=
   fun {a : Type} {b : Type} => foldr.
 
+#[global] Definition foldr' {a : Type} {b : Type}
+   : (a -> b -> b) -> b -> Set_ a -> b :=
+  fun f z =>
+    let fix go arg_0__ arg_1__
+      := match arg_0__, arg_1__ with
+         | z', Tip => z'
+         | z', Bin _ x l r => go (f x (go z' r)) l
+         end in
+    go z.
+
+#[local] Definition Foldable__Set__foldr'
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> Set_ a -> b :=
+  fun {a : Type} {b : Type} => foldr'.
+
 #[local] Definition Foldable__Set__length
    : forall {a : Type}, Set_ a -> GHC.Num.Int :=
   fun {a : Type} => size.
@@ -403,16 +438,6 @@ Program Instance Monoid__Set_ {a : Type} `{GHC.Base.Ord a}
 
 #[local] Definition Foldable__Set__null : forall {a : Type}, Set_ a -> bool :=
   fun {a : Type} => null.
-
-#[global] Definition foldl' {a : Type} {b : Type}
-   : (a -> b -> a) -> a -> Set_ b -> a :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Tip => z'
-         | z', Bin _ x l r => let z'' := go z' l in go (f z'' x) r
-         end in
-    go z.
 
 #[local] Definition Foldable__Set__product
    : forall {a : Type}, forall `{GHC.Num.Num a}, Set_ a -> a :=
@@ -439,8 +464,12 @@ Program Instance Foldable__Set_ : Data.Foldable.Foldable Set_ :=
              Foldable__Set__fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__Set__foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__Set__foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__Set__foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) => Foldable__Set__foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__Set__foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) => Foldable__Set__foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__Set__length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__Set__null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -1001,16 +1030,6 @@ Fixpoint mapMonotonic {a : Type} {b : Type} (arg_0__ : a -> b) (arg_1__
    : (a -> b -> b) -> b -> Set_ a -> b :=
   foldr.
 
-#[global] Definition foldr' {a : Type} {b : Type}
-   : (a -> b -> b) -> b -> Set_ a -> b :=
-  fun f z =>
-    let fix go arg_0__ arg_1__
-      := match arg_0__, arg_1__ with
-         | z', Tip => z'
-         | z', Bin _ x l r => go (f x (go z' r)) l
-         end in
-    go z.
-
 #[global] Definition elems {a : Type} : Set_ a -> list a :=
   toAscList.
 
@@ -1360,8 +1379,9 @@ End Notations.
      false id list negb nil op_zt__ option orb pair prod set_size true
      Data.Bits.shiftL Data.Bits.shiftR Data.Either.Either Data.Either.Left
      Data.Either.Right Data.Foldable.Foldable Data.Foldable.foldMap
-     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'
-     Data.Foldable.foldl__ Data.Foldable.foldr__ Data.Foldable.length__
+     Data.Foldable.foldMap'__ Data.Foldable.foldMap__ Data.Foldable.fold__
+     Data.Foldable.foldl' Data.Foldable.foldl'__ Data.Foldable.foldl__
+     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
      Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
      Data.Foldable.toList__ Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1
      Data.Functor.Classes.liftCompare Data.Functor.Classes.liftCompare__

@@ -19,6 +19,7 @@ Require Data.SemigroupInternal.
 Require Data.Traversable.
 Require GHC.Base.
 Require GHC.Num.
+Require GHC.Prim.
 Import Data.Functor.Notations.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -113,6 +114,27 @@ Fixpoint foldrOL {a : Type} {b : Type} (arg_0__ : a -> b -> b) (arg_1__ : b)
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, OrdList m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__OrdList_foldMap GHC.Base.id.
 
+Fixpoint foldlOL {b : Type} {a : Type} (arg_0__ : b -> a -> b) (arg_1__ : b)
+                 (arg_2__ : OrdList a) : b
+  := match arg_0__, arg_1__, arg_2__ with
+     | _, z, None => z
+     | k, z, One x => k z x
+     | k, z, Cons x xs => let z' := (k z x) in foldlOL k z' xs
+     | k, z, Snoc xs x => let z' := (foldlOL k z xs) in k z' x
+     | k, z, Two b1 b2 => let z' := (foldlOL k z b1) in foldlOL k z' b2
+     end.
+
+#[local] Definition Foldable__OrdList_foldl'
+   : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> OrdList a -> b :=
+  fun {b : Type} {a : Type} => foldlOL.
+
+#[local] Definition Foldable__OrdList_foldMap'
+   : forall {m : Type},
+     forall {a : Type}, forall `{GHC.Base.Monoid m}, (a -> m) -> OrdList a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__OrdList_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__OrdList_foldl
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> OrdList a -> b :=
   fun {b : Type} {a : Type} =>
@@ -121,6 +143,16 @@ Fixpoint foldrOL {a : Type} {b : Type} (arg_0__ : a -> b -> b) (arg_1__ : b)
                                       (Foldable__OrdList_foldMap (Data.SemigroupInternal.Mk_Dual GHC.Base.∘
                                                                   (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                    GHC.Base.flip f)) t)) z.
+
+#[local] Definition Foldable__OrdList_foldr'
+   : forall {a : Type}, forall {b : Type}, (a -> b -> b) -> b -> OrdList a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__OrdList_foldl (fun arg_0__ arg_1__ =>
+                                   match arg_0__, arg_1__ with
+                                   | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                                   end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__OrdList_length
    : forall {a : Type}, OrdList a -> GHC.Num.Int :=
@@ -137,13 +169,13 @@ Fixpoint foldrOL {a : Type} {b : Type} (arg_0__ : a -> b -> b) (arg_1__ : b)
    : forall {a : Type}, forall `{GHC.Num.Num a}, OrdList a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__OrdList_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__OrdList_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__OrdList_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, OrdList a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__OrdList_foldMap Data.SemigroupInternal.Mk_Sum).
+                               (Foldable__OrdList_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__OrdList_toList
    : forall {a : Type}, OrdList a -> list a :=
@@ -157,8 +189,14 @@ Program Instance Foldable__OrdList : Data.Foldable.Foldable OrdList :=
              Foldable__OrdList_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__OrdList_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__OrdList_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__OrdList_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) =>
+             Foldable__OrdList_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__OrdList_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) =>
+             Foldable__OrdList_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__OrdList_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__OrdList_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -278,16 +316,6 @@ Program Instance Traversable__OrdList : Data.Traversable.Traversable OrdList :=
 
 (* Skipping definition `OrdList.lengthOL' *)
 
-Fixpoint foldlOL {b : Type} {a : Type} (arg_0__ : b -> a -> b) (arg_1__ : b)
-                 (arg_2__ : OrdList a) : b
-  := match arg_0__, arg_1__, arg_2__ with
-     | _, z, None => z
-     | k, z, One x => k z x
-     | k, z, Cons x xs => let z' := (k z x) in foldlOL k z' xs
-     | k, z, Snoc xs x => let z' := (foldlOL k z xs) in k z' x
-     | k, z, Two b1 b2 => let z' := (foldlOL k z b1) in foldlOL k z' b2
-     end.
-
 Fixpoint reverseOL {a : Type} (arg_0__ : OrdList a) : OrdList a
   := match arg_0__ with
      | None => None
@@ -328,8 +356,9 @@ Fixpoint strictlyOrdOL {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__
 
 (* External variables:
      Eq Lt Type andb bool comparison cons false list nil true
-     Coq.Program.Basics.compose Data.Foldable.Foldable Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl__ Data.Foldable.foldr
+     Coq.Program.Basics.compose Data.Foldable.Foldable Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
+     Data.Foldable.foldl__ Data.Foldable.foldr Data.Foldable.foldr'__
      Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
      Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
      Data.Functor.op_zlzdzg__ Data.SemigroupInternal.Mk_Dual
@@ -345,5 +374,5 @@ Fixpoint strictlyOrdOL {a : Type} `{GHC.Base.Ord a} (arg_0__ arg_1__
      GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__ GHC.Base.op_z2218U__
      GHC.Base.op_zeze__ GHC.Base.op_zlzd____ GHC.Base.op_zlzlzgzg__
      GHC.Base.op_zlzlzgzg____ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zp__
+     GHC.Num.op_zp__ GHC.Prim.seq
 *)

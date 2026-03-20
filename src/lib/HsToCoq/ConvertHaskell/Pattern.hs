@@ -197,8 +197,8 @@ convertPat SumPat{} =
   convUnsupported "sum type patterns"
 
 #if __GLASGOW_HASKELL__ >= 806
-convertPat SigPat{} =
-  convUnsupported "`SigPat' constructor"
+convertPat (SigPat NOEXTP p _) =
+  convertLPat p
 convertPat XPat{} =
   convUnsupported "`XPat' constructor"  -- Can't use noExtCon to dispatch this on GHC 8.8
 #else

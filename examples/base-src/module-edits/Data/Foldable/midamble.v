@@ -17,16 +17,32 @@ Definition default_foldable {f:Type -> Type}
            let f' :=  fun  x  k  z => GHC.Base.op_zdzn__ k (f z x)
            in foldr _ _ f' GHC.Base.id xs z0)
   in
+  let foldr' : forall a b, (a -> b -> b) -> b -> f a -> b :=
+      (fun a b =>
+         fun f  z0  xs =>
+           let f' :=  fun  k  x  z => GHC.Base.op_zdzn__ k (f x z)
+           in foldl _ _ f' GHC.Base.id xs z0)
+  in
+  let foldMap' : forall m a, forall (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m), (a -> m) -> f a -> m :=
+      (fun m a S M =>
+         fun f => foldl' _ _ (fun acc x => GHC.Base.op_zlzlzgzg__ acc (f x)) GHC.Base.mempty)
+  in
   Foldable__Dict_Build
     f
     (* fold *)
     (fun m (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) => foldMap _ _ _ _ GHC.Base.id)
     (* foldMap *)
     (@foldMap)
+    (* foldMap' *)
+    (@foldMap')
     (* foldl *)
     (@foldl)
+    (* foldl' *)
+    (@foldl')
     (* foldr  *)
     (@foldr)
+    (* foldr' *)
+    (@foldr')
     (* length *)
     (fun a => @foldl' _ a (fun c  _ => GHC.Num.op_zp__ c (GHC.Num.fromInteger 1))
                     (GHC.Num.fromInteger 0))
@@ -63,4 +79,3 @@ Definition default_foldable_foldr (f : Type -> Type)
                                         f) GHC.Base.mempty
   in
   default_foldable foldMap (fun a b => foldr).
-

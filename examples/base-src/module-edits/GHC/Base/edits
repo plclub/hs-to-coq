@@ -155,7 +155,7 @@ skip GHC.Base.Monoid__arrow
 skip GHC.Base.Alternative__arrow
 skip GHC.Base.MonadPlus__arrow
 
-# <* operator: default definition uses SigPat which hs-to-coq can't translate.
+# <* operator: Coq operator parsing issue (<* parses as < then *).
 # Add a standalone definition equivalent to liftA2 const.
 add GHC.Base Definition GHC.Base.op_zlzt__ `{g__0__ : Applicative f}
    : forall {a : Type}, forall {b : Type}, f a -> f b -> f a :=

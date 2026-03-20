@@ -19,6 +19,7 @@ Require Data.Map.Internal.
 Require Data.SemigroupInternal.
 Require GHC.Base.
 Require GHC.Num.
+Require GHC.Prim.
 Require IntMap.
 Require Literal.
 Require UniqFM.
@@ -367,6 +368,36 @@ Program Instance TrieMap__MaybeMap {m : Type -> Type} `{TrieMap m}
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, MaybeMap inst_m m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__MaybeMap_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__MaybeMap_foldr {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> MaybeMap inst_m a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__MaybeMap_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+
+#[local] Definition Foldable__MaybeMap_foldl' {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> MaybeMap inst_m a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__MaybeMap_foldr (fun arg_0__ arg_1__ =>
+                                    match arg_0__, arg_1__ with
+                                    | x, k => (fun '(z) => GHC.Prim.seq z (k (f z x)))
+                                    end) (GHC.Base.id) xs z0.
+
+#[local] Definition Foldable__MaybeMap_foldMap' {inst_m : Type -> Type}
+  `{TrieMap inst_m}
+   : forall {m : Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monoid m}, (a -> m) -> MaybeMap inst_m a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__MaybeMap_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__MaybeMap_foldl {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {b : Type},
@@ -378,23 +409,26 @@ Program Instance TrieMap__MaybeMap {m : Type -> Type} `{TrieMap m}
                                                                    (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                     GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__MaybeMap_foldr {inst_m : Type -> Type} `{TrieMap
+#[local] Definition Foldable__MaybeMap_foldr' {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> MaybeMap inst_m a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__MaybeMap_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+    fun f z0 =>
+      fun xs =>
+        Foldable__MaybeMap_foldl (fun arg_0__ arg_1__ =>
+                                    match arg_0__, arg_1__ with
+                                    | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                                    end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__MaybeMap_length {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {a : Type}, MaybeMap inst_m a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__MaybeMap_foldl (fun arg_0__ arg_1__ =>
-                                match arg_0__, arg_1__ with
-                                | c, _ => c GHC.Num.+ #1
-                                end) #0.
+    Foldable__MaybeMap_foldl' (fun arg_0__ arg_1__ =>
+                                 match arg_0__, arg_1__ with
+                                 | c, _ => c GHC.Num.+ #1
+                                 end) #0.
 
 #[local] Definition Foldable__MaybeMap_null {inst_m : Type -> Type} `{TrieMap
   inst_m}
@@ -406,14 +440,14 @@ Program Instance TrieMap__MaybeMap {m : Type -> Type} `{TrieMap m}
    : forall {a : Type}, forall `{GHC.Num.Num a}, MaybeMap inst_m a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__MaybeMap_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__MaybeMap_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__MaybeMap_sum {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {a : Type}, forall `{GHC.Num.Num a}, MaybeMap inst_m a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__MaybeMap_foldMap Data.SemigroupInternal.Mk_Sum).
+                               (Foldable__MaybeMap_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__MaybeMap_toList {inst_m : Type -> Type} `{TrieMap
   inst_m}
@@ -429,8 +463,14 @@ Program Instance Foldable__MaybeMap {m : Type -> Type} `{TrieMap m}
              Foldable__MaybeMap_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__MaybeMap_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__MaybeMap_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__MaybeMap_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) =>
+             Foldable__MaybeMap_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__MaybeMap_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) =>
+             Foldable__MaybeMap_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__MaybeMap_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__MaybeMap_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -514,6 +554,36 @@ Program Instance TrieMap__ListMap {m : Type -> Type} `{TrieMap m}
    : forall {m : Type}, forall `{GHC.Base.Monoid m}, ListMap inst_m m -> m :=
   fun {m : Type} `{GHC.Base.Monoid m} => Foldable__ListMap_foldMap GHC.Base.id.
 
+#[local] Definition Foldable__ListMap_foldr {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {a : Type},
+     forall {b : Type}, (a -> b -> b) -> b -> ListMap inst_m a -> b :=
+  fun {a : Type} {b : Type} =>
+    fun f z t =>
+      Data.SemigroupInternal.appEndo (Foldable__ListMap_foldMap
+                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+
+#[local] Definition Foldable__ListMap_foldl' {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {b : Type},
+     forall {a : Type}, (b -> a -> b) -> b -> ListMap inst_m a -> b :=
+  fun {b : Type} {a : Type} =>
+    fun f z0 =>
+      fun xs =>
+        Foldable__ListMap_foldr (fun arg_0__ arg_1__ =>
+                                   match arg_0__, arg_1__ with
+                                   | x, k => (fun '(z) => GHC.Prim.seq z (k (f z x)))
+                                   end) (GHC.Base.id) xs z0.
+
+#[local] Definition Foldable__ListMap_foldMap' {inst_m : Type -> Type} `{TrieMap
+  inst_m}
+   : forall {m : Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monoid m}, (a -> m) -> ListMap inst_m a -> m :=
+  fun {m : Type} {a : Type} `{GHC.Base.Monoid m} =>
+    fun f =>
+      Foldable__ListMap_foldl' (fun acc a => acc GHC.Base.<<>> f a) GHC.Base.mempty.
+
 #[local] Definition Foldable__ListMap_foldl {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {b : Type},
@@ -525,23 +595,26 @@ Program Instance TrieMap__ListMap {m : Type -> Type} `{TrieMap m}
                                                                   (Data.SemigroupInternal.Mk_Endo GHC.Base.∘
                                                                    GHC.Base.flip f)) t)) z.
 
-#[local] Definition Foldable__ListMap_foldr {inst_m : Type -> Type} `{TrieMap
+#[local] Definition Foldable__ListMap_foldr' {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {a : Type},
      forall {b : Type}, (a -> b -> b) -> b -> ListMap inst_m a -> b :=
   fun {a : Type} {b : Type} =>
-    fun f z t =>
-      Data.SemigroupInternal.appEndo (Foldable__ListMap_foldMap
-                                      (Coq.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+    fun f z0 =>
+      fun xs =>
+        Foldable__ListMap_foldl (fun arg_0__ arg_1__ =>
+                                   match arg_0__, arg_1__ with
+                                   | k, x => (fun '(z) => GHC.Prim.seq z (k (f x z)))
+                                   end) (GHC.Base.id) xs z0.
 
 #[local] Definition Foldable__ListMap_length {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {a : Type}, ListMap inst_m a -> GHC.Num.Int :=
   fun {a : Type} =>
-    Foldable__ListMap_foldl (fun arg_0__ arg_1__ =>
-                               match arg_0__, arg_1__ with
-                               | c, _ => c GHC.Num.+ #1
-                               end) #0.
+    Foldable__ListMap_foldl' (fun arg_0__ arg_1__ =>
+                                match arg_0__, arg_1__ with
+                                | c, _ => c GHC.Num.+ #1
+                                end) #0.
 
 #[local] Definition Foldable__ListMap_null {inst_m : Type -> Type} `{TrieMap
   inst_m}
@@ -553,14 +626,14 @@ Program Instance TrieMap__ListMap {m : Type -> Type} `{TrieMap m}
    : forall {a : Type}, forall `{GHC.Num.Num a}, ListMap inst_m a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getProduct
-                               (Foldable__ListMap_foldMap Data.SemigroupInternal.Mk_Product).
+                               (Foldable__ListMap_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__ListMap_sum {inst_m : Type -> Type} `{TrieMap
   inst_m}
    : forall {a : Type}, forall `{GHC.Num.Num a}, ListMap inst_m a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
     Coq.Program.Basics.compose Data.SemigroupInternal.getSum
-                               (Foldable__ListMap_foldMap Data.SemigroupInternal.Mk_Sum).
+                               (Foldable__ListMap_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__ListMap_toList {inst_m : Type -> Type} `{TrieMap
   inst_m}
@@ -576,8 +649,14 @@ Program Instance Foldable__ListMap {m : Type -> Type} `{TrieMap m}
              Foldable__ListMap_fold ;
            Data.Foldable.foldMap__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
              Foldable__ListMap_foldMap ;
+           Data.Foldable.foldMap'__ := fun (m : Type) (a : Type) `(GHC.Base.Monoid m) =>
+             Foldable__ListMap_foldMap' ;
            Data.Foldable.foldl__ := fun (b : Type) (a : Type) => Foldable__ListMap_foldl ;
+           Data.Foldable.foldl'__ := fun (b : Type) (a : Type) =>
+             Foldable__ListMap_foldl' ;
            Data.Foldable.foldr__ := fun (a : Type) (b : Type) => Foldable__ListMap_foldr ;
+           Data.Foldable.foldr'__ := fun (a : Type) (b : Type) =>
+             Foldable__ListMap_foldr' ;
            Data.Foldable.length__ := fun (a : Type) => Foldable__ListMap_length ;
            Data.Foldable.null__ := fun (a : Type) => Foldable__ListMap_null ;
            Data.Foldable.product__ := fun (a : Type) `(GHC.Num.Num a) =>
@@ -655,8 +734,9 @@ End Notations.
 
 (* External variables:
      Key None Some Type bool false list option true Coq.Program.Basics.compose
-     Data.Foldable.Foldable Data.Foldable.foldMap__ Data.Foldable.fold__
-     Data.Foldable.foldl__ Data.Foldable.foldr__ Data.Foldable.length__
+     Data.Foldable.Foldable Data.Foldable.foldMap'__ Data.Foldable.foldMap__
+     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
+     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
      Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
      Data.Foldable.toList__ Data.IntSet.Internal.Key Data.Map.Internal.Map
      Data.Map.Internal.alter Data.Map.Internal.empty Data.Map.Internal.filter
@@ -668,8 +748,8 @@ End Notations.
      GHC.Base.Ord GHC.Base.build' GHC.Base.const GHC.Base.flip GHC.Base.fmap
      GHC.Base.fmap__ GHC.Base.id GHC.Base.mempty GHC.Base.op_z2218U__
      GHC.Base.op_zlzd____ GHC.Base.op_zlzlzgzg__ GHC.Num.Int GHC.Num.Num
-     GHC.Num.fromInteger GHC.Num.op_zp__ IntMap.IntMap IntMap.alter IntMap.empty
-     IntMap.filter IntMap.foldr IntMap.lookup Literal.Literal UniqFM.UniqFM
-     UniqFM.alterUFM UniqFM.emptyUFM UniqFM.filterUFM UniqFM.lookupUFM
+     GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.seq IntMap.IntMap IntMap.alter
+     IntMap.empty IntMap.filter IntMap.foldr IntMap.lookup Literal.Literal
+     UniqFM.UniqFM UniqFM.alterUFM UniqFM.emptyUFM UniqFM.filterUFM UniqFM.lookupUFM
      UniqFM.nonDetFoldUFM Unique.Uniquable
 *)
