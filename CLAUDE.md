@@ -116,7 +116,7 @@ These must use old versions from git master with manual fixes:
 - `Data/Functor/Classes` — hs-to-coq generates valid output, but Coq can't compile it: GHC 9.10 added quantified superclass constraints to Eq2/Ord2 (`forall a. Eq a => Eq1 (f a)`) that Coq can't resolve in the CPS encoding. The manual version has the same compilation failure. Nothing downstream imports Eq2/Ord2 so this is tolerated.
 
 Previously broken modules now regenerable:
-- `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity` — fixed via `DerivSkipInfo` filtering + parsed-AST standalone-deriving stripping + `skip method` default-binding filtering in `Class.hs`
+- `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity` — fixed via `DerivSkipInfo` filtering + parsed-AST standalone-deriving stripping + SigPat support in `Pattern.hs`
 - `Control/Category`, `Control/Arrow` — fixed by stripping invisible RuntimeRep args from `(->)` TyCon in Type.hs and flexible type matching in lookupInstance
 - **`(->)` TyCon in GHC 9.10**: `FunTyCon` reports 0 `tyConBinders` (unlike regular TyCons). RuntimeRep args appear as regular type args. `Type.hs` handles this by detecting `GHC.Prim.arrow` with null binders and passing empty args to `convertTyConApp`. `lookupInstance` uses `termHead` for flexible matching (e.g., `arrow` matches `arrow LiftedRep LiftedRep`).
 - Identity and Traversable now fully auto-generated (edits handle coerce issues)
@@ -134,7 +134,6 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **`GHC.Prim.coerce` with abstract types**: Coq can't resolve `Coercible` for newtypes with abstract type vars. Fix: replace with explicit pattern matching
 - **`rightSection`**: GHC 9.10 desugars `(op x)` to `rightSection op x`. Defined in `base/GHC/Prim.v`. Operators with invalid Coq chars (like `$`) are rendered as z-encoded names (e.g. `op_zd__`) instead of notation form. Proofs involving `rightSection` need `unfold GHC.Prim.rightSection` before `lia`
 - **`<*` operator ambiguity**: `GHC.Base.<*` parses as `GHC.Base.<` followed by `*`. Excluded from `qualidHasValidCoqOp` in `Gallina/Util.hs` — renders as `op_zlzt__` instead. Definition added via `add` directive in base-src edits.
-- **`foldMap'` in Foldable**: GHC 9.10 added this to the Foldable class. Old restored .v files need the field added manually
 
 ### Edits system gotchas
 - **`skip` overrides `redefine`**: In `definitionTask` (Monad.hs), `skip` is checked first. Remove `skip` directives before adding `redefine` for the same function.
