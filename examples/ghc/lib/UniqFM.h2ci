@@ -1,1 +1,17 @@
-{}
+constructorFields:
+  UniqFM.Added: NonRecordFields 0
+  UniqFM.Changed: NonRecordFields 0
+  UniqFM.Mk_NonDetUniqFM: RecordFields [Qualified "UniqFM" "getNonDet"]
+  UniqFM.Removed: NonRecordFields 0
+  UniqFM.UFM: NonRecordFields 0
+constructorTypes:
+  UniqFM.Added: Qualified "UniqFM" "Edit"
+  UniqFM.Changed: Qualified "UniqFM" "Edit"
+  UniqFM.Mk_NonDetUniqFM: Qualified "UniqFM" "NonDetUniqFM"
+  UniqFM.Removed: Qualified "UniqFM" "Edit"
+  UniqFM.UFM: Qualified "UniqFM" "UniqFM"
+constructors:
+  UniqFM.Edit: '[Qualified "UniqFM" "Removed",Qualified "UniqFM" "Added",Qualified
+    "UniqFM" "Changed"]'
+  UniqFM.NonDetUniqFM: '[Qualified "UniqFM" "Mk_NonDetUniqFM"]'
+  UniqFM.UniqFM: '[Qualified "UniqFM" "UFM"]'

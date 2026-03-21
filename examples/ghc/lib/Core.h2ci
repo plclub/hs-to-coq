@@ -54,6 +54,7 @@ constructorFields:
   Core.DoubleElemRep: NonRecordFields 0
   Core.DoubleRep: NonRecordFields 0
   Core.Dunno: NonRecordFields 0
+  Core.EmptyRuleInfo: NonRecordFields 0
   Core.ExnOrDiv: NonRecordFields 0
   Core.ExpandsSyn: NonRecordFields 3
   Core.Exported: NonRecordFields 0
@@ -284,6 +285,7 @@ constructorTypes:
   Core.DoubleElemRep: Qualified "Core" "PrimElemRep"
   Core.DoubleRep: Qualified "Core" "PrimRep"
   Core.Dunno: Qualified "Core" "Divergence"
+  Core.EmptyRuleInfo: Qualified "Core" "RuleInfo"
   Core.ExnOrDiv: Qualified "Core" "Divergence"
   Core.ExpandsSyn: Qualified "Core" "ExpandSynResult"
   Core.Exported: Qualified "Core" "ExportFlag"
@@ -509,6 +511,7 @@ constructors:
     "Core" "VecCount",Qualified "Core" "VecElem",Qualified "Core" "Levity"]'
   Core.RecSelParent: '[Qualified "Core" "RecSelData",Qualified "Core" "RecSelPatSyn"]'
   Core.RnEnv2: '[Qualified "Core" "RV2"]'
+  Core.RuleInfo: '[Qualified "Core" "EmptyRuleInfo"]'
   Core.Scaled: '[Qualified "Core" "Mk_Scaled"]'
   Core.Specificity: '[Qualified "Core" "InferredSpec",Qualified "Core" "SpecifiedSpec"]'
   Core.StrictnessMark: '[Qualified "Core" "MarkedStrict",Qualified "Core" "NotMarkedStrict"]'

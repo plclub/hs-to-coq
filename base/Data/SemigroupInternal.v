@@ -21,7 +21,6 @@ Implicit Type inst_k: unit_class.
 
 Require GHC.Base.
 Require GHC.Num.
-Require GHC.Prim.
 Require HsToCoq.Err.
 Require HsToCoq.Unpeel.
 Import GHC.Base.Notations.
@@ -100,18 +99,21 @@ Instance Unpeel_Alt (k : Type) (f : k -> Type) (a : k) : HsToCoq.Unpeel.Unpeel (
   `{GHC.Base.Monad inst_f}
    : forall {a : Type},
      forall {b : Type}, Alt inst_f a -> Alt inst_f b -> Alt inst_f b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (_GHC.Base.>>_).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Alt (_GHC.Base.>>_ (getAlt arg_0__) (getAlt arg_1__)).
 
 #[local] Definition Monad__Alt_op_zgzgze__ {inst_f : Type -> Type}
   `{GHC.Base.Monad inst_f}
    : forall {a : Type},
      forall {b : Type}, Alt inst_f a -> (a -> Alt inst_f b) -> Alt inst_f b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (_GHC.Base.>>=_).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      Mk_Alt (_GHC.Base.>>=_ (getAlt arg_0__) (fun v_0__ => getAlt (arg_1__ v_0__))).
 
 #[local] Definition Monad__Alt_return_ {inst_f : Type -> Type} `{GHC.Base.Monad
   inst_f}
    : forall {a : Type}, a -> Alt inst_f a :=
-  fun {a : Type} => GHC.Prim.coerce (GHC.Base.return_).
+  fun {a : Type} => fun arg_0__ => Mk_Alt (GHC.Base.return_ arg_0__).
 
 #[local] Definition Applicative__Alt_liftA2 {inst_f : Type -> Type}
   `{GHC.Base.Applicative inst_f}
@@ -119,35 +121,42 @@ Instance Unpeel_Alt (k : Type) (f : k -> Type) (a : k) : HsToCoq.Unpeel.Unpeel (
      forall {b : Type},
      forall {c : Type},
      (a -> b -> c) -> Alt inst_f a -> Alt inst_f b -> Alt inst_f c :=
-  fun {a : Type} {b : Type} {c : Type} => GHC.Prim.coerce (GHC.Base.liftA2).
+  fun {a : Type} {b : Type} {c : Type} =>
+    fun arg_0__ arg_1__ arg_2__ =>
+      Mk_Alt (GHC.Base.liftA2 arg_0__ (getAlt arg_1__) (getAlt arg_2__)).
 
 #[local] Definition Applicative__Alt_op_zlztzg__ {inst_f : Type -> Type}
   `{GHC.Base.Applicative inst_f}
    : forall {a : Type},
      forall {b : Type}, Alt inst_f (a -> b) -> Alt inst_f a -> Alt inst_f b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (_GHC.Base.<*>_).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      Mk_Alt (_GHC.Base.<*>_ (getAlt arg_0__) (getAlt arg_1__)).
 
 #[local] Definition Applicative__Alt_op_ztzg__ {inst_f : Type -> Type}
   `{GHC.Base.Applicative inst_f}
    : forall {a : Type},
      forall {b : Type}, Alt inst_f a -> Alt inst_f b -> Alt inst_f b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (_GHC.Base.*>_).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Alt (_GHC.Base.*>_ (getAlt arg_0__) (getAlt arg_1__)).
 
 #[local] Definition Applicative__Alt_pure {inst_f : Type -> Type}
   `{GHC.Base.Applicative inst_f}
    : forall {a : Type}, a -> Alt inst_f a :=
-  fun {a : Type} => GHC.Prim.coerce (GHC.Base.pure).
+  fun {a : Type} => fun arg_0__ => Mk_Alt (GHC.Base.pure arg_0__).
 
 #[local] Definition Functor__Alt_fmap {inst_f : Type -> Type} `{GHC.Base.Functor
   inst_f}
    : forall {a : Type},
      forall {b : Type}, (a -> b) -> Alt inst_f a -> Alt inst_f b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (GHC.Base.fmap).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Alt (GHC.Base.fmap arg_0__ (getAlt arg_1__)).
 
 #[local] Definition Functor__Alt_op_zlzd__ {inst_f : Type -> Type}
   `{GHC.Base.Functor inst_f}
    : forall {a : Type}, forall {b : Type}, a -> Alt inst_f b -> Alt inst_f a :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (GHC.Base.op_zlzd__).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ => Mk_Alt (GHC.Base.op_zlzd__ arg_0__ (getAlt arg_1__)).
 
 #[global]
 Program Instance Functor__Alt {f : Type -> Type} `{GHC.Base.Functor f}
@@ -602,6 +611,6 @@ Program Instance Monad__Product : GHC.Base.Monad Product :=
      GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg__
      GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return_
      GHC.Base.return___ GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
-     GHC.Num.op_zt__ GHC.Prim.coerce HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     GHC.Num.op_zt__ HsToCoq.Err.Build_Default HsToCoq.Err.Default
      HsToCoq.Err.default HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
 *)

@@ -1,9 +1,19 @@
 constructorFields:
+  BooleanFormula.And: NonRecordFields 0
   BooleanFormula.Mk_Clause: RecordFields [Qualified "BooleanFormula" "clauseAtoms",Qualified
     "BooleanFormula" "clauseExprs"]
+  BooleanFormula.Or: NonRecordFields 0
+  BooleanFormula.Parens: NonRecordFields 0
+  BooleanFormula.Var: NonRecordFields 0
 constructorTypes:
+  BooleanFormula.And: Qualified "BooleanFormula" "BooleanFormula"
   BooleanFormula.Mk_Clause: Qualified "BooleanFormula" "Clause"
+  BooleanFormula.Or: Qualified "BooleanFormula" "BooleanFormula"
+  BooleanFormula.Parens: Qualified "BooleanFormula" "BooleanFormula"
+  BooleanFormula.Var: Qualified "BooleanFormula" "BooleanFormula"
 constructors:
+  BooleanFormula.BooleanFormula: '[Qualified "BooleanFormula" "Var",Qualified "BooleanFormula"
+    "And",Qualified "BooleanFormula" "Or",Qualified "BooleanFormula" "Parens"]'
   BooleanFormula.Clause: '[Qualified "BooleanFormula" "Mk_Clause"]'
 recordFieldTypes:
   BooleanFormula.clauseAtoms: Qualified "BooleanFormula" "Clause"

@@ -16,7 +16,6 @@ Require Control.Arrow.
 Require Control.Category.
 Require Data.Tuple.
 Require GHC.Base.
-Require GHC.Prim.
 Require HsToCoq.Unpeel.
 Import Control.Arrow.Notations.
 Import Control.Category.Notations.
@@ -55,7 +54,9 @@ Instance Unpeel_WrappedMonad {m} {a}
    : forall {a : Type},
      forall {b : Type},
      WrappedMonad inst_m a -> WrappedMonad inst_m b -> WrappedMonad inst_m b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (_GHC.Base.>>_).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      WrapMonad (_GHC.Base.>>_ (unwrapMonad arg_0__) (unwrapMonad arg_1__)).
 
 #[local] Definition Monad__WrappedMonad_op_zgzgze__ {inst_m : Type -> Type}
   `{GHC.Base.Monad inst_m}
@@ -63,12 +64,15 @@ Instance Unpeel_WrappedMonad {m} {a}
      forall {b : Type},
      WrappedMonad inst_m a ->
      (a -> WrappedMonad inst_m b) -> WrappedMonad inst_m b :=
-  fun {a : Type} {b : Type} => GHC.Prim.coerce (_GHC.Base.>>=_).
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      WrapMonad (_GHC.Base.>>=_ (unwrapMonad arg_0__) (fun v_0__ =>
+                                                         unwrapMonad (arg_1__ v_0__))).
 
 #[local] Definition Monad__WrappedMonad_return_ {inst_m : Type -> Type}
   `{GHC.Base.Monad inst_m}
    : forall {a : Type}, a -> WrappedMonad inst_m a :=
-  fun {a : Type} => GHC.Prim.coerce (GHC.Base.return_).
+  fun {a : Type} => fun arg_0__ => WrapMonad (GHC.Base.return_ arg_0__).
 
 #[local] Definition Applicative__WrappedMonad_liftA2 {inst_m : Type -> Type}
   `{GHC.Base.Monad inst_m}
@@ -259,6 +263,6 @@ Instance Unpeel_WrappedArrow {a} {b} {c}
      GHC.Base.op_z2218U__ GHC.Base.op_zgzg__ GHC.Base.op_zgzg____
      GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__
      GHC.Base.op_zlzd____ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
-     GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ GHC.Prim.coerce
-     HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
+     GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ HsToCoq.Unpeel.Build_Unpeel
+     HsToCoq.Unpeel.Unpeel
 *)

@@ -8,6 +8,8 @@ constructorFields:
   SrcLoc.EpaSpan: NonRecordFields 1
   SrcLoc.L: NonRecordFields 2
   SrcLoc.Mk_BufPos: RecordFields [Qualified "SrcLoc" "bufPos"]
+  SrcLoc.Mk_BufSpan: RecordFields [Qualified "SrcLoc" "bufSpanStart",Qualified "SrcLoc"
+    "bufSpanEnd"]
   SrcLoc.Mk_NoComments: NonRecordFields 0
   SrcLoc.Mk_PsLoc: RecordFields [Qualified "SrcLoc" "psRealLoc",Qualified "SrcLoc"
     "psBufPos"]
@@ -33,6 +35,7 @@ constructorTypes:
   SrcLoc.EpaSpan: Qualified "SrcLoc" "EpaLocation'"
   SrcLoc.L: Qualified "SrcLoc" "GenLocated"
   SrcLoc.Mk_BufPos: Qualified "SrcLoc" "BufPos"
+  SrcLoc.Mk_BufSpan: Qualified "SrcLoc" "BufSpan"
   SrcLoc.Mk_NoComments: Qualified "SrcLoc" "NoComments"
   SrcLoc.Mk_PsLoc: Qualified "SrcLoc" "PsLoc"
   SrcLoc.Mk_PsSpan: Qualified "SrcLoc" "PsSpan"
@@ -47,6 +50,7 @@ constructorTypes:
   SrcLoc.UnhelpfulWiredIn: Qualified "SrcLoc" "UnhelpfulSpanReason"
 constructors:
   SrcLoc.BufPos: '[Qualified "SrcLoc" "Mk_BufPos"]'
+  SrcLoc.BufSpan: '[Qualified "SrcLoc" "Mk_BufSpan"]'
   SrcLoc.DeltaPos: '[Qualified "SrcLoc" "SameLine",Qualified "SrcLoc" "DifferentLine"]'
   SrcLoc.EpaLocation': '[Qualified "SrcLoc" "EpaSpan",Qualified "SrcLoc" "EpaDelta"]'
   SrcLoc.GenLocated: '[Qualified "SrcLoc" "L"]'
