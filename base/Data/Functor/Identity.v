@@ -53,10 +53,11 @@ Program Instance Semigroup__Identity {a : Type} `{GHC.Base.Semigroup a}
   fun arg_0__ arg_1__ =>
     Mk_Identity (GHC.Base.mappend (runIdentity arg_0__) (runIdentity arg_1__)).
 
-#[global] Definition Monoid__Identity_mconcat {inst_a : Type} `{GHC.Base.Monoid
+#[local] Definition Monoid__Identity_mconcat {inst_a : Type} `{GHC.Base.Monoid
   inst_a}
    : list (Identity inst_a) -> Identity inst_a :=
-  fun xs => Mk_Identity (GHC.Base.mconcat (GHC.Base.map runIdentity xs)).
+  fun arg_0__ =>
+    Mk_Identity (GHC.Base.mconcat (GHC.Base.map runIdentity arg_0__)).
 
 #[local] Definition Monoid__Identity_mempty {inst_a : Type} `{GHC.Base.Monoid
   inst_a}

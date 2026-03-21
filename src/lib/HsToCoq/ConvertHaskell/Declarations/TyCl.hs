@@ -119,8 +119,12 @@ convertTyClDecl env decl = do
               
               (DataDecl{}, CoqInductiveDef ind) ->
                 case ind of
-                  Inductive   (body :| [])  []    -> pure $ ConvData False body
-                  CoInductive (body :| [])  []    -> pure $ ConvData True body
+                  Inductive   (body :| [])  []    -> do
+                    storeRedefinedConstructors body
+                    pure $ ConvData False body
+                  CoInductive (body :| [])  []    -> do
+                    storeRedefinedConstructors body
+                    pure $ ConvData True body
                   Inductive   (_    :| _:_) _     -> editFailure "cannot redefine data type to mutually-recursive types"
                   Inductive   _             (_:_) -> editFailure "cannot redefine data type to include notations"
                   CoInductive _             _     -> editFailure "cannot redefine data type to be coinductive"
@@ -167,6 +171,25 @@ convertTyClDecl env decl = do
             -- type-level definitions.
             translateIt coqName
   where
+    -- Store constructor info for redefined inductives so that
+    -- lookupNewtypeInfo/expandCoerce can find them later.
+    -- Names from the edits parser may be Bare; qualify them using
+    -- the module from the type name.
+    storeRedefinedConstructors :: LocalConvMonad r m => IndBody -> m ()
+    storeRedefinedConstructors (IndBody tyName _params _resTy cons) = do
+      let qualifyLike (Qualified m _) (Bare b) = Qualified m b
+          qualifyLike _               q        = q
+          qCons = [(qualifyLike tyName cn, binders, mty) | (cn, binders, mty) <- cons]
+          conNames = [cn | (cn, _, _) <- qCons]
+      storeConstructors tyName conNames
+      for_ qCons $ \(cn, binders, _mty) -> do
+        storeConstructorType cn tyName
+        let namedFields = [qualifyLike tyName fld
+                          | Typed _ _ (Ident fld :| []) _ <- binders]
+        if not (null namedFields)
+          then storeConstructorFields cn (RecordFields namedFields)
+          else storeConstructorFields cn (NonRecordFields (length binders))
+
     translateIt :: LocalConvMonad r m => Qualid -> m (Maybe ConvertedDeclaration)
     translateIt coqName =
       let isCoind = view (edits.coinductiveTypes.contains coqName)

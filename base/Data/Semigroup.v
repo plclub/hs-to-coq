@@ -1455,8 +1455,8 @@ Program Instance Semigroup__WrappedMonoid {m : Type} `{GHC.Base.Monoid m}
 #[local] Definition Monoid__WrappedMonoid_mconcat {inst_m : Type}
   `{GHC.Base.Monoid inst_m}
    : list (WrappedMonoid inst_m) -> WrappedMonoid inst_m :=
-  fun xs =>
-    WrapMonoid (GHC.Base.mconcat (GHC.Base.map (fun '(WrapMonoid a) => a) xs)).
+  fun arg_0__ =>
+    WrapMonoid (GHC.Base.mconcat (GHC.Base.map unwrapMonoid arg_0__)).
 
 #[local] Definition Monoid__WrappedMonoid_mempty {inst_m : Type}
   `{GHC.Base.Monoid inst_m}

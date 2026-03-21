@@ -49,10 +49,8 @@ Arguments Mk_Const {_} {_} {_} _.
 #[local] Definition Semigroup__Const_op_zlzlzgzg__ {inst_a : Type} {inst_k
    : Type} {inst_b : inst_k} `{GHC.Base.Semigroup inst_a}
    : Const inst_a inst_b -> Const inst_a inst_b -> Const inst_a inst_b :=
-  fun x y =>
-    match x, y with
-    | Mk_Const a, Mk_Const b => Mk_Const (a GHC.Base.<<>> b)
-    end.
+  fun arg_0__ arg_1__ =>
+    Mk_Const (_GHC.Base.<<>>_ (getConst arg_0__) (getConst arg_1__)).
 
 #[global]
 Program Instance Semigroup__Const {a : Type} {k : Type} {b : k}
@@ -64,16 +62,13 @@ Program Instance Semigroup__Const {a : Type} {k : Type} {b : k}
 #[local] Definition Monoid__Const_mappend {inst_a : Type} {inst_k : Type}
   {inst_b : inst_k} `{GHC.Base.Monoid inst_a}
    : Const inst_a inst_b -> Const inst_a inst_b -> Const inst_a inst_b :=
-  fun x y =>
-    match x, y with
-    | Mk_Const a, Mk_Const b => Mk_Const (GHC.Base.mappend a b)
-    end.
+  fun arg_0__ arg_1__ =>
+    Mk_Const (GHC.Base.mappend (getConst arg_0__) (getConst arg_1__)).
 
 #[local] Definition Monoid__Const_mconcat {inst_a : Type} {inst_k : Type}
   {inst_b : inst_k} `{GHC.Base.Monoid inst_a}
    : list (Const inst_a inst_b) -> Const inst_a inst_b :=
-  fun xs =>
-    Mk_Const (GHC.Base.mconcat (GHC.Base.map (fun '(Mk_Const a) => a) xs)).
+  fun arg_0__ => Mk_Const (GHC.Base.mconcat (GHC.Base.map getConst arg_0__)).
 
 #[local] Definition Monoid__Const_mempty {inst_a : Type} {inst_k : Type} {inst_b
    : inst_k} `{GHC.Base.Monoid inst_a}
@@ -241,10 +236,9 @@ Program Instance Functor__Const {m : Type} : GHC.Base.Functor (Const m) :=
   `{GHC.Base.Monoid inst_m}
    : forall {a : Type},
      forall {b : Type}, Const inst_m (a -> b) -> Const inst_m a -> Const inst_m b :=
-  fun {a : Type} {b : Type} x y =>
-    match x, y with
-    | Mk_Const a, Mk_Const b => Mk_Const (GHC.Base.mappend a b)
-    end.
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      Mk_Const (GHC.Base.mappend (getConst arg_0__) (getConst arg_1__)).
 
 #[local] Definition Applicative__Const_op_ztzg__ {inst_m : Type}
   `{GHC.Base.Monoid inst_m}

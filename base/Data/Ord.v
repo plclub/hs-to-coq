@@ -67,7 +67,7 @@ Program Instance Semigroup__Down {a : Type} `{GHC.Base.Semigroup a}
 #[local] Definition Monoid__Down_mconcat {inst_a : Type} `{GHC.Base.Monoid
   inst_a}
    : list (Down inst_a) -> Down inst_a :=
-  fun xs => Mk_Down (GHC.Base.mconcat (GHC.Base.map (fun '(Mk_Down a) => a) xs)).
+  fun arg_0__ => Mk_Down (GHC.Base.mconcat (GHC.Base.map getDown arg_0__)).
 
 #[local] Definition Monoid__Down_mempty {inst_a : Type} `{GHC.Base.Monoid
   inst_a}

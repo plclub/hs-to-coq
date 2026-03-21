@@ -36,12 +36,6 @@ skip Data.Semigroup.Monoid__Max
 
 
 
-# GHC 9.10: coerce-based definitions are now expanded automatically by hs-to-coq
-# (expandCoerce in Instances.hs converts GHC.Prim.coerce to explicit wrapping)
-# Exception: mconcat has nested newtype inside list, which the expansion can't handle
-redefine Local Definition Data.Semigroup.Monoid__WrappedMonoid_mconcat {inst_m : Type} `{GHC.Base.Monoid inst_m}
-   : list (WrappedMonoid inst_m) -> WrappedMonoid inst_m :=
-  fun xs => WrapMonoid (GHC.Base.mconcat (GHC.Base.map (fun x => match x with | WrapMonoid a => a end) xs)).
 
 ##################################
 

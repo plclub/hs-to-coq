@@ -37,11 +37,6 @@ redefine Local Definition Data.Ord.Ord__Down_max {inst_a : Type} `{GHC.Base.Ord 
     | Mk_Down x, Mk_Down y => Mk_Down (GHC.Base.min x y)
     end.
 
-# GHC 9.10: coerce-based definitions are expanded automatically by hs-to-coq
-# Exception: mconcat has nested newtype inside list, which the expansion can't handle
-redefine Local Definition Data.Ord.Monoid__Down_mconcat {inst_a : Type} `{GHC.Base.Monoid inst_a}
-   : list (Down inst_a) -> Down inst_a :=
-  fun xs => Mk_Down (GHC.Base.mconcat (GHC.Base.map (fun x => match x with | Mk_Down a => a end) xs)).
 
 order Data.Ord.Eq___Down         Data.Ord.Ord__Down
 order Data.Ord.Semigroup__Down   Data.Ord.Monoid__Down

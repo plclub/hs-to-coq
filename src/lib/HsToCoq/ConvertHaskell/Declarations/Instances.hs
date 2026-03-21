@@ -82,9 +82,11 @@ lookupNewtypeInfo typeName = do
 
 -- | Extract the head type constructor from a Gallina type term.
 -- e.g. (Min inst_a) -> Just "Min", (list a) -> Just "list"
+-- Recurses through nested App to handle partially applied constructors
+-- like (Const inst_m) applied to further args: App (App (Qualid "Const") [m]) [a]
 typeHead :: Term -> Maybe Qualid
 typeHead (Qualid q)                      = Just q
-typeHead (App (Qualid q) _)              = Just q
+typeHead (App f _)                       = typeHead f
 typeHead (Parens t)                      = typeHead t
 typeHead (InScope t _)                   = typeHead t
 typeHead _                               = Nothing
@@ -218,28 +220,71 @@ expandBareCoerce _defArgs declType = do
       in wrapResult retInfo applied
 
 data NewtypeWrap = IsNewtype Qualid Qualid  -- constructor, accessor
+                 | ListNewtype Qualid       -- accessor for list elements
+                 | FnNewtype [NewtypeWrap] NewtypeWrap  -- arg wraps, result wrap
                  | NotNewtype
                  deriving (Eq)
 
 isNewtype :: NewtypeWrap -> Bool
-isNewtype (IsNewtype _ _) = True
-isNewtype _               = False
+isNewtype (IsNewtype _ _)  = True
+isNewtype (ListNewtype _)  = True
+isNewtype (FnNewtype _ _)  = True
+isNewtype NotNewtype       = False
 
 getNewtypeWrap :: ConversionMonad r m => Term -> m NewtypeWrap
-getNewtypeWrap ty = case typeHead ty of
-    Just q  -> do
-      minfo <- lookupNewtypeInfo q
-      case minfo of
-        Just (con, acc) -> pure $ IsNewtype con acc
-        Nothing         -> pure NotNewtype
-    Nothing -> pure NotNewtype
+getNewtypeWrap ty = case ty of
+    -- Handle function types: a -> b where the result is a newtype
+    Arrow a b -> do
+      aWrap <- getNewtypeWrap a
+      bWrap <- getNewtypeWrap b
+      if isNewtype bWrap || isNewtype aWrap
+        then pure $ FnNewtype [aWrap] bWrap
+        else pure NotNewtype
+    _ -> case typeHead ty of
+      Just q  -> do
+        minfo <- lookupNewtypeInfo q
+        case minfo of
+          Just (con, acc) -> pure $ IsNewtype con acc
+          Nothing
+            -- Check for list (Newtype) pattern: unwrap by mapping accessor
+            | q == Bare "list" || q == Qualified "GHC.Base" "list"
+            , App _ args <- ty
+            , PosArg innerTy :| [] <- args
+            -> do innerInfo <- getNewtypeWrap innerTy
+                  case innerInfo of
+                    IsNewtype _ acc -> pure $ ListNewtype acc
+                    _               -> pure NotNewtype
+            | otherwise -> pure NotNewtype
+      Nothing -> pure NotNewtype
 
 unwrapArg :: NewtypeWrap -> Term -> Term
 unwrapArg (IsNewtype _con acc) var = App (Qualid acc) (PosArg var :| [])
+unwrapArg (ListNewtype acc)    var = App (App (Qualid (Qualified "GHC.Base" "map"))
+                                              (PosArg (Qualid acc) :| []))
+                                         (PosArg var :| [])
+unwrapArg (FnNewtype argWraps retWrap) var =
+    -- Generate: fun v0 v1 ... => unwrapRet (var (wrapArg v0) (wrapArg v1) ...)
+    let varNames = [Bare (T.pack ("v_" ++ show i ++ "__"))
+                   | i <- [0 :: Int .. length argWraps - 1]]
+        wrappedArgs = zipWith wrapArg argWraps (map Qualid varNames)
+        appliedFn = foldl (\f a -> App f (PosArg a :| [])) var wrappedArgs
+        unwrappedRet = unwrapRet retWrap appliedFn
+        binders = [ExplicitBinder (Ident v) | v <- varNames]
+    in case NE.nonEmpty binders of
+         Just bs -> Fun bs unwrappedRet
+         Nothing -> unwrappedRet
+  where
+    wrapArg (IsNewtype con _) v = App (Qualid con) (PosArg v :| [])
+    wrapArg _                 v = v
+    unwrapRet (IsNewtype _ acc) inner = App (Qualid acc) (PosArg inner :| [])
+    unwrapRet (FnNewtype _ _)   inner = inner  -- nested FnNewtype: don't recurse
+    unwrapRet _                 inner = inner
 unwrapArg NotNewtype            var = var
 
 wrapResult :: NewtypeWrap -> Term -> Term
 wrapResult (IsNewtype con _acc) inner = App (Qualid con) (PosArg inner :| [])
+wrapResult (ListNewtype _)      inner = inner  -- list result stays as-is
+wrapResult (FnNewtype _ _)      inner = inner  -- fn result stays as-is
 wrapResult NotNewtype            inner = inner
 
 -- | Build the expanded function body with explicit wrapping/unwrapping.
