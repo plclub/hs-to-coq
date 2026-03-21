@@ -40,14 +40,25 @@ stripStandaloneDerivDecls pm =
       hsmod' = hsmod { hsmodDecls = decls' }
   in pm { pm_parsed_source = L loc hsmod' }
 
+-- | Test whether a parsed declaration is a standalone @deriving@ declaration.
 isDerivDecl :: HsDecl GhcPs -> Bool
 isDerivDecl (DerivD _ _) = True
 isDerivDecl _            = False
 #endif
 
+-- | Load and typecheck Haskell source files via the GHC API.
+--
+-- Uses a two-pass error-tolerant strategy (GHC >= 9.10): if the initial
+-- 'load' fails — typically because standalone @deriving instance@
+-- declarations reference types from skipped modules — we fall back to
+-- parsing each module individually, stripping standalone deriving decls,
+-- typechecking, and then re-deriving the wanted instances via
+-- 'addDerivedInstances'.
 processFiles :: GlobalMonad r m => ProcessingMode -> [FilePath] -> m (Maybe [TypecheckedModule])
 processFiles mode files = do
   initForDeriving
+  -- Build skip info from edits so addDerivedInstances can filter out
+  -- instances involving skipped modules or type classes.
   skipMods <- view (edits.skippedModules)
   skipCls  <- view (edits.skippedClasses)
   let skipInfo = DerivSkipInfo
@@ -91,6 +102,9 @@ processFiles mode files = do
             liftIO $ putStrLn "hs-to-coq: error: no modules found in module graph after filtering"
             pure Nothing
           else do
+            -- Process each module individually: parse, strip standalone derivs,
+            -- typecheck, then re-derive. Modules that still fail are skipped
+            -- (handleSourceError in processWithStrippedDerivs returns Nothing).
             results <- traverse (processWithStrippedDerivs skipInfo) modSummaries
             let successes = [tcm | Just tcm <- results]
             if null successes

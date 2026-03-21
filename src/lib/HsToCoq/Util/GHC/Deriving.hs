@@ -23,6 +23,8 @@ import Data.Maybe (catMaybes, mapMaybe)
 import qualified Data.Set as S
 import qualified Data.Text as T
 
+-- GHC version-gated imports: GHC 9.0+ reorganized internal modules under
+-- GHC.* hierarchies; older versions use flat module names (e.g. TcRnMonad).
 #if __GLASGOW_HASKELL__ >= 900
 import GHC.Plugins
 import GHC.Parser.Annotation (noAnn)
@@ -80,6 +82,9 @@ initForDeriving :: GhcMonad m => m ()
 initForDeriving =
   void $ getSessionDynFlags >>= setSessionDynFlags . (`xopt_set` LangExt.IncoherentInstances)
 
+-- | Carries skip/axiomatize info from the edits system into the deriving
+-- pipeline, so 'addDerivedInstances' can filter out deriving declarations
+-- for types whose modules are skipped or whose classes are not available.
 data DerivSkipInfo = DerivSkipInfo
   { dsi_skippedModules :: S.Set T.Text
   , dsi_skippedClasses :: S.Set T.Text
@@ -118,7 +123,10 @@ collectNamesFromHsType = go
     go (HsKindSig _ (L _ t) (L _ k)) = go t ++ go k
     go _                              = []
 
--- | Filter standalone deriving declarations, removing those that reference skipped modules/classes
+-- | Filter standalone deriving declarations based on 'DerivSkipInfo'.
+-- Removes declarations that would fail during typechecking because they
+-- reference types from skipped/axiomatized modules or skipped classes
+-- (e.g. @deriving instance Generic Foo@ when Generic is skipped).
 filterStandaloneDerivs :: DerivSkipInfo -> [LDerivDecl GhcRn] -> [LDerivDecl GhcRn]
 filterStandaloneDerivs dsi = filter (not . shouldSkipDerivDecl dsi . unLoc)
 
@@ -162,6 +170,11 @@ filterDerivingClause dsi (L loc clause) =
          else Just (L loc clause { deriv_clause_tys = L dctLoc (DctMulti ext filtered) })
 #endif
 
+-- | Re-derive instances after typechecking, using an error-tolerant strategy.
+-- Unlike GHC's all-or-nothing approach, this tries all derivations at once
+-- first, then falls back to processing each one individually on failure.
+-- Individual failures (e.g. Generic, newtypes with unsupported coercions) are
+-- silently dropped so that successful derivations still proceed.
 addDerivedInstances :: GhcMonad m => DerivSkipInfo -> TypecheckedModule -> m TypecheckedModule
 addDerivedInstances dsi tcm = do
 #if __GLASGOW_HASKELL__ >= 910
@@ -263,9 +276,10 @@ initTcHack tcm action = do
                snd msgs
 #endif
 
--- | Like 'initTcHack' but returns 'Nothing' on failure instead of throwing.
--- This allows the caller to proceed without derived instances when
--- tcTyAndClassDecls or other GHC internals fail.
+-- | Like 'initTcHack' but returns 'Maybe' instead of crashing on failure.
+-- 'initTcHack' throws a 'SourceError' when the TcM action fails;
+-- this variant catches all exceptions and returns 'Nothing', allowing
+-- graceful fallback when typechecking fails (e.g. missing TyCon info).
 initTcHackSafe :: GhcMonad m => TypecheckedModule -> TcM a -> m (Maybe a)
 initTcHackSafe tcm action = do
  hsc_env <- getSession
@@ -290,6 +304,9 @@ fakeDerivingMod = mkModule
   (mkModuleName "Deriving")
 
 
+-- | Convert a derived 'InstInfo' back into a source-level 'LInstDecl'.
+-- GHC 9.0+ changed type signature representation: 'HsIB' was replaced by
+-- 'HsSig' with 'HsOuterImplicit' for implicit type variable binding.
 instInfoToDecl :: InstInfo GhcRn -> LInstDecl GhcRn
 instInfoToDecl inst_info =
 #if __GLASGOW_HASKELL__ >= 900
@@ -332,7 +349,10 @@ instInfoToDecl inst_info =
 #define noLoc noLocA
 #endif
 
--- Taken from HsUtils. We need it to produce a Name, not a RdrName
+-- Taken from HsUtils. We need it to produce a Name, not a RdrName.
+-- GHC 9.0+ changes: 'splitFunTy' returns a 3-tuple (multiplicity, arg, res)
+-- for linear types support; 'ForAllTy' uses 'HsForAllInvis'/'hst_tele'
+-- instead of 'hst_bndrs'/'hst_fvf'; 'go_tv' gains a 'Specificity' parameter.
 typeToLHsType' :: Type -> LHsType GhcRn
 typeToLHsType' ty
   = go ty

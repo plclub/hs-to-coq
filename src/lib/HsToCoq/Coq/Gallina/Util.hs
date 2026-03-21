@@ -192,6 +192,8 @@ toImplicitBinder b@(ImplicitBinders _) = b
 toImplicitBinder (Typed ex _ei names ty) = Typed ex Implicit names ty
 toImplicitBinder (Generalized _ei ty) = Generalized Implicit ty
 
+-- | Convert a binder to explicit. Coq 8.20 warns about implicit binders
+-- inside record literals ({| field := fun {a} => ... |}); use this to suppress.
 toExplicitBinder :: Binder -> Binder
 toExplicitBinder b@(ExplicitBinder _) = b
 toExplicitBinder (ImplicitBinders names) = ImplicitBinders names  -- no type info; keep as-is
@@ -226,6 +228,7 @@ qualidModule :: Qualid -> Maybe ModuleIdent
 qualidModule (Bare      _)     = Nothing
 qualidModule (Qualified qid _) = Just qid
 
+-- | Apply a function to the last component (base name) of a qualified name.
 qualidMapBase :: (Ident -> Ident) -> Qualid -> Qualid
 qualidMapBase f (Bare             base) = Bare             $ f base
 qualidMapBase f (Qualified prefix base) = Qualified prefix $ f base

@@ -106,6 +106,8 @@ instance (GhcMonad m, Monoid w) => GhcMonad (RWSL.RWST r w s m) where
   getSession = lift   getSession
   setSession = lift . setSession
 
+-- GHC 9.x requires HasLogger in the monad stack for diagnostic output.
+-- This catch-all instance lifts getLogger through any monad transformer.
 instance {-# OVERLAPPABLE #-} (MonadTrans t, Monad m, HasLogger m) => HasLogger (t m) where
   getLogger = lift getLogger
 

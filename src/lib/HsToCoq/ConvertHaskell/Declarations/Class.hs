@@ -228,7 +228,10 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
   -- memberSigs.at name ?= sigs
 
   type_defs  <- M.fromList <$> traverse (convertAssociatedTypeDefault argNames . unLoc) typeDefaults
-  -- Filter out default method bindings for skipped methods
+  -- GHC 9.10: bagToList defaults includes default bindings for ALL class
+  -- methods, including those marked `skip method`. Attempting to convert
+  -- a skipped method's default body causes conversion errors (e.g., references
+  -- to skipped types/functions). Filter them out before conversion.
   let isSkippedDefault lbind =
         let bindName = case unLoc lbind of
               FunBind { fun_id = L _ n } -> Just (T.pack (occNameString (nameOccName n)))
@@ -249,17 +252,22 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
                   Just (ConvertedAxiomBinding      _ _)                     ->
                       convUnsupportedHere "axiom bindings in class declarations"
                   Just (RedefinedBinding           rname (CoqDefinitionDef (DefinitionDef _ _ rargs _ rbody _))) ->
-                      -- Support redefining class method default implementations.
-                      -- Useful when the default uses unsupported syntax (e.g. SigPat)
-                      -- but can be expressed differently in Coq.
+                      -- `redefine` on a class default method: replaces the GHC-derived
+                      -- default body with a user-provided Coq definition. The method
+                      -- stays in the class Dict with its original signature. Use case:
+                      -- the Haskell default uses constructs hs-to-coq can't convert
+                      -- (e.g., unsupported patterns or functions from skipped modules)
+                      -- but an equivalent Coq term can be written by hand.
                       pure $ Just (rname, maybe id Fun (NE.nonEmpty rargs) rbody)
                   Just (RedefinedBinding           _ _)                     ->
                       convUnsupportedHere "redefining class method declarations (only Definition form supported)"
                   Just (SkippedBinding _) ->
-                      -- Allow skipping individual default method implementations
-                      -- while keeping the method in the class Dict.
-                      -- Useful when the default uses unsupported syntax (e.g. SigPat)
-                      -- but per-instance implementations are fine.
+                      -- `skip` on a class default method body (not `skip method`):
+                      -- keeps the method in the class Dict type (instances must still
+                      -- provide it) but omits the default implementation. Returns
+                      -- Nothing so no default is stored. Use case: the Haskell default
+                      -- body can't be converted, but every concrete instance provides
+                      -- its own implementation so no default is needed.
                       pure Nothing
                   Nothing                                                   ->
                       convUnsupportedHere "skipping a type class method (use `skip method`)"

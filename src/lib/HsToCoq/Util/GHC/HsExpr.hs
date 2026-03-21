@@ -29,6 +29,9 @@ isGenLitString :: String -> HsExpr pass -> Bool
 isGenLitString str (HsLit NOEXTP (HsString _ fstr)) = fsLit str == fstr
 isGenLitString _   _                          = False
 
+-- GHC 9.x simplified SyntaxExpr to a single-field SyntaxExprRn wrapper
+-- (no more syn_arg_wraps/syn_res_wrap fields), so the match is just on the
+-- inner expression.
 #if __GLASGOW_HASKELL__ >= 900
 isNoSyntaxExpr :: SyntaxExprRn -> Bool
 isNoSyntaxExpr (SyntaxExprRn expr) =

@@ -215,8 +215,9 @@ token' = asum $
   , Just . nameToken <$> qualid
   , Just TokEOF      <$  (guard =<< atEOF) ]
   where
-    -- Parse '#' only when immediately followed by a digit (for #n notation)
-    -- The following nat token will be parsed by the next call to token'
+    -- GHC 9.10 generates hash-number literals (#n) in unboxed patterns.
+    -- Parse '#' only when immediately followed by a digit; the following
+    -- nat token will be parsed by the next call to token'.
     hashNum = parseCharTokenLookahead (const "#") (is '#') (maybe False isDigit)
     newlineToken = getPart <&> \case
                      NewlineSeparators -> Just TokNewline

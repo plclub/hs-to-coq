@@ -40,6 +40,7 @@ freshInternalName :: MonadIO m => String -> m Name
 freshInternalName var
     | Just (T.unpack -> mn, T.unpack -> base) <- splitModule (T.pack var) = do
       let mod = mkModule
+-- GHC 9.x renamed stringToUnitId to stringToUnit
 #if __GLASGOW_HASKELL__ >= 900
             (stringToUnit "hs-to-coq")
 #else

@@ -12,6 +12,7 @@ import Control.Monad
 
 import GHC
 import GHC.Paths
+-- GHC 9.x moved showPpr to GHC.Driver.Ppr (separate from Outputable)
 #if __GLASGOW_HASKELL__ >= 900
 import GHC.Driver.Session
 import GHC.Driver.Ppr

@@ -396,6 +396,8 @@ data InstanceInfo = InstanceInfo { instanceName       :: !Qualid
 -- TODO use LocalConvMonad instead?
 convertClsInstDeclInfo :: ConversionMonad r m => ClsInstDecl GhcRn -> m InstanceInfo
 convertClsInstDeclInfo ClsInstDecl{..} = do
+  -- GHC 9.10: cid_poly_ty is LHsSigType (located HsSigType) instead of
+  -- HsImplicitBndrs; extract the body type via sig_body instead of hsib_body
 #if __GLASGOW_HASKELL__ >= 900
   let unwrapSigType = sig_body . unLoc
 #else
@@ -450,6 +452,7 @@ bindsToMap binds = fmap M.fromList $ forM binds $ \hs_bind -> do
 
 clsInstFamiliesToMap :: ConversionMonad r m => [LTyFamInstDecl GhcRn] -> m (M.Map Qualid (HsType GhcRn))
 clsInstFamiliesToMap assocTys =
+  -- GHC 9.10: TyFamInstDecl has a direct FamEqn field instead of wrapping in HsIB
   fmap M.fromList . for assocTys $
 #if __GLASGOW_HASKELL__ >= 900
     \(L _ (TyFamInstDecl _ FamEqn{..})) ->
@@ -580,6 +583,8 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             local (envFor meth) $ convertMethodBinding localMeth bind >>= \case
               ConvertedDefinitionBinding cd ->
                 pure . CM_Defined CL_Term $ maybeFun (cd^.convDefArgs) (cd^.convDefBody)
+              -- Hard errors (not convUnsupported): these indicate edit misconfiguration,
+              -- not missing hs-to-coq features, so we fail immediately.
               ConvertedPatternBinding {} ->
                 throwProgramError "pattern bindings in instances"
               ConvertedAxiomBinding {} ->
@@ -592,6 +597,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
                   CoqInstanceDef         _   -> editFailure   "cannot redefine an instance method definition into an Instance"
                   CoqAxiomDef            _   -> pure ()
                   CoqAssertionDef        apf -> editFailure $ "cannot redefine an instance method definition into " ++ anAssertionVariety apf
+              -- Hard error: skip on instance methods is an edit misconfiguration
               SkippedBinding _ -> throwProgramError "skipping binding in instance"
 
           (Nothing, Just assoc, _) ->
@@ -646,6 +652,9 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
 
       let instHeadTy = appList (Qualid className)
             (PosArg <$> filterVisibleVars convertedInstanceClass convertedInstanceTypes)
+      -- Use quantifyExplicit (not quantify) for the instance record/definition
+      -- body: Coq 8.20 warns about implicit binders {a : Type} inside record
+      -- literals, where they have no meaning.  toExplicitBinder converts them.
       instance_sentence <- view (edits.simpleClasses.contains className) >>= \case
         True  -> do
           methods <- traverse (\m -> (m,) <$> quantifyExplicit M.empty m (Qualid $ localNameFor m)) classMethods

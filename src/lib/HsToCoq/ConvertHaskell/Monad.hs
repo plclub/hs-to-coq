@@ -62,6 +62,9 @@ import HsToCoq.Util.GHC.Module (moduleNameText, ModuleData, modName)
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.TypeInfo
 
+-- GHC 9.x replaced the Exception-based ExceptionMonad with MonadCatch,
+-- restructured diagnostics into a typed GhcMessage pipeline, and moved
+-- warning emission from logWarnings (Bag) to logDiagnostics (Messages).
 #if __GLASGOW_HASKELL__ >= 900
 import Control.Monad.Catch
 #define ExceptionMonad MonadCatch
@@ -290,6 +293,8 @@ convUnsupported what =
 
 warnConvUnsupported' :: ConversionMonad r m => SrcSpan -> String -> m ()
 warnConvUnsupported' loc what = do
+  -- GHC 9.x diagnostic pipeline: wrap message in GhcUnknownMessage to
+  -- satisfy the typed Messages framework (replaces old mkPlainWarnMsg).
 #if __GLASGOW_HASKELL__ >= 900
   diag_opts <- initDiagOpts <$> getDynFlags
   let mkMsg loc = singleMessage . mkPlainMsgEnvelope diag_opts loc . GhcUnknownMessage . mkSimpleUnknownDiagnostic . mkPlainDiagnostic WarningWithoutFlag []

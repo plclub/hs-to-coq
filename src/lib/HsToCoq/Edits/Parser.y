@@ -119,9 +119,11 @@ import HsToCoq.Edits.ParserState
   end             { TokWord    "end"            }
   struct          { TokWord    "struct"         }
   with            { TokWord    "with"           }
+  -- GHC 9.10: if/then/else for conditional expressions in redefine bodies
   'if'            { TokWord    "if"             }
   'then'          { TokWord    "then"           }
   'else'          { TokWord    "else"           }
+  -- GHC 9.10: hash-number prefix for unboxed literal patterns (#n)
   '#'             { TokWord    "#"              }
   for             { TokWord    "for"            }
   'measure'       { TokWord    "measure"        }
@@ -408,13 +410,13 @@ LargeTerm :: { Term }
   | fix   FixBodies             { Fix   $2 }
   | cofix FixBodies             { Cofix $2 }
   | forall Binders ',' Term     { Forall $2 $4 }
-  | 'if' Term 'then' Term 'else' Term  { If SymmetricIf $2 Nothing $4 $6 }
+  | 'if' Term 'then' Term 'else' Term  { If SymmetricIf $2 Nothing $4 $6 }  -- conditional exprs in redefine bodies
 
 -- Lets us implement EqlessTerm
 MediumTerm(Binop, RTerm) :: { Term }
   : 'let' Qualid Many(Binder) Optional(TypeAnnotation) ':=' Term 'in' RTerm     { Let $2 $3 $4 $6 $8 }
   | 'let' '\'' Pattern ':=' Term 'in' RTerm                                     { LetTick $3 $5 $7 }
-  | 'let' fix FixBody 'in' RTerm                                                { LetFix $3 $5 }
+  | 'let' fix FixBody 'in' RTerm                                                { LetFix $3 $5 }  -- local recursive functions in redefine bodies
   | SmallishTerm(Binop) ':' RTerm { HasType $1 $3 }
   | SmallishTerm(Binop) { $1 }
 
@@ -435,7 +437,7 @@ Atom :: { Term }
   : '(' Term ')'    { $2 }
   | Qualid          { Qualid $1 }
   | Num             { Num $1 }
-  | '#' Num         { App1 "GHC.Num.fromInteger" (Num $2) }
+  | '#' Num         { App1 "GHC.Num.fromInteger" (Num $2) }  -- GHC 9.10 unboxed literal patterns
   | '_'             { Underscore }
   | StringLit       { String $1 }
   | match SepBy1(MatchItem, ',') with Many(Equation) end

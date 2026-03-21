@@ -57,6 +57,8 @@ selectorFieldOcc_ (XFieldOcc v) = noExtCon v
 fieldOcc :: GenLocated _ RdrName -> Name -> FieldOcc GhcRn
 fieldOcc r n = FieldOcc n r
 
+-- GHC 9.x replaced NoExtCon with DataConCantHappen (an empty type used
+-- in "Trees That Grow" extension points that should never be reached).
 #if __GLASGOW_HASKELL__ >= 900
 noExtCon :: HasCallStack => DataConCantHappen -> a
 noExtCon = dataConCantHappen

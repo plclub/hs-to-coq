@@ -47,6 +47,8 @@ newtype CounterT m a = CounterT (StateT Natural m a)
                             , MonadFail, MonadFix, MonadIO
                             , R.MonadReader r, W.MonadWriter w, E.MonadError e, C.MonadCont
                             , MonadTrans
+                            -- GHC 9.0+ replaced GHC's ExceptionMonad with the
+                            -- exceptions library's MonadThrow/MonadCatch/MonadMask
                             , MonadThrow, MonadCatch, MonadMask
 #if __GLASGOW_HASKELL__ < 900
                             , ExceptionMonad

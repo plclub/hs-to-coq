@@ -32,6 +32,10 @@ import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Literals
 import HsToCoq.ConvertHaskell.Monad
 
+-- | Convert a TyCon application, filtering out invisible binder args.
+-- Uses tyConBinders to determine which args are visible. Note: GHC 9.10's
+-- FunTyCon reports 0 tyConBinders, so callers must handle (->) specially
+-- (see the arrow case below) to avoid filtering against an empty binder list.
 convertTyConApp :: ConversionMonad r m => Bool -> TyCon -> [KindOrType] -> Qualid -> m Term
 convertTyConApp b tc ts ctc = do
   let cond = if b then const True else fst
@@ -68,11 +72,15 @@ convertType_ b (ForAllTy tv ty) = do
   convertedTv <- convertTyVarBinder Coq.Implicit tv
   convertedTy <- convertType_ b ty
   pure $ Forall (convertedTv :| []) convertedTy
+-- GHC 9.0+ added a Mult (multiplicity) field to FunTy for linear types.
+-- The MULT macro absorbs this field; we discard it (Coq has no linear types).
 #if __GLASGOW_HASKELL__ >= 900
 #define MULT _
 #else
 #define MULT
 #endif
+-- GHC 9.10 replaced AnonArgFlag (InvisArg/VisArg) with FunTyFlag, which has
+-- more cases. isInvisibleFunArg provides a version-portable visibility check.
 #if __GLASGOW_HASKELL__ >= 910
 convertType_ b (FunTy af MULT ty1 ty2)
   | isInvisibleFunArg af = do

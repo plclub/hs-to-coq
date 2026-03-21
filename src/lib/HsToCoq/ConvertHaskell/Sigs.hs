@@ -56,6 +56,7 @@ collectSigs sigs = do
     TypeSig NOEXTP lnames (HsWC wcs hsib)
       | null wcs  -> asTypes lnames hsib
       | otherwise -> throwError "type wildcards found"
+    -- GHC 9.10 replaced IdSig with XSig for compiler-generated signatures
 #if __GLASGOW_HASKELL__ >= 910
     XSig _ -> throwError "generated-code signatures"
 #elif __GLASGOW_HASKELL__ >= 806
@@ -65,6 +66,7 @@ collectSigs sigs = do
     ClassOpSig NOEXTP False lnames sigTy -> asTypes lnames sigTy
     ClassOpSig NOEXTP True _ _ -> pure [] -- Ignore default methods signatures
     FixSig NOEXTP _            -> pure []
+    -- GHC 9.10 dropped NOEXT fields from these sig constructors
 #if __GLASGOW_HASKELL__ >= 910
     InlineSig{}          -> pure []
     SpecSig{}            -> pure []

@@ -92,6 +92,8 @@ convertConDecl curType extraArgs (ConDeclH98 lname mlqvs mlcxt details _doc)
   -- Only the explicit tyvars are available before renaming, so they're all we
   -- need to consider
   params <- withCurrentDefinition con $ convertLHsTyVarBndrs Coq.Implicit lqvs
+  -- GHC 9.0+ wraps constructor arg types in HsScaled for linear types;
+  -- extract the type via hsScaledThing, discarding the multiplicity annotation.
 #if __GLASGOW_HASKELL__ >= 900
   let hsConDeclArgTys (PrefixCon _ tys)  = hsScaledThing <$> tys
       hsConDeclArgTys (InfixCon ty1 ty2) = hsScaledThing <$> [ty1,ty2]
@@ -136,6 +138,10 @@ convertConDecl curType extraArgs (ConDeclGADT lnames sigTy _doc) = do
     utvm            <- unusedTyVarModeFor conName
     (_, curTypArgs) <- failEither (collectArgs curType)
     conTy           <- withCurrentDefinition conName $
+      -- GHC 9.0+ changed GADT quantified type variables from HsQTvs to
+      -- HsOuterImplicit/HsOuterExplicit.  Convert back to HsQTvs and replace
+      -- the specificity flag with HsBndrRequired (9.10) or () (9.0-9.8) so
+      -- convertHsSigType_ can process them uniformly.
 #if __GLASGOW_HASKELL__ >= 910
       let fqvars (L _ (HsOuterImplicit qvs)) = HsQTvs qvs []
           fqvars (L _ (HsOuterExplicit _ qvs)) = HsQTvs [] ((fmap . fmap) unanno qvs)
@@ -261,11 +267,12 @@ convertDataDecl name tvs defn = do
       _ ->
         pure ()
 
-  -- Use Set instead of Type for types that Coq 8.20 would auto-lower to Prop:
-  -- empty inductives (0 constructors) and single-constructor types with no
-  -- explicit arguments.  These are all legitimate Set types.
-  -- Constructor args may be encoded as arrows in the return type (not as
-  -- binders), so we check both.
+  -- Coq 8.20 auto-lowers eligible inductives (declared as Type) to Prop,
+  -- which breaks pattern matching in non-Prop return contexts.  Detect these
+  -- cases and explicitly annotate with `: Set` to prevent the lowering.
+  -- Affected: empty types (0 constructors) and single-constructor types with
+  -- no arguments.  Constructor args may appear as arrows in the return type
+  -- rather than as binders, so we check both representations.
   let finalResTy = case resTy of
         Sort Type | propLowerable cons -> Sort Set
         _                              -> resTy

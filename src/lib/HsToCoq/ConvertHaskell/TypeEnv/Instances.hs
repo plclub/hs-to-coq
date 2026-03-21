@@ -41,6 +41,7 @@ data ConvertedInstance =
 type ConvertedInstanceEnv = [ConvertedInstance]
 
 instancesOfModDetails :: ConversionMonad r m => ModDetails -> m ConvertedInstanceEnv
+-- GHC 9.10: md_insts changed from [ClsInst] to InstEnv; extract via instEnvElts
 instancesOfModDetails mod = mapM convertInstance GHC_900($ instEnvElts) $ md_insts mod
 
 convertInstance :: ConversionMonad r m => ClsInst -> m ConvertedInstance
@@ -51,6 +52,7 @@ convertInstance inst = do
   convertedInstanceTypes <- mapM convertType tms
   let convertedInstanceSubst = M.fromList $ zip
         (fst <$> convertedTyClTyVars convertedInstanceClass) convertedInstanceTypes
+  -- GHC 9.10: is_tcs changed from [Maybe Name] to [RoughMatchTc]
   convertedInstanceTops <- mapM (var TypeNS)
 #if __GLASGOW_HASKELL__ >= 900
                              [n | RM_KnownTc n <- is_tcs inst]

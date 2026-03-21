@@ -310,7 +310,10 @@ data AssumptionKeyword = Axiom                                                  
 data Assums = Assums (NonEmpty Qualid) Term                                     -- ^@/ident/ … /ident/ : /term/@
             deriving (Eq, Ord, Show, Read, Typeable, Data)
 
--- |@[Local] ::=@ – not a part of the grammar /per se/, but a common fragment
+-- |@[Local] ::=@ – not a part of the grammar /per se/, but a common fragment.
+-- Coq 8.20 replaced keyword locality (Global/Local) with attribute-based
+-- locality (#[global]/#[local]/#[export]). ExportL added as the new default
+-- (previously Global served as the no-locality case).
 data Locality = ExportL                                                                        -- ^@@ – (nothing – but sometimes @Export@)
               | Global                                                                         -- ^@Global@
               | Local                                                                          -- ^@Local@

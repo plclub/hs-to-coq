@@ -197,6 +197,9 @@ convertPat SumPat{} =
   convUnsupported "sum type patterns"
 
 #if __GLASGOW_HASKELL__ >= 806
+-- GHC 9.10 uses SigPat (type-annotated patterns) in more places, including
+-- derived instances. We strip the type annotation, treating it like ParPat
+-- and BangPat — the type info is redundant since Coq infers types.
 convertPat (SigPat NOEXTP p _) =
   convertLPat p
 convertPat XPat{} =

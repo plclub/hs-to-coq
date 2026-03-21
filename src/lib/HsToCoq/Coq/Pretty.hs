@@ -330,7 +330,9 @@ instance Gallina Term where
     char '#' <> renderNum num
 
   -- Special notation for somehting that looks like an operator an
-  -- is applied to two arguments
+  -- is applied to two arguments.
+  -- qualidHasValidCoqOp rejects operators with chars invalid in Coq (e.g. $)
+  -- so they render as z-encoded identifiers instead of broken notation.
   renderGallina' p (App2 (Qualid op) l r) | qualidIsOp op, qualidHasValidCoqOp op =
     case lookup op precTable of
       Just (n, LeftAssociativity)  ->
@@ -550,9 +552,12 @@ instance Gallina Sentence where
   renderGallina' p (DefinitionSentence      def)    = renderGallina' p def
   renderGallina' p (InductiveSentence       ind)    = renderGallina' p ind
   renderGallina' p (FixpointSentence        fix)    = renderGallina' p fix
+  -- Coq 8.20: Program Instance requires #[global] prefix
   renderGallina' p (ProgramSentence sen@(InstanceSentence _) pf) = "#[global]"
                                                                    <!> "Program" <+> renderGallina' p sen <!> renderObligation pf
-  -- Coq 8.20: locality attributes must come before Program, not after
+  -- Coq 8.20: locality attributes (#[global]/#[local]) must appear before
+  -- "Program", not after. Extract locality from the inner DefinitionDef,
+  -- emit it as a prefix, and render the def body without locality.
   renderGallina' p (ProgramSentence (DefinitionSentence (DefinitionDef loc name args oty body ex)) pf) =
     let sen' = DefinitionSentence (DefinitionDef ExportL name args oty body ex)
     in renderLocality loc <> "Program" <+> renderGallina' p sen' <!> renderObligation pf
@@ -586,6 +591,8 @@ instance Gallina Assums where
     where
       renderAss ids ty = fillSep (renderGallina <$> ids) <> nest 2 (render_type ty)
 
+-- Coq 8.20: Locality is now expressed via attributes (#[global], #[local],
+-- #[export]) instead of keywords (Global, Local).
 instance Gallina Locality where
   renderGallina' _ ExportL = "#[export]"
   renderGallina' _ Global  = "#[global]"
@@ -751,6 +758,7 @@ instance Gallina ArgumentSpec where
                  ArgExplicit -> id
                  ArgImplicit -> brackets
                  ArgMaximal  -> braces
+    -- Coq 8.20 deprecated "%" for scope annotations; use "%_" instead
     in wrap (renderGallina arg) <> maybe mempty (("%_" <>) . renderIdent) oscope
 
 instance Gallina LocalModule where

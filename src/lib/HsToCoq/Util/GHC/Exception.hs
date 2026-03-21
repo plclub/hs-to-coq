@@ -1,6 +1,10 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
+-- GHC >= 9.0 removed the ExceptionMonad class from its API in favor of the
+-- standard 'exceptions' library (Control.Monad.Catch). The orphan ExceptionMonad
+-- instances below are only needed for older GHC; GHC 9.x provides them upstream.
+-- gWithFile uses MC.bracket (via CPP alias gbracket) on GHC >= 9.0.
 module HsToCoq.Util.GHC.Exception (module Exception, gWithFile) where
 
 import Control.Monad.IO.Class

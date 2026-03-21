@@ -200,6 +200,7 @@ data Config = Config { _outputFile          :: !(Maybe FilePath)
 makeLenses ''Config
 
 ghcInputDirs :: FilePath -> [FilePath]
+-- GHC 9.10 reorganized the source tree; all needed modules are under compiler/
 ghcInputDirs base = [base </> "compiler"]
 
 processArgs :: GhcMonad m => m Config
@@ -215,6 +216,7 @@ processArgs = do
                    map (locate "--ghc-tree" . ("-i" ++)) (concatMap ghcInputDirs ghcTreeDirsArgs) ++
                    map (locate "--ghc")                  ghcOptionsArgs
 
+  -- GHC 9.10 removed Warn type; warnings are now a Messages bag, not [Warn]
 #if __GLASGOW_HASKELL__ >= 910
   (dflags, ghcRest, warnings) <- (parseDynamicFlagsCmdLine ?? ghcArgs) =<< getSessionDynFlags
   let numWarns = length (bagToList (getMessages warnings))
@@ -380,6 +382,7 @@ convertAndPrintModules :: GlobalMonad r m => WithModulePrinter m -> [Typechecked
 convertAndPrintModules p = printConvertedModules p <=< convertModules <=< traverse toRenamedHsGroup
   where
     toRenamedHsGroup tcm
+      -- GHC 9.10 added a Docs field to tm_renamed_source (5-tuple vs 4-tuple)
 #if __GLASGOW_HASKELL__ >= 910
       | Just (hs_group, _, _, _, _) <- tm_renamed_source tcm =
 #else

@@ -64,6 +64,8 @@ import HsToCoq.ConvertHaskell.TypeEnv.Instances
 import HsToCoq.Coq.Preamble
 import HsToCoq.Coq.Pretty (textP)
 
+-- GHC 9.x: Exception module's gcatch replaced by MonadCatch;
+-- getLoc replaced by getLocA for GenLocated SrcSpanAnn.
 #if __GLASGOW_HASKELL__ >= 900
 import qualified Control.Monad.Catch as MC
 gcatch :: (MC.MonadCatch m, MC.Exception e) => m a -> (e -> m a) -> m a

@@ -51,6 +51,7 @@ instance ToTerm (Tickish b) where
 instance ToTerm Int where
     t n = InScope (Num (fromIntegral n)) "N"
 
+-- GHC 9.10 changed Unique keys from Int to Word64
 #if __GLASGOW_HASKELL__ >= 910
 instance ToTerm Word64 where
     t n = InScope (Num (fromIntegral n)) "N"
@@ -59,6 +60,10 @@ instance ToTerm Word64 where
 instance ToTerm Module where
     t (Module a b) = App2 "Mk_Module" (t a) (t b)
 
+-- GHC 9.x restructured package units: UnitId is now a newtype over
+-- FastString, and the old IndefUnitId/DefiniteUnitId split became
+-- GenUnit with RealUnit/VirtUnit/HoleUnit constructors.
+-- Alt became a named data type (was a tuple in GHC 8.x).
 #if __GLASGOW_HASKELL__ >= 900
 instance ToTerm a => ToTerm (GenUnit a) where
   t (RealUnit a) = "RealUnit" <: [t a]

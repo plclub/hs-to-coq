@@ -46,6 +46,9 @@ instance Semigroup ModDetails where
 instance Monoid ModDetails where
   mempty = emptyModDetails
 
+-- GHC 9.x provides Show ModuleName upstream, so the orphan instance is
+-- only needed for older GHC. Instead, GHC 9.x needs a Semigroup InstEnv
+-- instance (used by the ModDetails Semigroup above via md_insts field).
 #if __GLASGOW_HASKELL__ >= 900
 instance Semigroup InstEnv where
   (<>) = unionInstEnv

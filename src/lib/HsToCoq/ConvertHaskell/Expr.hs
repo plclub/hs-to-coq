@@ -51,6 +51,8 @@ import qualified Data.Map.Strict as M
 
 import GHC hiding (Name, HsChar, HsString, AsPat)
 import qualified GHC
+-- GHC 9.0+ reorganized the module hierarchy; imports are CPP-gated by version.
+-- GHC 9.0+ also replaced GHC's own exception handling with Control.Monad.Catch.
 #if __GLASGOW_HASKELL__ >= 910
 import GHC.Data.Bag (bagToList)
 import GHC.Types.Name.Reader (mkOrig)
@@ -108,6 +110,9 @@ import HsToCoq.ConvertHaskell.Axiomatize
 
 import HsToCoq.ConvertHaskell.TypeEnv.Id
 
+-- Compatibility shims: GHC 9.0+ uses LocatedAn (annotated locations) instead
+-- of Located, and renames/restructures several pattern constructors.
+-- These thin wrappers let the rest of the file use uniform names.
 #if __GLASGOW_HASKELL__ >= 910
 unboundVarOcc = id
 getLoc_ x = getLocA x
@@ -127,6 +132,8 @@ conPatIn = ConPatIn
 type LocatedAn x = Located
 #endif
 
+-- GHC 9.0+ changed SrcSpan so sortOn getLoc no longer works directly;
+-- we compare the start SrcLoc of each binding's span instead.
 compareSrcLoc :: SrcLoc -> SrcLoc -> Ordering
 compareSrcLoc (UnhelpfulLoc _) (UnhelpfulLoc _) = EQ
 compareSrcLoc (UnhelpfulLoc _) (RealSrcLoc _ _) = LT
@@ -190,6 +197,8 @@ convertExpr_ (HsLit NOEXTP lit) =
     XLit v -> noExtCon v
 #endif
 
+-- GHC 9.10 merged HsLam and HsLamCase into a single HsLam constructor
+-- with a LamAlt tag: LamSingle = ordinary lambda, LamCase/LamCases = \case.
 #if __GLASGOW_HASKELL__ >= 910
 convertExpr_ (HsLam NOEXTP LamSingle mg) =
   uncurry Fun <$> convertFunction [] mg
@@ -267,6 +276,8 @@ convertExpr_ (HsCase NOEXTP e mg) = do
   skipPats <- views (edits.skippedCasePatterns) (S.map pure)
   bindIn "scrut" scrut $ \scrut -> convertMatchGroup skipPats [scrut] mg
 
+-- GHC 9.0+ removed the optional SyntaxExpr from HsIf (overloaded if-then-else
+-- is now handled via rebindable syntax / ExpandedThingRn instead).
 #if __GLASGOW_HASKELL__ < 900
 convertExpr_ (HsIf NOEXTP (Just (isNoSyntaxExpr -> False)) c t f) =
   convUnsupported "overloaded if-then-else"
@@ -287,11 +298,13 @@ convertExpr_ (HsDo sty (L _ stmts) PlaceHolder) =
 #endif
   case sty of
     ListComp        -> convertListComprehension stmts
+    -- GHC 9.0+ added a Maybe ModuleName arg to DoExpr/MDoExpr (for qualified do).
     DoExpr GHC_900(_) -> convertDoBlock stmts
     MDoExpr GHC_900(_) -> convUnsupported "`mdo' expressions"
 
     GhciStmtCtxt    -> convUnsupported "GHCi statement expressions"
     MonadComp       -> convUnsupported "monad comprehensions"
+    -- GHC 9.0+ removed these statement contexts from HsStmtContext.
 #if __GLASGOW_HASKELL__ < 900
     ArrowExpr       -> convUnsupported "arrow expressions"
     PatGuard _      -> convUnsupported "pattern guard expressions"
@@ -302,6 +315,8 @@ convertExpr_ (HsDo sty (L _ stmts) PlaceHolder) =
     PArrComp        -> convUnsupported "parallel array comprehensions"
 #endif
 
+-- GHC 9.0+ removed the optional SyntaxExpr from ExplicitList (same rationale
+-- as HsIf above: overloaded lists use rebindable syntax).
 #if __GLASGOW_HASKELL__ < 900
 convertExpr_ (ExplicitList PlaceHolder (Just (isNoSyntaxExpr -> False)) exprs) =
   convUnsupported "overloaded lists"
@@ -354,6 +369,8 @@ convertExpr_ (RecordCon (L _ hsCon) PlaceHolder conExpr HsRecFields{..}) = do
 
     Nothing -> recConUnsupported "unknown"
 
+-- GHC 9.10 split RecordUpd into OverloadedRecUpdFields (DuplicateRecordFields)
+-- and RegularRecUpdFields. GHC 9.0 used Either for the same distinction.
 #if __GLASGOW_HASKELL__ >= 910
 convertExpr_ (RecordUpd _ recVal (OverloadedRecUpdFields _ _)) = convUnsupported "overloaded record update"
 convertExpr_ (RecordUpd _ recVal (RegularRecUpdFields _ fields)) = do
@@ -488,6 +505,8 @@ convertExpr_ (RecordUpd recVal fields PlaceHolder PlaceHolder PlaceHolder PlaceH
       Nothing ->
         convUnsupported "invalid unknown constructor in record update"
 
+  -- GHC 9.10: HsCase takes a HsMatchContext (CaseAlt here); MG.mg_ext is
+  -- now Generated with Origin/DoPmc tags instead of a bare NoExtField.
 #if __GLASGOW_HASKELL__ >= 910
   convertExpr . HsCase CaseAlt recVal $
     MG { mg_alts    = loc $ map loc matches
@@ -542,6 +561,9 @@ convertExpr_ (ArithSeq _postTc _overloadedLists info) =
     FromTo     low      high -> App2 "GHC.Enum.enumFromTo"     <$> convertLExpr low                       <*> convertLExpr high
     FromThenTo low next high -> App3 "GHC.Enum.enumFromThenTo" <$> convertLExpr low <*> convertLExpr next <*> convertLExpr high
 
+-- GHC 9.0+ removed many HsExpr constructors (HsRecFld, HsSCC, HsCoreAnn,
+-- HsBracket, HsTick, HsWrap, etc.); their functionality moved to XExpr
+-- extensions (ExpandedThingRn, HsPragE) or was restructured.
 #if __GLASGOW_HASKELL__ >= 900
 #else
 convertExpr_ (HsRecFld NOEXTP fld) =
@@ -595,7 +617,8 @@ convertExpr_ (ExplicitSum{}) =
 #if __GLASGOW_HASKELL__ >= 806
 convertExpr_ (HsOverLit _ (XOverLit v)) = noExtCon v
 #if __GLASGOW_HASKELL__ >= 910
--- GHC 9.10 new expression constructors
+-- GHC 9.10 replaced HsRecFld with HsRecSel and split TH/pragma/annotation
+-- constructors. HsPragE subsumes HsSCC/HsCoreAnn/HsTickPragma.
 convertExpr_ (HsRecSel _ fld) =
   Qualid <$> var ExprNS (foExt fld)
 convertExpr_ (HsPragE _ _ e) =
@@ -614,8 +637,12 @@ convertExpr_ HsUntypedSplice{} =
   convUnsupported "untyped Template Haskell splices"
 convertExpr_ HsEmbTy{} =
   convUnsupported "embedded type expressions (RequiredTypeArguments)"
+-- GHC 9.10 wraps rebindable-syntax and derived expressions in
+-- ExpandedThingRn (original, expanded); we convert the expanded form.
+-- PopErrCtxt is an error-context wrapper with no semantic content.
 convertExpr_ (XExpr (ExpandedThingRn _ e)) = convertExpr e
 convertExpr_ (XExpr (PopErrCtxt e)) = convertLExpr e
+-- Catch-all with pretty-printed diagnostic (GHC 9.10 has many more constructors).
 convertExpr_ e = convUnsupported $ "unhandled HsExpr constructor: " ++ GHC.showPprUnsafe e
 #elif __GLASGOW_HASKELL__ >= 900
 convertExpr_ (XExpr (HsExpanded _ e)) = convertExpr e

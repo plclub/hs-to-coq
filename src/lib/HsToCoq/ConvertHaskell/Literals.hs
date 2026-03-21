@@ -27,6 +27,7 @@ convertFastString = HsString . fsToText
 
 convertFractional :: MonadIO f => FractionalLit -> f Term
 convertFractional
+  -- GHC 9.x added fl_exp and fl_signi fields to FractionalLit
 #if __GLASGOW_HASKELL__ >= 900
   (FL _ _ fl_v _ _)
 #else
