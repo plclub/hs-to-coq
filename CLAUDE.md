@@ -78,6 +78,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 - `common.mk` — Included by all example Makefiles; defines `HS_TO_COQ` variable (resolves to `stack exec hs-to-coq --`)
 - Each Coq directory uses `_CoqProject` + `coq_makefile` to generate its Makefile
 - `.h2ci` files store interface information for cross-module translation
+- `make vfiles` (base-src) skips existing `.v` files — `rm` the target file before running to force regeneration
 
 ### Stale .vo recovery
 If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the full chain: `base` → `base-thy` → `examples/containers` → `examples/ghc`. For coq_makefile dirs: `find <dir> \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' \) -delete && coq_makefile -f _CoqProject -o Makefile && make -j`.
@@ -131,6 +132,7 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **`envFor` cross-type method references**: `envFor` renames ALL class methods to local instance names (with pre-rename module name variants for GHC.Internal.* matching), but newtype-wrapper or parameterized instances reference methods for *component* types. `redefine` affected methods: Compose fold/null/length/product/sum, OccEnv `<$`. `in ... rename value` overrides must include BOTH post-rename and pre-rename module names (e.g., `GHC.Base.liftA2` AND `GHC.Internal.Base.liftA2`); see WriterT edits.
 - **mconcat `foldl' (<>) mempty`**: GHC 9.10 generates this for non-newtype Monoids (Max, Min). Fix: `redefine` to use `foldr mappend mempty` + `order mempty mconcat`. Newtype mconcat auto-generates via expandCoerce (wraps result, maps accessor over list args)
 - **`GHC.Prim.coerce` expansion** (Instances.hs `expandCoerce`): Auto-expands coerce-based instance methods into explicit newtype wrapping/unwrapping. Handles: simple newtypes, partially-applied type constructors (recursive `typeHead`), `list (Newtype)` args (via `map accessor`), and function-type args like `a -> Newtype b` (via wrapper lambdas). Requires constructor info from `storeRedefinedConstructors` (TyCl.hs) for `redefine Inductive` types. Remaining coerce cases needing `redefine`: function-composition coerce (Traversable mapAccumL/mapAccumR/fmapDefault with StateL/StateR/Identity)
+- **Coq hangs on instance compilation**: Usually means expandCoerce produced type-incorrect code (e.g., missing unwrap on function-type arg). Check generated `.v` for bare `GHC.Prim.coerce` or mismatched newtype/base types in method bodies.
 - **`rightSection`**: GHC 9.10 desugars `(op x)` to `rightSection op x`. Defined in `base/GHC/Prim.v`. Operators with invalid Coq chars (like `$`) are rendered as z-encoded names (e.g. `op_zd__`) instead of notation form. Proofs involving `rightSection` need `unfold GHC.Prim.rightSection` before `lia`
 - **`<*` operator ambiguity**: `GHC.Base.<*` parses as `GHC.Base.<` followed by `*`. Excluded from `qualidHasValidCoqOp` in `Gallina/Util.hs` — renders as `op_zlzt__` instead. Definition added via `add` directive in base-src edits.
 
