@@ -219,9 +219,13 @@ expandBareCoerce _defArgs declType = do
             (f:xs) -> foldl (\acc a -> App acc (PosArg a :| [])) f xs
       in wrapResult retInfo applied
 
-data NewtypeWrap = IsNewtype Qualid Qualid  -- constructor, accessor
-                 | ListNewtype Qualid       -- accessor for list elements
-                 | FnNewtype [NewtypeWrap] NewtypeWrap  -- arg wraps, result wrap
+-- | Describes how a type in a coerce-expanded method signature relates to newtypes.
+-- GHC 9.10 uses @coerce@ extensively in derived instance methods. Coq can't resolve
+-- @Coercible@ for newtypes, so we expand coerce into explicit wrap/unwrap operations.
+-- Each constructor handles a different shape of newtype occurrence in the type:
+data NewtypeWrap = IsNewtype Qualid Qualid  -- ^ Direct newtype: constructor, accessor (e.g. @Last a@)
+                 | ListNewtype Qualid       -- ^ Newtype inside list: accessor to map over elements (e.g. @list (Last a)@ in mconcat)
+                 | FnNewtype [NewtypeWrap] NewtypeWrap  -- ^ Newtype in function result: arg wraps, result wrap (e.g. @a -> Last b@ in >>=)
                  | NotNewtype
                  deriving (Eq)
 

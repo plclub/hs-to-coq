@@ -171,10 +171,13 @@ convertTyClDecl env decl = do
             -- type-level definitions.
             translateIt coqName
   where
-    -- Store constructor info for redefined inductives so that
-    -- lookupNewtypeInfo/expandCoerce can find them later.
-    -- Names from the edits parser may be Bare; qualify them using
-    -- the module from the type name.
+    -- When a data type is redefined via 'redefine Inductive', the normal
+    -- convertDataDecl path (which calls storeConstructors etc.) is skipped.
+    -- Without this, lookupNewtypeInfo returns Nothing for redefined types
+    -- like Ap/Last/First, and expandCoerce can't expand their coerce calls.
+    -- Names from the edits parser may be Bare (e.g. "Mk_Ap" not
+    -- "Data.Monoid.Mk_Ap"); we qualify them using the module from tyName
+    -- since store' in TypeInfo.hs rejects Bare keys.
     storeRedefinedConstructors :: LocalConvMonad r m => IndBody -> m ()
     storeRedefinedConstructors (IndBody tyName _params _resTy cons) = do
       let qualifyLike (Qualified m _) (Bare b) = Qualified m b
