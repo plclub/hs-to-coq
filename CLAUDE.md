@@ -117,10 +117,8 @@ These must use old versions from git master with manual fixes:
 - `Data/Functor/Classes` — hs-to-coq generates valid output, but Coq can't compile it: GHC 9.10 added quantified superclass constraints to Eq2/Ord2 (`forall a. Eq a => Eq1 (f a)`) that Coq can't resolve in the CPS encoding. The manual version has the same compilation failure. Nothing downstream imports Eq2/Ord2 so this is tolerated.
 
 Previously broken modules now regenerable:
-- `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity` — fixed via `DerivSkipInfo` filtering + parsed-AST standalone-deriving stripping + SigPat support in `Pattern.hs`
-- `Control/Category`, `Control/Arrow` — fixed by stripping invisible RuntimeRep args from `(->)` TyCon in Type.hs and flexible type matching in lookupInstance
-- **`(->)` TyCon in GHC 9.10**: `FunTyCon` reports 0 `tyConBinders` (unlike regular TyCons). RuntimeRep args appear as regular type args. `Type.hs` handles this by detecting `GHC.Prim.arrow` with null binders and passing empty args to `convertTyConApp`. `lookupInstance` uses `termHead` for flexible matching (e.g., `arrow` matches `arrow LiftedRep LiftedRep`).
-- Identity and Traversable now fully auto-generated (edits handle coerce issues)
+- `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity`, `Control/Category`, `Control/Arrow` — all now auto-generated via DerivSkipInfo filtering, SigPat support, RuntimeRep stripping, and expandCoerce improvements
+- **`(->)` TyCon in GHC 9.10**: `FunTyCon` reports 0 `tyConBinders`. `Type.hs` detects `GHC.Prim.arrow` with null binders → empty args to `convertTyConApp`. `lookupInstance` uses `termHead` for flexible matching.
 - `_CoqProject` ordering matters: Identity/Traversable must be listed early (EARLY_GHC_INTERNAL_MODULES in Makefile) to avoid Coq typeclass resolution stack overflow
 
 ### Deriving pipeline (GHC 9.10)
@@ -176,11 +174,10 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 - Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
 - `eval unfold f` in sections: use `let x := constr:(@f args) in let rhs := eval unfold f in x`
 - `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — different unfolding chains needed
-- **Deprecated warnings (all fixed)**: `Hint` needs `#[export]` or `: core`; `Arguments` scope uses `%_` not `%`; empty/singleton-constructor inductives use `Set` not `Type` to avoid auto-prop-lowering; `app_length` → `length_app`, `map_length` → `length_map`, `seq_length` → `length_seq`; `N.mod_eq` etc. → `N.Div0.*`; `Declare Scope` before `Bind Scope`
-- **Implicit binders in record literals (all fixed)**: `fun {a : Type}` inside `{| field := ... |}` triggers `unexpected-implicit-declaration` — use `fun (a : Type)` (explicit) instead. Code generator uses `quantifyExplicit` (Instances.hs) + `toExplicitBinder` (Gallina/Util.hs) for this. Same applies to midambles, edits, and manual .v files.
-- **Require inside Module/Section (all fixed)**: Triggers `require-in-section` warning. Move `Require` to file top-level; use `Export`/`Import` inside the block if needed. If moving causes name shadowing, keep in place and suppress with `#[local] Set Warnings "-require-in-section".` / `#[local] Set Warnings "require-in-section".`
-  - **Danger**: Moving `Require Import GHC.Base` to top shadows `Nat.le` (Prop) with bool-valued `<=`, breaking proofs that use `length x <= length y`. Always verify moved imports don't change notation scope.
-- **SSReflect `spurious-ssr-injection` (all fixed)**: `repeat case` on enum types with `==` triggers this. Suppress with `#[local] Set Warnings "-spurious-ssr-injection"`, or replace `[]` intro patterns with named wildcards.
+- **Deprecated warnings (all fixed)**: `Hint` → `#[export]`; `Arguments` scope `%_` not `%`; inductives use `Set` not `Type`; `app_length` → `length_app` etc.; `N.mod_eq` → `N.Div0.*`; `Declare Scope` before `Bind Scope`
+- **Implicit binders in record literals (all fixed)**: Use `fun (a : Type)` (explicit) not `fun {a : Type}` inside `{| field := ... |}`. Code generator: `quantifyExplicit` + `toExplicitBinder`.
+- **Require inside Module/Section (all fixed)**: Move `Require` to top-level. **Danger**: Moving `Require Import GHC.Base` shadows `Nat.le` with bool `<=`.
+- **SSReflect `spurious-ssr-injection` (all fixed)**: Suppress with `#[local] Set Warnings "-spurious-ssr-injection"`.
 
 ### Coq 8.20 proof tactics
 - **`Program Fixpoint` obligations**: Coq 8.20 pre-introduces ALL obligation variables. Use `revert dependent P` to recover CPS structure, or work with auto-named `H`/`H0`/`H1`.
