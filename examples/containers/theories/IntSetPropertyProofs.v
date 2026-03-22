@@ -279,22 +279,13 @@ Qed.
 ********************************************************************)
 
 (* "Check the invariant that the mask is a power of 2." *)
+(* FALSE: disproved by thm_MaskPow2_false in test_maskpow2.v.
+   The Coq model uses unbounded N (not 64-bit Word), so a WF IntSet can have
+   Bin masks > 2^63 (e.g., Bin with keys {0, 2^100} has mask 2^100).
+   powersOf2 only contains [2^0..2^63], so the check fails.
+   Aborted to prevent unsound use. *)
 Theorem thm_MaskPow2 : toProp prop_MaskPow2.
 Proof.
-  (* We do `...; [|done|done]` and the next rewrite both together instead of
-     `//=` to avoid ever trying to simplify `powersOf2`, which would both
-     generate [0..63] *and do the exponentiation*. *)
-  simpl; elim=> [p m l IHl r IHr | p m | ] WFs; [|done|done].
-  rewrite /prop_MaskPow2 -/prop_MaskPow2.
-  move: (WFs) => /WF_Bin_children [WFl WFr].
-  apply/and3P; split; [| apply IHl, WFl | apply IHr, WFr].
-  rewrite /powersOf2 flat_map_cons_f; change @GHC.Base.map with @Coq.Lists.List.map.
-  rewrite fromList_member.
-  rewrite (lock enumFromTo).
-  apply/elemP; rewrite in_map_iff.
-  move: (valid_maskPowerOfTwo _ WFs) => /= /and3P [/Eq_eq/bitcount_0_1_power [i ->] _ _].
-  exists i; split => //.
-  admit. (* Unprovable *)
 Abort.
 
 (* "Check that the prefix satisfies its invariant." *)

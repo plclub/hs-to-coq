@@ -38,6 +38,7 @@ IntSetUtil.v
 DyadicIntervals.v
 ../hs-spec/IntSetProperties.v
 IntSetPropertyProofs.v
+test_maskpow2.v
 Set.v
 IntMapProofs.v
 
