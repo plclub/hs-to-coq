@@ -355,12 +355,10 @@ Qed.
 ********************************************************************)
 
 (* "Check that IntSet.isProperSubsetOf is the same as Set.isProperSubsetOf."
-   Provable via Require SetProofs + toSet bridge lemmas, but loading
-   SetProofs.vo uses ~54GB peak RAM (OOM-killed). The proof goes through:
-     1. toSet_sem: sem (toSet s) k = IntSet.member k s (via fromList_Desc)
-     2. isSubsetOfX_spec relates Set subset to sem
-     3. toSet_size + NoDup_incl_length give strict size inequality for proper subset
-     4. toList_exact + Sem_unique give IntSet equality from Set equality
+   BLOCKER: Require SetProofs triggers a typeclass resolution infinite loop
+   when combined with IntSetProofs instances (kills coqc via OOM in make builds).
+   The proofs work in standalone coqc invocations — see test_bridge.v.
+   Proof strategy: toSet_sem bridge + SetProofs.isSubsetOfX_spec + size reasoning.
    thm_isProperSubsetOf2 covers the key property without Set import. *)
 Theorem thm_isProperSubsetOf : toProp prop_isProperSubsetOf.
 Proof. Admitted.
@@ -379,11 +377,11 @@ Proof.
   by rewrite union_member // k_in_s1 orTb.
 Qed.
 
-(* Provable via SetProofs bridge (same as thm_isProperSubsetOf):
+(* Same blocker: Require SetProofs typeclass loop. Proven in standalone:
      apply/Eq_eq/bool_eq_iff; rewrite isSubsetOf_member //;
-     rewrite SetProofs.isSubsetOf_spec; try apply toSet_Bounded; auto;
-     split; intros Hsub i Hi; apply Hsub; rewrite toSet_sem // in Hi |- *.
-   Blocked by SetProofs.vo ~54GB OOM. thm_isSubsetOf2 covers the key property. *)
+     rewrite SetProofs.isSubsetOf_spec //;
+     split; intros Hsub k Hk; [specialize (Hsub k)|]; rewrite !toSet_sem //; auto.
+   thm_isSubsetOf2 covers the key property. *)
 Theorem thm_isSubsetOf : toProp prop_isSubsetOf.
 Proof. Admitted.
 
