@@ -28,3 +28,6 @@
 [submodule "examples/graph/graph"]
 	path = examples/graph/graph
 	url = https://github.com/haskell/fgl.git
+[submodule "examples/bytestring/bytestring"]
+	path = examples/bytestring/bytestring
+	url = https://github.com/haskell/bytestring

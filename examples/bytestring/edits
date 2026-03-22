@@ -1,0 +1,68 @@
+axiomatize module Data.ByteString.Builder.Internal
+axiomatize module Data.ByteString.Builder.Prim.Internal.Base16
+axiomatize module Data.ByteString.Builder
+axiomatize module Data.ByteString.Internal
+axiomatize module Data.ByteString.Lazy.Internal
+
+axiomatize module Data.String
+
+skip module GHC.Ptr
+skip module GHC.ForeignPtr
+skip module GHC.IO.Handle.Types
+skip module Foreign.Storable
+skip module GHC.IO.IOMode
+skip module GHC.IO.Exception
+skip module GHC.IO.Handle.FD
+skip module GHC.IO.Error
+skip module Foreign.C.String
+skip module Foreign.Marshal.Alloc
+skip module GHC.IO.Unsafe
+skip module Foreign.Concurrent
+skip module ForeignPtr.Imp
+skip module Control.Exception.Base
+skip module Foreign.Marshal.Utils
+skip module System.IO.Error
+skip module System.IO
+
+skip module GHC.ST
+skip module Foreign.ForeignPtr.Imp
+skip module Foreign.C.Types
+skip module Foreign.Marshal.Array
+skip module GHC.Foreign
+skip module GHC.IO.Buffer
+skip module GHC.IO.Encoding
+skip module GHC.IO.Handle.Text
+skip module GHC.IO.Handle
+
+rename type  GHC.Maybe.Maybe   = option
+rename value GHC.Maybe.Just    = Some
+rename value GHC.Maybe.Nothing = None
+
+
+# xiomatize module GHC.Ptr
+# xiomatize module GHC.ForeignPtr
+# xiomatize module GHC.IO.Handle.Types
+# xiomatize module Foreign.Storable
+# xiomatize module GHC.IO.IOMode
+# xiomatize module GHC.IO.Exception
+# xiomatize module GHC.IO.Handle.FD
+# xiomatize module GHC.IO.Error
+# xiomatize module Foreign.C.String
+# xiomatize module Foreign.Marshal.Alloc
+# xiomatize module GHC.IO.Unsafe
+# xiomatize module Foreign.Concurrent
+# xiomatize module ForeignPtr.Imp
+# xiomatize module Control.Exception.Base
+# xiomatize module Foreign.Marshal.Utils
+# xiomatize module System.IO.Error
+# xiomatize module System.IO
+#
+# xiomatize module GHC.ST
+# xiomatize module Foreign.ForeignPtr.Imp
+# xiomatize module Foreign.C.Types
+# xiomatize module Foreign.Marshal.Array
+# xiomatize module GHC.Foreign
+# xiomatize module GHC.IO.Buffer
+# xiomatize module GHC.IO.Encoding
+# xiomatize module GHC.IO.Handle.Text
+# xiomatize module GHC.IO.Handle

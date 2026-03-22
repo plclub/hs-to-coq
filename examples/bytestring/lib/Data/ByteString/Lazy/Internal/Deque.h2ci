@@ -1,0 +1,17 @@
+constructors:
+  Data.ByteString.Lazy.Internal.Deque.Deque: '[Qualified "Data.ByteString.Lazy.Internal.Deque"
+    "Deque"]'
+constructorFields:
+  Data.ByteString.Lazy.Internal.Deque.Deque: RecordFields [Qualified "Data.ByteString.Lazy.Internal.Deque"
+    "front",Qualified "Data.ByteString.Lazy.Internal.Deque" "rear",Qualified "Data.ByteString.Lazy.Internal.Deque"
+    "byteLength"]
+recordFieldTypes:
+  Data.ByteString.Lazy.Internal.Deque.rear: Qualified "Data.ByteString.Lazy.Internal.Deque"
+    "Deque"
+  Data.ByteString.Lazy.Internal.Deque.front: Qualified "Data.ByteString.Lazy.Internal.Deque"
+    "Deque"
+  Data.ByteString.Lazy.Internal.Deque.byteLength: Qualified "Data.ByteString.Lazy.Internal.Deque"
+    "Deque"
+constructorTypes:
+  Data.ByteString.Lazy.Internal.Deque.Deque: Qualified "Data.ByteString.Lazy.Internal.Deque"
+    "Deque"

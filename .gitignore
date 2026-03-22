@@ -51,3 +51,4 @@ ghc-head
 *.crashcoqide
 *.DS_Store
 
+stack.yaml.lock
