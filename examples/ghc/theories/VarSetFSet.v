@@ -624,17 +624,28 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
 
   (* Connection: Data.IntMap.Internal.foldr (andb . f) true m = intmap_foldr_go ... *)
   (* For andb, the negative-mask dispatch order doesn't matter *)
-  (* Bridge lemma: Data.IntMap.Internal.foldr's local go computes identically
-     to intmap_foldr_go. Admitted due to memory constraints from unfolding
-     the large foldr definition; the two fixpoints have the same recursive
-     structure and are computationally equivalent on all inputs. *)
+  (* BLOCKER: Data.IntMap.Internal.foldr wraps its inner fixpoint `go` with a
+     top-level negative-mask check: for Bin _ m l r, if m < 0 it traverses
+     go (go z l) r instead of go (go z r) l. The inner `go` is identical to
+     intmap_foldr_go. For andb, traversal order is irrelevant because
+     (f v1 && (f v2 && acc)) = (f v2 && (f v1 && acc)) when the initial
+     accumulator is `true`. However, proving this requires unfolding the
+     large Data.IntMap.Internal.foldr definition, which causes Coq memory
+     exhaustion. Possible fix: prove a general lemma that foldr's inner go =
+     intmap_foldr_go by structural induction on the IntMap (skipping the
+     top-level negative-mask wrapper), then show the wrapper is harmless for
+     commutative-in-accumulator functions. Alternatively, make the inner go
+     function accessible as a separate Definition in IntMap/Internal.v. *)
   Lemma foldr_andb_eq_go :
     forall (f : elt -> bool) (m : Data.IntMap.Internal.IntMap elt),
     Data.IntMap.Internal.foldr (fun v acc => f v && acc) true m =
     intmap_foldr_go (fun v acc => f v && acc) true m.
   Admitted.
 
-  (* Bridge lemma for orb: same reasoning as foldr_andb_eq_go. *)
+  (* BLOCKER: Same as foldr_andb_eq_go — the inner `go` of foldr matches
+     intmap_foldr_go structurally, and for orb the traversal order is
+     irrelevant (orb is commutative/associative with identity `false`).
+     Blocked by the same memory exhaustion when unfolding foldr. *)
   Lemma foldr_orb_eq_go :
     forall (f : elt -> bool) (m : Data.IntMap.Internal.IntMap elt),
     Data.IntMap.Internal.foldr (fun v acc => f v || acc) false m =
@@ -713,9 +724,14 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
         by exact Hval.
       apply ValidVarSet_Axiom in Hlook. exact Hlook. }
     have Hfval : f val = true by rewrite <- (Hcompat x val Heq).
-    (* From lookup, construct tree_elem witness (reverse of tree_elem_kv_lookup).
-       Trivial structural induction; Admitted due to eq shadowing in VarSetFSet module
-       making eqn: tactics fail. Could be proved in a separate file. *)
+    (* BLOCKER: Need the reverse of tree_elem_kv_lookup: given
+       lookup k m = Some v, prove tree_elem_kv k v m. This is a
+       straightforward structural induction on m, but the VarSetFSet
+       Module shadows Coq's eq with E.eq, so `destruct ... eqn:` and
+       `rewrite ... in *` tactics fail inside this section. FIX: prove
+       `lookup_tree_elem_kv` in ContainerProofs.v (outside this Module)
+       and import it. Alternatively, use `remember` instead of `eqn:`.
+       With that reverse lemma, the remaining admit becomes trivial. *)
     have Helem : tree_elem_kv (Unique.getWordKey (Unique.getUnique x)) val m
       by admit.
     exact (intmap_foldr_go_orb_some_true _ _ _ _ Helem Hfval).
@@ -824,6 +840,12 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     - right. intro H. apply equal_1 in H. rewrite H in Heq. discriminate.
   Defined.
 
+  (* BLOCKER (fold_1): `fold` is defined as nonDetFoldUFM (a real fold over
+     the IntMap), but `elements` is HsToCoq.Err.default = fun _ => nil.
+     So the RHS reduces to fold_left _ nil i = i, but the LHS is a real
+     fold over the map contents. Unprovable for nonempty sets.
+     FIX: implement `elements` as a real function (e.g., via nonDetFoldUFM
+     cons nil), then prove the connection to fold. *)
   Lemma fold_1 :
     forall (s : t) (A : Type) (i : A) (f : elt -> A -> A),
     fold A f s i =
@@ -833,12 +855,18 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     simpl.
   Admitted.
 
-
+  (* BLOCKER (cardinal_1): `cardinal` is sizeVarSet (returns actual size),
+     but `elements` is HsToCoq.Err.default = fun _ => nil, so length = 0.
+     Unprovable for nonempty sets. FIX: implement `elements` properly. *)
   Lemma cardinal_1 : forall s : t, cardinal s = length (elements s).
   Proof.
     intros.
   Admitted.
 
+  (* BLOCKER (partition_1): `partition` is HsToCoq.Err.default (returns a
+     pair of empty sets), but `filter` is the real filterVarSet. The
+     equality fails for any set with elements passing f.
+     FIX: implement `partition` using filterVarSet for both halves. *)
   Lemma partition_1 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f -> Equal (fst (partition f s)) (filter f s).
@@ -848,6 +876,8 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     unfold Equal, partition; simpl.
   Admitted.
 
+  (* BLOCKER (partition_2): Same as partition_1 — dummy partition vs real
+     filter. FIX: implement `partition` properly. *)
   Lemma partition_2 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f ->
@@ -858,52 +888,60 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     unfold Equal, partition; simpl.
   Admitted.
 
+  (* BLOCKER (elements_1): `elements` is HsToCoq.Err.default = fun _ => nil.
+     The goal becomes In x s -> InA E.eq x nil, which is impossible for
+     nonempty sets. FIX: implement `elements` properly (e.g., via
+     nonDetFoldUFM cons nil) and prove membership correspondence. *)
   Lemma elements_1 :
     forall (s : t) (x : elt), In x s -> InA E.eq x (elements s).
   Proof.
     intros.
   Admitted.
 
+  (* PROVED: elements is HsToCoq.Err.default = fun _ => nil, so
+     InA E.eq x nil is always False — the premise is vacuously false. *)
   Lemma elements_2 :
     forall (s : t) (x : elt), InA E.eq x (elements s) -> In x s.
   Proof.
-    intros.
-  Admitted.
+    intros s x H.
+    unfold elements in H. simpl in H. inversion H.
+  Qed.
 
+  (* PROVED: choose is HsToCoq.Err.default = fun _ => None, so the
+     premise choose s = Some x is always False — vacuously true. *)
   Lemma choose_1 :
     forall (s : t) (x : elt), choose s = Some x -> In x s.
   Proof.
-    intros.
-    unfold choose in *.
-(*    destruct (elements s) eqn:?; try congruence.
-    inversion H; subst.
-    apply elements_2.
-    rewrite Heql.
-    left.
-    reflexivity. *)
-  Admitted.
+    intros s x H.
+    unfold choose in H. simpl in H. discriminate.
+  Qed.
 
+  (* BLOCKER (choose_2): choose is HsToCoq.Err.default = fun _ => None,
+     so the premise is always true, but Empty s is false for nonempty sets.
+     Would require all sets to be empty. Unprovable.
+     FIX: implement `choose` properly (e.g., head of elements). *)
   Lemma choose_2 : forall s : t, choose s = None -> Empty s.
   Proof.
-    intros.
-    unfold choose in *.
-(*    destruct (elements s) eqn:?; try congruence.
-    intros x ?.
-    apply elements_1 in H0.
-    rewrite Heql in H0.
-    inversion H0. *)
   Admitted.
 
+  (* PROVED: choose always returns None, so both premises
+     choose s1 = Some x1 and choose s2 = Some x2 are False. *)
   Lemma choose_3 (s1 s2 : t) (x1 x2 : elt) :
     choose s1 = Some x1 ->
     choose s2 = Some x2 ->
     Equal s1 s2         ->
     E.eq  x1 x2.
   Proof.
-  Admitted.
+    intros H1 H2 _.
+    unfold choose in H1. simpl in H1. discriminate.
+  Qed.
 
+  (* PROVED: elements is HsToCoq.Err.default = fun _ => nil, so
+     NoDupA E.eq nil holds trivially. *)
   Lemma elements_3w (s : t) : NoDupA E.eq (elements s).
-  Admitted.
+  Proof.
+    unfold elements. simpl. constructor.
+  Qed.
 
 
 End VarSetFSet.

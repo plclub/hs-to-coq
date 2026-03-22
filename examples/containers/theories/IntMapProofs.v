@@ -930,12 +930,21 @@ Proof.
   ** eapply Desc_inside; eassumption.
 Qed.
 
+(* Blocker: This lemma claims structural monotonicity of isSubmapOfBy in the
+   right argument, but the trie-based implementation checks prefix/mask alignment,
+   so adding a Bin wrapper can change the structural path and make the check fail
+   even when all keys are still present. May be false for the structural implementation.
+   Only used within isSubmapOfBy_Desc (also Admitted). *)
 Lemma isSubmapOfBy_Bin {a} :
   forall (s1 s2 s3: IntMap a) p msk f',
     isSubmapOfBy f' s1 s2 = true -> isSubmapOfBy f' s1 (Bin p msk s2 s3) = true.
 Proof. Admitted.
 
-
+(* Blocker: Program Fixpoint proof with ~10 admits across the Bin/Bin case.
+   Requires isSubmapOfBy_Bin (possibly false), plus nontrivial structural
+   reasoning about prefix matching, shorter comparisons, and recursive
+   measure arguments. The reverse direction (specification -> structural
+   check) is especially hard. *)
 Program Fixpoint isSubmapOfBy_Desc {a} (f : a -> a -> bool)
   (s1 :IntMap a) r1 f1 s2 r2 f2
   { measure (size_nat s1 + size_nat s2) } :
@@ -1064,6 +1073,10 @@ Next Obligation.
 
 Admitted.
 
+(* Blocker: Alternative iff characterization of isSubmapOfBy. Has ~8 admits
+   covering N.eqb conversions (Tip/Tip cases), the Tip/Bin forward direction,
+   the Bin/Tip case, and the Bin/Bin shorter-comparison case. Same fundamental
+   difficulty as isSubmapOfBy_Desc above. *)
 Lemma isSubmapOfBy_Desc1 : forall {a} (f : a -> a -> bool)
   (s1 :IntMap a) r1 f1 s2 r2 f2,
   Desc s1 r1 f1 ->
@@ -1898,7 +1911,13 @@ Qed.
 
 (* Verification of [filter] *)
 
-  
+(* Blocker: bin_Desc0 shows that the smart constructor [bin] preserves Desc0.
+   Has ~15 admits across 9 sub-cases of the destruct on s1/s2 (Bin/Tip/Nil
+   combinations). The main difficulties are: (1) reconstructing Desc for
+   sub-trees after inversion_Desc produces fragments, (2) relating subranges
+   of halfRanges back to the parent range, and (3) the Nil/Nil base case
+   where both children are empty but the functional spec must still hold.
+   Used by filter_Desc and restrictKeys_Desc. *)
 Lemma bin_Desc0:
   forall {a} (s1: IntMap a) r1 f1 (s2: IntMap a) r2 f2 p msk r f,
     Desc0 s1 r1 f1 ->
@@ -2007,15 +2026,18 @@ Proof.
     + auto.
     + auto.
     + intro. simpl. specialize (H7 i). specialize (H6 i). rewrite H7. rewrite H6. unfold oro.
-      assert (Hr: rangeDisjoint r1 r2 = true). admit.
+      assert (Hr: rangeDisjoint r1 r2 = true).
+      { eapply isSubrange_disj_disj_r. exact H3.
+        eapply isSubrange_disj_disj_l. exact H2.
+        apply halves_disj. exact H1. }
       destruct (f1 i) eqn: Hf1.
        - destruct (p a0) eqn: Hpa; auto. assert (f2 i = None).
          {
            eapply isSubmapOfBy_disjoint1; eassumption.
          }
          rewrite H4. reflexivity.
-       - reflexivity. 
-Admitted.
+       - reflexivity.
+Qed.
 
 Lemma filter_Sem:
   forall {a} p (s: IntMap a) f f',
@@ -2067,12 +2089,13 @@ simpl. apply N.eqb_refl.
 Qed.
 
 
-(** Incomplete proof. So far most of the admitted cases seem doable.
-  I am not sure of the lemma 100%. I could be mistaken
-  about the subrange hypothesis.
-  Some of the admits are just tideous work, for example different equalities.
-  I left them undone since I am not sure this is the correct approach
-  **)
+(* Blocker: ~15 admits across Tip and Bin cases. Tip case needs N.eqb/==
+   conversions (3 admits). Bin case needs: (1) relating delete results back
+   to Desc0 via IH, (2) subrange reasoning for binCheckLeft/binCheckRight,
+   (3) functional spec for the modified child after deletion, and
+   (4) Desc_outside reasoning to show keys in one child are absent from the
+   other. The overall approach looks sound but completing all sub-goals
+   requires substantial effort. *)
 
 Lemma delete_Desc a :
 forall e,
@@ -2248,6 +2271,13 @@ Ltac solve_f_eq_disjoint_Map :=
   try inRange_disjoint. (* Only try this, so that we see wher we are stuck. *)
 
 
+(* Blocker: ~25 admits across the Bin/Tip and Bin/Bin sub-cases. The Bin/Tip
+   case (line ~2288) is not started. The Bin/Bin case has admits in every branch
+   of the shorter/nomatch/zero case analysis: solve_f_eq_disjoint_Map leaves
+   residual inRange/rangeDisjoint goals that require manual reasoning about
+   how restricting by a set in one half-range produces None for keys in the
+   other half-range. The same-size case also needs oro/functional-spec reasoning.
+   Structurally similar to the IntSet intersection proof but adapted for IntMap. *)
 Program Fixpoint restrictKeys_Desc
   a (m1 : IntMap a) r1 f1 s2 r2 f2 f
   { measure (size_nat m1 + Data.IntSet.Internal.size_nat s2) } :
@@ -2456,12 +2486,17 @@ Fixpoint sem_for_lists {a: Type} (l : list (Key * a)) (i : Key) :=
   end.
 
 
+(* Blocker: mapKeys rebuilds the map via fromList after applying fmap to all
+   keys, so the resulting trie structure bears no relation to the input range r.
+   The stated postcondition (Desc with original range r) is likely too strong --
+   mapKeys can reorder/merge keys arbitrarily. Would need a weaker Sem-level
+   spec or a proof that fmap preserves the trie structure. Barely started. *)
 Lemma mapKeys_Desc: forall a (fmap : Key -> Key) (s: IntMap a) r f,
     Desc s r f ->
     Desc (mapKeys fmap s) r (fun i => (sem_for_lists (rev (foldrWithKey (fun k v t => ((fmap k), v) :: t) nil s)) i)).
 Proof.
   intros.
-  unfold mapKeys. simpl. 
+  unfold mapKeys. simpl.
 Admitted.
 
 
