@@ -2467,18 +2467,16 @@ Admitted.
 
 (* Verification of [lookupMin] *)
 
-Lemma empty_no_elts : forall {a}  (m: IntMap a),
-      (forall i, sem m i = None) <-> empty = m.
+(* empty_no_elts: false as stated for IntMap — Bin p msk Nil Nil has
+   sem = None everywhere but is not Nil. The forward direction needs a
+   WF/Desc hypothesis. The reverse direction is trivially true.
+   Unused in the codebase; the Map version in MaxMinProofs.v is correct
+   and covers the needed use cases. *)
+Lemma empty_no_elts_rev : forall {a} (m: IntMap a),
+      empty = m -> (forall i, sem m i = None).
 Proof.
-  intros. split; intros.
-  * induction m; auto.
-    + simpl in H. unfold oro in H.
-      assert (forall i, sem m2 i = None). admit.
-      assert (forall i, sem m3 i = None). admit.
-     intuition. symmetry in H2. rewrite H2. symmetry in H3. rewrite H3. unfold empty.                                                     admit.
-    + simpl in H. specialize (H k). unfold "==" in H. unfoldMethods. rewrite N.eqb_refl in H. discriminate. 
-  * unfold empty in H. rewrite <-  H. simpl. reflexivity.
-Admitted.
+  intros. unfold empty in H. rewrite <- H. simpl. reflexivity.
+Qed.
 
 Definition go {a} := fix go (arg_2__ : IntMap a) : option (Key * a) :=
         match arg_2__ with

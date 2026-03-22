@@ -1830,13 +1830,8 @@ Proof.
   auto.
 Qed.
 
-Lemma filterVarSet_iff (f1 f2 : Var -> bool) vs : 
-  (forall x, (f1 x) <-> (f2 x)) -> 
-  filterVarSet f1 vs [=] filterVarSet f2 vs.
-Proof.
-  intros. destruct vs, getUniqSet'. simpl.
-  apply IntMapEq_VarSetEq.
-Abort.
+(* filterVarSet_iff removed: unused and requires IntMap-level reasoning
+   beyond the FSet interface. Use filterVarSet_equal instead. *)
 
 Lemma filterVarSet_equal f vs1 vs2 :
   RespectsVar f -> 

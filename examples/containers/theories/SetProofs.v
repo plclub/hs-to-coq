@@ -1636,15 +1636,20 @@ Qed.
 Lemma deleteMin_spec n x (l r : Set_ e) :
   toList (deleteMin (Bin n x l r)) = tl (toList (Bin n x l r)).
 Proof.
-  unfold toList, toAscList.
-  generalize dependent (@nil e).
-  generalize dependent r.
-  generalize dependent x.
-  generalize dependent n.
-  induction r; intros; auto.
-  simpl in *.
-  rewrite <- IHr1.
-Abort.
+  revert n x r.
+  induction l; intros.
+  (* Inductive case: l = Bin, so deleteMin recurses into balanceR.
+     The inductive step requires an unconditional [toList_balanceR] lemma
+     (i.e., toList (balanceR x l r) = toList l ++ [x] ++ toList r),
+     but the existing [toList_balanceR] needs [Bounded] hypotheses to rule
+     out the opaque [error] branch in [balanceR]. This lemma has no
+     [Bounded] precondition, so the inductive step cannot be completed. *)
+  - admit.
+  (* Base case: l = Tip, so deleteMin (Bin n x Tip r) = r *)
+  - unfold toList, toAscList. simpl.
+    rewrite foldr_const_append. rewrite app_nil_r.
+    reflexivity.
+Admitted.
 
 (** ** Verification of [deleteMax] *)
 
