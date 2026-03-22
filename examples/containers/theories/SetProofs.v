@@ -1633,23 +1633,7 @@ Proof.
   * reflexivity.
 Qed.
 
-Lemma deleteMin_spec n x (l r : Set_ e) :
-  toList (deleteMin (Bin n x l r)) = tl (toList (Bin n x l r)).
-Proof.
-  revert n x r.
-  induction l; intros.
-  (* Inductive case: l = Bin, so deleteMin recurses into balanceR.
-     The inductive step requires an unconditional [toList_balanceR] lemma
-     (i.e., toList (balanceR x l r) = toList l ++ [x] ++ toList r),
-     but the existing [toList_balanceR] needs [Bounded] hypotheses to rule
-     out the opaque [error] branch in [balanceR]. This lemma has no
-     [Bounded] precondition, so the inductive step cannot be completed. *)
-  - admit.
-  (* Base case: l = Tip, so deleteMin (Bin n x Tip r) = r *)
-  - unfold toList, toAscList. simpl.
-    rewrite foldr_const_append. rewrite app_nil_r.
-    reflexivity.
-Admitted.
+(* deleteMin_spec moved after toList_balanceR/toList_balanceL (needs Bounded) *)
 
 (** ** Verification of [deleteMax] *)
 
@@ -2272,6 +2256,99 @@ Proof.
   all: try solve [exfalso; lia_sizes]. (* Some are simply impossible *)
   all: repeat find_Tip.
   all: rewrite ?toList_Bin, <- ?app_assoc; try reflexivity.
+Qed.
+
+(** ** Verification of [deleteMin] (toList spec) *)
+
+Lemma deleteMin_Bounded :
+  forall s lb ub,
+  Bounded s lb ub ->
+  Bounded (deleteMin s) lb ub.
+Proof.
+  intros s lb ub HB.
+  rewrite (deleteMin_Desc s lb ub HB).
+  pose proof (lookupMin_Desc s lb ub HB) as Hlm.
+  destruct (lookupMin s) as [e0|].
+  - pose proof (delete_Desc e0 s lb ub HB) as HD.
+    unfold Desc in HD. apply (HD (fun s' => Bounded s' lb ub)).
+    intros s' HBs' _ _. exact HBs'.
+  - exact HB.
+Qed.
+
+Lemma deleteMin_size :
+  forall s lb ub,
+  Bounded s lb ub ->
+  s <> Tip ->
+  (size (deleteMin s) = size s - 1)%Z.
+Proof.
+  intros s lb ub HB Hneq.
+  rewrite (deleteMin_Desc s lb ub HB).
+  pose proof (lookupMin_Desc s lb ub HB) as Hlm.
+  destruct (lookupMin s) as [e0|].
+  - destruct Hlm as [Hsem _].
+    pose proof (delete_Desc e0 s lb ub HB) as HD.
+    unfold Desc in HD.
+    apply (HD (fun s' => (size s' = size s - 1)%Z)).
+    intros s' _ Hsz _.
+    rewrite Hsz. rewrite Hsem. lia.
+  - exfalso. apply Hneq.
+    destruct HB.
+    + reflexivity.
+    + specialize (Hlm x).
+      simpl in Hlm. rewrite Eq_refl in Hlm.
+      rewrite orb_true_r in Hlm. discriminate.
+Qed.
+
+Lemma tl_app_nonempty {A} (l1 l2 : list A) :
+  l1 <> nil -> tl (l1 ++ l2) = tl l1 ++ l2.
+Proof.
+  destruct l1; intros.
+  - contradiction.
+  - simpl. reflexivity.
+Qed.
+
+Lemma toList_Bin_nonempty :
+  forall sz x (s1 s2 : Set_ e),
+  toList (Bin sz x s1 s2) <> nil.
+Proof.
+  intros.
+  rewrite toList_Bin.
+  destruct (toList s1); simpl; discriminate.
+Qed.
+
+Lemma deleteMin_spec n x (l r : Set_ e) lb ub :
+  Bounded (Bin n x l r) lb ub ->
+  toList (deleteMin (Bin n x l r)) = tl (toList (Bin n x l r)).
+Proof.
+  revert n x r lb ub.
+  induction l as [s1 e0 l1 IHl1 l2 IHl2 | ]; intros n x r lb ub HBtop.
+  - (* l = Bin s1 e0 l1 l2: deleteMin recurses *)
+    change (deleteMin (Bin n x (Bin s1 e0 l1 l2) r))
+      with (balanceR x (deleteMin (Bin s1 e0 l1 l2)) r).
+    assert (HBl : Bounded (Bin s1 e0 l1 l2) lb (Some x))
+      by (inversion HBtop; subst; assumption).
+    assert (HBr : Bounded r (Some x) ub)
+      by (inversion HBtop; subst; assumption).
+    assert (Hbal_orig : balance_prop (size (Bin s1 e0 l1 l2)) (size r))
+      by (inversion HBtop; subst; assumption).
+    pose proof (IHl1 s1 e0 l2 lb (Some x) HBl) as IH.
+    pose proof (deleteMin_Bounded _ _ _ HBl) as HB_dm.
+    pose proof (deleteMin_size _ _ _ HBl ltac:(discriminate)) as HszDM.
+    assert (Hbal' : balance_prop (size (deleteMin (Bin s1 e0 l1 l2))) (size r) \/
+                    balance_prop_inserted (size r - 1) (size (deleteMin (Bin s1 e0 l1 l2))) /\ (1 <= size r)%Z \/
+                    balance_prop (size (deleteMin (Bin s1 e0 l1 l2)) + 1) (size r)).
+    { right. right.
+      pose proof (size_nonneg HBl). pose proof (size_nonneg HBr).
+      unfold balance_prop in *. rewrite ?size_Bin in *. lia. }
+    erewrite toList_balanceR; [ | exact HB_dm | exact HBr | exact Hbal' ].
+    rewrite (toList_Bin n x (Bin s1 e0 l1 l2) r).
+    rewrite tl_app_nonempty by (apply toList_Bin_nonempty).
+    rewrite IH.
+    reflexivity.
+  - (* l = Tip *)
+    unfold toList, toAscList. simpl.
+    rewrite foldr_const_append. rewrite app_nil_r.
+    reflexivity.
 Qed.
 
 Lemma toList_insertMax:
