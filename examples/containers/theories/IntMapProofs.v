@@ -2131,16 +2131,14 @@ Proof.
   destruct (i =? k) eqn:EE1.
    * specialize (H1 i).
     assert (i=? e = true). {
-    (** Obvios from EE1, EE**)
-    admit.
+    apply Neqb_ok in EE. apply N.eqb_eq in EE1. subst. apply N.eqb_refl.
     }
     rewrite H2 in H1.
     apply H1.
    * 
    specialize (H1 i).
     assert (i=? e = false). {
-    (** This is true from  EE, EE1, just a lot of work**)
-    admit.
+    apply Neqb_ok in EE. subst. exact EE1.
     }
     rewrite H2 in H1.
     congruence.
@@ -2152,8 +2150,8 @@ Proof.
    specialize (H i). rewrite H in H1. 
    destruct (i=?e) eqn:EE1.
     --  assert (i=?k = false). {
-    (** This is true, just a lot of work**)
-    admit. }
+    apply N.eqb_eq in EE1. apply N.eqb_neq. apply N.eqb_neq in EE. intro. subst. contradiction.
+    }
     rewrite H1. rewrite H2. reflexivity. 
     -- assumption. 
  + simpl. rewrite nomatch_spec. 2:{ assumption. }
