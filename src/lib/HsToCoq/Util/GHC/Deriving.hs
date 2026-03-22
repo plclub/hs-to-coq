@@ -9,17 +9,17 @@
 
 #include "ghc-compat.h"
 
-{-
-This seems to work. But it is a hack!
-A 10-line patch extending the GHC-API would make that go away
--}
+{- | Error-tolerant deriving pipeline for hs-to-coq.
+Provides 'addDerivedInstances' which re-derives type class instances after
+typechecking, with skip-aware filtering ('DerivSkipInfo') and per-declaration
+retry on failure. Bridges the GHC deriving API with hs-to-coq's conversion. -}
 
 module HsToCoq.Util.GHC.Deriving (initForDeriving, addDerivedInstances, DerivSkipInfo(..)) where
 
 import GHC
 
 import Control.Monad
-import Data.Maybe (catMaybes, mapMaybe)
+import Data.Maybe (isNothing, mapMaybe)
 import qualified Data.Set as S
 import qualified Data.Text as T
 
@@ -34,8 +34,6 @@ import GhcPlugins (SourceText(NoSourceText), PromotionFlag(NotPromoted))
 #else
 import GhcPlugins (SourceText(NoSourceText))
 #endif
-
-import Control.Monad
 
 import GHC.IO (throwIO)
 import qualified Control.Exception as E
@@ -108,6 +106,10 @@ nameIsSkippedClass dsi name =
   in qualName `S.member` dsi_skippedClasses dsi
      || occStr `S.member` dsi_skippedClasses dsi
 
+-- | Check if a Name belongs to a skipped module or is a skipped class.
+shouldSkipName :: DerivSkipInfo -> Name -> Bool
+shouldSkipName dsi n = nameInSkippedModule dsi n || nameIsSkippedClass dsi n
+
 -- | Collect all Names from an HsType
 collectNamesFromHsType :: HsType GhcRn -> [Name]
 collectNamesFromHsType = go
@@ -136,7 +138,7 @@ shouldSkipDerivDecl dsi dd =
       sig = unLoc (hswc_body wcType)      -- HsSig GhcRn
       body = unLoc (sig_body sig)         -- HsType GhcRn
       names = collectNamesFromHsType body
-  in any (\n -> nameInSkippedModule dsi n || nameIsSkippedClass dsi n) names
+  in any (shouldSkipName dsi) names
 
 -- | Filter deriving clauses from data declarations in TyClGroups
 filterTyClGroupDerivs :: DerivSkipInfo -> [TyClGroup GhcRn] -> [TyClGroup GhcRn]
@@ -157,14 +159,14 @@ filterDerivingClause dsi (L loc clause) =
   in case dct of
     DctSingle ext ty ->
       let names = collectNamesFromHsType (unLoc (sig_body (unLoc ty)))
-      in if any (\n -> nameInSkippedModule dsi n || nameIsSkippedClass dsi n) names
+      in if any (shouldSkipName dsi) names
          then Nothing
          else Just (L loc clause)
     DctMulti ext tys ->
       let filtered = filter (not . hasSkippedName) tys
           hasSkippedName ty =
             let names = collectNamesFromHsType (unLoc (sig_body (unLoc ty)))
-            in any (\n -> nameInSkippedModule dsi n || nameIsSkippedClass dsi n) names
+            in any (shouldSkipName dsi) names
       in if null filtered
          then Nothing
          else Just (L loc clause { deriv_clause_tys = L dctLoc (DctMulti ext filtered) })
@@ -178,13 +180,17 @@ filterDerivingClause dsi (L loc clause) =
 addDerivedInstances :: GhcMonad m => DerivSkipInfo -> TypecheckedModule -> m TypecheckedModule
 addDerivedInstances dsi tcm = do
 #if __GLASGOW_HASKELL__ >= 910
-    let Just (hsgroup, a, b, c, d) = tm_renamed_source tcm
+    (hsgroup, a, b, c, d) <- case tm_renamed_source tcm of
+      Just x  -> pure x
+      Nothing -> error "addDerivedInstances: TypecheckedModule has no renamed source"
     -- Filter out deriving declarations that reference skipped modules/classes
     let filteredDerivds = filterStandaloneDerivs dsi (hs_derivds hsgroup)
     let filteredTyclds  = filterTyClGroupDerivs dsi (hs_tyclds hsgroup)
     let hsgroup_filtered = hsgroup { hs_derivds = filteredDerivds, hs_tyclds = filteredTyclds }
 #else
-    let Just (hsgroup, a, b, c) = tm_renamed_source tcm
+    (hsgroup, a, b, c) <- case tm_renamed_source tcm of
+      Just x  -> pure x
+      Nothing -> error "addDerivedInstances: TypecheckedModule has no renamed source"
     let hsgroup_filtered = hsgroup
 #endif
 
@@ -205,7 +211,8 @@ addDerivedInstances dsi tcm = do
                case mb_result of
                  Just (_gbl, infos, _binds) -> return infos
                  Nothing -> do
-                   -- Fall back: try each DerivInfo individually
+                   -- Batch derivation failed; fall back to per-declaration retry
+                   liftIO $ putStrLn "hs-to-coq: deriving: batch derivation failed, trying individually"
                    derivResults <- forM deriv_infos $ \di -> do
                      (mb, _) <- tryTc (tcInstDeclsDeriv [di] [])
                      return $ case mb of
@@ -234,9 +241,11 @@ addDerivedInstances dsi tcm = do
                return infos
 #endif
 
-    let inst_infos = case mb_inst_infos of
-          Just infos -> infos
-          Nothing    -> []  -- If tcTyAndClassDecls itself failed, proceed without derived instances
+    inst_infos <- case mb_inst_infos of
+          Just infos -> pure infos
+          Nothing    -> do  -- If tcTyAndClassDecls itself failed, proceed without derived instances
+            liftIO $ putStrLn "hs-to-coq: WARNING: entire deriving pipeline failed, proceeding with 0 derived instances"
+            pure []
     let inst_decls = map instInfoToDecl $ inst_infos
 
 #if __GLASGOW_HASKELL__ >= 806
@@ -291,8 +300,15 @@ initTcHackSafe tcm action = do
  result <- liftIO $ E.try @E.SomeException $
    initTc hsc_env_tmp HsSrcFile False mod src_span action
  case result of
-   Right (_msgs, mba) -> return mba
-   Left _exn          -> return Nothing
+   Right (_msgs, mba) -> do
+     when (isNothing mba) $
+       liftIO $ putStrLn "hs-to-coq: deriving: initTc returned Nothing (type errors in derived code)"
+     return mba
+   Left exn
+     | Just (_ :: E.AsyncException) <- E.fromException exn -> liftIO $ E.throwIO exn
+     | otherwise -> do
+         liftIO $ putStrLn $ "hs-to-coq: deriving: initTc threw exception: " ++ show exn
+         return Nothing
 
 fakeDerivingMod :: Module
 fakeDerivingMod = mkModule

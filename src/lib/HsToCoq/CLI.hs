@@ -50,6 +50,10 @@ import GHC.Driver.Session hiding (outputFile)
 import GHC.Unit.Module
 import GHC.Data.Bag (bagToList)
 import GHC.Types.Error (getMessages)
+import GHC.Driver.Errors.Ppr ()  -- instance Diagnostic DriverMessage => pprDiagnostic
+import GHC.Utils.Error (pprMsgEnvelopeBagWithLocDefault)
+import GHC.Utils.Outputable (showSDocUnsafe)
+import qualified GHC.Utils.Outputable as GHCOut
 #elif __GLASGOW_HASKELL__ >= 900
 import GHC.Driver.Session hiding (outputFile)
 import GHC.Unit.Module
@@ -220,8 +224,9 @@ processArgs = do
 #if __GLASGOW_HASKELL__ >= 910
   (dflags, ghcRest, warnings) <- (parseDynamicFlagsCmdLine ?? ghcArgs) =<< getSessionDynFlags
   let numWarns = length (bagToList (getMessages warnings))
-  when (numWarns > 0) $
-    liftIO $ hPutStrLn stderr $ "Command-line argument warnings: " ++ show numWarns
+  when (numWarns > 0) $ liftIO $ do
+    hPutStrLn stderr $ "Command-line argument warnings (" ++ show numWarns ++ "):"
+    hPutStrLn stderr $ showSDocUnsafe $ GHCOut.vcat $ pprMsgEnvelopeBagWithLocDefault (getMessages warnings)
 #else
   (dflags, ghcRest, warnings) <- (parseDynamicFlagsCmdLine ?? ghcArgs) =<< getSessionDynFlags
   printAllIfPresent unLoc "Command-line argument warning" (map warnMsg warnings)

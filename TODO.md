@@ -39,7 +39,7 @@
 - [x] containers/lib compiles
 - [x] containers/theories compiles
 - Note: IntSetWordProofs.v has ~80 Admitted (pre-existing, not a regression)
-- Note: MapProofs/FromListProofs.v has 2 Admitted (pre-existing)
+- Note: MapProofs/FromListProofs.v has 0 Admitted (fixed)
 
 ### 8. Commit to Git at milestones
 - [x] Deprecated warning fixes committed (06ceab6e)

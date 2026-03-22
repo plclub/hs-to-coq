@@ -172,7 +172,7 @@ convertClassDecl :: ConversionMonad r m
                  -> [LHsTyVarBndr GHC_900(flag) GhcRn]                  -- ^@tcdTyVars@  class type variables
 #if __GLASGOW_HASKELL__ >= 900
                  -> [GenLocated l' (FunDep GhcRn)] -- ^@tcdFDs@     functional dependencies
-#elif
+#else
                  -> [GenLocated l (FunDep (GenLocated l GHC.Name))] -- ^@tcdFDs@     functional dependencies
 #endif
                  -> [LSig GhcRn]                          -- ^@tcdSigs@    method signatures

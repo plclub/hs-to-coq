@@ -46,7 +46,7 @@ Use relative path instead of absolute path when `cd` to a directory.
 - `src/lib/HsToCoq/Coq/Gallina.hs` — Coq AST data types (Term, Sentence, Definition, Inductive, etc.)
 - `src/lib/HsToCoq/Coq/Pretty.hs` — Pretty-printer rendering Gallina AST as Coq source
 - `src/lib/HsToCoq/ConvertHaskell/` — Core conversion engine:
-  - `Expr.hs` — Expression conversion (largest file, ~1600 lines)
+  - `Expr.hs` — Expression conversion (largest file, ~1700 lines)
   - `Module.hs` — Whole-module conversion
   - `Monad.hs` — Conversion monad carrying edits/renamings/state
   - `Declarations/` — Data types, classes, instances, type synonyms
@@ -142,7 +142,7 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
 
 ### GHC example (examples/ghc/)
-Translated from GHC 9.10.3. All lib/*.v and 28 theories/*.v compile. `make clean && make` regenerates lib/ (removes dir, rebuilds via hs-to-coq + lndir for ~60 manual files). Edit `manual/*.v` directly (not `lib/*.v` symlinks).
+Translated from GHC 9.10.3. All lib/*.v and 29 theories/*.v compile. `make clean && make` regenerates lib/ (removes dir, rebuilds via hs-to-coq + lndir for ~48 manual files). Edit `manual/*.v` directly (not `lib/*.v` symlinks).
 
 Key GHC 9.10 type changes: `Alt` uses `Mk_Alt` constructor (not tuple); `Mk_Id` has 7 fields (`varMult : Mult` added 4th); `realUnique` is `Unique` not `N`; `Var` has single constructor `Mk_Id` (no `TyVar`); `cse_bind` has 5 args; `lookupIdSubst` dropped `String` doc param; State monad is bare function type; `mkVarApps` uses `foldl'`. GoDom: use `alt_rhs` projection (strict positivity).
 
@@ -155,7 +155,7 @@ Build details: `manual/AxiomatizedTypes.v` instances must be `#[global]`. `axiom
 Core.v post-processing uses `fix-files/` for multi-line insertions (portable across GNU/BSD sed). GHC and transformers regeneration on macOS requires GNU sed: `brew install gnu-sed && PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH" make -C examples/ghc vfiles`.
 
 ### Paper claims audit
-`paper-claims-audit.md` (project root) documents the status of formal verification claims from three publications (JFP 2021, arxiv:1910.11724, ICFP 2018) against the current codebase. Key results: all core verification theorems (WellScoped_substExpr, exitifyProgram_WellScoped_JPV, FSet/FMapInterface, type class laws) still hold. MonoidLaws for Map proved in TypeclassProofs.v (was a gap vs JFP Fig 4). Map fromList `Program Fixpoint` regressions from Coq 8.20 fixed (0 Admitted). Regressions: CSE (5 Admitted, axiomatized source).
+`paper-claims-audit.md` (project root) documents the status of formal verification claims from three publications (JFP 2021, arxiv:1910.11724, ICFP 2018) against the current codebase. Key results: all core verification theorems (WellScoped_substExpr, exitifyProgram_WellScoped_JPV, FSet/FMapInterface, type class laws) still hold. MonoidLaws for Map proved in TypeclassProofs.v (was a gap vs JFP Fig 4). Map fromList `Program Fixpoint` regressions from Coq 8.20 fixed (0 Admitted). Regressions: CSE (5 Admitted, axiomatized source), TrieMap (5 Admitted), VarSetFSet (13 Admitted), Exitify (3 Admitted).
 
 ### Containers submodule
 Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates and builds everything. IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources. Full type class laws verified: EqLaws, OrdLaws, SemigroupLaws, MonoidLaws, FunctorLaws for Map (all Qed in TypeclassProofs.v). Map fromList proofs fully verified (0 Admitted in FromListProofs.v).

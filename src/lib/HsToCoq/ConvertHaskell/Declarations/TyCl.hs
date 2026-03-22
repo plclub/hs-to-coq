@@ -202,7 +202,7 @@ convertTyClDecl env decl = do
            DataDecl{..}  -> ConvData <$> isCoind <*> convertDataDecl              tcdLName (hsq_explicit tcdTyVars) tcdDataDefn
            ClassDecl{..} -> ConvClass            <$> convertClassDecl env tcdCtxt' tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
 #if __GLASGOW_HASKELL__ >= 900
-             -- GHC 9.10: tcdCtxt changed from LHsContext to Maybe (LHsContext)
+             -- GHC 9.0+: tcdCtxt changed from LHsContext to Maybe (LHsContext)
              where tcdCtxt' = fromMaybe (noLocA []) tcdCtxt
 #else
              where tcdCtxt' = tcdCtxt

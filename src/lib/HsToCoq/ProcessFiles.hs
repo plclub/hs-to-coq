@@ -66,15 +66,15 @@ processFiles mode files = do
         , dsi_skippedClasses = S.map qualidToIdent skipCls
         }
   traverse_ (addTarget <=< (guessTarget ?? Nothing ?? Nothing)) files
+  filterModules <- case mode of
+    Recursive    -> pure pure
+    NonRecursive -> do
+      let canonicalizePaths trav = traverse (liftIO . canonicalizePath) trav
+      filePaths <- S.fromList . map Just <$> canonicalizePaths files
+      let moduleFile = canonicalizePaths . ml_hs_file . ms_location
+      pure . filterM $ fmap (`S.member` filePaths) . moduleFile
   load LoadAllTargets >>= \case
     Succeeded -> Just <$> do
-      filterModules <- case mode of
-        Recursive    -> pure pure
-        NonRecursive -> do
-          let canonicalizePaths trav = traverse (liftIO . canonicalizePath) trav
-          filePaths <- S.fromList . map Just <$> canonicalizePaths files
-          let moduleFile = canonicalizePaths . ml_hs_file . ms_location
-          pure . filterM $ fmap (`S.member` filePaths) . moduleFile
       traverse (addDerivedInstances skipInfo <=< typecheckModule <=< parseModule)
         =<< skipModulesBy ms_mod_name
         =<< filterModules . mgModSummaries
@@ -87,13 +87,6 @@ processFiles mode files = do
       -- when load fails.
       do
         liftIO $ putStrLn "hs-to-coq: initial load failed, attempting recovery by stripping standalone deriving declarations"
-        filterModules <- case mode of
-          Recursive    -> pure pure
-          NonRecursive -> do
-            let canonicalizePaths trav = traverse (liftIO . canonicalizePath) trav
-            filePaths <- S.fromList . map Just <$> canonicalizePaths files
-            let moduleFile = canonicalizePaths . ml_hs_file . ms_location
-            pure . filterM $ fmap (`S.member` filePaths) . moduleFile
         modSummaries <- skipModulesBy ms_mod_name
                           =<< filterModules . mgModSummaries
                           =<< getModuleGraph
@@ -107,6 +100,10 @@ processFiles mode files = do
             -- (handleSourceError in processWithStrippedDerivs returns Nothing).
             results <- traverse (processWithStrippedDerivs skipInfo) modSummaries
             let successes = [tcm | Just tcm <- results]
+            let failed = length results - length successes
+            when (failed > 0) $
+              liftIO $ putStrLn $ "hs-to-coq: warning: " ++ show failed ++ " of " ++ show (length results)
+                ++ " modules failed to typecheck and were skipped"
             if null successes
               then do
                 liftIO $ putStrLn "hs-to-coq: error: all modules failed to typecheck"

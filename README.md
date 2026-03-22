@@ -1,7 +1,7 @@
 
 # hs-to-coq
 
-![hs-to-coq](https://github.com/plclub/hs-to-coq/workflows/hs-to-coq/badge.svg?branch=ghc910-coq820)
+![hs-to-coq](https://github.com/plclub/hs-to-coq/workflows/hs-to-coq/badge.svg?branch=master)
 
 Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-coq-devs.20.26.20users)
 
@@ -154,7 +154,7 @@ base → base-thy → containers/lib → containers/theories
 | `containers/lib` | Generated lib | **PASS** | 16/16 .v | Containers v0.7 |
 | `containers/theories` | Proofs | **PASS** | 34/34 .v | Verified Set/IntSet/Map |
 | `ghc/lib` | Generated lib | **PASS** | 99/99 .v | GHC 9.10.3 core |
-| `ghc/theories` | Proofs | **PASS** | 29/29 .v | 25 files 0 Admitted; 31 actual Admitted across 4 files |
+| `ghc/theories` | Proofs | **PASS** | 29/29 .v | 25 files 0 Admitted; 26 actual Admitted across 4 files |
 | `transformers/lib` | Generated lib | **PASS** | 14/14 .v | Regenerated for GHC 9.10 |
 | `graph/lib` | Generated lib + proofs | **PASS** | 6/6 .v | Omega→Lia fixed |
 | `graph/theories` | Proofs | **PARTIAL** | 8/11 .v | 3 files need `coq-equations` |
