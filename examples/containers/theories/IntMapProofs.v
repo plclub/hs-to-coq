@@ -937,10 +937,22 @@ Qed.
    to pick left vs right child. With msk=1, zero 1 1 = false, so lookup 1
    goes to the right child (Nil) and returns None.
    Only used within isSubmapOfBy_Desc (also Admitted). *)
+(* Formal counterexample *)
+Lemma isSubmapOfBy_Bin_false :
+  ~ (forall (s1 s2 s3: IntMap N) p msk f',
+       isSubmapOfBy f' s1 s2 = true -> isSubmapOfBy f' s1 (Bin p msk s2 s3) = true).
+Proof.
+  intro H.
+  specialize (H (Tip 1%N 42%N) (Tip 1%N 42%N) Nil 0%N 1%N (fun _ _ => true) eq_refl).
+  discriminate.
+Qed.
+
+(* FALSE: disproved by isSubmapOfBy_Bin_false above. Aborted to prevent use. *)
 Lemma isSubmapOfBy_Bin {a} :
   forall (s1 s2 s3: IntMap a) p msk f',
     isSubmapOfBy f' s1 s2 = true -> isSubmapOfBy f' s1 (Bin p msk s2 s3) = true.
-Proof. Admitted.
+Proof.
+Abort.
 
 (* Blocker: Program Fixpoint proof with ~10 admits across the Bin/Bin case.
    Specific blockers:
@@ -1053,7 +1065,7 @@ Next Obligation.
             -- simpl. lia.
             -- eapply H1.
             -- eapply HD2.
-            -- rewrite Hr in H. simpl in H. eapply andb_prop in H. destruct H. apply isSubmapOfBy_Bin. auto. 
+            -- admit. (* was: apply isSubmapOfBy_Bin — disproved, see isSubmapOfBy_Bin_false *)
             -- admit.
          ++ eapply IH with (s1:= Bin (rPrefix r1) (rMask r1) m1 m2) (s2:= (Bin (rPrefix r2) (rMask r2) m0 m3)).
             -- simpl. admit.
