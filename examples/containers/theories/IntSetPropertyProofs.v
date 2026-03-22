@@ -345,14 +345,59 @@ Qed.
   IntSet operations are like Set operations
 ********************************************************************)
 
-(* "Check that IntSet.isProperSubsetOf is the same as Set.isProperSubsetOf."
-   BLOCKER: Require SetProofs triggers a typeclass resolution infinite loop
-   when combined with IntSetProofs instances (kills coqc via OOM in make builds).
-   The proofs work in standalone coqc invocations — see test_bridge.v.
-   Proof strategy: toSet_sem bridge + SetProofs.isSubsetOfX_spec + size reasoning.
-   thm_isProperSubsetOf2 covers the key property without Set import. *)
+(* Import SetProofs with depth limit to prevent typeclass loop *)
+Set Typeclasses Iterative Deepening.
+Set Typeclasses Depth 3.
+Require SetProofs.
+Unset Typeclasses Iterative Deepening.
+
+(* Bridge: List.elem for N is equivalent to Coq's In *)
+Lemma List_elem_In : forall (k : N) (xs : Coq.Init.Datatypes.list N),
+  GHC.List.elem k xs = true <-> List.In k xs.
+Proof.
+  intros k xs. induction xs as [|x xs' IH].
+  - simpl. split; intro H; inversion H.
+  - simpl. rewrite orb_true_iff. split.
+    + intros [Heq | Hin].
+      * left. symmetry. apply (reflect_iff _ _ (Eq_eq k x)). exact Heq.
+      * right. apply IH. exact Hin.
+    + intros [Heq | Hin].
+      * left. apply (reflect_iff _ _ (Eq_eq k x)). symmetry. exact Heq.
+      * right. apply IH. exact Hin.
+Qed.
+
+(* Bridge: toSet produces a Bounded Set with sem matching IntSet.member *)
+Lemma toSet_Bounded_sem : forall (s : IntSet),
+  WF s ->
+  exists s', s' = toSet s /\
+    SetProofs.Bounded s' None None /\
+    (forall k, SetProofs.sem s' k = Data.IntSet.Internal.member k s).
+Proof.
+  intros s [f Hsem].
+  unfold toSet, op_z2218U__.
+  pose proof (SetProofs.fromList_Desc (Data.IntSet.Internal.toList s)) as Hdesc.
+  unfold SetProofs.Desc' in Hdesc.
+  apply Hdesc. clear Hdesc.
+  intros s' Hbounded _ Hsem_eq.
+  exists s'. split; [reflexivity|]. split; [exact Hbounded|].
+  intros k. rewrite Hsem_eq.
+  apply Bool.eq_iff_eq_true.
+  pose proof (IntSetProofs.member_Sem Hsem (i := k)) as Hmem.
+  pose proof (IntSetProofs.toList_In _ _ Hsem k) as Hin.
+  split; intro H.
+  - apply List_elem_In in H. apply Hin in H. rewrite Hmem. exact H.
+  - rewrite Hmem in H. apply Hin in H. apply List_elem_In. exact H.
+Qed.
+
+(* "Check that IntSet.isProperSubsetOf is the same as Set.isProperSubsetOf." *)
 Theorem thm_isProperSubsetOf : toProp prop_isProperSubsetOf.
-Proof. Admitted.
+Proof.
+  rewrite /prop_isProperSubsetOf /= => s1 WF1 s2 WF2.
+  (* Needs size reasoning for proper subset — bridge infrastructure
+     is available but the size< direction requires toSet_size +
+     NoDup_incl_length reasoning. *)
+  admit.
+Admitted.
 
 (* "In the above test, isProperSubsetOf almost always returns False (since a
    random set is almost never a subset of another random set).  So this second
@@ -362,19 +407,32 @@ Proof.
   rewrite /prop_isProperSubsetOf2 /= => s1 WF1 s2 WF2.
   move: (union_WF _ _ WF1 WF2) => WF12.
   apply/Eq_eq/bool_eq_iff.
-  
+
   rewrite isProperSubsetOf_member //; split; first by intuition.
   move=> s1_diff; split=> // k k_in_s1.
   by rewrite union_member // k_in_s1 orTb.
 Qed.
 
-(* Same blocker: Require SetProofs typeclass loop. Proven in standalone:
-     apply/Eq_eq/bool_eq_iff; rewrite isSubsetOf_member //;
-     rewrite SetProofs.isSubsetOf_spec //;
-     split; intros Hsub k Hk; [specialize (Hsub k)|]; rewrite !toSet_sem //; auto.
-   thm_isSubsetOf2 covers the key property. *)
 Theorem thm_isSubsetOf : toProp prop_isSubsetOf.
-Proof. Admitted.
+Proof.
+  rewrite /prop_isSubsetOf /= => s1 WF1 s2 WF2.
+  apply/Eq_eq.
+  apply Bool.eq_iff_eq_true.
+  destruct (toSet_Bounded_sem s1 WF1) as [ts1 [Ets1 [Hb1 Hsem1]]].
+  destruct (toSet_Bounded_sem s2 WF2) as [ts2 [Ets2 [Hb2 Hsem2]]].
+  subst ts1 ts2.
+  split; intro H.
+  - apply (proj2 (SetProofs.isSubsetOf_spec _ _ _ _ Hb1 Hb2)).
+    assert (Hmem : forall k, Data.IntSet.Internal.member k s1 = true ->
+                             Data.IntSet.Internal.member k s2 = true).
+    { apply (proj1 (isSubsetOf_member s1 s2 WF1 WF2)). exact H. }
+    intros i Hi. rewrite Hsem2. apply Hmem. rewrite <- Hsem1. exact Hi.
+  - apply (proj2 (isSubsetOf_member s1 s2 WF1 WF2)).
+    assert (Hsem_sub : forall i, SetProofs.sem (toSet s1) i = true ->
+                                 SetProofs.sem (toSet s2) i = true).
+    { apply (proj1 (SetProofs.isSubsetOf_spec _ _ _ _ Hb1 Hb2)). exact H. }
+    intros k Hk. rewrite <- Hsem2. apply Hsem_sub. rewrite Hsem1. exact Hk.
+Qed.
 
 Theorem thm_isSubsetOf2 : toProp prop_isSubsetOf2.
 Proof.
