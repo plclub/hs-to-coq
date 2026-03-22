@@ -86,6 +86,9 @@ If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the
 ### Axiomatized lib functions
 When lib/*.v functions are `Axiom`, theories/*.v proofs that unfold them must be `Admitted`. Check with `grep "^Axiom" lib/Module.v` before attempting computation-based proofs. See "GHC example" section for the full list of axiomatized functions.
 
+### False theorems
+If a theorem is discovered to be false, construct a formal Coq counterexample (a proved `Lemma` showing `~ (statement)`) and `Abort` the original theorem (not `Admitted`, to prevent unsound use). Add a comment before `Abort` referencing the counterexample. Example: `mapKeys_Desc_false` in IntMapProofs.v disproves `mapKeys_Desc`.
+
 ## Test Structure
 
 - `examples/tests/` — Unit tests: each `.hs` file is translated to `.v` and type-checked with `coqc`. Tests categorized as `PASS`, `TODO_PASS` (known failures), `TODO_TRANSLATE`.
