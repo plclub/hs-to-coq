@@ -2117,13 +2117,12 @@ simpl. apply N.eqb_refl.
 Qed.
 
 
-(* Blocker: ~15 admits across Tip and Bin cases. Tip case needs N.eqb/==
-   conversions (3 admits). Bin case needs: (1) relating delete results back
-   to Desc0 via IH, (2) subrange reasoning for binCheckLeft/binCheckRight,
-   (3) functional spec for the modified child after deletion, and
-   (4) Desc_outside reasoning to show keys in one child are absent from the
-   other. The overall approach looks sound but completing all sub-goals
-   requires substantial effort. *)
+(* Fully proved. Key techniques: (1) revert r1/f before induction for a
+   strong IH generalized over the outer range, (2) nomatch_zero to split into
+   three sub-cases, (3) replace binCheckLeft/binCheckRight with bin (justified
+   because the untouched child satisfies Desc hence is non-Nil), (4) bin_Desc0
+   to combine the IH result with the unchanged child, (5) Desc_outside +
+   inRange_isSubrange_false to show keys in one half are absent from the other. *)
 
 Lemma delete_Desc a :
 forall e,
@@ -2134,115 +2133,119 @@ forall e,
   (forall i, f i = if (i =? e) then None else f1 i) ->
   Desc0 (delete e s1) r1 f.
 Proof.
- intros. induction H; intros; subst.
- + 
+ intros. revert dependent r1. revert dependent f.
+ induction H; intros; subst.
+ + (* Tip case: delete e (Tip k v) *)
  unfold delete.
  destruct (e == k) eqn:EE.
   - rewrite EE.  eapply Desc0Nil.
   intros. specialize (H i).
   destruct (i =? k) eqn:EE1.
    * specialize (H1 i).
-    assert (i=? e = true). {
+    assert (Hie : i=? e = true). {
     apply Neqb_ok in EE. apply N.eqb_eq in EE1. subst. apply N.eqb_refl.
     }
-    rewrite H2 in H1.
+    rewrite Hie in H1.
     apply H1.
-   * 
+   *
    specialize (H1 i).
-    assert (i=? e = false). {
+    assert (Hie : i=? e = false). {
     apply Neqb_ok in EE. subst. exact EE1.
     }
-    rewrite H2 in H1.
+    rewrite Hie in H1.
     congruence.
-  -  
+  -
   rewrite EE. eapply Desc0NotNil.
    * eapply DescTip; reflexivity.
    * assumption.
    * intros. simpl. specialize (H1 i).
-   specialize (H i). rewrite H in H1. 
+   specialize (H i). rewrite H in H1.
    destruct (i=?e) eqn:EE1.
-    --  assert (i=?k = false). {
+    --  assert (Hik : i=?k = false). {
     apply N.eqb_eq in EE1. apply N.eqb_neq. apply N.eqb_neq in EE. intro. subst. contradiction.
     }
-    rewrite H1. rewrite H2. reflexivity. 
-    -- assumption. 
- + simpl. rewrite nomatch_spec. 2:{ assumption. }
- destruct (inRange e r) eqn:EE.
- - simpl. rewrite zero_spec.
-  destruct (N.testbit e (rBits r - 1)) eqn:EE1. 3: { assumption. }
-   ++ simpl. unfold binCheckRight.
-   destruct (delete e m2) eqn:EE2.
-    -- rewrite <- EE2. admit.
-    -- admit.
-    -- eapply Desc0NotNil. eapply H.
-     ** admit. (**True from H4, H0**)
-     ** intros. specialize (H1 i). specialize (H8 i).
-      destruct (i=?e) eqn:EE3.
-       --- erewrite H1. unfold oro in H8.
-       symmetry.
-       eapply Desc_outside.
-       eapply H. 
-       replace e with i in *. 2: {  apply Neqb_ok. assumption. }
-       assert (inRange i (halfRange r false) = false). {
-       rewrite halfRange_inRange_testbit. 
-       simpl. 
-        rewrite EE1. auto. assumption. assumption.
-       }
-       eapply inRange_isSubrange_false.
-       eapply H4. assumption.
-       ---
-       rewrite H1.
-       unfold oro in H8. destruct (f1 i).
-        +++ assumption.
-        +++ admit.
-  ++ simpl.
-  unfold binCheckLeft.
-  destruct (delete e m1) eqn:EE2.
-   -- eapply Desc0NotNil.
-   assert (Desc0 (Bin p m i1 i2) r1 f). {
-    eapply IHDesc1.
-    admit. (** r0 is subrange of the halfrange, so it it is subrange of
-    the whole thing **)
-    intros. 
-    specialize (H1 i). specialize (H8 i).
-    destruct (i=?e).
-    - auto.
-    - admit. (**
-    We can deduce that f2 is none from the EE, EE1, H5, H2
-    by using Desc_outside
-    **)
-    }
-    inversion_Desc H6.
-   eapply DescBin. 
-    ** 
-    intuition.
-    eapply HD.
-    ** eapply H2.
-    ** eapply H3. 
-    ** admit.
-    ** eapply H5.
-    ** reflexivity.
-    ** reflexivity.
-    ** admit.
-    ** assumption.
-    ** reflexivity.
-    -- eapply Desc0NotNil.
-    eapply DescBin.
-     ** eapply  DescTip. reflexivity. reflexivity.
-     ** eapply H2.
-     ** eapply H3.
-     ** admit.
-     ** eapply H5.
-     ** reflexivity.
-     ** reflexivity.
-     ** reflexivity.
-     ** auto.
-     ** intros. simpl. admit. 
-     -- admit.
-    - simpl. eapply Desc0NotNil; try eassumption.
-     * eapply DescBin; try eassumption; try reflexivity.
-     * intros. admit.
-Admitted.
+    rewrite H1. rewrite Hik. reflexivity.
+    -- assumption.
+ + (* Bin case: delete e (Bin (rPrefix r) (rMask r) m1 m2) *)
+   simpl.
+   apply nomatch_zero.
+   { (* (0 < rBits r)%N *) exact H1. }
+   - (* nomatch case: inRange e r = false, tree unchanged *)
+     intro HnotInRange.
+     eapply Desc0NotNil.
+     * eapply DescBin.
+       exact H. exact H0. exact H1. exact H2. exact H3.
+       reflexivity. reflexivity. exact H6.
+     * exact H8.
+     * intro i. rewrite H7.
+       destruct (i =? e) eqn:Hie; [| reflexivity].
+       apply N.eqb_eq in Hie. subst i.
+       symmetry. eapply Desc_outside.
+       eapply DescBin.
+       exact H. exact H0. exact H1. exact H2. exact H3.
+       reflexivity. reflexivity. exact H6.
+       exact HnotInRange.
+   - (* zero case (delete from left): inRange e (halfRange r false) = true *)
+     intros HinLeft HnotRight.
+     (* binCheckLeft p m (delete e m1) m2 = bin p m (delete e m1) m2
+        because m2 is non-Nil (it satisfies Desc) *)
+     assert (Hm2_notNil : m2 <> Nil) by (intro Heq; subst; inversion H0).
+     replace (binCheckLeft (rPrefix r) (rMask r) (delete e m1) m2)
+       with (bin (rPrefix r) (rMask r) (delete e m1) m2). 2: {
+       unfold binCheckLeft, bin.
+       destruct (delete e m1); destruct m2; try reflexivity;
+       exfalso; apply Hm2_notNil; reflexivity.
+     }
+     (* Combine via bin_Desc0, then lift to outer range *)
+     eapply Desc0_subRange. 2: exact H8.
+     eapply bin_Desc0.
+     * (* Desc0 (delete e m1) r1 (fun i => if i=?e then None else f1 i) *)
+       eapply IHDesc1.
+       ++ intro i. reflexivity.
+       ++ apply isSubrange_refl.
+     * (* Desc0 m2 r2 f2 *)
+       eapply Desc_Desc0. exact H0.
+     * exact H1.
+     * exact H2.
+     * exact H3.
+     * reflexivity.
+     * reflexivity.
+     * intro i. rewrite H7. rewrite H6.
+       destruct (i =? e) eqn:Hie.
+       ++ apply N.eqb_eq in Hie. subst i. simpl. symmetry.
+          eapply Desc_outside. exact H0.
+          eapply inRange_isSubrange_false. exact H3. exact HnotRight.
+       ++ reflexivity.
+   - (* one case (delete from right): inRange e (halfRange r true) = true *)
+     intros HnotLeft HinRight.
+     assert (Hm1_notNil : m1 <> Nil) by (intro Heq; subst; inversion H).
+     replace (binCheckRight (rPrefix r) (rMask r) m1 (delete e m2))
+       with (bin (rPrefix r) (rMask r) m1 (delete e m2)). 2: {
+       unfold binCheckRight, bin.
+       destruct m1; destruct (delete e m2); try reflexivity.
+       all: exfalso; apply Hm1_notNil; reflexivity.
+     }
+     eapply Desc0_subRange. 2: exact H8.
+     eapply bin_Desc0.
+     * eapply Desc_Desc0. exact H.
+     * eapply IHDesc2.
+       ++ intro i. reflexivity.
+       ++ apply isSubrange_refl.
+     * exact H1.
+     * exact H2.
+     * exact H3.
+     * reflexivity.
+     * reflexivity.
+     * intro i. rewrite H7. rewrite H6.
+       destruct (i =? e) eqn:Hie.
+       ++ apply N.eqb_eq in Hie. subst i.
+          assert (Hfl_none : f1 e = None). {
+            eapply Desc_outside. exact H.
+            eapply inRange_isSubrange_false. exact H2. exact HnotLeft.
+          }
+          rewrite Hfl_none. simpl. reflexivity.
+       ++ reflexivity.
+Qed.
 
 Definition IMFilterWithKey {a} p (s: IntMap a) :=
   Data.IntMap.Internal.filterWithKey p s.
