@@ -12,6 +12,9 @@ Set Bullet Behavior "Strict Subproofs".
 (* Sortedness *)
 Require Import Coq.Sorting.Sorted.
 
+(* Arithmetic *)
+From Coq Require Import NArith Lia.
+
 (* Basic Haskell libraries *)
 Require Import GHC.Base      Proofs.GHC.Base.
 Require Import GHC.List      Proofs.GHC.List.
@@ -278,15 +281,135 @@ Qed.
   Bin invariants
 ********************************************************************)
 
+(** *** Counterexample: thm_MaskPow2 is FALSE in the Coq model *)
+
+(* The Coq model uses unbounded N (not 64-bit Word), so we can construct
+   a WF IntSet whose Bin mask is 2^100 -- outside [2^0..2^63].
+   We build: Bin 0 (2^100) (Tip 0 1) (Tip (2^100) 1). *)
+
+Definition r_left_mp2 : range := (0%N, 6%N).
+Definition r_right_mp2 : range := (2^94, 6)%N.
+Definition r_top_mp2 : range := (0%N, 101%N).
+
+Definition f_left_mp2 : N -> bool := bitmapInRange r_left_mp2 1.
+Definition f_right_mp2 : N -> bool := bitmapInRange r_right_mp2 1.
+Definition f_big_mp2 : N -> bool := fun i => f_left_mp2 i || f_right_mp2 i.
+
+Definition big_set_mp2 : IntSet :=
+  Bin 0%N (2^100)%N (Tip 0%N 1%N) (Tip (2^100)%N 1%N).
+
+Lemma isBitMask_1_mp2 : isBitMask 1.
+Proof. unfold isBitMask, WIDTH. lia. Qed.
+
+Lemma Desc_left_mp2 : Desc (Tip 0%N 1%N) r_left_mp2 f_left_mp2.
+Proof.
+  apply DescTip.
+  - reflexivity.
+  - reflexivity.
+  - intro i. reflexivity.
+  - exact isBitMask_1_mp2.
+Qed.
+
+Lemma Desc_right_mp2 : Desc (Tip (2^100)%N 1%N) r_right_mp2 f_right_mp2.
+Proof.
+  apply DescTip.
+  - unfold r_right_mp2. simpl. reflexivity.
+  - reflexivity.
+  - intro i. reflexivity.
+  - exact isBitMask_1_mp2.
+Qed.
+
+Lemma isSubrange_left_mp2 : isSubrange r_left_mp2 (halfRange r_top_mp2 false) = true.
+Proof. vm_compute. reflexivity. Qed.
+
+Lemma isSubrange_right_mp2 : isSubrange r_right_mp2 (halfRange r_top_mp2 true) = true.
+Proof. vm_compute. reflexivity. Qed.
+
+Lemma Desc_big_mp2 : Desc big_set_mp2 r_top_mp2 f_big_mp2.
+Proof.
+  unfold big_set_mp2.
+  eapply DescBin.
+  - exact Desc_left_mp2.
+  - exact Desc_right_mp2.
+  - unfold r_top_mp2; simpl; lia.
+  - exact isSubrange_left_mp2.
+  - exact isSubrange_right_mp2.
+  - reflexivity.
+  - reflexivity.
+  - intro i. reflexivity.
+Qed.
+
+Lemma WF_big_set_mp2 : WF big_set_mp2.
+Proof.
+  exists f_big_mp2. apply (DescSem _ r_top_mp2). exact Desc_big_mp2.
+Qed.
+
+Lemma pow2_100_not_in_powers :
+  ~ In (2^100)%N
+    (Coq.Lists.List.map (fun i : N => (2^i)%N)
+       (GHC.Enum.enumFromTo 0%N 63%N)).
+Proof.
+  intro HIn.
+  apply Coq.Lists.List.in_map_iff in HIn.
+  destruct HIn as [x [Hpow Hin]].
+  assert (Hx : x = 100%N) by (apply N.pow_inj_r with (a := 2%N); lia).
+  subst x.
+  revert Hin.
+  vm_compute.
+  intuition congruence.
+Qed.
+
+Lemma member_pow2_100_powersOf2_false : member (2^100)%N powersOf2 = false.
+Proof.
+  unfold powersOf2.
+  rewrite fromList_member.
+  apply negbTE. apply/negP. move/elemP.
+  rewrite flat_map_cons_f.
+  exact pow2_100_not_in_powers.
+Qed.
+
+Lemma prop_MaskPow2_big_set_false : prop_MaskPow2 big_set_mp2 = false.
+Proof.
+  unfold big_set_mp2.
+  change (prop_MaskPow2 (Bin 0%N (2^100)%N (Tip 0%N 1%N) (Tip (2^100)%N 1%N)))
+    with (member (2^100)%N powersOf2 && (prop_MaskPow2 (Tip 0%N 1%N) && prop_MaskPow2 (Tip (2^100)%N 1%N))).
+  rewrite member_pow2_100_powersOf2_false. reflexivity.
+Qed.
+
+Theorem thm_MaskPow2_false : ~ (toProp prop_MaskPow2).
+Proof.
+  intro H.
+  have := H big_set_mp2 WF_big_set_mp2.
+  rewrite prop_MaskPow2_big_set_false.
+  done.
+Qed.
+
+(** *** thm_MaskPow2: disproved above *)
+
 (* "Check the invariant that the mask is a power of 2." *)
-(* FALSE: disproved by thm_MaskPow2_false in test_maskpow2.v.
+(* FALSE: disproved by thm_MaskPow2_false above.
    The Coq model uses unbounded N (not 64-bit Word), so a WF IntSet can have
-   Bin masks > 2^63 (e.g., Bin with keys {0, 2^100} has mask 2^100).
+   Bin masks > 2^63 (e.g., big_set_mp2 has keys {0, 2^100} and mask 2^100).
    powersOf2 only contains [2^0..2^63], so the check fails.
    Aborted to prevent unsound use. *)
 Theorem thm_MaskPow2 : toProp prop_MaskPow2.
 Proof.
 Abort.
+
+(* The original thm_MaskPow2 is false for unbounded N (see thm_MaskPow2_false).
+   In Haskell, Word is 64-bit, so all keys satisfy k < 2^64 and all masks
+   satisfy mask < 2^64. Under this constraint, the property holds.
+   We restate with an explicit bound hypothesis reflecting Haskell semantics. *)
+Definition bounded_WF (s : IntSet) :=
+  WF s /\ forall k, member k s = true -> (k < 2^64)%N.
+
+Theorem thm_MaskPow2_bounded : forall s, bounded_WF s -> prop_MaskPow2 s = true.
+Proof.
+  (* The proof requires showing that for bounded keys, all rBits <= 63,
+     hence all masks are in [2^0..2^63]. Needs induction on Desc with
+     the bound propagated through halfRange. *)
+  admit.
+Admitted.
 
 (* "Check that the prefix satisfies its invariant." *)
 Theorem thm_Prefix : toProp prop_Prefix.
