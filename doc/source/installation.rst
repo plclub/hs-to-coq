@@ -5,8 +5,7 @@ Installation
 Latest release
 --------------
 
-Not yet released. Eventually `hs-to-coq` will be available on
-`hackage <https://hackage.haskell.org/>`_.
+`hs-to-coq` is not published on Hackage. Install from source (see below).
 
 Development version
 -------------------
@@ -36,7 +35,7 @@ Coq Requirements
 ----------------
 
 This repository comes with a Coq version of the Haskell `base
-<https://github.com/plclub/hs-to-coq/tree/ghc910-coq820/base>`_ library, used by the
+<https://github.com/plclub/hs-to-coq/tree/master/base>`_ library, used by the
 output of ``hs-to-coq``.
 
 You must have `Coq 8.20` and `MathComp` (with Hierarchy Builder) to build
@@ -57,7 +56,7 @@ Once installed, you can build the base library from the project root with
     $ cd base && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
 The directory `base-thy
-<https://github.com/plclub/hs-to-coq/tree/ghc910-coq820/base-thy>`_ contains auxiliary
+<https://github.com/plclub/hs-to-coq/tree/master/base-thy>`_ contains auxiliary
 definitions and lemmas, such as lawful type-class instances. You can build
 these with
 
@@ -71,13 +70,23 @@ Test your hs-to-coq installation
 To test whether your `hs-to-coq` installation is successful, you can try to
 compile the examples that are distributed with the tool.
 
-Some examples use git submodules, so run
+Some examples use git submodules. If you only want to **build the
+pre-generated Coq files** (proofs, libraries), a shallow init is enough:
 
 .. code-block:: shell
 
-    $ git submodule update --init --recursive
+    $ git submodule update --init
 
-once first to download all dependencies.
+If you want to **regenerate Coq modules from Haskell source** (e.g. to test
+edits or work on hs-to-coq itself), you also need the GHC and containers
+source trees:
+
+.. code-block:: shell
+
+    $ git submodule update --init examples/ghc/ghc
+    $ git submodule update --init examples/containers/containers
+
+Note that these submodules are large and may take a while to download.
 
 Then, compile all of the examples with
 
@@ -127,8 +136,8 @@ variable.
 
     $ export PATH=$PATH:/usr/X11/bin >> ~/.bash_profile
     
-2. git submodule update --init --recursive gives error fatal: Needed a single revision
+2. git submodule update --init gives error fatal: Needed a single revision
 
-Try removing the submodule directory that the error was triggered on, and run the command again. 
+Try removing the submodule directory that the error was triggered on, and run the command again.
 (i.e. If the error was on `examples/wc/wc`, a `rm -rf examples/wc/wc` followed by a
-`git submodule update --init --recursive` will do the trick. 
+`git submodule update --init` will do the trick.)
