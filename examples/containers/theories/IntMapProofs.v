@@ -2485,6 +2485,16 @@ Definition go {a} := fix go (arg_2__ : IntMap a) : option (Key * a) :=
         | Nil => None
         end.
 
+(* sem and f agree for Desc-valid trees *)
+Lemma sem_Desc:
+  forall {a} (s : IntMap a) r f, Desc s r f -> forall i, sem s i = f i.
+Proof.
+  intros a s r f HD.
+  induction HD; subst; intro i.
+  - simpl. unfoldMethods. rewrite H. reflexivity.
+  - simpl. rewrite H4. rewrite IHHD1. rewrite IHHD2. reflexivity.
+Qed.
+
 Lemma goL_Desc:
   forall {a} (s : IntMap a) r f,
     Desc s r f -> match go s with
@@ -2492,7 +2502,51 @@ Lemma goL_Desc:
                  | Some (k, v) => sem s k = Some v /\ (forall i v1, sem s i = Some v1 -> (k <= i))
                  end.
 Proof.
-  Admitted.
+  intros a s r f HD.
+  induction HD; subst.
+  - (* DescTip: go (Tip k v) = Some (k, v) *)
+    simpl. unfoldMethods. rewrite N.eqb_refl. split.
+    + reflexivity.
+    + intros i v1 Hi. unfoldMethods.
+      destruct (i =? k) eqn:Hik; [|discriminate].
+      apply N.eqb_eq in Hik. subst. apply N.le_refl.
+  - (* DescBin: go (Bin p msk m1 m2) = go m1 *)
+    simpl. fold (@go a).
+    (* go m1 cannot be None because Desc m1 r1 f1 implies m1 is non-Nil *)
+    destruct (go m1) as [[k v]|] eqn:Hgo.
+    + (* go m1 = Some (k, v) *)
+      destruct IHHD1 as [Hsem1k Hmin1].
+      split.
+      * (* sem (Bin p msk m1 m2) k = Some v *)
+        simpl. rewrite Hsem1k. apply oro_Some_l.
+      * (* ordering: forall i v1, sem (Bin p msk m1 m2) i = Some v1 -> k <= i *)
+        intros i v1 Hi. simpl in Hi.
+        apply oro_Some in Hi. destruct Hi as [Hi | Hi].
+        -- (* sem m1 i = Some v1: by IH *)
+           exact (Hmin1 i v1 Hi).
+        -- (* sem m2 i = Some v1: k is in left half, i is in right half *)
+           assert (Hk_in : inRange k r1 = true).
+           { eapply Desc_inside. exact HD1.
+             rewrite <- (sem_Desc _ _ _ HD1). exact Hsem1k. }
+           assert (Hi_in : inRange i r2 = true).
+           { eapply Desc_inside. exact HD2.
+             rewrite <- (sem_Desc _ _ _ HD2). exact Hi. }
+           assert (Hk_left : inRange k (halfRange r false) = true)
+             by (eapply inRange_isSubrange_true; eauto).
+           assert (Hi_right : inRange i (halfRange r true) = true)
+             by (eapply inRange_isSubrange_true; eauto).
+           apply inRange_bounded in Hk_left.
+           apply inRange_bounded in Hi_right.
+           pose proof (rPrefix_halfRange_otherhalf r H) as Hpref.
+           rewrite Hpref in Hi_right.
+           lia.
+    + (* go m1 = None: contradictory — Desc implies non-Nil, go non-Nil ≠ None *)
+      exfalso.
+      enough (go m1 <> None) by contradiction.
+      clear -HD1. induction HD1; subst; simpl.
+      * discriminate.
+      * fold (@go a). exact IHHD1_1.
+Qed.
 
 Lemma lookupMin_Desc:
   forall {a} (s : IntMap a) r f,
@@ -2502,23 +2556,48 @@ Lemma lookupMin_Desc:
     | Some (k, v) => sem s k = Some v /\ (forall i v1, sem s i = Some v1 -> (k <= i))
     end.
 Proof.
-  intros. induction H.
-  * simpl. unfoldMethods. rewrite N.eqb_refl. split.
+  intros a s r f HD. induction HD; subst.
+  - (* DescTip *)
+    simpl. unfoldMethods. rewrite N.eqb_refl. split.
     + reflexivity.
-    + intros. destruct (i =? k) eqn: Hik.
-      - apply Neqb_ok in Hik. subst. move: (N.le_refl k) => H2. intuition.
-      - discriminate.
-  * simpl. unfoldMethods. destruct (msk <? 0) eqn: Hm.
-    + destruct msk; discriminate.
-    + fold (@go a). move: (goL_Desc m1 r1 f1 H) => H7. destruct (go m1) eqn: Hg.
-      - destruct p0. destruct H7. split.
-        ** unfold oro. rewrite H7. reflexivity.
-        ** unfold oro. intros i v1. destruct (sem m1 i) eqn: Hs.
-          ++ specialize (H8 i v1). rewrite Hs in H8. auto. 
-          ++  admit.
-      - destruct (lookupMin m2) in IHDesc2.
-        ** destruct p0. subst. admit.
-        ** intro. specialize (H7 i). unfold oro. rewrite H7.
-           rewrite IHDesc2. reflexivity.
-Admitted.
+    + intros. unfoldMethods.
+      destruct (i =? k) eqn: Hik; [|discriminate].
+      apply N.eqb_eq in Hik. subst. apply N.le_refl.
+  - (* DescBin: lookupMin reduces to go m1 since rMask r >= 0 *)
+    simpl. unfoldMethods.
+    assert (Hm: (rMask r <? 0) = false) by (apply N.ltb_ge; apply N.le_0_l).
+    rewrite Hm. fold (@go a).
+      (* goL_Desc gives us the property for go m1 *)
+      pose proof (goL_Desc m1 r1 f1 HD1) as HgoL.
+      destruct (go m1) as [[k v]|] eqn:Hgo.
+      * (* go m1 = Some (k, v): extend from m1 to the whole Bin *)
+        destruct HgoL as [Hsem1k Hmin1]. split.
+        -- (* sem (Bin ...) k = Some v *)
+           simpl. rewrite Hsem1k. apply oro_Some_l.
+        -- (* ordering: k <= i for any i with sem (Bin ...) i = Some v1 *)
+           intros i v1 Hi. simpl in Hi.
+           apply oro_Some in Hi. destruct Hi as [Hi | Hi].
+           ++ exact (Hmin1 i v1 Hi).
+           ++ (* i is in m2, k is min of m1: use range ordering *)
+              assert (Hk_in : inRange k r1 = true).
+              { eapply Desc_inside. exact HD1.
+                rewrite <- (sem_Desc _ _ _ HD1). exact Hsem1k. }
+              assert (Hi_in : inRange i r2 = true).
+              { eapply Desc_inside. exact HD2.
+                rewrite <- (sem_Desc _ _ _ HD2). exact Hi. }
+              assert (Hk_left : inRange k (halfRange r false) = true)
+                by (eapply inRange_isSubrange_true; eauto).
+              assert (Hi_right : inRange i (halfRange r true) = true)
+                by (eapply inRange_isSubrange_true; eauto).
+              apply inRange_bounded in Hk_left.
+              apply inRange_bounded in Hi_right.
+              pose proof (rPrefix_halfRange_otherhalf r ltac:(assumption)) as Hpref.
+              rewrite Hpref in Hi_right.
+              lia.
+      * (* go m1 = None: contradictory — Desc implies go ≠ None *)
+        exfalso. enough (go m1 <> None) by contradiction.
+        clear -HD1. induction HD1; subst; simpl.
+        -- discriminate.
+        -- fold (@go a). exact IHHD1_1.
+Qed.
 
