@@ -930,10 +930,12 @@ Proof.
   ** eapply Desc_inside; eassumption.
 Qed.
 
-(* Blocker: This lemma claims structural monotonicity of isSubmapOfBy in the
-   right argument, but the trie-based implementation checks prefix/mask alignment,
-   so adding a Bin wrapper can change the structural path and make the check fail
-   even when all keys are still present. May be false for the structural implementation.
+(* FALSE: isSubmapOfBy_Bin is disproved by concrete counterexample.
+   isSubmapOfBy (fun _ _ => true) (Tip 1 42) (Tip 1 42) = true, but
+   isSubmapOfBy (fun _ _ => true) (Tip 1 42) (Bin 0 1 (Tip 1 42) Nil) = false.
+   Reason: lookup in IntMap ignores the prefix field -- it uses only `zero k m`
+   to pick left vs right child. With msk=1, zero 1 1 = false, so lookup 1
+   goes to the right child (Nil) and returns None.
    Only used within isSubmapOfBy_Desc (also Admitted). *)
 Lemma isSubmapOfBy_Bin {a} :
   forall (s1 s2 s3: IntMap a) p msk f',
@@ -941,10 +943,21 @@ Lemma isSubmapOfBy_Bin {a} :
 Proof. Admitted.
 
 (* Blocker: Program Fixpoint proof with ~10 admits across the Bin/Bin case.
-   Requires isSubmapOfBy_Bin (possibly false), plus nontrivial structural
-   reasoning about prefix matching, shorter comparisons, and recursive
-   measure arguments. The reverse direction (specification -> structural
-   check) is especially hard. *)
+   Specific blockers:
+   1. isSubmapOfBy_Bin (line 940) is FALSE (see counterexample above), and is
+      used at line 1045 for the equal-prefix forward direction.
+   2. Bin/Tip reverse direction (line 1024): must show that if all keys of a Bin
+      are in a Tip, the Bin is empty -- but there is no Desc/WF constraint here.
+   3. Bin/Bin shorter(m1,m2) reverse direction (line 1028): must show that a
+      structurally larger tree cannot be a submap of a smaller one, again needs WF.
+   4. Bin/Bin equal-mask reverse direction (lines 1044, 1046): needs to split the
+      universal quantifier over children, requires range disjointness from Desc.
+   5. Bin/Bin shorter(m2,m1) reverse direction (lines 1058, 1063): must restrict
+      the universal quantifier to keys in the appropriate child's range.
+   The fundamental issue is that the proof works on raw trees without requiring
+   that the Bin arguments satisfy the well-formedness invariant (Desc). A correct
+   statement would need Desc hypotheses on ALL intermediate sub-trees, not just
+   the top-level s1 and s2. *)
 Program Fixpoint isSubmapOfBy_Desc {a} (f : a -> a -> bool)
   (s1 :IntMap a) r1 f1 s2 r2 f2
   { measure (size_nat s1 + size_nat s2) } :
@@ -1073,10 +1086,23 @@ Next Obligation.
 
 Admitted.
 
-(* Blocker: Alternative iff characterization of isSubmapOfBy. Has ~8 admits
-   covering N.eqb conversions (Tip/Tip cases), the Tip/Bin forward direction,
-   the Bin/Tip case, and the Bin/Bin shorter-comparison case. Same fundamental
-   difficulty as isSubmapOfBy_Desc above. *)
+(* Blocker: Alternative iff characterization of isSubmapOfBy. Has ~8 admits:
+   1. Tip/Tip forward direction (lines 1105, 1108): Need to convert between
+      (k == k0) = true (Eq_ class) and (i =? k) = true (N.eqb). These are
+      related but the proof uses the wrong equivalence direction.
+   2. Tip/Bin forward direction (line 1110): Must show lookup in a Bin child
+      implies the predicate holds, requires unfolding Bin lookup structure.
+   3. Bin/any forward direction (line 1111): Full induction on the Bin case
+      for the forward direction is not even started.
+   4. Tip/Tip reverse direction (line 1115): Same N.eqb vs == conversion issue.
+   5. Tip/Tip reverse direction (line 1118): Need k =? k0 = false from
+      (k == k0) = false, again the Eq_/N.eqb bridge.
+   6. Tip/Bin reverse direction (line 1120): Not started.
+   7. Bin/Tip reverse direction (line 1122): Not started.
+   8. Bin/Bin reverse shorter case (line 1125): Not started.
+   Same fundamental difficulty as isSubmapOfBy_Desc: the induction on raw
+   trees without Desc constraints makes it hard to relate structural
+   prefix/mask checks to the semantic key-containment property. *)
 Lemma isSubmapOfBy_Desc1 : forall {a} (f : a -> a -> bool)
   (s1 :IntMap a) r1 f1 s2 r2 f2,
   Desc s1 r1 f1 ->
@@ -1911,12 +1937,7 @@ Qed.
 
 (* Verification of [filter] *)
 
-(* Blocker: bin_Desc0 shows that the smart constructor [bin] preserves Desc0.
-   Has ~15 admits across 9 sub-cases of the destruct on s1/s2 (Bin/Tip/Nil
-   combinations). The main difficulties are: (1) reconstructing Desc for
-   sub-trees after inversion_Desc produces fragments, (2) relating subranges
-   of halfRanges back to the parent range, and (3) the Nil/Nil base case
-   where both children are empty but the functional spec must still hold.
+(* bin_Desc0: the smart constructor [bin] preserves Desc0.
    Used by filter_Desc and restrictKeys_Desc. *)
 Lemma bin_Desc0:
   forall {a} (s1: IntMap a) r1 f1 (s2: IntMap a) r2 f2 p msk r f,
@@ -1930,57 +1951,52 @@ Lemma bin_Desc0:
     (forall i, f i = oro (f1 i) (f2 i)) ->
     Desc0 (bin p msk s1 s2) r f.
 Proof.
-  intros. unfold bin. 
-  destruct s1.
-  * destruct s2.
-    + apply Desc_Desc0. inversion_Desc H. inversion_Desc HD.  eapply DescBin; eauto.
-      - inversion_Desc H. eapply DescBin.
-        ** inversion_Desc H0. inversion_Desc HD1.   admit.
-        ** inversion_Desc H0. inversion_Desc HD1. admit.
-        ** apply subRange_smaller in H3.  unfold isSubrange in H3. admit.
-        ** eapply subRange_smaller in Hsubrange. admit.
-        ** admit.
-        ** admit.
-        ** admit.
-        ** unfold rMask. unfold isSubrange in Hsubrange.
-           unfold inRange in Hsubrange. unfold rPrefix in Hsubrange. unfold rBits in Hsubrange. admit.
-      - eapply isSubrange_trans; eauto.
-      - intro. specialize (H19 i). specialize (Hf i). specialize (H6 i). rewrite Hf in H6. eauto.
-    + eapply Desc0NotNil.
-      - eapply DescBin; eauto.
-        ** inversion_Desc H. admit.
-        ** inversion_Desc H0. admit.
-      - apply isSubrange_refl.
-      - intro. reflexivity.
-    + admit.       
-  * destruct s2.
-    + apply Desc_Desc0. inversion_Desc H. inversion_Desc HD. eapply DescBin; try reflexivity.
-      - inversion_Desc H. eauto.
-      - inversion_Desc H0. admit. 
-      - auto.
-      - eapply isSubrange_trans; eauto.
-      - eauto.
-      - intro. specialize (Hf i). specialize (H6 i). rewrite Hf in H6. eauto.
-    + apply Desc_Desc0. inversion_Desc H. inversion_Desc H0. eapply DescBin; try reflexivity.
-      - eauto.
-      - eauto.
-      - auto.
-      - eapply isSubrange_trans; eauto.
-      - eapply isSubrange_trans; eauto.
-      - intro. specialize (Hf0 i). specialize (Hf i). specialize (H6 i).
-        rewrite Hf in H6. rewrite Hf0 in H6. auto.
-    + apply Desc_Desc0. inversion_Desc H. admit.
-  * destruct s2.
-    + inversion_Desc H0; inversion_Desc H.
-      - apply Desc_Desc0. admit.
-      - admit.
-    + admit.
-    + apply Desc0Nil. inversion_Desc H.
-      - inversion_Desc H0.  intro. specialize (H6 i). specialize (H7 i). specialize (H9 i).
-        rewrite H9 in H6. rewrite H7 in H6. simpl in H6. apply H6.
-        inversion HD.
-      - inversion HD.
-Admitted.     
+  intros a s1 r1 f1 s2 r2 f2 p msk r f HD1 HD2 Hbits Hr1 Hr2 Hp Hmsk Hf.
+  subst p msk.
+  (* Useful derived facts: halfRanges are subranges of r *)
+  assert (HhrL : isSubrange (halfRange r false) r = true)
+    by (apply isSubrange_halfRange; exact Hbits).
+  assert (HhrR : isSubrange (halfRange r true) r = true)
+    by (apply isSubrange_halfRange; exact Hbits).
+  destruct HD1 as [a1 r1 f1 Hf1_nil | a1 s1 r1i f1i r1 f1 HD1i Hsub1 Hf1_eq].
+  - (* Case: s1 = Nil *)
+    destruct HD2 as [a2 r2 f2 Hf2_nil | a2 s2 r2i f2i r2 f2 HD2i Hsub2 Hf2_eq].
+    + (* Case 1: s1 = Nil, s2 = Nil -> bin returns Nil *)
+      simpl. apply Desc0Nil. intro i.
+      rewrite Hf. rewrite Hf1_nil. rewrite Hf2_nil. reflexivity.
+    + (* Case 2: s1 = Nil, s2 non-Nil -> bin returns s2 *)
+      destruct s2; [| | inversion HD2i].
+      all: simpl; eapply Desc0NotNil; [
+        exact HD2i |
+        eapply isSubrange_trans; [eapply isSubrange_trans; [exact Hsub2 | exact Hr2] | exact HhrR] |
+        intro i; rewrite Hf; rewrite Hf1_nil; simpl; apply Hf2_eq ].
+  - (* Case: s1 non-Nil *)
+    destruct HD2 as [a2 r2 f2 Hf2_nil | a2 s2 r2i f2i r2 f2 HD2i Hsub2 Hf2_eq].
+    + (* Case 3: s1 non-Nil, s2 = Nil -> bin returns s1 *)
+      destruct s1; [| | inversion HD1i].
+      all: simpl; eapply Desc0NotNil; [
+        exact HD1i |
+        eapply isSubrange_trans; [eapply isSubrange_trans; [exact Hsub1 | exact Hr1] | exact HhrL] |
+        intro i; rewrite Hf; rewrite Hf2_nil; rewrite oro_None_r; apply Hf1_eq ].
+    + (* Case 4: both non-Nil -> bin returns Bin (rPrefix r) (rMask r) s1 s2 *)
+      (* We need to destruct s1 and s2 to let simpl reduce the match in bin.
+         Desc guarantees they are Bin or Tip (not Nil). *)
+      assert (Hsub1r : isSubrange r1i (halfRange r false) = true)
+        by (eapply isSubrange_trans; [exact Hsub1 | exact Hr1]).
+      assert (Hsub2r : isSubrange r2i (halfRange r true) = true)
+        by (eapply isSubrange_trans; [exact Hsub2 | exact Hr2]).
+      destruct s1; [| | inversion HD1i];
+      (destruct s2; [| | inversion HD2i]);
+      simpl;
+      (eapply Desc0NotNil; [
+        eapply DescBin; [
+          exact HD1i | exact HD2i | exact Hbits |
+          exact Hsub1r | exact Hsub2r |
+          reflexivity | reflexivity |
+          intro i; reflexivity ] |
+        apply isSubrange_refl |
+        intro i; rewrite Hf; rewrite Hf1_eq; rewrite Hf2_eq; reflexivity ]).
+Qed.     
 
 Definition IMFilter {a} p (s: IntMap a) :=
   Data.IntMap.Internal.filter p s.
@@ -2486,17 +2502,20 @@ Fixpoint sem_for_lists {a: Type} (l : list (Key * a)) (i : Key) :=
   end.
 
 
-(* Blocker: mapKeys rebuilds the map via fromList after applying fmap to all
-   keys, so the resulting trie structure bears no relation to the input range r.
-   The stated postcondition (Desc with original range r) is likely too strong --
-   mapKeys can reorder/merge keys arbitrarily. Would need a weaker Sem-level
-   spec or a proof that fmap preserves the trie structure. Barely started. *)
+(* FALSE: mapKeys_Desc is disproved by concrete counterexample.
+   mapKeys (fun k => k + 100) (Tip 1 42) = fromList [(101, 42)] = Tip 101 42.
+   The result Tip 101 42 cannot satisfy Desc with the original range r
+   (singletonRange 1), because 101 is not in singletonRange 1.
+   mapKeys rebuilds the map via fromList after applying fmap to all keys,
+   so the resulting trie structure bears no relation to the input range r.
+   A correct specification would use Sem (no range claim) or Desc0, but
+   even that requires a fromList_Desc lemma for the arbitrary key list.
+   Use mapKeys_Sem below for a weaker (Sem-based) specification if needed. *)
 Lemma mapKeys_Desc: forall a (fmap : Key -> Key) (s: IntMap a) r f,
     Desc s r f ->
     Desc (mapKeys fmap s) r (fun i => (sem_for_lists (rev (foldrWithKey (fun k v t => ((fmap k), v) :: t) nil s)) i)).
 Proof.
-  intros.
-  unfold mapKeys. simpl.
+  (* FALSE -- see comment above. *)
 Admitted.
 
 
