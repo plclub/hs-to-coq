@@ -2511,12 +2511,34 @@ Fixpoint sem_for_lists {a: Type} (l : list (Key * a)) (i : Key) :=
    A correct specification would use Sem (no range claim) or Desc0, but
    even that requires a fromList_Desc lemma for the arbitrary key list.
    Use mapKeys_Sem below for a weaker (Sem-based) specification if needed. *)
+(* Formal counterexample: mapKeys_Desc is false.
+   mapKeys (+100) (Tip 1 42) computes to Tip 101 42, but
+   Desc (Tip 101 42) (singletonRange 1) _ requires 101 ∈ singletonRange 1,
+   which is false since inRange 101 (singletonRange 1) = (101 =? 1) = false. *)
+Lemma mapKeys_Desc_false :
+  ~ (forall a (fmap : Key -> Key) (s: IntMap a) r f,
+       Desc s r f ->
+       Desc (mapKeys fmap s) r (fun i => (sem_for_lists (rev (foldrWithKey (fun k v t => ((fmap k), v) :: t) nil s)) i))).
+Proof.
+  intro H.
+  specialize (H N (fun k => k + 100)%N (Tip 1%N 42%N) (singletonRange 1%N)
+    (fun i => if i =? 1%N then Some 42%N else None)
+    (DescTip _ _ _ _ _ (fun i => eq_refl) eq_refl)).
+  (* H : Desc (mapKeys (+100) (Tip 1 42)) (singletonRange 1) _ *)
+  (* Reduce: mapKeys (+100) (Tip 1 42) = Tip 101 42 *)
+  (* Desc (Tip 101 42) (singletonRange 1) _ is absurd *)
+  simpl in H.
+  inversion H; subst;
+    first [ discriminate
+          | unfold singletonRange in *; congruence ].
+Qed.
+
+(* FALSE: disproved by mapKeys_Desc_false above. Aborted to prevent use. *)
 Lemma mapKeys_Desc: forall a (fmap : Key -> Key) (s: IntMap a) r f,
     Desc s r f ->
     Desc (mapKeys fmap s) r (fun i => (sem_for_lists (rev (foldrWithKey (fun k v t => ((fmap k), v) :: t) nil s)) i)).
 Proof.
-  (* FALSE -- see comment above. *)
-Admitted.
+Abort.
 
 
 (* Verification of [lookupMin] *)
