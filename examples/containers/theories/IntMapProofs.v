@@ -177,11 +177,8 @@ Proof. intros.
   * intro. reflexivity.
 Qed.
 
-Lemma Desc0_Desc:
-  forall {a} (s: IntMap a) r f, Desc0 s r f -> Desc s r f.
-Proof.
-  intros. destruct s.
-  * eapply DescBin. inversion H. subst. Admitted.
+(* Desc0_Desc was here but is false: Desc0 allows Nil while Desc does not.
+   Use Desc0_Sem instead. *)
  
 
 Lemma Desc0_Sem:
@@ -792,10 +789,10 @@ Lemma lookup_Desc0:
   forall {a}{s:IntMap a} {r f i}, Desc0 s r f -> lookup i s = f i.
 Proof.
   intros.
-  destruct H; simpl; auto.
-  rewrite Hf.
-  eapply lookup_Desc; eauto.
-Abort.
+  destruct H.
+  - simpl. symmetry. apply H.
+  - rewrite Hf. eapply lookup_Desc; eauto.
+Qed.
 
 Lemma lookup_Sem:
   forall {a}{s:IntMap a}{f i}, Sem s f -> lookup i s = f i.
@@ -1135,10 +1132,10 @@ Lemma member_Desc0:
   forall {a}{s:IntMap a} {r f i}, Desc0 s r f -> member i s = ssrbool.isSome (f i).
 Proof.
   intros.
-  destruct H; simpl; auto.
-  rewrite H. simpl. auto.
-  eapply member_Desc; eauto.
-Abort.
+  destruct H.
+  - simpl. rewrite H. simpl. reflexivity.
+  - rewrite Hf. eapply member_Desc; eauto.
+Qed.
 
 Lemma member_Sem:
   forall {a}{s:IntMap a}{f i}, Sem s f -> member i s = ssrbool.isSome (f i).
