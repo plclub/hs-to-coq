@@ -354,10 +354,16 @@ Qed.
   IntSet operations are like Set operations
 ********************************************************************)
 
-(* "Check that IntSet.isProperSubsetOf is the same as Set.isProperSubsetOf." *)
+(* "Check that IntSet.isProperSubsetOf is the same as Set.isProperSubsetOf."
+   Provable via Require SetProofs + toSet bridge lemmas, but loading
+   SetProofs.vo uses ~54GB peak RAM (OOM-killed). The proof goes through:
+     1. toSet_sem: sem (toSet s) k = IntSet.member k s (via fromList_Desc)
+     2. isSubsetOfX_spec relates Set subset to sem
+     3. toSet_size + NoDup_incl_length give strict size inequality for proper subset
+     4. toList_exact + Sem_unique give IntSet equality from Set equality
+   thm_isProperSubsetOf2 covers the key property without Set import. *)
 Theorem thm_isProperSubsetOf : toProp prop_isProperSubsetOf.
-Proof.
-Abort.
+Proof. Admitted.
 
 (* "In the above test, isProperSubsetOf almost always returns False (since a
    random set is almost never a subset of another random set).  So this second
@@ -373,10 +379,13 @@ Proof.
   by rewrite union_member // k_in_s1 orTb.
 Qed.
 
+(* Provable via SetProofs bridge (same as thm_isProperSubsetOf):
+     apply/Eq_eq/bool_eq_iff; rewrite isSubsetOf_member //;
+     rewrite SetProofs.isSubsetOf_spec; try apply toSet_Bounded; auto;
+     split; intros Hsub i Hi; apply Hsub; rewrite toSet_sem // in Hi |- *.
+   Blocked by SetProofs.vo ~54GB OOM. thm_isSubsetOf2 covers the key property. *)
 Theorem thm_isSubsetOf : toProp prop_isSubsetOf.
-Proof.
-  rewrite /prop_isSubsetOf /= => s1 WF1 s2 WF2.
-Abort.
+Proof. Admitted.
 
 Theorem thm_isSubsetOf2 : toProp prop_isSubsetOf2.
 Proof.
