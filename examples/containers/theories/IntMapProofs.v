@@ -177,8 +177,23 @@ Proof. intros.
   * intro. reflexivity.
 Qed.
 
-(* Desc0_Desc was here but is false: Desc0 allows Nil while Desc does not.
+(* Formal counterexample: Desc0_Desc is false because Desc0 allows Nil via
+   Desc0Nil, but Desc has no Nil constructor (only DescTip and DescBin). *)
+Lemma Desc0_Desc_false :
+  ~ (forall {a} (s: IntMap a) r f, Desc0 s r f -> Desc s r f).
+Proof.
+  intro H.
+  pose proof (H N Nil (singletonRange 0%N) (fun _ => None)
+    (Desc0Nil (singletonRange 0%N) (fun _ => None) (fun _ => eq_refl))) as HD.
+  inversion HD.
+Qed.
+
+(* FALSE: disproved by Desc0_Desc_false above. Aborted to prevent use.
    Use Desc0_Sem instead. *)
+Lemma Desc0_Desc:
+  forall {a} (s: IntMap a) r f, Desc0 s r f -> Desc s r f.
+Proof.
+Abort.
  
 
 Lemma Desc0_Sem:
@@ -2933,11 +2948,29 @@ Abort.
 
 (* Verification of [lookupMin] *)
 
-(* empty_no_elts: false as stated for IntMap — Bin p msk Nil Nil has
-   sem = None everywhere but is not Nil. The forward direction needs a
-   WF/Desc hypothesis. The reverse direction is trivially true.
-   Unused in the codebase; the Map version in MaxMinProofs.v is correct
-   and covers the needed use cases. *)
+(* Formal counterexample: empty_no_elts is false because the forward direction
+   fails for Bin p msk Nil Nil, which has sem = None everywhere but is not Nil.
+   The Bin constructor is syntactically valid even with Nil children (just not WF). *)
+Lemma empty_no_elts_false :
+  ~ (forall {a} (m: IntMap a), (forall i, sem m i = None) <-> empty = m).
+Proof.
+  intro H.
+  specialize (H N (Bin 0%N 1%N Nil Nil)).
+  destruct H as [Hfwd _].
+  assert (Hnil : forall i, sem (Bin 0%N 1%N (@Nil N) (@Nil N)) i = None).
+  { intro i. simpl. reflexivity. }
+  specialize (Hfwd Hnil). discriminate.
+Qed.
+
+(* FALSE: disproved by empty_no_elts_false above. Aborted to prevent use.
+   The reverse direction (empty = m -> forall i, sem m i = None) is trivially true
+   and available as empty_no_elts_rev below. The forward direction would need a
+   WF/Desc hypothesis. The Map version in MaxMinProofs.v is correct. *)
+Lemma empty_no_elts : forall {a} (m: IntMap a),
+      (forall i, sem m i = None) <-> empty = m.
+Proof.
+Abort.
+
 Lemma empty_no_elts_rev : forall {a} (m: IntMap a),
       empty = m -> (forall i, sem m i = None).
 Proof.
