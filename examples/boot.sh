@@ -126,10 +126,10 @@ coq make -C base-src coq
 coq make -C ../base-thy
 coq-test make -C base-tests
 
-# Containers: regenerate lib/ from Haskell source, then build Coq files.
-# Note: several functions use 'redefine' edits to restore v0.6-compatible
-# definitions (e.g. fromDistinctAscList, split, splitMember) so that
-# existing proofs compile against the v0.7 library.
+# Containers v0.7: regenerate lib/ from Haskell source, then build Coq files.
+# Some functions use 'redefine' edits for Coq compatibility (e.g.
+# fromDistinctAscList uses a stack-based algorithm that needs redefine
+# for the proof infrastructure).
 make -C containers vfiles
 coq make -C containers
 (cd containers/theories; coq coq_makefile -f _CoqProject -o Makefile)
@@ -156,13 +156,6 @@ coq make -C rle
 coq make -C quicksort
 coq make -C dlist
 coq make -C coinduction
-coq make -C intervals
-coq make -C successors
 coq make -C lambda
 coq make -C simple
 coq make -C bag
-
-# Not currently building (submodules not checked out or need porting):
-# make -C transformers vfiles && coq make -C transformers coq
-# make -C ghc vfiles && coq make -C ghc/lib
-# make -C core-semantics vfiles && coq make -C core-semantics coq
