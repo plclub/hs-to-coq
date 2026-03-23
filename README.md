@@ -35,7 +35,7 @@ available!**](https://hs-to-coq.readthedocs.io/en/latest/)
 
 # Installation
 
-**Current target: GHC 9.10.3 and Coq 8.20** (branch `ghc910-coq820`)
+**Current target: GHC 9.10.3 and Coq 8.20**
 
 ## Compilation
 
