@@ -135,6 +135,22 @@ coq make -C containers
 (cd containers/theories; coq coq_makefile -f _CoqProject -o Makefile)
 coq make -C containers/theories
 
+make -C transformers vfiles
+coq make -C transformers coq
+#coq make -C transformers/theories no theories yet
+
+make -C ghc vfiles
+(cd ghc/lib; coq coq_makefile -f _CoqProject -o Makefile)
+coq make -C ghc/lib
+(cd ghc/theories; coq coq_makefile -f _CoqProject -o Makefile)
+coq make -C ghc/theories
+
+make -C core-semantics vfiles
+coq make -C core-semantics coq
+#coq make -C core-semantics/theories theories yet
+
+coq make -C successors
+coq make -C intervals
 coq make -C compiler
 coq make -C rle
 coq make -C quicksort
