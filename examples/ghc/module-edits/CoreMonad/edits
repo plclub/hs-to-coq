@@ -8,12 +8,12 @@ skip module Language.Haskell.TH.Syntax
 skip module Data.Graph
 skip module NameCache
 
-rename value CoreMonad.SimplMode = CoreMonad.Mk_SimplMode
-rename value CoreMonad.SimplCount = CoreMonad.Mk_SimplCount
-rename value CoreMonad.FloatOutSwitches = CoreMonad.Mk_FloatOutSwitches
-rename value CoreMonad.CoreWriter = CoreMonad.Mk_CoreWriter
-rename value CoreMonad.CoreState = CoreMonad.Mk_CoreState
-rename value CoreMonad.CoreM = CoreMonad.Mk_CoreM
+rename value GHC.Core.Opt.Monad.SimplMode = CoreMonad.Mk_SimplMode
+rename value GHC.Core.Opt.Monad.SimplCount = CoreMonad.Mk_SimplCount
+rename value GHC.Core.Opt.Monad.FloatOutSwitches = CoreMonad.Mk_FloatOutSwitches
+rename value GHC.Core.Opt.Monad.CoreWriter = CoreMonad.Mk_CoreWriter
+rename value GHC.Core.Opt.Monad.CoreState = CoreMonad.Mk_CoreState
+rename value GHC.Core.Opt.Monad.CoreM = CoreMonad.Mk_CoreM
 
 redefine Axiom CoreMonad.CoreReader : Type.
 redefine Axiom CoreMonad.CoreIOEnv : Type -> Type.
@@ -37,7 +37,8 @@ skip CoreMonad.liftIOWithCount
 skip CoreMonad.thNameToGhcName
 
 skip CoreMonad.msg
-skip CoreMonad.getPrintUnqualified 
+skip CoreMonad.getPrintUnqualified
+skip CoreMonad.getNamePprCtx
 skip CoreMonad.getPackageFamInstEnv
 skip CoreMonad.getOrigNameCache 
 skip CoreMonad.getHscEnv

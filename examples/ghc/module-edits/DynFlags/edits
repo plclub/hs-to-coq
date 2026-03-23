@@ -4,6 +4,55 @@
 #
 axiomatize module DynFlags
 
+# GHC 9.10: FieldLabel needs Core/Name chain which isn't compiled yet
+skip module GHC.Types.FieldLabel
+skip module GHC.Utils.CliOption
+skip DynFlags.xopt_DuplicateRecordFields
+skip DynFlags.xopt_FieldSelectors
+# Coq 8.20: type/constructor name clash
+rename value GHC.Driver.DynFlags.IncludeSpecs = DynFlags.Mk_IncludeSpecs
+
+skip DynFlags.LinkerInfo
+skip DynFlags.Eq___LinkerInfo
+skip DynFlags.Eq___LinkerInfo_op_zeze__
+skip DynFlags.Eq___LinkerInfo_op_zsze__
+
+# GHC 9.10: references to modules we don't translate
+skip module GHC.Settings
+skip DynFlags.defaultDynFlags
+skip DynFlags.defaultFlags
+skip module GHC.Driver.Flags
+
+# GHC 9.10: These axioms reference GHC.Driver.Flags types
+skip DynFlags.dopt_set
+skip DynFlags.dopt_unset
+skip DynFlags.gopt
+skip DynFlags.gopt_set
+skip DynFlags.wopt_fatal
+skip DynFlags.wopt_set_fatal
+skip DynFlags.wopt_unset_fatal
+skip DynFlags.validHoleFitDefaults
+skip DynFlags.optLevelFlags
+skip DynFlags.wopt_set_custom
+skip DynFlags.wopt_unset_custom
+skip DynFlags.wopt_fatal_custom
+skip DynFlags.wopt_unset_fatal_custom
+skip DynFlags.wopt_set_fatal_custom
+skip DynFlags.xopt_set_unlessExplSpec
+
+# GHC 9.10: references to GHC.Platform.* types
+skip DynFlags.ways
+skip DynFlags.targetProfile
+skip DynFlags.versionedFilePath
+skip module GHC.Platform.Ways
+skip module GHC.Platform.Profile
+skip module GHC.Platform.ArchOS
+
+# GHC 9.10: references to Outputable types not in our stub
+skip DynFlags.initSDocContext
+skip DynFlags.initDefaultSDocContext
+skip DynFlags.initPromotionTickContext
+
 rename type GHC.Num.Int = BinNums.N
 
 redefine Axiom DynFlags.Settings : Type.

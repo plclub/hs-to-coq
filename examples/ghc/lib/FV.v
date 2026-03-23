@@ -19,29 +19,30 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Definition InterestingVarFun :=
+#[global] Definition VarAcc :=
+  (list Core.Var * Core.VarSet)%type%type.
+
+#[global] Definition InterestingVarFun :=
   (Core.Var -> bool)%type.
 
-Definition FV :=
-  (InterestingVarFun ->
-   Core.VarSet ->
-   (list Core.Var * Core.VarSet)%type -> (list Core.Var * Core.VarSet)%type)%type.
+#[global] Definition FV :=
+  (InterestingVarFun -> Core.VarSet -> VarAcc -> VarAcc)%type.
 
 (* Converted value declarations: *)
 
-Definition fvVarListVarSet : FV -> (list Core.Var * Core.VarSet)%type :=
+#[global] Definition fvVarAcc : FV -> (list Core.Var * Core.VarSet)%type :=
   fun fv => fv (GHC.Base.const true) Core.emptyVarSet (pair nil Core.emptyVarSet).
 
-Definition fvVarList : FV -> list Core.Var :=
-  Data.Tuple.fst GHC.Base.∘ fvVarListVarSet.
+#[global] Definition fvVarList : FV -> list Core.Var :=
+  Data.Tuple.fst GHC.Base.∘ fvVarAcc.
 
-Definition fvVarSet : FV -> Core.VarSet :=
-  Data.Tuple.snd GHC.Base.∘ fvVarListVarSet.
+#[global] Definition fvVarSet : FV -> Core.VarSet :=
+  Data.Tuple.snd GHC.Base.∘ fvVarAcc.
 
-Definition fvDVarSet : FV -> Core.DVarSet :=
+#[global] Definition fvDVarSet : FV -> Core.DVarSet :=
   fvVarSet.
 
-Definition unitFV : Core.Id -> FV :=
+#[global] Definition unitFV : Core.Id -> FV :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
     | var, fv_cand, in_scope, (pair have haveSet as acc) =>
@@ -52,25 +53,25 @@ Definition unitFV : Core.Id -> FV :=
         acc
     end.
 
-Definition emptyFV : FV :=
+#[global] Definition emptyFV : FV :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
     | _, _, acc => acc
     end.
 
-Definition unionFV : FV -> FV -> FV :=
+#[global] Definition unionFV : FV -> FV -> FV :=
   fun fv1 fv2 fv_cand in_scope acc =>
     fv1 fv_cand in_scope (fv2 fv_cand in_scope acc).
 
-Definition delFV : Core.Var -> FV -> FV :=
+#[global] Definition delFV : Core.Var -> FV -> FV :=
   fun var fv fv_cand in_scope acc =>
     fv fv_cand (Core.extendVarSet in_scope var) acc.
 
-Definition delFVs : Core.VarSet -> FV -> FV :=
+#[global] Definition delFVs : Core.VarSet -> FV -> FV :=
   fun vars fv fv_cand in_scope acc =>
     fv fv_cand (Core.unionVarSet in_scope vars) acc.
 
-Definition filterFV : InterestingVarFun -> FV -> FV :=
+#[global] Definition filterFV : InterestingVarFun -> FV -> FV :=
   fun fv_cand2 fv fv_cand1 in_scope acc =>
     fv (fun v => andb (fv_cand1 v) (fv_cand2 v)) in_scope acc.
 
@@ -82,10 +83,10 @@ Fixpoint mapUnionFV {a : Type} `(arg_0__ : a -> FV) `(arg_1__ : list a) arg_2__
          mapUnionFV f as_ fv_cand in_scope (f a fv_cand in_scope acc)
      end.
 
-Definition unionsFV : list FV -> FV :=
+#[global] Definition unionsFV : list FV -> FV :=
   fun fvs fv_cand in_scope acc => mapUnionFV GHC.Base.id fvs fv_cand in_scope acc.
 
-Definition mkFVs : list Core.Var -> FV :=
+#[global] Definition mkFVs : list Core.Var -> FV :=
   fun vars fv_cand in_scope acc => mapUnionFV unitFV vars fv_cand in_scope acc.
 
 (* External variables:

@@ -18,6 +18,7 @@ HANDMOD = \
   GHC/Real \
   GHC/Enum \
   Data/Bits \
+  Data/Functor/Classes \
   GHC/Prim \
   GHC/Types \
   GHC/Tuple \
@@ -28,12 +29,22 @@ HANDMOD = \
   GHC/Unicode \
   Prelude\
 
-# Generated modules
-# generated directly from GHC/libraries/base
-MODULES = \
-  GHC/Base \
+# Generated modules that must be listed early in _CoqProject
+# (before other generated modules) to avoid Coq stack overflow
+# in typeclass resolution. These were formerly in HANDMOD.
+EARLY_GHC_INTERNAL_MODULES = \
+  Data/Functor/Identity \
+  Data/Traversable
+
+# No early base modules currently needed
+EARLY_BASE_MODULES =
+
+# Generated modules from ghc-internal
+# Source at ghc-internal/src/GHC/Internal/...
+# For Data/* and Control/* modules: ghc-internal/src/GHC/Internal/$*.hs
+# For GHC/* modules: need explicit rules (GHC/List -> GHC/Internal/List.hs)
+GHC_INTERNAL_MODULES = \
   Data/Maybe \
-  GHC/List \
   Data/List \
   Data/OldList \
   Data/Bool \
@@ -47,15 +58,20 @@ MODULES = \
   Control/Monad \
   Data/Monoid \
   Data/Functor/Utils \
-  Data/Traversable \
   Control/Monad/Fail \
   Data/Foldable \
-  Control/Arrow \
-  Data/Functor/Identity \
   Data/Functor/Const \
-  Control/Applicative \
-  Data/Functor/Classes \
   Control/Category \
+  Control/Arrow
+
+# GHC/* modules in ghc-internal that need special path mapping
+# GHC/List -> ghc-internal/src/GHC/Internal/List.hs (not GHC/Internal/GHC/List.hs)
+GHC_INTERNAL_GHC_MODULES = \
+  GHC/List
+
+# Generated modules still in base/src/ (with real content, not re-exports)
+BASE_MODULES = \
+  Control/Applicative \
   Data/Bifunctor \
   Data/List/NonEmpty \
   Data/Semigroup \
@@ -66,6 +82,11 @@ MODULES = \
   Data/Bitraversable \
   Control/Monad/Zip
 
+# All generated modules (for _CoqProject etc.)
+MODULES = $(GHC_INTERNAL_MODULES) $(GHC_INTERNAL_GHC_MODULES) $(BASE_MODULES)
+EARLY_MODULES = $(EARLY_GHC_INTERNAL_MODULES) $(EARLY_BASE_MODULES)
+ALL_MODULES = $(EARLY_MODULES) $(MODULES)
+
 RENAMED = \
   Data/SemigroupInternal \
 
@@ -74,29 +95,35 @@ RENAMED = \
 DROPIN =
 
 # also generated from drop-in/
-SPECIAL_MODULES =
+SPECIAL_MODULES = \
+  GHC/Base
 
+VFILES_GHC_INTERNAL     = $(addprefix $(OUT)/,$(addsuffix .v,$(GHC_INTERNAL_MODULES)))
+VFILES_GHC_INTERNAL_GHC = $(addprefix $(OUT)/,$(addsuffix .v,$(GHC_INTERNAL_GHC_MODULES)))
+VFILES_BASE_GEN  = $(addprefix $(OUT)/,$(addsuffix .v,$(BASE_MODULES)))
+VFILES_EARLY_GHC_INTERNAL = $(addprefix $(OUT)/,$(addsuffix .v,$(EARLY_GHC_INTERNAL_MODULES)))
+VFILES_EARLY_BASE = $(addprefix $(OUT)/,$(addsuffix .v,$(EARLY_BASE_MODULES)))
+VFILES_GEN       = $(VFILES_GHC_INTERNAL) $(VFILES_GHC_INTERNAL_GHC) $(VFILES_BASE_GEN) $(VFILES_EARLY_GHC_INTERNAL) $(VFILES_EARLY_BASE)
+VFILES_RENAMED   = $(addprefix $(OUT)/,$(addsuffix .v,$(RENAMED)))
+VFILES_MAN       = $(addprefix $(OUT)/,$(addsuffix .v,$(HANDMOD)))
+VFILES_SPECIAL   = $(addprefix $(OUT)/,$(addsuffix .v,$(SPECIAL_MODULES)))
+VFILES_DROPIN    = $(addprefix $(OUT)/,$(addsuffix .v,$(DROPIN)))
 
-VFILES_GEN     = $(addprefix $(OUT)/,$(addsuffix .v,$(MODULES)))
-VFILES_RENAMED = $(addprefix $(OUT)/,$(addsuffix .v,$(RENAMED)))
-VFILES_MAN     = $(addprefix $(OUT)/,$(addsuffix .v,$(HANDMOD)))
-VFILES_SPECIAL = $(addprefix $(OUT)/,$(addsuffix .v,$(SPECIAL_MODULES)))
-VFILES_DROPIN  = $(addprefix $(OUT)/,$(addsuffix .v,$(DROPIN)))
+VFILES   = $(VFILES_MAN) $(VFILES_GEN) $(VFILES_SPECIAL) $(VFILES_DROPIN) $(VFILES_RENAMED)
 
-VFILES   = $(VFILES_GEN) $(VFILES_MAN) $(VFILES_SPECIAL) $(VFILES_DROPIN) $(VFILES_RENAMED)
-
-all:  vfiles coq
+all:  vfiles coq base-thy
 
 filelist:
-	@ls -1 $(addprefix base/,$(addsuffix .hs,$(MODULES)))
+	@ls -1 $(addprefix base/src/,$(addsuffix .hs,$(BASE_MODULES)))
+	@ls -1 $(addprefix ghc-internal/src/GHC/Internal/,$(addsuffix .hs,$(GHC_INTERNAL_MODULES)))
 
-vfiles: $(OUT)/edits $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
+vfiles: $(OUT)/edits $(OUT)/README.md $(OUT)/_CoqProject $(OUT)/coq-hs-to-coq-base.opam $(VFILES)
 
 $(OUT)/_CoqProject : Makefile
 	mkdir -p $(OUT)
 	> $@
 	echo '-Q . ""' >> $@
-	echo $(addsuffix .v,$(HANDMOD)) >> $@
+	echo $(addsuffix .v,$(HANDMOD)) $(addsuffix .v,$(EARLY_MODULES)) >> $@
 	echo $(addsuffix .v,$(MODULES)) >> $@
 	echo $(addsuffix .v,$(RENAMED)) >> $@
 	echo $(addsuffix .v,$(SPECIAL_MODULES)) >> $@
@@ -105,6 +132,37 @@ $(OUT)/_CoqProject : Makefile
 $(OUT)/Makefile: $(OUT)/_CoqProject
 	cd $(OUT); coq_makefile -f _CoqProject -o Makefile
 
+$(OUT)/coq-hs-to-coq-base.opam : Makefile
+	mkdir -p $(OUT)
+	> $@
+	echo 'opam-version: "2.0"' >> $@
+	echo 'name: "coq-hs-to-coq-base"' >> $@
+	echo 'version: "dev"' >> $@
+	echo 'synopsis: "Coq translation of parts of the Haskell base library"' >> $@
+	echo 'maintainer: "antal.b.sz@gmail.com"' >> $@
+	echo 'authors: [' >> $@
+	echo '  "Antal Spector-Zabusky"' >> $@
+	echo '  "Joachim Breitner"' >> $@
+	echo '  "Yao Li"' >> $@
+	echo '  "Christine Rizkallah"' >> $@
+	echo '  "John Wiegley"' >> $@
+	echo '  "Stephanie Weirich"' >> $@
+	echo ']' >> $@
+	echo 'license: "MIT"' >> $@
+	echo 'homepage: "https://github.com/plclub/hs-to-coq"' >> $@
+	echo 'bug-reports: "https://github.com/plclub/hs-to-coq/issues"' >> $@
+	echo 'dev-repo: "git+https://github.com/plclub/hs-to-coq.git"' >> $@
+	echo 'depends: [' >> $@
+	echo '  "coq" {>= "8.20" & < "8.21~"}' >> $@
+	echo ']' >> $@
+	echo 'build: [' >> $@
+	echo '  ["coq_makefile" "-f" "_CoqProject" "-o" "Makefile"]' >> $@
+	echo '  [make "-j%{jobs}%"]' >> $@
+	echo ']' >> $@
+	echo 'install: [' >> $@
+	echo '  [make "install"]' >> $@
+	echo ']' >> $@
+
 $(OUT)/edits:
 	mkdir -p $(OUT)
 	ln -fs ../examples/base-src/edits $(OUT)/edits
@@ -112,54 +170,125 @@ $(OUT)/edits:
 $(OUT)/README.md:
 	mkdir -p $(OUT)
 	> $@
-	echo 'This directory contains a Coq’ified version of the Haskell base library' >> $@
+	echo 'This directory contains a Coq'\''ified version of the Haskell base library' >> $@
 	echo 'Do not edit files here! Instead, look in `examples/base-src`.' >> $@
 
 coq: $(OUT)/Makefile $(VFILES)
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
 
-HS_TO_COQ_OPTS := \
+BASE_THY=../../base-thy
+
+base-thy: coq
+	cd $(BASE_THY) && coq_makefile -f _CoqProject -o Makefile && $(MAKE) -f Makefile
+
+# Common options shared by all translation rules
+# NOTE: -i gen-files is NOT included here because it would cause GHC to
+# find our stub modules instead of the installed ghc-internal package.
+# Only GHC/Base needs -i gen-files (see HS_TO_COQ_OPTS_GHC_BASE).
+HS_TO_COQ_OPTS_COMMON := \
     -e edits \
     -N \
-    -i gen-files \
     -I gen-files \
-    -i base \
-    -I base/include \
+    -I ghc-internal/include \
     --iface-dir $(OUT) \
     --dependency-dir deps \
-    --ghc -this-unit-id --ghc base \
     -o $(OUT)
+
+# Options for ghc-internal modules
+# Use a dummy unit-id so GHC resolves GHC.Internal.* imports from
+# the installed ghc-internal package (not our gen-files stubs).
+HS_TO_COQ_OPTS_INTERNAL := \
+    $(HS_TO_COQ_OPTS_COMMON) \
+    --ghc -this-unit-id --ghc ghc-internal-local
+
+# For GHC/Base we use -this-unit-id ghc-internal without hiding the
+# installed package. GHC treats our source as part of ghc-internal,
+# so SOURCE imports work and desugaring uses our local class definitions.
+# gen-files stubs shadow modules with boot-file conflicts.
+HS_TO_COQ_OPTS_GHC_BASE := \
+    $(HS_TO_COQ_OPTS_COMMON) \
+    -i gen-files \
+    -i ghc-internal/src \
+    --ghc -this-unit-id --ghc ghc-internal
+
+# Options for base/src modules
+HS_TO_COQ_OPTS_BASE := \
+    $(HS_TO_COQ_OPTS_COMMON) \
+    -i base/src \
+    --ghc -this-unit-id --ghc base
 
 
 include deps/*.mk
 
 .SECONDEXPANSION:
-$(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
+
+# Rule for Data/* and Control/* modules from ghc-internal
+# Source: ghc-internal/src/GHC/Internal/$*.hs
+$(VFILES_GHC_INTERNAL) $(VFILES_EARLY_GHC_INTERNAL): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
 	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
-		     $(HS_TO_COQ_OPTS) \
-		     base/$*.hs
+		     $(HS_TO_COQ_OPTS_INTERNAL) \
+		     ghc-internal/src/GHC/Internal/$*.hs
+	test -e $@
+
+# Rule for GHC/* modules from ghc-internal
+# GHC/List -> ghc-internal/src/GHC/Internal/List.hs
+$(VFILES_GHC_INTERNAL_GHC): $(OUT)/GHC/%.v : $$(wildcard module-edits/GHC/$$*/preamble.v) $$(wildcard module-edits/GHC/$$*/midamble.v)  $$(wildcard module-edits/GHC/$$*/edits) edits
+	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/GHC/$*/edits)) \
+	             $(addprefix -p , $(wildcard module-edits/GHC/$*/preamble.v)) \
+	             $(addprefix --midamble , $(wildcard module-edits/GHC/$*/midamble.v)) \
+		     $(HS_TO_COQ_OPTS_INTERNAL) \
+		     ghc-internal/src/GHC/Internal/$*.hs
+	test -e $@
+
+# Rule for modules still in base/src
+$(VFILES_BASE_GEN) $(VFILES_EARLY_BASE): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
+	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
+	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
+		     $(HS_TO_COQ_OPTS_BASE) \
+		     base/src/$*.hs
 	test -e $@
 
 # This is renamed, which confuses Make, so hence the special rule
+# Data/Semigroup/Internal is in ghc-internal
 $(OUT)/Data/SemigroupInternal.v : $(wildcard module-edits/Data/Semigroup/Internal/preamble.v) $(wildcard module-edits/Data/Semigroup/Internal/midamble.v)  $(wildcard module-edits/Data/Semigroup/Internal/edits) edits
 	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/Data/Semigroup/Internal/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/Data/Semigroup/Internal/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/Data/Semigroup/Internal/midamble.v)) \
-		     $(HS_TO_COQ_OPTS) \
-		     base/Data/Semigroup/Internal.hs
+		     $(HS_TO_COQ_OPTS_INTERNAL) \
+		     ghc-internal/src/GHC/Internal/Data/Semigroup/Internal.hs
 	test -e $(OUT)/Data/SemigroupInternal.v
+
+# We merge GHC.Maybe into GHC.Base, which requires a special rule.
+# Both are now in ghc-internal
+
+GHC_BASE_PRE = $(wildcard module-edits/GHC/Base/preamble.v module-edits/GHC/Maybe/preamble.v)
+GHC_BASE_MID = $(wildcard module-edits/GHC/Base/midamble.v module-edits/GHC/Maybe/midamble.v)
+GHC_BASE_EDITS = $(wildcard module-edits/GHC/Base/edits module-edits/GHC/Maybe/edits)
+
+$(OUT)/GHC/Base.v: $(GHC_BASE_PRE) $(GHC_BASE_MID) $(GHC_BASE_EDITS) edits
+	cat /dev/null $(GHC_BASE_PRE) > Base_preamble.v
+	cat /dev/null $(GHC_BASE_MID) > Base_midamble.v
+	$(HS_TO_COQ) -p Base_preamble.v \
+	             --midamble Base_midamble.v \
+	             $(addprefix -e , $(GHC_BASE_EDITS)) \
+	             $(HS_TO_COQ_OPTS_GHC_BASE) \
+	             ghc-internal/src/GHC/Internal/Stack/Types.hs \
+	             gen-files/GHC/Internal/Exception/Context.hs \
+	             ghc-internal/src/GHC/Internal/Base.hs ghc-internal/src/GHC/Internal/Maybe.hs
+	test -e $(OUT)/GHC/Base.v
+	rm -f Base_preamble.v Base_midamble.v
 
 $(VFILES_MAN): $(OUT)/% : manual/%
 	rm -f $@
 	lndir ../examples/base-src/manual $(OUT)/
 
-
 $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preamble.v drop-in/%.hs
 	$(HS_TO_COQ) -e module-edits/$*/edits \
 	             -e edits \
-		     $(HS_TO_COQ_OPTS) \
+		     $(HS_TO_COQ_OPTS_BASE) \
 		     drop-in/$*.hs
 
 # Every rule that builds a .v also produces the corresponding interface file

@@ -1,1 +1,2 @@
-{}
+constructors:
+  NameSet.NonCaffySet: '[Bare "Mk_NonCaffySet"]'

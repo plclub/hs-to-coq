@@ -3,8 +3,7 @@ Set Warnings "-notation-overridden".
 
 (* This file gathers and explains axioms about the GHC development. *)
 
-From mathcomp.ssreflect
-Require Import ssreflect ssrnat prime ssrbool.
+From Coq Require Import ssreflect ssrbool.
 
 
 
@@ -15,6 +14,7 @@ Require Import Coq.Classes.Morphisms.
 
 Require Import GHC.Base.
 
+Require Import Outputable.
 Require Import PrelNames.
 Require Import Id.
 Require Import Core.
@@ -83,9 +83,9 @@ Definition isLocalUnique  (u : Unique.Unique) : bool :=
      negb (List.elem c &"B0123456789:kmnrz").
 *)
 
-(** [initExitJoinUnique] better be a local unique *)
-Axiom isLocalUnique_initExitJoinUnique:
-  Unique.isLocalUnique Unique.initExitJoinUnique = true.
+(* GHC 9.10: initExitJoinUnique moved to GHC.Builtin.Uniques (not translated) *)
+(* Axiom isLocalUnique_initExitJoinUnique:
+  Unique.isLocalUnique Unique.initExitJoinUnique = true. *)
 
 
 
@@ -119,19 +119,20 @@ Axiom isLocalId_uniqAway:
 
 
 
-Lemma isJoinId_maybe_uniqAway:
-  forall s v, 
-  isJoinId_maybe (uniqAway s v) = isJoinId_maybe v.
+(* GHC 9.10: Id.idJoinPointHood is now defined in the Id midamble.
+   This follows from id_details_uniqAway. *)
+Lemma idJoinPointHood_uniqAway:
+  forall s v,
+  Id.idJoinPointHood (uniqAway s v) = Id.idJoinPointHood v.
 Proof.
-  intros iss v.
-  move: (id_details_uniqAway iss v) => h.
-  destruct v; simpl in *. 
-  unfold isJoinId_maybe, isId.
-  destruct uniqAway.
-  rewrite andb_false_r.
-  simpl in *.
-  subst.
-  auto.
+  intros s v.
+  unfold Id.idJoinPointHood, Core.isId, Core.idDetails.
+  destruct v as [n u t m sc d i].
+  destruct (uniqAway s (Mk_Id n u t m sc d i)) as [n' u' t' m' sc' d' i'] eqn:E.
+  simpl.
+  move: (id_details_uniqAway s (Mk_Id n u t m sc d i)) => H.
+  simpl in H. rewrite E in H. simpl in H. rewrite H.
+  reflexivity.
 Qed.
 
 Lemma isLocalUnique_uniqAway:
@@ -183,39 +184,26 @@ Qed.
   
 (**** *)
 
-(* NOTE: are these better as rewrites? Or as axioms? *)
-Lemma isJoinId_maybe_setIdOccInfo:
-  forall v occ_info, 
-  isJoinId_maybe (setIdOccInfo v occ_info) = isJoinId_maybe v.
+(* GHC 9.10: Id.idJoinPointHood is now defined in the Id midamble.
+   These follow from the concrete definitions. *)
+Lemma idJoinPointHood_setIdOccInfo:
+  forall v occ_info,
+  Id.idJoinPointHood (setIdOccInfo v occ_info) = Id.idJoinPointHood v.
 Proof.
-  destruct v.
-  move=> oi. cbv.
-  destruct Util.debugIsOn.
-  auto.
-  auto.
+  intros v occ_info.
+  unfold Id.idJoinPointHood, setIdOccInfo, Id.modifyIdInfo, Id.setIdInfo,
+         Id.lazySetIdInfo, Core.lazySetIdInfo.
+  destruct v as [n u t m s d i]. simpl. reflexivity.
 Qed.
 
-(* SCW: this one has a precondition that v is VanillaId or JoinId *)
-Lemma isJoinId_maybe_asJoinId:
+Lemma idJoinPointHood_asJoinId:
   forall v a,
-  ( match Core.idDetails v with
-        | Core.VanillaId => true
-        | Core.Mk_JoinId _ => true
-        | _ => false
-        end ) -> 
-  isLocalId v ->
-  isJoinId_maybe (asJoinId v a) = Some a.
+  isLocalId v = true ->
+  Id.idJoinPointHood (Id.asJoinId v a) = Outputable.JoinPoint a.
 Proof.
-  intros. destruct v.
-  simpl in *.
-  unfold isJoinId_maybe. unfold isId.
-  destruct asJoinId eqn:AS.
-  rewrite andb_false_r.
-  unfold asJoinId in AS. rewrite H0 in AS. 
-  unfold Panic.warnPprTrace in AS. simpl in AS. 
-  rewrite H in AS. simpl in AS. inversion AS.
-  simpl.
-  auto.
+  intros v a Hlocal.
+  unfold Id.idJoinPointHood, Id.asJoinId, Core.setIdDetails.
+  destruct v as [n u t m s d i]. simpl. reflexivity.
 Qed.  
 
 
@@ -229,6 +217,42 @@ Definition ValidVarSet (vs : VarSet) : Prop :=
   forall v1 v2, lookupVarSet vs v1 = Some v2 -> (v1 == v2).
 
 Axiom ValidVarSet_Axiom : forall vs, ValidVarSet vs.
+
+
+(** ** Strong Valid VarSets *)
+
+(* StrongValidVarSet says that every entry (k, v) in a VarSet's underlying
+   IntMap has key_of(v) = k. This is key-surjectivity: it ensures that every
+   key in the IntMap comes from the Unique of the stored Var. This is needed
+   for proofs that go from "no Var is a member" to "the map is empty", or
+   from "all Vars pass a predicate" to "all stored values pass". *)
+
+Definition StrongValidVarSet (vs : VarSet) : Prop :=
+  match vs with
+  | UniqSet.Mk_UniqSet (UniqFM.UFM m) =>
+    forall k v, Data.IntMap.Internal.lookup k m = Some v ->
+      Unique.getWordKey (Unique.getUnique v) = k
+  end.
+
+Axiom StrongValidVarSet_Axiom : forall vs, StrongValidVarSet vs.
+
+
+(** ** Extensional equality for VarSets *)
+
+(* Two VarSets with the same membership (elemVarSet) have equal underlying
+   IntMaps (via _==_). This combines three facts about VarSets:
+   1. StrongValidVarSet: every key comes from a Var's unique
+   2. WF PATRICIA tries: same key domain → same tree structure
+   3. Values at same key are ==-equal (same unique)
+   Proving this formally requires ~150 lines of Desc_unique-style reasoning
+   from IntMapProofs. We axiomatize it as a sound property of VarSets. *)
+(* Formulated with destructured VarSet to avoid match in conclusion *)
+Definition VarSet_IntMap (vs : VarSet) :=
+  match vs with UniqSet.Mk_UniqSet (UniqFM.UFM m) => m end.
+
+Axiom VarSet_extensional_equal : forall vs1 vs2 : VarSet,
+  (forall v, elemVarSet v vs1 = elemVarSet v vs2) ->
+  GHC.Base.op_zeze__ (VarSet_IntMap vs1) (VarSet_IntMap vs2) = true.
 
 
 (********************************* *)

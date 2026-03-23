@@ -13,6 +13,8 @@ rename value Data.IntMap.Internal.View = Data.IntMap.Internal.Mk_View
 
 rename value Data.IntMap.Internal.bool = Data.IntMap.Internal.boolITE
 
+termination Data.IntMap.Internal.disjoint deferred
+
 in Data.IntMap.Internal.fromSet       termination buildTree deferred
 in Data.IntMap.Internal.mergeWithKey' termination go        deferred
 
@@ -80,6 +82,18 @@ termination Data.IntMap.Internal.withoutKeys deferred
 # non-structural recursion
 termination Data.IntMap.Internal.restrictBM deferred
 termination Data.IntMap.Internal.withoutBM deferred
+
+# New in v0.7 - skip types with name collisions (only used by skipped functions)
+skip Data.IntMap.Internal.Inserted
+skip Data.IntMap.Internal.Distinct
+skip Data.IntMap.Internal.fromMonoListWithKey
+
+skip Data.IntMap.Internal.IsList__IntMap
+skip Data.IntMap.Internal.compose
+skip Data.IntMap.Internal.takeWhileAntitone
+skip Data.IntMap.Internal.dropWhileAntitone
+skip Data.IntMap.Internal.spanAntitone
+skip Data.IntMap.Internal.Lift__IntMap
 
 # Show stuff
 skip Data.IntMap.Internal.showsBars

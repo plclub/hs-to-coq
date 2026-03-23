@@ -1,3 +1,6 @@
+# Break Core->Literal circular dependency
+rename type GHC.Core.TyCo.Rep.RuntimeRepType = AxiomatizedTypes.RuntimeRepType
+
 axiomatize module Literal
 
 axiomatize definition Literal.absent_lits

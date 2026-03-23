@@ -1,4 +1,4 @@
-From Coq Require Import ssrnat seq.
+From mathcomp Require Import ssreflect ssrnat seq.
 Require Import Coq.Strings.String.
 
 Definition list_pure {a : Type} (x : a) : seq a :=

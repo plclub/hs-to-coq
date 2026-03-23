@@ -7,6 +7,10 @@ skip Id.idFunRepArity
 # unfolding info 
 skip Id.setCaseBndrEvald
 
+# GHC 9.10: hs-to-coq generates Core.Scaled (the type) instead of Core.Mk_Scaled (the constructor)
+redefine Definition Id.idScaledType : Core.Id -> Core.Scaled AxiomatizedTypes.Type_ :=
+  fun id => Core.Mk_Scaled (Id.idMult id) (Id.idType id).
+
 # Needs `GHC.Prim.seq`, used to evaluate the type information strictly
 in Id.setIdType rewrite forall x y, GHC.Prim.seq x y = y
 
@@ -16,7 +20,28 @@ axiomatize definition Id.mkTemplateLocalsNum
 axiomatize definition Id.mkTemplateLocals 
 
 # skipping type and coercion variables
-skip Id.mkLocalCoVar 
+skip Id.mkLocalCoVar
+skip Id.mkLocalIdOrCoVar
+skip Id.mkSysLocalOrCoVar
+skip Id.mkSysLocalOrCoVarM
+skip Id.mkUserLocalOrCoVar
+
+# GHC 9.10: uses Core.ManyTy which is not available (Mult = Type_ is axiomatized)
+axiomatize definition Id.mkWorkerId
+
+# GHC 9.10: uses Outputable.JoinPointHood which is not available
+skip Id.idJoinPointHood
+skip Id.idJoinArity
+skip Id.asJoinId_maybe
+
+# GHC 9.10: asJoinId uses pprTraceDebug; we provide it in midamble via setIdDetails
+skip Id.asJoinId
+
+# GHC 9.10: type error with Data.Maybe.maybe/length
+axiomatize definition Id.idCbvMarkArity
+
+# GHC 9.10: uses Core.Scaled as constructor pattern (should be Mk_Scaled) and mkSysLocalOrCoVar
+skip Id.mkScaledTemplateLocal
 
 # don't change the scope of the Id
 skip Id.setIdNotExported

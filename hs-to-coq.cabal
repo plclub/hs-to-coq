@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 extra-source-files:
   src/lib/HsToCoq/Edits/Parser.y
   src/include/*.h
-tested-with: GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.4 GHC == 8.10.1
+tested-with: GHC == 8.10.7, GHC == 9.10.3
 
 source-repository head
   type:     git
@@ -120,9 +120,9 @@ library
                      , TemplateHaskell
                      , CPP
 
-  build-depends:       base                 >=4.11 && < 4.15
-                     , template-haskell     >=2.13
-                     , ghc                  >=8.4
+  build-depends:       base                 >=4.14 && < 4.22
+                     , template-haskell     >=2.16
+                     , ghc                  >=8.10
                      , ghc-boot
                      , ghc-paths
                      , transformers
@@ -140,13 +140,19 @@ library
                      , optparse-applicative
                      , yaml
 
-  -- These are actually not used directly by hs-to-coq, but work around a
-  -- bug(?) in GHC-8.4 that no longer loads other packages if there is a GHC
-  -- environment file
+  if impl(ghc >= 9)
+    build-depends:
+      exceptions
+
+  -- These are not used directly by hs-to-coq but must be in the package DB
+  -- so that GHC (used internally by hs-to-coq) can parse Haskell test files.
+  -- test-framework-*: containers v0.6 tests; tasty-*: containers v0.7 tests.
   build-depends:
     test-framework >= 0.3.3,
     test-framework-quickcheck2 >= 0.2.9,
-    test-framework-hunit
+    test-framework-hunit,
+    tasty-quickcheck,
+    tasty-hunit
 
   hs-source-dirs:      src/lib
   include-dirs:        src/include

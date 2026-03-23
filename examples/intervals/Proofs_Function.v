@@ -15,7 +15,7 @@ Require Import Coq.Sets.Ensembles.
 Require Import Coq.Sets.Powerset_facts.
 Require Import Ensemble_facts.
 Import ListNotations.
-Require Import Omega.
+Require Import Lia.
 
 Require Import Coq.Logic.FunctionalExtensionality.
 
@@ -243,7 +243,7 @@ Ltac solve_size2 :=
   repeat (
     match goal with [ |- context [if (?x <? ?y)%Z then _ else _] ] => destruct (Z.ltb_spec x y) end
   );
-  try omega.
+  try lia.
   
 Require Import Recdef.
 

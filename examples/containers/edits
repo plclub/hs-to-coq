@@ -1,9 +1,19 @@
 skip module Utils.Containers.Internal.StrictFold
 skip module Utils.Containers.Internal.StrictPair
 skip module Utils.Containers.Internal.BitQueue
+skip module Utils.Containers.Internal.Prelude
+skip module Utils.Containers.Internal.StrictMaybe
+skip module Utils.Containers.Internal.Coercions
 
 skip module GHC.Show
 skip module Data.Data
+skip module Language.Haskell.TH.Syntax
+skip module Language.Haskell.TH
+skip module Data.List.NonEmpty
+skip module Data.Bifoldable
+skip module Data.Semigroup
+skip module GHC.Internal.IsList
+skip module GHC.Exts
 
 rename value Utils.Containers.Internal.StrictFold.foldlStrict = Data.Foldable.foldl
 rename type Utils.Containers.Internal.StrictPair.StrictPair = prod

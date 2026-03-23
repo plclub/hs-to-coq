@@ -1,7 +1,7 @@
 Require Import Data.Graph.Inductive.Internal.Heap.
 Require Import Coq.Lists.List.
 Require Import Coq.Wellfounded.Inverse_Image.
-Require Import Omega.
+Require Import Lia.
 Require Import HeapEquiv.
 Require Import Helper.
 
@@ -100,10 +100,10 @@ Proof.
   simpl. split; intros. left. assumption. destruct H1. assumption. destruct H1.
   split; intros. apply in_heap_merge in H1. destruct H1. apply in_heap_merge in H1.
   destruct H1. left. assumption. simpl. right. left. assumption. 
-  right. apply H0 in H1. simpl. right. apply H1. simpl. omega.
+  right. apply H0 in H1. simpl. right. apply H1. simpl. lia.
   rewrite in_heap_merge. rewrite in_heap_merge. simpl in H1. destruct H1.
   left. left. assumption. destruct H1. left. right. assumption. 
-  right. apply H0. simpl. omega. assumption.
+  right. apply H0. simpl. lia. assumption.
 Qed.
 
 Program Instance triple : Err.Default (A * B * Heap A B).
@@ -245,11 +245,11 @@ Proof.
     simpl in H1. rewrite merge_empty in H1. destruct H1. rewrite merge_empty in H1.
     destruct_all. subst. right. intros. simpl in H1. destruct H1. subst. reflexivity.
     destruct H1. subst. reflexivity. apply H0 in H2. destruct H2. subst. inversion H1.
-    apply H2. assumption. simpl. omega.
+    apply H2. assumption. simpl. lia.
   - destruct l. reflexivity. destruct l. simpl. destruct H1. inversion H1.
     apply H1. left. reflexivity. simpl. destruct H1. inversion H1.
     rewrite merge_empty. split. rewrite merge_empty. split; apply H1; try(solve_in).
-    right. left. reflexivity. apply H0. simpl. omega. right. intros. apply H1. right. right. assumption.
+    right. left. reflexivity. apply H0. simpl. lia. right. intros. apply H1. right. right. assumption.
 Qed. 
 
 (*The key lemma for proving mergeAll finds the minimum. The proof boils down to checking a lot of cases
@@ -271,26 +271,26 @@ Proof.
   destruct (mergeAll l) eqn : M.
   - rewrite mergeAll_empty in M. destruct M. subst. inversion H1. apply H6 in H1. inversion H1.
   - assert (x <= a = true). eapply H3. reflexivity. 
-    assert (a <= x' = true). eapply H0. 2 : { apply H1. } simpl. omega. rewrite M. simpl. reflexivity.
+    assert (a <= x' = true). eapply H0. 2 : { apply H1. } simpl. lia. rewrite M. simpl. reflexivity.
     order A.
   - subst. destruct H1; subst. eapply H5. reflexivity. destruct H1. inversion H1; subst. order A.
     destruct (mergeAll l) eqn : M.
     + rewrite mergeAll_empty in M. destruct M; subst. inversion H1. apply H4 in H1. inversion H1.
     + assert (x <= a = true). eapply H3. reflexivity. assert (a <= x' = true). eapply H0.
-      2 : { apply H1. } simpl. omega. rewrite M. reflexivity. order A.
+      2 : { apply H1. } simpl. lia. rewrite M. reflexivity. order A.
   - destruct (merge h h0) eqn : M.
     + rewrite merge_empty in M. destruct_all. subst. destruct H1. inversion H1. destruct H1. inversion H1.
-      eapply H0. 2 : { apply H1. } simpl. omega. rewrite H2. simpl. reflexivity.
+      eapply H0. 2 : { apply H1. } simpl. lia. rewrite H2. simpl. reflexivity.
     + assert (splitMinT (merge h h0) = Some (a, b, mergeAll l0)) by (rewrite M; reflexivity).
       apply merge_min' in H4. destruct H4; destruct_all; subst.
       * destruct H1; subst. inversion H1; subst. eapply H3. reflexivity.
         destruct H1; subst. simpl in M. destruct (a < x') eqn : L.
         assert (x <= a = true). eapply H3. reflexivity. order A. inversion M; subst.
-        eapply H3. reflexivity. eapply H0. 2 : { apply H1. } simpl. omega. rewrite H2. reflexivity.
+        eapply H3. reflexivity. eapply H0. 2 : { apply H1. } simpl. lia. rewrite H2. reflexivity.
       * destruct H1; subst. simpl in M. destruct (x' < a) eqn : L.
         inversion M; subst. order A. assert (x <= a = true). eapply H3. reflexivity. order A.
         destruct H1. inversion H1; subst. eapply H3. reflexivity.
-        eapply H0. 2 : { apply H1. } simpl. omega. rewrite H2. reflexivity.
+        eapply H0. 2 : { apply H1. } simpl. lia. rewrite H2. reflexivity.
 Qed. 
 
 (*If the heap is well_formed, then findMin actually finds the min.*)
@@ -375,7 +375,7 @@ Proof.
             assumption.
         -- right. right. right. right. exists x. exists x0. split. right. right. assumption.
            split. right. right. assumption. assumption.
-  - simpl. omega.
+  - simpl. lia.
 Qed.
 
 (*The result we want*)
@@ -454,7 +454,7 @@ Proof.
                      (wf_inverse_image _ nat _ (@length _)
                         PeanoNat.Nat.lt_wf_0)).
   - destruct l. simpl. reflexivity. simpl. destruct l. simpl. reflexivity.
-    rewrite map_merge. rewrite H0. simpl. rewrite map_merge. reflexivity. simpl. omega.
+    rewrite map_merge. rewrite H0. simpl. rewrite map_merge. reflexivity. simpl. lia.
 Qed.
 
 Lemma map_splitMinT: forall (f: A -> B -> C) x y (h h' : Heap A B),

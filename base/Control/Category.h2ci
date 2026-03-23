@@ -1,7 +1,3 @@
-superclassCount:
-  Control.Category.Category: '0'
-classTypes:
-  Control.Category.Category: fromList []
 classDefns:
   Control.Category.Category: ClassDefinition (Qualified "Control.Category" "Category")
     [Typed Ungeneralizable Implicit (Ident (Bare "k") :| []) (Qualid (Bare "Type")),Typed
@@ -18,3 +14,7 @@ classDefns:
     (Bare "cat")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg (Qualid (Bare "b"))
     :| [])) (App (App (Qualid (Bare "cat")) (PosArg (Qualid (Bare "a")) :| [])) (PosArg
     (Qualid (Bare "c")) :| [])))))))]
+classTypes:
+  Control.Category.Category: fromList []
+superclassCount:
+  Control.Category.Category: '0'

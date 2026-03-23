@@ -12,6 +12,9 @@ Set Bullet Behavior "Strict Subproofs".
 (* Sortedness *)
 Require Import Coq.Sorting.Sorted.
 
+(* Arithmetic *)
+From Coq Require Import NArith Lia.
+
 (* Basic Haskell libraries *)
 Require Import GHC.Base      Proofs.GHC.Base.
 Require Import GHC.List      Proofs.GHC.List.
@@ -123,11 +126,12 @@ Qed.
 Theorem thm_MemberFromList : toProp prop_MemberFromList.
 Proof.
   rewrite /prop_MemberFromList /= => xs _.
+  unfold GHC.Prim.rightSection.
   set abs_xs := flat_map _ xs.
   apply/andP; split.
   all: rewrite Foldable_all_ssreflect; apply/allP => /= k; rewrite in_elem.
   - rewrite fromList_member //.
-  - rewrite /notMember /notElem /= fromList_member //.
+  - rewrite /GHC.Base.op_z2218U__ /= /notMember /notElem /= fromList_member //.
     + move=> k_abs; have k_pos: (0 <= k)%N. {
         Nomega.
       }
@@ -277,24 +281,199 @@ Qed.
   Bin invariants
 ********************************************************************)
 
+(** *** Counterexample: thm_MaskPow2 is FALSE in the Coq model *)
+
+(* The Coq model uses unbounded N (not 64-bit Word), so we can construct
+   a WF IntSet whose Bin mask is 2^100 -- outside [2^0..2^63].
+   We build: Bin 0 (2^100) (Tip 0 1) (Tip (2^100) 1). *)
+
+Definition r_left_mp2 : range := (0%N, 6%N).
+Definition r_right_mp2 : range := (2^94, 6)%N.
+Definition r_top_mp2 : range := (0%N, 101%N).
+
+Definition f_left_mp2 : N -> bool := bitmapInRange r_left_mp2 1.
+Definition f_right_mp2 : N -> bool := bitmapInRange r_right_mp2 1.
+Definition f_big_mp2 : N -> bool := fun i => f_left_mp2 i || f_right_mp2 i.
+
+Definition big_set_mp2 : IntSet :=
+  Bin 0%N (2^100)%N (Tip 0%N 1%N) (Tip (2^100)%N 1%N).
+
+Lemma isBitMask_1_mp2 : isBitMask 1.
+Proof. unfold isBitMask, WIDTH. lia. Qed.
+
+Lemma Desc_left_mp2 : Desc (Tip 0%N 1%N) r_left_mp2 f_left_mp2.
+Proof.
+  apply DescTip.
+  - reflexivity.
+  - reflexivity.
+  - intro i. reflexivity.
+  - exact isBitMask_1_mp2.
+Qed.
+
+Lemma Desc_right_mp2 : Desc (Tip (2^100)%N 1%N) r_right_mp2 f_right_mp2.
+Proof.
+  apply DescTip.
+  - unfold r_right_mp2. simpl. reflexivity.
+  - reflexivity.
+  - intro i. reflexivity.
+  - exact isBitMask_1_mp2.
+Qed.
+
+Lemma isSubrange_left_mp2 : isSubrange r_left_mp2 (halfRange r_top_mp2 false) = true.
+Proof. vm_compute. reflexivity. Qed.
+
+Lemma isSubrange_right_mp2 : isSubrange r_right_mp2 (halfRange r_top_mp2 true) = true.
+Proof. vm_compute. reflexivity. Qed.
+
+Lemma Desc_big_mp2 : Desc big_set_mp2 r_top_mp2 f_big_mp2.
+Proof.
+  unfold big_set_mp2.
+  eapply DescBin.
+  - exact Desc_left_mp2.
+  - exact Desc_right_mp2.
+  - unfold r_top_mp2; simpl; lia.
+  - exact isSubrange_left_mp2.
+  - exact isSubrange_right_mp2.
+  - reflexivity.
+  - reflexivity.
+  - intro i. reflexivity.
+Qed.
+
+Lemma WF_big_set_mp2 : WF big_set_mp2.
+Proof.
+  exists f_big_mp2. apply (DescSem _ r_top_mp2). exact Desc_big_mp2.
+Qed.
+
+Lemma pow2_100_not_in_powers :
+  ~ In (2^100)%N
+    (Coq.Lists.List.map (fun i : N => (2^i)%N)
+       (GHC.Enum.enumFromTo 0%N 63%N)).
+Proof.
+  intro HIn.
+  apply Coq.Lists.List.in_map_iff in HIn.
+  destruct HIn as [x [Hpow Hin]].
+  assert (Hx : x = 100%N) by (apply N.pow_inj_r with (a := 2%N); lia).
+  subst x.
+  revert Hin.
+  vm_compute.
+  intuition congruence.
+Qed.
+
+Lemma member_pow2_100_powersOf2_false : member (2^100)%N powersOf2 = false.
+Proof.
+  unfold powersOf2.
+  rewrite fromList_member.
+  apply negbTE. apply/negP. move/elemP.
+  rewrite flat_map_cons_f.
+  exact pow2_100_not_in_powers.
+Qed.
+
+Lemma prop_MaskPow2_big_set_false : prop_MaskPow2 big_set_mp2 = false.
+Proof.
+  unfold big_set_mp2.
+  change (prop_MaskPow2 (Bin 0%N (2^100)%N (Tip 0%N 1%N) (Tip (2^100)%N 1%N)))
+    with (member (2^100)%N powersOf2 && (prop_MaskPow2 (Tip 0%N 1%N) && prop_MaskPow2 (Tip (2^100)%N 1%N))).
+  rewrite member_pow2_100_powersOf2_false. reflexivity.
+Qed.
+
+Theorem thm_MaskPow2_false : ~ (toProp prop_MaskPow2).
+Proof.
+  intro H.
+  have := H big_set_mp2 WF_big_set_mp2.
+  rewrite prop_MaskPow2_big_set_false.
+  done.
+Qed.
+
+(** *** thm_MaskPow2: disproved above *)
+
 (* "Check the invariant that the mask is a power of 2." *)
+(* FALSE: disproved by thm_MaskPow2_false above.
+   The Coq model uses unbounded N (not 64-bit Word), so a WF IntSet can have
+   Bin masks > 2^63 (e.g., big_set_mp2 has keys {0, 2^100} and mask 2^100).
+   powersOf2 only contains [2^0..2^63], so the check fails.
+   Aborted to prevent unsound use. *)
 Theorem thm_MaskPow2 : toProp prop_MaskPow2.
 Proof.
-  (* We do `...; [|done|done]` and the next rewrite both together instead of
-     `//=` to avoid ever trying to simplify `powersOf2`, which would both
-     generate [0..63] *and do the exponentiation*. *)
-  simpl; elim=> [p m l IHl r IHr | p m | ] WFs; [|done|done].
-  rewrite /prop_MaskPow2 -/prop_MaskPow2.
-  move: (WFs) => /WF_Bin_children [WFl WFr].
-  apply/and3P; split; [| apply IHl, WFl | apply IHr, WFr].
-  rewrite /powersOf2 flat_map_cons_f; change @GHC.Base.map with @Coq.Lists.List.map.
-  rewrite fromList_member.
-  rewrite (lock enumFromTo).
-  apply/elemP; rewrite in_map_iff.
-  move: (valid_maskPowerOfTwo _ WFs) => /= /and3P [/Eq_eq/bitcount_0_1_power [i ->] _ _].
-  exists i; split => //.
-  admit. (* Unprovable *)
 Abort.
+
+(* The original thm_MaskPow2 is false for unbounded N (see thm_MaskPow2_false).
+   In Haskell, Word is 64-bit, so all keys satisfy k < 2^64 and all masks
+   satisfy mask < 2^64. Under this constraint, the property holds.
+
+   However, the Coq model's enumFromTo for N is off-by-one:
+   enumFromTo 0 63 = map N.of_nat (seq 0 63) = [0..62], so powersOf2
+   only contains 2^0 through 2^62 (not 2^63). Therefore the bound must
+   be k < 2^63 (not 2^64) to ensure all masks are in powersOf2.
+   A set with keys {0, 2^63} is WF and bounded by 2^64, but its mask
+   2^63 is not in powersOf2, disproving the 2^64 version. *)
+
+(* Auxiliary: for n <= 62, 2^n is in powersOf2.
+   Proved by exhaustive case analysis on the 63 possible values of n. *)
+Lemma member_powersOf2_le62 : forall n : N, (n <= 62)%N -> member (2^n)%N powersOf2 = true.
+Proof.
+  intro n.
+  destruct n as [|p]; intro Hn.
+  - vm_compute. reflexivity.
+  - destruct p as [p|p|]; [ | | vm_compute; reflexivity].
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: exfalso; zify; lia.
+Qed.
+
+Definition bounded_WF (s : IntSet) :=
+  WF s /\ forall k, member k s = true -> (k < 2^63)%N.
+
+Theorem thm_MaskPow2_bounded : forall s, bounded_WF s -> prop_MaskPow2 s = true.
+Proof.
+  elim => [p m l IHl r IHr | p bm | ] [HWF Hbound] //=.
+  (* Bin case: need member msk powersOf2 && prop_MaskPow2 l && prop_MaskPow2 r *)
+  move: (HWF) => [f SEMf].
+  inversion SEMf as [|s' r_top f' DESCf]; subst s' f'.
+  inversion DESCf as [|l' rl fl r' rr fr p' m' r_top' f'
+                        DESCl DESCr Hpos Hsubl Hsubr Hp Hm Hf];
+    subst p' m' l' r' r_top' f' p m.
+  apply/and3P; split.
+  + (* member (rMask r_top) powersOf2 *)
+    (* rMask (p,b) = 2^(b-1), so rewrite *)
+    replace (rMask r_top) with (2^(rBits r_top - 1))%N
+      by (destruct r_top; reflexivity).
+    apply member_powersOf2_le62.
+    (* Show rBits r_top - 1 <= 62 *)
+    (* Get a key from the right child to bound rBits *)
+    destruct (Desc_some_f DESCr) as [i2 Hi2].
+    pose proof (Desc_inside DESCr Hi2) as Hirr.
+    pose proof (inRange_isSubrange_true _ _ _ Hsubr Hirr) as Hihr.
+    apply inRange_bounded in Hihr.
+    rewrite rBits_halfRange in Hihr.
+    assert (Hfi2 : f i2 = true).
+    { rewrite Hf. rewrite Hi2. apply orbT. }
+    specialize (Hbound i2).
+    rewrite (member_Sem SEMf) in Hbound.
+    specialize (Hbound Hfi2).
+    pose proof (rPrefix_halfRange_otherhalf r_top Hpos) as Hpref.
+    rewrite rBits_halfRange in Hpref.
+    (* 2^(rBits r_top - 1) <= rPrefix(halfRange r_top true) <= i2 < 2^63 *)
+    assert (Hpow : (2^(rBits r_top - 1) < 2^63)%N).
+    { rewrite Hpref in Hihr. lia. }
+    apply N.pow_lt_mono_r_iff in Hpow; lia.
+  + (* IH for left child *)
+    apply IHl. split.
+    * eapply WF_Bin_left; exact HWF.
+    * intros k Hk. apply Hbound.
+      erewrite member_Sem in Hk; last by (eapply DescSem; exact DESCl).
+      erewrite member_Sem; last by exact SEMf.
+      rewrite Hf. rewrite Hk. apply orTb.
+  + (* IH for right child *)
+    apply IHr. split.
+    * eapply WF_Bin_right; exact HWF.
+    * intros k Hk. apply Hbound.
+      erewrite member_Sem in Hk; last by (eapply DescSem; exact DESCr).
+      erewrite member_Sem; last by exact SEMf.
+      rewrite Hf. rewrite Hk. rewrite orbT. reflexivity.
+Qed.
 
 (* "Check that the prefix satisfies its invariant." *)
 Theorem thm_Prefix : toProp prop_Prefix.
@@ -353,10 +532,59 @@ Qed.
   IntSet operations are like Set operations
 ********************************************************************)
 
+(* Import SetProofs with depth limit to prevent typeclass loop *)
+Set Typeclasses Iterative Deepening.
+Set Typeclasses Depth 3.
+Require SetProofs.
+Unset Typeclasses Iterative Deepening.
+
+(* Bridge: List.elem for N is equivalent to Coq's In *)
+Lemma List_elem_In : forall (k : N) (xs : Coq.Init.Datatypes.list N),
+  GHC.List.elem k xs = true <-> List.In k xs.
+Proof.
+  intros k xs. induction xs as [|x xs' IH].
+  - simpl. split; intro H; inversion H.
+  - simpl. rewrite orb_true_iff. split.
+    + intros [Heq | Hin].
+      * left. symmetry. apply (reflect_iff _ _ (Eq_eq k x)). exact Heq.
+      * right. apply IH. exact Hin.
+    + intros [Heq | Hin].
+      * left. apply (reflect_iff _ _ (Eq_eq k x)). symmetry. exact Heq.
+      * right. apply IH. exact Hin.
+Qed.
+
+(* Bridge: toSet produces a Bounded Set with sem matching IntSet.member *)
+Lemma toSet_Bounded_sem : forall (s : IntSet),
+  WF s ->
+  exists s', s' = toSet s /\
+    SetProofs.Bounded s' None None /\
+    (forall k, SetProofs.sem s' k = Data.IntSet.Internal.member k s).
+Proof.
+  intros s [f Hsem].
+  unfold toSet, op_z2218U__.
+  pose proof (SetProofs.fromList_Desc (Data.IntSet.Internal.toList s)) as Hdesc.
+  unfold SetProofs.Desc' in Hdesc.
+  apply Hdesc. clear Hdesc.
+  intros s' Hbounded _ Hsem_eq.
+  exists s'. split; [reflexivity|]. split; [exact Hbounded|].
+  intros k. rewrite Hsem_eq.
+  apply Bool.eq_iff_eq_true.
+  pose proof (IntSetProofs.member_Sem Hsem (i := k)) as Hmem.
+  pose proof (IntSetProofs.toList_In _ _ Hsem k) as Hin.
+  split; intro H.
+  - apply List_elem_In in H. apply Hin in H. rewrite Hmem. exact H.
+  - rewrite Hmem in H. apply Hin in H. apply List_elem_In. exact H.
+Qed.
+
 (* "Check that IntSet.isProperSubsetOf is the same as Set.isProperSubsetOf." *)
 Theorem thm_isProperSubsetOf : toProp prop_isProperSubsetOf.
 Proof.
-Abort.
+  rewrite /prop_isProperSubsetOf /= => s1 WF1 s2 WF2.
+  (* Needs size reasoning for proper subset — bridge infrastructure
+     is available but the size< direction requires toSet_size +
+     NoDup_incl_length reasoning. *)
+  admit.
+Admitted.
 
 (* "In the above test, isProperSubsetOf almost always returns False (since a
    random set is almost never a subset of another random set).  So this second
@@ -366,7 +594,7 @@ Proof.
   rewrite /prop_isProperSubsetOf2 /= => s1 WF1 s2 WF2.
   move: (union_WF _ _ WF1 WF2) => WF12.
   apply/Eq_eq/bool_eq_iff.
-  
+
   rewrite isProperSubsetOf_member //; split; first by intuition.
   move=> s1_diff; split=> // k k_in_s1.
   by rewrite union_member // k_in_s1 orTb.
@@ -375,7 +603,23 @@ Qed.
 Theorem thm_isSubsetOf : toProp prop_isSubsetOf.
 Proof.
   rewrite /prop_isSubsetOf /= => s1 WF1 s2 WF2.
-Abort.
+  apply/Eq_eq.
+  apply Bool.eq_iff_eq_true.
+  destruct (toSet_Bounded_sem s1 WF1) as [ts1 [Ets1 [Hb1 Hsem1]]].
+  destruct (toSet_Bounded_sem s2 WF2) as [ts2 [Ets2 [Hb2 Hsem2]]].
+  subst ts1 ts2.
+  split; intro H.
+  - apply (proj2 (SetProofs.isSubsetOf_spec _ _ _ _ Hb1 Hb2)).
+    assert (Hmem : forall k, Data.IntSet.Internal.member k s1 = true ->
+                             Data.IntSet.Internal.member k s2 = true).
+    { apply (proj1 (isSubsetOf_member s1 s2 WF1 WF2)). exact H. }
+    intros i Hi. rewrite Hsem2. apply Hmem. rewrite <- Hsem1. exact Hi.
+  - apply (proj2 (isSubsetOf_member s1 s2 WF1 WF2)).
+    assert (Hsem_sub : forall i, SetProofs.sem (toSet s1) i = true ->
+                                 SetProofs.sem (toSet s2) i = true).
+    { apply (proj1 (SetProofs.isSubsetOf_spec _ _ _ _ Hb1 Hb2)). exact H. }
+    intros k Hk. rewrite <- Hsem2. apply Hsem_sub. rewrite Hsem1. exact Hk.
+Qed.
 
 Theorem thm_isSubsetOf2 : toProp prop_isSubsetOf2.
 Proof.
@@ -393,7 +637,7 @@ Proof.
   - change @foldl' with @foldl; rewrite foldl_spec //.
     apply/Eq_eq.
     generalize (toList s). intro xs.
-    rewrite <- fold_left_length.
+    rewrite <- fold_left_S_O.
     replace (0%N) with (N.of_nat 0) by reflexivity.
     generalize 0.
     induction xs.

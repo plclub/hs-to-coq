@@ -47,11 +47,15 @@ Theorem hs_coq_foldl_base {A B} (f : B -> A -> B) (z : B) (l : list A) :
   foldl f z l = Coq.Lists.List.fold_left f l z.
 Proof. by rewrite /foldl; move: z; elim: l => //=. Qed.
 
+Theorem hs_coq_foldl'_base {A B} (f : B -> A -> B) (z : B) (l : list A) :
+  foldl' f z l = Coq.Lists.List.fold_left f l z.
+Proof. rewrite /foldl'; move: z; elim: l => //=. Qed.
+
 (* ---------- foldr ------------------------------ *)
 
 Lemma foldr_initial {A} (x : list A) : foldr (_::_) nil x = x.
 Proof. by elim: x => //= x xs ->. Qed.
-Hint Rewrite @foldr_initial : hs_simpl.
+#[export] Hint Rewrite @foldr_initial : hs_simpl.
 
 Lemma foldr_single {A B} (k : A -> B -> B) z x : foldr k z (x :: nil) = k x z.
 Proof. done. Qed.
@@ -59,7 +63,7 @@ Proof. done. Qed.
 Lemma foldr_nil {A B} (k : A -> B -> B) z : foldr k z nil = z.
 Proof. done. Qed.
 
-Hint Rewrite @foldr_initial @foldr_single @foldr_nil : hs_simpl.
+#[export] Hint Rewrite @foldr_initial @foldr_single @foldr_nil : hs_simpl.
 
 Lemma foldr_id {A B} (a : A) (bs : list B) : foldr (fun _ => id) a bs = a.
 Proof. by elim: bs. Qed.
@@ -70,13 +74,13 @@ Proof. by elim: bs. Qed.
    Coq theorems are automatically available. However, we make these
    automatically available to hs_simpl. *)
 
-Hint Rewrite @app_nil_r @app_length : hs_simpl.
+#[export] Hint Rewrite @app_nil_r @length_app : hs_simpl.
 
 (* ---------- map ------------------------------ *)
 
 Lemma map_id {a} (x : list a) : map id x = x.
 Proof. by rewrite hs_coq_map Coq.Lists.List.map_id. Qed.
-Hint Rewrite @map_id : hs_simpl.
+#[export] Hint Rewrite @map_id : hs_simpl.
 
 Lemma map_map {a b c} (f : a -> b) (g : b -> c) (x : list a) :
   map g (map f x) = map (g ∘ f) x.
@@ -86,7 +90,7 @@ Lemma map_append {a b} (f : a -> b) (x y : list a) :
   map f (x ++ y) = map f x ++ map f y.
 Proof. by rewrite !hs_coq_map Coq.Lists.List.map_app. Qed.
 
-Hint Rewrite @map_append : hs_simpl.
+#[export] Hint Rewrite @map_append : hs_simpl.
 
 Lemma map_cong {a b} (f g : a -> b) (x : list a) :
   f =1 g -> map f x = map g x.
@@ -275,8 +279,8 @@ Ltac unfold_zeze :=
   Eq_comparison___,
   Eq_pair___ ,
   Eq_list,
-  Eq___NonEmpty, Base.Eq___NonEmpty_op_zeze__,
-  Eq___option, Base.Eq___option_op_zeze__.
+  Eq___NonEmpty, eq_NonEmpty,
+  Eq___option, eq_option.
 
 Ltac unfold_zsze :=
   repeat unfold op_zsze__, op_zsze____,
@@ -297,7 +301,7 @@ Lemma simpl_option_some_eq a `{Eq_ a} (x y :a) :
   (Some x == Some y) = (x == y).
 Proof.
     repeat unfold Eq___option, op_zeze__, op_zeze____,
-           Base.Eq___option_op_zeze__, op_zeze____.
+           eq_option, op_zeze____.
     auto.
 Qed.
 
@@ -305,7 +309,7 @@ Lemma simpl_option_none_eq a `{Eq_ a} :
   ((None : option a) == None) = true.
 Proof.
     repeat unfold Eq___option, op_zeze__, op_zeze____,
-           Base.Eq___option_op_zeze__, op_zeze____.
+           eq_option, op_zeze____.
     auto.
 Qed.
 
@@ -326,7 +330,7 @@ Proof.
     auto.
 Qed.
 
-Hint Rewrite @simpl_option_some_eq @simpl_option_none_eq
+#[export] Hint Rewrite @simpl_option_some_eq @simpl_option_none_eq
              @simpl_list_cons_eq @simpl_list_nil_eq : hs_simpl.
 
 
@@ -407,11 +411,13 @@ Instance EqExact_unit : EqExact unit.
 Proof. by split; repeat case; constructor. Qed.
 
 
+#[local] Set Warnings "-spurious-ssr-injection".
 Instance EqLaws_comparison : EqLaws comparison.
 Proof. by split; repeat case. Qed.
 
 Instance EqExact_comparison : EqExact comparison.
 Proof. by split; repeat case; constructor. Qed.
+#[local] Set Warnings "spurious-ssr-injection".
 
 
 Instance EqLaws_list {a} `{EqLaws a} : EqLaws (list a).
@@ -598,7 +604,7 @@ Proof.
       Base.Semigroup__option_op_zlzlzgzg__.
   - intros x y z.
     destruct x; destruct y; destruct z; try apply Eq_refl.
-    unfold op_zeze__, Eq___option, op_zeze____, Base.Eq___option_op_zeze__.
+    unfold op_zeze__, Eq___option, op_zeze____, eq_option.
     apply semigroup_assoc.
 Qed.
 
@@ -665,17 +671,25 @@ Qed.
 
 Instance instance_ApplicativeLaws_option : ApplicativeLaws option.
 Proof.
-  split;
-    repeat (unfold pure, Applicative__option,
-    Base.Applicative__option_pure,
-    Base.Applicative__option_op_zlztzg__,
-    Base.Functor__option_fmap; simpl).
-  - intros. destruct v; auto.
-  - intros. destruct u; destruct v; destruct w; auto.
-  - intros. auto.
-  - intros. destruct u; auto.
-  - intros. destruct x, y; reflexivity.
-  - reflexivity.
+  split.
+  - (* applicative_identity *)
+    intros a v.
+    destruct v; reflexivity.
+  - (* applicative_composition *)
+    intros a b c u v w.
+    destruct u as [u |]; destruct v as [v |]; destruct w as [w |]; reflexivity.
+  - (* applicative_homomorphism *)
+    intros a b f x.
+    reflexivity.
+  - (* applicative_interchange *)
+    intros a b u y.
+    destruct u as [u |]; reflexivity.
+  - (* applicative_liftA2 *)
+    intros a b c f x y.
+    destruct x as [x |]; destruct y as [y |]; reflexivity.
+  - (* applicative_fmap *)
+    intros a b f x.
+    destruct x as [x |]; reflexivity.
 Qed.
 
 Instance instance_ApplicativeLaws_list : ApplicativeLaws list.
@@ -769,8 +783,8 @@ Qed.
 
  *)
 
-Hint Rewrite andb_diag andb_false_r andb_true_r andb_false_l andb_true_l : hs_simpl.
-Hint Rewrite orb_diag orb_false_r orb_true_r orb_false_l orb_true_l : hs_simpl.
-Hint Rewrite negb_involutive : hs_simpl.
+#[export] Hint Rewrite andb_diag andb_false_r andb_true_r andb_false_l andb_true_l : hs_simpl.
+#[export] Hint Rewrite orb_diag orb_false_r orb_true_r orb_false_l orb_true_l : hs_simpl.
+#[export] Hint Rewrite negb_involutive : hs_simpl.
 
-Hint Rewrite andb_true_iff orb_true_iff negb_true_iff negb_false_iff : hs_simpl.
+#[export] Hint Rewrite andb_true_iff orb_true_iff negb_true_iff negb_false_iff : hs_simpl.

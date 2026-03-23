@@ -1,22 +1,32 @@
-primOpStrictness CatchOp =  \ _arity -> mkClosedStrictSig [ lazyApply1Dmd
+primOpStrictness AtomicModifyMutVar2Op =  \ _arity -> mkClosedDmdSig [ topDmd, lazyApply1Dmd, topDmd ] topDiv 
+primOpStrictness AtomicModifyMutVar_Op =  \ _arity -> mkClosedDmdSig [ topDmd, lazyApply1Dmd, topDmd ] topDiv 
+primOpStrictness CatchOp =  \ _arity -> mkClosedDmdSig [ lazyApply1Dmd
                                                  , lazyApply2Dmd
-                                                 , topDmd] topRes 
-primOpStrictness RaiseOp =  \ _arity -> mkClosedStrictSig [topDmd] exnRes 
-primOpStrictness RaiseIOOp =  \ _arity -> mkClosedStrictSig [topDmd, topDmd] exnRes 
-primOpStrictness MaskAsyncExceptionsOp =  \ _arity -> mkClosedStrictSig [strictApply1Dmd,topDmd] topRes 
-primOpStrictness MaskUninterruptibleOp =  \ _arity -> mkClosedStrictSig [strictApply1Dmd,topDmd] topRes 
-primOpStrictness UnmaskAsyncExceptionsOp =  \ _arity -> mkClosedStrictSig [strictApply1Dmd,topDmd] topRes 
-primOpStrictness AtomicallyOp =  \ _arity -> mkClosedStrictSig [strictApply1Dmd,topDmd] topRes 
-primOpStrictness RetryOp =  \ _arity -> mkClosedStrictSig [topDmd] exnRes 
-primOpStrictness CatchRetryOp =  \ _arity -> mkClosedStrictSig [ catchArgDmd
+                                                 , topDmd] topDiv 
+primOpStrictness RaiseOp =  \ _arity -> mkClosedDmdSig [topDmd] botDiv 
+primOpStrictness RaiseUnderflowOp =  \ _arity -> mkClosedDmdSig [topDmd] botDiv 
+primOpStrictness RaiseOverflowOp =  \ _arity -> mkClosedDmdSig [topDmd] botDiv 
+primOpStrictness RaiseDivZeroOp =  \ _arity -> mkClosedDmdSig [topDmd] botDiv 
+primOpStrictness RaiseIOOp =  \ _arity -> mkClosedDmdSig [topDmd, topDmd] exnDiv 
+primOpStrictness MaskAsyncExceptionsOp =  \ _arity -> mkClosedDmdSig [strictOnceApply1Dmd,topDmd] topDiv 
+primOpStrictness MaskUninterruptibleOp =  \ _arity -> mkClosedDmdSig [strictOnceApply1Dmd,topDmd] topDiv 
+primOpStrictness UnmaskAsyncExceptionsOp =  \ _arity -> mkClosedDmdSig [strictOnceApply1Dmd,topDmd] topDiv 
+primOpStrictness PromptOp =  \ _arity -> mkClosedDmdSig [topDmd, lazyApply1Dmd, topDmd] topDiv 
+primOpStrictness Control0Op =  \ _arity -> mkClosedDmdSig [topDmd, lazyApply2Dmd, topDmd] topDiv 
+primOpStrictness AtomicallyOp =  \ _arity -> mkClosedDmdSig [strictManyApply1Dmd,topDmd] topDiv 
+primOpStrictness RetryOp =  \ _arity -> mkClosedDmdSig [topDmd] botDiv 
+primOpStrictness CatchRetryOp =  \ _arity -> mkClosedDmdSig [ lazyApply1Dmd
                                                  , lazyApply1Dmd
-                                                 , topDmd ] topRes 
-primOpStrictness CatchSTMOp =  \ _arity -> mkClosedStrictSig [ lazyApply1Dmd
+                                                 , topDmd ] topDiv 
+primOpStrictness CatchSTMOp =  \ _arity -> mkClosedDmdSig [ lazyApply1Dmd
                                                  , lazyApply2Dmd
-                                                 , topDmd ] topRes 
-primOpStrictness DataToTagOp =  \ _arity -> mkClosedStrictSig [evalDmd] topRes 
-primOpStrictness PrefetchValueOp3 =  \ _arity -> mkClosedStrictSig [botDmd, topDmd] topRes 
-primOpStrictness PrefetchValueOp2 =  \ _arity -> mkClosedStrictSig [botDmd, topDmd] topRes 
-primOpStrictness PrefetchValueOp1 =  \ _arity -> mkClosedStrictSig [botDmd, topDmd] topRes 
-primOpStrictness PrefetchValueOp0 =  \ _arity -> mkClosedStrictSig [botDmd, topDmd] topRes 
-primOpStrictness _ =  \ arity -> mkClosedStrictSig (replicate arity topDmd) topRes 
+                                                 , topDmd ] topDiv 
+primOpStrictness ForkOp =  \ _arity -> mkClosedDmdSig [ lazyApply1Dmd
+                                              , topDmd ] topDiv 
+primOpStrictness ForkOnOp =  \ _arity -> mkClosedDmdSig [ topDmd
+                                              , lazyApply1Dmd
+                                              , topDmd ] topDiv 
+primOpStrictness KeepAliveOp =  \ _arity -> mkClosedDmdSig [topDmd, topDmd, strictOnceApply1Dmd] topDiv 
+primOpStrictness DataToTagSmallOp =  \ _arity -> mkClosedDmdSig [evalDmd] topDiv 
+primOpStrictness DataToTagLargeOp =  \ _arity -> mkClosedDmdSig [evalDmd] topDiv 
+primOpStrictness _thisOp =  \ arity -> mkClosedDmdSig (replicate arity topDmd) topDiv 

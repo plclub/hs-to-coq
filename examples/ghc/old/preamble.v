@@ -1,5 +1,5 @@
 Definition Synonym {A : Type} (_uniq : Type) (x : A) : A := x.
-Arguments Synonym {A}%type _uniq%type x%type.
+Arguments Synonym {A}%_type _uniq%_type x%_type.
 
 Require Import ZArith.
 

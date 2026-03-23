@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE CPP, FlexibleContexts #-}
 
 module HsToCoq.ConvertHaskell.TypeEnv.Id(
   ConvertedIdEnv,
@@ -11,8 +11,14 @@ module HsToCoq.ConvertHaskell.TypeEnv.Id(
 
 import qualified Data.Map as M
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins
+import GHC.Unit.Module.ModDetails (ModDetails(..))
+import GHC.Types.TypeEnv (typeEnvIds)
+#else
 import HscTypes
 import Var
+#endif
 
 import HsToCoq.Coq.Gallina
 import HsToCoq.Edits.Types

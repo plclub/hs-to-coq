@@ -4,8 +4,10 @@ Class Unpeel a b :=
   { unpeel : a -> b
   ; repeel : b -> a }.
 
+#[global]
 Instance Unpeel_refl a : Unpeel a a := Build_Unpeel _ _ (fun x => x) (fun x => x).
 
+#[global]
 Instance Unpeel_arrow
   a b c d
   `{Unpeel b a}
@@ -15,6 +17,7 @@ Instance Unpeel_arrow
   ; repeel f x := repeel (f (unpeel x))
   }.
 
+#[global]
 Instance Unpeel_pair
   a b c d
   `{Unpeel a b}
@@ -26,6 +29,8 @@ Instance Unpeel_pair
 
 
 Require Coq.Lists.List.
+
+#[global]
 Instance Unpeel_list a b
    `{Unpeel a b} : Unpeel (list a) (list b) :=
   { unpeel x := Coq.Lists.List.map unpeel x

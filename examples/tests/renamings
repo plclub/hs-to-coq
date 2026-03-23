@@ -18,6 +18,18 @@ rename value GHC.Base.Just    = Some
 rename value GHC.Base.Nothing = None
 
 rename type GHC.Types.* = Type
+rename type GHC.Types.Type_ = Type
+
+# GHC 9.10 moved base library definitions to GHC.Internal.*
+rename type  GHC.Internal.Maybe.Maybe   = option
+rename value GHC.Internal.Maybe.Just    = Some
+rename value GHC.Internal.Maybe.Nothing = None
+
+rename type  GHC.Types.List  = list
+rename type  GHC.Tuple.Unit  = unit
+rename type  GHC.Tuple.Tuple2 = prod
+
+rename value GHC.Internal.Base.++ = app
 
 # This is mostly for PatternGuard, which has Int defined in its preamble.v
 # rename type GHC.Types.Int    = PatternGuard.Int

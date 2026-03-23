@@ -73,7 +73,9 @@ conNameOrSkip name = do
 ------------------------------------------------------------------------------------------
 
 convertConDecl :: ConversionMonad r m
-               => Term -> [Binder] -> ConDecl GhcRn -> m [Constructor]
+               => Term -> [Binder]
+               -> ConDecl GhcRn
+               -> m [Constructor]
 #if __GLASGOW_HASKELL__ >= 806
 convertConDecl _ _ (XConDecl v) = noExtCon v
 convertConDecl curType extraArgs (ConDeclH98
@@ -90,6 +92,13 @@ convertConDecl curType extraArgs (ConDeclH98 lname mlqvs mlcxt details _doc)
   -- Only the explicit tyvars are available before renaming, so they're all we
   -- need to consider
   params <- withCurrentDefinition con $ convertLHsTyVarBndrs Coq.Implicit lqvs
+  -- GHC 9.0+ wraps constructor arg types in HsScaled for linear types;
+  -- extract the type via hsScaledThing, discarding the multiplicity annotation.
+#if __GLASGOW_HASKELL__ >= 900
+  let hsConDeclArgTys (PrefixCon _ tys)  = hsScaledThing <$> tys
+      hsConDeclArgTys (InfixCon ty1 ty2) = hsScaledThing <$> [ty1,ty2]
+      hsConDeclArgTys (RecCon flds)      = map (cd_fld_type . unLoc) (unLoc flds)
+#endif
   args   <- withCurrentDefinition con (traverse convertLHsType $ hsConDeclArgTys details)
 
   case details of
@@ -110,19 +119,44 @@ convertConDecl curType extraArgs (ConDeclH98 lname mlqvs mlcxt details _doc)
       pure [(con, params , Just . maybeForall extraArgs $ foldr Arrow curType args)]
 
 #if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 900
+#define con_qvars con_bndrs
+#define con_args con_g_args
+#endif
 convertConDecl curType extraArgs (ConDeclGADT
     { con_names = lnames, con_qvars = qvars, con_mb_cxt = mcxt
     , con_args = args, con_res_ty = res_ty }) = do
 #else
 convertConDecl curType extraArgs (ConDeclGADT lnames sigTy _doc) = do
 #endif
+#if __GLASGOW_HASKELL__ >= 910
+  fmap catMaybes . for (toList lnames) $ \(L _ hsName) -> runMaybeT $ do
+#else
   fmap catMaybes . for lnames $ \(L _ hsName) -> runMaybeT $ do
+#endif
     conName         <- conNameOrSkip hsName
     utvm            <- unusedTyVarModeFor conName
     (_, curTypArgs) <- failEither (collectArgs curType)
     conTy           <- withCurrentDefinition conName $
+      -- GHC 9.0+ changed GADT quantified type variables from HsQTvs to
+      -- HsOuterImplicit/HsOuterExplicit.  Convert back to HsQTvs and replace
+      -- the specificity flag with HsBndrRequired (9.10) or () (9.0-9.8) so
+      -- convertHsSigType_ can process them uniformly.
+#if __GLASGOW_HASKELL__ >= 910
+      let fqvars (L _ (HsOuterImplicit qvs)) = HsQTvs qvs []
+          fqvars (L _ (HsOuterExplicit _ qvs)) = HsQTvs [] ((fmap . fmap) unanno qvs)
+          unanno (UserTyVar x _ i) = UserTyVar x (HsBndrRequired noExtField) i
+          unanno (KindedTyVar x _ i j) = KindedTyVar x (HsBndrRequired noExtField) i j in
+#elif __GLASGOW_HASKELL__ >= 900
+      let fqvars (L _ (HsOuterImplicit qvs)) = HsQTvs qvs []
+          fqvars (L _ (HsOuterExplicit _ qvs)) = HsQTvs [] ((fmap . fmap) unanno qvs)
+          unanno (UserTyVar x _ i) = UserTyVar x () i
+          unanno (KindedTyVar x _ i j) = KindedTyVar x () i j in
+#else
+      let fqvars = id in
+#endif
 #if __GLASGOW_HASKELL__ >= 806
-      let mktm = convertHsSigType_ utvm qvars mcxt args res_ty in
+      let mktm = convertHsSigType_ utvm (fqvars qvars) mcxt args res_ty in
 #else
       let mktm = convertLHsSigTypeWithExcls utvm sigTy in
 #endif
@@ -175,8 +209,16 @@ rewriteDataTypeArguments dta bs = do
 convertDataDefn :: LocalConvMonad r m
                 => Term -> [Binder] -> HsDataDefn GhcRn
                 -> m (Term, [Constructor])
+#if __GLASGOW_HASKELL__ >= 910
+convertDataDefn curType extraArgs (HsDataDefn NOEXTP lcxt _ctype ksig cons _derivs) = do
+  when (isJust lcxt) $ convUnsupported' "data type contexts"
+#elif __GLASGOW_HASKELL__ >= 900
+convertDataDefn curType extraArgs (HsDataDefn NOEXTP _nd lcxt _ctype ksig cons _derivs) = do
+  when (isJust lcxt) $ convUnsupported' "data type contexts"
+#else
 convertDataDefn curType extraArgs (HsDataDefn NOEXTP _nd lcxt _ctype ksig cons _derivs) = do
   unless (null $ unLoc lcxt) $ convUnsupported' "data type contexts"
+#endif
   (,) <$> maybe (pure $ Sort Type) convertLHsType ksig
       <*> (traverse addAdditionalConstructorScope =<<
            foldTraverse (convertConDecl curType extraArgs . unLoc) cons)
@@ -185,7 +227,7 @@ convertDataDefn _ _ (XHsDataDefn v) = noExtCon v
 #endif
 
 convertDataDecl :: ConversionMonad r m
-                => Located GHC.Name -> [LHsTyVarBndr GhcRn] -> HsDataDefn GhcRn
+                => GenLocated l GHC.Name -> [LHsTyVarBndr flag GhcRn] -> HsDataDefn GhcRn
                 -> m IndBody
 convertDataDecl name tvs defn = do
   coqName   <- var TypeNS $ unLoc name
@@ -195,16 +237,15 @@ convertDataDecl name tvs defn = do
     Nothing  -> pure id
   kinds     <- (++ repeat Nothing) . map Just . maybe [] NE.toList <$> view (edits.dataKinds.at coqName)
   let cvtName tv = Ident <$> var TypeNS (unLoc tv)
-  let  go :: ConversionMonad r m => LHsTyVarBndr GhcRn -> Maybe Term -> m Binder
-       go (L _ (UserTyVar NOEXTP name))     (Just t) = cvtName name >>= \n -> return $ mkBinders Coq.Explicit (n NE.:| []) t
-       go (L _ (UserTyVar NOEXTP name))     Nothing  = cvtName name >>= \n -> return $ ExplicitBinder n
-       go (L _ (KindedTyVar NOEXTP name _)) (Just t) = cvtName name >>= \n -> return $ mkBinders Coq.Explicit (n NE.:| []) t
-       go (L _ (KindedTyVar NOEXTP name _)) Nothing  = cvtName name >>= \n -> return $ ExplicitBinder n  -- dunno if this could happen
+  let getName (L _ (UserTyVar NOEXTP GHC_900(_) name)) = name
+      getName (L _ (KindedTyVar NOEXTP GHC_900(_) name _)) = name
 #if __GLASGOW_HASKELL__ >= 806
-       go (L _ (XTyVarBndr v)) _ = noExtCon v
+      getName (L _ (XTyVarBndr v)) = noExtCon v
 #endif
+      mkBndr (Just t) n = mkBinders Coq.Explicit (n NE.:| []) t
+      mkBndr Nothing n = ExplicitBinder n
 
-  rawParams <- addKindVars <$> zipWithM go tvs kinds
+  rawParams <- addKindVars <$> zipWithM (\n t -> mkBndr t <$> cvtName (getName n)) tvs kinds
 
   (params, indices) <-
     view (edits . dataTypeArguments . at coqName) >>= \case
@@ -226,4 +267,19 @@ convertDataDecl name tvs defn = do
       _ ->
         pure ()
 
-  pure $ IndBody coqName params resTy cons
+  -- Coq 8.20 auto-lowers eligible inductives (declared as Type) to Prop,
+  -- which breaks pattern matching in non-Prop return contexts.  Detect these
+  -- cases and explicitly annotate with `: Set` to prevent the lowering.
+  -- Affected: empty types (0 constructors) and single-constructor types with
+  -- no arguments.  Constructor args may appear as arrows in the return type
+  -- rather than as binders, so we check both representations.
+  let finalResTy = case resTy of
+        Sort Type | propLowerable cons -> Sort Set
+        _                              -> resTy
+      propLowerable []                       = True
+      propLowerable [(_, binders, mty)]      = null binders && not (hasArrows mty)
+      propLowerable _                        = False
+      hasArrows (Just (Coq.Arrow _ _))       = True
+      hasArrows _                            = False
+
+  pure $ IndBody coqName params finalResTy cons

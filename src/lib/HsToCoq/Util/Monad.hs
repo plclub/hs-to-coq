@@ -17,6 +17,7 @@ module HsToCoq.Util.Monad (
   ) where
 
 import Control.Arrow
+import Control.Monad.IO.Class
 import Control.Monad.Except
 import Control.Monad.Fail (MonadFail)
 import Data.Bool

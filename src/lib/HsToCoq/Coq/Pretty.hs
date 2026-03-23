@@ -330,8 +330,10 @@ instance Gallina Term where
     char '#' <> renderNum num
 
   -- Special notation for somehting that looks like an operator an
-  -- is applied to two arguments
-  renderGallina' p (App2 (Qualid op) l r) | qualidIsOp op =
+  -- is applied to two arguments.
+  -- qualidHasValidCoqOp rejects operators with chars invalid in Coq (e.g. $)
+  -- so they render as z-encoded identifiers instead of broken notation.
+  renderGallina' p (App2 (Qualid op) l r) | qualidIsOp op, qualidHasValidCoqOp op =
     case lookup op precTable of
       Just (n, LeftAssociativity)  ->
         maybeParen (n < p) $ group $
@@ -377,7 +379,7 @@ instance Gallina Term where
     <> "end"
 
   renderGallina' p (Qualid qid)
-    | qualidIsOp qid = renderQPrefix qid
+    | qualidIsOp qid, qualidHasValidCoqOp qid = renderQPrefix qid
     | otherwise      = renderGallina' p qid
 
   renderGallina' p (RawQualid qid) = renderGallina' p qid
@@ -550,6 +552,15 @@ instance Gallina Sentence where
   renderGallina' p (DefinitionSentence      def)    = renderGallina' p def
   renderGallina' p (InductiveSentence       ind)    = renderGallina' p ind
   renderGallina' p (FixpointSentence        fix)    = renderGallina' p fix
+  -- Coq 8.20: Program Instance requires #[global] prefix
+  renderGallina' p (ProgramSentence sen@(InstanceSentence _) pf) = "#[global]"
+                                                                   <!> "Program" <+> renderGallina' p sen <!> renderObligation pf
+  -- Coq 8.20: locality attributes (#[global]/#[local]) must appear before
+  -- "Program", not after. Extract locality from the inner DefinitionDef,
+  -- emit it as a prefix, and render the def body without locality.
+  renderGallina' p (ProgramSentence (DefinitionSentence (DefinitionDef loc name args oty body ex)) pf) =
+    let sen' = DefinitionSentence (DefinitionDef ExportL name args oty body ex)
+    in renderLocality loc <> "Program" <+> renderGallina' p sen' <!> renderObligation pf
   renderGallina' p (ProgramSentence         sen pf) = "Program" <+> renderGallina' p sen <!> renderObligation pf
   renderGallina' p (AssertionSentence       ass pf) = renderGallina' p ass <!> renderGallina' p pf
   renderGallina' p (ModuleSentence          mod)    = renderGallina' p mod
@@ -580,18 +591,23 @@ instance Gallina Assums where
     where
       renderAss ids ty = fillSep (renderGallina <$> ids) <> nest 2 (render_type ty)
 
+-- Coq 8.20: Locality is now expressed via attributes (#[global], #[local],
+-- #[export]) instead of keywords (Global, Local).
 instance Gallina Locality where
-  renderGallina' _ Global = "(*Global*)"
-  renderGallina' _ Local  = "Local"
+  renderGallina' _ ExportL = "#[export]"
+  renderGallina' _ Global  = "#[global]"
+  renderGallina' _ Local   = "#[local]"
 
 renderLocality :: Locality -> Doc
-renderLocality Global = empty
-renderLocality Local  = "Local" <> space
+renderLocality ExportL = empty
+renderLocality Global  = "#[global]" <> space
+renderLocality Local   = "#[local]" <> space
 
 renderFullLocality :: Maybe Locality -> Doc
 renderFullLocality Nothing       = empty
-renderFullLocality (Just Global) = "Global" <> space
-renderFullLocality (Just Local)  = "Local"  <> space
+renderFullLocality (Just ExportL) = "#[export]" <> space
+renderFullLocality (Just Global)  = "#[global]" <> space
+renderFullLocality (Just Local)   = "#[local]"  <> space
 
 instance Gallina Definition where
   renderGallina' _ = \case
@@ -742,7 +758,8 @@ instance Gallina ArgumentSpec where
                  ArgExplicit -> id
                  ArgImplicit -> brackets
                  ArgMaximal  -> braces
-    in wrap (renderGallina arg) <> maybe mempty (("%" <>) . renderIdent) oscope
+    -- Coq 8.20 deprecated "%" for scope annotations; use "%_" instead
+    in wrap (renderGallina arg) <> maybe mempty (("%_" <>) . renderIdent) oscope
 
 instance Gallina LocalModule where
   renderGallina' _ (LocalModule name sentences) = vcat $

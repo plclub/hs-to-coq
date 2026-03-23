@@ -23,48 +23,39 @@ Require Data.Bifunctor.
 Require Data.Foldable.
 Require Data.Traversable.
 Require Data.Tuple.
-Require FastString.
 Require GHC.Base.
 Require GHC.Err.
+Require GHC.Prim.
+Require GHC.Utils.Monad.State.Strict.
 Require HsToCoq.DeferredFix.
 Require Id.
-Require State.
-Require Unique.
 Require Util.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Definition ExitifyM :=
-  (State.State (list (Core.JoinId * Core.CoreExpr)%type))%type.
+#[global] Definition ExitifyM :=
+  (GHC.Utils.Monad.State.Strict.State (list (Core.JoinId *
+                                             Core.CoreExpr)%type))%type.
 
 (* Converted value declarations: *)
 
-Definition mkExitJoinId
-   : Core.InScopeSet ->
-     AxiomatizedTypes.Type_ -> BasicTypes.JoinArity -> ExitifyM Core.JoinId :=
-  fun in_scope ty join_arity =>
-    let exit_id_tmpl :=
-      Id.asJoinId (Id.mkSysLocal (FastString.fsLit (GHC.Base.hs_string__ "exit"))
-                   Unique.initExitJoinUnique ty) join_arity in
-    State.get GHC.Base.>>=
-    (fun fs =>
-       let avoid :=
-         Core.extendInScopeSet (Core.extendInScopeSetList in_scope (GHC.Base.map
-                                                           Data.Tuple.fst fs)) exit_id_tmpl in
-       GHC.Base.return_ (Core.uniqAway avoid exit_id_tmpl)).
+Axiom mkExitJoinId : Core.InScopeSet ->
+                     AxiomatizedTypes.Type_ -> BasicTypes.JoinArity -> ExitifyM Core.JoinId.
 
-Definition addExit
+#[global] Definition addExit
    : Core.InScopeSet ->
      BasicTypes.JoinArity -> Core.CoreExpr -> ExitifyM Core.JoinId :=
   fun in_scope join_arity rhs =>
     let ty := CoreUtils.exprType rhs in
     mkExitJoinId in_scope ty join_arity GHC.Base.>>=
     (fun v =>
-       State.get GHC.Base.>>=
-       (fun fs => State.put (cons (pair v rhs) fs) GHC.Base.>> GHC.Base.return_ v)).
+       GHC.Utils.Monad.State.Strict.get GHC.Base.>>=
+       (fun fs =>
+          GHC.Utils.Monad.State.Strict.put (cons (pair v rhs) fs) GHC.Base.>>
+          GHC.Base.return_ v)).
 
-Definition exitifyRec
+#[global] Definition exitifyRec
    : Core.InScopeSet ->
      list (Core.Var * Core.CoreExpr)%type -> list Core.CoreBind :=
   fun in_scope pairs =>
@@ -124,7 +115,7 @@ Definition exitifyRec
                                               let j_40__ :=
                                                 match arg_19__, arg_20__ with
                                                 | captured, pair _ (Core.AnnCase scrut bndr ty alts) =>
-                                                    Data.Traversable.forM alts (fun '(pair (pair dc pats) rhs) =>
+                                                    Data.Traversable.forM alts (fun '(Core.Mk_AnnAlt dc pats rhs) =>
                                                                                   go (Coq.Init.Datatypes.app captured
                                                                                                              (Coq.Init.Datatypes.app
                                                                                                               (cons bndr
@@ -132,9 +123,8 @@ Definition exitifyRec
                                                                                                               pats)) rhs
                                                                                   GHC.Base.>>=
                                                                                   (fun rhs' =>
-                                                                                     GHC.Base.return_ (pair (pair dc
-                                                                                                                  pats)
-                                                                                                            rhs')))
+                                                                                     GHC.Base.return_ (Core.Mk_Alt dc
+                                                                                                       pats rhs')))
                                                     GHC.Base.>>=
                                                     (fun alts' =>
                                                        GHC.Base.return_ (Core.Case (Core.deAnnotate scrut) bndr ty
@@ -181,8 +171,8 @@ Definition exitifyRec
                                                       end in
                                                     match ann_bind with
                                                     | Core.AnnNonRec j rhs =>
-                                                        match Id.isJoinId_maybe j with
-                                                        | Some join_arity =>
+                                                        match Id.idJoinPointHood j with
+                                                        | Outputable.JoinPoint join_arity =>
                                                             let 'pair params join_body := Core.collectNAnnBndrs
                                                                                             join_arity rhs in
                                                             go (Coq.Init.Datatypes.app captured params) join_body
@@ -207,20 +197,29 @@ Definition exitifyRec
                                               j_40__
                                           end) in
     let ann_pairs := GHC.Base.map (Data.Bifunctor.second CoreFVs.freeVars) pairs in
-    let 'pair pairs' exits := (fun arg_45__ => State.runState arg_45__ nil)
-                                (Data.Traversable.forM ann_pairs (fun '(pair x rhs) =>
-                                                          let 'pair args body := Core.collectNAnnBndrs (Id.idJoinArity
-                                                                                                        x) rhs in
-                                                          go args body GHC.Base.>>=
-                                                          (fun body' =>
-                                                             let rhs' := Core.mkLams args body' in
-                                                             GHC.Base.return_ (pair x rhs')))) in
-    Coq.Init.Datatypes.app (let cont_52__ arg_53__ :=
-                              let 'pair xid rhs := arg_53__ in
+    let 'pair pairs' exits := GHC.Prim.rightSection
+                                GHC.Utils.Monad.State.Strict.runState nil (Data.Traversable.forM ann_pairs
+                                                                                                 (fun '(pair x rhs) =>
+                                                                                                    let 'pair args
+                                                                                                       body :=
+                                                                                                      Core.collectNAnnBndrs
+                                                                                                        (Id.idJoinArity
+                                                                                                         x) rhs in
+                                                                                                    go args body
+                                                                                                    GHC.Base.>>=
+                                                                                                    (fun body' =>
+                                                                                                       let rhs' :=
+                                                                                                         Core.mkLams
+                                                                                                         args body' in
+                                                                                                       GHC.Base.return_
+                                                                                                       (pair x
+                                                                                                             rhs')))) in
+    Coq.Init.Datatypes.app (let cont_51__ arg_52__ :=
+                              let 'pair xid rhs := arg_52__ in
                               cons (Core.NonRec xid rhs) nil in
-                            Coq.Lists.List.flat_map cont_52__ exits) (cons (Core.Rec pairs') nil).
+                            Coq.Lists.List.flat_map cont_51__ exits) (cons (Core.Rec pairs') nil).
 
-Definition exitifyProgram : Core.CoreProgram -> Core.CoreProgram :=
+#[global] Definition exitifyProgram : Core.CoreProgram -> Core.CoreProgram :=
   fun binds =>
     let go : Core.InScopeSet -> Core.CoreExpr -> Core.CoreExpr :=
       fix go (arg_0__ : Core.InScopeSet) (arg_1__ : Core.CoreExpr) : Core.CoreExpr
@@ -237,16 +236,15 @@ Definition exitifyProgram : Core.CoreProgram -> Core.CoreProgram :=
            | in_scope, Core.Case scrut bndr ty alts =>
                let in_scope1 := Core.extendInScopeSet in_scope bndr in
                let go_alt :=
-                 fun '(pair (pair dc pats) rhs) =>
+                 fun '(Core.Mk_Alt dc pats rhs) =>
                    let in_scope' := Core.extendInScopeSetList in_scope1 pats in
-                   pair (pair dc pats) (go in_scope' rhs) in
+                   Core.Mk_Alt dc pats (go in_scope' rhs) in
                Core.Case (go in_scope scrut) bndr ty (GHC.Base.map go_alt alts)
            | in_scope, Core.Let (Core.NonRec bndr rhs) body =>
                let in_scope' := Core.extendInScopeSet in_scope bndr in
                Core.Let (Core.NonRec bndr (go in_scope rhs)) (go in_scope' body)
            | in_scope, Core.Let (Core.Rec pairs) body =>
-               let in_scope' :=
-                 Core.extendInScopeSetList in_scope (Core.bindersOf (Core.Rec pairs)) in
+               let in_scope' := CoreUtils.extendInScopeSetBind in_scope (Core.Rec pairs) in
                let pairs' := Util.mapSnd (go in_scope') pairs in
                let body' := go in_scope' body in
                let is_join_rec :=
@@ -255,7 +253,7 @@ Definition exitifyProgram : Core.CoreProgram -> Core.CoreProgram :=
                Core.Let (Core.Rec pairs') body'
            end in
     let in_scope_toplvl :=
-      Core.extendInScopeSetList Core.emptyInScopeSet (Core.bindersOfBinds binds) in
+      CoreUtils.extendInScopeSetBndrs Core.emptyInScopeSet binds in
     let goTopLvl :=
       fun arg_22__ =>
         match arg_22__ with
@@ -266,23 +264,26 @@ Definition exitifyProgram : Core.CoreProgram -> Core.CoreProgram :=
     GHC.Base.map goTopLvl binds.
 
 (* External variables:
-     Some andb bool cons false list negb nil op_zt__ pair AxiomatizedTypes.Type_
+     andb bool cons false list negb nil op_zt__ pair AxiomatizedTypes.Type_
      BasicTypes.JoinArity Coq.Init.Datatypes.app Coq.Lists.List.flat_map
      Coq.Lists.List.length Core.AnnCase Core.AnnLet Core.AnnNonRec Core.AnnRec
      Core.App Core.Case Core.Cast Core.CoreBind Core.CoreExpr Core.CoreProgram
-     Core.InScopeSet Core.JoinId Core.Lam Core.Let Core.Lit Core.Mk_Coercion
-     Core.Mk_Type Core.Mk_Var Core.NonRec Core.Rec Core.Var Core.VarSet
-     Core.anyVarSet Core.bindersOf Core.bindersOfBinds Core.collectArgs
+     Core.InScopeSet Core.JoinId Core.Lam Core.Let Core.Lit Core.Mk_Alt
+     Core.Mk_AnnAlt Core.Mk_Coercion Core.Mk_Type Core.Mk_Var Core.NonRec Core.Rec
+     Core.Var Core.VarSet Core.anyVarSet Core.bindersOf Core.collectArgs
      Core.collectNAnnBndrs Core.dVarSetToVarSet Core.deAnnBind Core.deAnnotate
      Core.delVarSet Core.disjointVarSet Core.elemVarSet Core.emptyInScopeSet
      Core.extendInScopeSet Core.extendInScopeSetList Core.isId Core.isLocalId
      Core.minusVarSet Core.mkLams Core.mkLets Core.mkVarApps Core.mkVarSet
-     Core.uniqAway Core.vanillaIdInfo CoreFVs.CoreExprWithFVs CoreFVs.exprFreeVars
-     CoreFVs.freeVars CoreUtils.exprType Data.Bifunctor.second Data.Foldable.all
+     Core.vanillaIdInfo CoreFVs.CoreExprWithFVs CoreFVs.exprFreeVars CoreFVs.freeVars
+     CoreUtils.exprType CoreUtils.extendInScopeSetBind
+     CoreUtils.extendInScopeSetBndrs Data.Bifunctor.second Data.Foldable.all
      Data.Foldable.any Data.Foldable.elem Data.Foldable.foldr Data.Traversable.forM
-     Data.Tuple.fst Data.Tuple.snd FastString.fsLit GHC.Base.map GHC.Base.op_z2218U__
+     Data.Tuple.fst Data.Tuple.snd GHC.Base.map GHC.Base.op_z2218U__
      GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__ GHC.Base.return_ GHC.Err.head
-     HsToCoq.DeferredFix.deferredFix2 Id.asJoinId Id.idJoinArity Id.isJoinId
-     Id.isJoinId_maybe Id.mkSysLocal Id.setIdInfo State.State State.get State.put
-     State.runState Unique.initExitJoinUnique Util.mapSnd
+     GHC.Prim.rightSection GHC.Utils.Monad.State.Strict.State
+     GHC.Utils.Monad.State.Strict.get GHC.Utils.Monad.State.Strict.put
+     GHC.Utils.Monad.State.Strict.runState HsToCoq.DeferredFix.deferredFix2
+     Id.idJoinArity Id.idJoinPointHood Id.isJoinId Id.setIdInfo Outputable.JoinPoint
+     Util.mapSnd
 *)

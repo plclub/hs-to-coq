@@ -2,6 +2,22 @@
 skip Core.toCleanDmd
 skip Core.strictifyDictDmd
 
+# GHC 9.10: Eq instances for Demand types need prerequisite Eq instances
+# (Boxity, Card, etc.) that hs-to-coq doesn't generate.
+# Skip them all.
+skip Core.Eq___SubDemand
+skip Core.Eq___SubDemand_op_zeze__
+skip Core.Eq___SubDemand_op_zsze__
+skip Core.Eq___DmdEnv
+skip Core.Eq___DmdEnv_op_zeze__
+skip Core.Eq___DmdEnv_op_zsze__
+skip Core.Eq___DmdType
+skip Core.Eq___DmdType_op_zeze__
+skip Core.Eq___DmdType_op_zsze__
+skip Core.Eq___DmdSig
+skip Core.Eq___DmdSig_op_zeze__
+skip Core.Eq___DmdSig_op_zsze__
+
 #
 # Termination arguments for these are too difficult.
 #
@@ -20,7 +36,7 @@ skip Core.addCaseBndrDmd
 
 #
 # pretty printing
-# 
+#
 skip Core.pprIfaceStrictSig
 
 #
@@ -32,75 +48,25 @@ in Core.ensureArgs rewrite forall ds n x, Coq.Lists.List.firstn n (Coq.Init.Data
 # termination edits
 #
 
-in Core.mkWorkerDemand termination go { measure arg_0__ } 
+in Core.mkWorkerDemand termination go { measure arg_0__ }
 obligations Core.mkWorkerDemand solve_mkWorkerDemand
 
 
 in Core.dmdTransformDataConSig termination go_str { measure (arg_10__) }
-obligations Core.dmdTransformDataConSig solve_dmdTransform 
+obligations Core.dmdTransformDataConSig solve_dmdTransform
 
-in Core.peelManyCalls termination go_abs { measure (arg_2__) } 
-in Core.peelManyCalls termination go_str { measure (arg_10__) } 
-obligations Core.peelManyCalls solve_dmdTransform 
-
-inline mutual Core.lubArgUse
-inline mutual Core.bothArgUse
-inline mutual Core.bothArgStr
-inline mutual Core.isUsedMU 
-inline mutual Core.lubArgStr
-inline mutual Core.markReusedDmd
-inline mutual Core.zap_musg
-
-
-#
-# TODO: I don't know how to do these modifications with rewrites
-#
-
-redefine Local Definition Core.Eq___UseDmd_op_zeze__ : UseDmd -> (UseDmd -> bool) :=
- fix UseDmd_eq x y :=
-  let eq' : GHC.Base.Eq_ UseDmd := GHC.Base.eq_default UseDmd_eq in
-    match x , y with
-      | UCall a1 a2 , UCall b1 b2 => (andb ((a1 GHC.Base.== b1)) ((a2 GHC.Base.==
-                                           b2)))
-      | UProd a1 , UProd b1 => ((a1 GHC.Base.== b1))
-      | UHead , UHead => true
-      | Used , Used => true
-      | _ , _ => false
-    end.
-
-redefine Local Definition Core.Eq___StrDmd_op_zeze__ : StrDmd -> (StrDmd -> bool) :=
-  fix StrDmd_eq x y  :=
-    let eq' : GHC.Base.Eq_ StrDmd := GHC.Base.eq_default StrDmd_eq in
-    match x , y with
-      | HyperStr , HyperStr => true
-      | SCall a1 , SCall b1 => ((a1 GHC.Base.== b1))
-      | SProd a1 , SProd b1 => ((a1 GHC.Base.== b1))
-      | HeadStr , HeadStr => true
-      | _ , _ => false
-    end.
+in Core.peelManyCalls termination go_abs { measure (arg_2__) }
+in Core.peelManyCalls termination go_str { measure (arg_10__) }
+obligations Core.peelManyCalls solve_dmdTransform
 
 ## hard metrics, but they don't do anything
-redefine Definition Core.seqArgStr : ArgStr -> unit := fun x => tt.
-redefine Definition Core.seqStrDmd : StrDmd -> unit := fun x => tt.
-redefine Definition Core.seqStrDmdList : (list ArgStr) -> unit := fun x => tt.
-redefine Definition Core.seqArgUse : ArgUse -> unit := fun x => tt.
-redefine Definition Core.seqUseDmd : UseDmd -> unit := fun x => tt.
-redefine Definition Core.seqArgUseList : (list ArgUse) -> unit := fun x => tt.
 redefine Definition Core.seqDemand : Demand -> unit := fun x => tt.
 redefine Definition Core.seqDemandList : (list Demand) -> unit := fun x => tt.
 redefine Definition Core.seqDmdEnv : DmdEnv -> unit := fun x => tt.
-redefine Definition Core.seqCPRResult : CPRResult -> unit := fun x => tt.
-redefine Definition Core.seqDmdResult : DmdResult -> unit := fun x => tt.
 redefine Definition Core.seqDmdType : DmdType -> unit := fun x => tt.
-redefine Definition Core.seqStrictSig : StrictSig -> unit := fun x => tt.
-
 
 #
 # order edits
 #
-
-order Core.Eq___Termination Core.Eq___CPRResult Core.Eq___DmdType_op_zeze__
-order Core.Eq___Count Core.Eq___Use_op_zeze__ Core.Eq___Use Core.Eq___UseDmd_op_zeze__ Core.Eq___UseDmd Core.Eq___DmdType_op_zeze__
-order Core.Eq___ExnStr Core.Eq___Str_op_zeze__ Core.Eq___Str Core.Eq___StrDmd_op_zeze__ Core.Eq___StrDmd Core.Eq___JointDmd Core.Eq___DmdType_op_zeze__ Core.Eq___DmdType Core.Eq___StrictSig_op_zeze__
 
 order Core.Eq___TyCon Core.Ord__AltCon_compare

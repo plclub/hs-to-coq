@@ -1,2 +1,4 @@
-Existing Class HasDebugCallStack.
-Instance Util_HasDebugCallStack : HasDebugCallStack := tt.
+(* HasDebugCallStack is a type alias for HasCallStack in GHC.
+   We define it as a trivial typeclass so references in other modules compile. *)
+Class HasDebugCallStack := {}.
+#[global] Instance hasDebugCallStack : HasDebugCallStack := {}.

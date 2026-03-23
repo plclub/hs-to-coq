@@ -10,12 +10,10 @@ Require Import Core CoreSubst Id.
 Require Import Proofs.Core Proofs.ScopeInvariant Proofs.CoreSubst Proofs.CoreInduct.
 Require Import GHC.Base GHC.List Data.Foldable Data.Bifunctor.
 Require Import Proofs.GHC.Base Proofs.GHC.List Proofs.Data.Foldable HSUtil.
+Require Import Proofs.Var.
 Import Data.Functor.Notations.
 
 Set Bullet Behavior "Strict Subproofs".
-
-Arguments second {p _ b c a} _ _ /.
-Arguments Bifunctor__pair_type /.
 
 Fixpoint nth' {A} (xs : list A) (i : nat) : option A :=
   match xs , i with
@@ -42,16 +40,16 @@ Definition subst (e₀ : CoreExpr) (n : Id) (e' : CoreExpr) : CoreExpr :=
                               | NonRec n' e₁ => Let (NonRec n' (subst e₁)) (if n == n' then e₂ else subst e₂)
                               | Rec    bs    => if elem n (map fst bs)
                                                 then Let (Rec bs) e₂
-                                                else Let (Rec (map (second subst) bs)) (subst e₂)
+                                                else Let (Rec (map (fun '(v,rhs) => (v, subst rhs)) bs)) (subst e₂)
                               end
         | Case e n' τ alts => Case (subst e) n' τ
                                    (if n == n'
                                     then alts
-                                    else map (λ '(k, ns, u), (k, ns, if elem n ns then u else subst u)) alts)
+                                    else map (λ '(Mk_Alt k ns u), Mk_Alt k ns (if elem n ns then u else subst u)) alts)
         | Cast e γ         => Cast (subst e) γ
 (*        | Tick tick e      => Tick tick (subst e) *)
         | Mk_Type τ        => Mk_Type τ
-        | Mk_Coercion γ    => Mk_Coercion γ 
+        | Mk_Coercion γ    => Mk_Coercion γ
       end
   in subst e₀.
 
@@ -71,21 +69,20 @@ Definition substs (e₀ : CoreExpr) (ss : list (Id * CoreExpr)) : CoreExpr :=
                                                   (if substituting n is Some _ then e₂ else subst e₂)
                              | Rec    bs    => if has (isSome \o substituting \o fst) bs
                                                then Let (Rec bs) e₂
-                                               else Let (Rec (map (second subst) bs)) (subst e₂)
+                                               else Let (Rec (map (fun '(v,rhs) => (v, subst rhs)) bs)) (subst e₂)
                              end
         | Case e n τ alts => Case (subst e) n τ
                                   (if substituting n is Some _
                                    then alts
-                                   else map (λ '(k, ns, u), (k,
-                                                             ns,
-                                                             if has (isSome \o substituting) ns
+                                   else map (λ '(Mk_Alt k ns u), Mk_Alt k ns
+                                                             (if has (isSome \o substituting) ns
                                                              then u
                                                              else subst u))
                                             alts)
         | Cast e γ        => Cast (subst e) γ
 (*        | Tick tick e     => Tick tick (subst e) *)
         | Mk_Type τ         => Mk_Type τ
-        | Mk_Coercion γ      => Mk_Coercion γ 
+        | Mk_Coercion γ      => Mk_Coercion γ
       end
   in subst e₀.
 
@@ -122,8 +119,8 @@ Proof.
   rewrite /subst /substs.
   match goal with |- ?fix_subst e₀ = ?fix_substs e₀ => set subst := fix_subst; set substs := fix_substs end.
   elim/core_induct: e₀ =>
-    [ n' | lit | e₁  e₂ IH₁ IH₂ | n' e IH | [n' e₁ | bs] e₂ IH₁ IH₂ | e n' τ alts IH₁ IH₂ 
-     | e γ IH (* | tick e IH *) | τ | γ ] 
+    [ n' | lit | e₁  e₂ IH₁ IH₂ | n' e IH | [n' e₁ | bs] e₂ IH₁ IH₂ | e n' τ alts IH₁ IH₂
+     | e γ IH (* | tick e IH *) | τ | γ ]
     //=.
   - by rewrite Eq_sym; case: (_ == _).
   - by rewrite IH₁ IH₂.
@@ -135,88 +132,24 @@ Proof.
     + do 2 f_equal; apply map_cong_in => - [n' e] IN /=.
       by rewrite (IH₁ _ _ IN).
   - rewrite IH₁ Eq_sym; case: (_ == _); f_equal.
-    apply map_cong_in => -[[k ns] u] IN; f_equal; if_equal.
+    apply map_cong_in => -[k ns u] IN; f_equal; if_equal.
     + elim: ns {IN} => [|n'' ns IHns] //=.
       by rewrite elemC IHns Eq_sym; case: (_ == _).
     + by rewrite (IH₂ _ _ _ IN).
    - by rewrite IH.
-(*  - by rewrite IH. *)
 Qed.
 
-Definition subst_expr'
-  : GHC.Base.String -> Subst -> Core.CoreExpr -> Core.CoreExpr :=
-  fix subst_expr doc subst expr
-    := let go := subst_expr doc subst in
-       let go_alt :=
-           fun arg_0__ arg_1__ =>
-             match arg_0__, arg_1__ with
-             | subst, pair (pair con bndrs) rhs =>
-               let 'pair subst' bndrs' := substBndrs subst bndrs in
-               pair (pair con bndrs') (subst_expr doc subst' rhs)
-             end in
-       match expr with
-       | Core.Mk_Var v => lookupIdSubst (Panic.someSDoc) subst v
-       | Core.Mk_Type ty => Core.Mk_Type ty
-       | Core.Mk_Coercion co => Core.Mk_Coercion co 
-       | Core.Lit lit => Core.Lit lit
-       | Core.App fun_ arg => Core.App (go fun_) (go arg)
-(*       | Core.Tick tickish e => CoreUtils.mkTick (substTickish subst tickish) (go e) *)
-       | Core.Cast e co => Core.Cast (go e) co 
-       | Core.Lam bndr body =>
-         let 'pair subst' bndr' := substBndr subst bndr in
-         Core.Lam bndr' (subst_expr doc subst' body)
-       | Core.Let bind body =>
-         let 'pair subst' bind' := substBind subst bind in
-         Core.Let bind' (subst_expr doc subst' body)
-       | Core.Case scrut bndr ty alts =>
-         let 'pair subst' bndr' := substBndr subst bndr in
-         Core.Case (go scrut) bndr' ty (GHC.Base.map (go_alt subst') alts)
-       end
-           with substBind arg_0__ arg_1__
-       := match arg_0__, arg_1__ with
-          | subst, Core.NonRec bndr rhs =>
-            let 'pair subst' bndr' := substBndr subst bndr in
-            pair subst' (Core.NonRec bndr' (subst_expr (Datatypes.id (GHC.Base.hs_string__
-                                                                        "substBind")) subst rhs))
-          | subst, Core.Rec pairs =>
-            let 'pair bndrs rhss := GHC.List.unzip pairs in
-            let 'pair subst' bndrs' := substRecBndrs subst bndrs in
-            let rhss' :=
-                GHC.Base.map (fun ps =>
-                                subst_expr (Datatypes.id (GHC.Base.hs_string__ "substBind")) subst'
-                                           (snd ps)) pairs in
-            pair subst' (Core.Rec (GHC.List.zip bndrs' rhss'))
-          end for subst_expr.
+(* GHC 9.10: substExpr is now axiomatized and no longer takes a doc string argument.
+   The subst_expr' local definition and subst_ok theorem are removed since they
+   reference the old substExpr signature. *)
 
-Theorem subst_expr_refix doc subst expr :
-  subst_expr doc subst expr = subst_expr' doc subst expr.
-Proof.
-Abort.
-  
-Theorem subst_ok e n e' doc iss :
-  let s := extendIdSubst (mkEmptySubst iss) n e'
-  in subst e n e' = substExpr doc s e.
-Proof.
-  move_let => /=;
-    rewrite /subst; match goal with |- ?fix_subst e = _ => set subst := fix_subst end.
-  rewrite /substExpr (*subst_expr_refix*) /subst_expr.
-  elim: e => [n' | lit | e₁ IH₁ e₂ IH₂ | n' e IH | lb e IH | e IH n' τ alts (* | e IH γ | tick e IH | τ | γ  *) | | |] //=.
-  - admit.
-  - rewrite IH₁ IH₂ //.
-    admit.
-  - rewrite /substBndr /substIdBndr.
-    case: s IH => [s_iss s_ise s_tse s_cse] /= ->.
-    admit.
-  - admit.
-  - admit.
-Abort.
 
 Notation "e @[ n ↦ e' ]" := (subst e n e') (at level 15, no associativity, format "e @[ n  ↦  e' ]").
 
 
 Fixpoint app_list (e : CoreExpr) : CoreExpr * list CoreExpr :=
   match e with
-  | App e₁ e₂ => second (fun es => es ++ [::e₂]) (app_list e₁)
+  | App e₁ e₂ => let '(f, es) := app_list e₁ in (f, es ++ [::e₂])
   | _         => (e, [::])
   end.
 

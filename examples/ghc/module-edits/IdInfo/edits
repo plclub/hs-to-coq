@@ -6,6 +6,13 @@ skip Core.df_con
 ## needs Type.resultIdLevPoly
 skip Core.setLevityInfoWithType
 
+## GHC 9.10: bitfield functions use Data.Bits on ArityInfo (=nat)
+## Coq can't resolve Bits/Eq instances for ArityInfo
+axiomatize definition Core.bitfieldGetCallArityInfo
+axiomatize definition Core.bitfieldGetArityInfo
+axiomatize definition Core.bitfieldSetArityInfo
+axiomatize definition Core.bitfieldSetCallArityInfo
+
 ## Printing
 skip Core.pprArityInfo
 skip Core.pprCafInfo

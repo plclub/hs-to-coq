@@ -3,6 +3,7 @@ Set Bullet Behavior "Strict Subproofs".
 Require Import MapProofs.Bounds.
 Require Import MapProofs.Tactics.
 Require Export MapProofs.PairTypeclass.
+Require Import Coq.Sorting.Sorted.
 
 Section WF_1.
 Context {e : Type} {a b : Type} {HEq : Eq_ e} {HOrd : Ord e} {HEqLaws : EqLaws e}  {HOrdLaws : OrdLaws e}.
@@ -284,8 +285,7 @@ Proof.
   all: try solve [exfalso; lia_sizes]. (* Some are simply impossible *)
   all: repeat find_Tip.
   all: rewrite ?toList_Bin, <- ?app_assoc; try reflexivity.
-  simpl. rewrite <- app_assoc. simpl. reflexivity. simpl. rewrite <-app_assoc. simpl.
-  reflexivity.
+  simpl. rewrite <- app_assoc. simpl. reflexivity.
 Qed.
 
 Lemma toList_balanceL:
@@ -387,7 +387,6 @@ Qed.
 
 (** *** Sortedness of [toList] *)
 
-Require Import Coq.Sorting.Sorted.
 Close Scope Z.
 
 (*Maps are sorted only by keys*)
@@ -680,10 +679,10 @@ Lemma size_spec:
 Proof.
   intros. induction H.
   - simpl. reflexivity.
-  - simpl. rewrite toList_Bin. simpl. rewrite app_length. simpl.
+  - simpl. rewrite toList_Bin. simpl. rewrite length_app. simpl.
     rewrite Nat2Z.inj_add. rewrite <- IHBounded1.
     rewrite Nat2Z.inj_succ. rewrite <- IHBounded2.
-    omega.
+    lia.
 Qed.
 
 (** ** Verification of [Eq] *)

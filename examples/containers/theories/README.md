@@ -1,7 +1,41 @@
 This directory contains the specifications and proofs of [the translated Gallina
 code](../lib) of Haskell's `containers` library.
 
-We have formalized and proved a representative subset of three modules, namely, 
+## Dependencies
+
+Building the theories requires:
+
+- **Coq 8.20**
+- **MathComp 2.2.0+** (for `ssrnat`, `seq`, `eqtype`, and `HB.instance`/`hasDecEq.Build` in `HSUtil.v`)
+- **base library** (`../../base/`) — must be built first
+- **base-thy proofs** (`../../base-thy/`) — must be built first
+- **containers lib** (`../lib/`) — the translated Gallina code, must be built first
+
+### Build instructions
+
+```bash
+# 1. Build prerequisites (from the repository root)
+(cd base; coq_makefile -f _CoqProject -o Makefile && make -j)
+(cd base-thy; coq_makefile -f _CoqProject -o Makefile && make -j)
+(cd examples/containers/lib; coq_makefile -f _CoqProject -o Makefile && make -j)
+
+# 2. Build the theories
+cd examples/containers/theories
+coq_makefile -f _CoqProject -o Makefile
+make -j
+```
+
+### Installing MathComp via opam
+
+```bash
+opam install coq-mathcomp-ssreflect   # installs ssreflect + hierarchy-builder
+```
+
+The minimum required version is 2.2.0. Earlier versions (including all of MathComp 1.x) lack the Hierarchy Builder API (`HB.instance`, `hasDecEq.Build`) used in `HSUtil.v`.
+
+## Contents
+
+We have formalized and proved a representative subset of three modules, namely,
 `Data.Set`, `Data.IntSet`, and `Data.Map`. They can be found in:
 * `SetProofs.v` for `Data.Set` (this includes theorems for operations,
   type class laws, and Coq's finite set theorems),

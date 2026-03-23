@@ -34,19 +34,19 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Definition Prefix :=
+#[global] Definition Prefix :=
   IntWord.Int%type.
 
-Definition Nat :=
+#[global] Definition Nat :=
   IntWord.Word%type.
 
-Definition Mask :=
+#[global] Definition Mask :=
   IntWord.Int%type.
 
-Definition Key :=
+#[global] Definition Key :=
   IntWord.Int%type.
 
-Definition BitMap :=
+#[global] Definition BitMap :=
   IntWord.Word%type.
 
 Inductive IntSet : Type :=
@@ -54,15 +54,8 @@ Inductive IntSet : Type :=
   | Tip : Prefix -> BitMap -> IntSet
   | Nil : IntSet.
 
-Inductive Stack : Type :=
-  | Push : Prefix -> IntSet -> Stack -> Stack
-  | Nada : Stack.
-
 Instance Default__IntSet : HsToCoq.Err.Default IntSet :=
   HsToCoq.Err.Build_Default _ Nil.
-
-Instance Default__Stack : HsToCoq.Err.Default Stack :=
-  HsToCoq.Err.Build_Default _ Nada.
 
 (* Midamble *)
 
@@ -75,41 +68,45 @@ Fixpoint size_nat (t : IntSet) : nat :=
   | Nil => 0
   end.
 
-Require Omega.
+Require Lia.
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;Lia.lia.
 
 (* Converted value declarations: *)
 
-Definition intFromNat :=
+#[global] Definition intFromNat :=
   IntWord.intFromWord.
 
-Definition natFromInt :=
+#[global] Definition natFromInt :=
   IntWord.wordFromInt.
 
-Definition branchMask : Prefix -> Prefix -> Mask :=
+#[global] Definition branchMask : Prefix -> Prefix -> Mask :=
   fun p1 p2 =>
     intFromNat (IntWord.highestBitMask (Data.Bits.xor (natFromInt p1) (natFromInt
                                                        p2))).
 
-Definition maskW : Nat -> Nat -> Prefix :=
+#[global] Definition maskW : Nat -> Nat -> Prefix :=
   fun i m =>
-    intFromNat (i Data.Bits..&.(**)
-                (Data.Bits.xor (Data.Bits.complement (m GHC.Num.- #1)) m)).
+    intFromNat (Data.Bits.op_zizazi__ i (Data.Bits.xor (Data.Bits.complement (m
+                                                                              GHC.Num.-
+                                                                              #1)) m)).
 
-Definition mask : IntWord.Int -> Mask -> Prefix :=
+#[global] Definition mask : IntWord.Int -> Mask -> Prefix :=
   fun i m => maskW (natFromInt i) (natFromInt m).
 
-Definition zero : IntWord.Int -> Mask -> bool :=
-  fun i m => ((natFromInt i) Data.Bits..&.(**) (natFromInt m)) GHC.Base.== #0.
+#[global] Definition zero : IntWord.Int -> Mask -> bool :=
+  fun i m => Data.Bits.op_zizazi__ (natFromInt i) (natFromInt m) GHC.Base.== #0.
 
-Definition link : Prefix -> IntSet -> Prefix -> IntSet -> IntSet :=
-  fun p1 t1 p2 t2 =>
-    let m := branchMask p1 p2 in
+#[global] Definition linkWithMask
+   : Mask -> Prefix -> IntSet -> IntSet -> IntSet :=
+  fun m p1 t1 t2 =>
     let p := mask p1 m in if zero p1 m : bool then Bin p m t1 t2 else Bin p m t2 t1.
 
-Definition nomatch : IntWord.Int -> Prefix -> Mask -> bool :=
+#[global] Definition link : Prefix -> IntSet -> Prefix -> IntSet -> IntSet :=
+  fun p1 t1 p2 t2 => linkWithMask (branchMask p1 p2) p1 t1 t2.
+
+#[global] Definition nomatch : IntWord.Int -> Prefix -> Mask -> bool :=
   fun i p m => (mask i m) GHC.Base./= p.
 
 Fixpoint insertBM (arg_0__ : Prefix) (arg_1__ : BitMap) (arg_2__ : IntSet)
@@ -120,12 +117,12 @@ Fixpoint insertBM (arg_0__ : Prefix) (arg_1__ : BitMap) (arg_2__ : IntSet)
          if zero kx m : bool then Bin p m (insertBM kx bm l) r else
          Bin p m l (insertBM kx bm r)
      | kx, bm, (Tip kx' bm' as t) =>
-         if kx' GHC.Base.== kx : bool then Tip kx' (bm Data.Bits..|.(**) bm') else
+         if kx' GHC.Base.== kx : bool then Tip kx' (Data.Bits.op_zizbzi__ bm bm') else
          link kx (Tip kx bm) kx' t
      | kx, bm, Nil => Tip kx bm
      end.
 
-Definition shorter : Mask -> Mask -> bool :=
+#[global] Definition shorter : Mask -> Mask -> bool :=
   fun m1 m2 => (natFromInt m1) GHC.Base.> (natFromInt m2).
 
 Program Fixpoint union (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__ +
@@ -154,40 +151,43 @@ Program Fixpoint union (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__ +
      end.
 Solve Obligations with (termination_by_omega).
 
-Local Definition Semigroup__IntSet_op_zlzlzgzg__ : IntSet -> IntSet -> IntSet :=
+#[local] Definition Semigroup__IntSet_op_zlzlzgzg__
+   : IntSet -> IntSet -> IntSet :=
   union.
 
+#[global]
 Program Instance Semigroup__IntSet : GHC.Base.Semigroup IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__IntSet_op_zlzlzgzg__ |}.
 
-Local Definition Monoid__IntSet_mappend : IntSet -> IntSet -> IntSet :=
+#[local] Definition Monoid__IntSet_mappend : IntSet -> IntSet -> IntSet :=
   _GHC.Base.<<>>_.
 
-Definition empty : IntSet :=
+#[global] Definition empty : IntSet :=
   Nil.
 
-Definition unions {f : Type -> Type} `{Data.Foldable.Foldable f}
+#[global] Definition unions {f : Type -> Type} `{Data.Foldable.Foldable f}
    : f IntSet -> IntSet :=
   fun xs => Data.Foldable.foldl' union empty xs.
 
-Local Definition Monoid__IntSet_mconcat : list IntSet -> IntSet :=
+#[local] Definition Monoid__IntSet_mconcat : list IntSet -> IntSet :=
   unions.
 
-Local Definition Monoid__IntSet_mempty : IntSet :=
+#[local] Definition Monoid__IntSet_mempty : IntSet :=
   empty.
 
+#[global]
 Program Instance Monoid__IntSet : GHC.Base.Monoid IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.mappend__ := Monoid__IntSet_mappend ;
            GHC.Base.mconcat__ := Monoid__IntSet_mconcat ;
            GHC.Base.mempty__ := Monoid__IntSet_mempty |}.
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `Data.IntSet.InternalWord.Data__IntSet' *)
 
-(* Skipping all instances of class `GHC.Exts.IsList', including
-   `Data.IntSet.InternalWord.IsList__IntSet' *)
+(* Skipping instance `Data.IntSet.InternalWord.IsList__IntSet' of class
+   `GHC.Internal.IsList.IsList' *)
 
 Fixpoint equal (arg_0__ arg_1__ : IntSet) : bool
   := match arg_0__, arg_1__ with
@@ -199,7 +199,7 @@ Fixpoint equal (arg_0__ arg_1__ : IntSet) : bool
      | _, _ => false
      end.
 
-Local Definition Eq___IntSet_op_zeze__ : IntSet -> IntSet -> bool :=
+#[local] Definition Eq___IntSet_op_zeze__ : IntSet -> IntSet -> bool :=
   fun t1 t2 => equal t1 t2.
 
 Fixpoint nequal (arg_0__ arg_1__ : IntSet) : bool
@@ -212,40 +212,41 @@ Fixpoint nequal (arg_0__ arg_1__ : IntSet) : bool
      | _, _ => true
      end.
 
-Local Definition Eq___IntSet_op_zsze__ : IntSet -> IntSet -> bool :=
+#[local] Definition Eq___IntSet_op_zsze__ : IntSet -> IntSet -> bool :=
   fun t1 t2 => nequal t1 t2.
 
+#[global]
 Program Instance Eq___IntSet : GHC.Base.Eq_ IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zeze____ := Eq___IntSet_op_zeze__ ;
            GHC.Base.op_zsze____ := Eq___IntSet_op_zsze__ |}.
 
-Definition indexOfTheOnlyBit :=
+#[global] Definition indexOfTheOnlyBit :=
   IntWord.indexOfTheOnlyBit.
 
-Definition lowestBitMask : Nat -> Nat :=
-  fun x => x Data.Bits..&.(**) GHC.Num.negate x.
+#[global] Definition lowestBitMask : Nat -> Nat :=
+  fun x => Data.Bits.op_zizazi__ x (GHC.Num.negate x).
 
-Definition revNat : Nat -> Nat :=
+#[global] Definition revNat : Nat -> Nat :=
   fun x1 =>
-    let 'x2 := ((IntWord.shiftRWord x1 #1) Data.Bits..&.(**) #6148914691236517205)
-                 Data.Bits..|.(**)
-                 (IntWord.shiftLWord (x1 Data.Bits..&.(**) #6148914691236517205) #1) in
-    let 'x3 := ((IntWord.shiftRWord x2 #2) Data.Bits..&.(**) #3689348814741910323)
-                 Data.Bits..|.(**)
-                 (IntWord.shiftLWord (x2 Data.Bits..&.(**) #3689348814741910323) #2) in
-    let 'x4 := ((IntWord.shiftRWord x3 #4) Data.Bits..&.(**) #1085102592571150095)
-                 Data.Bits..|.(**)
-                 (IntWord.shiftLWord (x3 Data.Bits..&.(**) #1085102592571150095) #4) in
-    let 'x5 := ((IntWord.shiftRWord x4 #8) Data.Bits..&.(**) #71777214294589695)
-                 Data.Bits..|.(**)
-                 (IntWord.shiftLWord (x4 Data.Bits..&.(**) #71777214294589695) #8) in
-    let 'x6 := ((IntWord.shiftRWord x5 #16) Data.Bits..&.(**) #281470681808895)
-                 Data.Bits..|.(**)
-                 (IntWord.shiftLWord (x5 Data.Bits..&.(**) #281470681808895) #16) in
-    (IntWord.shiftRWord x6 #32) Data.Bits..|.(**) (IntWord.shiftLWord x6 #32).
+    let 'x2 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__ (IntWord.shiftRWord x1
+                                                                                #1) #6148914691236517205)
+                                     (IntWord.shiftLWord (Data.Bits.op_zizazi__ x1 #6148914691236517205) #1) in
+    let 'x3 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__ (IntWord.shiftRWord x2
+                                                                                #2) #3689348814741910323)
+                                     (IntWord.shiftLWord (Data.Bits.op_zizazi__ x2 #3689348814741910323) #2) in
+    let 'x4 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__ (IntWord.shiftRWord x3
+                                                                                #4) #1085102592571150095)
+                                     (IntWord.shiftLWord (Data.Bits.op_zizazi__ x3 #1085102592571150095) #4) in
+    let 'x5 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__ (IntWord.shiftRWord x4
+                                                                                #8) #71777214294589695)
+                                     (IntWord.shiftLWord (Data.Bits.op_zizazi__ x4 #71777214294589695) #8) in
+    let 'x6 := Data.Bits.op_zizbzi__ (Data.Bits.op_zizazi__ (IntWord.shiftRWord x5
+                                                                                #16) #281470681808895)
+                                     (IntWord.shiftLWord (Data.Bits.op_zizazi__ x5 #281470681808895) #16) in
+    Data.Bits.op_zizbzi__ (IntWord.shiftRWord x6 #32) (IntWord.shiftLWord x6 #32).
 
-Program Definition foldrBits {a}
+#[global] Program Definition foldrBits {a}
    : IntWord.Int -> (IntWord.Int -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
@@ -266,7 +267,7 @@ Program Definition foldrBits {a}
     go (revNat bitmap) z.
 Admit Obligations.
 
-Definition foldr {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
+#[global] Definition foldr {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -280,30 +281,31 @@ Definition foldr {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
       | _ => go z t
       end.
 
-Definition toAscList : IntSet -> list Key :=
+#[global] Definition toAscList : IntSet -> list Key :=
   foldr cons nil.
 
-Local Definition Ord__IntSet_compare : IntSet -> IntSet -> comparison :=
+#[local] Definition Ord__IntSet_compare : IntSet -> IntSet -> comparison :=
   fun s1 s2 => GHC.Base.compare (toAscList s1) (toAscList s2).
 
-Local Definition Ord__IntSet_op_zl__ : IntSet -> IntSet -> bool :=
+#[local] Definition Ord__IntSet_op_zl__ : IntSet -> IntSet -> bool :=
   fun x y => Ord__IntSet_compare x y GHC.Base.== Lt.
 
-Local Definition Ord__IntSet_op_zlze__ : IntSet -> IntSet -> bool :=
+#[local] Definition Ord__IntSet_op_zlze__ : IntSet -> IntSet -> bool :=
   fun x y => Ord__IntSet_compare x y GHC.Base./= Gt.
 
-Local Definition Ord__IntSet_op_zg__ : IntSet -> IntSet -> bool :=
+#[local] Definition Ord__IntSet_op_zg__ : IntSet -> IntSet -> bool :=
   fun x y => Ord__IntSet_compare x y GHC.Base.== Gt.
 
-Local Definition Ord__IntSet_op_zgze__ : IntSet -> IntSet -> bool :=
+#[local] Definition Ord__IntSet_op_zgze__ : IntSet -> IntSet -> bool :=
   fun x y => Ord__IntSet_compare x y GHC.Base./= Lt.
 
-Local Definition Ord__IntSet_max : IntSet -> IntSet -> IntSet :=
+#[local] Definition Ord__IntSet_max : IntSet -> IntSet -> IntSet :=
   fun x y => if Ord__IntSet_op_zlze__ x y : bool then y else x.
 
-Local Definition Ord__IntSet_min : IntSet -> IntSet -> IntSet :=
+#[local] Definition Ord__IntSet_min : IntSet -> IntSet -> IntSet :=
   fun x y => if Ord__IntSet_op_zlze__ x y : bool then x else y.
 
+#[global]
 Program Instance Ord__IntSet : GHC.Base.Ord IntSet :=
   fun _ k__ =>
     k__ {| GHC.Base.op_zl____ := Ord__IntSet_op_zl__ ;
@@ -323,7 +325,7 @@ Program Instance Ord__IntSet : GHC.Base.Ord IntSet :=
 (* Skipping all instances of class `Control.DeepSeq.NFData', including
    `Data.IntSet.InternalWord.NFData__IntSet' *)
 
-Definition bin : Prefix -> Mask -> IntSet -> IntSet -> IntSet :=
+#[global] Definition bin : Prefix -> Mask -> IntSet -> IntSet -> IntSet :=
   fun arg_0__ arg_1__ arg_2__ arg_3__ =>
     match arg_0__, arg_1__, arg_2__, arg_3__ with
     | _, _, l, Nil => l
@@ -331,7 +333,7 @@ Definition bin : Prefix -> Mask -> IntSet -> IntSet -> IntSet :=
     | p, m, l, r => Bin p m l r
     end.
 
-Definition tip : Prefix -> BitMap -> IntSet :=
+#[global] Definition tip : Prefix -> BitMap -> IntSet :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | _, num_2__ =>
@@ -350,7 +352,7 @@ Fixpoint deleteBM (arg_0__ : Prefix) (arg_1__ : BitMap) (arg_2__ : IntSet)
          bin p m l (deleteBM kx bm r)
      | kx, bm, (Tip kx' bm' as t) =>
          if kx' GHC.Base.== kx : bool
-         then tip kx (bm' Data.Bits..&.(**) Data.Bits.complement bm) else
+         then tip kx (Data.Bits.op_zizazi__ bm' (Data.Bits.complement bm)) else
          t
      | _, _, Nil => Nil
      end.
@@ -385,7 +387,7 @@ Program Fixpoint difference (arg_0__ arg_1__ : IntSet) {measure (size_nat
                   differenceTip r2
               | Tip kx2 bm2 =>
                   if Bool.Sumbool.sumbool_of_bool (kx GHC.Base.== kx2)
-                  then tip kx (bm Data.Bits..&.(**) Data.Bits.complement bm2) else
+                  then tip kx (Data.Bits.op_zizazi__ bm (Data.Bits.complement bm2)) else
                   t1
               | Nil => t1
               end in
@@ -394,7 +396,7 @@ Program Fixpoint difference (arg_0__ arg_1__ : IntSet) {measure (size_nat
      end.
 Solve Obligations with (termination_by_omega).
 
-Definition op_zrzr__ : IntSet -> IntSet -> IntSet :=
+#[global] Definition op_zrzr__ : IntSet -> IntSet -> IntSet :=
   fun m1 m2 => difference m1 m2.
 
 Notation "'_\\_'" := (op_zrzr__).
@@ -405,10 +407,10 @@ Infix "\\" := (_\\_) (at level 99).
 
 (* Skipping definition `Data.IntSet.InternalWord.intSetDataType' *)
 
-Definition null : IntSet -> bool :=
+#[global] Definition null : IntSet -> bool :=
   fun arg_0__ => match arg_0__ with | Nil => true | _ => false end.
 
-Definition size : IntSet -> IntWord.Int :=
+#[global] Definition size : IntSet -> IntWord.Int :=
   let fix go arg_0__ arg_1__
     := match arg_0__, arg_1__ with
        | acc, Bin _ _ l r => go (go acc l) r
@@ -417,25 +419,25 @@ Definition size : IntSet -> IntWord.Int :=
        end in
   go #0.
 
-Definition bitmapOfSuffix : IntWord.Int -> BitMap :=
+#[global] Definition bitmapOfSuffix : IntWord.Int -> BitMap :=
   fun s => IntWord.shiftLWord #1 s.
 
-Definition suffixBitMask : IntWord.Int :=
+#[global] Definition suffixBitMask : IntWord.Int :=
   #63.
 
-Definition suffixOf : IntWord.Int -> IntWord.Int :=
-  fun x => x Data.Bits..&.(**) suffixBitMask.
+#[global] Definition suffixOf : IntWord.Int -> IntWord.Int :=
+  fun x => Data.Bits.op_zizazi__ x suffixBitMask.
 
-Definition bitmapOf : IntWord.Int -> BitMap :=
+#[global] Definition bitmapOf : IntWord.Int -> BitMap :=
   fun x => bitmapOfSuffix (suffixOf x).
 
-Definition prefixBitMask : IntWord.Int :=
+#[global] Definition prefixBitMask : IntWord.Int :=
   Data.Bits.complement suffixBitMask.
 
-Definition prefixOf : IntWord.Int -> Prefix :=
-  fun x => x Data.Bits..&.(**) prefixBitMask.
+#[global] Definition prefixOf : IntWord.Int -> Prefix :=
+  fun x => Data.Bits.op_zizazi__ x prefixBitMask.
 
-Definition member : Key -> IntSet -> bool :=
+#[global] Definition member : Key -> IntSet -> bool :=
   fun x =>
     let fix go arg_0__
       := match arg_0__ with
@@ -444,17 +446,18 @@ Definition member : Key -> IntSet -> bool :=
              if zero x m : bool then go l else
              go r
          | Tip y bm =>
-             andb (prefixOf x GHC.Base.== y) ((bitmapOf x Data.Bits..&.(**) bm) GHC.Base./=
+             andb (prefixOf x GHC.Base.== y) (Data.Bits.op_zizazi__ (bitmapOf x) bm
+                   GHC.Base./=
                    #0)
          | Nil => false
          end in
     go.
 
-Definition notMember : Key -> IntSet -> bool :=
+#[global] Definition notMember : Key -> IntSet -> bool :=
   fun k => negb GHC.Base.∘ member k.
 
-Definition highestBitSet : Nat -> IntWord.Int :=
-  fun x => indexOfTheOnlyBit (IntWord.highestBitMask x).
+#[global] Definition highestBitSet : Nat -> IntWord.Int :=
+  fun x => IntWord.indexOfTheOnlyBit (IntWord.highestBitMask x).
 
 Fixpoint unsafeFindMax (arg_0__ : IntSet) : option Key
   := match arg_0__ with
@@ -463,7 +466,7 @@ Fixpoint unsafeFindMax (arg_0__ : IntSet) : option Key
      | Bin _ _ _ r => unsafeFindMax r
      end.
 
-Definition lookupLT : Key -> IntSet -> option Key :=
+#[global] Definition lookupLT : Key -> IntSet -> option Key :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -475,7 +478,7 @@ Definition lookupLT : Key -> IntSet -> option Key :=
              if zero x m : bool then go def l else
              go l r
          | def, Tip kx bm =>
-             let maskLT := (bitmapOf x GHC.Num.- #1) Data.Bits..&.(**) bm in
+             let maskLT := Data.Bits.op_zizazi__ (bitmapOf x GHC.Num.- #1) bm in
              if prefixOf x GHC.Base.> kx : bool
              then Some (kx GHC.Num.+ highestBitSet bm) else
              if andb (prefixOf x GHC.Base.== kx) (maskLT GHC.Base./= #0) : bool
@@ -494,8 +497,8 @@ Definition lookupLT : Key -> IntSet -> option Key :=
     | _ => j_12__
     end.
 
-Definition lowestBitSet : Nat -> IntWord.Int :=
-  fun x => indexOfTheOnlyBit (lowestBitMask x).
+#[global] Definition lowestBitSet : Nat -> IntWord.Int :=
+  fun x => IntWord.indexOfTheOnlyBit (lowestBitMask x).
 
 Fixpoint unsafeFindMin (arg_0__ : IntSet) : option Key
   := match arg_0__ with
@@ -504,7 +507,7 @@ Fixpoint unsafeFindMin (arg_0__ : IntSet) : option Key
      | Bin _ _ l _ => unsafeFindMin l
      end.
 
-Definition lookupGT : Key -> IntSet -> option Key :=
+#[global] Definition lookupGT : Key -> IntSet -> option Key :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -517,7 +520,8 @@ Definition lookupGT : Key -> IntSet -> option Key :=
              go def r
          | def, Tip kx bm =>
              let maskGT :=
-               (GHC.Num.negate (IntWord.shiftLWord (bitmapOf x) #1)) Data.Bits..&.(**) bm in
+               Data.Bits.op_zizazi__ (GHC.Num.negate (IntWord.shiftLWord (bitmapOf x) #1))
+                                     bm in
              if prefixOf x GHC.Base.< kx : bool then Some (kx GHC.Num.+ lowestBitSet bm) else
              if andb (prefixOf x GHC.Base.== kx) (maskGT GHC.Base./= #0) : bool
              then Some (kx GHC.Num.+ lowestBitSet maskGT) else
@@ -535,7 +539,7 @@ Definition lookupGT : Key -> IntSet -> option Key :=
     | _ => j_12__
     end.
 
-Definition lookupLE : Key -> IntSet -> option Key :=
+#[global] Definition lookupLE : Key -> IntSet -> option Key :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -548,7 +552,7 @@ Definition lookupLE : Key -> IntSet -> option Key :=
              go l r
          | def, Tip kx bm =>
              let maskLE :=
-               ((IntWord.shiftLWord (bitmapOf x) #1) GHC.Num.- #1) Data.Bits..&.(**) bm in
+               Data.Bits.op_zizazi__ ((IntWord.shiftLWord (bitmapOf x) #1) GHC.Num.- #1) bm in
              if prefixOf x GHC.Base.> kx : bool
              then Some (kx GHC.Num.+ highestBitSet bm) else
              if andb (prefixOf x GHC.Base.== kx) (maskLE GHC.Base./= #0) : bool
@@ -567,7 +571,7 @@ Definition lookupLE : Key -> IntSet -> option Key :=
     | _ => j_12__
     end.
 
-Definition lookupGE : Key -> IntSet -> option Key :=
+#[global] Definition lookupGE : Key -> IntSet -> option Key :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -579,7 +583,7 @@ Definition lookupGE : Key -> IntSet -> option Key :=
              if zero x m : bool then go r l else
              go def r
          | def, Tip kx bm =>
-             let maskGE := (GHC.Num.negate (bitmapOf x)) Data.Bits..&.(**) bm in
+             let maskGE := Data.Bits.op_zizazi__ (GHC.Num.negate (bitmapOf x)) bm in
              if prefixOf x GHC.Base.< kx : bool then Some (kx GHC.Num.+ lowestBitSet bm) else
              if andb (prefixOf x GHC.Base.== kx) (maskGE GHC.Base./= #0) : bool
              then Some (kx GHC.Num.+ lowestBitSet maskGE) else
@@ -597,14 +601,16 @@ Definition lookupGE : Key -> IntSet -> option Key :=
     | _ => j_12__
     end.
 
-Definition singleton : Key -> IntSet :=
+#[global] Definition singleton : Key -> IntSet :=
   fun x => Tip (prefixOf x) (bitmapOf x).
 
-Definition insert : Key -> IntSet -> IntSet :=
+#[global] Definition insert : Key -> IntSet -> IntSet :=
   fun x => insertBM (prefixOf x) (bitmapOf x).
 
-Definition delete : Key -> IntSet -> IntSet :=
+#[global] Definition delete : Key -> IntSet -> IntSet :=
   fun x => deleteBM (prefixOf x) (bitmapOf x).
+
+(* Skipping definition `Data.IntSet.InternalWord.alterF' *)
 
 Program Fixpoint intersection (arg_0__ arg_1__ : IntSet) {measure (size_nat
                                arg_0__ +
@@ -633,7 +639,7 @@ Program Fixpoint intersection (arg_0__ arg_1__ : IntSet) {measure (size_nat
                   intersectBM r1
               | Tip kx1 bm1 =>
                   if Bool.Sumbool.sumbool_of_bool (kx1 GHC.Base.== kx2)
-                  then tip kx1 (bm1 Data.Bits..&.(**) bm2) else
+                  then tip kx1 (Data.Bits.op_zizazi__ bm1 bm2) else
                   Nil
               | Nil => Nil
               end in
@@ -648,7 +654,7 @@ Program Fixpoint intersection (arg_0__ arg_1__ : IntSet) {measure (size_nat
                   intersectBM r2
               | Tip kx2 bm2 =>
                   if Bool.Sumbool.sumbool_of_bool (kx1 GHC.Base.== kx2)
-                  then tip kx1 (bm1 Data.Bits..&.(**) bm2) else
+                  then tip kx1 (Data.Bits.op_zizazi__ bm1 bm2) else
                   Nil
               | Nil => Nil
               end in
@@ -685,7 +691,7 @@ Fixpoint subsetCmp (arg_0__ arg_1__ : IntSet) : comparison
          | Tip kx1 bm1, Tip kx2 bm2 =>
              if kx1 GHC.Base./= kx2 : bool then Gt else
              if bm1 GHC.Base.== bm2 : bool then Eq else
-             if (bm1 Data.Bits..&.(**) Data.Bits.complement bm2) GHC.Base.== #0 : bool
+             if Data.Bits.op_zizazi__ bm1 (Data.Bits.complement bm2) GHC.Base.== #0 : bool
              then Lt else
              Gt
          | (Tip kx _ as t1), Bin p m l r =>
@@ -701,10 +707,10 @@ Fixpoint subsetCmp (arg_0__ arg_1__ : IntSet) : comparison
          end
      end.
 
-Definition isProperSubsetOf : IntSet -> IntSet -> bool :=
+#[global] Definition isProperSubsetOf : IntSet -> IntSet -> bool :=
   fun t1 t2 => match subsetCmp t1 t2 with | Lt => true | _ => false end.
 
-Definition match_ : IntWord.Int -> Prefix -> Mask -> bool :=
+#[global] Definition match_ : IntWord.Int -> Prefix -> Mask -> bool :=
   fun i p m => (mask i m) GHC.Base.== p.
 
 Fixpoint isSubsetOf (arg_0__ arg_1__ : IntSet) : bool
@@ -720,7 +726,7 @@ Fixpoint isSubsetOf (arg_0__ arg_1__ : IntSet) : bool
          match arg_0__, arg_1__ with
          | Bin _ _ _ _, _ => false
          | Tip kx1 bm1, Tip kx2 bm2 =>
-             andb (kx1 GHC.Base.== kx2) ((bm1 Data.Bits..&.(**) Data.Bits.complement bm2)
+             andb (kx1 GHC.Base.== kx2) (Data.Bits.op_zizazi__ bm1 (Data.Bits.complement bm2)
                    GHC.Base.==
                    #0)
          | (Tip kx _ as t1), Bin p m l r =>
@@ -759,7 +765,7 @@ Program Fixpoint disjoint (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__
                   disjointBM r1
               | Tip kx1 bm1 =>
                   if Bool.Sumbool.sumbool_of_bool (kx1 GHC.Base.== kx2)
-                  then (bm1 Data.Bits..&.(**) bm2) GHC.Base.== #0 else
+                  then (Data.Bits.op_zizazi__ bm1 bm2) GHC.Base.== #0 else
                   true
               | Nil => true
               end in
@@ -774,7 +780,7 @@ Program Fixpoint disjoint (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__
                   disjointBM r2
               | Tip kx2 bm2 =>
                   if Bool.Sumbool.sumbool_of_bool (kx1 GHC.Base.== kx2)
-                  then (bm1 Data.Bits..&.(**) bm2) GHC.Base.== #0 else
+                  then (Data.Bits.op_zizazi__ bm1 bm2) GHC.Base.== #0 else
                   true
               | Nil => true
               end in
@@ -783,7 +789,7 @@ Program Fixpoint disjoint (arg_0__ arg_1__ : IntSet) {measure (size_nat arg_0__
      end.
 Solve Obligations with (termination_by_omega).
 
-Program Definition foldl'Bits {a}
+#[global] Program Definition foldl'Bits {a}
    : IntWord.Int -> (a -> IntWord.Int -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
@@ -806,7 +812,7 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
   := let bitPred :=
        fun kx bm bi =>
          if predicate (kx GHC.Num.+ bi) : bool
-         then bm Data.Bits..|.(**) bitmapOfSuffix bi else
+         then Data.Bits.op_zizbzi__ bm (bitmapOfSuffix bi) else
          bm in
      match t with
      | Bin p m l r => bin p m (filter predicate l) (filter predicate r)
@@ -814,13 +820,14 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
      | Nil => Nil
      end.
 
-Definition partition : (Key -> bool) -> IntSet -> (IntSet * IntSet)%type :=
+#[global] Definition partition
+   : (Key -> bool) -> IntSet -> (IntSet * IntSet)%type :=
   fun predicate0 t0 =>
     let fix go predicate t
       := let bitPred :=
            fun kx bm bi =>
              if predicate (kx GHC.Num.+ bi) : bool
-             then bm Data.Bits..|.(**) bitmapOfSuffix bi else
+             then Data.Bits.op_zizbzi__ bm (bitmapOfSuffix bi) else
              bm in
          match t with
          | Bin p m l r =>
@@ -834,89 +841,97 @@ Definition partition : (Key -> bool) -> IntSet -> (IntSet * IntSet)%type :=
          end in
     id (go predicate0 t0).
 
-Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
+(* Skipping definition `Data.IntSet.InternalWord.takeWhileAntitone' *)
+
+(* Skipping definition `Data.IntSet.InternalWord.dropWhileAntitone' *)
+
+(* Skipping definition `Data.IntSet.InternalWord.spanAntitone' *)
+
+#[global] Definition split : Key -> IntSet -> (IntSet * IntSet)%type :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | x', (Bin p m l r as t') =>
-             if match_ x' p m : bool
-             then if zero x' m : bool
-                  then let 'pair lt gt := go x' l in
-                       pair lt (union gt r)
-                  else let 'pair lt gt := go x' r in
-                       pair (union lt l) gt else
-             if x' GHC.Base.< p : bool
-             then (pair Nil t')
-             else (pair t' Nil)
+             if nomatch x' p m : bool
+             then if x' GHC.Base.< p : bool
+                  then (pair Nil t')
+                  else (pair t' Nil) else
+             if zero x' m : bool
+             then let 'pair lt gt := go x' l in
+                  pair lt (bin p m gt r) else
+             let 'pair lt gt := go x' r in
+             pair (bin p m l lt) gt
          | x', (Tip kx' bm as t') =>
              let lowerBitmap := bitmapOf x' GHC.Num.- #1 in
              let higherBitmap := Data.Bits.complement (lowerBitmap GHC.Num.+ bitmapOf x') in
              if kx' GHC.Base.> x' : bool then (pair Nil t') else
              if kx' GHC.Base.< prefixOf x' : bool then (pair t' Nil) else
-             pair (tip kx' (bm Data.Bits..&.(**) lowerBitmap)) (tip kx' (bm Data.Bits..&.(**)
-                                                                         higherBitmap))
+             pair (tip kx' (Data.Bits.op_zizazi__ bm lowerBitmap)) (tip kx'
+                   (Data.Bits.op_zizazi__ bm higherBitmap))
          | _, Nil => (pair Nil Nil)
          end in
-    let j_21__ := let 'pair lt gt := go x t in pair lt gt in
+    let j_22__ := let 'pair lt gt := go x t in pair lt gt in
     match t with
-    | Bin _ m l r =>
+    | Bin p m l r =>
         if m GHC.Base.< #0 : bool
         then if x GHC.Base.>= #0 : bool
              then let 'pair lt gt := go x l in
-                  let lt' := union lt r in pair lt' gt
+                  let lt' := bin p m lt r in pair lt' gt
              else let 'pair lt gt := go x r in
-                  let gt' := union gt l in pair lt gt' else
-        j_21__
-    | _ => j_21__
+                  let gt' := bin p m l gt in pair lt gt' else
+        j_22__
+    | _ => j_22__
     end.
 
-Definition splitMember : Key -> IntSet -> (IntSet * bool * IntSet)%type :=
+#[global] Definition splitMember
+   : Key -> IntSet -> (IntSet * bool * IntSet)%type :=
   fun x t =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
          | x', (Bin p m l r as t') =>
-             if match_ x' p m : bool
-             then if zero x' m : bool
-                  then let 'pair (pair lt fnd) gt := go x' l in
-                       pair (pair lt fnd) (union gt r)
-                  else let 'pair (pair lt fnd) gt := go x' r in
-                       pair (pair (union lt l) fnd) gt else
-             if x' GHC.Base.< p : bool
-             then pair (pair Nil false) t'
-             else pair (pair t' false) Nil
+             if nomatch x' p m : bool
+             then if x' GHC.Base.< p : bool
+                  then pair (pair Nil false) t'
+                  else pair (pair t' false) Nil else
+             if zero x' m : bool
+             then let 'pair (pair lt fnd) gt := go x' l in
+                  let gt' := bin p m gt r in pair (pair lt fnd) gt' else
+             let 'pair (pair lt fnd) gt := go x' r in
+             let lt' := bin p m l lt in pair (pair lt' fnd) gt
          | x', (Tip kx' bm as t') =>
              let bitmapOfx' := bitmapOf x' in
              let lowerBitmap := bitmapOfx' GHC.Num.- #1 in
              let higherBitmap := Data.Bits.complement (lowerBitmap GHC.Num.+ bitmapOfx') in
              if kx' GHC.Base.> x' : bool then pair (pair Nil false) t' else
              if kx' GHC.Base.< prefixOf x' : bool then pair (pair t' false) Nil else
-             let gt := tip kx' (bm Data.Bits..&.(**) higherBitmap) in
-             let found := (bm Data.Bits..&.(**) bitmapOfx') GHC.Base./= #0 in
-             let lt := tip kx' (bm Data.Bits..&.(**) lowerBitmap) in pair (pair lt found) gt
+             let gt := tip kx' (Data.Bits.op_zizazi__ bm higherBitmap) in
+             let found := (Data.Bits.op_zizazi__ bm bitmapOfx') GHC.Base./= #0 in
+             let lt := tip kx' (Data.Bits.op_zizazi__ bm lowerBitmap) in
+             pair (pair lt found) gt
          | _, Nil => pair (pair Nil false) Nil
          end in
-    let j_22__ := go x t in
+    let j_25__ := go x t in
     match t with
-    | Bin _ m l r =>
+    | Bin p m l r =>
         if m GHC.Base.< #0 : bool
         then if x GHC.Base.>= #0 : bool
              then let 'pair (pair lt fnd) gt := go x l in
-                  let lt' := union lt r in pair (pair lt' fnd) gt
+                  let lt' := bin p m lt r in pair (pair lt' fnd) gt
              else let 'pair (pair lt fnd) gt := go x r in
-                  let gt' := union gt l in pair (pair lt fnd) gt' else
-        j_22__
-    | _ => j_22__
+                  let gt' := bin p m l gt in pair (pair lt fnd) gt' else
+        j_25__
+    | _ => j_25__
     end.
 
-Definition maxView : IntSet -> option (Key * IntSet)%type :=
+#[global] Definition maxView : IntSet -> option (Key * IntSet)%type :=
   fun t =>
     let fix go arg_0__
       := match arg_0__ with
          | Bin p m l r => let 'pair result r' := go r in pair result (bin p m l r')
          | Tip kx bm =>
              let 'bi := highestBitSet bm in
-             pair (kx GHC.Num.+ bi) (tip kx (bm Data.Bits..&.(**)
-                                             Data.Bits.complement (bitmapOfSuffix bi)))
+             pair (kx GHC.Num.+ bi) (tip kx (Data.Bits.op_zizazi__ bm (Data.Bits.complement
+                                                                    (bitmapOfSuffix bi))))
          | Nil => GHC.Err.error (GHC.Base.hs_string__ "maxView Nil")
          end in
     let j_12__ := Some (go t) in
@@ -930,15 +945,15 @@ Definition maxView : IntSet -> option (Key * IntSet)%type :=
     | _ => j_12__
     end.
 
-Definition minView : IntSet -> option (Key * IntSet)%type :=
+#[global] Definition minView : IntSet -> option (Key * IntSet)%type :=
   fun t =>
     let fix go arg_0__
       := match arg_0__ with
          | Bin p m l r => let 'pair result l' := go l in pair result (bin p m l' r)
          | Tip kx bm =>
              let 'bi := lowestBitSet bm in
-             pair (kx GHC.Num.+ bi) (tip kx (bm Data.Bits..&.(**)
-                                             Data.Bits.complement (bitmapOfSuffix bi)))
+             pair (kx GHC.Num.+ bi) (tip kx (Data.Bits.op_zizazi__ bm (Data.Bits.complement
+                                                                    (bitmapOfSuffix bi))))
          | Nil => GHC.Err.error (GHC.Base.hs_string__ "minView Nil")
          end in
     let j_12__ := Some (go t) in
@@ -960,25 +975,27 @@ Definition minView : IntSet -> option (Key * IntSet)%type :=
 
 (* Skipping definition `Data.IntSet.InternalWord.findMax' *)
 
-Definition deleteMin : IntSet -> IntSet :=
+#[global] Definition deleteMin : IntSet -> IntSet :=
   Data.Maybe.maybe Nil Data.Tuple.snd GHC.Base.∘ minView.
 
-Definition deleteMax : IntSet -> IntSet :=
+#[global] Definition deleteMax : IntSet -> IntSet :=
   Data.Maybe.maybe Nil Data.Tuple.snd GHC.Base.∘ maxView.
 
-Definition fromList : list Key -> IntSet :=
+#[global] Definition fromList : list Key -> IntSet :=
   fun xs => let ins := fun t x => insert x t in Data.Foldable.foldl' ins empty xs.
 
-Definition toList : IntSet -> list Key :=
+#[global] Definition toList : IntSet -> list Key :=
   toAscList.
 
-Definition map : (Key -> Key) -> IntSet -> IntSet :=
+#[global] Definition map : (Key -> Key) -> IntSet -> IntSet :=
   fun f => fromList GHC.Base.∘ (GHC.Base.map f GHC.Base.∘ toList).
 
-Definition fold {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
+(* Skipping definition `Data.IntSet.InternalWord.mapMonotonic' *)
+
+#[global] Definition fold {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   foldr.
 
-Program Definition foldr'Bits {a}
+#[global] Program Definition foldr'Bits {a}
    : IntWord.Int -> (IntWord.Int -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
@@ -999,7 +1016,7 @@ Program Definition foldr'Bits {a}
     go (revNat bitmap) z.
 Admit Obligations.
 
-Definition foldr' {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
+#[global] Definition foldr' {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1013,7 +1030,7 @@ Definition foldr' {b : Type} : (Key -> b -> b) -> b -> IntSet -> b :=
       | _ => go z t
       end.
 
-Program Definition foldlBits {a}
+#[global] Program Definition foldlBits {a}
    : IntWord.Int -> (a -> IntWord.Int -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
@@ -1032,7 +1049,7 @@ Program Definition foldlBits {a}
     go bitmap z.
 Admit Obligations.
 
-Definition foldl {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
+#[global] Definition foldl {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1046,7 +1063,7 @@ Definition foldl {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
       | _ => go z t
       end.
 
-Definition foldl' {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
+#[global] Definition foldl' {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
   fun f z =>
     let fix go arg_0__ arg_1__
       := match arg_0__, arg_1__ with
@@ -1060,21 +1077,25 @@ Definition foldl' {a : Type} : (a -> Key -> a) -> a -> IntSet -> a :=
       | _ => go z t
       end.
 
-Definition elems : IntSet -> list Key :=
+#[global] Definition elems : IntSet -> list Key :=
   toAscList.
 
-Definition toDescList : IntSet -> list Key :=
+#[global] Definition toDescList : IntSet -> list Key :=
   foldl (GHC.Base.flip cons) nil.
 
-Definition foldrFB {b} : (Key -> b -> b) -> b -> IntSet -> b :=
+#[global] Definition foldrFB {b} : (Key -> b -> b) -> b -> IntSet -> b :=
   foldr.
 
-Definition foldlFB {a} : (a -> Key -> a) -> a -> IntSet -> a :=
+#[global] Definition foldlFB {a} : (a -> Key -> a) -> a -> IntSet -> a :=
   foldl.
+
+(* Skipping definition `Data.IntSet.InternalWord.fromRange' *)
 
 (* Skipping definition `Data.IntSet.InternalWord.fromAscList' *)
 
 (* Skipping definition `Data.IntSet.InternalWord.fromDistinctAscList' *)
+
+(* Skipping definition `Data.IntSet.InternalWord.fromMonoList' *)
 
 (* Skipping definition `Data.IntSet.InternalWord.showTree' *)
 
@@ -1100,7 +1121,33 @@ Definition foldlFB {a} : (a -> Key -> a) -> a -> IntSet -> a :=
 
 (* Skipping definition `Data.IntSet.InternalWord.withEmpty' *)
 
-Definition splitRoot : IntSet -> list IntSet :=
+#[global] Definition takeWhileAntitoneBits
+   : IntWord.Int -> (IntWord.Int -> bool) -> Nat -> Nat :=
+  fun prefix predicate bitmap =>
+    let next :=
+      fun arg_0__ arg_1__ arg_2__ =>
+        match arg_0__, arg_1__, arg_2__ with
+        | d, h, pair n' b' =>
+            if andb (Data.Bits.op_zizazi__ n' h GHC.Base./= #0) (predicate ((prefix
+                                                                             GHC.Num.+
+                                                                             b') GHC.Num.+
+                                                                            d)) : bool
+            then pair (IntWord.shiftRWord n' d) (b' GHC.Num.+ d)
+            else pair n' b'
+        end in
+    let 'pair _ b := next #1 #2 (next #2 #12 (next #4 #240 (next #8 #65280 (next #16
+                                                                                 #4294901760 (next #32
+                                                                                                   #18446744069414584320
+                                                                                                   (pair bitmap
+                                                                                                         #0)))))) in
+    let m :=
+      if orb (b GHC.Base./= #0) (andb (Data.Bits.op_zizazi__ bitmap #1 GHC.Base./= #0)
+                                      (predicate prefix)) : bool
+      then ((IntWord.shiftLWord #2 b) GHC.Num.- #1)
+      else ((IntWord.shiftLWord #1 b) GHC.Num.- #1) in
+    Data.Bits.op_zizazi__ bitmap m.
+
+#[global] Definition splitRoot : IntSet -> list IntSet :=
   fun arg_0__ =>
     match arg_0__ with
     | Nil => nil

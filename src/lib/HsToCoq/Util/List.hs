@@ -27,6 +27,7 @@ import Data.Foldable
 import Data.Semigroup
 import Control.Applicative
 
+import Control.Monad (filterM)
 import Control.Monad.State
 
 import HsToCoq.Util.Function

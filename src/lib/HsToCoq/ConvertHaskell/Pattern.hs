@@ -22,6 +22,7 @@ import qualified Data.Text as T
 
 import HsToCoq.Util.Monad
 import Control.Monad.Trans.Maybe
+import Control.Monad (foldM)
 import Control.Monad.Writer
 import Control.Monad.Except
 
@@ -29,7 +30,13 @@ import qualified Data.Map.Strict as M
 
 import GHC hiding (Name, HsChar, HsString)
 import qualified GHC
+
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Types.SourceText (il_value)
+#else
 import BasicTypes (IntegralLit(..))
+#endif
+
 import HsToCoq.Util.GHC.FastString
 
 import HsToCoq.Util.GHC
@@ -65,7 +72,7 @@ convertPat (LazyPat NOEXTP p) = do
 convertPat (GHC.AsPat NOEXTP x p) =
   Coq.AsPat <$> convertLPat p <*> var ExprNS (unLoc x)
 
-convertPat (ParPat NOEXTP p) =
+convertPat (ParPat NOEXTP NOT_GHC_910(GHC_900(_)) p NOT_GHC_910(GHC_900(_))) =
   convertLPat p
 
 convertPat (BangPat NOEXTP p) =
@@ -76,9 +83,13 @@ convertPat (ListPat overloaded pats) =
 #else
 convertPat (ListPat pats PlaceHolder overloaded') | let overloaded = fmap snd overloaded' =
 #endif
+#if __GLASGOW_HASKELL__ >= 900
+  foldr (App2Pat (Bare "cons")) (Coq.VarPat "nil") <$> traverse convertLPat pats
+#else
   if maybe True isNoSyntaxExpr overloaded
   then foldr (App2Pat (Bare "cons")) (Coq.VarPat "nil") <$> traverse convertLPat pats
   else convUnsupported "overloaded list patterns"
+#endif
 
 #if __GLASGOW_HASKELL__ >= 806
 convertPat (TuplePat _ pats _boxity) =
@@ -88,12 +99,16 @@ convertPat (TuplePat pats _boxity _PlaceHolders) =
 #endif
   foldl1 (App2Pat (Bare "pair")) <$> traverse convertLPat pats
 
+#if __GLASGOW_HASKELL__ >= 900
+convertPat (ConPat _ (L _ hsCon) conVariety) = do
+#else
 convertPat (ConPatIn (L _ hsCon) conVariety) = do
+#endif
   con <- var ExprNS hsCon
   whenM (view $ edits.skippedConstructors.contains con) $ throwError con
 
   case conVariety of
-    PrefixCon args ->
+    PrefixCon GHC_900(_) args ->
       ArgsPat con <$> traverse convertLPat args
 
     RecCon HsRecFields{..} ->
@@ -108,7 +123,11 @@ convertPat (ConPatIn (L _ hsCon) conVariety) = do
                                   | otherwise         = UnderscorePat
 
              patterns <- fmap M.fromList . for rec_flds $
+#if __GLASGOW_HASKELL__ >= 900
+               \(L _ (HsFieldBind _ (L _ occ) hsPat pun)) -> do
+#else
                \(L _ (HsRecField (L _ occ) hsPat pun)) -> do
+#endif
                            field <- var ExprNS (selectorFieldOcc_ occ)
                            pat   <- if pun
                                     then pure $ Coq.VarPat (qualidBase field)
@@ -129,8 +148,13 @@ convertPat (ConPatIn (L _ hsCon) conVariety) = do
     InfixCon l r -> do
       App2Pat con <$> convertLPat l <*> convertLPat r
 
+#if __GLASGOW_HASKELL__ < 900
 convertPat (ConPatOut{}) =
   convUnsupported "[internal?] `ConPatOut' constructor"
+
+convertPat (CoPat NOEXTP _ _ _) =
+  convUnsupported "coercion patterns"
+#endif
 
 convertPat (ViewPat _ _ _) =
   convUnsupported "view patterns"
@@ -169,15 +193,15 @@ convertPat (NPat (L _ OverLit{..}) _negate _eq PlaceHolder) = -- And strings
 convertPat (NPlusKPat _ _ _ _ _ _) =
   convUnsupported "n+k-patterns"
 
-convertPat (CoPat NOEXTP _ _ _) =
-  convUnsupported "coercion patterns"
-
 convertPat SumPat{} =
   convUnsupported "sum type patterns"
 
 #if __GLASGOW_HASKELL__ >= 806
-convertPat SigPat{} =
-  convUnsupported "`SigPat' constructor"
+-- GHC 9.10 uses SigPat (type-annotated patterns) in more places, including
+-- derived instances. We strip the type annotation, treating it like ParPat
+-- and BangPat — the type info is redundant since Coq infers types.
+convertPat (SigPat NOEXTP p _) =
+  convertLPat p
 convertPat XPat{} =
   convUnsupported "`XPat' constructor"  -- Can't use noExtCon to dispatch this on GHC 8.8
 #else

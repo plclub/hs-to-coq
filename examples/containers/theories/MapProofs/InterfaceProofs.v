@@ -401,7 +401,7 @@ Qed.
     intros. induction H.
     - simpl. reflexivity.
     - simpl. rewrite Zpos_P_of_succ_nat. rewrite Nat2Z.inj_add.
-      rewrite <- IHBounded1. rewrite <- IHBounded2. rewrite size_size. omega.
+      rewrite <- IHBounded1. rewrite <- IHBounded2. rewrite size_size. lia.
   Qed.
 
   Lemma cardinal_1 : cardinal m = length (elements m).
@@ -409,7 +409,7 @@ Qed.
     intros. unfold cardinal. unfold elements. destruct m. simpl.
     assert (Z.of_nat (map_size x0) = Z.of_nat (length (toList x0))). {
     rewrite <- size_equiv. eapply size_spec. apply w. apply w. }
-    omega.
+    lia.
   Qed.
 
 Lemma foldlWithKey2_fold_left:
@@ -643,13 +643,13 @@ Proof.
   intros. generalize dependent f. revert i. revert v. induction H; intros.
   - inversion H0.
   - simpl. simpl in H5. destruct (sem (mapWithKey f s1) i) eqn : ?. inversion H5; subst.
-    apply IHBounded1 in Heqo. destruct Heqo. destruct H3. destruct H6. exists i. split. auto.
+    apply IHBounded1 in Heqo. destruct Heqo. destruct H3. destruct H6. exists i. split. apply E.eq_refl.
     exists x1. assert (sem s1 i = Some x1). erewrite sem_resp_eq. apply H6. apply elt_eq. apply H3.
     rewrite H7. reflexivity. eapply map_none_spec in Heqo.
     simpl in H5. destruct (i == x) eqn : ?. simpl in H5. inversion H5. exists x.
     split. apply elt_eq in Heqb. assumption. rewrite Eq_Reflexive. simpl. exists v.
     assert (sem s1 x = None). erewrite sem_resp_eq. apply Heqo. order key. rewrite H6.
-    simpl. reflexivity. simpl in H5. exists i. split. auto. apply IHBounded2 in H5.
+    simpl. reflexivity. simpl in H5. exists i. split. apply E.eq_refl. apply IHBounded2 in H5.
     destruct H5. destruct H5. destruct H6. exists x1. rewrite Heqo. rewrite Heqb. simpl.
     erewrite sem_resp_eq. apply H6. apply elt_eq. assumption. apply H.
 Qed.
@@ -661,10 +661,10 @@ Proof.
   - inversion H.
   - simpl. simpl in H. destruct (sem s1 x) eqn : ?. simpl in H; inversion H; subst.
     apply IHw1 in H. destruct H. exists x1. destruct H. split. assumption. rewrite H2. simpl. reflexivity.
-    simpl in H. destruct (x == x0) eqn : ?. exists x0. split. apply elt_eq in Heqb. auto.
+    simpl in H. destruct (x == x0) eqn : ?. exists x0. split. { apply elt_eq in Heqb. apply E.eq_sym. assumption. }
     simpl in H. inversion H; subst. apply (map_none_spec f s1 lb (Some x0)) in Heqo. rewrite Heqo. simpl. reflexivity.
     apply w1. simpl in H. apply IHw2 in H. destruct H. destruct H. exists x1. split.
-    auto. apply (map_none_spec f s1 lb (Some x0)) in Heqo. rewrite Heqo. simpl. apply H4. apply w1.
+    assumption. apply (map_none_spec f s1 lb (Some x0)) in Heqo. rewrite Heqo. simpl. apply H4. apply w1.
 Qed.
 
 Lemma mapi_2: forall (elt elt' : Type) (m: t elt) (x : key) (f: key -> elt -> elt'),

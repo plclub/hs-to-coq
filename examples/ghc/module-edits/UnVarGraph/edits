@@ -1,5 +1,11 @@
-rename value UnVarGraph.UnVarSet = UnVarGraph.Mk_UnVarSet
-rename value UnVarGraph.UnVarGraph = UnVarGraph.Mk_UnVarGraph
+rename value GHC.Data.Graph.UnVar.UnVarSet = UnVarGraph.Mk_UnVarSet
 
-redefine Definition UnVarGraph.k : Core.Var -> GHC.Num.Word :=
+rename value GHC.Data.Graph.UnVar.k = UnVarGraph.unVarKey
+redefine Definition UnVarGraph.unVarKey : Core.Var -> GHC.Num.Word :=
   fun v => Unique.getWordKey (Unique.getUnique v).
+
+# GHC 9.10: kind-polymorphic k variable in domUFMUnVarSet doesn't translate
+redefine Axiom UnVarGraph.domUFMUnVarSet : forall {key : Type}, forall {elt : Type}, UniqFM.UniqFM key elt -> UnVarGraph.UnVarSet.
+
+# GHC 9.10: IntSet.size returns N but function expects nat
+axiomatize definition UnVarGraph.sizeUnVarSet

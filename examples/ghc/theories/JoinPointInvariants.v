@@ -295,7 +295,7 @@ Fixpoint isJoinPointsValid (e : CoreExpr) (n : nat) (jps : VarSet) {struct e} : 
     negb (isJoinId bndr) &&
     isJoinPointsValid scrut 0 emptyVarSet &&  (* Non-tail-call position *)
     let jps' := delVarSet jps bndr in
-    forallb (fun '(dc,pats,rhs) =>
+    forallb (fun '(Mk_Alt dc pats rhs) =>
       let jps'' := delVarSetList jps' pats  in
       forallb (fun v => negb (isJoinId v)) pats &&
       isJoinPointsValid rhs 0 jps'') alts  (* Tail-call position *)
@@ -335,7 +335,7 @@ Definition isJoinRHS rhs a jps :=
 
 
 Definition isjoinPointsAlt : CoreAlt -> VarSet -> bool :=
-  fun '(dc,pats,rhs) jps =>
+  fun '(Mk_Alt dc pats rhs) jps =>
       let jps'' := delVarSetList jps pats  in
       forallb (fun v => negb (isJoinId v)) pats &&
       isJoinPointsValid rhs 0 jps''.
@@ -469,7 +469,7 @@ Proof.
     rewrite delVarSetList_cons.
     unfold isJoinRHS.
     destruct_match.
-    + apply EqNat.beq_nat_true in Heq. congruence.
+    + apply PeanoNat.Nat.eqb_eq in Heq. congruence.
     + clear Heq.
       inversion_clear Hdisjoint.
       rewrite IHvs by assumption.
@@ -493,7 +493,7 @@ Proof.
     replace (mkLams _ _) with (Lam a (mkLams vs e)) in H by reflexivity.
     unfold isJoinRHS in H.
     destruct_match.
-    + apply EqNat.beq_nat_true in Heq. simpl in Heq. congruence.
+    + apply PeanoNat.Nat.eqb_eq in Heq. simpl in Heq. congruence.
     + clear Heq.
       simpl in H.
       rewrite PeanoNat.Nat.sub_0_r in H.
@@ -541,6 +541,7 @@ Lemma isJoinPointsValid_mkVarApps:
 Proof.
   intros ???? Hnot_iJI HiJPV.
   unfold mkVarApps.
+  rewrite Foldable.foldl'_is_foldl.
   rewrite Foldable.hs_coq_foldl_list.
   revert e HiJPV.
   induction Hnot_iJI; intros.
@@ -554,13 +555,10 @@ Proof.
     - simpl in HiJPV.
       replace (_ + _ + _) with (n + S (length l)) by lia. 
       assumption.
-    - unfold varToCoreExpr.
-      repeat destruct_match; try reflexivity.
-      + (* new case from debugIsOn *)
-        rewrite andb_false_r in Heq.
-        discriminate.
-      + simpl. rewrite isJoinId_eq in H.
-      destruct_match; congruence. 
+    - unfold varToCoreExpr. simpl.
+      rewrite isJoinId_eq in H.
+      destruct (isJoinId_maybe x); try reflexivity.
+      discriminate.
 Qed.
 
 Lemma isJoinPointsValid_MkLetRec: forall pairs body jps,
@@ -706,10 +704,7 @@ Proof.
       eapply disjointVarSet_subVarSet_l; only 1: apply H0.
       rewrite rev_app_distr. simpl.
       rewrite delVarSetList_cons.
-      apply subVarSet_delVarSetList_both. 
-      (* Why does this even work? And how can we rewrite under [delVarSetList]
-         as well, so that we can skip the previous command?
-       *)
+      apply subVarSet_delVarSetList_both.
       rewrite exprFreeVars_Lam.
       set_b_iff; fsetdec.
     + apply H.
@@ -750,7 +745,7 @@ Proof.
       f_equal. f_equal.
       ** apply forallb_conq.
          rewrite Forall_forall.
-         intros [v rhs] HIn.
+         intros [v rhs0] HIn.
          specialize (H _ _ HIn).
          unfold isJoinPointsValidPair_aux.
          destruct_match; only 2: reflexivity.
@@ -788,7 +783,7 @@ Proof.
     f_equal.
     apply forallb_conq.
     rewrite Forall_forall.
-    intros [[dc pats] rhs] HIn.
+    intros [dc pats rhs] HIn.
     destruct (forallb (fun v : Var => negb (isJoinId v)) pats) eqn:?; only 2: reflexivity; simpl.
     rewrite <- !updJPSs_not_joinId by assumption.
     rewrite <- !updJPS_not_joinId by assumption.
@@ -808,18 +803,13 @@ Proof.
       epose proof (mapUnionVarSet_In_subVarSet f HIn) as H ; simpl in H end.
     rewrite delVarSetList_rev, <- delVarSetList_single, <- delVarSetList_app.
     set_b_iff; fsetdec.
-  - apply H. 
+  - apply H.
     eapply disjointVarSet_subVarSet_l; only 1: apply H0.
     apply subVarSet_delVarSetList_both.
     rewrite exprFreeVars_Cast.
     set_b_iff; fsetdec.
-(*  - apply H. 
-    eapply disjointVarSet_subVarSet_l; only 1: apply H0.
-    apply subVarSet_delVarSetList_both.
-    rewrite exprFreeVars_Tick.
-    set_b_iff; fsetdec. *)
   - reflexivity.
-  - reflexivity. 
+  - reflexivity.
 Qed.
 
 Lemma isJoinPointsValid_fresh_updJPSs:
@@ -1011,7 +1001,7 @@ Proof.
    * repeat apply Respects_StrongSubset_andb; try apply Respects_StrongSubset_const.
      apply Respects_StrongSubset_forallb.
      rewrite Forall_forall.
-     intros [[dc pats] rhs] HIn.
+     intros [dc pats rhs] HIn.
      specialize (H0 _ _ _ HIn).
      repeat apply Respects_StrongSubset_andb; try apply Respects_StrongSubset_const.
      apply Respects_StrongSubset_delVarSet with

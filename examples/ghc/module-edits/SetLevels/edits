@@ -4,7 +4,7 @@ in SetLevels.Level rename type GHC.Num.Int = BinNums.N
 
 axiomatize definition SetLevels.countFreeIds
 
-rename value SetLevels.Level = SetLevels.Mk_Level
+rename value GHC.Core.Opt.SetLevels.Level = SetLevels.Mk_Level
 
 add SetLevels Instance SetLevels.Default__Level : HsToCoq.Err.Default SetLevels.Level :=
   HsToCoq.Err.Build_Default _ (SetLevels.Mk_Level HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
@@ -23,3 +23,8 @@ in SetLevels.lvlApp termination left_ deferred
 
 
 skip SetLevels.Default__LevelEnv
+
+# GHC 9.10: uses Outputable.JoinPointHood (Outputable module skipped)
+skip SetLevels.lvlRhs
+skip SetLevels.lvlFloatRhs
+skip SetLevels.newLvlVar

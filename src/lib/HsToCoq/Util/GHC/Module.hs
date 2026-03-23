@@ -7,15 +7,22 @@ module HsToCoq.Util.GHC.Module (
   moduleNameText, mkModuleNameT,
   modName, modExports, modDetails) where
 
-import Module
-
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import qualified GHC
-import HscTypes (ModDetails(..), emptyModDetails)
-
 import Control.Lens
+
+import qualified GHC
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins hiding ((<>))
+import GHC.Core.InstEnv (InstEnv, unionInstEnv)
+import GHC.Unit.Module as Module
+import GHC.Unit.Module.ModDetails (ModDetails(..), emptyModDetails)
+#else
+import Module
+import HscTypes (ModDetails(..), emptyModDetails)
+#endif
+
 
 -- Note: the names in the list of module exports are from before any renaming
 -- has occurred.
@@ -39,9 +46,17 @@ instance Semigroup ModDetails where
 instance Monoid ModDetails where
   mempty = emptyModDetails
 
+-- GHC 9.x provides Show ModuleName upstream, so the orphan instance is
+-- only needed for older GHC. Instead, GHC 9.x needs a Semigroup InstEnv
+-- instance (used by the ModDetails Semigroup above via md_insts field).
+#if __GLASGOW_HASKELL__ >= 900
+instance Semigroup InstEnv where
+  (<>) = unionInstEnv
+#else
 instance Show ModuleName where
   showsPrec p mod = showParen (p >= 11)
                   $ showString "ModuleName " . showsPrec 11 (moduleNameString mod)
+#endif
 
 -- should this have ModuleData as a parameter instead of ModuleName?
 moduleNameText :: ModuleName -> Text

@@ -6,24 +6,26 @@ redefine Definition Data.IntSet.Internal.BitMap := Coq.Numbers.BinNums.N.
 redefine Definition Data.IntSet.Internal.Mask := Coq.Numbers.BinNums.N.
 
 rename type GHC.Types.Int = Coq.Numbers.BinNums.N
+rename type GHC.Num.Int = Coq.Numbers.BinNums.N
 
 rewrite forall xs, Data.Foldable.length xs = Coq.NArith.BinNat.N.of_nat (Coq.Init.Datatypes.length xs)
 
-skip module Test.Framework.Providers.HUnit
-skip module Test.Framework.Providers.QuickCheck2
-skip module Test.Framework.Runners.Console
-skip module Test.HUnit.Base
-skip module Test.HUnit.Lang
+# v0.7: tasty-based test modules
+skip module Test.Tasty
+skip module Test.Tasty.HUnit
+skip module Test.Tasty.QuickCheck
 skip module Text.Read
 
 skip Test.QuickCheck.Arbitrary.Arbitrary
 
 rename value GHC.Real.^ = Coq.NArith.BinNat.N.pow
+rewrite forall x y, (GHC.Real.op_zc__ x y) = Coq.NArith.BinNat.N.pow x y
 rename value enumFromTo = GHC.Enum.enumFromTo
 
 # We define this class ourselves
 skip class Test.QuickCheck.Arbitrary.Arbitrary
 
+# Properties that can't be translated (carried over from v0.6)
 skip IntSetProperties.prop_Ordered         # fromAscList
 skip IntSetProperties.prop_bitcount        # local fixpoint
 skip IntSetProperties.prop_findMax         # findMax
@@ -43,3 +45,15 @@ skip IntSetProperties.test_lookupLE        # HUnit
 skip IntSetProperties.test_lookupLT        # HUnit
 skip IntSetProperties.test_split           # HUnit
 skip IntSetProperties.main
+
+# New v0.7 properties that can't be translated
+skip IntSetProperties.prop_fromRange          # fromRange (skipped in IntSet edits)
+skip IntSetProperties.prop_takeWhileAntitone  # takeWhileAntitone (skipped in IntSet edits)
+skip IntSetProperties.prop_dropWhileAntitone  # dropWhileAntitone (skipped in IntSet edits)
+skip IntSetProperties.prop_spanAntitone       # spanAntitone (skipped in IntSet edits)
+skip IntSetProperties.prop_alterF_list        # alterF (skipped in IntSet edits)
+skip IntSetProperties.prop_alterF_const       # alterF (skipped in IntSet edits)
+skip IntSetProperties.prop_mapMonotonicId     # mapMonotonic (skipped in IntSet edits)
+skip IntSetProperties.prop_mapMonotonicLinear # mapMonotonic (skipped in IntSet edits)
+skip IntSetProperties.prop_instanceEqIntSet   # new v0.7, uses toAscList comparison
+skip IntSetProperties.prop_instanceOrdIntSet  # new v0.7, uses toAscList comparison

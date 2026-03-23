@@ -1,3 +1,6 @@
+# GHC 9.10: Eq2/Ord2 gained quantified superclass constraints (forall a. Eq a => Eq1 (f a))
+# that Coq can't handle. TODO: need edit support to drop quantified constraints.
+
 order Data.Functor.Classes.Eq1__pair_type  Data.Functor.Classes.Ord1__pair_type
 order Data.Functor.Classes.Eq2__pair_type  Data.Functor.Classes.Ord2__pair_type
 order Data.Functor.Classes.Eq2__pair_type  Data.Functor.Classes.Eq1__pair_type_liftEq
@@ -30,6 +33,20 @@ order Data.Functor.Classes.Eq2__Identity  Data.Functor.Classes.Ord2__Identity
 order Data.Functor.Classes.Eq1__Proxy  Data.Functor.Classes.Ord1__Proxy
 order Data.Functor.Classes.Eq2__Proxy  Data.Functor.Classes.Ord2__Proxy
 
+
+# GHC 9.10: skip Generically1 instances (uses GHC.Generics)
+skip Data.Functor.Classes.Eq1__Generically1
+skip Data.Functor.Classes.Ord1__Generically1
+
+# GHC 9.10: skip Complex instances (Data.Complex not translated)
+skip Data.Functor.Classes.Eq1__Complex
+skip Data.Functor.Classes.Ord1__Complex
+
+# GHC 9.10: skip Solo instances
+skip Data.Functor.Classes.Eq1__Solo
+skip Data.Functor.Classes.Ord1__Solo
+skip Data.Functor.Classes.Eq2__Solo
+skip Data.Functor.Classes.Ord2__Solo
 
 skip Data.Functor.Classes.readListWith
 skip Data.Functor.Classes.readsPrec1

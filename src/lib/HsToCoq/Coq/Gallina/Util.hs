@@ -27,12 +27,12 @@ module HsToCoq.Coq.Gallina.Util (
   -- ** Optics
   _Ident, _UnderscoreName, nameToIdent,
   binderNames, binderIdents, binderExplicitness, binderGeneralizability,
-  mkBinder, mkBinders, mkTypedBinder, toImplicitBinder,
+  mkBinder, mkBinders, mkTypedBinder, toImplicitBinder, toExplicitBinder,
   -- ** Functions
   qualidBase, qualidModule, qualidMapBase, qualidExtendBase,
   splitModule,
   qualidToIdent, identToQualid, identToBase,
-  qualidIsOp, qualidToOp, qualidToPrefix,
+  qualidIsOp, qualidHasValidCoqOp, qualidToOp, qualidToPrefix,
   unsafeIdentToQualid,
   nameToTerm, nameToPattern,
   binderArgs,
@@ -192,6 +192,14 @@ toImplicitBinder b@(ImplicitBinders _) = b
 toImplicitBinder (Typed ex _ei names ty) = Typed ex Implicit names ty
 toImplicitBinder (Generalized _ei ty) = Generalized Implicit ty
 
+-- | Convert a binder to explicit. Coq 8.20 warns about implicit binders
+-- inside record literals ({| field := fun {a} => ... |}); use this to suppress.
+toExplicitBinder :: Binder -> Binder
+toExplicitBinder b@(ExplicitBinder _) = b
+toExplicitBinder (ImplicitBinders names) = ImplicitBinders names  -- no type info; keep as-is
+toExplicitBinder (Typed ex _ei names ty) = Typed ex Explicit names ty
+toExplicitBinder (Generalized _ei ty) = Generalized Explicit ty
+
 -- | Single-name binder with inferred type. (Drops parentheses if Explicit.)
 mkBinder :: Explicitness -> Name -> Binder
 mkBinder Explicit name = ExplicitBinder name
@@ -220,6 +228,7 @@ qualidModule :: Qualid -> Maybe ModuleIdent
 qualidModule (Bare      _)     = Nothing
 qualidModule (Qualified qid _) = Just qid
 
+-- | Apply a function to the last component (base name) of a qualified name.
 qualidMapBase :: (Ident -> Ident) -> Qualid -> Qualid
 qualidMapBase f (Bare             base) = Bare             $ f base
 qualidMapBase f (Qualified prefix base) = Qualified prefix $ f base
@@ -233,6 +242,21 @@ qualidToIdent (Qualified qid aid) = qid <> "." <> aid
 
 qualidIsOp :: Qualid -> Bool
 qualidIsOp = identIsOp . qualidBase
+
+-- | Check if the decoded operator uses only valid Coq operator characters.
+-- Coq symbols consist of: + - * / \ < > = ~ ! @ # % ^ & | : ? , and Unicode symbols.
+-- Characters like '$' are not valid.
+qualidHasValidCoqOp :: Qualid -> Bool
+qualidHasValidCoqOp qid = case identToOp (qualidBase qid) of
+  Nothing -> False
+  Just op -> T.all isValidCoqOpChar op
+             && not (isAmbiguousCoqOp op)
+  where
+    isValidCoqOpChar c = c `elem` ("+-*/\\<>=~!@#%^&|:?," :: [Char])
+                      || c > '\x7f'  -- Unicode symbols
+    -- Operators that start with a built-in operator prefix create ambiguity
+    -- when qualified (e.g., "GHC.Base.<*" parses as "GHC.Base.<" then "*").
+    isAmbiguousCoqOp op = op `elem` ["<*"]
 
 qualidToOp :: Qualid -> Maybe Op
 qualidToOp (Qualified qid aid) = ((qid <> ".") <>) <$> identToOp aid

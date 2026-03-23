@@ -23,9 +23,16 @@ import qualified Data.Set as S
 import GHC hiding (Name)
 import HsToCoq.Util.GHC
 import qualified GHC
+
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Data.Bag (bagToList)
+import GHC.Utils.Outputable (Outputable())
+import GHC.Types.Name (occNameString, nameOccName)
+#else
 import Outputable (Outputable())
 import Bag
 import Class
+#endif
 
 import HsToCoq.Coq.Gallina as Coq
 import HsToCoq.Coq.Gallina.Util
@@ -76,7 +83,7 @@ getImplicits (Forall bs t) = if length bs == length imps then imps ++ getImplici
 getImplicits _ = []
 
 -- Module-local
-convUnsupportedIn_lname :: (ConversionMonad r m, Outputable nm) => String -> String -> Located nm -> m a
+convUnsupportedIn_lname :: (ConversionMonad r m, Outputable nm) => String -> String -> GenLocated l nm -> m a
 convUnsupportedIn_lname what whatFam lname = do
   name <- T.unpack <$> ghcPpr (unLoc lname)
   convUnsupportedIn what whatFam name
@@ -102,9 +109,9 @@ convertAssociatedType classArgs FamilyDecl{..} = do
   result <- case unLoc fdResultSig of
     NoSig NOEXTP                     -> pure $ Sort Type
     KindSig NOEXTP k                 -> withCurrentDefinition name $ convertLHsType k
-    TyVarSig NOEXTP (L _ (UserTyVar NOEXTP _))
+    TyVarSig NOEXTP (L _ (UserTyVar NOEXTP GHC_900(_) _))
       -> pure $ Sort Type -- Maybe not a thing inside type classes?
-    TyVarSig NOEXTP (L _ (KindedTyVar NOEXTP _ k))
+    TyVarSig NOEXTP (L _ (KindedTyVar NOEXTP GHC_900(_) _ k))
       -> withCurrentDefinition name $ convertLHsType k   -- Maybe not a thing inside type classes?
 #if __GLASGOW_HASKELL__ >= 806
     TyVarSig _ (L _ (XTyVarBndr v)) -> noExtCon v
@@ -128,7 +135,12 @@ convertAssociatedTypeDefault
   -> TyFamDefltDecl GhcRn
   -> m (Qualid, Term)
 convertAssociatedTypeDefault classArgs
-#if __GLASGOW_HASKELL__ >= 810
+#if __GLASGOW_HASKELL__ >= 900
+    (TyFamInstDecl { tfid_eqn = FamEqn{..} })
+      | let params = case feqn_bndrs of
+              HsOuterExplicit { hso_bndrs = b } -> b
+              _ -> [] = do
+#elif __GLASGOW_HASKELL__ >= 810
     (TyFamInstDecl { tfid_eqn = HsIB { hsib_body = FamEqn{..} } })
       | let params = fromMaybe [] feqn_bndrs = do
 #else
@@ -144,7 +156,9 @@ convertAssociatedTypeDefault classArgs
   pure (n, ty)
   -- Skipping feqn_fixity
 
-#if __GLASGOW_HASKELL__ >= 810
+#if __GLASGOW_HASKELL__ >= 900
+convertAssociatedTypeDefault _ (TyFamInstDecl _ (XFamEqn v)) = noExtCon v
+#elif __GLASGOW_HASKELL__ >= 810
 convertAssociatedTypeDefault _ (TyFamInstDecl (HsIB { hsib_body = XFamEqn v })) = noExtCon v
 convertAssociatedTypeDefault _ (TyFamInstDecl (XHsImplicitBndrs v)) = noExtCon v
 #elif __GLASGOW_HASKELL__ >= 806
@@ -154,9 +168,13 @@ convertAssociatedTypeDefault _ (XFamEqn v) = noExtCon v
 convertClassDecl :: ConversionMonad r m
                  => ConvertedTyClEnv
                  -> LHsContext GhcRn                      -- ^@tcdCtxt@    Context
-                 -> Located GHC.Name                      -- ^@tcdLName@   name of the class
-                 -> [LHsTyVarBndr GhcRn]                  -- ^@tcdTyVars@  class type variables
-                 -> [Located (FunDep (Located GHC.Name))] -- ^@tcdFDs@     functional dependencies
+                 -> GenLocated l GHC.Name                      -- ^@tcdLName@   name of the class
+                 -> [LHsTyVarBndr GHC_900(flag) GhcRn]                  -- ^@tcdTyVars@  class type variables
+#if __GLASGOW_HASKELL__ >= 900
+                 -> [GenLocated l' (FunDep GhcRn)] -- ^@tcdFDs@     functional dependencies
+#else
+                 -> [GenLocated l (FunDep (GenLocated l GHC.Name))] -- ^@tcdFDs@     functional dependencies
+#endif
                  -> [LSig GhcRn]                          -- ^@tcdSigs@    method signatures
                  -> LHsBinds GhcRn                        -- ^@tcdMeths@   default methods
                  -> [LFamilyDecl GhcRn]                   -- ^@tcdATs@     associated types
@@ -210,21 +228,47 @@ convertClassDecl env (L _ hsCtx) (L _ hsName) ltvs fds lsigs defaults types type
   -- memberSigs.at name ?= sigs
 
   type_defs  <- M.fromList <$> traverse (convertAssociatedTypeDefault argNames . unLoc) typeDefaults
-  value_defs <- fmap M.fromList $ for (bagToList defaults) $
+  -- GHC 9.10: bagToList defaults includes default bindings for ALL class
+  -- methods, including those marked `skip method`. Attempting to convert
+  -- a skipped method's default body causes conversion errors (e.g., references
+  -- to skipped types/functions). Filter them out before conversion.
+  let isSkippedDefault lbind =
+        let bindName = case unLoc lbind of
+              FunBind { fun_id = L _ n } -> Just (T.pack (occNameString (nameOccName n)))
+              _                          -> Nothing
+        in case bindName of
+             Just bname -> (name, bname) `S.member` skippedMethodsS
+             Nothing    -> False
+      filteredDefaults = filter (not . isSkippedDefault) (bagToList defaults)
+  value_defs <- fmap (M.fromList . catMaybes) $ for filteredDefaults $
                 convertTypedModuleBinding Nothing . unLoc >=> \case
                   Just (ConvertedDefinitionBinding cd) -> do
 --                      typeArgs <- getImplicitBindersForClassMember name convDefName
                       -- We have a tough time handling recursion (including mutual
                       -- recursion) here because of name overloading
-                      pure (cd^.convDefName, maybe id Fun (NE.nonEmpty $ cd^.convDefArgs) $ cd^.convDefBody)
+                      pure $ Just (cd^.convDefName, maybe id Fun (NE.nonEmpty $ cd^.convDefArgs) $ cd^.convDefBody)
                   Just (ConvertedPatternBinding    _ _)                     ->
                       convUnsupportedHere "pattern bindings in class declarations"
                   Just (ConvertedAxiomBinding      _ _)                     ->
                       convUnsupportedHere "axiom bindings in class declarations"
+                  Just (RedefinedBinding           rname (CoqDefinitionDef (DefinitionDef _ _ rargs _ rbody _))) ->
+                      -- `redefine` on a class default method: replaces the GHC-derived
+                      -- default body with a user-provided Coq definition. The method
+                      -- stays in the class Dict with its original signature. Use case:
+                      -- the Haskell default uses constructs hs-to-coq can't convert
+                      -- (e.g., unsupported patterns or functions from skipped modules)
+                      -- but an equivalent Coq term can be written by hand.
+                      pure $ Just (rname, maybe id Fun (NE.nonEmpty rargs) rbody)
                   Just (RedefinedBinding           _ _)                     ->
-                      convUnsupportedHere "redefining class method declarations"
+                      convUnsupportedHere "redefining class method declarations (only Definition form supported)"
                   Just (SkippedBinding _) ->
-                      convUnsupportedHere "skipping a binding (use `skip method')"
+                      -- `skip` on a class default method body (not `skip method`):
+                      -- keeps the method in the class Dict type (instances must still
+                      -- provide it) but omits the default implementation. Returns
+                      -- Nothing so no default is stored. Use case: the Haskell default
+                      -- body can't be converted, but every concrete instance provides
+                      -- its own implementation so no default is needed.
+                      pure Nothing
                   Nothing                                                   ->
                       convUnsupportedHere "skipping a type class method (use `skip method`)"
   let defs = type_defs <> value_defs

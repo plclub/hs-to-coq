@@ -1,5 +1,17 @@
 axiomatize definition Core.uniqAway
 
+# GHC 9.10: type error in generated code (key : k vs Type)
+skip Core.anyVarEnv
+
+# GHC 9.10: references UnVarGraph.UnVarSet (not available in Core.v)
+skip Core.varEnvDomain
+
+# GHC 9.10: type error (key : k vs Type)
+skip Core.modifyVarEnv_Directly
+
+# GHC 9.10: uses missing UniqFM functions
+skip Core.dVarEnvElts
+
 in Core.uniqAway' termination try deferred
 # obligations Core.uniqAway' admit
 

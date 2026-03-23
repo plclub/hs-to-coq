@@ -1,5 +1,9 @@
-## still need to redefine this 
+## still need to redefine this
 skip Control.Monad.Signatures.Catch
+
+# Not available in base
+skip class Data.Functor.Contravariant.Contravariant
+skip class Data.Foldable1.Foldable1
 skip Control.Monad.Trans.Identity.liftCatch
 skip Control.Monad.Trans.Reader.liftCatch
 skip Control.Monad.Trans.Writer.Lazy.liftCatch

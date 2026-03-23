@@ -1,4 +1,5 @@
 in Data.Functor.Compose.Applicative__Compose_op_zlztzg__ rewrite forall , Data.Functor.Compose.Applicative__Compose_liftA2 = GHC.Base.liftA2
+in Data.Functor.Compose.Functor__Compose_op_zlzd__ rewrite forall , Data.Functor.Compose.Functor__Compose_fmap = GHC.Base.fmap
 
 polykinds Data.Functor.Compose.Compose k k1
 data kinds Data.Functor.Compose.Compose (k -> Type), (k1 -> k), k1
@@ -10,3 +11,30 @@ order Data.Functor.Compose.Foldable__Compose Data.Functor.Compose.Traversable__C
 
 order Data.Functor.Compose.Eq1__Compose Data.Functor.Compose.Ord1__Compose Data.Functor.Compose.Ord__Compose_compare
 order Data.Functor.Compose.Eq___Compose Data.Functor.Compose.Ord__Compose
+
+skip Data.Functor.Compose.liftReadPrecCompose
+skip Data.Functor.Compose.liftShowsPrecCompose
+
+# envFor cross-type limitation: it renames ALL same-class method references to
+# local instance names, but Compose methods need foldMap/fold/null/etc. for the
+# *component* functors (inst_f/inst_g), not Compose itself.
+# Redefine affected methods to use the class methods directly.
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_fold {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {m : Type}, forall `{GHC.Base.Monoid m}, Compose inst_f inst_g m -> m := fun {m : Type} `{GHC.Base.Monoid m} arg => match arg with | Mk_Compose t => Data.Foldable.foldMap Data.Foldable.fold t end.
+
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_null {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, Compose inst_f inst_g a -> bool := fun {a : Type} arg => match arg with | Mk_Compose t => orb (Data.Foldable.null t) (Data.SemigroupInternal.getAll (Data.Foldable.foldMap (Data.SemigroupInternal.Mk_All GHC.Base.∘ Data.Foldable.null) t)) end.
+
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_length {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, Compose inst_f inst_g a -> GHC.Num.Int := fun {a : Type} arg => match arg with | Mk_Compose t => Data.SemigroupInternal.getSum (Data.Foldable.foldMap (fun x => Data.SemigroupInternal.Mk_Sum (Data.Foldable.length x)) t) end.
+
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_product {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a := fun {a : Type} `{GHC.Num.Num a} arg => match arg with | Mk_Compose t => Data.SemigroupInternal.getProduct (Data.Foldable.foldMap (fun x => Data.SemigroupInternal.Mk_Product (Data.Foldable.product x)) t) end.
+
+redefine Local Definition Data.Functor.Compose.Foldable__Compose_sum {inst_f : Type -> Type} {inst_g : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable inst_g} : forall {a : Type}, forall `{GHC.Num.Num a}, Compose inst_f inst_g a -> a := fun {a : Type} `{GHC.Num.Num a} arg => match arg with | Mk_Compose t => Data.SemigroupInternal.getSum (Data.Foldable.foldMap (fun x => Data.SemigroupInternal.Mk_Sum (Data.Foldable.sum x)) t) end.
+
+# GHC 9.10: Replace coerce-based definitions with explicit pattern matching
+
+
+skip Data.Functor.Compose.Semigroup__Compose_op_zlzlzgzg__
+skip Data.Functor.Compose.Semigroup__Compose
+skip Data.Functor.Compose.Monoid__Compose_mappend
+skip Data.Functor.Compose.Monoid__Compose_mconcat
+skip Data.Functor.Compose.Monoid__Compose_mempty
+skip Data.Functor.Compose.Monoid__Compose

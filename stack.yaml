@@ -1,4 +1,5 @@
-resolver: lts-12.0
+resolver: lts-24.32
 packages:
 - '.'
-extra-deps: []
+extra-deps:
+  - indents-0.5.0.1@sha256:5e371428d0ce0321d25a0bad4f646ca05cdf5b7b4d7784a0166bfad2102fb265,1607

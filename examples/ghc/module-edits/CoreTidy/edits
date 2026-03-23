@@ -32,3 +32,10 @@ in CoreTidy.tidyBind rewrite forall rec prs, GHC.Base.map rec (GHC.Base.map Data
 # crazy knot tying: this is ok because tidyLetBndr doesn't actually use its first argument.
 #
 in CoreTidy.tidyBind rewrite forall, CoreTidy.tidyLetBndr env' = CoreTidy.tidyLetBndr HsToCoq.Err.default
+
+# GHC 9.10: uses Id.idJoinPointHood (Outputable.JoinPointHood is not available)
+axiomatize definition CoreTidy.tidyLetBndr
+axiomatize definition CoreTidy.computeCbvInfo
+axiomatize definition CoreTidy.tidyBind
+axiomatize definition CoreTidy.tidyExpr
+axiomatize definition CoreTidy.tidyTickish

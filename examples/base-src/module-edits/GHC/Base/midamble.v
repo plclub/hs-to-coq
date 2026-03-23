@@ -49,9 +49,9 @@ Notation "'&' s" := (hs_string__ s) (at level 1, format "'&' s").
 Definition FilePath := String.
 
 (* ASZ: I've been assured that this is OK *)
-Inductive IO (a : Type) : Type :=.
-Inductive IORef (a : Type) : Type :=.
-Inductive IOError : Type :=.
+Inductive IO (a : Type) : Set :=.
+Inductive IORef (a : Type) : Set :=.
+Inductive IOError : Set :=.
 
 (****************************************************)
 
@@ -80,7 +80,7 @@ Arguments List.app {_} _ _.
 
 
 Definition Synonym {A : Type} (_uniq : Type) (x : A) : A := x.
-Arguments Synonym {A}%type _uniq%type x%type.
+Arguments Synonym {A}%_type _uniq%_type x%_type.
 
 
 (*********** built in classes Eq & Ord **********************)
@@ -153,11 +153,13 @@ Infix ">=" := (op_zgze__) (no associativity, at level 70).
 
 (*********** Eq/Ord for primitive types **************************)
 
+#[global]
 Instance Eq_Int___ : Eq_ Int := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%Z;
                                op_zsze____ := fun x y => negb (x =? y)%Z;
                                |}.
 
+#[global]
 Instance Ord_Int___ : Ord Int := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%Z;
   op_zlze____ := fun x y => (x <=? y)%Z;
@@ -168,11 +170,13 @@ Instance Ord_Int___ : Ord Int := fun _ k => k {|
   min__       := Z.min%Z;
 |}.
 
+#[global]
 Instance Eq_Integer___ : Eq_ Integer := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%Z;
                                op_zsze____ := fun x y => negb (x =? y)%Z;
                              |}.
 
+#[global]
 Instance Ord_Integer___ : Ord Integer := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%Z;
   op_zlze____ := fun x y => (x <=? y)%Z;
@@ -183,11 +187,13 @@ Instance Ord_Integer___ : Ord Integer := fun _ k => k {|
   min__       := Z.min%Z;
 |}.
 
+#[global]
 Instance Eq_Word___ : Eq_ Word := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%N;
                                op_zsze____ := fun x y => negb (x =? y)%N;
                              |}.
 
+#[global]
 Instance Ord_Word___ : Ord Word := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%N;
   op_zlze____ := fun x y => (x <=? y)%N;
@@ -198,11 +204,13 @@ Instance Ord_Word___ : Ord Word := fun _ k => k {|
   min__       := N.min%N;
 |}.
 
+#[global]
 Instance Eq_Char___ : Eq_ Char := fun _ k => k {|
                                op_zeze____ := fun x y => (x =? y)%N;
                                op_zsze____ := fun x y => negb (x =? y)%N;
                              |}.
 
+#[global]
 Instance Ord_Char___ : Ord Char := fun _ k => k {|
   op_zl____   := fun x y => (x <? y)%N;
   op_zlze____ := fun x y => (x <=? y)%N;
@@ -213,6 +221,7 @@ Instance Ord_Char___ : Ord Char := fun _ k => k {|
   min__       := N.min%N;
 |}.
 
+#[global]
 Instance Eq_bool___ : Eq_ bool := fun _ k => k {|
                                op_zeze____ := eqb;
                                op_zsze____ := fun x y => negb (eqb x y);
@@ -226,6 +235,7 @@ Definition compare_bool (b1:bool)(b2:bool) : comparison :=
   | false , true => Lt
   end.
 
+#[global]
 Instance Ord_bool___ : Ord bool := fun _ k => k {|
   op_zl____   := fun x y => andb (negb x) y;
   op_zlze____ := fun x y => orb (negb x) y;
@@ -236,11 +246,13 @@ Instance Ord_bool___ : Ord bool := fun _ k => k {|
   min__       := andb
 |}.
 
+#[global]
 Instance Eq_unit___ : Eq_ unit := fun _ k => k {|
                                op_zeze____ := fun x y => true;
                                op_zsze____ := fun x y => false;
                              |}.
 
+#[global]
 Instance Ord_unit___ : Ord unit := fun _ k => k {|
   op_zl____   := fun x y => false;
   op_zlze____ := fun x y => true;
@@ -259,6 +271,7 @@ Definition eq_comparison (x : comparison) (y: comparison) :=
   | _ , _  => false
 end.
 
+#[global]
 Instance Eq_comparison___ : Eq_ comparison := fun _ k => k
 {|
   op_zeze____ := eq_comparison;
@@ -293,6 +306,7 @@ Definition ord_default {a} (comp : a -> a -> comparison) `{Eq_ a} : Ord a :=
              | _  => x
              end)).
 
+#[global]
 Instance Ord_comparison___ : Ord comparison := ord_default compare_comparison.
 
 Definition eq_pair {t1} {t2} `{Eq_ t1} `{Eq_ t2} (a b : (t1 * t2)) :=
@@ -311,11 +325,13 @@ Definition compare_pair {t1} {t2} `{Ord t1} `{Ord t2} (a b : (t1 * t2)) :=
     end
   end.
 
+#[global]
 Instance Eq_pair___ {a} {b} `{Eq_ a} `{Eq_ b} : Eq_ (a * b) := fun _ k => k
   {| op_zeze____ := eq_pair;
      op_zsze____ := fun x y => negb (eq_pair x y)
   |}.
 
+#[global]
 Instance Ord_pair___ {a} {b} `{Ord a} `{Ord b} : Ord (a * b) :=
   ord_default compare_pair.
 
@@ -341,11 +357,13 @@ Fixpoint compare_list {a} `{Ord a} (xs :  list a) (ys : list a) : comparison :=
       end
     end.
 
+#[global]
 Instance Eq_list {a} `{Eq_ a} : Eq_ (list a) := fun _ k => k
   {| op_zeze____ := eqlist;
      op_zsze____ := fun x y => negb (eqlist x y)
   |}.
 
+#[global]
 Instance Ord_list {a} `{Ord a}: Ord (list a) :=
   ord_default compare_list.
 
@@ -395,6 +413,8 @@ Definition build' : forall {a}, (forall {b}, (a -> b -> b) -> b -> b) -> list a 
 
 (** Qualified notation for the notation defined here **)
 
+Require String Ascii.
+
 Module ManualNotations.
 Infix "GHC.Base./=" := (op_zsze__) (no associativity, at level 70).
 Notation "'_GHC.Base./=_'" := (op_zsze__).
@@ -409,6 +429,59 @@ Notation "'_GHC.Base.>_'" := (op_zg__).
 Infix "GHC.Base.>=" := (op_zgze__) (no associativity, at level 70).
 Notation "'_GHC.Base.>=_'" := (op_zgze__).
 
-Require String Ascii.
 Export String.StringSyntax Ascii.AsciiSyntax.
 End ManualNotations.
+
+(* Eq/Ord for option (Maybe) -- GHC 9.10 derives these using dataToTag#
+   which hs-to-coq can't translate *)
+
+Definition eq_option {a} `{Eq_ a} (x y : option a) : bool :=
+  match x, y with
+  | Some a1, Some b1 => a1 == b1
+  | None, None => true
+  | _, _ => false
+  end.
+
+Definition compare_option {a} `{Ord a} (x y : option a) : comparison :=
+  match x, y with
+  | None, None => Eq
+  | None, Some _ => Lt
+  | Some _, None => Gt
+  | Some a1, Some b1 => compare a1 b1
+  end.
+
+#[global]
+Instance Eq___option {a} `{Eq_ a} : Eq_ (option a) := fun _ k => k {|
+  op_zeze____ := eq_option;
+  op_zsze____ := fun x y => negb (eq_option x y) |}.
+
+#[global]
+Instance Ord__option {a} `{Ord a} : Ord (option a) :=
+  ord_default compare_option.
+
+(* Eq for NonEmpty -- GHC 9.10 derives using dataToTag# *)
+
+Definition eq_NonEmpty {a} `{Eq_ a} (x y : NonEmpty a) : bool :=
+  match x, y with
+  | NEcons a1 as1, NEcons b1 bs1 => (a1 == b1) && (as1 == bs1)
+  end.
+
+#[global]
+Instance Eq___NonEmpty {a} `{Eq_ a} : Eq_ (NonEmpty a) := fun _ k => k {|
+  op_zeze____ := eq_NonEmpty;
+  op_zsze____ := fun x y => negb (eq_NonEmpty x y) |}.
+
+(* Ord for NonEmpty -- GHC 9.10 derives using dataToTag# *)
+
+Definition compare_NonEmpty {a} `{Ord a} (x y : NonEmpty a) : comparison :=
+  match x, y with
+  | NEcons a1 as1, NEcons b1 bs1 =>
+    match compare a1 b1 with
+    | Eq => compare as1 bs1
+    | c => c
+    end
+  end.
+
+#[global]
+Instance Ord__NonEmpty {a} `{Ord a} : Ord (NonEmpty a) :=
+  ord_default compare_NonEmpty.

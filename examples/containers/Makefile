@@ -30,17 +30,18 @@ MODULES = \
   Data/Set/Internal \
   Utils/Containers/Internal/BitUtil \
   Data/IntSet/Internal \
+  IntSetValidity \
   Data/IntSet/InternalWord \
   Data/IntMap/Internal \
   Data/Map/Internal \
-  IntSetValidity \
 
+# tasty-quickcheck/tasty-hunit now in cabal deps
 HS_SPEC_MODULES = \
   IntSetProperties
 
 # Non-standard file names
-SRC_FILE_IntSetProperties = containers/tests/intset-properties.hs
-SRC_FILE_Data/IntSet/InternalWord = containers/Data/IntSet/Internal.hs
+SRC_FILE_IntSetProperties = containers/containers-tests/tests/intset-properties.hs
+SRC_FILE_Data/IntSet/InternalWord = containers/containers/src/Data/IntSet/Internal.hs
 
 # Generated modules
 # generated directly from GHC/libraries/containers/tests
@@ -62,11 +63,13 @@ VFILES_DROPIN = $(addprefix $(OUT)/,$(addsuffix .v,$(DROPIN)))
 
 VFILES = $(VFILES_GEN_TEST) $(VFILES_GEN) $(VFILES_HS_SPEC_GEN) $(VFILES_MAN) $(VFILES_SPECIAL) $(VFILES_DROPIN)
 
-all: vfiles coq
+# Default target: regenerate .v files from Haskell, then build Coq.
+all: vfiles coq theories
 
 vfiles: $(OUT)/edits  $(HS_SPEC)/README.md $(OUT)/README.md $(OUT)/_CoqProject $(VFILES)
 
-$(OUT)/_CoqProject : Makefile $(OUT)/README.md
+$(OUT)/_CoqProject : Makefile
+	mkdir -p $(OUT)
 	> $@
 	echo '-Q . ""' >> $@
 	echo '-Q ../../../base ""' >> $@
@@ -74,9 +77,6 @@ $(OUT)/_CoqProject : Makefile $(OUT)/README.md
 	echo $(addsuffix .v,$(MODULES)) >> $@
 	echo $(addsuffix .v,$(SPECIAL_MODULES)) >> $@
 	echo $(addsuffix .v,$(DROPIN)) >> $@
-
-$(OUT)/Makefile: $(OUT)/_CoqProject $(VFILES) $(OUT)/README.md
-	cd $(OUT); coq_makefile -f _CoqProject -o Makefile
 
 $(OUT)/edits: $(OUT)/README.md
 	ln -fs ../edits $(OUT)/edits
@@ -93,8 +93,15 @@ $(HS_SPEC)/README.md:
 	echo 'This directory contains a Coq’ified version of the Haskell containers library specification' >> $@
 	echo 'Do not edit files here! Instead, look in `examples/containers`.' >> $@
 
-coq: $(OUT)/Makefile $(VFILES)
+coq: $(OUT)/_CoqProject
+	cd $(OUT) && coq_makefile -f _CoqProject -o Makefile
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
+
+theories: coq
+	if test -f theories/_CoqProject; then \
+	  cd theories && coq_makefile -f _CoqProject -o Makefile && \
+	  $(MAKE) -f Makefile OPT=$(COQFLAGS); \
+	fi
 
 HS_TO_COQ_OPTS := \
   -e ../../base/edits \
@@ -102,10 +109,9 @@ HS_TO_COQ_OPTS := \
   --iface-dir ../../base/ \
   --iface-dir $(OUT) \
   -N \
-  -i containers \
-  -i containers/tests \
-  -i containers/dist-install/build \
-  -I containers/include \
+  -i containers/containers/src \
+  -i containers/containers-tests/tests \
+  -I containers/containers/include \
 
 
 # KEEP THIS IN SYNC WITH THE NEXT RULE (there ought to be a better way)
@@ -117,8 +123,8 @@ $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 		     $(HS_TO_COQ_OPTS) \
 	             -o $(OUT) \
-	             $(wildcard containers/$*.hs) \
-		     $(wildcard containers/tests/$*.hs) \
+	             $(wildcard containers/containers/src/$*.hs) \
+		     $(wildcard containers/containers-tests/tests/$*.hs) \
 		     $(SRC_FILE_$*)
 	test -e $@
 
@@ -131,8 +137,8 @@ $(VFILES_HS_SPEC_GEN): $(HS_SPEC)/%.v : $$(wildcard module-edits/$$*/preamble.v)
 		     $(HS_TO_COQ_OPTS) \
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 	             -o $(HS_SPEC) \
-	             $(wildcard containers/$*.hs) \
-		     $(wildcard containers/tests/$*.hs) \
+	             $(wildcard containers/containers/src/$*.hs) \
+		     $(wildcard containers/containers-tests/tests/$*.hs) \
 		     $(SRC_FILE_$*)
 	test -e $@
 
@@ -148,13 +154,14 @@ $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preambl
 	       -o $(OUT) \
 	       -N \
 	       -p module-edits/$*/preamble.v \
-	       --ghc -icontainers \
-	       --ghc -icontainers/dist-install/build \
-	       -Icontainers/include \
+	       --ghc -icontainers/containers/src \
+	       -Icontainers/containers/include \
 	       drop-in/$*.hs
 
 clean:
 	rm -rf $(OUT) $(HS_SPEC)
+	cd theories 2>/dev/null && find . \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' -o -name '.coqdeps.d' -o -name '.Makefile.coq.d' \) -delete || true
+	rm -f theories/Makefile
 	rm -f counts.pdf *.aux *.log
 
 todo:

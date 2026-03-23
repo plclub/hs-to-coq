@@ -10,7 +10,7 @@ Generalizable All Variables.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-From Coq Require Import ssreflect.
+From Coq Require Import ssreflect Lia.
 
 (* Note: we will only be able to make instances of this class for bounded
    types so that we can support enumFrom and still terminate.
@@ -39,10 +39,12 @@ Class Bounded a := {
 Definition maxIntWord : N := N.pow 2%N 31%N.
 
 (* Converted type class instance declarations: *)
+#[global]
 Instance instance__Bounded_unit__141__ : (Bounded unit) := {
   minBound := tt ;
   maxBound := tt }.
 
+#[global]
 Instance instance__Enum_unit__142__ : (Enum unit) := {
   succ := HsToCoq.Err.default;
   pred := HsToCoq.Err.default;
@@ -55,17 +57,20 @@ Instance instance__Enum_unit__142__ : (Enum unit) := {
     end)) ;
 }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b_____Bounded__a___b____155__
   : (forall `{(Bounded a)} `{(Bounded b)}, (Bounded (a * b))) := {
   minBound := (pair minBound minBound) ;
   maxBound := (pair maxBound maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c_____Bounded___a___b____c____156__
   : (forall `{(Bounded a)} `{(Bounded b)} `{(Bounded c)},
                  (Bounded ((a * b) * c))) := {
                                               minBound := (pair (pair minBound minBound) minBound) ;
                                               maxBound := (pair (pair maxBound maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d_____Bounded____a___b____c____d____157__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -75,6 +80,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
   minBound := (pair (pair (pair minBound minBound) minBound) minBound) ;
   maxBound := (pair (pair (pair maxBound maxBound) maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e_____Bounded_____a___b____c____d____e____158__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -87,6 +93,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
   maxBound := (pair (pair (pair (pair maxBound maxBound) maxBound) maxBound)
                     maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f_____Bounded______a___b____c____d____e____f____159__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -100,6 +107,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
   maxBound := (pair (pair (pair (pair (pair maxBound maxBound) maxBound) maxBound)
                           maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g_____Bounded_______a___b____c____d____e____f____g____160__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -114,6 +122,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
   maxBound := (pair (pair (pair (pair (pair (pair maxBound maxBound) maxBound)
                                       maxBound) maxBound) maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g______Bounded_h_____Bounded________a___b____c____d____e____f____g____h____161__
   : forall a b c d e f g h, (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -129,6 +138,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
   maxBound := (pair (pair (pair (pair (pair (pair (pair maxBound maxBound)
                                                   maxBound) maxBound) maxBound) maxBound) maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g______Bounded_h______Bounded_i_____Bounded_________a___b____c____d____e____f____g____h____i____162__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -147,6 +157,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
                                                         maxBound) maxBound) maxBound) maxBound) maxBound) maxBound)
                     maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g______Bounded_h______Bounded_i______Bounded_j_____Bounded__________a___b____c____d____e____f____g____h____i____j____163__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -166,6 +177,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
                                                                     maxBound) maxBound) maxBound) maxBound) maxBound)
                                       maxBound) maxBound) maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g______Bounded_h______Bounded_i______Bounded_j______Bounded_k_____Bounded___________a___b____c____d____e____f____g____h____i____j____k____164__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -186,6 +198,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
                                                                           maxBound) maxBound) maxBound) maxBound)
                                                   maxBound) maxBound) maxBound) maxBound) maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g______Bounded_h______Bounded_i______Bounded_j______Bounded_k______Bounded_l_____Bounded____________a___b____c____d____e____f____g____h____i____j____k____l____165__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -210,6 +223,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
                                                               maxBound) maxBound) maxBound) maxBound) maxBound)
                                 maxBound) maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g______Bounded_h______Bounded_i______Bounded_j______Bounded_k______Bounded_l______Bounded_m_____Bounded_____________a___b____c____d____e____f____g____h____i____j____k____l____m____166__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -235,6 +249,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
                                                                     maxBound) maxBound) maxBound) maxBound) maxBound)
                                       maxBound) maxBound) maxBound) maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g______Bounded_h______Bounded_i______Bounded_j______Bounded_k______Bounded_l______Bounded_m______Bounded_n_____Bounded______________a___b____c____d____e____f____g____h____i____j____k____l____m____n____167__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -263,6 +278,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
                                                         maxBound) maxBound) maxBound) maxBound) maxBound) maxBound)
                     maxBound) }.
 
+#[global]
 Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounded_d______Bounded_e______Bounded_f______Bounded_g______Bounded_h______Bounded_i______Bounded_j______Bounded_k______Bounded_l______Bounded_m______Bounded_n______Bounded_o_____Bounded_______________a___b____c____d____e____f____g____h____i____j____k____l____m____n____o____168__
   : (forall `{(Bounded a)}
             `{(Bounded b)}
@@ -293,6 +309,7 @@ Instance instance__forall____Bounded_a______Bounded_b______Bounded_c______Bounde
                                 maxBound) maxBound) maxBound) }.
 Definition minInt := Z.opp (Z.pow 2%Z 32%Z).
 Definition maxInt := Z.pow 2%Z 32%Z.
+#[global]
 Instance instance__Bounded_Int__183__ : (Bounded Int) := {
   minBound := minInt ;
   maxBound := maxInt }.
@@ -301,7 +318,7 @@ Lemma eftInt_aux_pf (y x : Int) :
   (x <= y)%Z ->
   x <> y ->
   (x+1 <= y)%Z.
-Proof. unfold Int in *; omega. Qed.
+Proof. unfold Int in *; lia. Qed.
 
 (* Manually copying `GHC.Enum.eftInt`'s local function `go` *)
 Program Fixpoint eftInt_aux (y x : Int) (pf : (x <= y)%Z) {measure (Z.to_nat (y - x))} : list Int :=
@@ -309,7 +326,7 @@ Program Fixpoint eftInt_aux (y x : Int) (pf : (x <= y)%Z) {measure (Z.to_nat (y 
        | left  _   => nil
        | right neq => eftInt_aux (eftInt_aux_pf pf neq)
        end%Z.
-Next Obligation. apply Z2Nat.inj_lt; omega. Defined.
+Next Obligation. apply Z2Nat.inj_lt; lia. Defined.
 Arguments eftInt_aux _ _ _ : clear implicits.
 
 (* Manually copying `GHC.Enum.eftInt` *)
@@ -319,6 +336,7 @@ Definition eftInt (x0 y : Int) :=
   | right Ngt => eftInt_aux y x0 (Znot_gt_le x0 y Ngt)
   end.
 
+#[global]
 Instance instance__Enum_Int__184__ : (Enum Int) := {
   succ := (fun arg_185__ =>
     (match arg_185__ with
@@ -349,6 +367,7 @@ Definition boundedEnumFrom {a} `{(Bounded a)}
                                                                          n)))))
     end)).
 
+#[global]
 Instance instance__Bounded_bool__169__ : (Bounded bool) := {
   minBound := false ;
   maxBound := true }.
@@ -365,6 +384,7 @@ Definition fromEnumBool : bool -> Int :=
       | false => #0
       | true => #1
     end)).
+#[global]
 Instance instance__Enum_bool__170__ : (Enum bool) := {
   succ := (fun arg_171__ =>
     (match arg_171__ with
@@ -385,6 +405,7 @@ Instance instance__Enum_bool__170__ : (Enum bool) := {
                     end))
 }.
 
+#[global]
 Instance instance__Bounded_comparison__175__ : (Bounded comparison) := {
   minBound := Lt ;
   maxBound := Gt }.
@@ -407,6 +428,7 @@ Definition toEnum_comparison : Int -> comparison :=
                  else Gt
     ))).
 
+#[global]
 Instance instance__Enum_comparison__176__ : (Enum comparison) := {
   succ := (fun arg_177__ =>
     (match arg_177__ with
@@ -432,19 +454,21 @@ enumFromTo := (fix enumFromTo_comparison arg_4__ arg_5__ :=
  }.
 
 
+#[global]
 Instance instance__Bounded_Char__181__ : (Bounded Char) := {
   minBound := 0%N;
   maxBound := &#"255" ;
 }.
 
 Definition toEnumChar (i : Integer) : Char :=
-  if (Nless maxBound (Z.to_N i)) then maxBound
-  else if Nless (Z.to_N i) minBound then minBound
-       else Z.to_N i.
+  if N.ltb maxBound (Z.to_N i) then maxBound
+  else if N.ltb (Z.to_N i) minBound then minBound
+  else Z.to_N i.
 
 Definition fromEnumChar (c : Char) : Integer :=
   Z.of_N c.
 
+#[global]
 Instance instance__Enum_N : (Enum N) := {
   succ := N.succ ;
   pred := fun x => if N.eqb x 0%N then HsToCoq.Err.default else N.pred x;

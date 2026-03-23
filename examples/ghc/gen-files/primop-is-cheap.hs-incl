@@ -1,0 +1,3 @@
+primOpIsCheap DataToTagSmallOp = True
+primOpIsCheap DataToTagLargeOp = True
+primOpIsCheap _thisOp =  primOpOkForSpeculation _thisOp 

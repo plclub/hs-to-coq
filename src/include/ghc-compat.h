@@ -27,6 +27,33 @@ or disappear when it doesn't exist (GHC < 8.6).
   'NoExtField' or 'NoExt').
 #endif
 
+#if __GLASGOW_HASKELL__ >= 910
+#define GHC_910(x) x
+#define NOT_GHC_910(x)
+#else
+#define GHC_910(x)
+#define NOT_GHC_910(x) x
+#endif
+
+#if __GLASGOW_HASKELL__ >= 900
+#define GHC_900(x) x
+#define NOT_GHC_900(x)
+#else
+#define GHC_900(x)
+#define NOT_GHC_900(x) x
+#endif
+
+/* Extension field for constructors that used EpAnn on GHC 9.0-9.8
+   but reverted to NoExtField on GHC 9.10. Use noAnn for GHC 9.0-9.8
+   and NoExtField otherwise. Only for use in expressions (not patterns). */
+#if __GLASGOW_HASKELL__ >= 910
+#define NOANNEXT NoExtField
+#elif __GLASGOW_HASKELL__ >= 900
+#define NOANNEXT noAnn
+#else
+#define NOANNEXT NoExtField
+#endif
+
 #if __GLASGOW_HASKELL__ >= 810
 
 #define PlaceHolder NoExtField

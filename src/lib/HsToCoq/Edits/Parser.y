@@ -2,10 +2,6 @@
 
 {-# LANGUAGE FlexibleContexts, TupleSections, OverloadedStrings, CPP #-}
 
---work around https://github.com/simonmar/happy/issues/109
-#undef __GLASGOW_HASKELL__
-#define __GLASGOW_HASKELL__ 709
-
 module HsToCoq.Edits.Parser (
   parseTerm, parseSentence, parseEditList,
   runParser, prettyParseError
@@ -19,6 +15,7 @@ import qualified Data.List.NonEmpty as NEL
 import qualified Data.Text as T
 import qualified Data.Set as S
 
+import Control.Monad (unless)
 import Control.Monad.Except
 import Control.Monad.State
 import Control.Monad.Parse
@@ -122,6 +119,12 @@ import HsToCoq.Edits.ParserState
   end             { TokWord    "end"            }
   struct          { TokWord    "struct"         }
   with            { TokWord    "with"           }
+  -- GHC 9.10: if/then/else for conditional expressions in redefine bodies
+  'if'            { TokWord    "if"             }
+  'then'          { TokWord    "then"           }
+  'else'          { TokWord    "else"           }
+  -- GHC 9.10: hash-number prefix for unboxed literal patterns (#n)
+  '#'             { TokWord    "#"              }
   for             { TokWord    "for"            }
   'measure'       { TokWord    "measure"        }
   'wf'            { TokWord    "wf"             }
@@ -407,11 +410,13 @@ LargeTerm :: { Term }
   | fix   FixBodies             { Fix   $2 }
   | cofix FixBodies             { Cofix $2 }
   | forall Binders ',' Term     { Forall $2 $4 }
+  | 'if' Term 'then' Term 'else' Term  { If SymmetricIf $2 Nothing $4 $6 }  -- conditional exprs in redefine bodies
 
 -- Lets us implement EqlessTerm
 MediumTerm(Binop, RTerm) :: { Term }
   : 'let' Qualid Many(Binder) Optional(TypeAnnotation) ':=' Term 'in' RTerm     { Let $2 $3 $4 $6 $8 }
   | 'let' '\'' Pattern ':=' Term 'in' RTerm                                     { LetTick $3 $5 $7 }
+  | 'let' fix FixBody 'in' RTerm                                                { LetFix $3 $5 }  -- local recursive functions in redefine bodies
   | SmallishTerm(Binop) ':' RTerm { HasType $1 $3 }
   | SmallishTerm(Binop) { $1 }
 
@@ -432,6 +437,7 @@ Atom :: { Term }
   : '(' Term ')'    { $2 }
   | Qualid          { Qualid $1 }
   | Num             { Num $1 }
+  | '#' Num         { App1 "GHC.Num.fromInteger" (Num $2) }  -- GHC 9.10 unboxed literal patterns
   | '_'             { Underscore }
   | StringLit       { String $1 }
   | match SepBy1(MatchItem, ',') with Many(Equation) end

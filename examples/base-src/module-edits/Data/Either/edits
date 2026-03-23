@@ -1,3 +1,16 @@
-order Data.Either.Eq___Either         Data.Either.Ord__Either
+# GHC 9.10: Eq/Ord for Either derived using dataToTag# which hs-to-coq can't translate
+# Skip generated versions; defined manually in midamble
+skip Data.Either.Eq___Either_op_zeze__
+skip Data.Either.Eq___Either_op_zsze__
+skip Data.Either.Eq___Either
+skip Data.Either.Ord__Either_compare
+skip Data.Either.Ord__Either_op_zl__
+skip Data.Either.Ord__Either_op_zlze__
+skip Data.Either.Ord__Either_op_zg__
+skip Data.Either.Ord__Either_op_zgze__
+skip Data.Either.Ord__Either_max
+skip Data.Either.Ord__Either_min
+skip Data.Either.Ord__Either
+
 order Data.Either.Functor__Either     Data.Either.Applicative__Either_op_zlztzg__
 order Data.Either.Applicative__Either Data.Either.Monad__Either_return_

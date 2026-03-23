@@ -1,3 +1,7 @@
-in Exitify.exitifyRec termination go deferred
 
+# GHC 9.10: uses Core.ManyTy (Mult is axiomatized)
+axiomatize definition Exitify.mkExitJoinId
+
+# GHC 9.10: exitifyRec uses idJoinPointHood which is now available in Id midamble
+in Exitify.exitifyRec termination go deferred
 in Exitify.exitifyRec rewrite forall ann_e, CoreFVs.freeVarsOf ann_e = CoreFVs.exprFreeVars (Core.deAnnotate ann_e)

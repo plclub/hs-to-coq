@@ -7,10 +7,10 @@ Fixpoint size_nat (t : IntSet) : nat :=
   | Nil => 0
   end.
 
-Require Omega.
+Require Lia.
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;Lia.lia.
 
 
 Require Import Coq.NArith.NArith.

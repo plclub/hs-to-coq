@@ -92,9 +92,10 @@ Ltac unfold_Foldable :=
   Foldable.Foldable__list,
   Foldable.Foldable__list_foldr,
   Base.foldr;
-  unfold Foldable.foldl', 
-  Foldable.foldl'__, 
-  Foldable.Foldable__list_foldl', 
+  unfold Foldable.foldl',
+  Foldable.foldl,
+  Foldable.foldl__,
+  Foldable.Foldable__list_foldl,
   foldl',
   fold_right.
 

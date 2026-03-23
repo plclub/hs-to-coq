@@ -6,6 +6,7 @@ Set Warnings "-notation-overridden".
 
 (* SSReflect *)
 From Coq Require Import ssreflect ssrbool ssrfun.
+From HB Require Import structures.
 From mathcomp Require Import ssrnat seq eqtype.
 Set Bullet Behavior "Strict Subproofs".
 
@@ -20,6 +21,7 @@ Require Import Data.Foldable Proofs.Data.Foldable.
 Require Import Data.OldList  Proofs.Data.OldList.
 
 (* Other utility libraries *)
+Require Import Lia.
 Require Import OrdTactic BitUtils.
 
 (******************************************************************************)
@@ -42,10 +44,10 @@ Notation "x === y :> A" := (eq_op     (x : A) (y : A)) (at level 70, y at next l
 (******************************************************************************)
 (** Easier simplification **)
 
-Global Arguments "$"          {_ _}     / _ _.
+Global Arguments op_zd__      {_ _}     / _ _.
 Global Arguments id           {_}       / _.
 Global Arguments Datatypes.id {_}       / _.
-Global Arguments "∘"          {_ _}     _ _ _ /.
+Global Arguments op_z2218U__  {_ _ _}   / _ _ _.
 Global Arguments flip         {_ _ _}   _ _ _ /.
 
 (******************************************************************************)
@@ -87,8 +89,7 @@ Proof. generalize (EqExact_cases x y); tauto. Qed.
 Lemma Int_eqbP : Equality.axiom (_==_ : Int -> Int -> bool).
 Proof. exact Eq_eq. Qed.
 
-Canonical Int_eqMixin := EqMixin Int_eqbP.
-Canonical Int_eqType := Eval hnf in EqType Int Int_eqMixin.
+HB.instance Definition _ := hasDecEq.Build Int Int_eqbP.
 
 (******************************************************************************)
 (** Ordering **)
@@ -284,9 +285,12 @@ Proof.
   rewrite /all /compose /foldMap /Foldable__list /=
           /Data.Foldable.Foldable__list_foldMap /Data.Foldable.Foldable__list_foldr /=.
   move=> p; elim=> [|x xs IH] //=.
-  rewrite -IH.
-  rewrite {1}/mappend /Data.SemigroupInternal.Monoid__All /=.
-  case: (GHC.Base.foldr _ _ _) => //=.
+  rewrite -IH /mconcat /Data.SemigroupInternal.Monoid__All /=
+          /Data.SemigroupInternal.Monoid__All_mconcat
+          /Data.SemigroupInternal.Monoid__All_mappend
+          /op_zlzlzgzg__ /Data.SemigroupInternal.Semigroup__All /=
+          /Data.SemigroupInternal.Semigroup__All_op_zlzlzgzg__ /=.
+  by case: (SemigroupInternal.getAll _).
 Qed.
 
 Theorem Foldable_and_all {F} `{Foldable F} :
@@ -307,9 +311,12 @@ Proof.
   rewrite /Data.Foldable.any /compose /foldMap /Foldable__list /=
           /Data.Foldable.Foldable__list_foldMap /Data.Foldable.Foldable__list_foldr /=.
   move=> p; elim=> [|x xs IH] //=.
-  rewrite -IH.
-  rewrite {1}/mappend /Data.SemigroupInternal.Monoid__Any /=.
-  case: (GHC.Base.foldr _ _ _) => //=.
+  rewrite -IH /mconcat /Data.SemigroupInternal.Monoid__Any /=
+          /Data.SemigroupInternal.Monoid__Any_mconcat
+          /Data.SemigroupInternal.Monoid__Any_mappend
+          /op_zlzlzgzg__ /Data.SemigroupInternal.Semigroup__Any /=
+          /Data.SemigroupInternal.Semigroup__Any_op_zlzlzgzg__ /=.
+  by case: (SemigroupInternal.getAny _).
 Qed.
 
 Theorem Foldable_any_or {F} `{Foldable F} :
@@ -551,7 +558,7 @@ Proof.
   split => [? | bits]; first by subst.
   apply Z.bits_inj_iff => ix.
   case: (Z_le_dec 0 ix) => [POS | NEG]; first by apply bits.
-  rewrite !Z.testbit_neg_r //; omega.
+  rewrite !Z.testbit_neg_r //; lia.
 Qed.
 
 Theorem Z_negb_testbit_iff (m n : Z) :
@@ -565,7 +572,7 @@ Proof.
   - case: (Z_le_dec 0 n) => [POS | NEG].
     + move: bits => /(_ n POS).
       by rewrite Z.bits_0 Z.land_spec Z.shiftl_spec // testbit_1 Z.sub_diag /= andbT => ->.
-    + rewrite Z.testbit_neg_r //; omega.
+    + rewrite Z.testbit_neg_r //; lia.
 Qed.
 
 Theorem Z_negb_testbit_eq (m n : Z) :

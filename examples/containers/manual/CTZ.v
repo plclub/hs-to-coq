@@ -11,7 +11,6 @@ equivalent, which is [ctz] (count trailing zeroes).
 
 Require Import Coq.PArith.PArith.
 Require Import Coq.NArith.NArith.
-Require Import Omega.
 
 (** First for [positive], where the function is nicely total. *)
 

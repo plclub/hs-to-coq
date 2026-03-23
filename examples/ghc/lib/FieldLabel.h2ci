@@ -1,11 +1,18 @@
-constructors:
-  FieldLabel.FieldLbl: ! '[Qualified "FieldLabel" "Mk_FieldLabel"]'
 constructorFields:
-  FieldLabel.Mk_FieldLabel: RecordFields [Qualified "FieldLabel" "flLabel",Qualified
-    "FieldLabel" "flIsOverloaded",Qualified "FieldLabel" "flSelector"]
-recordFieldTypes:
-  FieldLabel.flLabel: Qualified "FieldLabel" "FieldLbl"
-  FieldLabel.flSelector: Qualified "FieldLabel" "FieldLbl"
-  FieldLabel.flIsOverloaded: Qualified "FieldLabel" "FieldLbl"
+  FieldLabel.Mk_FieldLabel: RecordFields [Qualified "FieldLabel" "flHasDuplicateRecordFields",Qualified
+    "FieldLabel" "flHasFieldSelector",Qualified "FieldLabel" "flSelector"]
+  FieldLabel.NoDuplicateRecordFields: NonRecordFields 0
+  FieldLabel.NoFieldSelectors: NonRecordFields 0
 constructorTypes:
-  FieldLabel.Mk_FieldLabel: Qualified "FieldLabel" "FieldLbl"
+  FieldLabel.Mk_FieldLabel: Qualified "FieldLabel" "FieldLabel"
+  FieldLabel.NoDuplicateRecordFields: Qualified "FieldLabel" "DuplicateRecordFields"
+  FieldLabel.NoFieldSelectors: Qualified "FieldLabel" "FieldSelectors"
+constructors:
+  FieldLabel.DuplicateRecordFields: '[Bare "Mk_DuplicateRecordFields",Qualified "FieldLabel"
+    "NoDuplicateRecordFields"]'
+  FieldLabel.FieldLabel: '[Qualified "FieldLabel" "Mk_FieldLabel"]'
+  FieldLabel.FieldSelectors: '[Bare "Mk_FieldSelectors",Qualified "FieldLabel" "NoFieldSelectors"]'
+recordFieldTypes:
+  FieldLabel.flHasDuplicateRecordFields: Qualified "FieldLabel" "FieldLabel"
+  FieldLabel.flHasFieldSelector: Qualified "FieldLabel" "FieldLabel"
+  FieldLabel.flSelector: Qualified "FieldLabel" "FieldLabel"

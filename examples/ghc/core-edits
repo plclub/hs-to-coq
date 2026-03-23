@@ -45,7 +45,7 @@ rename value CoreSubst.Subst = CoreSubst.Mk_Subst
 # These types all contain actual non-strictly-positive function members
 # that e.g. take `Type`s or `Pair`s of `Type`s or lists of `Type`s as arguments.
 
-redefine Inductive TyCon.RuntimeRepInfo     : Type := TyCon.Mk_RuntimeRepInfo_Dummy.
+redefine Inductive TyCon.RuntimeRepInfo     : Set := TyCon.Mk_RuntimeRepInfo_Dummy.
 
 
 # notations in Core (must import Core)

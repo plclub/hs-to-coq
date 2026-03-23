@@ -2,7 +2,7 @@ Require Import Data.Graph.Inductive.Query.SP.
 Require Import Lex.
 Require Import Path.
 Require Import Data.Graph.Inductive.Internal.Heap.
-Require Import Omega.
+Require Import Lia.
 Require Import Equations.Equations.
 Require Import Coq.Bool.Bool.
 Require Import Data.Graph.Inductive.Graph.
@@ -50,10 +50,10 @@ Proof.
   intros. eapply WF_lex.
   - apply f_nat_lt_wf.
   - apply f_nat_lt_wf.
-  - unfold RelationClasses.Transitive. intros. unfold natNodes_eq in *; omega.
+  - unfold RelationClasses.Transitive. intros. unfold natNodes_eq in *; lia.
   - intros. unfold natNodes_eq in *. unfold natNodes_lt in *. destruct H. destruct H.
-    omega.
-  - unfold RelationClasses.Symmetric. intros. unfold natNodes_eq in *. omega.
+    lia.
+  - unfold RelationClasses.Symmetric. intros. unfold natNodes_eq in *. lia.
 Qed. 
 
 (*A few properties of this relation*)
@@ -65,11 +65,11 @@ Proof.
   intros. unfold bf_measure_heap in *.
   inversion H; subst.
   - inversion H0; subst.
-    + apply lex1. unfold natNodes_lt in *. omega.
-    + apply lex1. unfold natNodes_lt in *. unfold natNodes_eq in H4. omega.
+    + apply lex1. unfold natNodes_lt in *. lia.
+    + apply lex1. unfold natNodes_lt in *. unfold natNodes_eq in H4. lia.
   - inversion H0; subst.
-    + apply lex1. unfold natNodes_lt in *. unfold natNodes_eq in H1. omega.
-    + apply lex2. unfold natNodes_eq in *. omega. unfold heap_length_lt in *. omega.
+    + apply lex1. unfold natNodes_lt in *. unfold natNodes_eq in H1. lia.
+    + apply lex2. unfold natNodes_eq in *. lia. unfold heap_length_lt in *. lia.
 Qed. 
 
 Lemma measure_antisym: forall {a} x y,
@@ -78,17 +78,17 @@ Lemma measure_antisym: forall {a} x y,
 Proof.
   intros. intro. unfold bf_measure_heap in *. 
   inversion H; inversion H0; subst; unfold natNodes_lt in *; unfold natNodes_eq in *.
-  - inversion H5; subst. inversion H6; subst. omega.
-  - inversion H6; subst. inversion H7; subst. omega.
-  - inversion H6; subst. inversion H7; subst. omega.
+  - inversion H5; subst. inversion H6; subst. lia.
+  - inversion H6; subst. inversion H7; subst. lia.
+  - inversion H6; subst. inversion H7; subst. lia.
   - inversion H7; subst. inversion H8; subst.
-    unfold heap_length_lt in *. omega.
+    unfold heap_length_lt in *. lia.
 Qed.
 
 Lemma measure_antirefl: forall {a} x,
   ~@bf_measure_heap a x x.
 Proof.
-  intros. intro. inversion H; subst; unfold natNodes_lt in *; unfold heap_length_lt in *; try(omega).
+  intros. intro. inversion H; subst; unfold natNodes_lt in *; unfold heap_length_lt in *; try(lia).
 Qed.
 
 Instance need_this_for_equations : forall A, WellFounded (@bf_measure_heap A).
@@ -205,7 +205,7 @@ Proof.
   intros. unfold bf_measure_heap. inversion H; subst; simpl in *.
   - apply lex1. unfold natNodes_lt. eapply match_decr_size. symmetry. apply H1.
   - apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply H1.  unfold heap_length_lt.
-    destruct h; inversion H2; subst. rewrite mergeAll_size. simpl. omega.
+    destruct h; inversion H2; subst. rewrite mergeAll_size. simpl. lia.
 Qed.
 
 (*The same for multistep*)
@@ -376,7 +376,7 @@ Defined.
 Next Obligation.
 apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold heap_length_lt.
 unfold splitMin in H0. destruct h. simpl in n. contradiction. inversion H0; subst.
-rewrite (mergeAll_size l0). simpl. assert (forall x, x < S x). intros.  omega. apply H1.
+rewrite (mergeAll_size l0). simpl. assert (forall x, x < S x). intros.  lia. apply H1.
 Defined.
 
 Definition expand_sp_tail :=
@@ -427,7 +427,7 @@ Proof.
         -- eapply multi_step. eapply sp_skip. assumption. apply M. apply Min.
            eapply H. 2 : { reflexivity. } simpl. eapply lex2. symmetry. eapply match_none_size. apply M.
            unfold heap_length_lt. destruct h. simpl in Min. inversion Min. simpl in Min. inversion Min; subst.
-           rewrite mergeAll_size. simpl. omega.
+           rewrite mergeAll_size. simpl. lia.
       * destruct h. simpl in E. inversion E. inversion Min.
 Qed. 
 
@@ -448,7 +448,7 @@ Proof.
            apply M.
         -- eapply H. 2 : {  reflexivity. } apply lex2; simpl. unfold natNodes_eq. symmetry.
            eapply match_none_size. apply M. unfold heap_length_lt. destruct h. inversion E. simpl.
-            simpl in Min; inversion Min. rewrite mergeAll_size. omega.
+            simpl in Min; inversion Min. rewrite mergeAll_size. lia.
       * destruct h. inversion E. inversion Min.
 Qed. 
 
@@ -813,7 +813,7 @@ Proof.
   - inversion H0; subst.  exists (start g n). simpl. split. constructor. assumption.
     exists #0. left. reflexivity.
     assert (exists s : state, valid s g v /\ (exists d', In_Heap (d', v'0) (get_heap s))).
-    eapply H. 2 : { apply H6. } simpl. omega. 
+    eapply H. 2 : { apply H6. } simpl. lia. 
     destruct H1 as [s]. destruct H1.  
     assert (exists sd, done sd = true /\ sp_multi s sd). exists (sp_tail s).
     split. apply sp_tail_done. apply sp_tail_multi. destruct H3 as [sd]. destruct H3.
@@ -1554,7 +1554,7 @@ Defined.
 Next Obligation.
 apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold heap_length_lt.
 unfold splitMin in H0. destruct h. simpl in n. contradiction. inversion H0; subst.
-rewrite (mergeAll_size l). simpl. omega.
+rewrite (mergeAll_size l). simpl. lia.
 Defined.
 
 Definition expand_sp_distance :=
@@ -1607,7 +1607,7 @@ Defined.
 Next Obligation.
 apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold heap_length_lt.
 unfold splitMin in H0. destruct h. simpl in n. contradiction. inversion H0; subst.
-rewrite (mergeAll_size l4). simpl. omega.
+rewrite (mergeAll_size l4). simpl. lia.
 Defined.
 
 
@@ -1662,7 +1662,7 @@ Proof.
         apply lex1. unfold natNodes_lt. eapply match_decr_size. symmetry. apply M. reflexivity.
     + unfold dijkstra in H. unfold deferredFix2 in H. unfold curry in H. erewrite H. reflexivity.
       apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M. unfold heap_length_lt.
-      simpl. rewrite (mergeAll_size l0). omega. reflexivity.
+      simpl. rewrite (mergeAll_size l0). lia. reflexivity.
   - apply well_founded_bf_measure_heap.
   - unfold recurses_on. intros. unfold uncurry. destruct x. destruct (Heap.isEmpty h1) eqn : H';
      simpl. reflexivity. destruct (isEmpty g1) eqn : G'; simpl. reflexivity. destruct h1. simpl in H'.
@@ -1671,7 +1671,7 @@ Proof.
     + erewrite H1. reflexivity. auto. apply lex1. unfold natNodes_lt. eapply match_decr_size.
       symmetry. apply M'.
     + apply H1. auto. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M'.
-      unfold heap_length_lt. rewrite (mergeAll_size l0). simpl. omega.
+      unfold heap_length_lt. rewrite (mergeAll_size l0). simpl. lia.
   - auto.
 Qed.
 
@@ -1886,7 +1886,7 @@ Defined.
 Next Obligation.
 apply lex2. symmetry. unfold natNodes_eq. eapply match_none_size. apply H. unfold heap_length_lt.
 unfold splitMin in H0. destruct h. simpl in n. contradiction. inversion H0; subst.
-rewrite (mergeAll_size l5). simpl. omega.
+rewrite (mergeAll_size l5). simpl. lia.
 Defined.
 
 
@@ -1953,7 +1953,7 @@ Proof.
   - eapply multi_step. eapply d_skip. apply GE. apply M. simpl. reflexivity.
     eapply H. 3 : { reflexivity. }  apply lex2. simpl. symmetry. eapply match_none_size.
     apply M. simpl. unfold heap_length_lt. rewrite mergeAll_size. simpl.
-    omega. eapply v_d_step. apply H0. eapply d_skip. assumption. apply M. simpl. reflexivity.
+    lia. eapply v_d_step. apply H0. eapply d_skip. assumption. apply M. simpl. reflexivity.
   - destruct h. simpl in E. inversion E. simpl in S. inversion S.
 Qed.
 
@@ -1988,7 +1988,7 @@ Proof.
              destruct H2.
         -- reflexivity.
       * erewrite H. reflexivity. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M.
-        unfold heap_length_lt. rewrite mergeAll_size. simpl. omega. intros. intro.
+        unfold heap_length_lt. rewrite mergeAll_size. simpl. lia. intros. intro.
         apply (H0 k). right. rewrite in_heap_mergeAll in H1. rewrite in_heap_equiv in H1. apply H1. reflexivity.
 Qed.
 
@@ -2104,7 +2104,7 @@ Proof.
            rewrite <- unfold_dijkstra'.  rewrite unfold_sp_distance. erewrite H. reflexivity.
            apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size. apply M.
            unfold heap_length_lt. subst. simpl in Mi. inversion Mi; subst. rewrite (mergeAll_size l0).
-           simpl. omega. 3 : { reflexivity. } intros. intro. apply (Z x). rewrite in_heap_splitMin.
+           simpl. lia. 3 : { reflexivity. } intros. intro. apply (Z x). rewrite in_heap_splitMin.
             right. apply H3. intro. subst. inversion H4. rewrite <- splitMin_equiv in Mi. inversion Mi. subst. reflexivity.
           intro. subst. inversion H4. rewrite map_mergeAll. rewrite <- H9. rewrite H6. reflexivity.
       * subst. inversion Mi.
@@ -2125,7 +2125,7 @@ Proof.
   subst. apply lex1. unfold natNodes_lt. eapply match_decr_size. symmetry. apply M.
   reflexivity. erewrite H. reflexivity. apply lex2. unfold natNodes_eq. symmetry. eapply match_none_size.
   apply M. unfold heap_length_lt. destruct h. inversion S. inversion S; subst.
-  simpl. rewrite mergeAll_size. omega. reflexivity. destruct h. simpl in n. contradiction. inversion S.
+  simpl. rewrite mergeAll_size. lia. reflexivity. destruct h. simpl in n. contradiction. inversion S.
 Qed. 
 
 (*The analogue of [spTree]*)

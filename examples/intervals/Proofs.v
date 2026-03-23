@@ -13,7 +13,7 @@ Require Import Coq.Sets.Ensembles.
 Require Import Coq.Sets.Powerset_facts.
 Require Import Ensemble_facts.
 Import ListNotations.
-Require Import Omega.
+Require Import Lia.
 
 Definition goodI (i : Interval) : Prop :=
   match i with I f t => (f < t)%Z end.
@@ -255,24 +255,24 @@ Proof.
     destruct i1 as [f1 t1], i2 as [f2 t2].
     - apply IH; try assumption.
       + unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-        destruct (Z.ltb_spec t2 t1), (Z.ltb_spec t1 t2); simpl; omega.
+        destruct (Z.ltb_spec t2 t1), (Z.ltb_spec t1 t2); simpl; lia.
     - simpl in *. repeat rewrite Z.min_le_iff.
       intuition.
       apply IH.
       + destruct is2 as [|[f2' t2'] is].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. intuition.
       + simpl. intuition.
     - simpl in *.
       apply IH.
       + destruct is2 as [|[f2' t2'] is].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. intuition.
         rewrite Z.min_glb_iff in *. intuition.
         rewrite  Z.min_lt_iff in *. intuition.
@@ -311,7 +311,7 @@ Proof.
     - rewrite IH with (z:=lb).
       + intuition.
       + unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-        destruct (Z.ltb_spec t2 t1), (Z.ltb_spec t1 t2); simpl; omega.
+        destruct (Z.ltb_spec t2 t1), (Z.ltb_spec t1 t2); simpl; lia.
       + assumption.
       + assumption.
     - simpl in *. repeat rewrite Z.min_le_iff.
@@ -327,9 +327,9 @@ Proof.
         reflexivity.
       + destruct is2 as [|[f2' t2'] is].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl in *. intuition.
       + simpl. intuition.
     - simpl in *.
@@ -355,9 +355,9 @@ Proof.
            intuition.
       + destruct is2 as [|[f2' t2'] is].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. intuition.
         rewrite Z.min_glb_iff in *. intuition.
         rewrite  Z.min_lt_iff in *. intuition.
@@ -398,7 +398,7 @@ Proof.
       [| |destruct (Z.eqb_spec t1 t2)].
     - apply IH; clear dependent u.
       + unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-        destruct (Z.ltb_spec t2 t1), (Z.ltb_spec t1 t2); simpl; omega.
+        destruct (Z.ltb_spec t2 t1), (Z.ltb_spec t1 t2); simpl; lia.
       + assumption.
       + assumption.
     - simpl in *. repeat rewrite Z.min_le_iff.
@@ -406,9 +406,9 @@ Proof.
       apply IH;  clear dependent u.
       + destruct is2 as [|[f2' t2'] is].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H7). intuition.
     - simpl in *. repeat rewrite Z.max_le_iff. repeat rewrite Z.max_lub_lt_iff.
@@ -418,13 +418,13 @@ Proof.
         destruct is1 as [|[f1' t1'] is1];
         destruct is2 as [|[f2' t2'] is2].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1' t2'); simpl; omega.
+           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1' t2'); simpl; lia.
       + simpl. refine (goodLIs_mono _ _ _ _ H6). intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H7). intuition.
     - simpl in *. repeat rewrite Z.max_le_iff. repeat rewrite Z.max_lub_lt_iff.
@@ -432,9 +432,9 @@ Proof.
       apply IH; clear dependent u.
       + destruct is2 as [|[f2' t2'] is].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. intuition.
       + simpl. intuition.
 Qed.
@@ -475,7 +475,7 @@ Proof.
       + simpl.
         apply Intersection_commutative.
       + unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-        destruct (Z.ltb_spec t2 t1), (Z.ltb_spec t1 t2); simpl; omega.
+        destruct (Z.ltb_spec t2 t1), (Z.ltb_spec t1 t2); simpl; lia.
       + assumption.
       + assumption.
     - simpl in *. repeat rewrite Z.min_le_iff.
@@ -494,9 +494,9 @@ Proof.
         intuition.
       + destruct is2 as [|[f2' t2'] is].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H7). intuition.
     - simpl in *. repeat rewrite Z.max_le_iff. repeat rewrite Z.max_lub_lt_iff.
@@ -518,13 +518,13 @@ Proof.
         destruct is1 as [|[f1' t1'] is1];
         destruct is2 as [|[f2' t2'] is2].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1' t2'); simpl; omega.
+           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1' t2'); simpl; lia.
       + simpl. refine (goodLIs_mono _ _ _ _ H6). intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H7). intuition.
     - simpl in *. repeat rewrite Z.max_le_iff. repeat rewrite Z.max_lub_lt_iff.
@@ -554,9 +554,9 @@ Proof.
            -- assumption.
       + destruct is2 as [|[f2' t2'] is].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. intuition.
       + simpl. intuition.
 Qed.
@@ -596,54 +596,54 @@ Proof.
       + unfold size2. simpl.
         destruct is1 as [|[f1' t1'] is1].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1' t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1' t2); simpl; lia.
       + assumption.
       + simpl. intuition.
     - intuition. apply IH with (z := lb); clear dependent u.
       + unfold size2. simpl.
         destruct is2 as [|[f2' t2'] is2].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1 t2'); simpl; omega.
+           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1 t2'); simpl; lia.
       + simpl. intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H7). intuition.
     - intuition. apply IH with (z := lb); clear dependent u.
       + unfold size2. simpl.
         destruct is1 as [|[f1' t1'] is1].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1' t2), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1' t2), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. refine (goodLIs_mono _ _ _ _ H8). intuition.
       + simpl. intuition.
     - simpl. intuition. apply IH with (z := lb); clear dependent u.
       + unfold size2. simpl.
         destruct is2 as [|[f2' t2'] is2].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1 t2'); simpl; omega.
+           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1 t2'); simpl; lia.
       + simpl. intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H9). intuition.
     - simpl. intuition. apply IH with (z := f2); clear dependent u.
       + unfold size2. simpl.
         destruct is1 as [|[f1' t1'] is1].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1' t2), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1' t2), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. refine (goodLIs_mono _ _ _ _ H8). intuition.
       + simpl. intuition.
     - simpl. intuition. apply IH with (z := f2); clear dependent u.
       + unfold size2. simpl.
         destruct is2 as [|[f2' t2'] is2].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2) ; simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2) ; simpl; lia.
       + simpl. intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H9). intuition.
 Qed.
@@ -698,9 +698,9 @@ Proof.
       + unfold size2. simpl.
         destruct is1 as [|[f1' t1'] is1].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1' t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1' t2); simpl; lia.
       + assumption.
       + simpl. intuition.
     - intuition. rewrite IH with (z := Z.min f1 f2); clear dependent u.
@@ -717,9 +717,9 @@ Proof.
       + unfold size2. simpl.
         destruct is2 as [|[f2' t2'] is2].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1 t2'); simpl; omega.
+           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1 t2'); simpl; lia.
       + simpl. intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H7). rewrite Z.min_le_iff. intuition.
     - intuition. simpl. rewrite IH with (z := Z.min f1 f2); clear dependent u.
@@ -733,9 +733,9 @@ Proof.
       + unfold size2. simpl.
         destruct is1 as [|[f1' t1'] is1].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1' t2), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1' t2), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. refine (goodLIs_mono _ _ _ _ H8). rewrite Z.min_le_iff. intuition.
       + simpl. intuition.
     - simpl. intuition. rewrite IH with (z := Z.min f1 f2); clear dependent u.
@@ -760,9 +760,9 @@ Proof.
       + unfold size2. simpl.
         destruct is2 as [|[f2' t2'] is2].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1 t2'); simpl; omega.
+           destruct (Z.ltb_spec t1 t2), (Z.ltb_spec t1 t2'); simpl; lia.
       + simpl. rewrite Z.min_le_iff.  intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H9). rewrite Z.min_le_iff.  intuition.
     - simpl. intuition. rewrite IH with (z := f2); clear dependent u.
@@ -787,9 +787,9 @@ Proof.
       + unfold size2. simpl.
         destruct is1 as [|[f1' t1'] is1].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1' t2), (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1' t2), (Z.ltb_spec t1 t2); simpl; lia.
       + simpl. refine (goodLIs_mono _ _ _ _ H8). intuition.
       + simpl. intuition.
     - simpl. intuition. rewrite IH with (z := f2); clear dependent u.
@@ -823,9 +823,9 @@ Proof.
       + unfold size2. simpl.
         destruct is2 as [|[f2' t2'] is2].
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2); simpl; omega.
+           destruct (Z.ltb_spec t1 t2); simpl; lia.
         -- unfold size2. simpl in *. repeat rewrite Z.ltb_irrefl.
-           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2) ; simpl; omega.
+           destruct (Z.ltb_spec t1 t2'), (Z.ltb_spec t1 t2) ; simpl; lia.
       + simpl. intuition.
       + simpl. refine (goodLIs_mono _ _ _ _ H9). intuition.
 Qed.

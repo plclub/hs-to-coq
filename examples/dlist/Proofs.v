@@ -31,7 +31,7 @@ Inductive Denotes {A} : DList A -> list A -> Prop :=
     Denotes dys lys ->
     Denotes (dxs +++ dys) (lxs ++ lys).
 
-Hint Constructors Denotes.
+#[export] Hint Constructors Denotes.
 
 Definition WF {A} (dxs: DList A) : Prop :=
   exists lxs, Denotes dxs lxs.
@@ -138,12 +138,12 @@ Theorem appendA {A} :
   associative (@append A).
 Proof. by move=> [fxs] [fys] [fzs] /=. Qed.
 
-Hint Resolve empty_WF.
-Hint Resolve singleton_WF.
-Hint Resolve cons__WF.
-Hint Resolve append_WF.
+#[export] Hint Resolve empty_WF.
+#[export] Hint Resolve singleton_WF.
+#[export] Hint Resolve cons__WF.
+#[export] Hint Resolve append_WF.
 
-Hint Resolve reify_Denotes.
+#[export] Hint Resolve reify_Denotes.
 
 Ltac apply_reify :=
   match goal with

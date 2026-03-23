@@ -15,6 +15,10 @@ Require Import SetProofs.
 
 Set Bullet Behavior "Strict Subproofs".
 
+(* In Coq 8.20, "Internal" may resolve to Data.Map.Internal instead of
+   Data.Set.Internal due to import order changes. Use a module alias. *)
+Module Internal := Data.Set.Internal.
+
 (*
 
 ** Status
@@ -240,13 +244,11 @@ Program Definition splitMember {a} `{OrdLaws a}
    : a -> Set_ a -> (Set_ a * bool * Set_ a)%type :=  Internal.splitMember.
 Next Obligation.
   solveWF SetProofs.splitMember_Desc.
-  eapply Bounded_relax_lb_None.
-  eassumption.
+  simpl. unfold WF. eapply Bounded_relax_ub_None. eassumption.
 Defined.
 Next Obligation.
   solveWF SetProofs.splitMember_Desc.
-  eapply Bounded_relax_ub_None.
-  eassumption.
+  simpl. unfold WF. eapply Bounded_relax_lb_None. eassumption.
 Defined.
 
 Program Definition lookupIndex {a} `{Ord a} : a -> Set_ a -> option Int :=

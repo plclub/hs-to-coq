@@ -635,7 +635,7 @@ Lemma difference_Tip_non_member: forall `{EqLaws a} (map: Map e a) (key :e) lb u
   forall (value : a), difference (singleton key value) map == (singleton key value) = true.
 Proof.
   intros. assert (Bounded (singleton key value) lb ub). apply BoundedBin; try (apply BoundedTip); try(assumption).
-  simpl. reflexivity. simpl. unfold balance_prop. simpl. omega. eapply difference_Desc.
+  simpl. reflexivity. simpl. unfold balance_prop. simpl. lia. eapply difference_Desc.
   - apply H5.
   - apply H1.
   - intros. unfold diffo in H9.
@@ -710,7 +710,7 @@ Proof.
            (if f1 key v then insert key v (filterWithKey f1 m1) else filterWithKey f1 m1) = true).
   apply (contra _ _ None None).  rewrite Heqm1. unfold singleton. apply BoundedBin.
   apply BoundedTip. apply BoundedTip. solve_Bounds e. solve_Bounds e. simpl. reflexivity. simpl.
-  unfold balance_prop. omega. solve_Bounds e. solve_Bounds e. rewrite Heqf1. unfold respectful.
+  unfold balance_prop. lia. solve_Bounds e. solve_Bounds e. rewrite Heqf1. unfold respectful.
   unfold Proper. intros. reflexivity.
   rewrite Heqm1 in H2. rewrite weak_equals_spec in H2. specialize (H2 key).
   erewrite sem_filter_equiv in H2. unfold singleton in H2. unfold insert at 1 in H2.
@@ -723,7 +723,7 @@ Proof.
   destruct (PtrEquality.ptrEq Tip Tip). simpl in H2. rewrite Eq_Reflexive in H2. simpl in H2.
   inversion H2. simpl in H2. rewrite Eq_Reflexive in H2. simpl in H2. inversion H2.
   apply insert_WF. unfold WF. unfold singleton. apply BoundedBin. apply BoundedTip. apply BoundedTip.
-  solve_Bounds e. solve_Bounds e. simpl. reflexivity. unfold balance_prop. simpl. omega.
+  solve_Bounds e. solve_Bounds e. simpl. reflexivity. unfold balance_prop. simpl. lia.
   unfold respectful. unfold Proper. intros. rewrite Heqf1. reflexivity. apply filterWithKey_Bounded.
   apply insert_WF. applyDesc e (@singleton_Desc e a). assert (isLB None key = true) by (solve_Bounds e).
   apply H3. assert (isUB None key = true) by (solve_Bounds e). apply H3. apply HB.

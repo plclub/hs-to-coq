@@ -1,0 +1,1 @@
+../../../../manual/GHC/Core/TyCo/Tidy.v

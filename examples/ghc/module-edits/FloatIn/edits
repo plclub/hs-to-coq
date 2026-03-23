@@ -8,5 +8,8 @@ skip FloatIn.floatInwards
 
 # axiomatize definition FloatIn.fiBind
 axiomatize definition FloatIn.fiBinds
-# axiomatize definition FloatIn.fiRhs
+axiomatize definition FloatIn.fiRhs
 axiomatize definition FloatIn.fiExpr
+
+# GHC 9.10: unknown constructor FloatCase
+axiomatize definition FloatIn.floatIsCase

@@ -32,7 +32,7 @@ module HsToCoq.Edits.Lexer (
 import Prelude hiding (Num())
 
 import Data.Foldable
-import Data.Function ((&))
+import Data.Function ((&), fix)
 import Data.Bifunctor (first, second, bimap)
 import HsToCoq.Util.Foldable
 import HsToCoq.Util.Functor
@@ -203,7 +203,8 @@ type MonadNewlineStatus s m = (MonadParse m, MonadState s m, Has s NewlineStatus
 
 token' :: MonadNewlineStatus s m => m (Maybe Token)
 token' = asum $
-  [ Nothing          <$  comment
+  [ Just (TokWord "#") <$  hashNum  -- #digit: hash-number prefix (before comment!)
+  , Nothing          <$  comment
   , Nothing          <$  space
   , newlineToken     <*  newline
   , Just TokTick     <$  tick
@@ -214,6 +215,10 @@ token' = asum $
   , Just . nameToken <$> qualid
   , Just TokEOF      <$  (guard =<< atEOF) ]
   where
+    -- GHC 9.10 generates hash-number literals (#n) in unboxed patterns.
+    -- Parse '#' only when immediately followed by a digit; the following
+    -- nat token will be parsed by the next call to token'.
+    hashNum = parseCharTokenLookahead (const "#") (is '#') (maybe False isDigit)
     newlineToken = getPart <&> \case
                      NewlineSeparators -> Just TokNewline
                      NewlineWhitespace -> Nothing

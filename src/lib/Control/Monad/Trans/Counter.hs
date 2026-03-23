@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -6,12 +7,14 @@
 module Control.Monad.Trans.Counter (CounterT(), runCounterT, Counter, runCounter, MonadCounter(..)) where
 
 import Numeric.Natural
-import Exception
 import HsToCoq.Util.GHC.Exception ()
+import Control.Monad.IO.Class
 import Control.Monad.State.Strict
 
 import Data.Functor.Identity
 import Control.Applicative
+import Control.Monad (MonadPlus)
+import Control.Monad.Fix (MonadFix)
 import Control.Monad.Fail
 
 import qualified Control.Monad.Reader.Class    as R
@@ -29,6 +32,11 @@ import qualified Control.Monad.Trans.RWS.Lazy      as RWSL
 import qualified Control.Monad.Trans.Maybe         as M
 import qualified Control.Monad.Trans.Except        as E
 import qualified Control.Monad.Trans.Cont          as C
+import Control.Monad.Catch
+
+#if __GLASGOW_HASKELL__ < 900
+import Exception
+#endif
 
 --------------------------------------------------------------------------------
 -- Transformer
@@ -39,7 +47,12 @@ newtype CounterT m a = CounterT (StateT Natural m a)
                             , MonadFail, MonadFix, MonadIO
                             , R.MonadReader r, W.MonadWriter w, E.MonadError e, C.MonadCont
                             , MonadTrans
+                            -- GHC 9.0+ replaced GHC's ExceptionMonad with the
+                            -- exceptions library's MonadThrow/MonadCatch/MonadMask
+                            , MonadThrow, MonadCatch, MonadMask
+#if __GLASGOW_HASKELL__ < 900
                             , ExceptionMonad
+#endif
                             )
 
 instance MonadState s m => MonadState s (CounterT m) where

@@ -1,5 +1,8 @@
 rename type GHC.Num.Int = nat
 
+# GHC 9.10: UniqDFM is a new module we don't translate
+skip module GHC.Types.Unique.DFM
+skip UniqSet.uniqSetMinusUDFM
 
 skip UniqSet.pprUniqSet
 
@@ -11,13 +14,19 @@ skip UniqSet.Ord__UniqSet
 order UniqSet.unionUniqSets UniqSet.unionManyUniqSets
 order UniqSet.Semigroup__UniqSet UniqSet.Monoid__UniqSet
 
+# mconcat uses coerce which can't resolve
+redefine Local Definition UniqSet.Monoid__UniqSet_mconcat {inst_a} : list (UniqSet inst_a) -> UniqSet inst_a := fun xs => Data.Foldable.foldr (fun x y => Mk_UniqSet (GHC.Base.op_zlzlzgzg__ (getUniqSet' x) (getUniqSet' y))) (Mk_UniqSet GHC.Base.mempty) xs.
+
+# mappend uses coerce which can't resolve
+redefine Local Definition UniqSet.Monoid__UniqSet_mappend {inst_a} : UniqSet inst_a -> UniqSet inst_a -> UniqSet inst_a := fun x y => Mk_UniqSet (GHC.Base.mappend (getUniqSet' x) (getUniqSet' y)).
+
 redefine Definition UniqSet.unionManyUniqSets {a} (xs : list (UniqSet a)) : UniqSet a :=
     match xs with
       | nil => UniqSet.emptyUniqSet
       | cons uset usets => Data.Foldable.foldr UniqSet.unionUniqSets uset usets
     end.
 
-add UniqSet Instance Unpeel_UniqSet ele : HsToCoq.Unpeel.Unpeel (UniqSet ele) (UniqFM.UniqFM ele) :=
+add UniqSet Instance Unpeel_UniqSet ele : HsToCoq.Unpeel.Unpeel (UniqSet ele) (UniqFM.UniqFM ele ele) :=
   HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | Mk_UniqSet y => y end) Mk_UniqSet.
 
 redefine Local Definition UniqSet.Monoid__UniqSet_mempty {inst_a} : UniqSet inst_a :=

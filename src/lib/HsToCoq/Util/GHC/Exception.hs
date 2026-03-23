@@ -1,11 +1,14 @@
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
+-- GHC >= 9.0 removed the ExceptionMonad class from its API in favor of the
+-- standard 'exceptions' library (Control.Monad.Catch). The orphan ExceptionMonad
+-- instances below are only needed for older GHC; GHC 9.x provides them upstream.
+-- gWithFile uses MC.bracket (via CPP alias gbracket) on GHC >= 9.0.
 module HsToCoq.Util.GHC.Exception (module Exception, gWithFile) where
 
 import Control.Monad.IO.Class
 import System.IO
-
-import Exception
 
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.Maybe         as M
@@ -17,6 +20,13 @@ import qualified Control.Monad.Trans.State.Strict  as SS
 import qualified Control.Monad.Trans.State.Lazy    as SL
 import qualified Control.Monad.Trans.RWS.Strict    as RWSS
 import qualified Control.Monad.Trans.RWS.Lazy      as RWSL
+import qualified Control.Monad.Catch as MC
+
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Utils.Exception as Exception
+#define gbracket MC.bracket
+#else
+import Exception
 
 instance ExceptionMonad m => ExceptionMonad (I.IdentityT m) where
   gcatch  = I.liftCatch gcatch
@@ -58,6 +68,7 @@ instance (ExceptionMonad m, Monoid w) => ExceptionMonad (RWSS.RWST r w s m) wher
 instance (ExceptionMonad m, Monoid w) => ExceptionMonad (RWSL.RWST r w s m) where
   gcatch  = RWSL.liftCatch gcatch
   gmask f = RWSL.RWST $ \r s -> gmask $ (\m -> RWSL.runRWST m r s) . f . RWSL.mapRWST
+#endif
 
 -- Other MTL transformers will be added as necessary
 

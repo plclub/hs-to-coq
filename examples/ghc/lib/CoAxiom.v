@@ -17,6 +17,7 @@ Require BasicTypes.
 Require Core.
 Require FastString.
 Require GHC.Base.
+Require HsSyn.
 Require Name.
 Require Pair.
 Require SrcLoc.
@@ -24,26 +25,12 @@ Require Unique.
 
 (* Converted type declarations: *)
 
-Definition TypeEqn :=
+#[global] Definition TypeEqn :=
   (Pair.Pair AxiomatizedTypes.Type_)%type.
 
 Axiom Branches : AxiomatizedTypes.BranchFlag -> Type.
 
 (* Converted value declarations: *)
-
-Instance Eq___Role : GHC.Base.Eq_ AxiomatizedTypes.Role.
-Proof.
-Admitted.
-
-Instance Ord__Role : GHC.Base.Ord AxiomatizedTypes.Role.
-Proof.
-Admitted.
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `CoAxiom.Data__Role' *)
-
-(* Skipping all instances of class `Data.Data.Data', including
-   `CoAxiom.Data__CoAxBranch' *)
 
 Instance Eq___CoAxiom : forall {br}, GHC.Base.Eq_ (AxiomatizedTypes.CoAxiom br).
 Proof.
@@ -54,16 +41,16 @@ Instance Uniquable__CoAxiom
 Proof.
 Admitted.
 
-(* Skipping all instances of class `Outputable.Outputable', including
-   `CoAxiom.Outputable__CoAxiom' *)
-
 Instance NamedThing__CoAxiom
    : forall {br}, Name.NamedThing (AxiomatizedTypes.CoAxiom br).
 Proof.
 Admitted.
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `CoAxiom.Data__CoAxiom' *)
+
+(* Skipping all instances of class `Outputable.Outputable', including
+   `CoAxiom.Outputable__CoAxiom' *)
 
 (* Skipping all instances of class `Outputable.Outputable', including
    `CoAxiom.Outputable__CoAxBranch' *)
@@ -74,7 +61,7 @@ Admitted.
 (* Skipping all instances of class `Binary.Binary', including
    `CoAxiom.Binary__Role' *)
 
-(* Skipping all instances of class `Data.Data.Data', including
+(* Skipping all instances of class `GHC.Internal.Data.Data.Data', including
    `CoAxiom.Data__CoAxiomRule' *)
 
 Instance Uniquable__CoAxiomRule : Unique.Uniquable AxiomatizedTypes.CoAxiomRule.
@@ -140,7 +127,7 @@ Axiom coAxiomName : forall {br : AxiomatizedTypes.BranchFlag},
                     AxiomatizedTypes.CoAxiom br -> Name.Name.
 
 Axiom coAxiomRole : forall {br : AxiomatizedTypes.BranchFlag},
-                    AxiomatizedTypes.CoAxiom br -> AxiomatizedTypes.Role.
+                    AxiomatizedTypes.CoAxiom br -> HsSyn.Role.
 
 Axiom coAxiomBranches : forall {br : AxiomatizedTypes.BranchFlag},
                         AxiomatizedTypes.CoAxiom br -> Branches br.
@@ -164,8 +151,7 @@ Axiom coAxBranchLHS : AxiomatizedTypes.CoAxBranch ->
 
 Axiom coAxBranchRHS : AxiomatizedTypes.CoAxBranch -> AxiomatizedTypes.Type_.
 
-Axiom coAxBranchRoles : AxiomatizedTypes.CoAxBranch ->
-                        list AxiomatizedTypes.Role.
+Axiom coAxBranchRoles : AxiomatizedTypes.CoAxBranch -> list HsSyn.Role.
 
 Axiom coAxBranchSpan : AxiomatizedTypes.CoAxBranch -> SrcLoc.SrcSpan.
 
@@ -177,7 +163,7 @@ Axiom coAxBranchIncomps : AxiomatizedTypes.CoAxBranch ->
 
 Axiom placeHolderIncomps : list AxiomatizedTypes.CoAxBranch.
 
-Axiom fsFromRole : AxiomatizedTypes.Role -> FastString.FastString.
+Axiom fsFromRole : HsSyn.Role -> FastString.FastString.
 
 Axiom trivialBuiltInFamily : AxiomatizedTypes.BuiltInSynFamily.
 
@@ -185,8 +171,8 @@ Axiom trivialBuiltInFamily : AxiomatizedTypes.BuiltInSynFamily.
      Type bool list nat option AxiomatizedTypes.BranchFlag
      AxiomatizedTypes.BranchIndex AxiomatizedTypes.Branched
      AxiomatizedTypes.BuiltInSynFamily AxiomatizedTypes.CoAxBranch
-     AxiomatizedTypes.CoAxiom AxiomatizedTypes.CoAxiomRule AxiomatizedTypes.Role
-     AxiomatizedTypes.Type_ AxiomatizedTypes.Unbranched BasicTypes.Arity Core.CoVar
-     Core.TyCon Core.TyVar FastString.FastString GHC.Base.Eq_ GHC.Base.Ord Name.Name
+     AxiomatizedTypes.CoAxiom AxiomatizedTypes.CoAxiomRule AxiomatizedTypes.Type_
+     AxiomatizedTypes.Unbranched BasicTypes.Arity Core.CoVar Core.TyCon Core.TyVar
+     FastString.FastString GHC.Base.Eq_ GHC.Base.Ord HsSyn.Role Name.Name
      Name.NamedThing Pair.Pair SrcLoc.SrcSpan Unique.Uniquable
 *)

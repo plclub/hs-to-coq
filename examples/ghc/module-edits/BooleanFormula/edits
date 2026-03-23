@@ -1,3 +1,13 @@
+# GHC 9.10: skip unsupported modules
+skip module GHC.Parser.Annotation
+
+# GHC 9.10: BooleanFormula uses LocatedL (GHC.Parser.Annotation) instead of Located (SrcLoc)
+# Redefine to use SrcLoc.Located as a simplification
+redefine Inductive BooleanFormula.BooleanFormula (a : Type) : Type := | Var : a -> BooleanFormula a | And : list (SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a)) -> BooleanFormula a | Or : list (SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a)) -> BooleanFormula a | Parens : SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a) -> BooleanFormula a.
+
+redefine Definition BooleanFormula.LBooleanFormula := fun a_ => SrcLoc.GenLocated SrcLoc.SrcSpan (BooleanFormula a_).
+order BooleanFormula.BooleanFormula BooleanFormula.LBooleanFormula
+
 skip BooleanFormula.pprBooleanFormula'
 skip BooleanFormula.pprBooleanFormula
 skip BooleanFormula.pprBooleanFormulaNice
@@ -8,6 +18,8 @@ in BooleanFormula.implies termination go deferred
 redefine Local Definition BooleanFormula.Functor__BooleanFormula_fmap {a} {b} :
 	(a -> b) -> ((BooleanFormula a) -> (BooleanFormula b))
 	:= BooleanFormula_fmap.
+
+redefine Local Definition BooleanFormula.Functor__BooleanFormula_op_zlzd__ {a} {b} : a -> ((BooleanFormula b) -> (BooleanFormula a)) := bf_op_zlzd.
 
 redefine Local Definition BooleanFormula.Traversable__BooleanFormula_traverse
     {f} {a} {b} `{_:GHC.Base.Applicative f}: (a -> (f b)) ->
@@ -23,25 +35,12 @@ redefine Local Definition BooleanFormula.Foldable__BooleanFormula_foldr
 	 := BooleanFormula_foldr.
 
 
-# hs-to-coq gets the method operations all wrong
-redefine Fixpoint BooleanFormula.Foldable__BooleanFormula_null {a} (arg_0__ :  BooleanFormula a) : bool :=
-      match arg_0__ with
-      | Var _ => false
-      | And a1 => Data.Foldable.all (Data.Foldable.all Foldable__BooleanFormula_null) a1
-      | Or a1 => Data.Foldable.all (Data.Foldable.all Foldable__BooleanFormula_null) a1
-      | Parens a1 => Data.Foldable.all Foldable__BooleanFormula_null a1
-      end.
+# hs-to-coq gets the method operations all wrong - defined in midamble
+redefine Local Definition BooleanFormula.Foldable__BooleanFormula_null {a} : (BooleanFormula a) -> bool := bf_null.
 
-redefine Fixpoint BooleanFormula.Functor__BooleanFormula_op_zlzd__
-  {a} {b} (arg_0__ : a) (arg_1__ : BooleanFormula b) : BooleanFormula a :=
-      match arg_0__, arg_1__ with
-      | z, Var a1 => Var ((fun b1 => z) a1)
-      | z, And a1 =>
-          And (GHC.Base.fmap (GHC.Base.fmap (Functor__BooleanFormula_op_zlzd__ z)) a1)
-      | z, Or a1 =>
-          Or (GHC.Base.fmap (GHC.Base.fmap (Functor__BooleanFormula_op_zlzd__ z)) a1)
-      | z, Parens a1 => Parens (GHC.Base.fmap (Functor__BooleanFormula_op_zlzd__ z) a1)
-      end.
+# GHC 9.10: inner polymorphic let binding in mkAnd/mkOr can't be inferred
+axiomatize definition BooleanFormula.mkAnd
+axiomatize definition BooleanFormula.mkOr
 
 ## defined in the midamble
 skip Eq___BooleanFormula

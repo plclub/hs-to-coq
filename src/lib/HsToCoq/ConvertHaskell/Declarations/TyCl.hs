@@ -119,8 +119,12 @@ convertTyClDecl env decl = do
               
               (DataDecl{}, CoqInductiveDef ind) ->
                 case ind of
-                  Inductive   (body :| [])  []    -> pure $ ConvData False body
-                  CoInductive (body :| [])  []    -> pure $ ConvData True body
+                  Inductive   (body :| [])  []    -> do
+                    storeRedefinedConstructors body
+                    pure $ ConvData False body
+                  CoInductive (body :| [])  []    -> do
+                    storeRedefinedConstructors body
+                    pure $ ConvData True body
                   Inductive   (_    :| _:_) _     -> editFailure "cannot redefine data type to mutually-recursive types"
                   Inductive   _             (_:_) -> editFailure "cannot redefine data type to include notations"
                   CoInductive _             _     -> editFailure "cannot redefine data type to be coinductive"
@@ -167,6 +171,28 @@ convertTyClDecl env decl = do
             -- type-level definitions.
             translateIt coqName
   where
+    -- When a data type is redefined via 'redefine Inductive', the normal
+    -- convertDataDecl path (which calls storeConstructors etc.) is skipped.
+    -- Without this, lookupNewtypeInfo returns Nothing for redefined types
+    -- like Ap/Last/First, and expandCoerce can't expand their coerce calls.
+    -- Names from the edits parser may be Bare (e.g. "Mk_Ap" not
+    -- "Data.Monoid.Mk_Ap"); we qualify them using the module from tyName
+    -- since store' in TypeInfo.hs rejects Bare keys.
+    storeRedefinedConstructors :: LocalConvMonad r m => IndBody -> m ()
+    storeRedefinedConstructors (IndBody tyName _params _resTy cons) = do
+      let qualifyLike (Qualified m _) (Bare b) = Qualified m b
+          qualifyLike _               q        = q
+          qCons = [(qualifyLike tyName cn, binders, mty) | (cn, binders, mty) <- cons]
+          conNames = [cn | (cn, _, _) <- qCons]
+      storeConstructors tyName conNames
+      for_ qCons $ \(cn, binders, _mty) -> do
+        storeConstructorType cn tyName
+        let namedFields = [qualifyLike tyName fld
+                          | Typed _ _ (Ident fld :| []) _ <- binders]
+        if not (null namedFields)
+          then storeConstructorFields cn (RecordFields namedFields)
+          else storeConstructorFields cn (NonRecordFields (length binders))
+
     translateIt :: LocalConvMonad r m => Qualid -> m (Maybe ConvertedDeclaration)
     translateIt coqName =
       let isCoind = view (edits.coinductiveTypes.contains coqName)
@@ -174,7 +200,13 @@ convertTyClDecl env decl = do
            FamDecl{}     -> convUnsupported "type/data families"
            SynDecl{..}   -> ConvSyn              <$> convertSynDecl               tcdLName (hsq_explicit tcdTyVars) tcdRhs
            DataDecl{..}  -> ConvData <$> isCoind <*> convertDataDecl              tcdLName (hsq_explicit tcdTyVars) tcdDataDefn
-           ClassDecl{..} -> ConvClass            <$> convertClassDecl env tcdCtxt tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
+           ClassDecl{..} -> ConvClass            <$> convertClassDecl env tcdCtxt' tcdLName (hsq_explicit tcdTyVars) tcdFDs tcdSigs tcdMeths tcdATs tcdATDefs
+#if __GLASGOW_HASKELL__ >= 900
+             -- GHC 9.0+: tcdCtxt changed from LHsContext to Maybe (LHsContext)
+             where tcdCtxt' = fromMaybe (noLocA []) tcdCtxt
+#else
+             where tcdCtxt' = tcdCtxt
+#endif
 #if __GLASGOW_HASKELL__ >= 806
            XTyClDecl v -> noExtCon v
 #endif
@@ -488,4 +520,4 @@ convertModuleTyClDecls =  fork [ foldTraverse convertDeclarationGroup
                                , foldTraverse generateGroupDataInfixNotations
                                ]
                        <=< groupTyClDecls
-  where fork fns x = mconcat <$> mapM ($x) fns
+  where fork fns x = mconcat <$> mapM ($ x) fns

@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Preamble *)
 
-Require Import Omega.
+Require Import Lia.
 Require Import Lists.List.
 Require Import Coq.Sorting.Permutation.
 Require Import Coq.NArith.BinNat.
@@ -266,8 +266,8 @@ Proof.
   intros. rewrite noNodes_def. rewrite noNodes_def. 
   pose proof (vertices_valid g'). 
   assert (length (labNodes g') = length(nodeList g')). unfold nodeList. unfold ulabNodes.
-  rewrite map_length. reflexivity. rewrite H4. clear H4. assert (length (labNodes g) = length (nodeList g)).
-  unfold nodeList. unfold ulabNodes. rewrite map_length. reflexivity. rewrite H4. clear H4.
+  rewrite length_map. reflexivity. rewrite H4. clear H4. assert (length (labNodes g) = length (nodeList g)).
+  unfold nodeList. unfold ulabNodes. rewrite length_map. reflexivity. rewrite H4. clear H4.
    symmetry in H2.
   pose proof (match_remain_some g v c g' H2). destruct H4. clear H5.
   assert (forall u, In u (nodeList g') <-> In u (nodeList g) /\ u <> v). { intros.
@@ -280,7 +280,7 @@ Proof.
   assumption. unfold vIn in H8. unfold mem in H8.
   match goal with | [H: (if ?x then _ else _) = _ |- _] => destruct x end.
   assumption. inversion H8. pose proof (perm_remove (nodeList g') (nodeList g) v N.eq_dec H8 H5 H3 H6).
-  apply Permutation_length in H9. simpl in H9. omega.
+  apply Permutation_length in H9. simpl in H9. lia.
 Qed.
 
 Lemma matchAny_decr_size: forall {a b : Type} {gr} `{Graph gr} `{LawfulGraph gr} c g' (g: gr a b),

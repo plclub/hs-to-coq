@@ -9,8 +9,8 @@ This repository contains a converter from Haskell code to equivalent
 Coq code, as part of the [CoreSpec] component of the [DeepSpec]
 project.
 
-CPP'18 paper [“Total Haskell is Reasonable
-Coq”](https://arxiv.org/abs/1711.09286) by Antal Spector-Zabusky,
+CPP'18 paper ["Total Haskell is Reasonable
+Coq"](https://arxiv.org/abs/1711.09286) by Antal Spector-Zabusky,
 Joachim Breitner, Christine Rizkallah, and Stephanie Weirich. This
 paper describes the following examples:
 
@@ -26,13 +26,16 @@ Breitner, Antal Spector-Zabusky, Yao Li, Christine Rizkallah, John
 Wiegley, and Stephanie Weirich.  This paper describes the verification
 of the [containers](examples/containers) library.
 
+See [paper-claims-audit.md](paper-claims-audit.md) for a detailed audit of which
+paper claims still hold on the current codebase (GHC 9.10.3, Coq 8.20,
+containers v0.7).
 
 [**Documentation for the `hs-to-coq` tool is
 available!**](https://hs-to-coq.readthedocs.io/en/latest/)
 
 # Installation
 
-`hs-to-coq` uses Coq 8.10.2 and ssreflect.
+**Current target: GHC 9.10.3 and Coq 8.20** (branch `ghc910-coq820`)
 
 ## Compilation
 
@@ -45,33 +48,41 @@ To build `hs-to-coq`, then run
 
     stack build
 
-(`hs-to-coq` can be built with GHC 8.4, 8.6, 8.8, and 8.10. However, the repo
-only contains the translation of Haskell libraries such as `base` from GHC
-8.4. Therefore, it is advised to build `hs-to-coq` with GHC 8.4 if you plan to
-use example translations contained in this repo.)
-
 ## Building the `base` library
 
 This repository comes with a version of (parts of the) Haskell base library
 converted to Coq, which you will likely need if you want to verify Haskell
 code.
 
-You must have Coq 8.10.2 and ssreflect to build the base library. To
-install these tools:
+You must have Coq 8.20 and MathComp (with Hierarchy Builder) to build
+the base library and containers proofs. To install these tools:
 
   1. `opam repo add coq-released https://coq.inria.fr/opam/released` (for
      SSReflect and MathComp)
   2. `opam update`
-  3. `opam install coq.8.10.2 coq-mathcomp-ssreflect.1.10.0`
+  3. `opam install coq.8.20.1 coq-mathcomp-ssreflect coq-hierarchy-builder`
 
 Once installed, you can build the base library with
 
     cd base && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
-Th directory `base-thy/` contains auxillary definitions and lemmas, such as
+The directory `base-thy/` contains auxiliary definitions and lemmas, such as
 lawful type-class instances. You can build these with
 
     cd base-thy && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
+
+## Regenerating the `base` library
+
+The `base/` directory contains a convenience copy of the generated Coq files.
+To regenerate from Haskell source (requires the `ghc-internal` submodule):
+
+    git submodule update --init --recursive
+    make -C examples/base-src clean
+    make -C examples/base-src
+
+This runs hs-to-coq on the GHC 9.10 base/ghc-internal sources and
+compiles the resulting Coq files. Set `LANG=C.utf8` if you encounter
+encoding errors (generated files contain Unicode characters like `∘`).
 
 # Using the tool
 
@@ -113,29 +124,96 @@ See the [manual](https://hs-to-coq.readthedocs.io/en/latest/) for documentation
 for the edits files.
 
 
-# Other directories
+# Examples Status
 
-* The `examples/` directories contains a number of example translation and
-  verification projects, including
+All examples target **Coq 8.20** and **GHC 9.10.3**. The table below shows the
+build status of every example directory.
 
-  * [intervals](examples/intervals) A simple example described in this
-    [blog post](https://www.joachim-breitner.de/blog/734-Finding_bugs_in_Haskell_code_by_proving_it).
+## Dependency Chain
 
-  * [ghc](examples/ghc) Modules of GHC itself.
-  * [containers](examples/containers) Modules from the `containers` library,
-	including `Data.Set` and `Data.IntSet`
-  * [bag](examples/bag) Multiset implementation from GHC's implemention
-  * [successors](examples/successors) Successors Monad
-  * [compiler](examples/compiler) Hutton's razor
-  * [quicksort](examples/quicksort) Quicksort
-  * [rle](examples/rle) Run-length encoding
-  * [coinduction](examples/coinduction) Translating infinite data structures
-  * [base-src](examples/base-src) The sources of the `base/` directory
-  * [tests](examples/tests) Simple unit-tests
-  * [base-tests](examples/base-tests) Unit-tests that require `base/`
+```
+base → base-thy → containers/lib → containers/theories
+                 → transformers/lib
+                 → ghc/lib → ghc/theories
+                           → core-semantics/lib
+                 → graph/lib → graph/theories (needs coq-equations)
+                 → wc/lib (needs coq-itree)
+                 → shuffle/lib (depends on transformers)
+                 → compiler, rle, quicksort, dlist, coinduction,
+                   intervals, successors, lambda, simple
+```
 
+## Build Status
 
-  Some examples use git submodule, so run
+| Example | Type | Status | Files | Notes |
+|---------|------|--------|-------|-------|
+| **Core libraries** | | | | |
+| `base/` | Generated lib | **PASS** | 57/57 .v | GHC 9.10 base library |
+| `base-thy/` | Hand-written proofs | **PASS** | 15/15 .v | Lawful instances |
+| **Major verified examples** | | | | |
+| `containers/lib` | Generated lib | **PASS** | 16/16 .v | Containers v0.7 |
+| `containers/theories` | Proofs | **PASS** | 34/34 .v | Verified Set/IntSet/Map |
+| `ghc/lib` | Generated lib | **PASS** | 99/99 .v | GHC 9.10.3 core |
+| `ghc/theories` | Proofs | **PASS** | 29/29 .v | 25 files 0 Admitted; 26 actual Admitted across 4 files |
+| `transformers/lib` | Generated lib | **PASS** | 14/14 .v | Regenerated for GHC 9.10 |
+| `graph/lib` | Generated lib + proofs | **PASS** | 6/6 .v | Omega→Lia fixed |
+| `graph/theories` | Proofs | **PARTIAL** | 8/11 .v | 3 files need `coq-equations` |
+| **hs-to-coq generation examples** | | | | |
+| `bag/` | Hand-written proofs | **PASS** | 8/8 .v | Multiset from GHC |
+| `compiler/` | Generate + verify | **PASS** | 8/8 .v | Hutton's razor |
+| `coinduction/` | Generate + verify | **PASS** | 2/2 .v | Infinite data structures |
+| `dlist/` | Generate + verify | **PASS** | 2/2 .v | Difference lists |
+| `intervals/` | Generate + verify | **PASS** | 4/4 .v | Interval library |
+| `successors/` | Generate + verify | **PASS** | 2/2 .v | Successors Monad |
+| `rle/` | Generate + verify | **PASS** | 2/2 .v | Run-length encoding |
+| `quicksort/` | Generate + verify | **PASS** | 3/3 .v | Quicksort |
+| `lambda/` | Generate + verify | **PASS** | 2/2 .v | Lambda calculus |
+| `simple/` | Generate + verify | **PASS** | 1/1 .v | Simple example |
+| **Test suites** | | | | |
+| `tests/` | Unit tests | **PASS** | 43 pass, 4 known-fail | Translation + type-check |
+| `base-tests/` | Integration tests | **PASS** | 18 pass, 3 known-fail | Requires `base/` |
+| **Examples with external dependencies** | | | | |
+| `wc/lib` | Generated lib | **BLOCKED** | 0/14 .v | Needs `coq-itree` package |
+| `wc/theories` | Proofs | **BLOCKED** | 0/2 .v | Depends on wc/lib |
+| `shuffle/lib` | Generated lib | **PARTIAL** | 2/5 .v | Needs `Random Int` instance |
+| `shuffle/theories` | Proofs | **BLOCKED** | 0/1 .v | Depends on shuffle/lib |
+| `core-semantics/lib` | Generated lib | **PASS** | 1/1 .v | Manually updated for GHC 9.10 |
+| **Document-only** | | | | |
+| `resources/` | Standalone | **PASS** | 1/1 .v | Uses MathComp ssreflect |
+| `tip/` | Benchmark framework | N/A | 0 .v in git | Needs `benchmarks` submodule |
+| `locks/` | Skeleton | N/A | 0 .v files | _CoqProject only, no sources |
+| `base-src/` | Generation source | N/A | — | Source for regenerating `base/` |
+
+## Build Commands
+
+```bash
+# Build everything that works
+make                                    # base + base-thy + containers + ghc
+
+# Individual examples (generate + compile)
+make -C examples/compiler
+make -C examples/dlist
+make -C examples/rle
+make -C examples/quicksort
+make -C examples/coinduction
+make -C examples/intervals
+make -C examples/successors
+make -C examples/lambda
+make -C examples/simple
+
+# Graph (lib compiles, theories needs coq-equations for 3 proof files)
+cd examples/graph/lib && coq_makefile -f _CoqProject -o Makefile && make -j
+cd examples/graph/theories && coq_makefile -f _CoqProject -o Makefile && make -j
+
+# Transformers
+cd examples/transformers && make
+
+# Tests
+make -C examples/tests
+make -C examples/base-tests
+```
+
+  Some examples use git submodules, so run
 
       git submodule update --init --recursive
 

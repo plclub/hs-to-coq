@@ -7,6 +7,7 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Classes.Morphisms.
 
 Require Import Coq.Lists.List.
+Require Import Lia.
 Import ListNotations.
 
 (* Basic Haskell libraries *)
@@ -68,7 +69,7 @@ Next Obligation.
   * split; intros.
     + simpl.
       destruct_match.
-      - etransitivity; only 1: (apply IH; simpl; omega).
+      - etransitivity; only 1: (apply IH; simpl; lia).
         apply Permutation_middle.
       - simpl.
         etransitivity; only 1: apply Permutation_middle.
@@ -77,14 +78,14 @@ Next Obligation.
         destruct_match.
         ** reflexivity.
         ** destruct_match.
-           ++ apply IH; simpl; omega.
+           ++ apply IH; simpl; lia.
            ++ replace (fun y : list a => a0 :: y) with (app [a0]) by (simpl; reflexivity).
-              apply IH; simpl; omega.
+              apply IH; simpl; lia.
     + simpl.
       destruct_match.
       - replace ((fun arg_54__ : list a => xs ++ x :: arg_54__)) with (app (xs ++ [x]))
           by (extensionality r; rewrite <- app_assoc; reflexivity).
-        etransitivity; only 1: (apply IH; simpl; omega).
+        etransitivity; only 1: (apply IH; simpl; lia).
         rewrite <- app_assoc.
         reflexivity.
       - simpl.
@@ -94,9 +95,9 @@ Next Obligation.
         destruct_match.
         ** reflexivity.
         ** destruct_match.
-           ++ apply IH; simpl; omega.
+           ++ apply IH; simpl; lia.
            ++ replace (fun y : list a => a0 :: y) with (app [a0]) by (simpl; reflexivity).
-              apply IH; simpl; omega.
+              apply IH; simpl; lia.
 Qed.
 
 Lemma sequences_permutation:
@@ -147,7 +148,7 @@ Next Obligation.
     rewrite app_assoc.
     apply Permutation_app.
     - apply merge_permutation.
-    - apply mergePairs_permutation; simpl; omega.
+    - apply mergePairs_permutation; simpl; lia.
 Qed.
 
 Program Fixpoint mergeAll_permutation
@@ -161,7 +162,7 @@ Next Obligation.
     etransitivity; only 1: apply mergeAll_permutation. {
       pose proof (mergePairs_length (length zss) _ cmp zss xs ys).
       apply H.
-      omega.
+      lia.
     }
     apply mergePairs_permutation.
 Qed.
@@ -245,16 +246,16 @@ Next Obligation.
   * split; intros.
     + simpl.
       destruct_le.
-      - apply IH; only 1: (simpl; omega).
+      - apply IH; only 1: (simpl; lia).
         constructor; assumption.
       - constructor. assumption.
         destruct_match.
         ** constructor. constructor. constructor.
         ** destruct_le.
-           ++ apply IH; only 1: (simpl; omega).
+           ++ apply IH; only 1: (simpl; lia).
               constructor. constructor. assumption.
            ++ replace (fun y : list a => a0 :: y) with (app [a0]) by (simpl; reflexivity).
-              apply IH; only 1: (simpl; omega).
+              apply IH; only 1: (simpl; lia).
               constructor. constructor. assumption.
     + simpl.
       rewrite if_negb.
@@ -263,14 +264,14 @@ Next Obligation.
         destruct_match.
         ** constructor. constructor. constructor.
         ** destruct_le.
-           ++ apply IH; only 1: (simpl; omega).
+           ++ apply IH; only 1: (simpl; lia).
               constructor. constructor. assumption.
            ++ replace (fun y : list a => a0 :: y) with (app [a0]) by (simpl; reflexivity).
-              apply IH; only 1: (simpl; omega).
+              apply IH; only 1: (simpl; lia).
               constructor. constructor. assumption.
       - replace ((fun arg_54__ : list a => xs ++ x :: arg_54__)) with (app (xs ++ [x]))
           by (extensionality r; rewrite <- app_assoc; reflexivity).
-        apply IH; only 1: (simpl; omega).
+        apply IH; only 1: (simpl; lia).
         apply LocallySorted_snoc; assumption.
 Qed.
 
@@ -337,7 +338,7 @@ Next Obligation.
   * inversion_clear H. inversion_clear H1.
     constructor.
     apply merge_sorted; assumption.
-    apply mergePairs_sorted; only 1: (simpl; omega).
+    apply mergePairs_sorted; only 1: (simpl; lia).
     assumption.
 Qed.
 
@@ -352,7 +353,7 @@ Next Obligation.
     apply mergeAll_sorted. {
       pose proof (mergePairs_length (length zss) _ cmp zss xs ys).
       apply H0.
-      omega.
+      lia.
     }
     apply mergePairs_sorted.
     assumption.
@@ -534,7 +535,7 @@ Next Obligation.
         clear Heq.
         assert (LocallySorted lt (a0 :: x :: xs)) by (constructor; assumption).
         etransitivity.
-        ++ apply IH; only 1: (simpl; omega). assumption.
+        ++ apply IH; only 1: (simpl; lia). assumption.
         ++ replace (xs ++ x :: a0 :: ys) with ((xs ++ [x]) ++ a0 :: ys)
              by (rewrite <- app_assoc; reflexivity).
            apply Stable_app; try reflexivity.
@@ -554,15 +555,15 @@ Next Obligation.
            ** reflexivity.
            ** destruct_match.
               -- assert (a1 < a0 = true) by (destruct (compare a0 a1) eqn:?; simpl in *; try congruence; order a).
-                 apply IH; only 1: (simpl; omega).
+                 apply IH; only 1: (simpl; lia).
                  repeat (assumption||constructor).
               -- replace (fun y : list a => a0 :: y) with (app [a0]) by (simpl; reflexivity).
-                 apply IH; only 1: (simpl; omega).
+                 apply IH; only 1: (simpl; lia).
     + simpl.
       destruct_match.
       - replace ((fun arg_54__ : list a => xs ++ x :: arg_54__)) with (app (xs ++ [x]))
           by (extensionality r; rewrite <- app_assoc; reflexivity).
-        etransitivity; only 1: (apply IH; simpl; omega).
+        etransitivity; only 1: (apply IH; simpl; lia).
         rewrite <- app_assoc.
         reflexivity.
       - simpl.
@@ -573,10 +574,10 @@ Next Obligation.
         ** reflexivity.
         ** destruct_match.
            ++ assert (a1 < a0 = true) by (destruct (compare a0 a1) eqn:?; simpl in *; try congruence; order a).
-              apply IH; only 1: (simpl; omega).
+              apply IH; only 1: (simpl; lia).
               repeat (assumption||constructor).
            ++ replace (fun y : list a => a0 :: y) with (app [a0]) by (simpl; reflexivity).
-              apply IH; simpl; omega.
+              apply IH; simpl; lia.
 Qed.
 
 Lemma sequences_stable:
@@ -651,7 +652,7 @@ Next Obligation.
     - apply merge_stable.
       inversion H.
       assumption.
-    - apply mergePairs_stable; only 1: (simpl; omega).
+    - apply mergePairs_stable; only 1: (simpl; lia).
       inversion H. inversion H3. assumption.
 Qed.
 
@@ -667,7 +668,7 @@ Next Obligation.
     etransitivity; only 1: apply mergeAll_stable. {
       pose proof (mergePairs_length (length zss) _ compare zss xs ys).
       apply H0.
-      omega.
+      lia.
     }
     apply mergePairs_sorted.
     + intros x y ?. destruct (compare x y) eqn:?; unfold le in *; simpl in *; try congruence; try solve [order a].

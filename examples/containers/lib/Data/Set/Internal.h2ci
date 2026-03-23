@@ -1,14 +1,26 @@
-constructors:
-  Data.Set.Internal.Set_: ! '[Qualified "Data.Set.Internal" "Bin",Qualified "Data.Set.Internal"
-    "Tip"]'
-  Data.Set.Internal.MergeSet: ! '[Qualified "Data.Set.Internal" "Mk_MergeSet"]'
 constructorFields:
-  Data.Set.Internal.Mk_MergeSet: RecordFields [Qualified "Data.Set.Internal" "getMergeSet"]
   Data.Set.Internal.Bin: NonRecordFields 4
+  Data.Set.Internal.Mk_MergeSet: RecordFields [Qualified "Data.Set.Internal" "getMergeSet"]
+  Data.Set.Internal.Nada: NonRecordFields 0
+  Data.Set.Internal.Push: NonRecordFields 3
+  Data.Set.Internal.State0: NonRecordFields 1
+  Data.Set.Internal.State1: NonRecordFields 2
   Data.Set.Internal.Tip: NonRecordFields 0
+constructorTypes:
+  Data.Set.Internal.Bin: Qualified "Data.Set.Internal" "Set_"
+  Data.Set.Internal.Mk_MergeSet: Qualified "Data.Set.Internal" "MergeSet"
+  Data.Set.Internal.Nada: Qualified "Data.Set.Internal" "Stack"
+  Data.Set.Internal.Push: Qualified "Data.Set.Internal" "Stack"
+  Data.Set.Internal.State0: Qualified "Data.Set.Internal" "FromDistinctMonoState"
+  Data.Set.Internal.State1: Qualified "Data.Set.Internal" "FromDistinctMonoState"
+  Data.Set.Internal.Tip: Qualified "Data.Set.Internal" "Set_"
+constructors:
+  Data.Set.Internal.FromDistinctMonoState: '[Qualified "Data.Set.Internal" "State0",Qualified
+    "Data.Set.Internal" "State1"]'
+  Data.Set.Internal.MergeSet: '[Qualified "Data.Set.Internal" "Mk_MergeSet"]'
+  Data.Set.Internal.Set_: '[Qualified "Data.Set.Internal" "Bin",Qualified "Data.Set.Internal"
+    "Tip"]'
+  Data.Set.Internal.Stack: '[Qualified "Data.Set.Internal" "Push",Qualified "Data.Set.Internal"
+    "Nada"]'
 recordFieldTypes:
   Data.Set.Internal.getMergeSet: Qualified "Data.Set.Internal" "MergeSet"
-constructorTypes:
-  Data.Set.Internal.Mk_MergeSet: Qualified "Data.Set.Internal" "MergeSet"
-  Data.Set.Internal.Bin: Qualified "Data.Set.Internal" "Set_"
-  Data.Set.Internal.Tip: Qualified "Data.Set.Internal" "Set_"

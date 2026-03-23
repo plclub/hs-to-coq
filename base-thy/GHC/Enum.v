@@ -2,7 +2,9 @@ From Coq Require Import ssreflect ssrfun.
 Set Bullet Behavior "Strict Subproofs".
 
 Require Import GHC.Base.
+Require Import Lia.
 Require Import GHC.Enum.
+Require Import Lia.
 
 (******************************************************************************)
 (** `iterates'` and `iterates` functions -- used for specification **)
@@ -48,7 +50,7 @@ Proof. rewrite iterates_iterates'; apply iterates'_map. Qed.
 
 Theorem iterates'_length {A} (n : nat) (f : A -> A) (z : A) :
   length (iterates' n f z) = n.
-Proof. by rewrite iterates'_map map_length seq_length. Qed.
+Proof. by rewrite iterates'_map length_map length_seq. Qed.
 
 Theorem iterates_length {A} (n : nat) (f : A -> A) (z : A) :
   length (iterates n f z) = S n.
@@ -68,7 +70,7 @@ Theorem iterates_In {A} (n : nat) (f : A -> A) (z : A) (a : A) :
   In a (iterates n f z) <-> ex2 (fun i => i <= n)%nat (fun i => a = Nat.iter i f z).
 Proof.
   rewrite iterates_iterates' iterates'_In.
-  split=> [[i LT def_a] | [i LE def_a]]; exists i=> //; omega.
+  split=> [[i LT def_a] | [i LE def_a]]; exists i=> //; lia.
 Qed.
 
 (******************************************************************************)
@@ -111,9 +113,9 @@ Proof.
   elim: diff to from pf def_diff => [|diff IH] to from pf def_diff /=;
     rewrite eftInt_aux_unroll /eftInt_aux_rhs.
   - case: (Z.eq_dec _ _) => [// | NEQ].
-    suff LE: (to - from <= 0)%Z by omega.
+    suff LE: (to - from <= 0)%Z by lia.
     move: def_diff; case: (to - from)%Z => //=.
-    move=> p ZERO; move: (Pos2Nat.is_pos p) => POS; omega.
+    move=> p ZERO; move: (Pos2Nat.is_pos p) => POS; lia.
   - case: (Z.eq_dec _ _) => [? | NEQ]; first by subst; rewrite Z.sub_diag in def_diff.
     rewrite IH //.
     by rewrite Z.sub_add_distr Z2Nat.inj_sub //= -def_diff /Pos.to_nat /= Nat.sub_0_r.
@@ -123,11 +125,11 @@ Theorem eftInt_iterates' (from to : Int) :
   eftInt from to = iterates' (Z.to_nat (to - from + 1)) Z.succ from.
 Proof.
   rewrite /eftInt; case: (Z_gt_dec _ _) => [GT | LE].
-  - have: (to - from < 0)%Z by omega.
+  - have: (to - from < 0)%Z by lia.
     case: (to - from)%Z => //=.
     case=> //=.
   - rewrite eftInt_aux_iterates iterates_iterates'; f_equal.
-    rewrite Z.add_1_r Z2Nat.inj_succ //; omega.
+    rewrite Z.add_1_r Z2Nat.inj_succ //; lia.
 Qed.
 
 Theorem enumFromTo_Int_iterates' (from to : Int) :
@@ -142,25 +144,24 @@ Proof.
   rewrite eftInt_aux_iterates iterates_In.
   split=> [[i LE ->{a}] | [LE_a a_LE]].
   - rewrite iter_plus_Z.
-    move: LE => /inj_le; rewrite Z2Nat.id => [|LE]; omega.
+    move: LE => /inj_le; rewrite Z2Nat.id => [|LE]; lia.
   - remember (Z.to_nat (to - from)) as diff eqn:def_diff.
     elim: diff from pf def_diff LE_a => [|diff IH] from pf def_diff LE_a.
     + exists 0 => //=.
-      suff LE: (to - from <= 0)%Z by apply Z.le_antisymm; omega.
+      suff LE: (to - from <= 0)%Z by apply Z.le_antisymm; lia.
       move: def_diff; case: (to - from)%Z => //= p.
-      move: (Pos2Nat.is_pos p) => *; omega.
-    + case: (Z.eq_dec from a) => [? | NEQ]; first by subst a; exists 0 => //=; omega.
-      have LE_a': (from < a)%Z by omega.
-      case: (IH (Z.succ from)) => [| | | i LE_i def_a]; try omega.
-      * by rewrite Z.sub_succ_r Z2Nat.inj_pred -def_diff.
-      * exists (S i); first by apply le_n_S.
-        by rewrite def_a /Nat.iter nat_rect_succ_r.
+      move: (Pos2Nat.is_pos p) => *; lia.
+    + case: (Z.eq_dec from a) => [? | NEQ]; first by subst a; exists 0 => //=; lia.
+      have LE_a': (from < a)%Z by lia.
+      case: (IH (Z.succ from)) => [| | | i LE_i def_a]; try lia.
+      exists (S i); first by apply le_n_S.
+      by rewrite def_a /Nat.iter nat_rect_succ_r.
 Qed.
 
 Theorem eftInt_In (from to : Int) (a : Int) :
   In a (eftInt from to) <-> (from <= a <= to)%Z.
 Proof.
-  rewrite /eftInt; case: (Z_gt_dec _ _) => ?; [simpl; omega | apply eftInt_aux_In].
+  rewrite /eftInt; case: (Z_gt_dec _ _) => ?; [simpl; lia | apply eftInt_aux_In].
 Qed.
 
 Theorem enumFromTo_Int_In (from to : Int) (a : Int) :

@@ -3,7 +3,13 @@
 skip Data.List.NonEmpty.!!
 
 skip Data.List.NonEmpty.fromList
+skip Data.List.NonEmpty.inits1
+skip Data.List.NonEmpty.tails1
+skip Data.List.NonEmpty.permutations
+skip Data.List.NonEmpty.permutations1
 skip Data.List.NonEmpty.lift
+skip Data.List.NonEmpty.sortOn
+skip Data.List.NonEmpty.sortWith
 skip Data.List.NonEmpty.tails
 skip Data.List.NonEmpty.scanl
 skip Data.List.NonEmpty.scanr
@@ -60,7 +66,7 @@ skip Data.List.NonEmpty.groupAllWith1
 skip Data.List.NonEmpty.group1
 
 
-# Something broke with derived instances (compare gets renamed to the instance’s method,
+# Something broke with derived instances (compare gets renamed to the instance's method,
 # even though it should use GHC.Base.compare) after going to qualified names
 skip Data.List.NonEmpty.Ord__NonEmpty
 #skip Data.List.NonEmpty.Eq___NonEmpty

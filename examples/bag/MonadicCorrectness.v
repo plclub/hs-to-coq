@@ -139,10 +139,16 @@ Lemma monad_bind_fmap_ap {M A B C} `{MonadLaws M} (f : A -> B -> C) (mx : M A) (
   (mx >>= fun x : A => fmap (f x) my) = (f <$> mx <*> my).
 Proof.
   unfold "<$>";
-    setoid_rewrite ->applicative_fmap;
-    repeat setoid_rewrite ->monad_applicative_ap;
-    setoid_rewrite ->monad_applicative_pure;
-    unfold ap.
+    rewrite !applicative_fmap.
+  replace (fun x : A => fmap (f x) my) with (fun x : A => pure (f x) <*> my).
+  2: { by setoid_rewrite <- applicative_fmap. }
+  repeat rewrite ->monad_applicative_ap.
+  replace (fun x : A => pure (f x) <*> my) with (fun x : A => ap (pure (f x)) my).
+  2: { by setoid_rewrite monad_applicative_ap. }
+  rewrite ->monad_applicative_pure.
+  replace (fun x : A => ap (pure (f x)) my) with (fun x : A => ap (return_ (f x)) my).
+  2: { by setoid_rewrite monad_applicative_pure. }
+  unfold ap.
   by rewrite -!monad_composition monad_left_id -!monad_composition.
 Qed.
 
@@ -172,12 +178,17 @@ Proof.
        rewrite functor_composition monad_fmap_return -monad_applicative_pure
                applicative_identity.
   - by rewrite applicative_liftA2 monad_bind_return_fmap; unfold "<$>"; rewrite !functor_composition.
-  - setoid_rewrite ->monad_bind_return_fmap; setoid_rewrite ->monad_bind_fmap_ap.
-    rewrite bagToList_TwoBags foldr_app -IHl -IHr.
-    unfold "<$>"; rewrite !functor_composition.
-    rewrite !applicative_fmap -!applicative_composition !applicative_homomorphism; f_equal.
-    rewrite !applicative_interchange -!applicative_fmap functor_composition; do 2 f_equal.
-    funext=> l'; funext=> r'; funext=> z'.
+  - rewrite bagToList_TwoBags foldr_app -IHl -IHr.
+    unfold "<$>"; rewrite
+      !functor_composition !applicative_fmap
+      !monad_applicative_ap /ap !monad_applicative_pure !monad_left_id -!monad_composition.
+    f_equal; funext=> ?.
+    rewrite !monad_left_id -!monad_composition.
+    f_equal; funext=> ?.
+    rewrite !monad_left_id -!monad_composition.
+    f_equal; funext=> ?.
+    rewrite monad_left_id.
+    f_equal.
     by unfold "∘"; rewrite bagToList_TwoBags app_assoc.
   - rewrite bagToList_ListBag
             /Data.Traversable.mapM /Traversable.Traversable__list /Data.Traversable.mapM__
@@ -226,8 +237,17 @@ Proof.
   - anf_equal.
   - rewrite applicative_liftA2 monad_bind_return_fmap; anf_equal.
   - rewrite bagToList_TwoBags foldr_app -IHl -IHr.
-    setoid_rewrite ->monad_bind_return_fmap; setoid_rewrite ->monad_bind_fmap_ap.
-    by anf_equal; unfold "∘"; rewrite bagToList_TwoBags app_assoc.
+    unfold "<$>"; rewrite
+      !functor_composition !applicative_fmap
+      !monad_applicative_ap /ap !monad_applicative_pure !monad_left_id -!monad_composition.
+    f_equal; funext=> ?.
+    rewrite !monad_left_id -!monad_composition.
+    f_equal; funext=> ?.
+    rewrite !monad_left_id -!monad_composition.
+    f_equal; funext=> ?.
+    rewrite monad_left_id.
+    f_equal.
+    by unfold "∘"; rewrite bagToList_TwoBags app_assoc.
   - rewrite bagToList_ListBag
             /Data.Traversable.mapM /Data.Traversable.mapM /Traversable.Traversable__list /Data.Traversable.mapM__
             /Data.Traversable.Traversable__list_mapM

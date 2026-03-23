@@ -1,6 +1,20 @@
 import module AxiomatizedTypes
 import module Literal
 
+# Coq 8.20: type and constructor cannot share the same name
+rename value GHC.Core.UnfoldingCache = Core.Mk_UnfoldingCache
+rename value GHC.Core.TyCo.Rep.Scaled = Core.Mk_Scaled
+rename value GHC.Types.Demand.Card = Core.Mk_Card
+rename value GHC.Types.Id.Info.BitField = Core.Mk_BitField
+rename value GHC.Types.Demand.DmdSig = Core.Mk_DmdSig
+rename value GHC.Core.Alt = Core.Mk_Alt
+rename value GHC.Core.TyCon.TyCon = Core.Mk_TyCon
+rename value GHC.Core.AnnAlt = Core.Mk_AnnAlt
+rename value GHC.Core.TyCo.Rep.TyCoFolder = Core.Mk_TyCoFolder
+
+# GHC 9.10: KnotTied is a type-level identity; needs explicit type annotation
+redefine Definition Core.KnotTied (ty : Type) := ty.
+
 ####################################
 # skipping or redefining unfolding info so that it is 'NoUnfolding'
 #
@@ -10,7 +24,7 @@ axiomatize definition Core.unfoldingTemplate
 #
 skip Core.bootUnfolding
 skip Core.mkOtherCon
-skip Core.evaldUnfolding
+axiomatize definition Core.evaldUnfolding
 
 ####################################
 # removing Tick datacons from Expr
@@ -54,7 +68,7 @@ skip Core.ru_rhs
 #
 # ordering
 #
-order Core.Eq___DataCon Core.Eq___AltCon_op_zeze__ Core.Eq___AltCon Core.Ord__AltCon
+order Core.Eq___DataCon Core.Ord__AltCon
 order Core.Eq___Tickish Core.Ord__Tickish
 
 #
@@ -67,8 +81,11 @@ inline mutual Core.deAnnotate
 inline mutual Core.deAnnAlt
 
 
-# Core.collectNAnnBndrs is defined in the midamble
+# These collect functions are defined in the midamble
 skip Core.collectNAnnBndrs
+skip Core.collectBinders
+skip Core.collectNBinders
+skip Core.collectArgs
 #
 # It needs a default constraint, as well as a termination argument
 # ISSUE: unfortunately our termination edits don't work in the presence 
@@ -117,6 +134,8 @@ skip Core.mkIntLitInt
 skip Core.mkWord64LitWord64
 skip Core.mkWordLit
 skip Core.mkWordLitWord
+# GHC 9.10: uses GHC.Internal.Word.Word32 not available
+skip Core.mkWord32LitWord32
 
 #
 # Default instances
@@ -129,3 +148,11 @@ skip Core.Default__Var
 skip Core.Default__PatSyn
 skip Core.Default__CoreRule
 skip Core.Default__RuleEnv
+# GHC 9.10: these Default instances need types not available; provided in midamble
+skip Core.Default__TyFamEqnValidityInfo
+skip Core.Default__Termination
+skip Core.Default__DmdType
+skip Core.Default__StrictSig
+skip Core.Default__AlgTyConRhs
+skip Core.Default__TyConDetails
+skip Core.Default__TyCon

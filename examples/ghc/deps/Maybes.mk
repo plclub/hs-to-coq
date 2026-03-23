@@ -1,1 +1,1 @@
-lib/Maybes.v: ../../base/GHC/Base.h2ci
+lib/Maybes.v: ../../base/Data/Either.h2ci ../../base/GHC/Base.h2ci

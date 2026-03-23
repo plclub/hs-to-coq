@@ -12,3 +12,15 @@ order UniqSupply.Applicative__UniqSM UniqSupply.Monad__UniqSM_op_zgzg__
 order UniqSupply.Applicative__UniqSM UniqSupply.Monad__UniqSM_return_
 
 rename type GHC.Num.Int = BinNums.N
+
+# UniqResult is a type alias to pair, constructor should be pair
+rename value GHC.Types.Unique.Supply.UniqResult = pair
+
+# MonadFail needs Default (UniqSM a) for Panic.panic
+skip UniqSupply.MonadFail__UniqSM
+
+# GHC primitive operations not available in Coq
+skip UniqSupply.op_fetchAddWord64Addrzh__
+skip UniqSupply.genSym
+skip UniqSupply.initUniqSupply
+skip UniqSupply.uniqFromTag

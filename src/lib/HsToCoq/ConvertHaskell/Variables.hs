@@ -21,8 +21,14 @@ import Control.Monad
 
 import GHC (GhcMonad,AmbiguousFieldOcc(..),GhcRn)
 import qualified GHC
+
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Utils.Outputable (OutputableBndr)
+import GHC.Types.Name(occNameString, nameOccName, nameModule_maybe)
+#else
 import Outputable (OutputableBndr)
 import Name(occNameString, nameOccName, nameModule_maybe)
+#endif
 
 import HsToCoq.Util.Monad (failIO)
 import HsToCoq.Util.GHC

@@ -69,6 +69,12 @@ Instance Arbitrary_list {a} `{Arbitrary a} : Arbitrary (list a) :=
   { arbitrary := MkGen (Coq.Lists.List.Forall (unGen arbitrary)) }.
 
 
+(* z-encoded operator names used by auto-generated code *)
+Notation op_zizazazi__ := andp (only parsing).
+Notation op_zizozi__   := orp  (only parsing).
+Notation op_zezeze__   := GHC.Base.op_zeze__ (only parsing).
+Notation op_zezezg__   := implies (only parsing).
+
 Module Notations.
 Infix "Test.QuickCheck.Property.===" := GHC.Base.op_zeze__ (at level 99).
 Infix "Test.QuickCheck.Property.==>" := implies (at level 99).

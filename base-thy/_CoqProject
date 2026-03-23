@@ -1,5 +1,7 @@
 -Q .        Proofs
 -Q ../base/ ""
+-arg -w
+-arg -masking-absolute-name
 ./Data/Either.v
 ./Data/Foldable.v
 ./Data/Traversable.v

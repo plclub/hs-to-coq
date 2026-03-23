@@ -1,5 +1,8 @@
 skip module GHC.Types
 
+# For typeclass instances
+import module Data.SemigroupInternal
+
 # partial
 
 skip Data.Foldable.minimumBy
@@ -16,7 +19,7 @@ add Data.Foldable Definition Data.Foldable.elem {f} `{Foldable f} {a} `{GHC.Base
 skip Data.Foldable.asum
 skip Data.Foldable.msum
 
-# Coq’s type class inference does not find the right instance
+# Coq's type class inference does not find the right instance
 # Why?
 redefine Definition Data.Foldable.concat {t : Type -> Type} {a : Type} `{Foldable t} : (t (list a)) -> (list a) :=
   fun xs =>
@@ -48,3 +51,14 @@ skip Data.Foldable.Foldable__Par1
 skip Data.Foldable.Foldable__op_ZCziZC__
 skip Data.Foldable.Foldable__op_ZCztZC__
 skip Data.Foldable.Foldable__op_ZCzpZC__
+skip Data.Foldable.Foldable__UWord
+skip Data.Foldable.Foldable__UInt
+skip Data.Foldable.Foldable__UFloat
+skip Data.Foldable.Foldable__UDouble
+skip Data.Foldable.Foldable__UChar
+skip Data.Foldable.Foldable__UAddr
+skip Data.Foldable.Foldable__Solo
+skip Data.Foldable.Foldable__Down
+
+
+

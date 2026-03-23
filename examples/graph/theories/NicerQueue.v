@@ -2,7 +2,7 @@ Require Import Data.Graph.Inductive.Internal.Queue.
 Require Import Coq.Lists.List.
 Require Import Data.Foldable.
 Require Import HsToCoq.DeferredFix.
-Require Import Omega.
+Require Import Lia.
 
 Section Queue.
 
@@ -37,8 +37,8 @@ Qed.
 
 Lemma toList_queuePutList: forall q l, toList (queuePutList l q) = toList q ++ l.
 Proof.
-  intros. unfold queuePutList. (* unfold toList. *) unfold Base.flip. unfold foldl'. unfold Foldable__list.
-  simpl. unfold Foldable.Foldable__list_foldl'. unfold Base.foldl'. unfold id. generalize dependent q. 
+  intros. unfold queuePutList. unfold Base.flip. unfold foldl'. unfold foldl. unfold Foldable__list.
+  simpl. unfold Foldable.Foldable__list_foldl. unfold id. generalize dependent q.
   induction l; intros; simpl.
   - rewrite app_nil_r; reflexivity.
   - rewrite IHl. rewrite toList_queuePut. rewrite <- app_assoc. reflexivity.
@@ -70,8 +70,8 @@ Definition queue_order q1 q2 := queue_size' q1 < queue_size' q2.
 Lemma queue_order_wf': forall x, forall q, queue_size' q <= x -> Acc queue_order q.
 Proof.
   intros. unfold queue_order. generalize dependent q. induction x; intros. 
-  - apply Acc_intro. intros. assert (queue_size' y < 0) by omega. omega.
-  - intros. apply Acc_intro. intros. apply IHx. omega.
+  - apply Acc_intro. intros. assert (queue_size' y < 0) by lia. lia.
+  - intros. apply Acc_intro. intros. apply IHx. lia.
 Defined.  
 
 Lemma queue_order_wf : well_founded queue_order.
@@ -111,7 +111,7 @@ Proof.
     * unfold recurses_on. intros. destruct x0. destruct l1. destruct l0. simpl in H1. inversion H1. 
       apply H2. simpl. rewrite_rev. unfold_null. 
       destruct (rev l0);  reflexivity.
-      simpl. rewrite_rev. rewrite app_nil_r. rewrite app_length. simpl.  rewrite rev_length. omega. 
+      simpl. rewrite_rev. rewrite app_nil_r. rewrite length_app. simpl.  rewrite rev_length. lia. 
       reflexivity.
     * simpl. unfold_null. destruct (rev l); reflexivity.
     + apply queue_order_wf.
@@ -119,7 +119,7 @@ Proof.
       unfold queueEmpty. simpl. unfold_null.
       destruct l0. intuition. rewrite_rev. 
       destruct (rev l0); reflexivity. simpl. destruct l0. unfold queueEmpty in H1; unfold_null. inversion H1.
-      simpl. rewrite_rev. rewrite app_nil_r. rewrite app_length; rewrite rev_length. simpl. omega. reflexivity.
+      simpl. rewrite_rev. rewrite app_nil_r. rewrite length_app; rewrite rev_length. simpl. lia. reflexivity.
      + apply H0.
   - rewrite (deferredFix_eq_on _ (fun x => queueEmpty x = false) 
   (fun x y => queue_size' x < queue_size' y)).
@@ -127,8 +127,8 @@ Proof.
     + apply queue_order_wf.
     + unfold recurses_on. intros. destruct x0. destruct l1. destruct l2. unfold queueEmpty in H1.
       unfold_null. inversion H1. reflexivity. destruct l2. apply H2. unfold queueEmpty. unfold_null.
-      rewrite_rev. destruct (rev l1); reflexivity. rewrite_rev. rewrite app_nil_r. rewrite app_length.
-      rewrite rev_length. simpl. omega. reflexivity.
+      rewrite_rev. destruct (rev l1); reflexivity. rewrite_rev. rewrite app_nil_r. rewrite length_app.
+      rewrite rev_length. simpl. lia. reflexivity.
     + assumption.
 Qed.
 

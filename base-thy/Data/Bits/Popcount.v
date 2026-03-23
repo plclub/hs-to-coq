@@ -3,9 +3,28 @@
 Require Import Coq.PArith.PArith.
 Require Import Coq.NArith.NArith.
 Require Import Coq.ZArith.ZArith.
-Require Import Omega.
+Require Import Lia.
 
 Require Import Data.Bits.
+
+Fixpoint Is_power (p:positive) : Prop :=
+  match p with
+  | xH => True
+  | xO q => Is_power q
+  | xI q => False
+  end.
+
+Lemma Is_power_correct :
+  forall p:positive, Is_power p <-> (exists y : nat, p = shift_nat y 1).
+Proof.
+  intros. split.
+  - induction p; cbn; try contradiction.
+    + intros. apply IHp in H. destruct H as [y H].
+      rewrite H. exists (S y). cbn. reflexivity.
+    + intros. exists 0. cbn. reflexivity.
+  - intros [n H]. generalize dependent p.
+    induction n; cbn; intros; rewrite H; cbn; auto.
+Qed.
 
 Lemma Pos_popcount_pow2:
   forall n, Pos_popcount (Pos.pow 2 n) = 1%positive.
@@ -97,7 +116,7 @@ Proof.
     try specialize (IHp1 p2);
     rewrite ?N_popcount_Ndouble, ?N_popcount_Nsucc_double,
             ?N_double_succ;
-    zify; omega
+    zify; lia
   ).
   * simpl.
     destruct (Pos_popcount p2); simpl in *; try rewrite <- Pplus_one_succ_r; try reflexivity.

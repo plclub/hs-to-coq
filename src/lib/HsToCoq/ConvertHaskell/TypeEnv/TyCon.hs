@@ -16,10 +16,19 @@ import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Type
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Unit.Module.ModDetails
+import GHC.Core.TyCon
+import GHC.Core.TyCo.Rep
+import GHC.Types.Name (getName)
+import GHC.Types.Var (binderVar, binderType)
+import GHC.Types.TypeEnv (typeEnvTyCons)
+#else
 import HscTypes
 import TyCon
 import TyCoRep
 import Name (getName)
+#endif
 
 data ConvertedTyCon =
   ConvertedTyCon { convertedTyConBinds :: [Binder]

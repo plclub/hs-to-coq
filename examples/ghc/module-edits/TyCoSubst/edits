@@ -1,0 +1,119 @@
+# GHC.Core.TyCo.Subst — merged into Core.v for concrete Subst type
+#
+# We keep the Subst data type and type aliases (IdSubstEnv, TvSubstEnv, CvSubstEnv).
+# All functions are skipped — type/coercion substitution is identity (axiomatized),
+# and Id substitution functions are provided by CoreSubst midamble.
+
+# Coq 8.20: type and constructor cannot share the same name
+rename value GHC.Core.TyCo.Subst.Subst = Core.Mk_Subst
+
+# Types/coercions are axiomatized — their SubstEnvs are unit
+redefine Definition Core.TvSubstEnv := unit.
+redefine Definition Core.CvSubstEnv := unit.
+
+# Skip imports for modules not in the CORESYN group
+# (GHC.Core.Type, GHC.Core.Coercion, GHC.Core.TyCo.Rep are in CORESYN — don't skip)
+skip module GHC.Core.TyCo.Ppr
+skip module GHC.Core.Ppr
+skip module GHC.Core.TyCo.FVs
+
+# Skip all functions — provided by CoreSubst midamble or not needed
+skip Core.emptyIdSubstEnv
+skip Core.emptyTvSubstEnv
+skip Core.emptyCvSubstEnv
+skip Core.composeTCvSubst
+# Default instance for Subst (needed by Err.error calls)
+add Core Instance Core.Default__Subst : HsToCoq.Err.Default Core.Subst :=
+  HsToCoq.Err.Build_Default _ (Core.Mk_Subst (Core.InScope Core.emptyVarSet) Core.emptyVarEnv tt tt).
+order Core.Default__Subst Core.emptySubst
+
+# emptySubst and mkEmptySubst: redefined since their helpers are skipped
+redefine Definition Core.emptySubst : Core.Subst := Core.Mk_Subst Core.emptyInScopeSet Core.emptyVarEnv tt tt.
+redefine Definition Core.mkEmptySubst (in_scope : Core.InScopeSet) : Core.Subst := Core.Mk_Subst in_scope Core.emptyVarEnv tt tt.
+skip Core.isEmptySubst
+skip Core.isEmptyTCvSubst
+skip Core.mkTCvSubst
+skip Core.mkIdSubst
+skip Core.mkTvSubst
+skip Core.mkCvSubst
+skip Core.getIdSubstEnv
+skip Core.getTvSubstEnv
+skip Core.getCvSubstEnv
+skip Core.getSubstInScope
+skip Core.setInScope
+skip Core.getSubstRangeTyCoFVs
+skip Core.isInScope
+skip Core.elemSubst
+skip Core.notElemSubst
+skip Core.zapSubst
+skip Core.extendSubstInScope
+skip Core.extendSubstInScopeList
+skip Core.extendSubstInScopeSet
+skip Core.extendTCvSubst
+skip Core.extendTCvSubstWithClone
+skip Core.extendTvSubst
+skip Core.extendTvSubstWithClone
+skip Core.extendCvSubst
+skip Core.extendCvSubstWithClone
+skip Core.extendTvSubstAndInScope
+skip Core.extendTvSubstList
+skip Core.extendTCvSubstList
+skip Core.unionSubst
+skip Core.zipTvSubst
+skip Core.zipCvSubst
+skip Core.zipTCvSubst
+skip Core.mkTvSubstPrs
+skip Core.zipTyEnv
+skip Core.zipCoEnv
+skip Core.checkValidSubst
+skip Core.isValidTCvSubst
+skip Core.substTyWith
+skip Core.substTyWithUnchecked
+skip Core.substTyWithInScope
+skip Core.substCoWith
+skip Core.substCoWithUnchecked
+skip Core.substTyWithCoVars
+skip Core.substTysWith
+skip Core.substTysWithCoVars
+skip Core.substTyAddInScope
+skip Core.substTy
+skip Core.substTyUnchecked
+skip Core.substScaledTy
+skip Core.substScaledTyUnchecked
+skip Core.substTys
+skip Core.substScaledTys
+skip Core.substTysUnchecked
+skip Core.substScaledTysUnchecked
+skip Core.substTheta
+skip Core.substThetaUnchecked
+skip Core.subst_ty
+skip Core.substTyVar
+skip Core.substTyVarToTyVar
+skip Core.substTyVars
+skip Core.substTyCoVars
+skip Core.substTyCoVar
+skip Core.lookupTyVar
+skip Core.substCo
+skip Core.substCoUnchecked
+skip Core.substCos
+skip Core.subst_co
+skip Core.substForAllCoBndr
+skip Core.substForAllCoBndrUnchecked
+skip Core.substForAllCoBndrUsing
+skip Core.substForAllCoTyVarBndrUsing
+skip Core.substForAllCoCoVarBndrUsing
+skip Core.substCoVar
+skip Core.substCoVars
+skip Core.lookupCoVar
+skip Core.substTyVarBndr
+skip Core.substTyVarBndrs
+skip Core.substVarBndr
+skip Core.substVarBndrs
+skip Core.substCoVarBndr
+skip Core.substVarBndrUnchecked
+skip Core.substVarBndrUsing
+skip Core.substTyCoBndr
+skip Core.cloneTyVarBndr
+skip Core.cloneTyVarBndrs
+skip Core.substTyVarBndrUsing
+skip Core.substCoVarBndrUsing

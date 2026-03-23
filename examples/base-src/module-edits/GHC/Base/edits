@@ -6,7 +6,6 @@ skip module GHC.Types
 
 # replaced with Coq types
 skip GHC.Base.String
-skip option
 skip Coq.Init.Datatypes.app
 
 skip GHC.Base.Opaque   # can't handle existential
@@ -24,6 +23,7 @@ skip GHC.Base.unIO
 skip GHC.Base.thenIO
 skip GHC.Base.returnIO
 skip GHC.Base.bindIO
+skip GHC.Base.failIO
 skip GHC.Base.Functor__IO
 skip GHC.Base.Applicative__IO
 skip GHC.Base.Alternative__IO
@@ -62,12 +62,19 @@ redefine Local Definition GHC.Base.Applicative__NonEmpty_liftA2 {a} {b} {c} :
 skip GHC.Base.unsafeChr
 skip GHC.Base.ord
 
+# Avoid representation polymorphism.
+redefine Definition GHC.Base.op_zd__ {a} {b} : (a -> b) -> a -> b :=
+  fun f x => f x.
+redefine Definition GHC.Base.op_zdzn__ {a : Type} {b : Type} : (a -> b) -> a -> b :=
+  fun f x => let vx := x in f vx.
+
 skip GHC.Base.shiftRL#
 skip GHC.Base.shiftL#
 skip GHC.Base.iShiftL#
 skip GHC.Base.iShiftRA#
 skip GHC.Base.iShiftRL#
 skip GHC.Base.divModInt#
+skip GHC.Base.shift_mask
 
 skip GHC.Base.remInt
 skip GHC.Base.quotRemInt
@@ -83,11 +90,27 @@ skip GHC.Base.primIntToChar
 skip GHC.Base.primCharToInt
 skip GHC.Base.primUnicodeMaxChar
 
+# GHC 9.10 generates dataToTag#-based Eq/Ord for Maybe/option and NonEmpty
+# which hs-to-coq can't translate. Skip them; defined manually in midamble.
+skip GHC.Base.Eq___option_op_zeze__
+skip GHC.Base.Eq___option_op_zsze__
+skip GHC.Base.Eq___option
+skip GHC.Base.Ord__option_compare
+skip GHC.Base.Ord__option_op_zl__
+skip GHC.Base.Ord__option_op_zlze__
+skip GHC.Base.Ord__option_op_zg__
+skip GHC.Base.Ord__option_op_zgze__
+skip GHC.Base.Ord__option_max
+skip GHC.Base.Ord__option_min
+skip GHC.Base.Ord__option
+
+skip GHC.Base.Eq___NonEmpty_op_zeze__
+skip GHC.Base.Eq___NonEmpty_op_zsze__
+skip GHC.Base.Eq___NonEmpty
+
 ## Type class instance ordering
 
-order GHC.Base.Eq___option GHC.Base.Ord__option
-
-order GHC.Base.Functor__arrow GHC.Base.Applicative__arrow_op_ztzg__ GHC.Base.Applicative__arrow GHC.Base.Monad__arrow_return_ GHC.Base.Monad__arrow GHC.Base.Alternative__arrow GHC.Base.MonadPlus__arrow
+# order for arrow instances (all skipped in GHC 9.10)
 
 order GHC.Base.Functor__list GHC.Base.Applicative__list GHC.Base.Monad__list_return_ GHC.Base.Monad__list_op_zgzg__ GHC.Base.Monad__list GHC.Base.Alternative__list
 
@@ -101,7 +124,7 @@ order GHC.Base.Functor__NonEmpty GHC.Base.Applicative__NonEmpty_op_ztzg__ GHC.Ba
 order GHC.Base.Monad__list GHC.Base.Monad__NonEmpty_op_zgzgze__
 
 order GHC.Base.Semigroup__list       GHC.Base.Monoid__list_mappend
-order GHC.Base.Semigroup__arrow      GHC.Base.Monoid__arrow_mappend
+# order GHC.Base.Semigroup__GHC_Prim_arrow (skipped in GHC 9.10)
 order GHC.Base.Semigroup__unit       GHC.Base.Monoid__unit_mappend
 order GHC.Base.Semigroup__comparison GHC.Base.Monoid__comparison_mappend
 order GHC.Base.Semigroup__option     GHC.Base.Monoid__option_mappend
@@ -114,6 +137,29 @@ skip GHC.Base.Alternative__list
 skip GHC.Base.MonadPlus__list
 skip GHC.Base.Alternative__option
 skip GHC.Base.MonadPlus__option
+
+# GHC 9.10: Solo type is in GHC.Tuple, not translated
+skip GHC.Base.Semigroup__Solo
+skip GHC.Base.Monoid__Solo
+skip GHC.Base.Functor__Solo
+skip GHC.Base.Applicative__Solo
+skip GHC.Base.Monad__Solo
+
+# GHC 9.10: skip all arrow-type instances
+# Instance names use just "arrow" (unTyCon extracts base from Qualified "GHC.Prim" "arrow")
+skip GHC.Base.Functor__arrow
+skip GHC.Base.Applicative__arrow
+skip GHC.Base.Monad__arrow
+skip GHC.Base.Semigroup__arrow
+skip GHC.Base.Monoid__arrow
+skip GHC.Base.Alternative__arrow
+skip GHC.Base.MonadPlus__arrow
+
+# <* operator: Coq operator parsing issue (<* parses as < then *).
+# Add a standalone definition equivalent to liftA2 const.
+add GHC.Base Definition GHC.Base.op_zlzt__ `{g__0__ : Applicative f}
+   : forall {a : Type}, forall {b : Type}, f a -> f b -> f a :=
+  fun {a} {b} => @liftA2 f _ g__0__ a b a (fun x _ => x).
 
 # For hs_coq_map theorem
 redefine Definition GHC.Base.map {A B :Type} (f : A -> B) xs := Coq.Lists.List.map f xs.

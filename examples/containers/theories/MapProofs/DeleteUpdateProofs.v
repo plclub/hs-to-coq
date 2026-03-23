@@ -4,6 +4,7 @@ Require Import MapProofs.Bounds.
 Require Import MapProofs.Tactics.
 Require Import MapProofs.MaxMinProofs.
 Require Import MapProofs.InsertProofs.
+Require Import Coq.Classes.Morphisms.
 
 Section WF.
 Context {e : Type} {a : Type} {HEq : Eq_ e} {HOrd : Ord e} {HEqLaws : EqLaws e}  {HOrdLaws : OrdLaws e}.
@@ -30,16 +31,14 @@ Proof.
     destruct Hthere as [[??]|Hthere].
       (*TODO: See why this is not rewriting automatically*)
     * subst. applyDesc e (@balanceR_Desc e a). rewrite size_Bin in *. rewrite size_Bin in H1.
-      solve_size. solve_Desc e. repeat(rewrite size_Bin in H1). rewrite size_Bin in Hsz0. solve_size.
-      (*subst; applyDesc e (@balanceR_Desc e a); solve_Desc e.*)
+      solve_size. all: solve_Desc e; repeat(rewrite size_Bin in H1); try (rewrite size_Bin in Hsz0); solve_size.
     * subst; applyDesc e (@balanceR_Desc e a). rewrite size_Bin in *. rewrite size_Bin in H1. solve_size.
-      solve_Desc e. rewrite size_Bin in Hsz0. solve_size.
+      all: solve_Desc e; try (rewrite size_Bin in Hsz0); solve_size.
   - eapply minViewSure_Desc; only 1: solve_Bounded e.
     intros y vy r [Hthere HD].
     applyDesc e HD.
     destruct Hthere as [[??]|Hthere]; subst; applyDesc e (@balanceL_Desc e a).
-    rewrite size_Bin in H1. solve_size. solve_Desc e. rewrite size_Bin in Hsz0. solve_size.
-    rewrite size_Bin in H1. solve_size. solve_Desc e. rewrite size_Bin in Hsz0. solve_size.
+    all: rewrite size_Bin in H1; solve_size; solve_Desc e; try (rewrite size_Bin in Hsz0); solve_size.
 
 Qed.
 
@@ -155,7 +154,6 @@ Proof.
 Qed.
 
 (** ** Verification of [adjustWithKey *)
-Require Import Coq.Classes.Morphisms. (* For [Proper] *)
 
 (*TODO: Had to add assumption that f is proper*)
 Lemma adjustWithKey_Desc :
@@ -215,20 +213,20 @@ intros ????? HB HP.
       * applyDesc e glue_Desc. solve_Desc e.
         rewrite -> (sem_outside_above HB1) by solve_Bounds e.
         rewrite -> (sem_outside_below HB2) by solve_Bounds e.
-        simpl_options. rewrite <-H1. cbn -[Z.add]. rewrite Hsz. omega.
+        simpl_options. rewrite <-H1. cbn -[Z.add]. rewrite Hsz. lia.
     + applyDesc e IHHB1. replace (x == x0) with false by solve_Bounds e.
       rewrite -> (sem_outside_below HB2) by solve_Bounds e.
       simpl_options. destruct (sem s1 x); cbn -[Z.add] in *; applyDesc e (@balanceR_Desc e a).
       destruct (f x a0) eqn : ?. simpl in Hsz. rewrite Hsz. left. assumption.
       simpl in Hsz. rewrite Hsz. solve_size.
       solve_Desc e. rewrite Hsz0. destruct (f x a0); simpl in Hsz; rewrite Hsz;
-      cbn -[Z.add]. reflexivity. omega. solve_Desc e.
+      cbn -[Z.add]. reflexivity. lia. solve_Desc e.
     + applyDesc e IHHB2. replace (x == x0) with false by (order e).
       rewrite -> (sem_outside_above HB1) by solve_Bounds e.
       simpl_options. destruct (sem s2 x); cbn -[Z.add] in *; applyDesc e (@balanceL_Desc e a).
       destruct (f x a0) eqn : ?. simpl in Hsz. rewrite Hsz. left. assumption.
       simpl in Hsz. rewrite Hsz. solve_size.
-      solve_Desc e. rewrite Hsz0. destruct (f x a0); simpl in Hsz; rewrite Hsz; cbn -[Z.add]; omega.
+      solve_Desc e. rewrite Hsz0. destruct (f x a0); simpl in Hsz; rewrite Hsz; cbn -[Z.add]; lia.
       solve_Desc e.
 Qed.
 

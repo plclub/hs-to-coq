@@ -2,7 +2,7 @@ Require Import Data.OldList.
 Require Import GHC.Base.
 Require Import GHC.Char.
 Require GHC.Unicode.
-Require Import Omega.
+Require Import Coq.Program.Wf.
 
 
 (* -------------------------------------------------------------------- *)
@@ -19,23 +19,41 @@ Qed.
 Require Coq.Lists.List.
 
 
-Lemma words_def s : words s = 
-  match (GHC.List.dropWhile GHC.Unicode.isSpace s) with 
+Lemma words_def s : words s =
+  match (GHC.List.dropWhile GHC.Unicode.isSpace s) with
     | nil => nil
     | s'  =>
      let 'pair w s'' := GHC.List.break GHC.Unicode.isSpace s' in
      cons w (words s'')
   end.
-Admitted.
-Lemma lines_def s : lines s = 
-  if (List.null s) then nil else 
+Proof.
+  unfold words at 1.
+  rewrite Wf.WfExtensionality.fix_sub_eq_ext.
+  fold words. cbn [proj1_sig].
+  destruct (List.dropWhile Unicode.isSpace s).
+  - reflexivity.
+  - destruct (List.break Unicode.isSpace (c :: l)).
+    reflexivity.
+Qed.
+
+Lemma lines_def s : lines s =
+  if (List.null s) then nil else
   let cons_ := fun '(pair h t) => cons h t in
-  cons_ (let 'pair l s' := GHC.List.break 
+  cons_ (let 'pair l s' := GHC.List.break
                              (fun arg_4__ =>
                                 arg_4__ == newline) s in
          pair l (match s' with | nil => nil | cons _ s'' => lines s'' end)).
 Proof.
-Admitted.
+  unfold lines at 1.
+  rewrite Wf.WfExtensionality.fix_sub_eq_ext.
+  fold lines. cbn [proj1_sig].
+  destruct (List.null s) eqn:E.
+  - reflexivity.
+  - destruct (List.break (fun arg_4__ => arg_4__ == newline) s) eqn:E2.
+    destruct l0.
+    + reflexivity.
+    + reflexivity.
+Qed.
 
 
 Lemma words_nil : words nil = nil. Proof. reflexivity. Qed.
@@ -73,6 +91,6 @@ Proof.
   reflexivity.
 Qed.
 
-Hint Rewrite words_nil lines_nil words_cons lines_cons : hs_simpl.
+#[export] Hint Rewrite words_nil lines_nil words_cons lines_cons : hs_simpl.
 
 

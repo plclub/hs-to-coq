@@ -5,6 +5,7 @@
              OverloadedStrings,
              ScopedTypeVariables,
              FlexibleContexts #-}
+#include "ghc-compat.h"
 
 module HsToCoq.ConvertHaskell.Declarations.Instances (
   convertClsInstDecls
@@ -16,9 +17,12 @@ import Data.Semigroup (Semigroup(..), (<>))
 import Data.Traversable
 import HsToCoq.Util.Traversable
 import Data.Maybe
+import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NE
 import Data.Bifunctor
+import Data.List (partition, sortBy)
 import Data.Monoid
+import Data.Ord (comparing)
 import qualified Data.Text as T
 import Control.Monad.Reader.Class
 
@@ -27,7 +31,11 @@ import Control.Monad.State
 import qualified Data.Map.Strict as M
 
 import GHC hiding (Name)
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Data.Bag (bagToList)
+#else
 import Bag
+#endif
 #if __GLASGOW_HASKELL__ >= 806
 import HsToCoq.Util.GHC.HsTypes (noExtCon)
 #endif
@@ -35,6 +43,7 @@ import HsToCoq.Util.GHC.Module
 import HsToCoq.Util.Monad (ErrorString)
 
 import HsToCoq.Coq.Gallina
+
 import HsToCoq.Coq.Subst
 import HsToCoq.Coq.SubstTy
 import HsToCoq.Coq.Pretty
@@ -51,6 +60,242 @@ import HsToCoq.ConvertHaskell.Axiomatize
 import HsToCoq.ConvertHaskell.Declarations.Class
 import HsToCoq.ConvertHaskell.TypeEnv.TyCl
 import HsToCoq.ConvertHaskell.TypeEnv.Instances
+
+import qualified Data.Set as S
+
+--------------------------------------------------------------------------------
+
+-- | Check if a type name is a single-constructor, single-field type (newtype).
+-- Returns (constructor, accessor) if so.
+lookupNewtypeInfo :: ConversionMonad r m
+                  => Qualid -> m (Maybe (Qualid, Qualid))
+lookupNewtypeInfo typeName = do
+    mcons <- lookupConstructors typeName
+    case mcons of
+      Just [con] -> do
+        mfields <- lookupConstructorFields con
+        case mfields of
+          Just (RecordFields [field]) -> pure $ Just (con, field)
+          Just (NonRecordFields 1)    -> pure $ Just (con, con) -- no accessor
+          _                           -> pure Nothing
+      _ -> pure Nothing
+
+-- | Extract the head type constructor from a Gallina type term.
+-- e.g. (Min inst_a) -> Just "Min", (list a) -> Just "list"
+-- Recurses through nested App to handle partially applied constructors
+-- like (Const inst_m) applied to further args: App (App (Qualid "Const") [m]) [a]
+typeHead :: Term -> Maybe Qualid
+typeHead (Qualid q)                      = Just q
+typeHead (App f _)                       = typeHead f
+typeHead (Parens t)                      = typeHead t
+typeHead (InScope t _)                   = typeHead t
+typeHead _                               = Nothing
+
+-- | Decompose an arrow type into arguments and result, skipping forall binders.
+-- Returns ([argTypes], resultType)
+decomposeArrowType :: Term -> ([Term], Term)
+decomposeArrowType (Forall _ t)  = decomposeArrowType t
+decomposeArrowType (Arrow a b)   = let (args, ret) = decomposeArrowType b
+                                   in (a : args, ret)
+decomposeArrowType (Parens t)    = decomposeArrowType t
+decomposeArrowType t             = ([], t)
+
+-- | Constant for the GHC.Prim.coerce qualid, used throughout coerce expansion.
+ghcPrimCoerce :: Qualid
+ghcPrimCoerce = Qualified "GHC.Prim" "coerce"
+
+-- | Expand a coerce-based definition body using explicit newtype wrapping.
+-- If the body contains GHC.Prim.coerce and we can determine the newtype
+-- constructors from the declared type, replace coerce with explicit
+-- pattern matching (unwrap arguments, apply function, wrap result).
+expandCoerce :: ConversionMonad r m
+             => Maybe Term  -- ^ The declared type (if available)
+             -> Term        -- ^ The definition body
+             -> m Term
+expandCoerce mDeclType body = case stripFunBinders body of
+    -- Strip any leading fun binders (implicit or explicit) from body
+    -- and work on the inner coerce expression
+    (outerBinders, innerBody) -> case innerBody of
+
+      -- Pattern: GHC.Prim.coerce applied to an argument (with optional Parens/HasType wrappers)
+      App (Qualid q) (PosArg arg :| [])
+        | q == ghcPrimCoerce, Just declType <- mDeclType
+        -> rewrap outerBinders <$> expandCoerceWithTypes declType (stripCoerceArg arg)
+
+      -- Pattern: bare GHC.Prim.coerce used as a function
+      Qualid q
+        | q == ghcPrimCoerce, Just declType <- mDeclType
+        -> rewrap outerBinders <$> expandBareCoerce declType
+
+      -- Pattern: GHC.Prim.coerce (f : srcType) :: dstType (old GHC 8.x pattern)
+      HasType app@(App (Qualid q)
+                       (PosArg (Parens (Qualid _)) :| [])) _
+        | q == ghcPrimCoerce
+        -> pure $ rewrap outerBinders app  -- existing hack: just strip type ascription
+
+      _ -> pure body
+  where
+    -- Strip Parens and HasType wrappers from a coerce argument
+    stripCoerceArg :: Term -> Term
+    stripCoerceArg (Parens (HasType fn _)) = fn
+    stripCoerceArg (HasType fn _)          = fn
+    stripCoerceArg (Parens fn)             = fn
+    stripCoerceArg fn                      = fn
+
+    -- Strip leading Fun binders to expose the inner coerce body
+    stripFunBinders :: Term -> ([NonEmpty Binder], Term)
+    stripFunBinders (Fun bs inner) =
+      let (rest, core) = stripFunBinders inner
+      in (bs : rest, core)
+    stripFunBinders t = ([], t)
+
+    -- Re-wrap an expanded body with the stripped binders
+    rewrap :: [NonEmpty Binder] -> Term -> Term
+    rewrap [] t     = t
+    rewrap (bs:rest) t = Fun bs (rewrap rest t)
+
+-- | Expand coerce when we have a typed inner function and a declared type.
+expandCoerceWithTypes :: ConversionMonad r m
+                      => Term -> Term -> m Term
+expandCoerceWithTypes declType innerFn = do
+    let (argTypes, retType) = decomposeArrowType declType
+    -- Try to find newtype info for argument and return types
+    argInfos <- mapM getNewtypeWrap argTypes
+    retInfo  <- getNewtypeWrap retType
+    -- If at least one argument or the return type is a newtype, expand
+    if any isNewtype argInfos || isNewtype retInfo
+      then buildExpandedBody argInfos retInfo innerFn
+      else do
+        liftIO $ putStrLn "hs-to-coq: warning: could not expand GHC.Prim.coerce (no newtype info)"
+        pure $ App (Qualid ghcPrimCoerce)
+                    (PosArg (Parens innerFn) :| [])
+
+-- | Expand bare coerce (used as identity-like function between newtype and base type).
+-- For bare coerce, we generate an explicit lambda that unwraps newtype args,
+-- applies any function args, and wraps the result.
+expandBareCoerce :: ConversionMonad r m
+                 => Term -> m Term
+expandBareCoerce declType = do
+    let (argTypes, retType) = decomposeArrowType declType
+    argInfos <- mapM getNewtypeWrap argTypes
+    retInfo  <- getNewtypeWrap retType
+    if any isNewtype argInfos || isNewtype retInfo
+      then do
+        let varNames = [ Bare (T.pack ("arg_" ++ show i ++ "__"))
+                       | i <- [0 :: Int .. length argTypes - 1] ]
+            indexed = zip3 [0::Int ..] argInfos varNames
+            innerExpr = buildInnerExpr indexed retInfo
+            explicitArgs = [ExplicitBinder (Ident v) | v <- varNames]
+        case NE.nonEmpty explicitArgs of
+          Just binders -> pure $ Fun binders innerExpr
+          Nothing -> do
+            liftIO $ putStrLn "hs-to-coq: warning: could not expand GHC.Prim.coerce (no newtype info)"
+            pure $ Qualid ghcPrimCoerce
+      else do
+        liftIO $ putStrLn "hs-to-coq: warning: could not expand GHC.Prim.coerce (no newtype info)"
+        pure $ Qualid ghcPrimCoerce
+  where
+    -- Build the inner expression for bare coerce
+    -- For single arg: wrap(unwrap(arg))
+    -- For multi arg like (a->b->c) -> F a -> F b -> F c:
+    --   apply first non-newtype arg to remaining unwrapped args, then wrap
+    buildInnerExpr :: [(Int, NewtypeWrap, Qualid)] -> NewtypeWrap -> Term
+    buildInnerExpr indexed retInfo =
+      let (fnArgs, dataArgs) = partition (\(_, nw, _) -> not (isNewtype nw)) indexed
+          unwrapped = [(i, unwrapArg nw (Qualid v)) | (i, nw, v) <- dataArgs]
+          fnTerms = [(i, Qualid v) | (i, _, v) <- fnArgs]
+          allTerms = map snd $ sortBy (comparing fst) (unwrapped ++ fnTerms)
+          applied = case allTerms of
+            []     -> Qualid ghcPrimCoerce
+            [x]    -> x
+            (f:xs) -> foldl (\acc a -> App acc (PosArg a :| [])) f xs
+      in wrapResult retInfo applied
+
+-- | Describes how a type in a coerce-expanded method signature relates to newtypes.
+-- GHC 9.10 uses @coerce@ extensively in derived instance methods. Coq can't resolve
+-- @Coercible@ for newtypes, so we expand coerce into explicit wrap/unwrap operations.
+-- Each constructor handles a different shape of newtype occurrence in the type:
+data NewtypeWrap = IsNewtype Qualid Qualid  -- ^ Direct newtype: constructor, accessor (e.g. @Last a@)
+                 | ListNewtype Qualid       -- ^ Newtype inside list: accessor to map over elements (e.g. @list (Last a)@ in mconcat)
+                 | FnNewtype [NewtypeWrap] NewtypeWrap  -- ^ Newtype in function result: arg wraps, result wrap (e.g. @a -> Last b@ in >>=)
+                 | NotNewtype
+                 deriving (Eq)
+
+isNewtype :: NewtypeWrap -> Bool
+isNewtype (IsNewtype _ _)  = True
+isNewtype (ListNewtype _)  = True
+isNewtype (FnNewtype _ _)  = True
+isNewtype NotNewtype       = False
+
+getNewtypeWrap :: ConversionMonad r m => Term -> m NewtypeWrap
+getNewtypeWrap ty = case ty of
+    -- Handle function types: a -> b where the result is a newtype
+    Arrow a b -> do
+      aWrap <- getNewtypeWrap a
+      bWrap <- getNewtypeWrap b
+      if isNewtype bWrap || isNewtype aWrap
+        then pure $ FnNewtype [aWrap] bWrap
+        else pure NotNewtype
+    _ -> case typeHead ty of
+      Just q  -> do
+        minfo <- lookupNewtypeInfo q
+        case minfo of
+          Just (con, acc) -> pure $ IsNewtype con acc
+          Nothing
+            -- Check for list (Newtype) pattern: unwrap by mapping accessor
+            | q == Bare "list" || q == Qualified "GHC.Base" "list"
+            , App _ args <- ty
+            , PosArg innerTy :| [] <- args
+            -> do innerInfo <- getNewtypeWrap innerTy
+                  case innerInfo of
+                    IsNewtype _ acc -> pure $ ListNewtype acc
+                    _               -> pure NotNewtype
+            | otherwise -> pure NotNewtype
+      Nothing -> pure NotNewtype
+
+unwrapArg :: NewtypeWrap -> Term -> Term
+unwrapArg (IsNewtype _con acc) var = App (Qualid acc) (PosArg var :| [])
+unwrapArg (ListNewtype acc)    var = App (App (Qualid (Qualified "GHC.Base" "map"))
+                                              (PosArg (Qualid acc) :| []))
+                                         (PosArg var :| [])
+unwrapArg (FnNewtype argWraps retWrap) var =
+    -- Generate: fun v0 v1 ... => unwrapRet (var (wrapArg v0) (wrapArg v1) ...)
+    let varNames = [Bare (T.pack ("v_" ++ show i ++ "__"))
+                   | i <- [0 :: Int .. length argWraps - 1]]
+        wrappedArgs = zipWith wrapArg argWraps (map Qualid varNames)
+        appliedFn = foldl (\f a -> App f (PosArg a :| [])) var wrappedArgs
+        unwrappedRet = unwrapRet retWrap appliedFn
+        binders = [ExplicitBinder (Ident v) | v <- varNames]
+    in case NE.nonEmpty binders of
+         Just bs -> Fun bs unwrappedRet
+         Nothing -> unwrappedRet
+  where
+    wrapArg (IsNewtype con _) v = App (Qualid con) (PosArg v :| [])
+    wrapArg _                 v = v
+    unwrapRet (IsNewtype _ acc) inner = App (Qualid acc) (PosArg inner :| [])
+    unwrapRet (FnNewtype _ _)   inner = inner  -- nested FnNewtype: don't recurse
+    unwrapRet _                 inner = inner
+unwrapArg NotNewtype            var = var
+
+wrapResult :: NewtypeWrap -> Term -> Term
+wrapResult (IsNewtype con _acc) inner = App (Qualid con) (PosArg inner :| [])
+wrapResult (ListNewtype _)      inner = inner  -- list result stays as-is
+wrapResult (FnNewtype _ _)      inner = inner  -- fn result stays as-is
+wrapResult NotNewtype            inner = inner
+
+-- | Build the expanded function body with explicit wrapping/unwrapping.
+buildExpandedBody :: ConversionMonad r m
+                  => [NewtypeWrap] -> NewtypeWrap -> Term -> m Term
+buildExpandedBody argInfos retInfo innerFn = do
+    let varNames = [ Bare (T.pack ("arg_" ++ show i ++ "__"))
+                   | i <- [0 :: Int .. length argInfos - 1] ]
+        unwrappedArgs = zipWith unwrapArg argInfos (map Qualid varNames)
+        innerApp = foldl (\f a -> App f (PosArg a :| [])) innerFn unwrappedArgs
+        wrappedResult = wrapResult retInfo innerApp
+        binders = [ExplicitBinder (Ident v) | v <- varNames]
+    case NE.nonEmpty binders of
+      Just bs -> pure $ Fun bs wrappedResult
+      Nothing -> pure wrappedResult
 
 --------------------------------------------------------------------------------
 
@@ -143,7 +388,14 @@ data InstanceInfo = InstanceInfo { instanceName       :: !Qualid
 -- TODO use LocalConvMonad instead?
 convertClsInstDeclInfo :: ConversionMonad r m => ClsInstDecl GhcRn -> m InstanceInfo
 convertClsInstDeclInfo ClsInstDecl{..} = do
-  (instanceName, instanceTy)  <- convertInstanceNameAndTy $ hsib_body cid_poly_ty
+  -- GHC 9.10: cid_poly_ty is LHsSigType (located HsSigType) instead of
+  -- HsImplicitBndrs; extract the body type via sig_body instead of hsib_body
+#if __GLASGOW_HASKELL__ >= 900
+  let unwrapSigType = sig_body . unLoc
+#else
+  let unwrapSigType = hsib_body
+#endif
+  (instanceName, instanceTy)  <- convertInstanceNameAndTy $ unwrapSigType cid_poly_ty
   utvm                        <- unusedTyVarModeFor instanceName
   instanceHead                <- withCurrentDefinition instanceName $ convertLHsSigType utvm cid_poly_ty
   instanceClass               <- termHead instanceHead
@@ -192,7 +444,13 @@ bindsToMap binds = fmap M.fromList $ forM binds $ \hs_bind -> do
 
 clsInstFamiliesToMap :: ConversionMonad r m => [LTyFamInstDecl GhcRn] -> m (M.Map Qualid (HsType GhcRn))
 clsInstFamiliesToMap assocTys =
-  fmap M.fromList . for assocTys $ \(L _ (TyFamInstDecl HsIB {hsib_body = FamEqn{..}})) ->
+  -- GHC 9.10: TyFamInstDecl has a direct FamEqn field instead of wrapping in HsIB
+  fmap M.fromList . for assocTys $
+#if __GLASGOW_HASKELL__ >= 900
+    \(L _ (TyFamInstDecl _ FamEqn{..})) ->
+#else
+    \(L _ (TyFamInstDecl HsIB {hsib_body = FamEqn{..}})) ->
+#endif
     (, unLoc feqn_rhs) <$> var TypeNS (unLoc feqn_tycon)
 
 -- Module-local
@@ -260,22 +518,50 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
       let localNameFor :: Qualid -> Qualid
           localNameFor meth = qualidMapBase (<> ("_" <> qualidBase meth)) instanceName
 
+      -- Build inverse of renamedModules (old->new) to get (new->[old]).
+      -- This lets envFor also register pre-module-rename keys, so that
+      -- GHC.Internal.* references match before renameModule runs.
+      inverseModRenames <- do
+          rmMap <- view (edits.renamedModules)
+          pure $ M.fromListWith (++)
+            [ (moduleNameText newM, [moduleNameText oldM])
+            | (oldM, newM) <- M.toList rmMap, oldM /= newM ]
+
+      let preRenameVariants :: Qualid -> [Qualid]
+          preRenameVariants (Qualified modName ident) =
+            case M.lookup modName inverseModRenames of
+              Just oldMods -> [Qualified om ident | om <- oldMods]
+              Nothing      -> []
+          preRenameVariants _ = []
+
       -- In the translation of meth1, we want all _other_ methods to be renamed
       -- to the concrete methods of the current instance (because type class methods
       -- usually refer to each other).
       -- We don’t do this for the current method (because type class methods are usually
       -- not recursive.)
       -- This is a heuristic, and the user can override it using `rewrite` rules.
+      -- Note: we register both post-rename and pre-rename module names so that
+      -- GHC.Internal.* references are caught before renameModule runs.
       let envFor :: Qualid -> r -> r
-          envFor meth = appEndo $ foldMap Endo
+          envFor meth = appEndo $ foldMap Endo $
             [ edits.renamings.at (NamespacedIdent ns m) ?~ localNameFor m
             | m <- classMethods
             , m /= meth
-            , let ns = if m `elem` classTypes then TypeNS else ExprNS]
+            , let ns = if m `elem` classTypes then TypeNS else ExprNS
+            ] ++
+            [ edits.renamings.at (NamespacedIdent ns preM) ?~ localNameFor m
+            | m <- classMethods
+            , m /= meth
+            , preM <- preRenameVariants m
+            , let ns = if m `elem` classTypes then TypeNS else ExprNS
+            ]
 
       let allLocalNames = M.fromList $  [ (m, Qualid (localNameFor m)) | m <- classMethods ]
 
       let quantify sub meth body = (maybeFun ?? body) . subst sub <$> getImplicitBindersForClassMember className meth
+          -- Like quantify, but makes binders explicit (not implicit).
+          -- Used inside record literals where {a : Type} is meaningless and triggers warnings.
+          quantifyExplicit sub meth body = (maybeFun ?? body) . map toExplicitBinder . subst sub <$> getImplicitBindersForClassMember className meth
 
       -- For each method, look for
       --  * explicit definitions
@@ -289,12 +575,12 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             local (envFor meth) $ convertMethodBinding localMeth bind >>= \case
               ConvertedDefinitionBinding cd ->
                 pure . CM_Defined CL_Term $ maybeFun (cd^.convDefArgs) (cd^.convDefBody)
-                -- We have a tough time handling recursion (including mutual
-                -- recursion) here because of name overloading
+              -- Hard errors (not convUnsupported): these indicate edit misconfiguration,
+              -- not missing hs-to-coq features, so we fail immediately.
               ConvertedPatternBinding {} ->
-                convUnsupportedHere "pattern bindings in instances"
+                throwProgramError "pattern bindings in instances"
               ConvertedAxiomBinding {} ->
-                convUnsupportedHere "axiom bindings in instances"
+                throwProgramError "axiom bindings in instances"
               RedefinedBinding _ def ->
                 CM_Renamed (definitionSentence def) <$ case def of
                   CoqInductiveDef        _   -> editFailure   "cannot redefine an instance method definition into an Inductive"
@@ -303,7 +589,8 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
                   CoqInstanceDef         _   -> editFailure   "cannot redefine an instance method definition into an Instance"
                   CoqAxiomDef            _   -> pure ()
                   CoqAssertionDef        apf -> editFailure $ "cannot redefine an instance method definition into " ++ anAssertionVariety apf
-              SkippedBinding _ -> convUnsupportedHere "skipping binding in instance"
+              -- Hard error: skip on instance methods is an edit misconfiguration
+              SkippedBinding _ -> throwProgramError "skipping binding in instance"
 
           (Nothing, Just assoc, _) ->
             let convertedType = withCurrentDefinition meth $ convertHsType assoc in
@@ -342,7 +629,12 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             
             -- We've converted the method, now sentenceify it
             ty    <- makeTy sub className meth
-            qbody <- quantify sub meth $ substTy sub' body
+            -- Expand GHC.Prim.coerce into explicit newtype wrapping/unwrapping
+            -- to avoid Coq Coercible/Unpeel resolution loops
+            expandedBody <- case level of
+              CL_Term -> expandCoerce (Just ty) body
+              _       -> pure body
+            qbody <- quantify sub meth $ substTy sub' expandedBody
             pure . DefinitionSentence $ DefinitionDef Local
                                                       localMeth
                                                       (subst allLocalNames <$> params)
@@ -352,16 +644,19 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
 
       let instHeadTy = appList (Qualid className)
             (PosArg <$> filterVisibleVars convertedInstanceClass convertedInstanceTypes)
+      -- Use quantifyExplicit (not quantify) for the instance record/definition
+      -- body: Coq 8.20 warns about implicit binders {a : Type} inside record
+      -- literals, where they have no meaning.  toExplicitBinder converts them.
       instance_sentence <- view (edits.simpleClasses.contains className) >>= \case
         True  -> do
-          methods <- traverse (\m -> (m,) <$> quantify M.empty m (Qualid $ localNameFor m)) classMethods
+          methods <- traverse (\m -> (m,) <$> quantifyExplicit M.empty m (Qualid $ localNameFor m)) classMethods
           pure $ ProgramSentence
                    (InstanceSentence $ InstanceDefinition instanceName binds instHeadTy methods Nothing)
                    Nothing
         False -> do
           -- Assemble the actual record
           instRHS <- fmap Record $ forM classMethods $ \m -> do
-                       method_body <- subst convertedInstanceSubst $ quantify M.empty m $ Qualid (localNameFor m)
+                       method_body <- subst convertedInstanceSubst $ quantifyExplicit M.empty m $ Qualid (localNameFor m)
                        return (qualidMapBase (<> "__") m, method_body)
           -- TODO: This should probably be created with 'gensym'/'genqid', but then I
           -- have to be within a 'LocalConvMonad' and then I have to think exactly about
@@ -415,7 +710,7 @@ makeInstanceMethodSubst params =
   -- When desugared naïvely into Coq, this will result in a term with type
   -- @
   --     forall {a₁}, forall {a₂ b},
-  --       (a₂ -> b) -> f (Either a₁ a₂) -> f (Either a₁ b)
+  --       (a₂ -> b) -> Either a₁ a₂ -> Either a₁ b
   -- @
   -- Except without the subscripts!  So we have to rename either
   -- the per-instance variables (here, @a₁@) or the type class

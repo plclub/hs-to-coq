@@ -1,4 +1,4 @@
-Require Import Omega.
+Require Import Lia.
 Require Import Psatz.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.NArith.NArith.
@@ -212,7 +212,7 @@ Proof.
   replace tip_width with 6 by reflexivity.
   rewrite eq_iff_eq_true.
   rewrite !N.eqb_eq.
-  rewrite -> N_shiftl_inj by omega.
+  rewrite -> N_shiftl_inj by lia.
   reflexivity.
 Qed.
  *)
@@ -267,12 +267,12 @@ Proof.
   intros.
   rewrite <- rPrefix_shiftr.
   unfold rPrefix, tip_width, tip_width. simpl id.
-  rewrite N.shiftr_div_pow2 by omega.
-  rewrite N.shiftl_mul_pow2 by omega.
+  rewrite N.shiftr_div_pow2 by lia.
+  rewrite N.shiftl_mul_pow2 by lia.
   unfold prefixOf, suffixOf, suffixBitMask, WIDTH in *.
   unfoldMethods.
   simpl N.log2.
-  rewrite N.land_ones by omega.
+  rewrite N.land_ones by lia.
   symmetry.
   rewrite N.mul_comm.
   apply N.div_mod.
@@ -763,7 +763,7 @@ Ltac isBitMask := solve [auto with isBitMask].
 Lemma isBitMask_isBitMask0:
   forall bm, isBitMask bm -> isBitMask0 bm.
 Proof. intros. unfold isBitMask0, isBitMask in *. intuition. Qed.
-Hint Resolve isBitMask_isBitMask0 : isBitMask.
+#[export] Hint Resolve isBitMask_isBitMask0 : isBitMask.
 
 Lemma isBitMask0_zero_or_isBitMask:
   forall bm, isBitMask0 bm <-> (bm = 0%N \/ isBitMask bm).
@@ -818,7 +818,7 @@ Proof.
     rewrite H2, H3 by assumption.
     reflexivity.
 Qed.
-Hint Resolve isBitMask_lor : isBitMask.
+#[export] Hint Resolve isBitMask_lor : isBitMask.
 
 Lemma isBitMask0_land:
   forall bm1 bm2, isBitMask0 bm1 -> isBitMask0 bm2 -> isBitMask0 (N.land bm1 bm2).
@@ -831,7 +831,7 @@ Proof.
   rewrite H, H0 by assumption.
   reflexivity.
 Qed.
-Hint Resolve isBitMask0_land : isBitMask.
+#[export] Hint Resolve isBitMask0_land : isBitMask.
 
 Lemma isBitMask0_lxor:
   forall bm1 bm2, isBitMask0 bm1 -> isBitMask0 bm2 -> isBitMask0 (N.lxor bm1 bm2).
@@ -844,7 +844,7 @@ Proof.
   rewrite H, H0 by assumption.
   reflexivity.
 Qed.
-Hint Resolve isBitMask0_lxor : isBitMask.
+#[export] Hint Resolve isBitMask0_lxor : isBitMask.
 
 
 Lemma isBitMask0_ldiff:
@@ -858,7 +858,7 @@ Proof.
   rewrite H by assumption.
   reflexivity.
 Qed.
-Hint Resolve isBitMask0_ldiff : isBitMask.
+#[export] Hint Resolve isBitMask0_ldiff : isBitMask.
 
 Lemma isBitMask0_lor:
   forall bm1 bm2, isBitMask0 bm1 -> isBitMask0 bm2 -> isBitMask0 (N.lor bm1 bm2).
@@ -871,7 +871,7 @@ Proof.
   rewrite H, H0 by assumption.
   reflexivity.
 Qed.
-Hint Resolve isBitMask0_lor : isBitMask.
+#[export] Hint Resolve isBitMask0_lor : isBitMask.
 
 Lemma isBitMask0_ones:
   forall n, (n <= WIDTH)%N ->
@@ -888,7 +888,7 @@ Proof.
     constructor.
   Nomega.
 Qed.
-Hint Resolve isBitMask0_ones : isBitMask.
+#[export] Hint Resolve isBitMask0_ones : isBitMask.
 
 
 Lemma isBitMask_bitmapOf: forall e, isBitMask (wordToN (bitmapOf e)).
@@ -905,7 +905,7 @@ Admitted.
   * apply N.pow_lt_mono_r. reflexivity.
     apply N.mod_upper_bound; compute; congruence.
 Qed. *)
-Hint Resolve isBitMask_bitmapOf : isBitMask.
+#[export] Hint Resolve isBitMask_bitmapOf : isBitMask.
 
 Lemma isBitMask0_outside:
   forall bm i,
@@ -921,7 +921,7 @@ Lemma isBitMask_log2_lt_WIDTH:
   forall bm,
   isBitMask bm -> (N.log2 bm < WIDTH)%N.
 Proof. intros. apply N.log2_lt_pow2; apply H. Qed.
-Hint Resolve isBitMask_log2_lt_WIDTH : isBitMask.
+#[export] Hint Resolve isBitMask_log2_lt_WIDTH : isBitMask.
 
 Lemma isBitMask_ctz_lt_WIDTH:
   forall bm,
@@ -940,7 +940,7 @@ Proof.
   simpl in H0.
   Nomega.
 Qed.
-Hint Resolve isBitMask_ctz_lt_WIDTH : isBitMask.
+#[export] Hint Resolve isBitMask_ctz_lt_WIDTH : isBitMask.
 
 (** *** Verification of [revNat] *)
 
@@ -961,7 +961,7 @@ Proof.
 Admitted.
 (*   exact (RevNatSlowProofs.isBitMask0_revNat).
 Qed. *)
-Hint Resolve isBitMask0_revNat : isBitMask.
+#[export] Hint Resolve isBitMask0_revNat : isBitMask.
 
 
 Lemma isBitMask0_clearbit:
@@ -974,7 +974,7 @@ Proof.
   apply clearbit_le.
   assumption.
 Qed.
-Hint Resolve isBitMask0_clearbit : isBitMask.
+#[export] Hint Resolve isBitMask0_clearbit : isBitMask.
 
 Lemma clearbit_revNat:
   forall n i, (i < WIDTH)%N ->
@@ -1029,7 +1029,7 @@ Proof.
   intuition.
   rewrite revNat_eq_0 in H by assumption. intuition.
 Qed.
-Hint Resolve isBitMask_revNat : isBitMask.
+#[export] Hint Resolve isBitMask_revNat : isBitMask.
 
 Lemma revNat_revNat:
   forall n, revNat (revNat n) = n.
@@ -1084,7 +1084,7 @@ Proof.
   * apply N_pow_pos_nonneg; Nomega.
   * apply N.pow_lt_mono_r; Nomega.
 Qed.
-Hint Resolve pow_isBitMask : isBitMask.
+#[export] Hint Resolve pow_isBitMask : isBitMask.
 
 Lemma revNat_pow:
   forall i,
@@ -1154,7 +1154,7 @@ Admitted.
   apply N.pow_lt_mono_r; try Nomega.
   isBitMask.
 Qed. *)
-Hint Resolve isBitMask0_lowestBitMask : isBitMask.
+#[export] Hint Resolve isBitMask0_lowestBitMask : isBitMask.
 
 
 Lemma isBitMask_highestBitMask:
@@ -1169,7 +1169,7 @@ Admitted.
     Nomega.
     isBitMask.
 Qed.
-Hint Resolve isBitMask_highestBitMask : isBitMask.
+#[export] Hint Resolve isBitMask_highestBitMask : isBitMask.
  *)
 
 Lemma lxor_pow2_clearbit:
@@ -1268,7 +1268,7 @@ Lemma isBitMask_twoBits:
   forall bm,
   hasTwoBits bm -> isBitMask bm.
 Proof. intros. apply H. Qed.
-Hint Immediate isBitMask_twoBits : isBitMask.
+#[export] Hint Immediate isBitMask_twoBits : isBitMask.
 
 Lemma hasTwoBits_revNat:
   forall bm,
@@ -1377,7 +1377,7 @@ Proof.
     apply clearbit_pow2_0.
   * destruct H. isBitMask.
 Qed.
-Hint Resolve isBitMask_clearbit_twoBits : isBitMask.
+#[export] Hint Resolve isBitMask_clearbit_twoBits : isBitMask.
 
 (** *** Induction along a bitmask *)
 
@@ -2143,11 +2143,11 @@ Proof. intuition; specialize (H0 i); specialize (H i); intuition. Qed.
 Lemma isBitMask0_wordToN:
   forall bm, isBitMask0 (wordToN bm).
 Admitted.
-Hint Resolve isBitMask0_wordToN : isBitMask.
+#[export] Hint Resolve isBitMask0_wordToN : isBitMask.
 Lemma isBitMask0_lnot:
   forall n, isBitMask0 (N.lnot n WIDTH).
 Admitted.
-Hint Resolve isBitMask0_lnot : isBitMask.
+#[export] Hint Resolve isBitMask0_lnot : isBitMask.
 
 
 Program Fixpoint isSubsetOf_Desc
@@ -2214,7 +2214,7 @@ Next Obligation.
       ** eapply (DescBin s1 _ _ s2); try eassumption; try reflexivity.
     - intros.
        etransitivity; [eapply IH with (f2 := f1)|].
-       + simpl. omega.
+       + simpl. lia.
        + eapply DescTip with (p := NToInt (rPrefix r)) (r := r) (bm := bm); try eassumption; try congruence.
        + eassumption.
        + apply pointwise_iff. intros i Hi.
@@ -2228,7 +2228,7 @@ Next Obligation.
          rewrite orb_false_r. reflexivity.
     - intros.
        etransitivity; [eapply IH with (f2 := f2)|].
-       + simpl. omega.
+       + simpl. lia.
        + eapply DescTip with (p := NToInt (rPrefix r)) (r := r) (bm := bm); try eassumption; try congruence.
        + eassumption.
        + apply pointwise_iff. intros i Hi.
@@ -2281,7 +2281,7 @@ Next Obligation.
          -- eapply DescBin with (s1 := s2) (s2 := s3); try eassumption; reflexivity.
       ** intros.
          etransitivity; [eapply IH with (f2 := f2)|].
-         + simpl. omega.
+         + simpl. lia.
          + eapply DescBin with (s1 := s1) (s2 := s0) (r := r); try eassumption; reflexivity.
          + eassumption.
          + apply pointwise_iff. intros i Hi.
@@ -2296,7 +2296,7 @@ Next Obligation.
            rewrite orb_false_r. reflexivity.
       ** intros.
          etransitivity; [eapply IH with (f2 := f3)|].
-         + simpl. omega.
+         + simpl. lia.
          + eapply DescBin with (s1 := s1) (s2 := s0) (r := r); try eassumption; reflexivity.
          + eassumption.
          + apply pointwise_iff. intros i Hi.
@@ -2315,8 +2315,8 @@ Next Obligation.
       + replace r4 with r in * by (apply rPrefix_rBits_range_eq; Nomega). clear r4.
         simpl.
         rewrite andb_true_iff.
-        rewrite (IH s1 r1 f1 s2 r2 f2); try assumption; simpl; try omega.
-        rewrite (IH s0 r0 f0 s3 r3 f3); try assumption; simpl; try omega.
+        rewrite (IH s1 r1 f1 s2 r2 f2); try assumption; simpl; try lia.
+        rewrite (IH s0 r0 f0 s3 r3 f3); try assumption; simpl; try lia.
         intuition.
         ++ rewrite H10. rewrite H4 in H8.
            rewrite orb_true_iff in H8.
@@ -2500,7 +2500,7 @@ Qed.
 
 Lemma empty_WF : WF empty.
 Proof. now exists (fun _ => false); constructor. Qed.
-Hint Resolve empty_WF.
+#[export] Hint Resolve empty_WF : core.
 
 (** *** Verification of [singleton] *)
 
@@ -2541,7 +2541,7 @@ Lemma link_Desc:
   Desc (link p1' s1 p2' s2) r f.
 Proof.
   intros; subst.
-  unfold link.
+  unfold link, linkWithMask.
   rewrite branchMask_spec.
   rewrite mask_spec.
   rewrite -> zero_spec by (apply commonRangeDisj_rBits_pos; eapply Desc_rNonneg; eassumption).
@@ -2937,12 +2937,12 @@ Next Obligation.
             |..]; auto.
         - rewrite -> (isSubrange_commonRange_l r1 r2) in * by isSubrange_true.
           eapply DescBin; [eapply union_Desc|eassumption|..]; try eassumption; try reflexivity.
-          ** subst sl sr. simpl. omega.
+          ** subst sl sr. simpl. lia.
           ** isSubrange_true; eapply Desc_rNonneg; eassumption.
           ** solve_f_eq.
         - rewrite -> (isSubrange_commonRange_l r1 r2) in *  by isSubrange_true.
           eapply DescBin; [eassumption|eapply union_Desc|..]; try eassumption; try reflexivity.
-          ** subst sl sr. simpl. omega.
+          ** subst sl sr. simpl. lia.
           ** isSubrange_true; eapply Desc_rNonneg; eassumption.
           ** solve_f_eq.
       ++ apply nomatch_zero_smaller; try assumption; intros.
@@ -2953,12 +2953,12 @@ Next Obligation.
             |..]; auto.
         - rewrite -> (isSubrange_commonRange_r r1 r2) in * by isSubrange_true.
           eapply DescBin; [eapply union_Desc|eassumption|..]; try eassumption; try reflexivity.
-          ** subst sl sr. simpl. omega.
+          ** subst sl sr. simpl. lia.
           ** isSubrange_true; eapply Desc_rNonneg; eassumption.
           ** solve_f_eq.
         - rewrite -> (isSubrange_commonRange_r r1 r2) in *  by isSubrange_true.
           eapply DescBin; [eassumption|eapply union_Desc|..]; try eassumption; try reflexivity.
-          ** subst sl sr. simpl. omega.
+          ** subst sl sr. simpl. lia.
           ** isSubrange_true; eapply Desc_rNonneg; eassumption.
           ** solve_f_eq.
       ++ unfoldMethods. Int_Word_N.
@@ -2967,12 +2967,12 @@ Next Obligation.
           rewrite commonRange_idem in *.
           eapply DescBin; try assumption; try reflexivity.
           ** eapply union_Desc.
-             -- subst sl sr. simpl. omega.
+             -- subst sl sr. simpl. lia.
              -- eassumption.
              -- eassumption.
              -- intro i. reflexivity.
           ** eapply union_Desc.
-             -- subst sl sr. simpl. omega.
+             -- subst sl sr. simpl. lia.
              -- eassumption.
              -- eassumption.
              -- intro i. reflexivity.
@@ -3272,13 +3272,13 @@ Next Obligation.
          - (* s2 is part of the left half of s1 *)
            eapply Desc0_subRange.
            eapply intersection_Desc; clear intersection_Desc; try eassumption.
-           ** subst sl sr. simpl. omega.
+           ** subst sl sr. simpl. lia.
            ** solve_f_eq_disjoint.
            ** isSubrange_true; eapply Desc_rNonneg; eassumption.
          - (* s2 is part of the right half of s1 *)
            eapply Desc0_subRange.
            eapply intersection_Desc; clear intersection_Desc; try eassumption.
-           ** subst sl sr. simpl. omega.
+           ** subst sl sr. simpl. lia.
            ** solve_f_eq_disjoint.
            ** isSubrange_true; eapply Desc_rNonneg; eassumption.
 
@@ -3292,7 +3292,7 @@ Next Obligation.
           - (* s1 is part of the left half of s2 *)
             eapply Desc0_subRange.
             eapply intersection_Desc; clear intersection_Desc; try eassumption.
-            ** subst sl sr. simpl. omega.
+            ** subst sl sr. simpl. lia.
             ** solve_f_eq_disjoint.
             ** isSubrange_true; eapply Desc_rNonneg; eassumption.
 
@@ -3300,7 +3300,7 @@ Next Obligation.
 
             eapply Desc0_subRange.
             eapply intersection_Desc; clear intersection_Desc; try eassumption.
-            ** subst sl sr. simpl. omega.
+            ** subst sl sr. simpl. lia.
             ** solve_f_eq_disjoint.
             ** isSubrange_true; eapply Desc_rNonneg; eassumption.
 
@@ -3310,12 +3310,12 @@ Next Obligation.
            - subst.
              eapply bin_Desc0; try assumption; try reflexivity.
              ** eapply intersection_Desc.
-                --- subst sl sr. simpl. omega.
+                --- subst sl sr. simpl. lia.
                 --- eassumption.
                 --- eassumption.
                 --- intro i. reflexivity.
              ** eapply intersection_Desc.
-                --- subst sl sr. simpl. omega.
+                --- subst sl sr. simpl. lia.
                 --- eassumption.
                 --- eassumption.
                 --- intro i. reflexivity.
@@ -3473,7 +3473,7 @@ Next Obligation.
         - (* s2 is part of the left half of s1 *)
           eapply bin_Desc0.
           ++ eapply difference_Desc; clear difference_Desc; try eassumption.
-             subst sl sr. simpl. omega.
+             subst sl sr. simpl. lia.
              intro i; reflexivity.
           ++ apply Desc_Desc0; eassumption.
           ++ eassumption.
@@ -3486,7 +3486,7 @@ Next Obligation.
           eapply bin_Desc0.
           ++ apply Desc_Desc0; eassumption.
           ++ eapply difference_Desc; clear difference_Desc; try eassumption.
-             subst sl sr. simpl. omega.
+             subst sl sr. simpl. lia.
              intro i; reflexivity.
           ++ eassumption.
           ++ eassumption.
@@ -3505,13 +3505,13 @@ Next Obligation.
           - (* s1 is part of the left half of s2 *)
             eapply Desc0_subRange.
             eapply difference_Desc; clear difference_Desc; try eassumption.
-            *** subst sl sr. simpl. omega.
+            *** subst sl sr. simpl. lia.
             *** solve_f_eq_disjoint.
             *** apply isSubrange_refl.
           - (* s1 is part of the right half of s2 *)
             eapply Desc0_subRange.
             eapply difference_Desc; clear difference_Desc; try eassumption.
-            *** subst sl sr. simpl. omega.
+            *** subst sl sr. simpl. lia.
             *** solve_f_eq_disjoint.
             *** apply isSubrange_refl.
 
@@ -3522,12 +3522,12 @@ Next Obligation.
           - subst.
             eapply bin_Desc0; try assumption; try reflexivity.
             ++ eapply difference_Desc.
-               --- subst sl sr. simpl. omega.
+               --- subst sl sr. simpl. lia.
                --- eassumption.
                --- eassumption.
                --- intro i. reflexivity.
             ++ eapply difference_Desc.
-               --- subst sl sr. simpl. omega.
+               --- subst sl sr. simpl. lia.
                --- eassumption.
                --- eassumption.
                --- intro i. reflexivity.
@@ -3787,12 +3787,12 @@ Next Obligation.
           rewrite disjoint_Desc; try eassumption.
           ** setoid_rewrite H6.
              split; intro; solve_eq_disjoint_specialize.
-          ** subst sl sr. simpl. omega.
+          ** subst sl sr. simpl. lia.
         - (* s2 is part of the right half of s1 *)
           rewrite disjoint_Desc; try eassumption.
           ** setoid_rewrite H6.
              split; intro; solve_eq_disjoint_specialize.
-          ** subst sl sr. simpl. omega.
+          ** subst sl sr. simpl. lia.
 
       ++ (* s2 is not smaller than s1 *)
         destruct (N.ltb_spec (rBits r1) (rBits r2)).
@@ -3805,12 +3805,12 @@ Next Obligation.
             rewrite disjoint_Desc; try eassumption.
             ** setoid_rewrite H17.
                split; intro; solve_eq_disjoint_specialize.
-            ** subst sl sr. simpl. omega.
+            ** subst sl sr. simpl. lia.
           - (* s1 is part of the right half of s2 *)
             rewrite disjoint_Desc; try eassumption.
             ** setoid_rewrite H17.
                split; intro; solve_eq_disjoint_specialize.
-            ** subst sl sr. simpl. omega.
+            ** subst sl sr. simpl. lia.
 
         -- (* s1 and s2 are the same size *)
            Int_Word_N.
@@ -3820,8 +3820,8 @@ Next Obligation.
              rewrite !disjoint_Desc; try eassumption.
              ** setoid_rewrite H17. setoid_rewrite H6.
                 intuition solve_eq_disjoint_specialize.
-             ** subst sl sr. simpl. omega.
-             ** subst sl sr. simpl. omega.
+             ** subst sl sr. simpl. lia.
+             ** subst sl sr. simpl. lia.
            - split; intro; try reflexivity.
              solve_f_eq_disjoint.
 Qed.
@@ -4919,7 +4919,7 @@ Proof.
   rewrite foldlBits_eq at 1. unfold foldlBits_go, proj1_sig.
   unfoldMethods. Int_Word_N.
   replace (wordToN bm =? Z.to_N 0)%N with false
-    by (symmetry; apply N.eqb_neq; unfold isBitMask in *; zify; rewrite Z2N.id; omega).
+    by (symmetry; apply N.eqb_neq; unfold isBitMask in *; zify; try rewrite Z2N.id; lia).
   (* eek *)
   replace (Sumbool.sumbool_of_bool false) with (@right (false = true) (false = false) (@eq_refl bool false))
     by reflexivity.
@@ -5192,7 +5192,7 @@ Proof.
     erewrite toList_go_append with (s := s2) by eassumption.
     rewrite IHDesc1.
     rewrite IHDesc2.
-    rewrite !app_length.
+    rewrite !length_app.
     Int_Word_N.
     simpl length.
     unfold Nat in *.
@@ -5227,7 +5227,7 @@ Proof.
          erewrite toList_go_append with (s := s2) by eassumption.
          erewrite sizeGo_spec' by eassumption.
          erewrite sizeGo_spec' by eassumption.
-         rewrite !app_length.
+         rewrite !length_app.
          simpl length.
          Int_Word_N.
          rewrite Nat2Z.inj_add.
@@ -5236,7 +5236,7 @@ Proof.
          erewrite toList_go_append with (s := s2) by eassumption.
          erewrite sizeGo_spec' by eassumption.
          erewrite sizeGo_spec' by eassumption.
-         rewrite !app_length.
+         rewrite !length_app.
          simpl length.
          rewrite Nat.add_0_r.
          Int_Word_N.
@@ -5300,7 +5300,7 @@ Proof.
   * exists (fun _ => false).
     split.
     + constructor. auto.
-    + intuition. congruence.
+    + intuition; try congruence.
   * destruct IHl as [?[??]].
     eexists.
     split.
@@ -5690,7 +5690,7 @@ Next Obligation.
       intuition; rewrite ?andb_false_r in *; try congruence.
   * (* Tip left, Bin right *)
     simpl; subst.
-    do 2 erewrite <- IH by (first [ simpl; omega
+    do 2 erewrite <- IH by (first [ simpl; lia
                                   | apply DescTip; try eassumption; reflexivity
                                   | eassumption ]).
     repeat (match goal with [ |- context [match ?scrut with _ => _ end] ] => destruct scrut end;
@@ -5710,14 +5710,14 @@ Next Obligation.
     - (* right is bigger than left *)
       unfold match_, nomatch. unfoldMethods.
       rewrite if_negb.
-      do 2 erewrite <- IH by (first [ simpl; omega
+      do 2 erewrite <- IH by (first [ simpl; lia
                                     | eapply DescBin; try beassumption; reflexivity
                                     | eassumption ]).
       destruct (intToN (mask _ _) =? _), (zero _ _);
       repeat (match goal with [ |- context [match ?scrut with _ => _ end] ] => destruct scrut eqn:? end); intuition.
     - (* same sized bins *)
       unfoldMethods.
-      do 2 erewrite <- IH by (first [ simpl; omega
+      do 2 erewrite <- IH by (first [ simpl; lia
                                     | eapply DescBin; try beassumption; reflexivity
                                     | eassumption ]).
       destruct (N.eqb_spec (rPrefix r) (rPrefix r4));
@@ -6404,7 +6404,7 @@ Module IntSetFSet <: WSfun(Int_as_OT) <: WS <: Sfun(Int_as_OT) <: S.
   Definition filter : (elt -> bool) -> t -> t.
     refine (fun p ws =>
        s <-- ws;;
-       pack (filter p s) _).
+       pack (Data.IntSet.InternalWord.filter p s) _).
     apply filter_WF; assumption.
   Defined.
 
@@ -6412,12 +6412,12 @@ Module IntSetFSet <: WSfun(Int_as_OT) <: WS <: Sfun(Int_as_OT) <: S.
   Program Definition partition : (elt -> bool) -> t -> t * t :=
      (fun p ws => Data.IntSet.InternalWord.partition p ws).
   Next Obligation.
-    rewrite partition_snd.
+    rewrite partition_fst.
     apply filter_WF.
     destruct ws; auto.
   Qed.
   Next Obligation.
-    rewrite partition_fst.
+    rewrite partition_snd.
     apply filter_WF.
     destruct ws; auto.
   Qed.

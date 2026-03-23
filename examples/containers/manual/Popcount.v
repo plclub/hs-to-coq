@@ -7,7 +7,7 @@ The standard library lacks a popcount operation.
 Require Import Coq.PArith.PArith.
 Require Import Coq.NArith.NArith.
 Require Import Coq.ZArith.ZArith.
-Require Import Omega.
+Require Import Lia.
 
 (** First for [positive], where the function is nicely total. *)
 
@@ -114,7 +114,7 @@ Proof.
     try specialize (IHp1 p2);
     rewrite ?N_popcount_Ndouble, ?N_popcount_Nsucc_double,
             ?N_double_succ;
-    zify; omega
+    zify; lia
   ).
   * simpl.
     destruct (Pos_popcount p2); simpl in *; try rewrite <- Pplus_one_succ_r; try reflexivity.

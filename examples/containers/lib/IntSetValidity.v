@@ -29,7 +29,7 @@ Import GHC.Num.Notations.
 Fixpoint commonPrefix (t : Data.IntSet.Internal.IntSet) : bool
   := let sharedPrefix
       : Data.IntSet.Internal.Prefix -> Coq.Numbers.BinNums.N -> bool :=
-       fun p a => p GHC.Base.== (p Data.Bits..&.(**) a) in
+       fun p a => p GHC.Base.== Data.Bits.op_zizazi__ p a in
      match t with
      | Data.IntSet.Internal.Nil => true
      | Data.IntSet.Internal.Tip _ _ => true
@@ -59,7 +59,7 @@ Fixpoint maskRespected (t : Data.IntSet.Internal.IntSet) : bool
                                                                                             (maskRespected r)))
      end.
 
-Definition nilNeverChildOfBin : Data.IntSet.Internal.IntSet -> bool :=
+#[global] Definition nilNeverChildOfBin : Data.IntSet.Internal.IntSet -> bool :=
   fun t =>
     let fix noNilInSet t'
       := match t' with
@@ -73,8 +73,8 @@ Definition nilNeverChildOfBin : Data.IntSet.Internal.IntSet -> bool :=
     | Data.IntSet.Internal.Bin _ _ l r => andb (noNilInSet l) (noNilInSet r)
     end.
 
-Definition validTipPrefix : Data.IntSet.Internal.Prefix -> bool :=
-  fun p => (#63 Data.Bits..&.(**) p) GHC.Base.== #0.
+#[global] Definition validTipPrefix : Data.IntSet.Internal.Prefix -> bool :=
+  fun p => (Data.Bits.op_zizazi__ #63 p) GHC.Base.== #0.
 
 Fixpoint tipsValid (t : Data.IntSet.Internal.IntSet) : bool
   := match t with
@@ -83,7 +83,7 @@ Fixpoint tipsValid (t : Data.IntSet.Internal.IntSet) : bool
      | Data.IntSet.Internal.Bin _ _ l r => andb (tipsValid l) (tipsValid r)
      end.
 
-Definition valid : Data.IntSet.Internal.IntSet -> bool :=
+#[global] Definition valid : Data.IntSet.Internal.IntSet -> bool :=
   fun t =>
     andb (nilNeverChildOfBin t) (andb (maskPowerOfTwo t) (andb (commonPrefix t)
                                                                (andb (maskRespected t) (tipsValid t)))).

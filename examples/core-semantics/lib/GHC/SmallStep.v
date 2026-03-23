@@ -27,7 +27,7 @@ Require GHC.List.
 Require GHC.Num.
 Require Id.
 Require Literal.
-Require Panic.
+Require GHC.Builtin.Uniques.
 Require Unique.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -81,11 +81,11 @@ Instance Default_StackElem : HsToCoq.Err.Default StackElem :=
 
 (* ----------- termination metric for step function --------------- *)
 
-Require Omega.
+Require Import Lia.
 
 Ltac termination_by_omega :=
   Coq.Program.Tactics.program_simpl;
-  simpl;Omega.omega.
+  simpl;lia.
 
 Ltac solve_step_obligations :=
   repeat split; intros; try discriminate; termination_by_omega.
@@ -107,7 +107,7 @@ Defined.
 Next Obligation.
   match goal with [a : Core.Expr _ , h : Core.isTypeArg a = true |- _ ] => 
                  destruct a; simpl in h; try discriminate end;
-  simpl; replace (BinPos.Pos.to_nat 1) with 1; try Omega.omega; reflexivity.
+  simpl; replace (BinPos.Pos.to_nat 1) with 1; try lia; reflexivity.
 Defined.
 Next Obligation.
   repeat split; intros; intro h0; inversion h0.
@@ -233,8 +233,8 @@ Definition etaExpandDCWorker : Core.DataCon -> Core.CoreExpr :=
   fun dc =>
     let params :=
       GHC.List.zipWith (fun n t =>
-                          Id.mkSysLocalOrCoVar (FastString.fsLit (GHC.Base.hs_string__ "eta"))
-                          (Unique.mkBuiltinUnique n) t) nil (nil) in
+                          Id.mkSysLocal (FastString.fsLit (GHC.Base.hs_string__ "eta"))
+                          (GHC.Builtin.Uniques.mkBuiltinUnique n) HsToCoq.Err.default t) nil (nil) in
     Core.mkLams params (Core.mkConApp dc (GHC.Base.map Core.Mk_Var params)).
 
 Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
@@ -252,13 +252,13 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
       | pair (pair heap (LitVal l)) (cons (Alts b alts) s) =>
           Error (GHC.Base.hs_string__ "literal not found in alts")
       | pair (pair heap (DataConApp dc args as val)) (cons (Alts b alts) s) =>
-          let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+          let subst0 := Core.mkEmptySubst (in_scope heap) in
           let 'pair subst1 b' := CoreSubst.substBndr subst0 b in
           match CoreUtils.findAlt (Core.DataAlt dc) alts with
-          | Some (pair (pair _ pats) rhs) =>
+          | Some (Core.Mk_Alt _ pats rhs) =>
               let val_pats := GHC.List.filter Core.isId pats in
               let 'pair subst2 pats' := CoreSubst.substBndrs subst1 val_pats in
-              let rhs' := CoreSubst.substExpr Panic.someSDoc subst2 rhs in
+              let rhs' := CoreSubst.substExpr subst2 rhs in
               let heap' := addManyToHeap pats' args (addToHeap b' (valueToExpr val) heap) in
               Mk_Step (pair (pair heap' rhs') s)
           | _ => j_3__
@@ -270,30 +270,30 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
       | pair (pair heap (LamVal v e)) (cons (ApplyTo a) s) =>
           let fresh_tmpl :=
             Id.mkSysLocal (FastString.fsLit (GHC.Base.hs_string__ "arg"))
-            (Unique.mkBuiltinUnique #1) (CoreUtils.exprType a) in
+            (GHC.Builtin.Uniques.mkBuiltinUnique #1) HsToCoq.Err.default (CoreUtils.exprType a) in
           let fresh := Core.uniqAway (in_scope heap) fresh_tmpl in
           let subst :=
-            CoreSubst.extendSubstWithVar (CoreSubst.mkEmptySubst (in_scope heap)) v fresh in
-          Mk_Step (pair (pair (addToHeap fresh a heap) (CoreSubst.substExpr Panic.someSDoc
+            CoreSubst.extendSubstWithVar (Core.mkEmptySubst (in_scope heap)) v fresh in
+          Mk_Step (pair (pair (addToHeap fresh a heap) (CoreSubst.substExpr
                                subst e)) s)
       | pair (pair heap val) (cons (ApplyTo a) s) =>
           Error (GHC.Base.hs_string__ "non-function applied to argument")
       | pair (pair heap val) (cons (Alts b nil) s) =>
           Error (GHC.Base.hs_string__ "empty case")
-      | pair (pair heap val) (cons (Alts b (cons (pair (pair Core.DEFAULT nil) rhs)
+      | pair (pair heap val) (cons (Alts b (cons (Core.Mk_Alt Core.DEFAULT nil rhs)
          nil)) s) =>
-          let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+          let subst0 := Core.mkEmptySubst (in_scope heap) in
           let 'pair subst1 b' := CoreSubst.substBndr subst0 b in
           let heap' := addToHeap b' (valueToExpr val) heap in
-          let rhs' := CoreSubst.substExpr Panic.someSDoc subst1 rhs in
+          let rhs' := CoreSubst.substExpr subst1 rhs in
           Mk_Step (pair (pair heap' rhs') s)
       | pair (pair heap (LitVal l)) (cons (Alts b alts) s) =>
-          let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+          let subst0 := Core.mkEmptySubst (in_scope heap) in
           let 'pair subst1 b' := CoreSubst.substBndr subst0 b in
           match CoreUtils.findAlt (Core.LitAlt l) alts with
-          | Some (pair (pair _ nil) rhs) =>
+          | Some (Core.Mk_Alt _ nil rhs) =>
               let heap' := addToHeap b' (Core.Lit l) heap in
-              let rhs' := CoreSubst.substExpr Panic.someSDoc subst1 rhs in
+              let rhs' := CoreSubst.substExpr subst1 rhs in
               Mk_Step (pair (pair heap' rhs') s)
           | _ => j_12__
           end
@@ -305,9 +305,9 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
         Mk_Step (pair (pair (addToHeap v (valueToExpr val) heap) (valueToExpr val)) s)
     | pair (pair heap (LamVal v e)) (cons (ApplyTo a) s) =>
         let subst :=
-          CoreSubst.extendSubst (CoreSubst.mkEmptySubst (in_scope heap)) v a in
+          CoreSubst.extendSubst (Core.mkEmptySubst (in_scope heap)) v a in
         if exprIsTrivial' a : bool
-        then Mk_Step (pair (pair heap (CoreSubst.substExpr Panic.someSDoc subst e))
+        then Mk_Step (pair (pair heap (CoreSubst.substExpr subst e))
                            s) else
         j_29__
     | _ => j_29__
@@ -322,16 +322,16 @@ Program Fixpoint step (arg_0__ : Conf) {measure (step_measure arg_0__)} : Step
        | pair (pair heap (Core.App e a)) s =>
            Mk_Step (pair (pair heap e) (cons (ApplyTo a) s))
        | pair (pair heap (Core.Let (Core.NonRec v rhs) e)) s =>
-           let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+           let subst0 := Core.mkEmptySubst (in_scope heap) in
            let 'pair subst1 v' := CoreSubst.substBndr subst0 v in
-           let e' := CoreSubst.substExpr Panic.someSDoc subst1 e in
+           let e' := CoreSubst.substExpr subst1 e in
            Mk_Step (pair (pair (addToHeap v' rhs heap) e') s)
        | pair (pair heap (Core.Let (Core.Rec pairs) e)) s =>
            let 'pair vars rhss := GHC.List.unzip pairs in
-           let subst0 := CoreSubst.mkEmptySubst (in_scope heap) in
+           let subst0 := Core.mkEmptySubst (in_scope heap) in
            let 'pair subst1 vars' := CoreSubst.substRecBndrs subst0 vars in
-           let rhss' := GHC.Base.map (CoreSubst.substExpr Panic.someSDoc subst1) rhss in
-           let e' := CoreSubst.substExpr Panic.someSDoc subst1 e in
+           let rhss' := GHC.Base.map (CoreSubst.substExpr subst1) rhss in
+           let e' := CoreSubst.substExpr subst1 e in
            Mk_Step (pair (pair (addManyToHeap vars' rhss' heap) e') s)
        | pair (pair heap (Core.Case e b _ alts)) s =>
            Mk_Step (pair (pair heap e) (cons (Alts b alts) s))
@@ -399,16 +399,17 @@ Admit Obligations.
      option pair step_measure true AxiomatizedTypes.Coercion Coq.Lists.List.length
      Core.App Core.Case Core.Cast Core.CoreAlt Core.CoreArg Core.CoreBndr
      Core.CoreExpr Core.DEFAULT Core.DataAlt Core.DataCon Core.InScopeSet Core.Lam
-     Core.Let Core.Lit Core.LitAlt Core.Mk_Coercion Core.Mk_Type Core.Mk_Var
+     Core.Let Core.Lit Core.LitAlt Core.Mk_Alt Core.Mk_Coercion Core.Mk_Type
+     Core.Mk_Var Core.Mult
      Core.NonRec Core.Rec Core.Var Core.dataConRepArity Core.isId Core.isTypeArg
      Core.mkConApp Core.mkInScopeSet Core.mkLams Core.mkVarSet Core.uniqAway
-     CoreSubst.extendSubst CoreSubst.extendSubstWithVar CoreSubst.mkEmptySubst
+     CoreSubst.extendSubst CoreSubst.extendSubstWithVar Core.mkEmptySubst
      CoreSubst.substBndr CoreSubst.substBndrs CoreSubst.substExpr
      CoreSubst.substRecBndrs CoreUtils.exprType CoreUtils.findAlt Data.Foldable.all
      Data.Foldable.foldr Data.Maybe.isJust Data.Tuple.fst FastString.fsLit
      GHC.Base.String GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zg__ GHC.Base.op_zsze__ GHC.Err.patternFailure GHC.List.filter
      GHC.List.lookup GHC.List.unzip GHC.List.zipWith GHC.Num.fromInteger
-     Id.isDataConWorkId_maybe Id.mkSysLocal Id.mkSysLocalOrCoVar Literal.Literal
-     Panic.someSDoc Unique.mkBuiltinUnique
+     Id.isDataConWorkId_maybe Id.mkSysLocal Literal.Literal
+     GHC.Builtin.Uniques.mkBuiltinUnique
 *)

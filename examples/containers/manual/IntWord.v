@@ -63,12 +63,12 @@ Definition wordTonat (w : Word) : nat :=
 
 (** Instances *)
 
-Instance Eq___Word : Eq_ Word := fun _ k => k
+#[global] Instance Eq___Word : Eq_ Word := fun _ k => k
   {| op_zeze____ x y := N.eqb (wordToN x) (wordToN y);
      op_zsze____ x y := negb (N.eqb (wordToN x) (wordToN y))
   |}.
 
-Program Instance Ord__Word : Ord Word := fun _ k => k
+#[global] Program Instance Ord__Word : Ord Word := fun _ k => k
   {| compare__   x y := N.compare (wordToN x) (wordToN y)
   ;  op_zl____   x y := N.ltb (wordToN x) (wordToN y)
   ;  op_zg____   x y := N.ltb (wordToN y) (wordToN x)
@@ -78,7 +78,7 @@ Program Instance Ord__Word : Ord Word := fun _ k => k
   ;  max__       x y := if N.leb (wordToN x) (wordToN y) then y else x
   |}.
 
-Instance Num__Word : Num Word := 
+#[global] Instance Num__Word : Num Word := 
   {| op_zp__     x y := NToWord (wordToN x + wordToN y);
      op_zm__     x y := NToWord (wordToN x - wordToN y);
      op_zt__     x y := NToWord (wordToN x * wordToN y);
@@ -88,7 +88,7 @@ Instance Num__Word : Num Word :=
      signum      x   := if N.eqb (wordToN x) 0 then NToWord 0 else NToWord 1
   |}.
 
-Instance Bits__Word : Bits Word :=
+#[global] Instance Bits__Word : Bits Word :=
   { op_zizazi__  x y  := NToWord (N.land (wordToN x) (wordToN y));
     op_zizbzi__  x y  := NToWord (N.lor  (wordToN x) (wordToN y));
     bit          x    := NToWord (2^(Z.to_N x));
@@ -111,12 +111,12 @@ Instance Bits__Word : Bits Word :=
     xor          x y  := NToWord (N.lxor  (wordToN x) (wordToN y));
     zeroBits          := NToWord 0 }.
 
-Instance Eq___Int : Eq_ Int := fun _ k => k
+#[global] Instance Eq___Int : Eq_ Int := fun _ k => k
   {| op_zeze____ x y := N.eqb (intToN x) (intToN y);
      op_zsze____ x y := negb (N.eqb (intToN x) (intToN y))
   |}.
 
-Program Instance Ord__Int : Ord Int := fun _ k => k
+#[global] Program Instance Ord__Int : Ord Int := fun _ k => k
   {| compare__   x y := Z.compare (intToZ x) (intToZ y)
   ;  op_zl____   x y := Z.ltb (intToZ x) (intToZ y)
   ;  op_zg____   x y := Z.ltb (intToZ y) (intToZ x)
@@ -126,7 +126,7 @@ Program Instance Ord__Int : Ord Int := fun _ k => k
   ;  max__       x y := if Z.leb (intToZ x) (intToZ y) then y else x
   |}.
 
-Instance Num__Int : Num Int := 
+#[global] Instance Num__Int : Num Int := 
   {| op_zp__     x y := ZToInt (intToZ x + intToZ y);
      op_zm__     x y := ZToInt (intToZ x - intToZ y);
      op_zt__     x y := ZToInt (intToZ x * intToZ y);
@@ -137,7 +137,7 @@ Instance Num__Int : Num Int :=
                         if Z.eqb (intToZ x) 0 then ZToInt 0 else ZToInt 1
   |}.
 
-Instance Bits__Int : Bits Int :=
+#[global] Instance Bits__Int : Bits Int :=
   { op_zizazi__  x y  := NToInt (N.land (intToN x) (intToN y));
     op_zizbzi__  x y  := NToInt (N.lor  (intToN x) (intToN y));
     bit          x    := NToInt (2^(Z.to_N x));

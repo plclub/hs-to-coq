@@ -5,7 +5,7 @@
 -Q ../../transformers/lib ""
 -Q ../../containers/lib ""
 -Q ../../containers/theories ""
--arg -w -arg -masking-absolute-name
+-arg -w -arg -masking-absolute-name,-intuition-auto-with-star
 Util.v
 ContainerProofs.v
 Axioms.v

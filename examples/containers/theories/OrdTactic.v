@@ -9,6 +9,7 @@ the module system.
 
 Require Import GHC.Base.
 Require Import Proofs.GHC.Base.
+Require Import Lia.
 Set Bullet Behavior "Strict Subproofs".
 
 Class OrdLaws (t : Type) {HEq : Eq_ t} {HOrd : Ord t} {HEqLaw : EqLaws t} :=
@@ -153,9 +154,9 @@ Ltac nonconst_bool_eq_to_iff :=
     not_bool_const b1; not_bool_const b2; rewrite ->eq_iff_eq_true
   end.
 
-Hint Rewrite -> andb_true_iff : bool_to_prop.
-Hint Rewrite -> orb_true_iff  : bool_to_prop.
-Hint Rewrite -> negb_true_iff : bool_to_prop.
+#[export] Hint Rewrite -> andb_true_iff : bool_to_prop.
+#[export] Hint Rewrite -> orb_true_iff  : bool_to_prop.
+#[export] Hint Rewrite -> negb_true_iff : bool_to_prop.
 
 Ltac bool_to_prop :=
   nonconst_bool_eq_to_iff;
@@ -454,7 +455,7 @@ Proof.
     try apply eq_iff_eq_true;
     rewrite ?negb_true_iff, ?N.eqb_eq, ?N.eqb_neq, ?N.leb_le,  ?N.leb_gt, ?N.ltb_lt,
             ?N.compare_eq_iff, ?N.compare_lt_iff, ?N.compare_gt_iff in *;
-    try (zify;omega).
+    try (zify;lia).
 Qed.
 
 Ltac unfoldZ := unfold
@@ -471,7 +472,7 @@ Proof.
     try apply eq_iff_eq_true;
     rewrite ?negb_true_iff, ?Z.eqb_eq, ?Z.eqb_neq, ?Z.leb_le,  ?Z.leb_gt, ?Z.ltb_lt,
             ?Z.compare_eq_iff, ?Z.compare_lt_iff, ?Z.compare_gt_iff in *;
-    try omega.
+    try lia.
 Qed.
 
 Module Tests.

@@ -24,6 +24,7 @@ Defined.
 Definition apply {k1}{k2}{f : k1 -> k2}{g}{a}{b} : (f :~: g) -> (a :~: b) -> (f a :~: g b).
 intros. subst. auto. Defined.
 
+#[global]
 Instance Eq_EqTy {A} {a b : A} : `{Eq_ (a :~: b)} := fun _ k => k
 	(Eq___Dict_Build _ (fun x y => true) (fun x y => false)).
 
@@ -33,6 +34,7 @@ Instance Eq_EqTy {A} {a b : A} : `{Eq_ (a :~: b)} := fun _ k => k
 Class TestEquality {k1} (f : k1 -> Type) :=
   { testEquality {a}{b} : f a -> f b -> option (a :~: b) }.
 
+#[global]
 Instance TestEquality_EqTy {k}{a:k} : `{ TestEquality (fun x => a :~: x) } :=
   { testEquality := fun a b x y => match x,  y with eq_refl, eq_refl => Some eq_refl end }.
 

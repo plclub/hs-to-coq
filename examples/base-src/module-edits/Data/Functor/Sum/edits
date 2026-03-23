@@ -1,6 +1,18 @@
 polykinds Data.Functor.Sum.Sum k
 data kinds Data.Functor.Sum.Sum (k -> Type),(k -> Type), k
 
+# GHC 9.10: redefine Eq to avoid dataToTag#/patternFailure
+redefine Local Definition Data.Functor.Sum.Eq___Sum_op_zeze__ {inst_k : Type} {inst_f : inst_k -> Type}
+  {inst_a : inst_k} {inst_g : inst_k -> Type} `{GHC.Base.Eq_ (inst_f inst_a)}
+  `{GHC.Base.Eq_ (inst_g inst_a)}
+   : Sum inst_f inst_g inst_a -> Sum inst_f inst_g inst_a -> bool :=
+  fun a b =>
+    match a, b with
+    | InL a1, InL b1 => ((a1 GHC.Base.== b1))
+    | InR a1, InR b1 => ((a1 GHC.Base.== b1))
+    | _, _ => false
+    end.
+
 order Data.Functor.Sum.Eq___Sum Data.Functor.Sum.Ord__Sum
 
 order Data.Functor.Sum.Functor__Sum Data.Functor.Sum.Applicative__Sum_op_ztzg__ Data.Functor.Sum.Applicative__Sum Data.Functor.Sum.Monad__Sum_return_ Data.Functor.Sum.Monad__Sum

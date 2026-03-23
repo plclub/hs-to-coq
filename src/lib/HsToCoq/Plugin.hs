@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -7,14 +8,25 @@
 module HsToCoq.Plugin (plugin) where
 
 import Data.Text (pack)
+import Data.Word (Word64)
 import Control.Monad.IO.Class
 import System.IO
 
+#if __GLASGOW_HASKELL__ >= 900
+import GHC.Plugins hiding (vcat, InScope)
+import qualified GHC.Utils.Outputable as Outputable
+import GHC.Types.Tickish
+#define Tickish GenTickish
+import GHC.Tc.Utils.TcType as TcType
+import GHC.Utils.Ppr (Mode(PageMode))
+import GHC.Types.Unique (getKey)
+#else
 import GhcPlugins hiding (vcat)
 import Unique
 import TcType
 import qualified Pretty
 import qualified Outputable
+#endif
 
 import HsToCoq.Coq.Gallina hiding (Type, Let, App, Name)
 import HsToCoq.Coq.Gallina.Orphans ()
@@ -39,18 +51,47 @@ instance ToTerm (Tickish b) where
 instance ToTerm Int where
     t n = InScope (Num (fromIntegral n)) "N"
 
+-- GHC 9.10 changed Unique keys from Int to Word64
+#if __GLASGOW_HASKELL__ >= 910
+instance ToTerm Word64 where
+    t n = InScope (Num (fromIntegral n)) "N"
+#endif
+
 instance ToTerm Module where
     t (Module a b) = App2 "Mk_Module" (t a) (t b)
 
-instance ToTerm IndefUnitId where
-    t _ = "default"
+-- GHC 9.x restructured package units: UnitId is now a newtype over
+-- FastString, and the old IndefUnitId/DefiniteUnitId split became
+-- GenUnit with RealUnit/VirtUnit/HoleUnit constructors.
+-- Alt became a named data type (was a tuple in GHC 8.x).
+#if __GLASGOW_HASKELL__ >= 900
+instance ToTerm a => ToTerm (GenUnit a) where
+  t (RealUnit a) = "RealUnit" <: [t a]
+  t (VirtUnit a) = "VirtUnit" <: [t a]
+  t HoleUnit = "HoleUnit"
 
-instance ToTerm DefUnitId where
+instance ToTerm a => ToTerm (Definite a) where
+  t (Definite a) = "Definite" <: [t a]
+
+instance ToTerm (GenInstantiatedUnit a) where
+  t _ = "GenInstantiatedUnit(..)"
+
+instance ToTerm UnitId where
+  t (UnitId a) = "UnitId" <: [t a]
+
+instance ToTerm b => ToTerm (Alt b) where
+  t (Alt x y z) = "Alt" <: [t x, t y, t z]
+#else
+instance ToTerm IndefUnitId where
     t _ = "default"
 
 instance ToTerm UnitId where
     t (IndefiniteUnitId a) = "IndefiniteUnitId" <: [t a]
     t (DefiniteUnitId a)   = "DefiniteUnitId" <: [t a]
+#endif
+
+instance ToTerm DefUnitId where
+    t _ = "default"
 
 instance ToTerm ModuleName where
     t _ = "default"
@@ -172,7 +213,12 @@ proofPass :: PluginPass -- ModGuts -> CoreM ModGuts
 proofPass guts@ModGuts {..} = do
     dflags <- getDynFlags
     liftIO $ withFile coq WriteMode $ \h -> do
-      printSDocLn Pretty.PageMode dflags h (defaultDumpStyle dflags) $
+#if __GLASGOW_HASKELL__ >= 900
+      let ctx = initSDocContext dflags defaultDumpStyle
+      printSDocLn ctx (PageMode False) h $
+#else
+      printSDocLn PageMode dflags h (defaultDumpStyle dflags) $
+#endif
         Outputable.vcat ["(*", Outputable.ppr mg_binds, "*)"]
       hPrettyPrint h $ vcat (map renderGallina mod)
     return guts

@@ -30,6 +30,7 @@ Definition Qabs (q : Rational) : Rational :=
 Definition Qsignum (q : Rational) : Rational :=
   QArith_base.Qmake (Z.sgn (QArith_base.Qnum q)) (QArith_base.Qden q).
 
+#[global]
 Instance Num_Q__ : Num Rational := {
   op_zp__   := QArith_base.Qplus;
   op_zm__   := QArith_base.Qminus;
@@ -40,12 +41,14 @@ Instance Num_Q__ : Num Rational := {
   signum      := Qsignum; }.
 
 
- Instance Eq_Q : Eq_ Rational := fun _ k => k {|
+#[global]
+Instance Eq_Q : Eq_ Rational := fun _ k => k {|
    op_zeze____ := Qeq_bool;
    op_zsze____ := fun x y => negb (Qeq_bool x y)
  |}.
 
- Instance Ord_Q : Ord Rational :=
+#[global]
+Instance Ord_Q : Ord Rational :=
    ord_default Qcompare.
 
 
@@ -91,10 +94,12 @@ Definition ratioPrec1 : Int := (ratioPrec + #1)%Z.
 Definition fromIntegral {a} {b} `{(Integral a)} `{(Num b)} : (a -> b) :=
   (fromInteger ∘ toInteger).
 
+#[global]
 Instance instance__Real_Int__72__ : (Real Int) := {
   toRational := (fun x => QArith_base.Qmake x 1)
 }.
 
+#[global]
 Instance instance__Integral_Int__74__ : (Integral Int) := {
   toInteger := id ;
   quot := Z.quot ;
@@ -104,10 +109,12 @@ Instance instance__Integral_Int__74__ : (Integral Int) := {
   quotRem := Z.quotrem ;
   divMod := fun x y => (Z.div x y, Z.modulo x y) }.
 
+#[global]
 Instance instance__Real_Word : (Real Word) := {
   toRational := (fun x => QArith_base.Qmake (Z.of_N x) 1)
 }.
 
+#[global]
 Instance instance__Integral_Word : (Integral Word) := {
   toInteger := Z.of_N ;
   quot := N.div ;

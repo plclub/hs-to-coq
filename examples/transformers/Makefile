@@ -118,6 +118,15 @@ $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 	             $(wildcard $(SRC)/$*.hs) $(wildcard $(SRC)/tests/$*.hs)
 	test -e $@
+	@# Post-processing: GHC 9.10 MonadTrans has a quantified superclass
+	@# constraint that Coq cannot resolve. Strip it from generated output.
+	@if [ "$*" = "Control/Monad/Trans/Class" ]; then \
+	  sed -i \
+	    -e 's/Definition MonadTrans (t : (Type -> Type) -> Type -> Type) `{forall {m/Definition MonadTrans (t : (Type -> Type) -> Type -> Type) :=/' \
+	    -e '/^   : Type -> Type},/d' \
+	    -e '/^  forall `{GHC.Base.Monad m}, GHC.Base.Monad (t m)} :=/d' \
+	    $@; \
+	fi
 
 $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preamble.v drop-in/%.hs
 	$(HS_TO_COQ) -e module-edits/$*/edits \

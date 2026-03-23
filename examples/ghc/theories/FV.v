@@ -1,8 +1,7 @@
 (* Disable notation conflict warnings *)
 Set Warnings "-notation-overridden".
 
-From mathcomp.ssreflect
-Require Import ssreflect ssrnat prime ssrbool eqtype.
+From Coq Require Import ssreflect ssrbool.
 
 Require Import Core.
 Require Import FV.
@@ -31,7 +30,7 @@ Set Bullet Behavior "Strict Subproofs".
 
 Lemma RespectsVar_const_true : RespectsVar (const true).
 Proof. move => x1 x2 Eq. reflexivity. Qed.
-Hint Resolve RespectsVar_const_true.
+#[export] Hint Resolve RespectsVar_const_true : core.
 Lemma RespectsVar_andb f0 f: 
   RespectsVar f0 -> RespectsVar f ->
   RespectsVar (fun v : Var => f0 v && f v).
@@ -291,7 +290,7 @@ Proof.
   unfold emptyFV.
   reflexivity.
 Qed. 
-Hint Rewrite mapUnionFV_nil : hs_simpl. 
+#[export] Hint Rewrite mapUnionFV_nil : hs_simpl.
 
 Lemma mapUnionFV_cons A f (x : A) xs : 
   mapUnionFV f (x :: xs) = unionFV (mapUnionFV f xs) (f x).
@@ -300,7 +299,7 @@ Proof.
   unfold unionFV.
   reflexivity.
 Qed.
-Hint Rewrite mapUnionFV_cons : hs_simpl. 
+#[export] Hint Rewrite mapUnionFV_cons : hs_simpl.
 
 
 Lemma map_union_FV_WF : forall A f (ls : list A),
@@ -336,12 +335,12 @@ Proof.
   intros. apply map_union_FV_WF; intros. apply unit_FV_WF.
 Qed.
 
-Hint Resolve unit_FV_WF.
-Hint Resolve empty_FV_WF.
-Hint Resolve union_FV_WF.
-Hint Resolve unions_FV_WF.
-Hint Resolve del_FV_WF.
-Hint Resolve mkFVs_FV_WF.
+#[export] Hint Resolve unit_FV_WF : core.
+#[export] Hint Resolve empty_FV_WF : core.
+#[export] Hint Resolve union_FV_WF : core.
+#[export] Hint Resolve unions_FV_WF : core.
+#[export] Hint Resolve del_FV_WF : core.
+#[export] Hint Resolve mkFVs_FV_WF : core.
 
 (** * Some other theroems about [FV]s. *)
 
@@ -355,7 +354,7 @@ Lemma DenotesfvVarSet vs fv :
   Denotes vs fv -> fvVarSet fv [=] vs.
 Proof.
   move => [vs0 fv0 h1].
-  unfold fvVarSet, op_z2218U__, fvVarListVarSet, Tuple.snd.
+  unfold fvVarSet, op_z2218U__, fvVarAcc, Tuple.snd.
   specialize (h1 (const true) emptyVarSet emptyVarSet nil ltac:(eauto)). 
   destruct h1.
   rewrite extendVarSetList_nil.
@@ -394,7 +393,7 @@ Qed.
 
 Lemma unionVarSet_same vs : unionVarSet vs vs [=] vs.
 Proof. set_b_iff. fsetdec. Qed.
-Hint Rewrite unionVarSet_same : hs_simpl.
+#[export] Hint Rewrite unionVarSet_same : hs_simpl.
 
 Lemma delVarSet_fvVarSet: forall fv x,
     WF_fv fv ->
