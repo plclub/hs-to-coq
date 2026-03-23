@@ -399,17 +399,81 @@ Abort.
 (* The original thm_MaskPow2 is false for unbounded N (see thm_MaskPow2_false).
    In Haskell, Word is 64-bit, so all keys satisfy k < 2^64 and all masks
    satisfy mask < 2^64. Under this constraint, the property holds.
-   We restate with an explicit bound hypothesis reflecting Haskell semantics. *)
+
+   However, the Coq model's enumFromTo for N is off-by-one:
+   enumFromTo 0 63 = map N.of_nat (seq 0 63) = [0..62], so powersOf2
+   only contains 2^0 through 2^62 (not 2^63). Therefore the bound must
+   be k < 2^63 (not 2^64) to ensure all masks are in powersOf2.
+   A set with keys {0, 2^63} is WF and bounded by 2^64, but its mask
+   2^63 is not in powersOf2, disproving the 2^64 version. *)
+
+(* Auxiliary: for n <= 62, 2^n is in powersOf2.
+   Proved by exhaustive case analysis on the 63 possible values of n. *)
+Lemma member_powersOf2_le62 : forall n : N, (n <= 62)%N -> member (2^n)%N powersOf2 = true.
+Proof.
+  intro n.
+  destruct n as [|p]; intro Hn.
+  - vm_compute. reflexivity.
+  - destruct p as [p|p|]; [ | | vm_compute; reflexivity].
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: destruct p as [p|p|]; try (vm_compute; reflexivity).
+    all: exfalso; zify; lia.
+Qed.
+
 Definition bounded_WF (s : IntSet) :=
-  WF s /\ forall k, member k s = true -> (k < 2^64)%N.
+  WF s /\ forall k, member k s = true -> (k < 2^63)%N.
 
 Theorem thm_MaskPow2_bounded : forall s, bounded_WF s -> prop_MaskPow2 s = true.
 Proof.
-  (* The proof requires showing that for bounded keys, all rBits <= 63,
-     hence all masks are in [2^0..2^63]. Needs induction on Desc with
-     the bound propagated through halfRange. *)
-  admit.
-Admitted.
+  elim => [p m l IHl r IHr | p bm | ] [HWF Hbound] //=.
+  (* Bin case: need member msk powersOf2 && prop_MaskPow2 l && prop_MaskPow2 r *)
+  move: (HWF) => [f SEMf].
+  inversion SEMf as [|s' r_top f' DESCf]; subst s' f'.
+  inversion DESCf as [|l' rl fl r' rr fr p' m' r_top' f'
+                        DESCl DESCr Hpos Hsubl Hsubr Hp Hm Hf];
+    subst p' m' l' r' r_top' f' p m.
+  apply/and3P; split.
+  + (* member (rMask r_top) powersOf2 *)
+    (* rMask (p,b) = 2^(b-1), so rewrite *)
+    replace (rMask r_top) with (2^(rBits r_top - 1))%N
+      by (destruct r_top; reflexivity).
+    apply member_powersOf2_le62.
+    (* Show rBits r_top - 1 <= 62 *)
+    (* Get a key from the right child to bound rBits *)
+    destruct (Desc_some_f DESCr) as [i2 Hi2].
+    pose proof (Desc_inside DESCr Hi2) as Hirr.
+    pose proof (inRange_isSubrange_true _ _ _ Hsubr Hirr) as Hihr.
+    apply inRange_bounded in Hihr.
+    rewrite rBits_halfRange in Hihr.
+    assert (Hfi2 : f i2 = true).
+    { rewrite Hf. rewrite Hi2. apply orbT. }
+    specialize (Hbound i2).
+    rewrite (member_Sem SEMf) in Hbound.
+    specialize (Hbound Hfi2).
+    pose proof (rPrefix_halfRange_otherhalf r_top Hpos) as Hpref.
+    rewrite rBits_halfRange in Hpref.
+    (* 2^(rBits r_top - 1) <= rPrefix(halfRange r_top true) <= i2 < 2^63 *)
+    assert (Hpow : (2^(rBits r_top - 1) < 2^63)%N).
+    { rewrite Hpref in Hihr. lia. }
+    apply N.pow_lt_mono_r_iff in Hpow; lia.
+  + (* IH for left child *)
+    apply IHl. split.
+    * eapply WF_Bin_left; exact HWF.
+    * intros k Hk. apply Hbound.
+      erewrite member_Sem in Hk; last by (eapply DescSem; exact DESCl).
+      erewrite member_Sem; last by exact SEMf.
+      rewrite Hf. rewrite Hk. apply orTb.
+  + (* IH for right child *)
+    apply IHr. split.
+    * eapply WF_Bin_right; exact HWF.
+    * intros k Hk. apply Hbound.
+      erewrite member_Sem in Hk; last by (eapply DescSem; exact DESCr).
+      erewrite member_Sem; last by exact SEMf.
+      rewrite Hf. rewrite Hk. rewrite orbT. reflexivity.
+Qed.
 
 (* "Check that the prefix satisfies its invariant." *)
 Theorem thm_Prefix : toProp prop_Prefix.
