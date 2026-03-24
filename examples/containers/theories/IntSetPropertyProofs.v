@@ -576,15 +576,108 @@ Proof.
   - rewrite Hmem in H. apply Hin in H. apply List_elem_In. exact H.
 Qed.
 
+(* Helper: N equality via == *)
+Lemma eq_true_N : forall (i w : N),
+  (i == w) = true -> i = w.
+Proof.
+  intros i w H.
+  unfold op_zeze__, Eq_Char___, op_zeze____ in H.
+  apply N.eqb_eq in H. exact H.
+Qed.
+
+(* Helper: proper subset implies strictly smaller Set size, via delete *)
+Lemma psubset_size :
+  forall (s1 s2 : Data.Set.Internal.Set_ N) lb ub,
+  SetProofs.Bounded s1 lb ub ->
+  SetProofs.Bounded s2 lb ub ->
+  (forall i, SetProofs.sem s1 i = true -> SetProofs.sem s2 i = true) ->
+  (exists w, SetProofs.sem s2 w = true /\ SetProofs.sem s1 w = false) ->
+  (Data.Set.Internal.size s1 < Data.Set.Internal.size s2)%Z.
+Proof.
+  intros s1 s2 lb ub Hb1 Hb2 Hsub [w [Hw2 Hw1]].
+  pose proof (SetProofs.delete_Desc w s2 lb ub Hb2) as Hdel.
+  unfold SetProofs.Desc in Hdel.
+  specialize (Hdel (fun s2' =>
+    SetProofs.Bounded s2' lb ub /\
+    Data.Set.Internal.size s2' =
+      (if SetProofs.sem s2 w
+       then Data.Set.Internal.size s2 - 1
+       else Data.Set.Internal.size s2)%Z /\
+    (forall i, SetProofs.sem s2' i = SetProofs.sem s2 i && negb (i == w)))).
+  destruct Hdel as [Hb2' [Hsz2' Hsem2']].
+  { intros. split; [assumption|]. split; assumption. }
+  rewrite Hw2 in Hsz2'.
+  assert (Hsub' : forall i, SetProofs.sem s1 i = true ->
+    SetProofs.sem (Data.Set.Internal.delete w s2) i = true).
+  { intros i Hi. rewrite Hsem2'.
+    rewrite (Hsub i Hi). simpl.
+    destruct (i == w) eqn:Hiw; simpl; [|reflexivity].
+    exfalso. apply eq_true_N in Hiw. subst i.
+    rewrite Hi in Hw1. discriminate. }
+  assert (Hle : (Data.Set.Internal.size s1 <=
+    Data.Set.Internal.size (Data.Set.Internal.delete w s2))%Z).
+  { eapply SetProofs.subset_size; eassumption. }
+  lia.
+Qed.
+
 (* "Check that IntSet.isProperSubsetOf is the same as Set.isProperSubsetOf." *)
 Theorem thm_isProperSubsetOf : toProp prop_isProperSubsetOf.
 Proof.
   rewrite /prop_isProperSubsetOf /= => s1 WF1 s2 WF2.
-  (* Needs size reasoning for proper subset — bridge infrastructure
-     is available but the size< direction requires toSet_size +
-     NoDup_incl_length reasoning. *)
-  admit.
-Admitted.
+  apply/Eq_eq.
+  apply Bool.eq_iff_eq_true.
+  destruct (toSet_Bounded_sem s1 WF1) as [ts1 [Ets1 [Hb1 Hsem1]]].
+  destruct (toSet_Bounded_sem s2 WF2) as [ts2 [Ets2 [Hb2 Hsem2]]].
+  subst ts1 ts2.
+  split; intro H.
+  - (* IntSet.isProperSubsetOf = true -> Set.isProperSubsetOf = true *)
+    assert (Hmem : forall k, Data.IntSet.Internal.member k s1 = true ->
+                              Data.IntSet.Internal.member k s2 = true).
+    { apply (proj1 (isProperSubsetOf_member s1 s2 WF1 WF2)). exact H. }
+    assert (Hneq : s1 /= s2).
+    { apply (proj1 (isProperSubsetOf_member s1 s2 WF1 WF2)). exact H. }
+    unfold Data.Set.Internal.isProperSubsetOf.
+    apply andb_true_iff. split.
+    + (* size (toSet s1) < size (toSet s2) *)
+      unfold op_zl__, Ord_Integer___, op_zl____.
+      apply Z.ltb_lt.
+      apply psubset_size with (lb := None) (ub := None); try assumption.
+      * intros i Hi. rewrite Hsem2. apply Hmem. rewrite <- Hsem1. exact Hi.
+      * (* Witness: exists w in s2 not in s1 *)
+        destruct WF1 as [f1 Sem1]. destruct WF2 as [f2 Sem2].
+        assert (Hprop : Data.IntSet.Internal.isProperSubsetOf s1 s2 = true)
+          by exact H.
+        apply (isProperSubsetOf_Sem _ _ _ _ Sem1 Sem2) in Hprop.
+        destruct Hprop as [Hf_sub [w Hw]].
+        exists w.
+        assert (Hf2 : f2 w = true).
+        { destruct (f2 w) eqn:Ef2; [reflexivity|].
+          destruct (f1 w) eqn:Ef1; [|exfalso; apply Hw; reflexivity].
+          specialize (Hf_sub w Ef1). rewrite Hf_sub in Ef2. discriminate. }
+        assert (Hf1 : f1 w = false).
+        { destruct (f1 w) eqn:Ef1; [|reflexivity].
+          exfalso; apply Hw. rewrite (Hf_sub w Ef1). reflexivity. }
+        split.
+        -- rewrite Hsem2. erewrite member_Sem; eassumption.
+        -- rewrite Hsem1. erewrite member_Sem; [|eassumption]. exact Hf1.
+    + (* isSubsetOfX *)
+      apply (proj2 (SetProofs.isSubsetOfX_spec _ _ _ _ Hb1 Hb2)).
+      intros i Hi. rewrite Hsem2. apply Hmem. rewrite <- Hsem1. exact Hi.
+  - (* Set.isProperSubsetOf = true -> IntSet.isProperSubsetOf = true *)
+    unfold Data.Set.Internal.isProperSubsetOf in H.
+    apply andb_true_iff in H. destruct H as [Hlt HsubX].
+    apply (proj2 (isProperSubsetOf_member s1 s2 WF1 WF2)). split.
+    + (* membership inclusion *)
+      intros k Hk.
+      assert (HsubSem : forall i, SetProofs.sem (toSet s1) i = true ->
+                                   SetProofs.sem (toSet s2) i = true).
+      { apply (proj1 (SetProofs.isSubsetOfX_spec _ _ _ _ Hb1 Hb2)). exact HsubX. }
+      rewrite <- Hsem2. apply HsubSem. rewrite Hsem1. exact Hk.
+    + (* s1 /= s2 *)
+      unfold op_zl__, Ord_Integer___, op_zl____ in Hlt.
+      apply Z.ltb_lt in Hlt.
+      rewrite Neq_inv. apply/Eq_eq. intro Heq. subst s2. lia.
+Qed.
 
 (* "In the above test, isProperSubsetOf almost always returns False (since a
    random set is almost never a subset of another random set).  So this second

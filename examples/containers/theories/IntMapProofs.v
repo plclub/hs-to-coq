@@ -2534,9 +2534,10 @@ Ltac solve_f_eq_disjoint_Map :=
   try inRange_disjoint. (* Only try this, so that we see wher we are stuck. *)
 
 
-(* The Bin/Tip case (m1=Bin, s2=IntSet.Tip) involves [restrictBM] and
-   [lookupPrefix], which are separate deferredFix functions requiring their
-   own Desc lemmas. We admit this case and prove the Bin/Bin case fully. *)
+(* The Bin/Tip case (m1=Bin, s2=IntSet.Tip) involves [restrictBM]
+   (deferredFix2) and [lookupPrefix] (Fixpoint), which need separate
+   semantic specs. The Bin/Bin case is fully proved. See the Bin/Tip
+   case body for a detailed roadmap of the remaining proof obligations. *)
 Program Fixpoint restrictKeys_Desc
   a (m1 : IntMap a) r1 f1 s2 r2 f2 f
   { measure (size_nat m1 + Data.IntSet.Internal.size_nat s2) } :
@@ -2579,9 +2580,41 @@ Next Obligation.
        H4 : forall i, f3 i = oro (f1 i) (f0 i)
        Hf : forall i, f i = if f2 i then f3 i else None *)
     inversion HD2.
-    + (* s2 is a Tip *)
-      (* This case involves restrictBM and lookupPrefix which need separate
-         Desc lemmas. Admitted for now. *)
+    + (* s2 is a Tip: m1=Bin, s2=IntSet.Tip p2 bm2.
+         After unfolding, the code computes:
+           let maxbit := bitmapOf (p1 .|. (m1_mask .|. (m1_mask - 1))) in
+           let le_maxbit := maxbit .|. (maxbit - 1) in
+           let minbit := bitmapOf p1 in
+           let ge_minbit := complement' (minbit - 1) in
+           restrictBM ((bm2 .&. ge_minbit) .&. le_maxbit) (lookupPrefix p2 t1)
+
+         To prove this, we need:
+         1. lookupPrefix_Desc: lookupPrefix p t navigates the IntMap trie
+            to the subtree at prefix p. Spec: Sem (lookupPrefix p m)
+              (fun k => if prefixOf k == p then f k else None).
+            Since lookupPrefix is a regular Fixpoint, this is provable by
+            induction on Desc. Note: prefixOf k = N.ldiff k suffixBitMask.
+         2. restrictBM_Desc: restrictBM bm m restricts an IntMap to keys
+            whose bit in bm is set. Spec: Sem (restrictBM bm m)
+              (fun k => if N.testbit bm (suffixOf k) then f k else None).
+            Since restrictBM uses deferredFix2, one needs a restrictBM_eq
+            lemma (from deferredFix2_eq) plus induction on Desc.
+         3. Bitmap clipping: the clipped bitmap ((bm2 .&. ge_minbit) .&.
+            le_maxbit) restricts bm2 to bits that fall within the map's
+            range r. Need: for keys k in range r with prefixOf k = p2,
+            bitmapInRange r2 ((bm2 .&. ge_minbit) .&. le_maxbit) k =
+            bitmapInRange r2 bm2 k. This involves suffixOf/bitmapOf
+            arithmetic from IntSetProofs.
+
+         These three components compose to give the overall spec:
+         Desc0 (restrictBM bm' (lookupPrefix p2 t1)) r1
+           (fun i => if f2 i then f3 i else None)
+         where f2 i = bitmapInRange r2 bm2 i and f3 is the map semantics.
+
+         TODO(Issue #215): Prove lookupPrefix_Desc, restrictBM_Desc, and
+         bitmap clipping lemmas. Follow the pattern of IntSetProofs
+         intersection_Desc Bin/Tip case (line ~3117) which uses induction
+         on the Bin descriptor with nomatch_zero_smaller dispatch. *)
       clear restrictKeys_Desc. subst.
       set (m := Bin (rPrefix r) (rMask r) m1 m2) in *.
       admit.
