@@ -1,13 +1,14 @@
+Require Import Equations.Prop.Equations.
 Require Import HsToCoq.DeferredFix.
 Require Import Data.Graph.Inductive.Query.BFS.
 Require Import Coq.Lists.List.
 Require Import Data.Graph.Inductive.Internal.Queue.
 Require Import NicerQueue.
-Require Import Equations.Equations.
 Require Import Data.Graph.Inductive.Graph.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.SetoidList.
 Require Import Lia.
+Require Import ZArith.
 Require Import Wellfounded.
 
 Require Import Path.
@@ -28,6 +29,10 @@ Require Import Lex.
 (* Inductive relation*)
 Section Ind.
 
+(* GHC 9.10 regeneration uses Num.op_zp__ and Num.fromInteger instead of Z.add.
+   Make them transparent so rewrite/simpl/reflexivity see through them. *)
+#[local] Typeclasses Transparent Num.op_zp__ Num.fromInteger.
+#[local] Set Keyed Unification.
 
 Context {a : Type} {b : Type} { gr : Type -> Type -> Type} {Hgraph : Graph.Graph gr} {Hlaw : Graph.LawfulGraph gr}.
 
@@ -132,14 +137,14 @@ Inductive bfs_step : state -> state -> Prop :=
   | bfs_find: forall g d v j vs c g',
       isEmpty g = false ->
       match_ v g = (Some c, g') ->
-      bfs_step (g, (v, j) :: vs, d) (g', (vs ++ suci c (Num.op_zp__ j (Num.fromInteger 1))),
+      bfs_step (g, (v, j) :: vs, d) (g', (vs ++ suci c (Num.op_zp__ j (Num.fromInteger 1%Z))),
         d ++ (v,j) :: nil)
   | bfs_skip: forall g d v j vs g',
       isEmpty g = false ->
       match_ v g = (None, g') ->
       bfs_step (g, (v, j) :: vs, d) (g', vs, d).
 
-Definition start (g : gr a b) (v: Graph.Node) : state := (g, ((v, Num.fromInteger 0) :: nil), nil).
+Definition start (g : gr a b) (v: Graph.Node) : state := (g, ((v, Num.fromInteger 0%Z) :: nil), nil).
 
 (*A valid state is any state that can be reached from the start state.*)
 Inductive valid : state -> (gr a b) -> Node -> Prop :=
@@ -208,7 +213,7 @@ Equations bfs_tail (s: state) : state by wf (get_queue s, get_graph s) (bf_measu
   bfs_tail (g, (v, j) :: vs, d) => if (isEmpty g) then  (g, (v, j) :: vs, d) else
       match (match_ v g) as y return ((match_ v g = y) -> _) with
       | (Some c, g') => fun H: (match_ v g) = (Some c, g') => 
-        bfs_tail (g', (vs ++ suci c (Num.op_zp__ j (Num.fromInteger 1))), d ++ (v,j) :: nil)
+        bfs_tail (g', (vs ++ suci c (Num.op_zp__ j (Num.fromInteger 1%Z))), d ++ (v,j) :: nil)
       | (None, g') => fun H: (match_ v g) = (None, g') => bfs_tail (g', vs, d)
       end (eq_refl).
 Next Obligation.
@@ -240,7 +245,7 @@ let (p, l) := s in
         with
         | Some c =>
             fun _ : match_ n g = (Some c, g') =>
-            bfs_tail (g', l4 ++ suci c (Num.op_zp__ i (Num.fromInteger 1)), l5 ++ (n, i) :: nil)
+            bfs_tail (g', l4 ++ suci c (Num.op_zp__ i (Num.fromInteger 1%Z)), l5 ++ (n, i) :: nil)
         | None => fun _ : match_ n g = (None, g') => bfs_tail (g', l4, l5)
         end) eq_refl) l2 l3
  end l1) l.
@@ -390,7 +395,7 @@ Proof.
     destruct q. simpl in H0. inversion H0.
     destruct p as [v' d'].
     destruct (match_ v' g') eqn : M. destruct m.
-    + exists ((g0, q ++ suci c (Num.op_zp__ d' (Num.fromInteger 1)), d ++ (v', d') :: nil)).
+    + exists ((g0, q ++ suci c (Num.op_zp__ d' (Num.fromInteger 1%Z)), d ++ (v', d') :: nil)).
       constructor; assumption.
     + exists (g0, q, d). constructor; assumption.
   - destruct H0. unfold done in *; inversion H0; subst; simpl in *; assumption.
@@ -585,7 +590,7 @@ Lemma len_acc_def: forall {a} (l : list a ) n,
 Proof.
   intros. revert n. induction l; intros; simpl.
   - lia.
-  - rewrite IHl. rewrite Zpos_P_of_succ_nat. lia.
+  - rewrite IHl. lia.
 Qed. 
 
 Lemma length_equiv: forall {a} (l: list a),
@@ -650,10 +655,10 @@ Proof.
   - rewrite in_map_iff in H0. destruct H0. destruct x0. simpl in *. destruct H0. subst.
     apply in_app_or in H1. destruct H1. apply match_context in H.
     destruct_all. subst. apply H2. rewrite in_map_iff. exists (b0, y). split; auto.
-    unfold Base.op_z2218U__ in H0. unfold Base.op_zeze__ in H0. unfold Base.Eq_Char___ in H0.
-    unfold Base.op_zeze____  in H0. rewrite filter_equiv in H0. apply filter_In in H0.
-    destruct H0. apply match_context in H. destruct_all. subst. 
-    simpl in H1. rewrite N.eqb_eq in H1. subst. apply H2. rewrite in_map_iff. exists (b0, x).
+    unfold GHC.Prim.rightSection in H0. unfold Base.op_z2218U__ in H0.
+    rewrite filter_equiv in H0. apply filter_In in H0.
+    destruct H0. apply match_context in H. destruct_all. subst.
+    unfold Data.Tuple.snd in H1. simpl in H1. rewrite N.eqb_eq in H1. subst. apply H2. rewrite in_map_iff. exists (b0, x).
     split. reflexivity. assumption.
   - apply match_context in H. destruct_all. subst.
     apply H2 in H0. rewrite in_map_iff in H0. destruct H0. rewrite in_map_iff. exists x0.
@@ -1081,7 +1086,7 @@ Lemma output_is_added: forall s v g v' d,
   valid s g v ->
   In (v', d) (get_dists s) ->
   (exists s' c g', valid s' g v /\ bfs_multi s' s  /\ (exists l1,
-    get_queue s' = l1 ++ suci c (Num.op_zp__ d (Num.fromInteger 1)) /\ (forall s'', valid s'' g v ->
+    get_queue s' = l1 ++ suci c (Num.op_zp__ d (Num.fromInteger 1%Z)) /\ (forall s'', valid s'' g v ->
      bfs_step s'' s' ->
     ~In v' (map fst (get_dists s'')) /\ (match_ v' (get_graph s'') = (Some c, g')) /\ 
       get_queue s'' = (v', d) :: l1)) /\ s' <> start g v /\ (exists l2, get_dists s' = l2 ++ (v', d) :: nil) ).
@@ -1168,7 +1173,7 @@ Proof.
     + assert (vIn (get_graph sb) n = true). erewrite <- match_in. exists c. exists g'. assumption.
       rewrite H19 in H16. assert (eIn (get_graph sb) n v' = true). rewrite H16. split; reflexivity.
       exists sp. split; try(assumption). rewrite A.  rewrite map_app. apply in_or_app. right.
-      pose proof (suci_def v' (Num.op_zp__ d (Num.fromInteger 1)) (Num.op_zp__ d (Num.fromInteger 1))
+      pose proof (suci_def v' (Num.op_zp__ d (Num.fromInteger 1%Z)) (Num.op_zp__ d (Num.fromInteger 1%Z))
       c n (get_graph sb) g' H17). simpl in H21. destruct H21.
       rewrite H20 in H21. rewrite in_map_iff. exists (v', (d+1)%Z). split. reflexivity.
       simpl. apply H22. rewrite H20. split; reflexivity.
@@ -1618,7 +1623,7 @@ Equations leveln' (x: (list (Node * Num.Int) * (gr a b))) : list (Node * Num.Int
   leveln' (nil, g) := nil;
   leveln' ((v,j) :: vs, g) := if (isEmpty g) then nil else
                                 match (match_ v g) as y return ((match_ v g = y) -> _ ) with
-                                | (Some c, g') => fun H : (match_ v g) = (Some c, g') => (v,j) :: leveln' ( (vs ++ suci c (Num.op_zp__ j (Num.fromInteger 1))), g')
+                                | (Some c, g') => fun H : (match_ v g) = (Some c, g') => (v,j) :: leveln' ( (vs ++ suci c (Num.op_zp__ j (Num.fromInteger 1%Z))), g')
                                 | (None, g') => fun H: (match_ v g) = (None, g') => leveln' (vs, g')
                                  end (eq_refl).
 Next Obligation.
@@ -1646,7 +1651,7 @@ match l with
        match m as m0 return (match_ n g1 = (m0, g') -> list (Node * Num.Int)) with
        | Some c =>
            fun _ : match_ n g1 = (Some c, g') =>
-           (n, i) :: leveln' (l1 ++ suci c (Num.op_zp__ i (Num.fromInteger 1)), g')
+           (n, i) :: leveln' (l1 ++ suci c (Num.op_zp__ i (Num.fromInteger 1%Z)), g')
        | None => fun _ : match_ n g1 = (None, g') => leveln' (l1, g')
        end) eq_refl) l0 g0
 end g.
@@ -1943,7 +1948,7 @@ Proof.
   pose proof (@bfsnInternal_equiv Node). rewrite H.
   clear H. rewrite <- leveln_leveln'_equiv.
   pose proof (@bfsInternal_on_vertex_equiv Node (toList Node (queuePut v mkQueue)) 
-  ((v, Num.fromInteger 0) :: nil) g node' x). simpl in H. unfold fst. apply H. intros.
+  ((v, Num.fromInteger 0%Z) :: nil) g node' x). simpl in H. unfold fst. apply H. intros.
   assumption. reflexivity.
 Qed. 
 

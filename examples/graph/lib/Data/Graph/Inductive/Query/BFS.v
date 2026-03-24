@@ -96,8 +96,8 @@ Definition lbf {gr} {b} {a} `{(Data.Graph.Inductive.Graph.Graph gr)}
 
 (* Converted value declarations: *)
 
-Definition bfsnInternal {gr} {a} {b} {c} `{(Data.Graph.Inductive.Graph.Graph
-   gr)}
+#[global] Definition bfsnInternal {gr} {a} {b} {c}
+  `{(Data.Graph.Inductive.Graph.Graph gr)}
    : (Data.Graph.Inductive.Graph.Context a b -> c) ->
      Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Node ->
      gr a b -> list c :=
@@ -116,42 +116,42 @@ Definition bfsnInternal {gr} {a} {b} {c} `{(Data.Graph.Inductive.Graph.Graph
                                       | pair None g' => bfsnInternal f q' g'
                                       end).
 
-Definition bfsnWith {gr : Type -> Type -> Type} {a : Type} {b : Type} {c : Type}
-  `{Data.Graph.Inductive.Graph.Graph gr}
+#[global] Definition bfsnWith {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  {c : Type} `{Data.Graph.Inductive.Graph.Graph gr}
    : (Data.Graph.Inductive.Graph.Context a b -> c) ->
      list Data.Graph.Inductive.Graph.Node -> gr a b -> list c :=
   fun f vs =>
     bfsnInternal f (Data.Graph.Inductive.Internal.Queue.queuePutList vs
                     Data.Graph.Inductive.Internal.Queue.mkQueue).
 
-Definition bfsn {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition bfsn {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : list Data.Graph.Inductive.Graph.Node ->
      gr a b -> list Data.Graph.Inductive.Graph.Node :=
   bfsnWith Data.Graph.Inductive.Graph.node'.
 
-Definition bfsWith {gr : Type -> Type -> Type} {a : Type} {b : Type} {c : Type}
-  `{Data.Graph.Inductive.Graph.Graph gr}
+#[global] Definition bfsWith {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  {c : Type} `{Data.Graph.Inductive.Graph.Graph gr}
    : (Data.Graph.Inductive.Graph.Context a b -> c) ->
      Data.Graph.Inductive.Graph.Node -> gr a b -> list c :=
   fun f v =>
     bfsnInternal f (Data.Graph.Inductive.Internal.Queue.queuePut v
                     Data.Graph.Inductive.Internal.Queue.mkQueue).
 
-Definition bfs {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition bfs {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : Data.Graph.Inductive.Graph.Node ->
      gr a b -> list Data.Graph.Inductive.Graph.Node :=
   bfsWith Data.Graph.Inductive.Graph.node'.
 
-Definition suci {a} {b}
+#[global] Definition suci {a} {b}
    : Data.Graph.Inductive.Graph.Context a b ->
      GHC.Num.Int -> list (Data.Graph.Inductive.Graph.Node * GHC.Num.Int)%type :=
   fun c i =>
     GHC.List.zip (Data.Graph.Inductive.Graph.suc' c) (repeat i (BinInt.Z.to_nat
                                                               (GHC.List.length (Data.Graph.Inductive.Graph.suc' c)))).
 
-Definition leveln {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition leveln {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : list (Data.Graph.Inductive.Graph.Node * GHC.Num.Int)%type ->
      gr a b -> list (Data.Graph.Inductive.Graph.Node * GHC.Num.Int)%type :=
@@ -175,20 +175,21 @@ Definition leveln {gr : Type -> Type -> Type} {a : Type} {b : Type}
                                           end
                                       end).
 
-Definition level {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition level {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : Data.Graph.Inductive.Graph.Node ->
      gr a b -> list (Data.Graph.Inductive.Graph.Node * GHC.Num.Int)%type :=
   fun v => leveln (cons (pair v #0) nil).
 
-Definition outU {a} {b}
+#[global] Definition outU {a} {b}
    : Data.Graph.Inductive.Graph.Context a b ->
      list Data.Graph.Inductive.Graph.Edge :=
   fun c =>
     GHC.Base.map Data.Graph.Inductive.Graph.toEdge (Data.Graph.Inductive.Graph.out'
                                                     c).
 
-Definition bfenInternal {gr} {a} {b} `{(Data.Graph.Inductive.Graph.Graph gr)}
+#[global] Definition bfenInternal {gr} {a} {b}
+  `{(Data.Graph.Inductive.Graph.Graph gr)}
    : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Edge ->
      gr a b -> list Data.Graph.Inductive.Graph.Edge :=
   HsToCoq.DeferredFix.deferredFix2 (fun bfenInternal
@@ -205,7 +206,7 @@ Definition bfenInternal {gr} {a} {b} `{(Data.Graph.Inductive.Graph.Graph gr)}
                                       | pair None g' => bfenInternal q' g'
                                       end).
 
-Definition bfen {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition bfen {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : list Data.Graph.Inductive.Graph.Edge ->
      gr a b -> list Data.Graph.Inductive.Graph.Edge :=
@@ -213,7 +214,7 @@ Definition bfen {gr : Type -> Type -> Type} {a : Type} {b : Type}
     bfenInternal (Data.Graph.Inductive.Internal.Queue.queuePutList vs
                   Data.Graph.Inductive.Internal.Queue.mkQueue).
 
-Definition bfe {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition bfe {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : Data.Graph.Inductive.Graph.Node ->
      gr a b -> list Data.Graph.Inductive.Graph.Edge :=
@@ -221,7 +222,7 @@ Definition bfe {gr : Type -> Type -> Type} {a : Type} {b : Type}
 
 (* Skipping definition `Data.Graph.Inductive.Query.BFS.bf' *)
 
-Definition bft {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition bft {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : Data.Graph.Inductive.Graph.Node ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.RTree :=
@@ -229,7 +230,7 @@ Definition bft {gr : Type -> Type -> Type} {a : Type} {b : Type}
     bf (Data.Graph.Inductive.Internal.Queue.queuePut (cons v nil)
         Data.Graph.Inductive.Internal.Queue.mkQueue).
 
-Definition esp {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition esp {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : Data.Graph.Inductive.Graph.Node ->
      Data.Graph.Inductive.Graph.Node -> gr a b -> Data.Graph.Inductive.Graph.Path :=
@@ -237,7 +238,7 @@ Definition esp {gr : Type -> Type -> Type} {a : Type} {b : Type}
 
 (* Skipping definition `Data.Graph.Inductive.Query.BFS.lbf' *)
 
-Definition lbft {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition lbft {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : Data.Graph.Inductive.Graph.Node ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.LRTree b :=
@@ -250,7 +251,7 @@ Definition lbft {gr : Type -> Type -> Type} {a : Type} {b : Type}
              Data.Graph.Inductive.Internal.Queue.mkQueue) g
     end.
 
-Definition lesp {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition lesp {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : Data.Graph.Inductive.Graph.Node ->
      Data.Graph.Inductive.Graph.Node ->

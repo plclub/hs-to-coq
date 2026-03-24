@@ -35,7 +35,7 @@ destruct H. apply (default, Data.Graph.Inductive.Graph.LP nil, Data.Graph.Induct
 Defined.
 (* Converted value declarations: *)
 
-Definition expand {b} {a} `{(GHC.Real.Real b)}
+#[global] Definition expand {b} {a} `{(GHC.Real.Real b)}
    : b ->
      Data.Graph.Inductive.Graph.LPath b ->
      Data.Graph.Inductive.Graph.Context a b ->
@@ -49,8 +49,8 @@ Definition expand {b} {a} `{(GHC.Real.Real b)}
                         (Data.Graph.Inductive.Graph.LP (cons (pair v (l GHC.Num.+ d)) p))) s
     end.
 
-Definition dijkstra {gr} {b} {a} `{Data.Graph.Inductive.Graph.Graph gr}
-  `{GHC.Real.Real b} `{HsToCoq.Err.Default b}
+#[global] Definition dijkstra {gr} {b} {a} `{Data.Graph.Inductive.Graph.Graph
+  gr} `{GHC.Real.Real b} `{HsToCoq.Err.Default b}
    : Data.Graph.Inductive.Internal.Heap.Heap b (Data.Graph.Inductive.Graph.LPath
                                               b) ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.LRTree b :=
@@ -62,37 +62,25 @@ Definition dijkstra {gr} {b} {a} `{Data.Graph.Inductive.Graph.Graph gr}
                                       match arg_0__, arg_1__ with
                                       | h, g =>
                                           if orb (Data.Graph.Inductive.Internal.Heap.isEmpty h)
-                                             (Data.Graph.Inductive.Graph.isEmpty g) : bool then nil else (match arg_0__
-                                                                                                              , arg_1__ with
-                                                                                            | h, g =>
-                                                                                                match Data.Graph.Inductive.Internal.Heap.splitMin
-                                                                                                        h with
-                                                                                                | pair (pair _
-                                                                                                 (Data.Graph.Inductive.Graph.LP
-                                                                                                  (cons (pair v d)
-                                                                                                   _) as p)) h' =>
-                                                                                                    match Data.Graph.Inductive.Graph.match_
-                                                                                                            v g with
-                                                                                                    | pair (Some c)
-                                                                                                    g' =>
-                                                                                                        cons p (dijkstra
-                                                                                                              (Data.Graph.Inductive.Internal.Heap.mergeAll
-                                                                                                               (cons h'
-                                                                                                                     (expand
-                                                                                                                      d
-                                                                                                                      p
-                                                                                                                      c)))
-                                                                                                              g')
-                                                                                                    | pair None g' =>
-                                                                                                        dijkstra h' g'
-                                                                                                    end
-                                                                                                | _ =>
-                                                                                                    GHC.Err.patternFailure
-                                                                                                end
-                                                                                            end)
+                                                 (Data.Graph.Inductive.Graph.isEmpty g) : bool
+                                          then nil
+                                          else match arg_0__, arg_1__ with
+                                               | h, g =>
+                                                   match Data.Graph.Inductive.Internal.Heap.splitMin h with
+                                                   | pair (pair _ (Data.Graph.Inductive.Graph.LP (cons (pair v d)
+                                                      _) as p)) h' =>
+                                                       match Data.Graph.Inductive.Graph.match_ v g with
+                                                       | pair (Some c) g' =>
+                                                           cons p (dijkstra (Data.Graph.Inductive.Internal.Heap.mergeAll
+                                                                             (cons h' (expand d p c))) g')
+                                                       | pair None g' => dijkstra h' g'
+                                                       end
+                                                   | _ => GHC.Err.patternFailure
+                                                   end
+                                               end
                                       end).
 
-Definition spTree {gr : Type -> Type -> Type} {b : Type} {a : Type}
+#[global] Definition spTree {gr : Type -> Type -> Type} {b : Type} {a : Type}
   `{Data.Graph.Inductive.Graph.Graph gr} `{GHC.Real.Real b}
    : Data.Graph.Inductive.Graph.Node ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.LRTree b :=
@@ -100,14 +88,14 @@ Definition spTree {gr : Type -> Type -> Type} {b : Type} {a : Type}
     dijkstra (Data.Graph.Inductive.Internal.Heap.unit #0
               (Data.Graph.Inductive.Graph.LP (cons (pair v #0) nil))).
 
-Definition spLength {gr : Type -> Type -> Type} {b : Type} {a : Type}
+#[global] Definition spLength {gr : Type -> Type -> Type} {b : Type} {a : Type}
   `{Data.Graph.Inductive.Graph.Graph gr} `{GHC.Real.Real b}
    : Data.Graph.Inductive.Graph.Node ->
      Data.Graph.Inductive.Graph.Node -> gr a b -> option b :=
   fun s t =>
     Data.Graph.Inductive.Internal.RootPath.getDistance t GHC.Base.∘ spTree s.
 
-Definition sp {gr : Type -> Type -> Type} {b : Type} {a : Type}
+#[global] Definition sp {gr : Type -> Type -> Type} {b : Type} {a : Type}
   `{Data.Graph.Inductive.Graph.Graph gr} `{GHC.Real.Real b}
    : Data.Graph.Inductive.Graph.Node ->
      Data.Graph.Inductive.Graph.Node ->
@@ -119,7 +107,7 @@ Definition sp {gr : Type -> Type -> Type} {b : Type} {a : Type}
     end.
 
 (* External variables:
-     None Some Type bool cons else if list nil option orb pair then
+     None Some Type bool cons list nil option orb pair
      Data.Graph.Inductive.Graph.Context Data.Graph.Inductive.Graph.Graph
      Data.Graph.Inductive.Graph.LP Data.Graph.Inductive.Graph.LPath
      Data.Graph.Inductive.Graph.Node Data.Graph.Inductive.Graph.Path

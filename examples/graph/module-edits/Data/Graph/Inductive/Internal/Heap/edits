@@ -18,7 +18,7 @@ add Data.Graph.Inductive.Internal.Heap Lemma merge_size {a} {b} `{GHC.Base.Ord a
 Proof.
 intros. generalize dependent h2. induction h1; intros; simpl.
   - destruct h2; reflexivity.
-  - destruct h2; simpl. omega. destruct (_GHC.Base.<_ a0 a1 ) eqn : ?; simpl; omega.
+  - destruct h2; simpl. lia. destruct (_GHC.Base.<_ a0 a1 ) eqn : ?; simpl; lia.
  Qed.
 
  add Data.Graph.Inductive.Internal.Heap Lemma mergeAll_size {a} {b} `{GHC.Base.Ord a} (l: list (Heap a b)) :
@@ -30,8 +30,8 @@ Proof.
   destruct l.
   - reflexivity.
   - destruct l.
-    + simpl. omega.
-    + simpl. repeat(rewrite merge_size). rewrite plus_assoc. rewrite H1. reflexivity. simpl. omega.
+    + simpl. lia.
+    + simpl. repeat(rewrite merge_size). rewrite Nat.add_assoc. rewrite H1. reflexivity. simpl. lia.
 Qed. 
 
 add Data.Graph.Inductive.Internal.Heap Lemma deleteMin_size {a} {b} `{GHC.Base.Ord a} (h: Heap a b) :
@@ -39,7 +39,7 @@ add Data.Graph.Inductive.Internal.Heap Lemma deleteMin_size {a} {b} `{GHC.Base.O
   ((size (deleteMin h) + 1) = size h).
 Proof.
   intros. unfold deleteMin. destruct h. contradiction. rewrite mergeAll_size.
-  unfold size. simpl. omega.
+  unfold size. simpl. lia.
 Qed. 
 
 #can't use ltac, so prove the result as a lemma and apply it
@@ -47,7 +47,7 @@ add Data.Graph.Inductive.Internal.Heap Lemma toList_termination {a} {b} `{GHC.Ba
   (Empty <> h) ->
   (size (deleteMin h) < size h).
 Proof.
-  intros. assert (A: h <> Empty) by auto; apply deleteMin_size in A; omega.
+  intros. assert (A: h <> Empty) by auto; apply deleteMin_size in A; lia.
 Qed.
 
 order merge_size mergeAll_size deleteMin_size toList_termination Data.Graph.Inductive.Internal.Heap.toList  

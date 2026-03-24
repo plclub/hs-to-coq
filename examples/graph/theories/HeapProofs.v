@@ -5,7 +5,7 @@ Require Import Lia.
 Require Import HeapEquiv.
 Require Import Helper.
 
-Require Import Equations.Equations.
+Require Import Equations.Prop.Equations.
 Require Import OrdTactic.
 
 Section Heap.

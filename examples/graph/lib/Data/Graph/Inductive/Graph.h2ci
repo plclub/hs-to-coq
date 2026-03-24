@@ -1,58 +1,3 @@
-superclassCount:
-  Data.Graph.Inductive.Graph.DynGraph: '1'
-  Data.Graph.Inductive.Graph.Graph: '0'
-defaultMethods:
-  Data.Graph.Inductive.Graph.Graph: fromList [(Qualified "Data.Graph.Inductive.Graph"
-    "labEdges",App (App (Qualid (Qualified "Data.Graph.Inductive.Graph" "ufold"))
-    (PosArg (Parens (Fun (ExplicitBinder (Ident (Bare "arg_0__")) :| []) (Match (MatchItem
-    (Qualid (Bare "arg_0__")) Nothing Nothing :| []) Nothing [Equation (MultPattern
-    (ArgsPat (Bare "pair") [ArgsPat (Bare "pair") [ArgsPat (Bare "pair") [UnderscorePat,QualidPat
-    (Bare "v")],UnderscorePat],QualidPat (Bare "s")] :| []) :| []) (Parens (Fun (ExplicitBinder
-    (Ident (Bare "arg_1__")) :| []) (App (Qualid (Qualified "Coq.Init.Datatypes" "app"))
-    (PosArg (App (App (Qualid (Qualified "GHC.Base" "map")) (PosArg (Parens (Fun (ExplicitBinder
-    (Ident (Bare "arg_2__")) :| []) (Match (MatchItem (Qualid (Bare "arg_2__")) Nothing
-    Nothing :| []) Nothing [Equation (MultPattern (ArgsPat (Bare "pair") [QualidPat
-    (Bare "l"),QualidPat (Bare "w")] :| []) :| []) (App (Qualid (Bare "pair")) (PosArg
-    (App (Qualid (Bare "pair")) (PosArg (Qualid (Bare "v")) :| [PosArg (Qualid (Bare
-    "w"))])) :| [PosArg (Qualid (Bare "l"))]))]))) :| [])) (PosArg (Qualid (Bare "s"))
-    :| [])) :| [PosArg (Qualid (Bare "arg_1__"))]))))]))) :| [])) (PosArg (Qualid
-    (Bare "nil")) :| [])),(Qualified "Data.Graph.Inductive.Graph" "matchAny",Fun (ExplicitBinder
-    (Ident (Bare "g")) :| []) (Match (MatchItem (App (Qualid (Qualified "Data.Graph.Inductive.Graph"
-    "labNodes")) (PosArg (Qualid (Bare "g")) :| [])) Nothing Nothing :| []) Nothing
-    [Equation (MultPattern (ArgsPat (Bare "nil") [] :| []) :| []) (App (Qualid (Qualified
-    "GHC.Err" "error")) (PosArg (HsString "Match Exception, Empty Graph") :| [])),Equation
-    (MultPattern (ArgsPat (Bare "cons") [ArgsPat (Bare "pair") [QualidPat (Bare "v"),UnderscorePat],UnderscorePat]
-    :| []) :| []) (Match (MatchItem (App (App (Qualid (Qualified "Data.Graph.Inductive.Graph"
-    "match_")) (PosArg (Qualid (Bare "v")) :| [])) (PosArg (Qualid (Bare "g")) :|
-    [])) Nothing Nothing :| []) Nothing [Equation (MultPattern (ArgsPat (Bare "pair")
-    [ArgsPat (Bare "Some") [QualidPat (Bare "c")],QualidPat (Bare "g'")] :| []) :|
-    []) (App (Qualid (Bare "pair")) (PosArg (Qualid (Bare "c")) :| [PosArg (Qualid
-    (Bare "g'"))])),Equation (MultPattern (UnderscorePat :| []) :| []) (Qualid (Qualified
-    "GHC.Err" "patternFailure"))])])),(Qualified "Data.Graph.Inductive.Graph" "noNodes",App
-    (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg (Qualid (Qualified "Data.Foldable"
-    "length")) :| [PosArg (Qualid (Qualified "Data.Graph.Inductive.Graph" "labNodes"))])),(Qualified
-    "Data.Graph.Inductive.Graph" "nodeRange",Fun (ExplicitBinder (Ident (Bare "g"))
-    :| []) (Let (Bare "vs") [] Nothing (App (Qualid (Qualified "Data.Graph.Inductive.Graph"
-    "nodes")) (PosArg (Qualid (Bare "g")) :| [])) (If LinearIf (HasType (App (Qualid
-    (Qualified "Data.Graph.Inductive.Graph" "isEmpty")) (PosArg (Qualid (Bare "g"))
-    :| [])) (Qualid (Bare "bool"))) Nothing (App (Qualid (Qualified "GHC.Err" "error"))
-    (PosArg (HsString "nodeRange of empty graph") :| [])) (App (Qualid (Bare "pair"))
-    (PosArg (App (Qualid (Qualified "Data.Foldable" "minimum")) (PosArg (Qualid (Bare
-    "vs")) :| [])) :| [PosArg (App (Qualid (Qualified "Data.Foldable" "maximum"))
-    (PosArg (Qualid (Bare "vs")) :| []))])))))]
-classTypes:
-  Data.Graph.Inductive.Graph.DynGraph: fromList []
-  Data.Graph.Inductive.Graph.Graph: fromList []
-constructors:
-  Data.Graph.Inductive.Graph.GroupEdges: ! '[Qualified "Data.Graph.Inductive.Graph"
-    "GEs"]'
-  Data.Graph.Inductive.Graph.LPath: ! '[Qualified "Data.Graph.Inductive.Graph" "LP"]'
-constructorFields:
-  Data.Graph.Inductive.Graph.LP: RecordFields [Qualified "Data.Graph.Inductive.Graph"
-    "unLPath"]
-  Data.Graph.Inductive.Graph.GEs: NonRecordFields 1
-recordFieldTypes:
-  Data.Graph.Inductive.Graph.unLPath: Qualified "Data.Graph.Inductive.Graph" "LPath"
 classDefns:
   Data.Graph.Inductive.Graph.DynGraph: ClassDefinition (Qualified "Data.Graph.Inductive.Graph"
     "DynGraph") [Typed Ungeneralizable Explicit (Ident (Bare "gr") :| []) (Arrow (Qualid
@@ -122,6 +67,61 @@ classDefns:
     (Qualid (Bare "b")) :| [])) (InScope (App (Qualid (Bare "op_zt__")) (PosArg (Qualid
     (Qualified "Data.Graph.Inductive.Graph" "Node")) :| [PosArg (Qualid (Qualified
     "Data.Graph.Inductive.Graph" "Node"))])) "type"))))]
+classTypes:
+  Data.Graph.Inductive.Graph.DynGraph: fromList []
+  Data.Graph.Inductive.Graph.Graph: fromList []
+constructorFields:
+  Data.Graph.Inductive.Graph.GEs: NonRecordFields 1
+  Data.Graph.Inductive.Graph.LP: RecordFields [Qualified "Data.Graph.Inductive.Graph"
+    "unLPath"]
 constructorTypes:
-  Data.Graph.Inductive.Graph.LP: Qualified "Data.Graph.Inductive.Graph" "LPath"
   Data.Graph.Inductive.Graph.GEs: Qualified "Data.Graph.Inductive.Graph" "GroupEdges"
+  Data.Graph.Inductive.Graph.LP: Qualified "Data.Graph.Inductive.Graph" "LPath"
+constructors:
+  Data.Graph.Inductive.Graph.GroupEdges: '[Qualified "Data.Graph.Inductive.Graph"
+    "GEs"]'
+  Data.Graph.Inductive.Graph.LPath: '[Qualified "Data.Graph.Inductive.Graph" "LP"]'
+defaultMethods:
+  Data.Graph.Inductive.Graph.Graph: fromList [(Qualified "Data.Graph.Inductive.Graph"
+    "labEdges",App (App (Qualid (Qualified "Data.Graph.Inductive.Graph" "ufold"))
+    (PosArg (Parens (Fun (ExplicitBinder (Ident (Bare "arg_0__")) :| []) (Match (MatchItem
+    (Qualid (Bare "arg_0__")) Nothing Nothing :| []) Nothing [Equation (MultPattern
+    (ArgsPat (Bare "pair") [ArgsPat (Bare "pair") [ArgsPat (Bare "pair") [UnderscorePat,QualidPat
+    (Bare "v")],UnderscorePat],QualidPat (Bare "s")] :| []) :| []) (Parens (App (Qualid
+    (Qualified "Coq.Init.Datatypes" "app")) (PosArg (App (App (Qualid (Qualified "GHC.Base"
+    "map")) (PosArg (Parens (Fun (ExplicitBinder (Ident (Bare "arg_1__")) :| []) (Match
+    (MatchItem (Qualid (Bare "arg_1__")) Nothing Nothing :| []) Nothing [Equation
+    (MultPattern (ArgsPat (Bare "pair") [QualidPat (Bare "l"),QualidPat (Bare "w")]
+    :| []) :| []) (App (Qualid (Bare "pair")) (PosArg (App (Qualid (Bare "pair"))
+    (PosArg (Qualid (Bare "v")) :| [PosArg (Qualid (Bare "w"))])) :| [PosArg (Qualid
+    (Bare "l"))]))]))) :| [])) (PosArg (Qualid (Bare "s")) :| [])) :| [])))]))) :|
+    [])) (PosArg (Qualid (Bare "nil")) :| [])),(Qualified "Data.Graph.Inductive.Graph"
+    "matchAny",Fun (ExplicitBinder (Ident (Bare "g")) :| []) (Match (MatchItem (App
+    (Qualid (Qualified "Data.Graph.Inductive.Graph" "labNodes")) (PosArg (Qualid (Bare
+    "g")) :| [])) Nothing Nothing :| []) Nothing [Equation (MultPattern (ArgsPat (Bare
+    "nil") [] :| []) :| []) (App (Qualid (Qualified "GHC.Err" "error")) (PosArg (HsString
+    "Match Exception, Empty Graph") :| [])),Equation (MultPattern (ArgsPat (Bare "cons")
+    [ArgsPat (Bare "pair") [QualidPat (Bare "v"),UnderscorePat],UnderscorePat] :|
+    []) :| []) (Match (MatchItem (App (App (Qualid (Qualified "Data.Graph.Inductive.Graph"
+    "match_")) (PosArg (Qualid (Bare "v")) :| [])) (PosArg (Qualid (Bare "g")) :|
+    [])) Nothing Nothing :| []) Nothing [Equation (MultPattern (ArgsPat (Bare "pair")
+    [ArgsPat (Bare "Some") [QualidPat (Bare "c")],QualidPat (Bare "g'")] :| []) :|
+    []) (App (Qualid (Bare "pair")) (PosArg (Qualid (Bare "c")) :| [PosArg (Qualid
+    (Bare "g'"))])),Equation (MultPattern (UnderscorePat :| []) :| []) (Qualid (Qualified
+    "GHC.Err" "patternFailure"))])])),(Qualified "Data.Graph.Inductive.Graph" "noNodes",App
+    (Qualid (Qualified "GHC.Base" "op_z2218U__")) (PosArg (Qualid (Qualified "Data.Foldable"
+    "length")) :| [PosArg (Qualid (Qualified "Data.Graph.Inductive.Graph" "labNodes"))])),(Qualified
+    "Data.Graph.Inductive.Graph" "nodeRange",Fun (ExplicitBinder (Ident (Bare "g"))
+    :| []) (Let (Bare "vs") [] Nothing (App (Qualid (Qualified "Data.Graph.Inductive.Graph"
+    "nodes")) (PosArg (Qualid (Bare "g")) :| [])) (If LinearIf (HasType (App (Qualid
+    (Qualified "Data.Graph.Inductive.Graph" "isEmpty")) (PosArg (Qualid (Bare "g"))
+    :| [])) (Qualid (Bare "bool"))) Nothing (App (Qualid (Qualified "GHC.Err" "error"))
+    (PosArg (HsString "nodeRange of empty graph") :| [])) (App (Qualid (Bare "pair"))
+    (PosArg (App (Qualid (Qualified "Data.Foldable" "minimum")) (PosArg (Qualid (Bare
+    "vs")) :| [])) :| [PosArg (App (Qualid (Qualified "Data.Foldable" "maximum"))
+    (PosArg (Qualid (Bare "vs")) :| []))])))))]
+recordFieldTypes:
+  Data.Graph.Inductive.Graph.unLPath: Qualified "Data.Graph.Inductive.Graph" "LPath"
+superclassCount:
+  Data.Graph.Inductive.Graph.DynGraph: '1'
+  Data.Graph.Inductive.Graph.Graph: '0'

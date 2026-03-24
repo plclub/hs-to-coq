@@ -26,19 +26,19 @@ Arguments MkQueue {_} _ _.
 
 (* Converted value declarations: *)
 
-Definition mkQueue {a : Type} : Queue a :=
+#[global] Definition mkQueue {a : Type} : Queue a :=
   MkQueue nil nil.
 
-Definition queuePut {a : Type} : a -> Queue a -> Queue a :=
+#[global] Definition queuePut {a : Type} : a -> Queue a -> Queue a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | item, MkQueue ins outs => MkQueue (cons item ins) outs
     end.
 
-Definition queuePutList {a : Type} : list a -> Queue a -> Queue a :=
+#[global] Definition queuePutList {a : Type} : list a -> Queue a -> Queue a :=
   fun xs q => Data.Foldable.foldl' (GHC.Base.flip queuePut) q xs.
 
-Definition queueGet {a} `{HsToCoq.Err.Default (a * Queue a)}
+#[global] Definition queueGet {a} `{HsToCoq.Err.Default (a * Queue a)}
    : Queue a -> a * Queue a :=
   HsToCoq.DeferredFix.deferredFix1 (fun queueGet (arg_0__ : Queue a) =>
                                       match arg_0__ with
@@ -46,7 +46,7 @@ Definition queueGet {a} `{HsToCoq.Err.Default (a * Queue a)}
                                       | MkQueue ins nil => queueGet (MkQueue nil (GHC.List.reverse ins))
                                       end).
 
-Definition queueEmpty {a : Type} : Queue a -> bool :=
+#[global] Definition queueEmpty {a : Type} : Queue a -> bool :=
   fun '(MkQueue ins outs) =>
     andb (Data.Foldable.null ins) (Data.Foldable.null outs).
 

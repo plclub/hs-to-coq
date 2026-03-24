@@ -1,6 +1,3 @@
-constructors:
-  Data.Graph.Inductive.Internal.Heap.Heap: ! '[Qualified "Data.Graph.Inductive.Internal.Heap"
-    "Empty",Qualified "Data.Graph.Inductive.Internal.Heap" "Node"]'
 constructorFields:
   Data.Graph.Inductive.Internal.Heap.Empty: NonRecordFields 0
   Data.Graph.Inductive.Internal.Heap.Node: NonRecordFields 3
@@ -9,3 +6,6 @@ constructorTypes:
     "Heap"
   Data.Graph.Inductive.Internal.Heap.Node: Qualified "Data.Graph.Inductive.Internal.Heap"
     "Heap"
+constructors:
+  Data.Graph.Inductive.Internal.Heap.Heap: '[Qualified "Data.Graph.Inductive.Internal.Heap"
+    "Empty",Qualified "Data.Graph.Inductive.Internal.Heap" "Node"]'

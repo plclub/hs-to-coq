@@ -21,15 +21,15 @@ Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
 
-Definition RTree :=
+#[global] Definition RTree :=
   (list Data.Graph.Inductive.Graph.Path)%type.
 
-Definition LRTree a :=
+#[global] Definition LRTree a :=
   (list (Data.Graph.Inductive.Graph.LPath a))%type.
 
 (* Converted value declarations: *)
 
-Definition first {a} : (list a -> bool) -> list (list a) -> list a :=
+#[global] Definition first {a} : (list a -> bool) -> list (list a) -> list a :=
   fun p xss => match GHC.List.filter p xss with | nil => nil | cons x _ => x end.
 
 Fixpoint findP {a} (arg_0__ : Data.Graph.Inductive.Graph.Node) (arg_1__
@@ -42,7 +42,7 @@ Fixpoint findP {a} (arg_0__ : Data.Graph.Inductive.Graph.Node) (arg_1__
          findP v ps
      end.
 
-Definition getPath
+#[global] Definition getPath
    : Data.Graph.Inductive.Graph.Node ->
      RTree -> Data.Graph.Inductive.Graph.Path :=
   fun v =>
@@ -53,17 +53,17 @@ Definition getPath
              | _ => GHC.Err.patternFailure
              end).
 
-Definition getLPath {a : Type}
+#[global] Definition getLPath {a : Type}
    : Data.Graph.Inductive.Graph.Node ->
      LRTree a -> Data.Graph.Inductive.Graph.LPath a :=
   fun v =>
     Data.Graph.Inductive.Graph.LP GHC.Base.∘ (GHC.List.reverse GHC.Base.∘ findP v).
 
-Definition getDistance {a : Type}
+#[global] Definition getDistance {a : Type}
    : Data.Graph.Inductive.Graph.Node -> LRTree a -> option a :=
   fun v t => match findP v t with | nil => None | cons (pair _ d) _ => Some d end.
 
-Definition getLPathNodes {a : Type}
+#[global] Definition getLPathNodes {a : Type}
    : Data.Graph.Inductive.Graph.Node ->
      LRTree a -> Data.Graph.Inductive.Graph.Path :=
   fun v =>

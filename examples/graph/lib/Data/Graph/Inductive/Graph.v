@@ -32,6 +32,7 @@ Require GHC.Base.
 Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
+Require GHC.Prim.
 Require GHC.Tuple.
 Require HsToCoq.Err.
 Require String.
@@ -41,53 +42,53 @@ Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
 
-Definition Node :=
+#[global] Definition Node :=
   Coq.Numbers.BinNums.N.
 
-Definition Path :=
+#[global] Definition Path :=
   (list Node)%type.
 
-Definition UContext :=
+#[global] Definition UContext :=
   (list Node * Node * list Node)%type%type.
 
-Definition UDecomp g :=
+#[global] Definition UDecomp g :=
   (option UContext * g)%type%type.
 
-Definition LNode a :=
+#[global] Definition LNode a :=
   (Node * a)%type%type.
 
 Inductive LPath a : Type := | LP (unLPath : list (LNode a)) : LPath a.
 
-Definition UNode :=
+#[global] Definition UNode :=
   (LNode unit)%type.
 
-Definition UPath :=
+#[global] Definition UPath :=
   (list UNode)%type.
 
-Definition LEdge b :=
+#[global] Definition LEdge b :=
   (Node * Node * b)%type%type.
 
-Definition UEdge :=
+#[global] Definition UEdge :=
   (LEdge unit)%type.
 
 Inductive GroupEdges b : Type := | GEs : (LEdge (list b)) -> GroupEdges b.
 
-Definition Edge :=
+#[global] Definition Edge :=
   (Node * Node)%type%type.
 
-Definition Adj b :=
+#[global] Definition Adj b :=
   (list (b * Node)%type)%type.
 
-Definition Context a b :=
+#[global] Definition Context a b :=
   (Adj b * Node * a * Adj b)%type%type.
 
-Definition GDecomp g a b :=
+#[global] Definition GDecomp g a b :=
   (Context a b * g a b)%type%type.
 
-Definition MContext a b :=
+#[global] Definition MContext a b :=
   (option (Context a b))%type.
 
-Definition Decomp g a b :=
+#[global] Definition Decomp g a b :=
   (MContext a b * g a b)%type%type.
 
 Record Graph__Dict (gr : Type -> Type -> Type) := Graph__Dict_Build {
@@ -104,7 +105,7 @@ Record Graph__Dict (gr : Type -> Type -> Type) := Graph__Dict_Build {
   nodeRange__ : forall {a : Type},
   forall {b : Type}, gr a b -> (Node * Node)%type }.
 
-Definition Graph (gr : Type -> Type -> Type) :=
+#[global] Definition Graph (gr : Type -> Type -> Type) :=
   forall r__, (Graph__Dict gr -> r__) -> r__.
 Existing Class Graph.
 
@@ -112,48 +113,48 @@ Record DynGraph__Dict (gr : Type -> Type -> Type) := DynGraph__Dict_Build {
   op_za____ : forall {a : Type},
   forall {b : Type}, Context a b -> gr a b -> gr a b }.
 
-Definition empty `{g__0__ : Graph gr}
+#[global] Definition empty `{g__0__ : Graph gr}
    : forall {a : Type}, forall {b : Type}, gr a b :=
   g__0__ _ (empty__ gr).
 
-Definition isEmpty `{g__0__ : Graph gr}
+#[global] Definition isEmpty `{g__0__ : Graph gr}
    : forall {a : Type}, forall {b : Type}, gr a b -> bool :=
   g__0__ _ (isEmpty__ gr).
 
-Definition labEdges `{g__0__ : Graph gr}
+#[global] Definition labEdges `{g__0__ : Graph gr}
    : forall {a : Type}, forall {b : Type}, gr a b -> list (LEdge b) :=
   g__0__ _ (labEdges__ gr).
 
-Definition labNodes `{g__0__ : Graph gr}
+#[global] Definition labNodes `{g__0__ : Graph gr}
    : forall {a : Type}, forall {b : Type}, gr a b -> list (LNode a) :=
   g__0__ _ (labNodes__ gr).
 
-Definition matchAny `{g__0__ : Graph gr}
+#[global] Definition matchAny `{g__0__ : Graph gr}
    : forall {a : Type}, forall {b : Type}, gr a b -> GDecomp gr a b :=
   g__0__ _ (matchAny__ gr).
 
-Definition match_ `{g__0__ : Graph gr}
+#[global] Definition match_ `{g__0__ : Graph gr}
    : forall {a : Type}, forall {b : Type}, Node -> gr a b -> Decomp gr a b :=
   g__0__ _ (match___ gr).
 
-Definition mkGraph `{g__0__ : Graph gr}
+#[global] Definition mkGraph `{g__0__ : Graph gr}
    : forall {a : Type},
      forall {b : Type}, list (LNode a) -> list (LEdge b) -> gr a b :=
   g__0__ _ (mkGraph__ gr).
 
-Definition noNodes `{g__0__ : Graph gr}
+#[global] Definition noNodes `{g__0__ : Graph gr}
    : forall {a : Type}, forall {b : Type}, gr a b -> GHC.Num.Int :=
   g__0__ _ (noNodes__ gr).
 
-Definition nodeRange `{g__0__ : Graph gr}
+#[global] Definition nodeRange `{g__0__ : Graph gr}
    : forall {a : Type}, forall {b : Type}, gr a b -> (Node * Node)%type :=
   g__0__ _ (nodeRange__ gr).
 
-Definition DynGraph (gr : Type -> Type -> Type) `{Graph gr} :=
+#[global] Definition DynGraph (gr : Type -> Type -> Type) `{Graph gr} :=
   forall r__, (DynGraph__Dict gr -> r__) -> r__.
 Existing Class DynGraph.
 
-Definition op_za__ `{g__0__ : DynGraph gr}
+#[global] Definition op_za__ `{g__0__ : DynGraph gr}
    : forall {a : Type}, forall {b : Type}, Context a b -> gr a b -> gr a b :=
   g__0__ _ (op_za____ gr).
 
@@ -165,7 +166,7 @@ Arguments LP {_} _.
 
 Arguments GEs {_} _.
 
-Definition unLPath {a} (arg_0__ : LPath a) :=
+#[global] Definition unLPath {a} (arg_0__ : LPath a) :=
   let 'LP unLPath := arg_0__ in
   unLPath.
 
@@ -297,18 +298,6 @@ Qed.
 (* Converted value declarations: *)
 
 (* Skipping all instances of class `GHC.Show.Show', including
-   `Data.Graph.Inductive.Graph.Show__GroupEdges' *)
-
-(* Skipping all instances of class `GHC.Read.Read', including
-   `Data.Graph.Inductive.Graph.Read__GroupEdges' *)
-
-(* Skipping all instances of class `GHC.Read.Read', including
-   `Data.Graph.Inductive.Graph.Read__OrdGr' *)
-
-(* Skipping all instances of class `GHC.Show.Show', including
-   `Data.Graph.Inductive.Graph.Show__OrdGr' *)
-
-(* Skipping all instances of class `GHC.Show.Show', including
    `Data.Graph.Inductive.Graph.Show__LPath' *)
 
 (* Skipping all instances of class `GHC.Base.Eq_', including
@@ -326,11 +315,13 @@ Qed.
 (* Skipping all instances of class `GHC.Base.Ord', including
    `Data.Graph.Inductive.Graph.Ord__OrdGr' *)
 
-Definition order {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition order {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> GHC.Num.Int :=
   noNodes.
 
-Definition size {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition size {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> GHC.Num.Int :=
   Data.Foldable.length GHC.Base.∘ labEdges.
 
@@ -342,62 +333,65 @@ Program Fixpoint ufold {gr} {a} {b} {c} `{Graph gr} `{LawfulGraph gr} (f
      f c (ufold f u g').
 Solve Obligations with ((Tactics.program_simpl; eapply matchAny_decr_size; try (apply Heq_anonymous); auto)).
 
-Definition gmap {gr} {a} {b} {c} {d} `{DynGraph gr} `{LawfulGraph gr}
+#[global] Definition gmap {gr} {a} {b} {c} {d} `{DynGraph gr} `{LawfulGraph gr}
    : (Context a b -> Context c d) -> gr a b -> gr c d :=
-  fun f => ufold (fun c => (fun arg_0__ => f c & arg_0__)) empty.
+  fun f => ufold (fun c => (_&_ (f c))) empty.
 
-Definition nmap {gr} {a} {c} {b} `{DynGraph gr} `{LawfulGraph gr}
+#[global] Definition nmap {gr} {a} {c} {b} `{DynGraph gr} `{LawfulGraph gr}
    : (a -> c) -> gr a b -> gr c b :=
   fun f =>
     gmap (fun '(pair (pair (pair p v) l) s) => pair (pair (pair p v) (f l)) s).
 
-Definition emap {gr} {b} {c} {a} `{DynGraph gr} `{LawfulGraph gr}
+#[global] Definition emap {gr} {b} {c} {a} `{DynGraph gr} `{LawfulGraph gr}
    : (b -> c) -> gr a b -> gr a c :=
   fun f =>
     let map1 := fun g => GHC.Base.map (Control.Arrow.first g) in
     gmap (fun '(pair (pair (pair p v) l) s) =>
             pair (pair (pair (map1 f p) v) l) (map1 f s)).
 
-Definition nemap {gr} {a} {c} {b} {d} `{DynGraph gr} `{LawfulGraph gr}
+#[global] Definition nemap {gr} {a} {c} {b} {d} `{DynGraph gr} `{LawfulGraph gr}
    : (a -> c) -> (b -> d) -> gr a b -> gr c d :=
   fun fn fe =>
     let fe' := GHC.Base.map (Control.Arrow.first fe) in
     gmap (fun '(pair (pair (pair p v) l) s) =>
             pair (pair (pair (fe' p) v) (fn l)) (fe' s)).
 
-Definition nodes {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition nodes {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> list Node :=
   GHC.Base.map Data.Tuple.fst GHC.Base.∘ labNodes.
 
-Definition toEdge {b : Type} : LEdge b -> Edge :=
+#[global] Definition toEdge {b : Type} : LEdge b -> Edge :=
   fun '(pair (pair v w) _) => pair v w.
 
-Definition edges {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition edges {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> list Edge :=
   GHC.Base.map toEdge GHC.Base.∘ labEdges.
 
-Definition toLEdge {b : Type} : Edge -> b -> LEdge b :=
+#[global] Definition toLEdge {b : Type} : Edge -> b -> LEdge b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | pair v w, l => pair (pair v w) l
     end.
 
-Definition edgeLabel {b : Type} : LEdge b -> b :=
+#[global] Definition edgeLabel {b : Type} : LEdge b -> b :=
   fun '(pair (pair _ _) l) => l.
 
 (* Skipping definition `Data.Graph.Inductive.Graph.newNodes' *)
 
-Definition gelem {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition gelem {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : Node -> gr a b -> bool :=
   fun v => Data.Maybe.isJust GHC.Base.∘ (Data.Tuple.fst GHC.Base.∘ match_ v).
 
-Definition insNode {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
-  gr}
+#[global] Definition insNode {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{DynGraph gr}
    : LNode a -> gr a b -> gr a b :=
-  fun '(pair v l) => (fun arg_1__ => pair (pair (pair nil v) l) nil & arg_1__).
+  fun '(pair v l) => (_&_ (pair (pair (pair nil v) l) nil)).
 
-Definition insEdge {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default (Context a
-                                                                              b)}
+#[global] Definition insEdge {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default
+  (Context a b)}
    : LEdge b -> gr a b -> gr a b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -412,25 +406,27 @@ Definition insEdge {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default (Context a
         pair (pair (pair pr v) la) (cons (pair l w) su) & g'
     end.
 
-Definition op_ziZC__ {c} {d} {a} {b}
+#[global] Definition op_ziZC__ {c} {d} {a} {b}
    : (c -> d) -> (a -> b -> c) -> a -> b -> d :=
   _GHC.Base.∘_ GHC.Base.∘ _GHC.Base.∘_.
 
 Notation "'_.:_'" := (op_ziZC__).
 
-Infix ".:" := (_.:_) (at level 99).
+Infix ".:" := (op_ziZC__) (at level 99).
 
-Definition delNodes {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph
-  gr}
+#[global] Definition delNodes {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : list Node -> gr a b -> gr a b :=
-  fun vs g => Data.Foldable.foldl' (Data.Tuple.snd .: GHC.Base.flip match_) g vs.
+  fun vs g =>
+    Data.Foldable.foldl' (op_ziZC__ Data.Tuple.snd (GHC.Base.flip match_)) g vs.
 
-Definition delNode {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition delNode {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : Node -> gr a b -> gr a b :=
   fun v => delNodes (cons v nil).
 
-Definition delEdge {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
-  gr}
+#[global] Definition delEdge {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{DynGraph gr}
    : Edge -> gr a b -> gr a b :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -438,14 +434,14 @@ Definition delEdge {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
         match match_ v g with
         | pair None _ => g
         | pair (Some (pair (pair (pair p v') l) s)) g' =>
-            pair (pair (pair p v') l) (GHC.List.filter ((fun arg_3__ =>
-                                                           arg_3__ GHC.Base./= w) GHC.Base.∘
+            pair (pair (pair p v') l) (GHC.List.filter ((GHC.Prim.rightSection _GHC.Base./=_
+                                                         w) GHC.Base.∘
                                                         Data.Tuple.snd) s) &
             g'
         end
     end.
 
-Definition delLEdgeBy {gr} {b} {a} `{(DynGraph gr)}
+#[global] Definition delLEdgeBy {gr} {b} {a} `{(DynGraph gr)}
    : ((b * Node)%type -> Adj b -> Adj b) -> LEdge b -> gr a b -> gr a b :=
   fun arg_0__ arg_1__ arg_2__ =>
     match arg_0__, arg_1__, arg_2__ with
@@ -457,227 +453,250 @@ Definition delLEdgeBy {gr} {b} {a} `{(DynGraph gr)}
         end
     end.
 
-Definition delLEdge {gr : Type -> Type -> Type} {b : Type} {a : Type} `{DynGraph
-  gr} `{GHC.Base.Eq_ b}
+#[global] Definition delLEdge {gr : Type -> Type -> Type} {b : Type} {a : Type}
+  `{DynGraph gr} `{GHC.Base.Eq_ b}
    : LEdge b -> gr a b -> gr a b :=
   delLEdgeBy Data.OldList.delete.
 
-Definition delAllLEdge {gr : Type -> Type -> Type} {b : Type} {a : Type}
-  `{DynGraph gr} `{GHC.Base.Eq_ b}
+#[global] Definition delAllLEdge {gr : Type -> Type -> Type} {b : Type} {a
+   : Type} `{DynGraph gr} `{GHC.Base.Eq_ b}
    : LEdge b -> gr a b -> gr a b :=
   delLEdgeBy (GHC.List.filter GHC.Base.∘ _GHC.Base./=_).
 
-Definition insNodes {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
-  gr}
+#[global] Definition insNodes {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{DynGraph gr}
    : list (LNode a) -> gr a b -> gr a b :=
   fun vs g => Data.Foldable.foldl' (GHC.Base.flip insNode) g vs.
 
-Definition insEdges {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default (Context a
-                                                                               b)}
+#[global] Definition insEdges {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default
+  (Context a b)}
    : list (LEdge b) -> gr a b -> gr a b :=
   fun es g => Data.Foldable.foldl' (GHC.Base.flip insEdge) g es.
 
-Definition delEdges {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
-  gr}
+#[global] Definition delEdges {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{DynGraph gr}
    : list Edge -> gr a b -> gr a b :=
   fun es g => Data.Foldable.foldl' (GHC.Base.flip delEdge) g es.
 
-Definition buildGr {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
-  gr}
+#[global] Definition buildGr {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{DynGraph gr}
    : list (Context a b) -> gr a b :=
   Data.Foldable.foldr _&_ empty.
 
-Definition mkUGraph {gr : Type -> Type -> Type} `{Graph gr}
+#[global] Definition mkUGraph {gr : Type -> Type -> Type} `{Graph gr}
    : list Node -> list Edge -> gr unit unit :=
   fun vs es =>
     let labUNodes := GHC.Base.map (GHC.Base.flip GHC.Tuple.pair2 tt) in
-    let labUEdges := GHC.Base.map (fun arg_1__ => toLEdge arg_1__ tt) in
+    let labUEdges := GHC.Base.map (GHC.Prim.rightSection toLEdge tt) in
     mkGraph (labUNodes vs) (labUEdges es).
 
-Definition gfiltermap {gr} {a} {b} {c} {d} `{DynGraph gr} `{LawfulGraph gr}
+#[global] Definition gfiltermap {gr} {a} {b} {c} {d} `{DynGraph gr}
+  `{LawfulGraph gr}
    : (Context a b -> MContext c d) -> gr a b -> gr c d :=
   fun f => ufold (Data.Maybe.maybe GHC.Base.id _&_ GHC.Base.∘ f) empty.
 
-Definition labnfilter {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph
-  gr}
+#[global] Definition labnfilter {gr : Type -> Type -> Type} {a : Type} {b
+   : Type} `{Graph gr}
    : (LNode a -> bool) -> gr a b -> gr a b :=
   fun p gr =>
     delNodes ((GHC.Base.map Data.Tuple.fst GHC.Base.∘
                GHC.List.filter (negb GHC.Base.∘ p)) (labNodes gr)) gr.
 
-Definition nfilter {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
-  gr}
+#[global] Definition nfilter {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{DynGraph gr}
    : (Node -> bool) -> gr a b -> gr a b :=
   fun f => labnfilter (f GHC.Base.∘ Data.Tuple.fst).
 
-Definition labfilter {gr : Type -> Type -> Type} {a : Type} {b : Type}
+#[global] Definition labfilter {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{DynGraph gr}
    : (a -> bool) -> gr a b -> gr a b :=
   fun f => labnfilter (f GHC.Base.∘ Data.Tuple.snd).
 
-Definition subgraph {gr : Type -> Type -> Type} {a : Type} {b : Type} `{DynGraph
-  gr}
+#[global] Definition subgraph {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{DynGraph gr}
    : list Node -> gr a b -> gr a b :=
   fun vs =>
     let vs' := Data.IntSet.Internal.fromList vs in
-    nfilter (fun arg_1__ => Data.IntSet.Internal.member arg_1__ vs').
+    nfilter (GHC.Prim.rightSection Data.IntSet.Internal.member vs').
 
-Definition context {gr} {a} {b} `{Graph gr} `{HsToCoq.Err.Default (Context a b)}
+#[global] Definition context {gr} {a} {b} `{Graph gr} `{HsToCoq.Err.Default
+  (Context a b)}
    : gr a b -> Node -> Context a b :=
   fun g v =>
     Data.Maybe.fromMaybe (GHC.Err.error (Coq.Init.Datatypes.app
                                          (GHC.Base.hs_string__ "Match Exception, Node: ") (GHC.Base.hs_string__
                                           String.EmptyString))) (Data.Tuple.fst (match_ v g)).
 
-Definition lab' {a : Type} {b : Type} : Context a b -> a :=
+#[global] Definition lab' {a : Type} {b : Type} : Context a b -> a :=
   fun '(pair (pair (pair _ _) l) _) => l.
 
-Definition lab {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition lab {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> option a :=
   fun g v =>
     ((@GHC.Base.fmap option _ _ _) lab' GHC.Base.∘ Data.Tuple.fst) (match_ v g).
 
-Definition lneighbors' {a : Type} {b : Type} : Context a b -> Adj b :=
+#[global] Definition lneighbors' {a : Type} {b : Type} : Context a b -> Adj b :=
   fun '(pair (pair (pair p _) _) s) => Coq.Init.Datatypes.app p s.
 
-Definition mcontext {gr} {a} {b} `{(Graph gr)}
+#[global] Definition mcontext {gr} {a} {b} `{(Graph gr)}
    : gr a b -> Node -> MContext a b :=
-  Data.Tuple.fst .: GHC.Base.flip match_.
+  op_ziZC__ Data.Tuple.fst (GHC.Base.flip match_).
 
-Definition lneighbors {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph
-  gr}
+#[global] Definition lneighbors {gr : Type -> Type -> Type} {a : Type} {b
+   : Type} `{Graph gr}
    : gr a b -> Node -> Adj b :=
-  Data.Maybe.maybe nil lneighbors' .: mcontext.
+  op_ziZC__ (Data.Maybe.maybe nil lneighbors') mcontext.
 
-Definition neighbors {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph
-  gr}
+#[global] Definition neighbors {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> list Node :=
-  GHC.Base.map Data.Tuple.snd .: lneighbors.
+  op_ziZC__ (GHC.Base.map Data.Tuple.snd) lneighbors.
 
-Definition context4l' {a} {b} : Context a b -> Adj b :=
+#[global] Definition context4l' {a} {b} : Context a b -> Adj b :=
   fun '(pair (pair (pair p v) _) s) =>
-    Coq.Init.Datatypes.app s (GHC.List.filter ((fun arg_1__ =>
-                                                  arg_1__ GHC.Base.== v) GHC.Base.∘
+    Coq.Init.Datatypes.app s (GHC.List.filter ((GHC.Prim.rightSection _GHC.Base.==_
+                                                v) GHC.Base.∘
                                                Data.Tuple.snd) p).
 
-Definition context4l {gr} {a} {b} `{(Graph gr)} : gr a b -> Node -> Adj b :=
-  Data.Maybe.maybe nil context4l' .: mcontext.
+#[global] Definition context4l {gr} {a} {b} `{(Graph gr)}
+   : gr a b -> Node -> Adj b :=
+  op_ziZC__ (Data.Maybe.maybe nil context4l') mcontext.
 
-Definition suc {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition suc {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> list Node :=
-  GHC.Base.map Data.Tuple.snd .: context4l.
+  op_ziZC__ (GHC.Base.map Data.Tuple.snd) context4l.
 
-Definition context1l' {a} {b} : Context a b -> Adj b :=
+#[global] Definition context1l' {a} {b} : Context a b -> Adj b :=
   fun '(pair (pair (pair p v) _) s) =>
-    Coq.Init.Datatypes.app p (GHC.List.filter ((fun arg_1__ =>
-                                                  arg_1__ GHC.Base.== v) GHC.Base.∘
+    Coq.Init.Datatypes.app p (GHC.List.filter ((GHC.Prim.rightSection _GHC.Base.==_
+                                                v) GHC.Base.∘
                                                Data.Tuple.snd) s).
 
-Definition context1l {gr} {a} {b} `{(Graph gr)} : gr a b -> Node -> Adj b :=
-  Data.Maybe.maybe nil context1l' .: mcontext.
+#[global] Definition context1l {gr} {a} {b} `{(Graph gr)}
+   : gr a b -> Node -> Adj b :=
+  op_ziZC__ (Data.Maybe.maybe nil context1l') mcontext.
 
-Definition pre {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition pre {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> list Node :=
-  GHC.Base.map Data.Tuple.snd .: context1l.
+  op_ziZC__ (GHC.Base.map Data.Tuple.snd) context1l.
 
-Definition flip2 {a} {b} : (a * b)%type -> (b * a)%type :=
+#[global] Definition flip2 {a} {b} : (a * b)%type -> (b * a)%type :=
   fun '(pair x y) => pair y x.
 
-Definition lsuc {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition lsuc {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> list (Node * b)%type :=
-  GHC.Base.map flip2 .: context4l.
+  op_ziZC__ (GHC.Base.map flip2) context4l.
 
-Definition lpre {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition lpre {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> list (Node * b)%type :=
-  GHC.Base.map flip2 .: context1l.
+  op_ziZC__ (GHC.Base.map flip2) context1l.
 
-Definition out {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition out {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> list (LEdge b) :=
   fun g v => GHC.Base.map (fun '(pair l w) => pair (pair v w) l) (context4l g v).
 
-Definition inn {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition inn {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> list (LEdge b) :=
   fun g v => GHC.Base.map (fun '(pair l w) => pair (pair w v) l) (context1l g v).
 
-Definition outdeg {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition outdeg {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> GHC.Num.Int :=
-  GHC.List.length .: context4l.
+  op_ziZC__ GHC.List.length context4l.
 
-Definition indeg {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition indeg {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Node -> GHC.Num.Int :=
-  GHC.List.length .: context1l.
+  op_ziZC__ GHC.List.length context1l.
 
-Definition deg' {a : Type} {b : Type} : Context a b -> GHC.Num.Int :=
+#[global] Definition deg' {a : Type} {b : Type} : Context a b -> GHC.Num.Int :=
   fun '(pair (pair (pair p _) _) s) =>
     GHC.List.length p GHC.Num.+ GHC.List.length s.
 
-Definition deg {gr} {a} {b} `{Graph gr} `{HsToCoq.Err.Default (Context a b)}
+#[global] Definition deg {gr} {a} {b} `{Graph gr} `{HsToCoq.Err.Default (Context
+                                                                         a b)}
    : gr a b -> Node -> GHC.Num.Int :=
-  deg' .: context.
+  op_ziZC__ deg' context.
 
-Definition node' {a : Type} {b : Type} : Context a b -> Node :=
+#[global] Definition node' {a : Type} {b : Type} : Context a b -> Node :=
   fun '(pair (pair (pair _ v) _) _) => v.
 
-Definition labNode' {a : Type} {b : Type} : Context a b -> LNode a :=
+#[global] Definition labNode' {a : Type} {b : Type} : Context a b -> LNode a :=
   fun '(pair (pair (pair _ v) l) _) => pair v l.
 
-Definition neighbors' {a : Type} {b : Type} : Context a b -> list Node :=
+#[global] Definition neighbors' {a : Type} {b : Type}
+   : Context a b -> list Node :=
   fun '(pair (pair (pair p _) _) s) =>
     Coq.Init.Datatypes.app (GHC.Base.map Data.Tuple.snd p) (GHC.Base.map
                             Data.Tuple.snd s).
 
-Definition suc' {a : Type} {b : Type} : Context a b -> list Node :=
+#[global] Definition suc' {a : Type} {b : Type} : Context a b -> list Node :=
   GHC.Base.map Data.Tuple.snd GHC.Base.∘ context4l'.
 
-Definition pre' {a : Type} {b : Type} : Context a b -> list Node :=
+#[global] Definition pre' {a : Type} {b : Type} : Context a b -> list Node :=
   GHC.Base.map Data.Tuple.snd GHC.Base.∘ context1l'.
 
-Definition lsuc' {a : Type} {b : Type} : Context a b -> list (Node * b)%type :=
+#[global] Definition lsuc' {a : Type} {b : Type}
+   : Context a b -> list (Node * b)%type :=
   GHC.Base.map flip2 GHC.Base.∘ context4l'.
 
-Definition lpre' {a : Type} {b : Type} : Context a b -> list (Node * b)%type :=
+#[global] Definition lpre' {a : Type} {b : Type}
+   : Context a b -> list (Node * b)%type :=
   GHC.Base.map flip2 GHC.Base.∘ context1l'.
 
-Definition out' {a : Type} {b : Type} : Context a b -> list (LEdge b) :=
+#[global] Definition out' {a : Type} {b : Type}
+   : Context a b -> list (LEdge b) :=
   fun '((pair (pair (pair _ v) _) _ as c)) =>
     GHC.Base.map (fun '(pair l w) => pair (pair v w) l) (context4l' c).
 
-Definition inn' {a : Type} {b : Type} : Context a b -> list (LEdge b) :=
+#[global] Definition inn' {a : Type} {b : Type}
+   : Context a b -> list (LEdge b) :=
   fun '((pair (pair (pair _ v) _) _ as c)) =>
     GHC.Base.map (fun '(pair l w) => pair (pair w v) l) (context1l' c).
 
-Definition outdeg' {a : Type} {b : Type} : Context a b -> GHC.Num.Int :=
+#[global] Definition outdeg' {a : Type} {b : Type}
+   : Context a b -> GHC.Num.Int :=
   GHC.List.length GHC.Base.∘ context4l'.
 
-Definition indeg' {a : Type} {b : Type} : Context a b -> GHC.Num.Int :=
+#[global] Definition indeg' {a : Type} {b : Type}
+   : Context a b -> GHC.Num.Int :=
   GHC.List.length GHC.Base.∘ context1l'.
 
-Definition hasEdge {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph gr}
+#[global] Definition hasEdge {gr : Type -> Type -> Type} {a : Type} {b : Type}
+  `{Graph gr}
    : gr a b -> Edge -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | gr, pair v w => Data.Foldable.elem w (suc gr v)
     end.
 
-Definition hasNeighbor {gr : Type -> Type -> Type} {a : Type} {b : Type} `{Graph
-  gr}
+#[global] Definition hasNeighbor {gr : Type -> Type -> Type} {a : Type} {b
+   : Type} `{Graph gr}
    : gr a b -> Node -> Node -> bool :=
   fun gr v w => Data.Foldable.elem w (neighbors gr v).
 
-Definition hasLEdge {gr : Type -> Type -> Type} {b : Type} {a : Type} `{Graph
-  gr} `{GHC.Base.Eq_ b}
+#[global] Definition hasLEdge {gr : Type -> Type -> Type} {b : Type} {a : Type}
+  `{Graph gr} `{GHC.Base.Eq_ b}
    : gr a b -> LEdge b -> bool :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | gr, pair (pair v w) l => Data.Foldable.elem (pair w l) (lsuc gr v)
     end.
 
-Definition hasNeighborAdj {gr : Type -> Type -> Type} {b : Type} {a : Type}
-  `{Graph gr} `{GHC.Base.Eq_ b}
+#[global] Definition hasNeighborAdj {gr : Type -> Type -> Type} {b : Type} {a
+   : Type} `{Graph gr} `{GHC.Base.Eq_ b}
    : gr a b -> Node -> (b * Node)%type -> bool :=
   fun gr v a => GHC.List.elem a (lneighbors gr v).
 
-Definition slabNodes {gr} {a} {b} `{(Graph gr)} : gr a b -> list (LNode a) :=
+#[global] Definition slabNodes {gr} {a} {b} `{(Graph gr)}
+   : gr a b -> list (LNode a) :=
   Data.OldList.sortBy (Data.Function.on GHC.Base.compare Data.Tuple.fst)
   GHC.Base.∘
   labNodes.
@@ -686,7 +705,8 @@ Definition slabNodes {gr} {a} {b} `{(Graph gr)} : gr a b -> list (LNode a) :=
 
 (* Skipping definition `Data.Graph.Inductive.Graph.equal' *)
 
-Definition eqLists {a} `{(GHC.Base.Eq_ a)} : list a -> list a -> bool :=
+#[global] Definition eqLists {a} `{(GHC.Base.Eq_ a)}
+   : list a -> list a -> bool :=
   fun xs ys =>
     andb (Data.Foldable.null (xs Data.OldList.\\ ys)) (Data.Foldable.null (ys
                                                                            Data.OldList.\\
@@ -700,7 +720,7 @@ Module Notations.
 Notation "'_Data.Graph.Inductive.Graph.&_'" := (op_za__).
 Infix "Data.Graph.Inductive.Graph.&" := (_&_) (at level 99).
 Notation "'_Data.Graph.Inductive.Graph..:_'" := (op_ziZC__).
-Infix "Data.Graph.Inductive.Graph..:" := (_.:_) (at level 99).
+Infix "Data.Graph.Inductive.Graph..:" := (op_ziZC__) (at level 99).
 End Notations.
 
 (* External variables:
@@ -714,6 +734,6 @@ End Notations.
      GHC.Base.Eq_ GHC.Base.compare GHC.Base.flip GHC.Base.fmap GHC.Base.hs_string__
      GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zsze__ GHC.Err.error GHC.List.elem GHC.List.filter GHC.List.length
-     GHC.Num.Int GHC.Num.op_zp__ GHC.Tuple.pair2 HsToCoq.Err.Default
-     String.EmptyString
+     GHC.Num.Int GHC.Num.op_zp__ GHC.Prim.rightSection GHC.Tuple.pair2
+     HsToCoq.Err.Default String.EmptyString
 *)

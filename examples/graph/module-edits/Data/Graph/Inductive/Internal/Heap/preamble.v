@@ -1,3 +1,4 @@
 Require Import Coq.Lists.List.
-Require Import Omega.
+Require Import Lia.
+Require Import PeanoNat.
 Require Import Wellfounded.

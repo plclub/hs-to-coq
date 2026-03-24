@@ -3,7 +3,7 @@ Require Import Lex.
 Require Import Path.
 Require Import Data.Graph.Inductive.Internal.Heap.
 Require Import Lia.
-Require Import Equations.Equations.
+Require Import Equations.Prop.Equations.
 Require Import Coq.Bool.Bool.
 Require Import Data.Graph.Inductive.Graph.
 Require Import Coq.Lists.List.
@@ -16,8 +16,10 @@ Require Import RealRing.
 Require Import Helper.
 Require Import Lex.
 Require Import Proofs.GHC.List.
+Require Import WeightedGraphs.
 
 Require Import Coq.Wellfounded.Inverse_Image.
+Require Import Coq.Lists.SetoidList.
 
 (* Inductive relation*)
 Section Ind.
@@ -26,6 +28,11 @@ Context {a : Type} {b : Type} { gr : Type -> Type -> Type} {Hgraph : Graph.Graph
 {Hnum: GHC.Num.Num b} {Heq: Base.Eq_ b} {HOrd: Base.Ord b} {Hreal: @GHC.Real.Real b Hnum Heq HOrd}
 {Heq': Base.Eq_ a} {HOrd': Base.Ord a} (*{Herr: Err.Default (b)}*){Hlaw2 : (@WeightedGraphs.LawfulWGraph a b gr Hgraph) } {HEqLaw: Base.EqLaws b} {HOrdLaw: @OrdLaws b Heq HOrd HEqLaw}
 {HorderedRing: @RealRing b Heq HOrd HEqLaw Hnum Hreal}.
+
+(* GHC 9.10 regeneration uses Num.op_zp__ and Num.fromInteger instead of Z.add.
+   Make them transparent so rewrite/simpl/reflexivity see through them. *)
+#[local] Typeclasses Transparent Num.op_zp__ Num.fromInteger.
+#[local] Set Keyed Unification.
 
 Program Instance path_default : Err.Default (Graph.LPath b).
 Next Obligation.
@@ -485,7 +492,7 @@ Proof.
   - contradiction. 
   - rewrite H0 in H1. inversion H1.
   - specialize (IHvalid H0). inversion H1; subst.
-    + simpl. simpl in H2. unfold map in H2. rewrite map_app in H2. apply in_app_or in H2.
+    + simpl. simpl in H2. unfold GHC.Base.map in H2. rewrite map_app in H2. apply in_app_or in H2.
       destruct H2. simpl in IHvalid. eapply match_remain_some in H4. destruct_all.
       rewrite IHvalid in H2. destruct (vIn g' v') eqn : V.
       apply H4 in V. destruct_all. rewrite H2 in H7. inversion H7. reflexivity.
@@ -494,17 +501,15 @@ Proof.
       destruct H2.
     + simpl in *. eapply match_remain_none in H4. subst. apply IHvalid; assumption.
   - specialize (IHvalid H0). inversion H1; subst; simpl in *.
-    + destruct (N.eq_dec v' v0). subst. unfold map. rewrite map_app. apply in_or_app.
+    + destruct (N.eq_dec v' v0). subst. unfold GHC.Base.map. rewrite map_app. apply in_or_app.
       right. simpl. left. reflexivity.
       apply match_remain_some in H4. destruct_all.
       assert (vIn g0 v' = false). destruct (vIn g0 v') eqn : V. 
       assert (vIn g' v' = true). apply H4. split; assumption. rewrite H7 in H2. inversion H2. 
-      reflexivity. unfold map. rewrite map_app. apply in_or_app. left. unfold map in IHvalid. apply IHvalid.
+      reflexivity. unfold GHC.Base.map. rewrite map_app. apply in_or_app. left. unfold GHC.Base.map in IHvalid. apply IHvalid.
       assumption.
     + apply match_remain_none in H4. subst. apply IHvalid; assumption.
 Qed.
-
-Require Import WeightedGraphs.
 
 Lemma graph_subset: forall s s' v g,
   valid s v g ->
@@ -603,7 +608,7 @@ Proof.
   intros. induction H.
   - simpl in H0. destruct H0.
   - inversion H1; subst.
-    + simpl in *. unfold map in H0. rewrite map_app in H0.
+    + simpl in *. unfold GHC.Base.map in H0. rewrite map_app in H0.
       apply in_app_or in H0. destruct H0. apply IHvalid. assumption. simpl in H0. destruct H0. subst.
       eapply in_heap_reachable. apply H. simpl. destruct h; inversion H4. subst. simpl. exists d. left.
       reflexivity. destruct H0.
@@ -673,7 +678,7 @@ Proof.
     + destruct H1 as [d']. simpl in H1. remember ((h' :: expand_dist d v0 c)) as h0.
       simpl in IHmulti. subst. destruct h; inversion H7. subst. simpl in H1.
       destruct H1. inversion H1; subst. eapply output_preserved. apply H4. 
-      assumption. simpl. unfold map. rewrite map_app. apply in_or_app. simpl.
+      assumption. simpl. unfold GHC.Base.map. rewrite map_app. apply in_or_app. simpl.
       right. left. reflexivity. 
       destruct_all. apply IHmulti. exists d'. rewrite in_heap_mergeAll.
       rewrite in_heap_unfold. left. rewrite in_heap_mergeAll. rewrite in_heap_equiv. apply H1.
@@ -703,7 +708,6 @@ Proof.
   rewrite isEmpty_def in H1. apply H1. apply v'. 
   eapply multi_valid. apply H. assumption. destruct H2. eapply heap_valid. apply H. apply H2. 
 Qed.
-Require Import Coq.Lists.SetoidList.
 (*Each vertex appears at most once in the output*)
 Lemma no_dups_output: forall s g v,
   valid s g v ->
@@ -711,7 +715,7 @@ Lemma no_dups_output: forall s g v,
 Proof.
   intros. induction H; simpl.
   - constructor.
-  - inversion H0; subst; simpl in *. unfold map.
+  - inversion H0; subst; simpl in *; unfold GHC.Base.map in *.
     rewrite map_app. simpl. assert (List.map snd p ++ v0 :: nil = rev (v0 :: rev ((map snd p)))).
     simpl. rewrite rev_involutive. reflexivity.
     rewrite H4. rewrite NoDup_NoDupA. apply NoDupA_rev. apply eq_equivalence.
@@ -739,7 +743,7 @@ Proof.
   - simpl in H0. destruct H0.
   - inversion H1; subst.
     + assert (~In v0 (map snd p)). { assert (valid (g', mergeAll (h' :: expand_dist d0 v0 c), p ++ (d0, v0) :: nil) g v).
-      eapply v_step. apply H. assumption. apply no_dups_output in H5. simpl in H5. rewrite NoDup_NoDupA in H5. unfold map in H5.
+      eapply v_step. apply H. assumption. apply no_dups_output in H5. simpl in H5. rewrite NoDup_NoDupA in H5. unfold GHC.Base.map in H5.
       rewrite map_app in H5. simpl in H5. apply NoDupA_swap in H5. inversion H5; subst.
       intro. rewrite In_InA_equiv in H6. rewrite app_nil_r in H8. contradiction.
       apply eq_equivalence. } destruct (N.eq_dec v' v0).
@@ -1458,7 +1462,7 @@ Proof.
       rewrite find_dist_not in F. simpl in F.
       assert (In v' (map snd (get_dists (g', mergeAll (h' :: expand_dist d v0 c), p ++ (d, v0) :: nil)))).
       eapply graph_iff_not_output. eapply v_step. apply H. assumption. assumption. simpl. assumption.
-      simpl in H7. unfold map in H7. rewrite map_app in H7. apply in_app_or in H7. destruct H7.
+      simpl in H7. unfold GHC.Base.map in H7. rewrite map_app in H7. apply in_app_or in H7. destruct H7.
       rewrite in_map_iff in H7. destruct_all. destruct x. simpl in *; subst. exfalso. apply (F b0). assumption.
       simpl in H7. destruct H7. contradiction. destruct H7. }
       rewrite H7. apply Eq_refl.
@@ -2095,7 +2099,7 @@ Proof.
      (map (fun '(l2, v) => unit (_GHC.Num.+_ l2 b3) (LP ((v, _GHC.Num.+_ l2 b3) :: (n0, b3) :: unLPath))) l') =
       List.map (map_heap (fun (x : b) (y : Node) => (Some x, Some y)))
      (map (fun x : b * Node => let (l2, v') := x in unit (_GHC.Num.+_ l2 b3) v') l')). { intros. induction l'.
-      simpl. reflexivity. simpl. rewrite IHl'. simpl. destruct a3. reflexivity. } rewrite H4. reflexivity. unfold map.
+      simpl. reflexivity. simpl. rewrite IHl'. simpl. destruct a3. reflexivity. } rewrite H4. reflexivity. unfold GHC.Base.map.
       rewrite H4. reflexivity.
         -- rewrite Heqh in H2. simpl in H2. rewrite Heqh'. unfold splitMinT. rewrite Heqh' in H0.
            rewrite Heqh in H0. inversion H0; subst. destruct l; simpl in H5. destruct unLPath0; simpl in H5.
