@@ -69,7 +69,7 @@ jobs:
             (cd examples/graph/lib; coq_makefile -f _CoqProject -o Makefile)
             make -j -C examples/graph/lib
             (cd examples/graph/theories; coq_makefile -f _CoqProject -o Makefile)
-            make -j -C examples/graph/theories HeapEquiv.vo Crush.vo Helper.vo NicerQueue.vo RealRing.vo Path.vo Lex.vo WeightedGraphs.vo
+            make -j -C examples/graph/theories
             endGroup
             startGroup "Compiling GHC core"
             (cd examples/ghc/lib; coq_makefile -f _CoqProject -o Makefile)
@@ -162,6 +162,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git submodule update --init examples/ghc/ghc
           git submodule update --init examples/containers/containers
+          git submodule update --init examples/graph/graph
       - name: Installing dependencies
         run: apt-get update && apt-get install -y xutils-dev
       - name: Caching Stack
@@ -198,3 +199,12 @@ jobs:
           git add examples/ghc/lib
           git status
           git diff-index --cached --quiet HEAD -- examples/ghc/lib
+      - name: Translating graph
+        run: |
+          make -C examples/graph clean
+          make -C examples/graph vfiles
+      - name: Comparing convenience copy of graph
+        run: |
+          git add examples/graph/lib
+          git status
+          git diff-index --cached --quiet HEAD -- examples/graph/lib

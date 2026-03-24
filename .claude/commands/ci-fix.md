@@ -48,7 +48,7 @@ Build all Coq targets in dependency order. For each directory, generate the Make
 
 # 4. graph
 (cd examples/graph/lib; coq_makefile -f _CoqProject -o Makefile) && make -j -C examples/graph/lib
-(cd examples/graph/theories; coq_makefile -f _CoqProject -o Makefile) && make -j -C examples/graph/theories HeapEquiv.vo Crush.vo Helper.vo NicerQueue.vo RealRing.vo Path.vo Lex.vo WeightedGraphs.vo
+(cd examples/graph/theories; coq_makefile -f _CoqProject -o Makefile) && make -j -C examples/graph/theories
 
 # 5. ghc
 (cd examples/ghc/lib; coq_makefile -f _CoqProject -o Makefile) && make -j -C examples/ghc/lib
@@ -138,6 +138,7 @@ Regenerate base, containers, and ghc, then verify the convenience copies match w
 # Check submodules are initialized
 git submodule update --init examples/ghc/ghc
 git submodule update --init examples/containers/containers
+git submodule update --init examples/graph/graph
 
 # Build hs-to-coq first
 stack build
@@ -160,6 +161,11 @@ git reset HEAD examples/containers/lib
 make -C examples/ghc clean && make -C examples/ghc vfiles
 git add examples/ghc/lib && git diff-index --cached --quiet HEAD -- examples/ghc/lib
 git reset HEAD examples/ghc/lib
+
+# graph
+make -C examples/graph clean && make -C examples/graph vfiles
+git add examples/graph/lib && git diff-index --cached --quiet HEAD -- examples/graph/lib
+git reset HEAD examples/graph/lib
 ```
 
 **If `git diff-index` exits non-zero**: The convenience copy is out of date. This usually means someone edited hs-to-coq source or edits files without regenerating. Show `git diff --cached --stat` before resetting to see what changed. The fix is simple — the regenerated files ARE the fix. Stage and commit them.
