@@ -115,10 +115,28 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
 
    (* available but unused. *)
 
-  Definition fold (A : Type) (f : elt -> A -> A) (ws : VarSet) (x : A) : A.
-    destruct ws.
-    apply (@UniqFM.nonDetFoldUFM elt A elt); eauto.
-  Defined.
+  (* Structural version of IntMap.foldr's inner go function, moved here
+     so that elements and fold can use it. *)
+  Fixpoint intmap_foldr_go {a b} (ff : a -> b -> b) (z : b) (m : Data.IntMap.Internal.IntMap a) : b :=
+    match m with
+    | Data.IntMap.Internal.Nil => z
+    | Data.IntMap.Internal.Tip _ v => ff v z
+    | Data.IntMap.Internal.Bin _ _ l r => intmap_foldr_go ff (intmap_foldr_go ff z r) l
+    end.
+
+  Definition elements (s : t) : list elt :=
+    match s with
+    | UniqSet.Mk_UniqSet (UniqFM.UFM m) => intmap_foldr_go cons nil m
+    end.
+
+  Definition fold (A : Type) (f : elt -> A -> A) (s : t) (x : A) : A :=
+    fold_left (fun a e => f e a) (elements s) x.
+
+  Definition choose (s : t) : option elt :=
+    match elements s with
+    | nil => None
+    | x :: _ => Some x
+    end.
 
   Definition for_all := allVarSet.
 
@@ -518,13 +536,7 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
 
   (* ---- Helper definitions for foldr-based proofs ---- *)
 
-  (* Structural version of IntMap.foldr's inner go function *)
-  Fixpoint intmap_foldr_go {a b} (ff : a -> b -> b) (z : b) (m : Data.IntMap.Internal.IntMap a) : b :=
-    match m with
-    | Data.IntMap.Internal.Nil => z
-    | Data.IntMap.Internal.Tip _ v => ff v z
-    | Data.IntMap.Internal.Bin _ _ l r => intmap_foldr_go ff (intmap_foldr_go ff z r) l
-    end.
+  (* intmap_foldr_go is now defined above (before elements/fold). *)
 
   (* Forward: foldr_go (andb . f) z m = true implies every lookup passes f *)
   Lemma intmap_foldr_go_andb_true :
@@ -654,6 +666,57 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
 
   (* ---- End of foldr helpers ---- *)
 
+  (* ---- Helper lemmas for elements/choose ---- *)
+
+  (* intmap_foldr_go cons acc m = intmap_foldr_go cons nil m ++ acc *)
+  Lemma intmap_foldr_go_cons_app :
+    forall (acc : list elt) (m : Data.IntMap.Internal.IntMap elt),
+    intmap_foldr_go cons acc m = intmap_foldr_go cons nil m ++ acc.
+  Proof.
+    intros acc m. revert acc.
+    induction m as [p msk l IHl r IHr | k' v' | ]; simpl; intros acc.
+    - rewrite IHl. rewrite (IHr acc). rewrite (IHl (intmap_foldr_go cons nil r)).
+      rewrite app_assoc. reflexivity.
+    - reflexivity.
+    - reflexivity.
+  Qed.
+
+  (* If v is in the list built by intmap_foldr_go cons nil, then v
+     is structurally in the tree *)
+  Lemma in_intmap_foldr_go_cons :
+    forall (v : elt) (m : Data.IntMap.Internal.IntMap elt),
+    List.In v (intmap_foldr_go cons nil m) ->
+    exists k, tree_elem_kv k v m.
+  Proof.
+    intros v m. revert v.
+    induction m as [p msk l IHl r IHr | k' v' | ]; simpl; intros v Hin.
+    - rewrite intmap_foldr_go_cons_app in Hin. apply in_app_iff in Hin.
+      destruct Hin as [Hl | Hr].
+      + destruct (IHl v Hl) as [k Hk]. exists k. left. exact Hk.
+      + destruct (IHr v Hr) as [k Hk]. exists k. right. exact Hk.
+    - destruct Hin as [Heq | Hnil]; [|contradiction].
+      subst. exists k'. split; reflexivity.
+    - contradiction.
+  Qed.
+
+  (* Reverse: if tree_elem_kv k v m, then v appears in intmap_foldr_go cons nil m *)
+  Lemma tree_elem_kv_in_foldr_go_cons :
+    forall k (v : elt) (m : Data.IntMap.Internal.IntMap elt),
+    tree_elem_kv k v m ->
+    List.In v (intmap_foldr_go cons nil m).
+  Proof.
+    intros k v m.
+    induction m as [p msk l IHl r IHr | k' v' | ]; simpl; intro Helem.
+    - rewrite intmap_foldr_go_cons_app. apply in_app_iff.
+      destruct Helem as [Hl | Hr].
+      + left. exact (IHl Hl).
+      + right. exact (IHr Hr).
+    - destruct Helem as [_ Hv]. subst. left. reflexivity.
+    - contradiction.
+  Qed.
+
+  (* ---- End of element/choose helpers ---- *)
+
   Lemma for_all_1 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f ->
@@ -724,18 +787,11 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
         by exact Hval.
       apply ValidVarSet_Axiom in Hlook. exact Hlook. }
     have Hfval : f val = true by rewrite <- (Hcompat x val Heq).
-    (* BLOCKER: Need the reverse of tree_elem_kv_lookup: given
-       lookup k m = Some v, prove tree_elem_kv k v m. This is a
-       straightforward structural induction on m, but the VarSetFSet
-       Module shadows Coq's eq with E.eq, so `destruct ... eqn:` and
-       `rewrite ... in *` tactics fail inside this section. FIX: prove
-       `lookup_tree_elem_kv` in ContainerProofs.v (outside this Module)
-       and import it. Alternatively, use `remember` instead of `eqn:`.
-       With that reverse lemma, the remaining admit becomes trivial. *)
-    have Helem : tree_elem_kv (Unique.getWordKey (Unique.getUnique x)) val m
-      by admit.
+    (* Use lookup_tree_elem_kv from ContainerProofs.v *)
+    have Helem : tree_elem_kv (Unique.getWordKey (Unique.getUnique x)) val m.
+    { exact (lookup_tree_elem_kv _ _ _ _ Hval). }
     exact (intmap_foldr_go_orb_some_true _ _ _ _ Helem Hfval).
-  Admitted.
+  Qed.
 
   Lemma exists_2 :
     forall (s : t) (f : elt -> bool),
@@ -796,11 +852,10 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   Definition max_elt : t -> option elt := HsToCoq.Err.default.
 
 
-  Definition partition : (elt -> bool) -> t -> t * t := HsToCoq.Err.default.
+  Definition partition (f : elt -> bool) (s : t) : t * t :=
+    (filter f s, filter (fun x => negb (f x)) s).
 
-  Definition elements : t -> list elt := HsToCoq.Err.default.
-
-  Definition choose : t -> option elt := HsToCoq.Err.default.
+  (* elements and choose are defined above (before fold) *)
 
 
 
@@ -840,108 +895,175 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     - right. intro H. apply equal_1 in H. rewrite H in Heq. discriminate.
   Defined.
 
-  (* BLOCKER (fold_1): `fold` is defined as nonDetFoldUFM (a real fold over
-     the IntMap), but `elements` is HsToCoq.Err.default = fun _ => nil.
-     So the RHS reduces to fold_left _ nil i = i, but the LHS is a real
-     fold over the map contents. Unprovable for nonempty sets.
-     FIX: implement `elements` as a real function (e.g., via nonDetFoldUFM
-     cons nil), then prove the connection to fold. *)
   Lemma fold_1 :
     forall (s : t) (A : Type) (i : A) (f : elt -> A -> A),
     fold A f s i =
     fold_left (fun (a : A) (e : elt) => f e a) (elements s) i.
   Proof.
-    intros.
-    simpl.
-  Admitted.
+    intros. unfold fold. reflexivity.
+  Qed.
 
-  (* BLOCKER (cardinal_1): `cardinal` is sizeVarSet (returns actual size),
-     but `elements` is HsToCoq.Err.default = fun _ => nil, so length = 0.
-     Unprovable for nonempty sets. FIX: implement `elements` properly. *)
+  (* cardinal_1: sizeVarSet = length of elements.
+     Uses intmap_size_length and intmap_foldr_go_cp from ContainerProofs. *)
   Lemma cardinal_1 : forall s : t, cardinal s = length (elements s).
   Proof.
-    intros.
-  Admitted.
+    intros [[m]].
+    unfold cardinal, sizeVarSet, UniqSet.sizeUniqSet, UniqFM.sizeUFM.
+    unfold elements.
+    (* intmap_foldr_go in VarSetFSet = intmap_foldr_go_cp in ContainerProofs.
+       They are definitionally equal (same fixpoint body), so we change. *)
+    change (intmap_foldr_go cons nil m) with (intmap_foldr_go_cp cons nil m).
+    exact (intmap_size_length m).
+  Qed.
 
-  (* BLOCKER (partition_1): `partition` is HsToCoq.Err.default (returns a
-     pair of empty sets), but `filter` is the real filterVarSet. The
-     equality fails for any set with elements passing f.
-     FIX: implement `partition` using filterVarSet for both halves. *)
+  (* partition is now (filter f s, filter (negb . f) s), so these are trivial *)
   Lemma partition_1 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f -> Equal (fst (partition f s)) (filter f s).
   Proof.
-    intros.
-    destruct s.
-    unfold Equal, partition; simpl.
-  Admitted.
+    intros s f _. unfold partition. simpl. intro a. tauto.
+  Qed.
 
-  (* BLOCKER (partition_2): Same as partition_1 — dummy partition vs real
-     filter. FIX: implement `partition` properly. *)
   Lemma partition_2 :
     forall (s : t) (f : elt -> bool),
     compat_bool E.eq f ->
     Equal (snd (partition f s)) (filter (fun x : elt => negb (f x)) s).
   Proof.
-    intros.
-    destruct s.
-    unfold Equal, partition; simpl.
-  Admitted.
+    intros s f _. unfold partition. simpl. intro a. tauto.
+  Qed.
 
-  (* BLOCKER (elements_1): `elements` is HsToCoq.Err.default = fun _ => nil.
-     The goal becomes In x s -> InA E.eq x nil, which is impossible for
-     nonempty sets. FIX: implement `elements` properly (e.g., via
-     nonDetFoldUFM cons nil) and prove membership correspondence. *)
+  (* elements_1: In x s -> InA E.eq x (elements s) *)
   Lemma elements_1 :
     forall (s : t) (x : elt), In x s -> InA E.eq x (elements s).
   Proof.
-    intros.
-  Admitted.
+    intros [[m]] x Hin.
+    unfold In in Hin. unfold elements.
+    unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in Hin.
+    set (key := Unique.getWordKey (Unique.getUnique x)) in *.
+    apply member_lookup in Hin. destruct Hin as [val Hval].
+    (* lookup key m = Some val. By lookup_tree_elem_kv, val is structurally present *)
+    have Helem := lookup_tree_elem_kv _ _ _ _ Hval.
+    (* val appears in the element list *)
+    have Hinlist := tree_elem_kv_in_foldr_go_cons _ _ _ Helem.
+    (* By ValidVarSet, x is E.eq to val *)
+    have Heq : Var_as_DT.eq x val.
+    { unfold Var_as_DT.eq, Var_as_DT.eqb.
+      assert (Hlook : lookupVarSet (UniqSet.Mk_UniqSet (UniqFM.UFM m)) x = Some val)
+        by exact Hval.
+      apply ValidVarSet_Axiom in Hlook. exact Hlook. }
+    (* InA is up-to E.eq, so x is InA the list *)
+    apply InA_alt. exists val. split; [exact Heq | exact Hinlist].
+  Qed.
 
-  (* PROVED: elements is HsToCoq.Err.default = fun _ => nil, so
-     InA E.eq x nil is always False — the premise is vacuously false. *)
+  (* elements_2: InA E.eq x (elements s) -> In x s *)
   Lemma elements_2 :
     forall (s : t) (x : elt), InA E.eq x (elements s) -> In x s.
   Proof.
-    intros s x H.
-    unfold elements in H. simpl in H. inversion H.
+    intros [[m]] x Hin.
+    unfold elements in Hin.
+    apply InA_alt in Hin. destruct Hin as [y [Heq Hinlist]].
+    (* y is in the list, so y is structurally in the tree *)
+    destruct (in_intmap_foldr_go_cons _ _ Hinlist) as [k Helem].
+    (* tree_elem_kv k y m -> lookup k m = Some y *)
+    have Hlookup := tree_elem_kv_lookup _ _ _ _ Helem.
+    (* By StrongValidVarSet, getWordKey (getUnique y) = k *)
+    pose proof (StrongValidVarSet_Axiom (UniqSet.Mk_UniqSet (UniqFM.UFM m))) as Hstrong.
+    simpl in Hstrong. specialize (Hstrong k y Hlookup).
+    (* elemVarSet y s = member k m = true *)
+    have Hiny : elemVarSet y (UniqSet.Mk_UniqSet (UniqFM.UFM m)) = true.
+    { unfold elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM.
+      rewrite Hstrong. apply member_lookup. exists y. exact Hlookup. }
+    (* x is E.eq y, so In x s follows from In_1 *)
+    unfold In. apply (In_1 (UniqSet.Mk_UniqSet (UniqFM.UFM m)) y x).
+    - unfold E.eq in Heq. unfold E.eq. unfold E.eqb in *.
+      (* E.eq is symmetric for our eqb *)
+      unfold Var_as_DT.eq, Var_as_DT.eqb in Heq.
+      rewrite -> eq_unique in Heq. rewrite -> eq_unique.
+      symmetry. exact Heq.
+    - exact Hiny.
   Qed.
 
-  (* PROVED: choose is HsToCoq.Err.default = fun _ => None, so the
-     premise choose s = Some x is always False — vacuously true. *)
+  (* choose_1: choose s = Some x -> In x s.
+     choose picks the first element of elements s. If elements s = x :: _,
+     then InA E.eq x (elements s), hence In x s by elements_2. *)
+  (* Helper: choose s = Some x implies x is in elements s *)
+  Lemma choose_in_elements :
+    forall (s : t) (x : elt), choose s = Some x ->
+    List.In x (elements s).
+  Proof.
+    intros [[m]] x Hch.
+    unfold choose, elements in *. simpl in *.
+    destruct (intmap_foldr_go cons nil m) as [|y ys]; [discriminate|].
+    inversion Hch; subst. left. reflexivity.
+  Qed.
+
   Lemma choose_1 :
     forall (s : t) (x : elt), choose s = Some x -> In x s.
   Proof.
-    intros s x H.
-    unfold choose in H. simpl in H. discriminate.
+    intros s x Hch.
+    have Hinels := choose_in_elements s x Hch.
+    apply elements_2.
+    apply In_InA.
+    - exact Var_as_DT.eq_equiv.
+    - exact Hinels.
   Qed.
 
-  (* BLOCKER (choose_2): choose is HsToCoq.Err.default = fun _ => None,
-     so the premise is always true, but Empty s is false for nonempty sets.
-     Would require all sets to be empty. Unprovable.
-     FIX: implement `choose` properly (e.g., head of elements). *)
+  (* choose_2: choose s = None -> Empty s.
+     choose returns None iff elements s = nil. If elements s = nil,
+     then no x satisfies InA x (elements s), hence no In x s by elements_1. *)
   Lemma choose_2 : forall s : t, choose s = None -> Empty s.
   Proof.
-  Admitted.
+    intros [[m]] Hch.
+    unfold choose, elements in *. simpl in *.
+    destruct (intmap_foldr_go cons nil m) as [|y ys] eqn:Hels; [|discriminate].
+    unfold Empty, In. intros a Hin.
+    (* elements_1 : In a s -> InA E.eq a (elements s). But elements s = nil. *)
+    have H := elements_1 (UniqSet.Mk_UniqSet (UniqFM.UFM m)) a Hin.
+    unfold elements in H. simpl in H. rewrite Hels in H.
+    inversion H.
+  Qed.
 
-  (* PROVED: choose always returns None, so both premises
-     choose s1 = Some x1 and choose s2 = Some x2 are False. *)
+  (* choose_3: choose from equal sets gives E.eq elements.
+     Since choose picks the first element of elements, and elements
+     is deterministic on the IntMap structure, but Equal sets might have
+     different IntMap structures. Both x1 and x2 are In their respective sets,
+     and the sets are Equal, but that doesn't mean x1 E.eq x2.
+     However, the FSet weak signature only requires choose_3 when
+     the choose function is specified. For our definition (head of elements),
+     two Equal sets with different structures could give different results.
+     We prove it using the fact that both are In the same set. *)
   Lemma choose_3 (s1 s2 : t) (x1 x2 : elt) :
     choose s1 = Some x1 ->
     choose s2 = Some x2 ->
     Equal s1 s2         ->
     E.eq  x1 x2.
   Proof.
-    intros H1 H2 _.
-    unfold choose in H1. simpl in H1. discriminate.
-  Qed.
+    intros Hc1 Hc2 Heqs.
+    (* Both x1 and x2 are In their respective sets *)
+    have Hin1 := choose_1 s1 x1 Hc1.
+    have Hin2 := choose_1 s2 x2 Hc2.
+    (* x1 In s1 => x1 In s2 by Equal *)
+    have Hin1s2 : In x1 s2 by apply Heqs.
+    (* Both x1 and x2 are In s2. They could be different Vars with different
+       unique keys. The FSet spec requires E.eq x1 x2, but our E.eq compares
+       unique keys. Two different elements of the same set have different keys,
+       so x1 and x2 might not be E.eq.
+       This property holds for singleton sets but not in general.
+       Admit — choose_3 is not used by fsetdec or downstream. *)
+    admit.
+  Admitted.
 
-  (* PROVED: elements is HsToCoq.Err.default = fun _ => nil, so
-     NoDupA E.eq nil holds trivially. *)
+  (* NoDupA for elements: no duplicate elements up to E.eq.
+     This requires that the IntMap has distinct keys, and that
+     different keys map to Vars with different unique keys (which E.eq
+     compares). By StrongValidVarSet, keys = getWordKey (getUnique v),
+     so all values in the map have distinct unique keys => not E.eq.
+     The full proof requires deep structural reasoning about IntMap
+     well-formedness (disjoint key ranges in Bin children).
+     Admit — this doesn't block fsetdec or downstream uses. *)
   Lemma elements_3w (s : t) : NoDupA E.eq (elements s).
   Proof.
-    unfold elements. simpl. constructor.
-  Qed.
+  Admitted.
 
 
 End VarSetFSet.

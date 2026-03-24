@@ -2736,6 +2736,118 @@ Proof.
   - simpl in H. contradiction.
 Qed.
 
+(* Reverse of tree_elem_kv_lookup: lookup k m = Some v implies
+   the key-value pair is structurally present in the tree. *)
+Lemma lookup_tree_elem_kv :
+  forall A k (v : A) (m : IntMap.IntMap A),
+  Data.IntMap.Internal.lookup k m = Some v -> tree_elem_kv k v m.
+Proof.
+  intros A k v m.
+  induction m as [p msk l IHl r IHr | k' v' | ]; simpl; intro H.
+  - (* Bin case: lookup dispatches to l or r based on zero k msk *)
+    destruct (Data.IntSet.Internal.zero k msk) eqn:Hz.
+    + left. exact (IHl H).
+    + right. exact (IHr H).
+  - (* Tip case *)
+    destruct (GHC.Base.op_zeze__ k k') eqn:Hk.
+    + inversion H; subst. split.
+      * move: Hk => /Eq_eq_Word Hk. exact Hk.
+      * reflexivity.
+    + discriminate.
+  - (* Nil case *)
+    discriminate.
+Qed.
+
+(* ============================================================ *)
+
+(* Structural foldr_go matching IntMap.foldr's inner go function *)
+Fixpoint intmap_foldr_go_cp {a b} (ff : a -> b -> b) (z : b) (m : Data.IntMap.Internal.IntMap a) : b :=
+  match m with
+  | Data.IntMap.Internal.Nil => z
+  | Data.IntMap.Internal.Tip _ v => ff v z
+  | Data.IntMap.Internal.Bin _ _ l r => intmap_foldr_go_cp ff (intmap_foldr_go_cp ff z r) l
+  end.
+
+(* intmap_foldr_go_cp cons acc m = intmap_foldr_go_cp cons nil m ++ acc *)
+Lemma intmap_foldr_go_cp_cons_app :
+  forall {a} (acc : list a) (m : Data.IntMap.Internal.IntMap a),
+  intmap_foldr_go_cp cons acc m = intmap_foldr_go_cp cons nil m ++ acc.
+Proof.
+  intros a acc m. revert acc.
+  induction m as [p msk l IHl r IHr | k' v' | ]; simpl; intros acc.
+  - rewrite IHl. rewrite (IHr acc). rewrite (IHl (intmap_foldr_go_cp cons nil r)).
+    rewrite app_assoc. reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(* Structural element count for IntMaps *)
+Fixpoint intmap_count {a} (m : Data.IntMap.Internal.IntMap a) : nat :=
+  match m with
+  | Data.IntMap.Internal.Nil => O
+  | Data.IntMap.Internal.Tip _ _ => S O
+  | Data.IntMap.Internal.Bin _ _ l r => Nat.add (intmap_count l) (intmap_count r)
+  end.
+
+(* length of foldr_go cons nil = intmap_count *)
+Lemma length_foldr_go_cp_cons :
+  forall {a} (m : Data.IntMap.Internal.IntMap a),
+  length (intmap_foldr_go_cp cons nil m) = intmap_count m.
+Proof.
+  intros a m.
+  induction m as [p msk l IHl r IHr | k' v' | ]; simpl.
+  - rewrite intmap_foldr_go_cp_cons_app. rewrite app_length.
+    rewrite IHl IHr. reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(* Data.IntMap.Internal.size m = intmap_count m (as nat).
+   size uses an accumulating go function: go acc m = acc + count(m).
+   We prove this by matching size's inner fixpoint. *)
+(* Helper: N.to_nat of N addition *)
+Local Lemma N_to_nat_add_1 : forall n : N, N.to_nat (1 + n)%N = S (N.to_nat n).
+Proof.
+  intros n. rewrite N2Nat.inj_add. simpl. lia.
+Qed.
+
+Lemma intmap_size_count :
+  forall {a} (m : Data.IntMap.Internal.IntMap a),
+  N.to_nat (Data.IntMap.Internal.size m) = intmap_count m.
+Proof.
+  intros a m.
+  (* size m = go 0 m where go is an accumulating function.
+     For N, GHC.Num.fromInteger is id and GHC.Num.+ is N.add.
+     So go acc (Tip _ _) = 1 + acc, go acc Nil = acc,
+     go acc (Bin _ _ l r) = go (go acc l) r.
+     We prove: N.to_nat (go acc m) = N.to_nat acc + intmap_count m. *)
+  unfold Data.IntMap.Internal.size.
+  (* After unfold, the goal has the inner go applied to fromInteger 0 and m.
+     For N, fromInteger 0 = 0%N and fromInteger 1 + acc = N.add 1 acc.
+     The fix is definitionally equal to our version with N.add. *)
+  match goal with
+  | |- N.to_nat (?go _ _) = _ =>
+    cut (forall acc, N.to_nat (go acc m) = Nat.add (N.to_nat acc) (intmap_count m));
+    [intro H; specialize (H 0%N); simpl in H; exact H|]
+  end.
+  induction m as [p msk l IHl r IHr | k' v' | ]; intro acc.
+  - (* Bin *) simpl. rewrite IHr. rewrite IHl. simpl. lia.
+  - (* Tip: go acc (Tip k v) = fromInteger 1 + acc = 1 + acc for N *)
+    (* Don't simpl to avoid reducing N arithmetic to match forms *)
+    change (intmap_count (Data.IntMap.Internal.Tip k' v')) with (S O).
+    (* After matching, goal is N.to_nat (1 + acc)%N = Nat.add (N.to_nat acc) (S O) *)
+    rewrite N_to_nat_add_1. lia.
+  - (* Nil *) simpl. lia.
+Qed.
+
+(* Combined: size m as nat = length of element list *)
+Lemma intmap_size_length :
+  forall {a} (m : Data.IntMap.Internal.IntMap a),
+  N.to_nat (Data.IntMap.Internal.size m) = length (intmap_foldr_go_cp cons nil m).
+Proof.
+  intros a m. rewrite intmap_size_count. rewrite length_foldr_go_cp_cons. reflexivity.
+Qed.
+
 (* ============================================================ *)
 
 Lemma null_intersection_eq : forall b (x1 x2 y1 y2 : IntMap.IntMap b),
