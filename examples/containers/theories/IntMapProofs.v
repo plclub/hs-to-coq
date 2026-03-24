@@ -2533,6 +2533,195 @@ Ltac solve_f_eq_disjoint_Map :=
   repeat saturate_inRange;
   try inRange_disjoint. (* Only try this, so that we see wher we are stuck. *)
 
+(** ** Helper definitions for the Bin/Tip case of [restrictKeys_Desc] *)
+
+(* [restrictBM] unfolding, analogous to [restrictKeys_eq]. *)
+Definition restrictBM_f {a} :
+  (IntSetBitMap -> IntMap a -> IntMap a) -> (IntSetBitMap -> IntMap a -> IntMap a).
+Proof.
+  let rhs := eval unfold restrictBM in (@restrictBM a) in
+  match rhs with context[ deferredFix2 ?f ] => exact f end.
+Defined.
+
+Definition restrictBM_body {a} := restrictBM_f (@restrictBM a).
+
+Lemma restrictBM_eq {a} (bm : IntSetBitMap) (m : IntMap a) :
+  restrictBM bm m = restrictBM_body bm m.
+Proof.
+  enough (@restrictBM a = restrictBM_body) by congruence.
+  apply deferredFix2_eq.
+Qed.
+
+Lemma restrictBM_Nil {a} (bm : IntSetBitMap) :
+  @restrictBM a bm Nil = Nil.
+Proof.
+  rewrite restrictBM_eq.
+  unfold restrictBM_body, restrictBM_f.
+  unfoldMethods.
+  destruct (N.eqb_spec bm (Z.to_N 0)); reflexivity.
+Qed.
+
+Lemma restrictBM_0 {a} (m : IntMap a) :
+  restrictBM 0 m = Nil.
+Proof.
+  rewrite restrictBM_eq.
+  unfold restrictBM_body, restrictBM_f.
+  unfoldMethods.
+  reflexivity.
+Qed.
+
+(* [restrictBM] preserves [Desc0], filtering by bitmap membership.
+   The semantic function checks if key i's suffix bit is set in bm.
+   This follows the [filter_Desc] pattern: induction on [Desc m],
+   using [bin_Desc0] for the Bin case. *)
+Lemma restrictBM_Desc0:
+  forall {a} bm (m : IntMap a) r f,
+  Desc m r f ->
+  Desc0 (restrictBM bm m) r
+    (fun i => if Data.IntSet.Internal.member i
+                (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)
+              then f i else None).
+Proof.
+  intros a bm m r f HD.
+  revert bm.
+  induction HD; intros bm; subst.
+  - (* Tip k v *)
+    rewrite restrictBM_eq.
+    unfold restrictBM_body, restrictBM_f.
+    unfoldMethods.
+    destruct (N.eqb_spec bm (Z.to_N 0)) as [Hbm0 | Hbm0].
+    + (* bm = 0: result is Nil *)
+      apply Desc0Nil. intro i. rewrite H.
+      assert (Hbm0' : bm = 0%N) by lia.
+      destruct (N.eqb_spec i k).
+      * subst. unfold Data.IntSet.Internal.member. unfoldMethods.
+        rewrite N.land_0_r. rewrite andb_false_r. reflexivity.
+      * destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)) eqn:Hmem;
+        [| reflexivity].
+        exfalso. subst bm.
+        unfold Data.IntSet.Internal.member in Hmem. unfoldMethods.
+        rewrite andb_true_iff in Hmem. destruct Hmem as [_ Hmem].
+        rewrite negb_true_iff in Hmem.
+        rewrite N.eqb_neq in Hmem.
+        apply Hmem. rewrite N.land_0_r. reflexivity.
+    + (* bm /= 0 *)
+      destruct (Data.IntSet.Internal.member k (Data.IntSet.Internal.Tip (N.ldiff k suffixBitMask) bm)) eqn:Hmemk.
+      * (* k is in bm: return Tip k v *)
+        eapply Desc0NotNil; [eapply DescTip; [intro; reflexivity | reflexivity] | apply isSubrange_refl |].
+        intro i. rewrite H.
+        destruct (N.eqb_spec i k).
+        -- subst. rewrite Hmemk. reflexivity.
+        -- destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm));
+           reflexivity.
+      * (* k is not in bm: return Nil *)
+        apply Desc0Nil. intro i. rewrite H.
+        destruct (N.eqb_spec i k).
+        -- subst. rewrite Hmemk. reflexivity.
+        -- destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm));
+           reflexivity.
+  - (* Bin (rPrefix r) (rMask r) m1 m2 *)
+    rewrite restrictBM_eq.
+    unfold restrictBM_body, restrictBM_f.
+    unfoldMethods.
+    destruct (N.eqb_spec bm (Z.to_N 0)).
+    + apply Desc0Nil. intro i.
+      rewrite H4.
+      destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)) eqn:Hmem;
+        [| reflexivity].
+      exfalso.
+      assert (Hbm' : bm = 0%N) by lia. subst bm.
+      unfold Data.IntSet.Internal.member in Hmem. unfoldMethods.
+      rewrite andb_true_iff in Hmem. destruct Hmem as [_ Hmem].
+      rewrite negb_true_iff in Hmem.
+      rewrite N.eqb_neq in Hmem.
+      apply Hmem. rewrite N.land_0_r. reflexivity.
+    + eapply bin_Desc0.
+      * apply IHHD1.
+      * apply IHHD2.
+      * assumption.
+      * assumption.
+      * assumption.
+      * reflexivity.
+      * reflexivity.
+      * (* Semantic combination *)
+        intro i. rewrite H4.
+        (* The IH for left child uses bm .&. (bitmapOf (rPrefix r .|. rMask r) - 1)
+           The IH for right child uses bm `xor` (bm .&. ...)
+           We need: oro of the two restricted children = restricted combined.
+           This requires showing that the bitmap split correctly partitions
+           the member predicate. *)
+        admit.
+Admitted.
+
+(* [lookupPrefix] characterization: returns a sub-map whose keys have
+   the given prefix. *)
+Lemma lookupPrefix_Desc:
+  forall {a} kp (m : IntMap a) r f,
+  Desc m r f ->
+  Desc0 (lookupPrefix kp m) r
+    (fun i => if (N.ldiff i suffixBitMask =? kp)%N then f i else None).
+Proof.
+  intros a kp m r f HD.
+  induction HD; subst.
+  - (* Tip k v *)
+    simpl lookupPrefix.
+    unfoldMethods.
+    destruct (N.eqb_spec (N.ldiff k suffixBitMask) kp).
+    + eapply Desc0NotNil;
+        [eapply DescTip; [intro; reflexivity | reflexivity] | apply isSubrange_refl |].
+      intro i. rewrite H.
+      destruct (N.eqb_spec i k).
+      * subst. rewrite N.eqb_refl. reflexivity.
+      * destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); reflexivity.
+    + apply Desc0Nil. intro i. rewrite H.
+      destruct (N.eqb_spec i k).
+      * subst. destruct (N.eqb_spec (N.ldiff k suffixBitMask) kp); [contradiction | reflexivity].
+      * destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); reflexivity.
+  - (* Bin (rPrefix r) (rMask r) m1 m2 *)
+    simpl lookupPrefix.
+    unfoldMethods.
+    (* Top-level condition: tip-level check *)
+    match goal with |- Desc0 (if ?c then _ else _) _ _ => destruct c eqn:Htiplevel end.
+    + (* Tip level: check prefix match *)
+      destruct (N.eqb_spec (N.ldiff (rPrefix r) suffixBitMask) kp).
+      * (* Prefix matches: return whole Bin node *)
+        eapply Desc0NotNil;
+          [eapply DescBin; try eassumption; try assumption; try reflexivity; intro; reflexivity
+          | apply isSubrange_refl |].
+        intro i. rewrite H4.
+        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); [reflexivity |].
+        (* Key i has a different prefix than kp. Since the range is at tip level
+           (rBits r <= N.log2 WIDTH = 6), all keys in the range share the same
+           ldiff prefix. If i were in the range, it would have the same prefix.
+           So f1 i = None and f2 i = None. *)
+        (* TODO: This requires a lemma about keys in tip-level ranges sharing
+           the same ldiff prefix. For now, admit. *)
+        admit.
+      * (* Prefix doesn't match: return Nil *)
+        apply Desc0Nil. intro i. rewrite H4.
+        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); [| reflexivity].
+        (* All keys in the map have prefix matching rPrefix r, but rPrefix r
+           has a different ldiff prefix than kp. So no key in the map matches kp. *)
+        admit.
+    + (* Above tip level: nomatch/zero dispatch *)
+      apply nomatch_zero; [assumption | ..]; intros.
+      * (* Disjoint: kp is not in range r *)
+        apply Desc0Nil. intro i. rewrite H4.
+        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); [| reflexivity].
+        (* Key i with prefix kp is not in range r, so f1 i = f2 i = None *)
+        admit.
+      * (* Left half: recurse on m1 *)
+        (* IHHD1 gives: Desc0 (lookupPrefix kp m1) r1
+             (fun i => if ldiff i suffixBitMask =? kp then f1 i else None)
+           We need: Desc0 (lookupPrefix kp m1) r
+             (fun i => if ldiff i suffixBitMask =? kp then oro (f1 i) (f2 i) else None)
+           The difference: f1 i vs oro (f1 i) (f2 i). For keys in the left half,
+           f2 i = None (right child is disjoint), so they're equal. *)
+        admit.
+      * (* Right half: recurse on m2 *)
+        admit.
+Admitted.
+
 
 (* The Bin/Tip case (m1=Bin, s2=IntSet.Tip) involves [restrictBM]
    (deferredFix2) and [lookupPrefix] (Fixpoint), which need separate
@@ -2617,6 +2806,18 @@ Next Obligation.
          on the Bin descriptor with nomatch_zero_smaller dispatch. *)
       clear restrictKeys_Desc. subst.
       set (m := Bin (rPrefix r) (rMask r) m1 m2) in *.
+      (* Build Desc for m *)
+      assert (HDm : Desc m r (fun i => oro (f1 i) (f0 i))).
+      { subst m. eapply DescBin; try eassumption; try reflexivity;
+        intro; reflexivity. }
+      (* The restrictKeys Bin/Tip case computes:
+           restrictBM (clipped_bm) (lookupPrefix p0 m)
+         We need Desc0 at range r with semantics f.
+         The result is a sub-map of m containing keys that are both in m
+         and in the IntSet Tip. We prove Desc0 using Desc0Nil for the None
+         case and Desc0NotNil when the result is non-empty.
+         The admitted subgoals are in the helper lemmas
+         restrictBM_Desc0 and lookupPrefix_Desc. *)
       admit.
     + (* s2 is also a Bin *)
       (* After inversion HD2 (Bin case) and subst, we additionally have:
