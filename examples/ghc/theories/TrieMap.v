@@ -2,6 +2,7 @@ Require Import GHC.Base.     Import GHC.Base.Notations.
 Require Import Data.Functor. Import Data.Functor.Notations.
 
 Require Import TrieMap.
+Require Data.IntMap.Internal.
 
 Require MapProofs.Bounds.
 Require MapProofs.Tactics.
@@ -12,6 +13,8 @@ Require MapProofs.ToListProofs.
 Require Proofs.GHC.Base.
 
 Require UniqFM.
+
+Require Proofs.ContainerProofs.
 
 From Coq Require Import ssreflect ssrbool ssrfun.
 Set Bullet Behavior "Strict Subproofs".
@@ -237,15 +240,33 @@ Qed.
 
 End MapTrieMapLaws.
 
-(* BLOCKER (TrieMapLaws__IntMap): IntMap operations are concrete.
-   - tml_empty: IntMap.lookup k IntMap.empty = None. Straightforward.
-   - tml_alter_here/there: IntMap.lookup k (IntMap.alter f k m) = f (IntMap.lookup k m).
-     Needs IntMap alter/lookup interaction lemmas (not yet in IntSetProofs
-     or IntMapProofs — those focus on member/insert/delete/union).
-   - tml_fold_in/fold_via_list: Properties of IntMap.foldr. The same
-     foldr unfolding issue as VarSetFSet's bridge lemmas (memory exhaustion).
-   PARTIALLY FEASIBLE: empty + alter laws likely provable; fold laws blocked. *)
-Instance TrieMapLaws__IntMap                                                    : TrieMapLaws IntMap.IntMap. Admitted.
+(* TrieMapLaws__IntMap: first 3 laws proved via ContainerProofs.lookup_alter
+   and ContainerProofs.lookup_alter_neq. Fold laws (4,5) are Admitted because
+   IntMap.foldr uses deferredFix which causes memory exhaustion when unfolded. *)
+Instance TrieMapLaws__IntMap : TrieMapLaws IntMap.IntMap.
+Proof.
+  constructor.
+  - (* tml_empty: lookupTM k emptyTM = None *)
+    intros a k. reflexivity.
+  - (* tml_alter_here: lookupTM k (alterTM k f tm) = f (lookupTM k tm) *)
+    intros a k f tm.
+    (* lookupTM unfolds to IntMap.lookup, alterTM to xtInt = IntMap.alter *)
+    simpl.
+    apply Proofs.ContainerProofs.lookup_alter.
+  - (* tml_alter_there: k <> k' -> lookupTM k' (alterTM k f tm) = lookupTM k' tm *)
+    intros a k f tm k' Hneq.
+    simpl.
+    apply Proofs.ContainerProofs.lookup_alter_neq. exact Hneq.
+  - (* tml_fold_in: blocked by foldr/deferredFix memory exhaustion *)
+    (* TODO: requires proving that IntMap.foldr cons nil produces exactly
+       the values in the map. Blocked by the same deferredFix unfolding
+       issue as VarSetFSet's bridge lemmas. *)
+    admit.
+  - (* tml_fold_via_list: blocked by foldr/deferredFix memory exhaustion *)
+    (* TODO: requires foldTM f tm z = foldr f z (foldTM cons tm nil).
+       Blocked by the same deferredFix issue. *)
+    admit.
+Admitted.
 
 Instance TrieMapLaws__MaybeMap     {m} `{TrieMapLaws m}                         : TrieMapLaws (MaybeMap m).
 Proof.

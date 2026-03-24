@@ -766,6 +766,221 @@ Proof.
 Qed.
 
 (* ============================================================ *)
+(* Alter: lookup_alter and lookup_alter_neq                      *)
+(* ============================================================ *)
+
+(* Helper: nomatch implies lookup on Bin returns None.
+   (Moved here from later in the file so alter lemmas can use it.) *)
+Local Lemma lookup_nomatch_None_early : forall {a} p msk (l r : IntMap.IntMap a) key,
+  Data.IntMap.Internal.nomatch key p msk = true ->
+  Data.IntMap.Internal.lookup key (Bin p msk l r) = None.
+Proof.
+  intros a p msk l r key Hnm.
+  rewrite (lookup_Sem2 _ key (IntMapProofs.All_IntMaps_WF _ _)).
+  destruct (IntMapProofs.All_IntMaps_WF _ (Bin p msk l r)) as [f Hf].
+  rewrite <- (Sem_Sem2 _ _ Hf key).
+  assert (HDB : exists rr, IntMapProofs.Desc (Bin p msk l r) rr f).
+  { inversion Hf.
+    apply Eqdep.EqdepTheory.inj_pair2 in H1.
+    apply Eqdep.EqdepTheory.inj_pair2 in H2.
+    subst. eauto. }
+  destruct HDB as [rr HDB].
+  assert (Hrr_bits : (0 < rBits rr)%N).
+  { inversion HDB.
+    repeat match goal with
+      | Heq : existT _ _ _ = existT _ _ _ |- _ =>
+          apply Eqdep.EqdepTheory.inj_pair2 in Heq
+    end.
+    subst. assumption. }
+  assert (Hnm_rr : nomatch key (rPrefix rr) (rMask rr) = true).
+  { inversion HDB.
+    repeat match goal with
+      | Heq : existT _ _ _ = existT _ _ _ |- _ =>
+          apply Eqdep.EqdepTheory.inj_pair2 in Heq
+    end.
+    subst. exact Hnm. }
+  eapply IntMapProofs.Desc_outside. exact HDB.
+  rewrite <- Bool.negb_true_iff.
+  rewrite <- IntMapProofs.nomatch_spec; [exact Hnm_rr | exact Hrr_bits].
+Qed.
+
+(* For WF Bin, when zero key msk = true, lookup key r = None *)
+Local Lemma lookup_WF_Bin_left_None : forall {a} p msk (l r : IntMap a) key,
+  IntMapProofs.WF (Bin p msk l r) ->
+  Data.IntSet.Internal.zero key msk = true ->
+  lookup key r = None.
+Proof.
+  intros a p msk l r key HWF Hz.
+  pose proof (WF_Bin_left_key_not_right p msk l r key HWF Hz) as H.
+  rewrite <- (lookup_Sem2 r key (IntMapProofs.All_IntMaps_WF _ r)) in H.
+  exact H.
+Qed.
+
+(* For WF Bin, when zero key msk = false, lookup key l = None *)
+Local Lemma lookup_WF_Bin_right_None : forall {a} p msk (l r : IntMap a) key,
+  IntMapProofs.WF (Bin p msk l r) ->
+  Data.IntSet.Internal.zero key msk = false ->
+  lookup key l = None.
+Proof.
+  intros a p msk l r key HWF Hz.
+  pose proof (WF_Bin_right_key_not_left p msk l r key HWF Hz) as H.
+  rewrite <- (lookup_Sem2 l key (IntMapProofs.All_IntMaps_WF _ l)) in H.
+  exact H.
+Qed.
+
+(* lookup_alter: looking up key k in alter f k m gives f (lookup k m) *)
+Lemma lookup_alter : forall (A : Type) (k : Data.IntSet.Internal.Key)
+  (f : option A -> option A) (m : IntMap A),
+  lookup k (alter f k m) = f (lookup k m).
+Proof.
+  intros A k f.
+  induction m as [p msk l IHl r IHr | ky vy | ].
+  - (* Bin case *)
+    simpl alter.
+    destruct (nomatch k p msk) eqn:Hnm.
+    + (* nomatch: k is outside the range of Bin *)
+      pose proof (lookup_nomatch_None_early p msk l r k Hnm) as Hlook_none.
+      destruct (f None) eqn:Hfn.
+      * rewrite lookup_link_self. rewrite Hlook_none. congruence.
+      * rewrite Hlook_none. congruence.
+    + destruct (Data.IntSet.Internal.zero k msk) eqn:Hz.
+      * (* zero = true: alter from left *)
+        assert (Hlookup_r : lookup k r = None).
+        { exact (lookup_WF_Bin_left_None p msk l r k (IntMapProofs.All_IntMaps_WF _ _) Hz). }
+        unfold binCheckLeft.
+        destruct (alter f k l) as [p' msk' l' r' | ky' vy' | ] eqn:Haltl.
+        -- rewrite (lookup_Bin_oro p msk (Bin p' msk' l' r') r k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_r. rewrite oro_None_r.
+           rewrite IHl.
+           rewrite (lookup_Bin_oro p msk l r k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_r. rewrite oro_None_r. reflexivity.
+        -- rewrite (lookup_Bin_oro p msk (Tip ky' vy') r k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_r. rewrite oro_None_r.
+           rewrite IHl.
+           rewrite (lookup_Bin_oro p msk l r k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_r. rewrite oro_None_r. reflexivity.
+        -- (* alter f k l = Nil: result is r *)
+           rewrite Hlookup_r.
+           (* IHl : lookup k Nil = f (lookup k l), i.e., None = f (lookup k l) *)
+           simpl in IHl.
+           rewrite (lookup_Bin_oro p msk l r k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_r. rewrite oro_None_r. congruence.
+      * (* zero = false: alter from right *)
+        assert (Hlookup_l : lookup k l = None).
+        { exact (lookup_WF_Bin_right_None p msk l r k (IntMapProofs.All_IntMaps_WF _ _) Hz). }
+        unfold binCheckRight.
+        destruct (alter f k r) as [p' msk' l' r' | ky' vy' | ] eqn:Haltr.
+        -- rewrite (lookup_Bin_oro p msk l (Bin p' msk' l' r') k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_l. rewrite oro_None_l.
+           rewrite IHr.
+           rewrite (lookup_Bin_oro p msk l r k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_l. rewrite oro_None_l. reflexivity.
+        -- rewrite (lookup_Bin_oro p msk l (Tip ky' vy') k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_l. rewrite oro_None_l.
+           rewrite IHr.
+           rewrite (lookup_Bin_oro p msk l r k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_l. rewrite oro_None_l. reflexivity.
+        -- rewrite Hlookup_l.
+           simpl in IHr.
+           rewrite (lookup_Bin_oro p msk l r k (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite Hlookup_l. simpl. congruence.
+  - (* Tip case *)
+    simpl alter.
+    destruct (k == ky) eqn:Hkky.
+    + move: Hkky => /Eq_eq_Word Hkky. subst ky.
+      destruct (f (Some vy)) eqn:Hfv.
+      * simpl. rewrite Eq_refl. congruence.
+      * simpl. rewrite Eq_refl. congruence.
+    + destruct (f None) eqn:Hfn.
+      * rewrite lookup_link_self. simpl. rewrite Hkky. congruence.
+      * simpl. rewrite Hkky. congruence.
+  - (* Nil case *)
+    simpl alter.
+    destruct (f None) eqn:Hfn.
+    + simpl. rewrite Eq_refl. congruence.
+    + simpl. congruence.
+Qed.
+
+(* lookup_alter_neq: alter at key k does not affect lookup at different key k' *)
+Lemma lookup_alter_neq : forall (A : Type) (k k' : Data.IntSet.Internal.Key)
+  (f : option A -> option A) (m : IntMap A),
+  k <> k' ->
+  lookup k' (alter f k m) = lookup k' m.
+Proof.
+  intros A k k' f m Hneq.
+  induction m as [p msk l IHl r IHr | ky vy | ].
+  - (* Bin case *)
+    simpl alter.
+    destruct (nomatch k p msk) eqn:Hnm.
+    + (* nomatch *)
+      destruct (f None) eqn:Hfn.
+      * (* link case *)
+        rewrite lookup_link_oro. simpl.
+        assert (Hkk' : (k' == k) = false).
+        { rewrite Eq_sym_Word. unfold op_zeze__, Eq_Word___. apply N.eqb_neq. exact Hneq. }
+        rewrite Hkk'. simpl. reflexivity.
+      * reflexivity.
+    + destruct (Data.IntSet.Internal.zero k msk) eqn:Hz.
+      * (* zero = true: alter from left *)
+        unfold binCheckLeft.
+        destruct (alter f k l) as [p' msk' l' r' | ky' vy' | ] eqn:Haltl.
+        -- rewrite (lookup_Bin_oro p msk (Bin p' msk' l' r') r k' (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite IHl.
+           rewrite (lookup_Bin_oro p msk l r k' (IntMapProofs.All_IntMaps_WF _ _)).
+           reflexivity.
+        -- rewrite (lookup_Bin_oro p msk (Tip ky' vy') r k' (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite IHl.
+           rewrite (lookup_Bin_oro p msk l r k' (IntMapProofs.All_IntMaps_WF _ _)).
+           reflexivity.
+        -- (* alter f k l = Nil: result is r *)
+           (* IHl : lookup k' Nil = lookup k' l, i.e., None = lookup k' l *)
+           simpl in IHl.
+           rewrite (lookup_Bin_oro p msk l r k' (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite <- IHl. simpl. reflexivity.
+      * (* zero = false: alter from right *)
+        unfold binCheckRight.
+        destruct (alter f k r) as [p' msk' l' r' | ky' vy' | ] eqn:Haltr.
+        -- rewrite (lookup_Bin_oro p msk l (Bin p' msk' l' r') k' (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite IHr.
+           rewrite (lookup_Bin_oro p msk l r k' (IntMapProofs.All_IntMaps_WF _ _)).
+           reflexivity.
+        -- rewrite (lookup_Bin_oro p msk l (Tip ky' vy') k' (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite IHr.
+           rewrite (lookup_Bin_oro p msk l r k' (IntMapProofs.All_IntMaps_WF _ _)).
+           reflexivity.
+        -- simpl in IHr.
+           rewrite (lookup_Bin_oro p msk l r k' (IntMapProofs.All_IntMaps_WF _ _)).
+           rewrite <- IHr. simpl. rewrite oro_None_r. reflexivity.
+  - (* Tip case *)
+    simpl alter.
+    destruct (k == ky) eqn:Hkky.
+    + move: Hkky => /Eq_eq_Word Hkky. subst ky.
+      destruct (f (Some vy)) eqn:Hfv.
+      * simpl.
+        assert (Hkk' : (k' == k) = false).
+        { rewrite Eq_sym_Word. unfold op_zeze__, Eq_Word___. apply N.eqb_neq. exact Hneq. }
+        rewrite Hkk'. reflexivity.
+      * simpl.
+        assert (Hkk' : (k' == k) = false).
+        { rewrite Eq_sym_Word. unfold op_zeze__, Eq_Word___. apply N.eqb_neq. exact Hneq. }
+        rewrite Hkk'. reflexivity.
+    + destruct (f None) eqn:Hfn.
+      * rewrite lookup_link_oro. simpl.
+        assert (Hkk' : (k' == k) = false).
+        { rewrite Eq_sym_Word. unfold op_zeze__, Eq_Word___. apply N.eqb_neq. exact Hneq. }
+        rewrite Hkk'. simpl. reflexivity.
+      * reflexivity.
+  - (* Nil case *)
+    simpl alter.
+    destruct (f None) eqn:Hfn.
+    + simpl.
+      assert (Hkk' : (k' == k) = false).
+      { rewrite Eq_sym_Word. unfold op_zeze__, Eq_Word___. apply N.eqb_neq. exact Hneq. }
+      rewrite Hkk'. reflexivity.
+    + simpl. reflexivity.
+Qed.
+
+(* ============================================================ *)
 (* Filter-related lemmas                                         *)
 (* ============================================================ *)
 
