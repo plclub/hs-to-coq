@@ -2687,6 +2687,150 @@ Proof.
   reflexivity.
 Qed.
 
+(* member i (Tip (ldiff i suffixBitMask) bm) = testbit bm (suffixOf i).
+   The Tip case of IntSet member is (prefixOf i == p) && (bitmapOf i .&. bm /= 0).
+   Since p = ldiff i suffixBitMask = prefixOf i, the first conjunct is true.
+   bitmapOf i = 2^(suffixOf i), so .&. bm /= 0 iff testbit bm (suffixOf i). *)
+Lemma member_self_tip : forall i bm,
+  Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm) =
+  N.testbit bm (suffixOf i).
+Proof.
+  intros. simpl. unfold prefixOf. unfoldMethods.
+  rewrite N.eqb_refl. simpl.
+  (* After unfoldMethods, bitmapOf i is expanded to N.shiftl 1 (suffixOf i),
+     which may be further reduced. The goal reduces to:
+     negb (N.land (2^(suffixOf i)) bm =? 0) = N.testbit bm (suffixOf i)
+     by N_land_pow2_testbit. We use native_compute-level reasoning. *)
+  unfold bitmapOf, suffixOf, suffixBitMask, bitmapOfSuffix,
+         Utils.Containers.Internal.BitUtil.shiftLL in *.
+  (* After full expansion, use N.shiftl_1_l and N_land_pow2_testbit *)
+  set (s := N.land i 63).
+  assert (Hshiftl: N.shiftl 1 s = 2^s) by apply N.shiftl_1_l.
+  admit.
+Admitted.
+
+(* [restrictBM] unfolding, analogous to [restrictKeys_eq]. *)
+Definition restrictBM_f {a} :
+  (IntSetBitMap -> IntMap a -> IntMap a) -> (IntSetBitMap -> IntMap a -> IntMap a).
+Proof.
+  let rhs := eval unfold restrictBM in (@restrictBM a) in
+  match rhs with context[ deferredFix2 ?f ] => exact f end.
+Defined.
+
+Definition restrictBM_body {a} := restrictBM_f (@restrictBM a).
+
+Lemma restrictBM_eq {a} (bm : IntSetBitMap) (m : IntMap a) :
+  restrictBM bm m = restrictBM_body bm m.
+Proof.
+  enough (@restrictBM a = restrictBM_body) by congruence.
+  apply deferredFix2_eq.
+Qed.
+
+Lemma restrictBM_Nil {a} (bm : IntSetBitMap) :
+  @restrictBM a bm Nil = Nil.
+Proof.
+  rewrite restrictBM_eq.
+  unfold restrictBM_body, restrictBM_f.
+  unfoldMethods.
+  destruct (N.eqb_spec bm (Z.to_N 0)); reflexivity.
+Qed.
+
+Lemma restrictBM_0 {a} (m : IntMap a) :
+  restrictBM 0 m = Nil.
+Proof.
+  rewrite restrictBM_eq.
+  unfold restrictBM_body, restrictBM_f.
+  unfoldMethods.
+  reflexivity.
+Qed.
+
+(* [restrictBM] preserves [Desc0], filtering by bitmap membership.
+   The semantic function checks if key i's suffix bit is set in bm.
+   This follows the [filter_Desc] pattern: induction on [Desc m],
+   using [bin_Desc0] for the Bin case. *)
+Lemma restrictBM_Desc0:
+  forall {a} bm (m : IntMap a) r f,
+  Desc m r f ->
+  Desc0 (restrictBM bm m) r
+    (fun i => if Data.IntSet.Internal.member i
+                (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)
+              then f i else None).
+Proof.
+  intros a bm m r f HD.
+  revert bm.
+  induction HD; intros bm; subst.
+  - (* Tip k v *)
+    rewrite restrictBM_eq.
+    unfold restrictBM_body, restrictBM_f.
+    unfoldMethods.
+    destruct (N.eqb_spec bm (Z.to_N 0)) as [Hbm0 | Hbm0].
+    + (* bm = 0: result is Nil *)
+      apply Desc0Nil. intro i. rewrite H.
+      assert (Hbm0' : bm = 0%N) by lia.
+      destruct (N.eqb_spec i k).
+      * subst. unfold Data.IntSet.Internal.member. unfoldMethods.
+        rewrite N.land_0_r. rewrite andb_false_r. reflexivity.
+      * destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)) eqn:Hmem;
+        [| reflexivity].
+        exfalso. subst bm.
+        unfold Data.IntSet.Internal.member in Hmem. unfoldMethods.
+        rewrite andb_true_iff in Hmem. destruct Hmem as [_ Hmem].
+        rewrite negb_true_iff in Hmem.
+        rewrite N.eqb_neq in Hmem.
+        apply Hmem. rewrite N.land_0_r. reflexivity.
+    + (* bm /= 0 *)
+      destruct (Data.IntSet.Internal.member k (Data.IntSet.Internal.Tip (N.ldiff k suffixBitMask) bm)) eqn:Hmemk.
+      * (* k is in bm: return Tip k v *)
+        eapply Desc0NotNil; [eapply DescTip; [intro; reflexivity | reflexivity] | apply isSubrange_refl |].
+        intro i. rewrite H.
+        destruct (N.eqb_spec i k).
+        -- subst. rewrite Hmemk. reflexivity.
+        -- destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm));
+           reflexivity.
+      * (* k is not in bm: return Nil *)
+        apply Desc0Nil. intro i. rewrite H.
+        destruct (N.eqb_spec i k).
+        -- subst. rewrite Hmemk. reflexivity.
+        -- destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm));
+           reflexivity.
+  - (* Bin (rPrefix r) (rMask r) m1 m2 *)
+    rewrite restrictBM_eq.
+    unfold restrictBM_body, restrictBM_f.
+    unfoldMethods.
+    destruct (N.eqb_spec bm (Z.to_N 0)).
+    + apply Desc0Nil. intro i.
+      rewrite H4.
+      destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)) eqn:Hmem;
+        [| reflexivity].
+      exfalso.
+      assert (Hbm' : bm = 0%N) by lia. subst bm.
+      unfold Data.IntSet.Internal.member in Hmem. unfoldMethods.
+      rewrite andb_true_iff in Hmem. destruct Hmem as [_ Hmem].
+      rewrite negb_true_iff in Hmem.
+      rewrite N.eqb_neq in Hmem.
+      apply Hmem. rewrite N.land_0_r. reflexivity.
+    + eapply bin_Desc0.
+      * apply IHHD1.
+      * apply IHHD2.
+      * assumption.
+      * assumption.
+      * assumption.
+      * reflexivity.
+      * reflexivity.
+      * (* Semantic combination: the bitmap split bmL/bmR partitions membership.
+           After rewriting with member_self_tip and H4, the goal reduces to:
+           oro (if testbit bmL (suffixOf i) then f1 i else None)
+               (if testbit bmR (suffixOf i) then f2 i else None) =
+           if testbit bm (suffixOf i) then oro (f1 i) (f2 i) else None
+           where bmL = bm .&. (splitBit - 1), bmR = bm xor bmL.
+           The bitmap split correctly partitions: when bm bit is set, exactly one
+           of bmL/bmR has the bit, and the corresponding child (f1 or f2) is the
+           only one that can have a non-None value for that key.
+           Proving the bitmap-to-range correspondence (that the split point aligns
+           with halfRange) requires relating suffixOf to rBits, which needs additional
+           helper lemmas about rPrefix, rMask, and the Desc invariants. *)
+        admit.
+Admitted.
 
 (* [lookupPrefix] characterization: returns a sub-map whose keys have
    the given prefix. *)
@@ -2811,123 +2955,6 @@ Proof.
         intro i. rewrite H4. apply Hadapt_r.
 Qed.
 
-(* [restrictBM] unfolding, analogous to [restrictKeys_eq]. *)
-Definition restrictBM_f {a} :
-  (IntSetBitMap -> IntMap a -> IntMap a) -> (IntSetBitMap -> IntMap a -> IntMap a).
-Proof.
-  let rhs := eval unfold restrictBM in (@restrictBM a) in
-  match rhs with context[ deferredFix2 ?f ] => exact f end.
-Defined.
-
-Definition restrictBM_body {a} := restrictBM_f (@restrictBM a).
-
-Lemma restrictBM_eq {a} (bm : IntSetBitMap) (m : IntMap a) :
-  restrictBM bm m = restrictBM_body bm m.
-Proof.
-  enough (@restrictBM a = restrictBM_body) by congruence.
-  apply deferredFix2_eq.
-Qed.
-
-Lemma restrictBM_Nil {a} (bm : IntSetBitMap) :
-  @restrictBM a bm Nil = Nil.
-Proof.
-  rewrite restrictBM_eq.
-  unfold restrictBM_body, restrictBM_f.
-  unfoldMethods.
-  destruct (N.eqb_spec bm (Z.to_N 0)); reflexivity.
-Qed.
-
-Lemma restrictBM_0 {a} (m : IntMap a) :
-  restrictBM 0 m = Nil.
-Proof.
-  rewrite restrictBM_eq.
-  unfold restrictBM_body, restrictBM_f.
-  unfoldMethods.
-  reflexivity.
-Qed.
-
-(* [restrictBM] preserves [Desc0], filtering by bitmap membership.
-   The semantic function checks if key i's suffix bit is set in bm.
-   This follows the [filter_Desc] pattern: induction on [Desc m],
-   using [bin_Desc0] for the Bin case. *)
-Lemma restrictBM_Desc0:
-  forall {a} bm (m : IntMap a) r f,
-  Desc m r f ->
-  Desc0 (restrictBM bm m) r
-    (fun i => if Data.IntSet.Internal.member i
-                (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)
-              then f i else None).
-Proof.
-  intros a bm m r f HD.
-  revert bm.
-  induction HD; intros bm; subst.
-  - (* Tip k v *)
-    rewrite restrictBM_eq.
-    unfold restrictBM_body, restrictBM_f.
-    unfoldMethods.
-    destruct (N.eqb_spec bm (Z.to_N 0)) as [Hbm0 | Hbm0].
-    + (* bm = 0: result is Nil *)
-      apply Desc0Nil. intro i. rewrite H.
-      assert (Hbm0' : bm = 0%N) by lia.
-      destruct (N.eqb_spec i k).
-      * subst. unfold Data.IntSet.Internal.member. unfoldMethods.
-        rewrite N.land_0_r. rewrite andb_false_r. reflexivity.
-      * destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)) eqn:Hmem;
-        [| reflexivity].
-        exfalso. subst bm.
-        unfold Data.IntSet.Internal.member in Hmem. unfoldMethods.
-        rewrite andb_true_iff in Hmem. destruct Hmem as [_ Hmem].
-        rewrite negb_true_iff in Hmem.
-        rewrite N.eqb_neq in Hmem.
-        apply Hmem. rewrite N.land_0_r. reflexivity.
-    + (* bm /= 0 *)
-      destruct (Data.IntSet.Internal.member k (Data.IntSet.Internal.Tip (N.ldiff k suffixBitMask) bm)) eqn:Hmemk.
-      * (* k is in bm: return Tip k v *)
-        eapply Desc0NotNil; [eapply DescTip; [intro; reflexivity | reflexivity] | apply isSubrange_refl |].
-        intro i. rewrite H.
-        destruct (N.eqb_spec i k).
-        -- subst. rewrite Hmemk. reflexivity.
-        -- destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm));
-           reflexivity.
-      * (* k is not in bm: return Nil *)
-        apply Desc0Nil. intro i. rewrite H.
-        destruct (N.eqb_spec i k).
-        -- subst. rewrite Hmemk. reflexivity.
-        -- destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm));
-           reflexivity.
-  - (* Bin (rPrefix r) (rMask r) m1 m2 *)
-    rewrite restrictBM_eq.
-    unfold restrictBM_body, restrictBM_f.
-    unfoldMethods.
-    destruct (N.eqb_spec bm (Z.to_N 0)).
-    + apply Desc0Nil. intro i.
-      rewrite H4.
-      destruct (Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm)) eqn:Hmem;
-        [| reflexivity].
-      exfalso.
-      assert (Hbm' : bm = 0%N) by lia. subst bm.
-      unfold Data.IntSet.Internal.member in Hmem. unfoldMethods.
-      rewrite andb_true_iff in Hmem. destruct Hmem as [_ Hmem].
-      rewrite negb_true_iff in Hmem.
-      rewrite N.eqb_neq in Hmem.
-      apply Hmem. rewrite N.land_0_r. reflexivity.
-    + eapply bin_Desc0.
-      * apply IHHD1.
-      * apply IHHD2.
-      * assumption.
-      * assumption.
-      * assumption.
-      * reflexivity.
-      * reflexivity.
-      * (* Semantic combination *)
-        intro i. rewrite H4.
-        (* The IH for left child uses bm .&. (bitmapOf (rPrefix r .|. rMask r) - 1)
-           The IH for right child uses bm `xor` (bm .&. ...)
-           We need: oro of the two restricted children = restricted combined.
-           This requires showing that the bitmap split correctly partitions
-           the member predicate. *)
-        admit.
-Admitted.
 
 
 
