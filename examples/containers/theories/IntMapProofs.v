@@ -2687,6 +2687,27 @@ Proof.
   reflexivity.
 Qed.
 
+(* Helper: negb (N.land (2^s) bm == 0) = N.testbit bm s.
+   Proved by case split on N.land result + bit injectivity. *)
+Lemma negb_land_pow2_eq0_testbit : forall bm s,
+  negb (N.land (2^s) bm =? 0)%N = N.testbit bm s.
+Proof.
+  intros.
+  destruct (N.land (2^s) bm) eqn:Hland.
+  - simpl. destruct (N.testbit bm s) eqn:Hbit; [|reflexivity].
+    exfalso.
+    assert (H: N.testbit (N.land (2^s) bm) s = false) by (rewrite Hland; apply N.bits_0).
+    rewrite N.land_spec in H. rewrite N.pow2_bits_true in H. simpl in H. rewrite Hbit in H. discriminate.
+  - simpl. destruct (N.testbit bm s) eqn:Hbit; [reflexivity|].
+    exfalso.
+    assert (Hzero: N.land (2^s) bm = 0%N).
+    { apply N.bits_inj. intro n. rewrite N.land_spec. rewrite N.bits_0.
+      destruct (N.eq_dec n s) as [->|Hne].
+      + rewrite Hbit. rewrite andb_comm. reflexivity.
+      + rewrite N.pow2_bits_false; [reflexivity | auto]. }
+    rewrite Hland in Hzero. discriminate.
+Qed.
+
 (* member i (Tip (ldiff i suffixBitMask) bm) = testbit bm (suffixOf i).
    The Tip case of IntSet member is (prefixOf i == p) && (bitmapOf i .&. bm /= 0).
    Since p = ldiff i suffixBitMask = prefixOf i, the first conjunct is true.
@@ -2695,17 +2716,15 @@ Lemma member_self_tip : forall i bm,
   Data.IntSet.Internal.member i (Data.IntSet.Internal.Tip (N.ldiff i suffixBitMask) bm) =
   N.testbit bm (suffixOf i).
 Proof.
-  intros. simpl. unfold prefixOf. unfoldMethods.
-  rewrite N.eqb_refl. simpl.
-  (* After unfoldMethods, bitmapOf i is expanded to N.shiftl 1 (suffixOf i),
-     which may be further reduced. The goal reduces to:
-     negb (N.land (2^(suffixOf i)) bm =? 0) = N.testbit bm (suffixOf i)
-     by N_land_pow2_testbit. We use native_compute-level reasoning. *)
-  unfold bitmapOf, suffixOf, suffixBitMask, bitmapOfSuffix,
-         Utils.Containers.Internal.BitUtil.shiftLL in *.
-  (* After full expansion, use N.shiftl_1_l and N_land_pow2_testbit *)
-  set (s := N.land i 63).
-  assert (Hshiftl: N.shiftl 1 s = 2^s) by apply N.shiftl_1_l.
+  intros.
+  (* Follow the same pattern as IntSetProofs.member_Desc Tip case *)
+  intros.
+  (* The proof reduces to negb_land_pow2_eq0_testbit after unfolding GHC operators.
+     BLOCKER: unfoldMethods (needed to unfold == to N.eqb for the prefix check)
+     also expands bitmapOfSuffix/shiftLL down to Pos-level operations,
+     preventing rewrite with bitmapOfSuffix_pow or N.shiftl_1_l.
+     A targeted unfold of just Eq_Word___ without expanding Bits__N would fix this.
+     The mathematical content is trivial: negb_land_pow2_eq0_testbit (proved above). *)
   admit.
 Admitted.
 
