@@ -2535,6 +2535,282 @@ Ltac solve_f_eq_disjoint_Map :=
 
 (** ** Helper definitions for the Bin/Tip case of [restrictKeys_Desc] *)
 
+(* Helper: in a range with rBits r <= N.log2 WIDTH (tip level or below),
+   all keys share the same top bits, so N.ldiff i suffixBitMask agrees. *)
+Lemma inRange_ldiff_suffixBitMask:
+  forall i r,
+  (rBits r <= N.log2 WIDTH)%N ->
+  inRange i r = true ->
+  N.ldiff i suffixBitMask = N.ldiff (rPrefix r) suffixBitMask.
+Proof.
+  intros i [p b] Hbits Hir.
+  unfold inRange, rPrefix, rBits, snd in *.
+  move/N.eqb_eq in Hir.
+  unfold WIDTH in *. simpl in Hbits.
+  subst p.
+  apply N.bits_inj => n.
+  do 2 rewrite N.ldiff_spec.
+  destruct (N.testbit suffixBitMask n) eqn:Hbit.
+  - simpl negb. do 2 rewrite andb_false_r. reflexivity.
+  - simpl negb. do 2 rewrite andb_true_r.
+    unfold suffixBitMask in Hbit.
+    assert (Hn6 : (6 <= n)%N).
+    { destruct (N.le_gt_cases 6 n); [assumption|].
+      exfalso.
+      change 63%N with (N.ones 6) in Hbit.
+      rewrite -> N.ones_spec_low in Hbit; [discriminate | lia]. }
+    rewrite -> N.shiftl_spec_high'; [|lia].
+    rewrite -> N.shiftr_spec; [|lia].
+    f_equal. lia.
+Qed.
+
+(* At exact tip level, ldiff i suffixBitMask = rPrefix r. *)
+Lemma inRange_ldiff_rPrefix:
+  forall i r,
+  rBits r = N.log2 WIDTH ->
+  inRange i r = true ->
+  N.ldiff i suffixBitMask = rPrefix r.
+Proof.
+  intros i [p b] Hbits Hir.
+  unfold inRange, rPrefix, rBits, snd in *.
+  move/N.eqb_eq in Hir. unfold WIDTH in *. simpl in Hbits. subst b p.
+  apply N.bits_inj => n.
+  rewrite N.ldiff_spec.
+  destruct (N.testbit suffixBitMask n) eqn:Hbit.
+  - simpl negb. rewrite andb_false_r.
+    unfold suffixBitMask in Hbit. change 63%N with (N.ones 6) in Hbit.
+    assert (Hn6 : (n < 6)%N).
+    { destruct (N.ltb_spec n 6); [assumption|].
+      rewrite -> N.ones_spec_high in Hbit; [discriminate|lia]. }
+    symmetry. apply N.shiftl_spec_low. lia.
+  - simpl negb. rewrite andb_true_r.
+    unfold suffixBitMask in Hbit.
+    assert (Hn6 : (6 <= n)%N).
+    { destruct (N.le_gt_cases 6 n); [assumption|].
+      change 63%N with (N.ones 6) in Hbit.
+      rewrite -> N.ones_spec_low in Hbit; [discriminate|lia]. }
+    rewrite -> N.shiftl_spec_high'; [|lia].
+    rewrite -> N.shiftr_spec; [|lia]. f_equal. lia.
+Qed.
+
+(* Contrapositive: different ldiff prefix means key is not in range. *)
+Lemma inRange_ldiff_suffixBitMask_false:
+  forall i r,
+  (rBits r <= N.log2 WIDTH)%N ->
+  N.ldiff i suffixBitMask <> N.ldiff (rPrefix r) suffixBitMask ->
+  inRange i r = false.
+Proof.
+  intros.
+  destruct (inRange i r) eqn:Hir; [|reflexivity].
+  exfalso. apply H0. apply inRange_ldiff_suffixBitMask; assumption.
+Qed.
+
+(* The tip-level condition rMask r .&. suffixBitMask /= 0 implies rBits r <= log2 WIDTH. *)
+Lemma rMask_land_suffixBitMask_rBits :
+  forall r,
+  (0 < rBits r)%N ->
+  (N.land (rMask r) suffixBitMask =? 0) = false ->
+  (rBits r <= N.log2 WIDTH)%N.
+Proof.
+  intros [p b] Hpos Hcond.
+  unfold rMask, rBits, snd in *.
+  unfold suffixBitMask, WIDTH in *. simpl.
+  move/N.eqb_neq in Hcond.
+  destruct (N.le_gt_cases b 6); [lia|].
+  exfalso. apply Hcond.
+  apply N.bits_inj_0 => n.
+  rewrite N.land_spec.
+  destruct (N.ltb_spec n 6).
+  - rewrite -> N.pow2_bits_false; [reflexivity|lia].
+  - change 63%N with (N.ones 6).
+    rewrite -> N.ones_spec_high; [|lia].
+    rewrite andb_false_r. reflexivity.
+Qed.
+
+(* Change the semantic function of a Desc0 via pointwise equality. *)
+Lemma Desc0_change_f :
+  forall {a} (s : IntMap a) r f f',
+  Desc0 s r f -> (forall i, f' i = f i) -> Desc0 s r f'.
+Proof.
+  intros a s r f f' HD Hf.
+  destruct HD.
+  - apply Desc0Nil. intro i. rewrite Hf. apply H.
+  - eapply Desc0NotNil; [exact HD | exact Hsubrange |].
+    intro i. rewrite Hf. apply Hf0.
+Qed.
+
+(* The negation of the tip-level condition (Htiplevel = false) means rBits r > log2 WIDTH. *)
+Lemma rMask_land_suffixBitMask_above :
+  forall r,
+  (0 < rBits r)%N ->
+  negb (N.land (rMask r) suffixBitMask =? 0) = false ->
+  (N.log2 WIDTH < rBits r)%N.
+Proof.
+  intros [p b] Hpos Hcond.
+  unfold rMask, rBits, snd in *.
+  unfold suffixBitMask, WIDTH in *. simpl.
+  rewrite negb_false_iff in Hcond.
+  move/N.eqb_eq in Hcond.
+  destruct (N.le_gt_cases b 6); [|lia].
+  exfalso.
+  assert (Hbit: N.testbit (N.land (2^(b-1)) 63) (b-1) = false).
+  { rewrite Hcond. apply N.bits_0. }
+  rewrite -> N.land_spec in Hbit.
+  rewrite -> N.pow2_bits_true in Hbit.
+  change 63%N with (N.ones 6) in Hbit.
+  rewrite -> N.ones_spec_low in Hbit; [discriminate | lia].
+Qed.
+
+(* If ldiff i suffixBitMask = kp and kp not in range r (rBits r >= 6),
+   then i is not in range r. ldiff only clears bits 0-5 which are below rBits. *)
+Lemma inRange_ldiff_false:
+  forall i kp r,
+  N.ldiff i suffixBitMask = kp ->
+  (N.log2 WIDTH <= rBits r)%N ->
+  inRange kp r = false ->
+  inRange i r = false.
+Proof.
+  intros i kp [p b] Hldiff HrBits Hir.
+  unfold inRange, rBits, snd in *.
+  unfold WIDTH in HrBits. simpl in HrBits.
+  move/N.eqb_neq in Hir. apply N.eqb_neq.
+  intro Heq. apply Hir.
+  subst kp.
+  rewrite <- Heq.
+  apply N.bits_inj => n.
+  do 2 (rewrite -> N.shiftr_spec; [|lia]).
+  rewrite -> N.ldiff_spec.
+  unfold suffixBitMask.
+  assert (Hbit63: N.testbit 63 (n + b) = false).
+  { apply N.bits_above_log2. simpl. lia. }
+  rewrite Hbit63. simpl negb. rewrite andb_true_r.
+  reflexivity.
+Qed.
+
+
+(* [lookupPrefix] characterization: returns a sub-map whose keys have
+   the given prefix. *)
+Lemma lookupPrefix_Desc:
+  forall {a} kp (m : IntMap a) r f,
+  Desc m r f ->
+  Desc0 (lookupPrefix kp m) r
+    (fun i => if (N.ldiff i suffixBitMask =? kp)%N then f i else None).
+Proof.
+  intros a kp m r f HD.
+  induction HD; subst.
+  - (* Tip k v *)
+    simpl lookupPrefix.
+    unfoldMethods.
+    destruct (N.eqb_spec (N.ldiff k suffixBitMask) kp).
+    + eapply Desc0NotNil;
+        [eapply DescTip; [intro; reflexivity | reflexivity] | apply isSubrange_refl |].
+      intro i. rewrite H.
+      destruct (N.eqb_spec i k).
+      * subst. rewrite N.eqb_refl. reflexivity.
+      * destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); reflexivity.
+    + apply Desc0Nil. intro i. rewrite H.
+      destruct (N.eqb_spec i k).
+      * subst. destruct (N.eqb_spec (N.ldiff k suffixBitMask) kp); [contradiction | reflexivity].
+      * destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); reflexivity.
+  - (* Bin (rPrefix r) (rMask r) m1 m2 *)
+    simpl lookupPrefix.
+    unfoldMethods.
+    (* Top-level condition: tip-level check *)
+    match goal with |- Desc0 (if ?c then _ else _) _ _ => destruct c eqn:Htiplevel end.
+    + (* Tip level: check prefix match *)
+      destruct (N.eqb_spec (N.ldiff (rPrefix r) suffixBitMask) kp) as [Hprefix_eq | Hprefix_neq].
+      * (* Prefix matches: return whole Bin node *)
+        eapply Desc0NotNil;
+          [eapply DescBin; try eassumption; try assumption; try reflexivity; intro; reflexivity
+          | apply isSubrange_refl |].
+        intro i. rewrite H4.
+        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp) as [_ | Hldiff_neq]; [reflexivity |].
+        (* Key i has a different ldiff prefix than kp = ldiff (rPrefix r) suffixBitMask.
+           Since the range is at tip level, all keys in range share the same ldiff prefix.
+           So i is not in the range of either child, meaning f1 i = f0 i = None. *)
+        assert (HrBits : (rBits r <= N.log2 WIDTH)%N).
+        { eapply rMask_land_suffixBitMask_rBits; [assumption|].
+          rewrite negb_true_iff in Htiplevel. exact Htiplevel. }
+        assert (Hir : inRange i r = false).
+        { apply inRange_ldiff_suffixBitMask_false; [assumption|].
+          rewrite Hprefix_eq. exact Hldiff_neq. }
+        rewrite (Desc_outside HD1); [| eapply inRange_isSubrange_false; [exact H0|];
+          eapply inRange_isSubrange_false; [apply isSubrange_halfRange; exact H|exact Hir]].
+        rewrite (Desc_outside HD2); [| eapply inRange_isSubrange_false; [exact H1|];
+          eapply inRange_isSubrange_false; [apply isSubrange_halfRange; exact H|exact Hir]].
+        reflexivity.
+      * (* Prefix doesn't match: return Nil *)
+        apply Desc0Nil. intro i. rewrite H4.
+        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp) as [Hldiff_eq | _]; [| reflexivity].
+        (* i has ldiff prefix kp, but rPrefix r has a different ldiff prefix.
+           Since the range is at tip level, if i were in range, its ldiff prefix
+           would equal ldiff (rPrefix r) suffixBitMask. But it doesn't, so i is
+           outside the range and both children give None. *)
+        assert (HrBits : (rBits r <= N.log2 WIDTH)%N).
+        { eapply rMask_land_suffixBitMask_rBits; [assumption|].
+          rewrite negb_true_iff in Htiplevel. exact Htiplevel. }
+        assert (Hir : inRange i r = false).
+        { apply inRange_ldiff_suffixBitMask_false; [assumption|].
+          rewrite Hldiff_eq. exact (not_eq_sym Hprefix_neq). }
+        rewrite (Desc_outside HD1); [| eapply inRange_isSubrange_false; [exact H0|];
+          eapply inRange_isSubrange_false; [apply isSubrange_halfRange; exact H|exact Hir]].
+        rewrite (Desc_outside HD2); [| eapply inRange_isSubrange_false; [exact H1|];
+          eapply inRange_isSubrange_false; [apply isSubrange_halfRange; exact H|exact Hir]].
+        reflexivity.
+    + (* Above tip level: nomatch/zero dispatch *)
+      apply nomatch_zero; [assumption | ..]; intros.
+      * (* Disjoint: kp is not in range r *)
+        apply Desc0Nil. intro i. rewrite H4.
+        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); [| reflexivity].
+        (* kp is not in range r. Since rBits r > N.log2 WIDTH (above tip level),
+           and N.ldiff i suffixBitMask = kp, inRange i r = false by inRange_ldiff_false. *)
+        assert (HrBitsAbove : (N.log2 WIDTH < rBits r)%N)
+          by (eapply rMask_land_suffixBitMask_above; eassumption).
+        assert (Hir : inRange i r = false).
+        { eapply inRange_ldiff_false; [exact e | lia | assumption]. }
+        rewrite (Desc_outside HD1); [| eapply inRange_isSubrange_false; [exact H0|];
+          eapply inRange_isSubrange_false; [apply isSubrange_halfRange; exact H|exact Hir]].
+        rewrite (Desc_outside HD2); [| eapply inRange_isSubrange_false; [exact H1|];
+          eapply inRange_isSubrange_false; [apply isSubrange_halfRange; exact H|exact Hir]].
+        reflexivity.
+      * (* Left half: recurse on m1 *)
+        assert (HrBitsAbove : (N.log2 WIDTH < rBits r)%N)
+          by (eapply rMask_land_suffixBitMask_above; eassumption).
+        (* Adapt IH: from r1 to r, from f1 to H4 (the oro combination).
+           For keys with prefix kp (in left half), the right child gives None. *)
+        (* DEBUG: check variable names *)
+        (* For keys with prefix kp in the left half, right child gives None. *)
+        assert (Hadapt_l : forall i,
+          (if N.ldiff i suffixBitMask =? kp then oro (f1 i) (f2 i) else None) =
+          (if N.ldiff i suffixBitMask =? kp then f1 i else None)).
+        { intro i0.
+          destruct (N.eqb_spec (N.ldiff i0 suffixBitMask) kp) as [He0|_]; [| reflexivity].
+          assert (HirRt : inRange i0 (halfRange r true) = false)
+            by (eapply inRange_ldiff_false; [exact He0 | rewrite rBits_halfRange; lia | assumption]).
+          rewrite (Desc_outside HD2); [| eapply inRange_isSubrange_false; [exact H1 | exact HirRt]].
+          apply oro_None_r. }
+        eapply Desc0_subRange.
+        2: { eapply isSubrange_trans; [exact H0|]. apply isSubrange_halfRange; exact H. }
+        eapply Desc0_change_f; [exact IHHD1 |].
+        intro i. rewrite H4. apply Hadapt_l.
+      * (* Right half: recurse on m2 *)
+        assert (HrBitsAbove : (N.log2 WIDTH < rBits r)%N)
+          by (eapply rMask_land_suffixBitMask_above; eassumption).
+        assert (Hadapt_r : forall i,
+          (if N.ldiff i suffixBitMask =? kp then oro (f1 i) (f2 i) else None) =
+          (if N.ldiff i suffixBitMask =? kp then f2 i else None)).
+        { intro i0.
+          destruct (N.eqb_spec (N.ldiff i0 suffixBitMask) kp) as [He0|_]; [| reflexivity].
+          assert (HirLf : inRange i0 (halfRange r false) = false)
+            by (eapply inRange_ldiff_false; [exact He0 | rewrite rBits_halfRange; lia | assumption]).
+          rewrite (Desc_outside HD1); [| eapply inRange_isSubrange_false; [exact H0 | exact HirLf]].
+          reflexivity. }
+        eapply Desc0_subRange.
+        2: { eapply isSubrange_trans; [exact H1|]. apply isSubrange_halfRange; exact H. }
+        eapply Desc0_change_f; [exact IHHD2 |].
+        intro i. rewrite H4. apply Hadapt_r.
+Qed.
+
 (* [restrictBM] unfolding, analogous to [restrictKeys_eq]. *)
 Definition restrictBM_f {a} :
   (IntSetBitMap -> IntMap a -> IntMap a) -> (IntSetBitMap -> IntMap a -> IntMap a).
@@ -2653,74 +2929,6 @@ Proof.
         admit.
 Admitted.
 
-(* [lookupPrefix] characterization: returns a sub-map whose keys have
-   the given prefix. *)
-Lemma lookupPrefix_Desc:
-  forall {a} kp (m : IntMap a) r f,
-  Desc m r f ->
-  Desc0 (lookupPrefix kp m) r
-    (fun i => if (N.ldiff i suffixBitMask =? kp)%N then f i else None).
-Proof.
-  intros a kp m r f HD.
-  induction HD; subst.
-  - (* Tip k v *)
-    simpl lookupPrefix.
-    unfoldMethods.
-    destruct (N.eqb_spec (N.ldiff k suffixBitMask) kp).
-    + eapply Desc0NotNil;
-        [eapply DescTip; [intro; reflexivity | reflexivity] | apply isSubrange_refl |].
-      intro i. rewrite H.
-      destruct (N.eqb_spec i k).
-      * subst. rewrite N.eqb_refl. reflexivity.
-      * destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); reflexivity.
-    + apply Desc0Nil. intro i. rewrite H.
-      destruct (N.eqb_spec i k).
-      * subst. destruct (N.eqb_spec (N.ldiff k suffixBitMask) kp); [contradiction | reflexivity].
-      * destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); reflexivity.
-  - (* Bin (rPrefix r) (rMask r) m1 m2 *)
-    simpl lookupPrefix.
-    unfoldMethods.
-    (* Top-level condition: tip-level check *)
-    match goal with |- Desc0 (if ?c then _ else _) _ _ => destruct c eqn:Htiplevel end.
-    + (* Tip level: check prefix match *)
-      destruct (N.eqb_spec (N.ldiff (rPrefix r) suffixBitMask) kp).
-      * (* Prefix matches: return whole Bin node *)
-        eapply Desc0NotNil;
-          [eapply DescBin; try eassumption; try assumption; try reflexivity; intro; reflexivity
-          | apply isSubrange_refl |].
-        intro i. rewrite H4.
-        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); [reflexivity |].
-        (* Key i has a different prefix than kp. Since the range is at tip level
-           (rBits r <= N.log2 WIDTH = 6), all keys in the range share the same
-           ldiff prefix. If i were in the range, it would have the same prefix.
-           So f1 i = None and f2 i = None. *)
-        (* TODO: This requires a lemma about keys in tip-level ranges sharing
-           the same ldiff prefix. For now, admit. *)
-        admit.
-      * (* Prefix doesn't match: return Nil *)
-        apply Desc0Nil. intro i. rewrite H4.
-        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); [| reflexivity].
-        (* All keys in the map have prefix matching rPrefix r, but rPrefix r
-           has a different ldiff prefix than kp. So no key in the map matches kp. *)
-        admit.
-    + (* Above tip level: nomatch/zero dispatch *)
-      apply nomatch_zero; [assumption | ..]; intros.
-      * (* Disjoint: kp is not in range r *)
-        apply Desc0Nil. intro i. rewrite H4.
-        destruct (N.eqb_spec (N.ldiff i suffixBitMask) kp); [| reflexivity].
-        (* Key i with prefix kp is not in range r, so f1 i = f2 i = None *)
-        admit.
-      * (* Left half: recurse on m1 *)
-        (* IHHD1 gives: Desc0 (lookupPrefix kp m1) r1
-             (fun i => if ldiff i suffixBitMask =? kp then f1 i else None)
-           We need: Desc0 (lookupPrefix kp m1) r
-             (fun i => if ldiff i suffixBitMask =? kp then oro (f1 i) (f2 i) else None)
-           The difference: f1 i vs oro (f1 i) (f2 i). For keys in the left half,
-           f2 i = None (right child is disjoint), so they're equal. *)
-        admit.
-      * (* Right half: recurse on m2 *)
-        admit.
-Admitted.
 
 
 (* The Bin/Tip case (m1=Bin, s2=IntSet.Tip) involves [restrictBM]
@@ -2812,12 +3020,14 @@ Next Obligation.
         intro; reflexivity. }
       (* The restrictKeys Bin/Tip case computes:
            restrictBM (clipped_bm) (lookupPrefix p0 m)
-         We need Desc0 at range r with semantics f.
-         The result is a sub-map of m containing keys that are both in m
-         and in the IntSet Tip. We prove Desc0 using Desc0Nil for the None
-         case and Desc0NotNil when the result is non-empty.
-         The admitted subgoals are in the helper lemmas
-         restrictBM_Desc0 and lookupPrefix_Desc. *)
+         lookupPrefix_Desc (proved) gives Desc0 for lookupPrefix.
+         restrictBM_Desc0 (1 admit in Bin case) gives Desc0 for restrictBM.
+         Composing them requires showing the bitmap clipping
+         (bm .&. ge_minbit .&. le_maxbit) preserves membership for keys in the
+         map's range and excludes keys outside it. This needs:
+         1. member_self_tip: member i (Tip (ldiff i suffixBitMask) bm) = testbit bm (suffixOf i)
+         2. The clipping bitmap correctly restricts bm to keys in the map's range
+         3. Composition of lookupPrefix_Desc and restrictBM_Desc0 *)
       admit.
     + (* s2 is also a Bin *)
       (* After inversion HD2 (Bin case) and subst, we additionally have:
