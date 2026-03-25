@@ -43,6 +43,9 @@ jobs:
             startGroup "Workaround permission issue"
             sudo chown -R coq:coq .
             endGroup
+            startGroup "Install coq-equations (needed by graph theories)"
+            opam install -y coq-equations
+            endGroup
           script: |
             startGroup "Lint opam files"
             opam lint base/coq-hs-to-coq-base.opam
