@@ -28,6 +28,7 @@ import qualified Data.Set                    as S
 import           Data.Text                   (Text)
 import qualified Data.Text                   as T
 
+import qualified Data.List.NonEmpty
 import           Data.List.NonEmpty          (NonEmpty ((:|)))
 
 import           Data.Data                   (Data (..))
@@ -571,6 +572,23 @@ instance Gallina Sentence where
   renderGallina' p (ArgumentsSentence       arg)    = renderGallina' p arg
   renderGallina' p (CommentSentence         com)    = renderGallina' p com
   renderGallina' p (LocalModuleSentence     lmd)    = renderGallina' p lmd
+  renderGallina' _ (EquationsSentence name binders mty mwf eqns wheres) =
+    nest 2 ("Equations" <+> renderGallina name <> spaceIf binders <> render_args H binders
+            <+> ":" <+> maybe "_" renderGallina mty
+            <> maybe mempty (\(m, r) -> " " <> "by wf" <+> parens (renderGallina m) <+> renderGallina r) mwf
+            <+> ":=" <$$>
+            vsep (punctuate " ;" [ renderGallina name <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
+                                 | (pats, rhs) <- eqns ]))
+    <> foldMap renderWhere wheres <> "."
+    where
+      renderWhere (EquationsWhere wname wbinders wmty weqns) =
+        line <> line <>
+        nest 2 ("where" <+> renderGallina wname <> renderBinderList wbinders
+                <+> ":" <+> maybe "_" renderGallina wmty <+> ":=" <$$>
+                vsep (punctuate " ;" [ renderGallina wname <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
+                                     | (pats, rhs) <- weqns ]))
+      renderBinderList [] = mempty
+      renderBinderList bs = " " <> render_args H (Data.List.NonEmpty.fromList bs)
 
 instance Gallina Assumption where
   renderGallina' p (Assumption kw ass) = renderGallina' p kw <+> align (renderGallina ass) <> "."

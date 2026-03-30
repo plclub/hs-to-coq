@@ -993,6 +993,37 @@ Effect:
 
 Examples:
 
+``equations`` -- emit definition using the Equations plugin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index::
+   single: equations, edit
+
+
+Format:
+  | **equations** *qualified_name*
+
+Effect:
+  Instead of emitting a standard ``Definition`` or ``Fixpoint``, the function
+  is emitted using the `Equations <https://github.com/mattam82/Coq-Equations>`_
+  plugin syntax.  This automatically adds ``From Equations Require Import Equations``
+  to the module's imports.
+
+  ``hs-to-coq`` extracts match arms from the function body and emits them as
+  Equations clauses.  Local ``let`` bindings that contain pattern-matching functions
+  are emitted as ``where`` clauses (at most one per definition).
+
+  When combined with a ``termination`` edit, generates ``Equations ... by wf``
+  syntax for well-founded recursion.  Measure-based termination uses ``lt``
+  as the relation; ``wf``-based termination uses the user-specified relation.
+
+Examples:
+  .. code-block:: shell
+
+    equations MyModule.myFunc
+    equations MyModule.myRecFunc
+    termination MyModule.myRecFunc {measure (size arg_0__)}
+
 ``universe polymorphic`` -- make an inductive type universe polymorphic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

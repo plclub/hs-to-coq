@@ -104,6 +104,7 @@ import HsToCoq.Edits.ParserState
   universe        { TokWord    "universe"       }
   polymorphic     { TokWord    "polymorphic"    }
   cumulative      { TokWord    "cumulative"     }
+  equations_kw    { TokWord    "equations"      }
   invariant       { TokWord    "invariant"      }
   useSigmaType    { TokWord    "useSigmaType"   }
   qid             { TokWord    "qid"            }
@@ -367,6 +368,7 @@ Edit :: { Edit }
   | universe polymorphic Qualid                            { UniversePolymorphicEdit          $3                                    }
   | universe cumulative Qualid                             { UniverseCumulativeEdit            $3                                    }
   | universe polymorphic cumulative Qualid                 { UniverseCumulativeEdit            $4                                    }
+  | equations_kw Qualid                                    { EquationsEdit                    $2                                    }
   | except 'in' SepBy1(Qualid, ',') Edit                  { ExceptInEdit                     $3 $4                                 }
   | InvariantEdit_                                        { $1 }
 

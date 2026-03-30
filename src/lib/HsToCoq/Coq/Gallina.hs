@@ -51,6 +51,7 @@ module HsToCoq.Coq.Gallina (
   -- * The vernacular
   -- $Vernacular
   Sentence(..),
+  EquationsWhere(..),
   Assumption(..),
   AssumptionKeyword(..),
   Assums(..),
@@ -289,7 +290,13 @@ data Sentence = AssumptionSentence       Assumption                             
               | ArgumentsSentence        Arguments                                             -- ^@/arguments/@ – extra
               | CommentSentence          Comment                                               -- ^@/comment/@ – extra
               | LocalModuleSentence      LocalModule
+              | EquationsSentence        Qualid Binders (Maybe Term) (Maybe (Term, Qualid)) [(NonEmpty Pattern, Term)] [EquationsWhere]
+                                                                                                  -- ^@Equations /ident/ /binders/ [: /term/] [by wf /term/ /qualid/] := /ident/ /pat/ … := /term/ ; … [where …] .@
               deriving (Eq, Ord, Show, Read, Typeable, Data)
+
+-- |@Equations@ where clause for auxiliary definitions.
+data EquationsWhere = EquationsWhere Qualid [Binder] (Maybe Term) [(NonEmpty Pattern, Term)]
+                    deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/assumption/ ::=@
 data Assumption = Assumption AssumptionKeyword Assums                                          -- ^@/assumption_keyword/ /assums/ .@

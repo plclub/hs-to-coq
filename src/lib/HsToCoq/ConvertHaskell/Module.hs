@@ -18,6 +18,7 @@ import Data.Traversable
 import HsToCoq.Util.Monad
 import Data.Function
 import Data.Maybe
+import qualified Data.List.NonEmpty
 import Data.List.NonEmpty (NonEmpty (..), fromList)
 import Data.List (partition, sortBy)
 import HsToCoq.Util.List
@@ -51,6 +52,7 @@ import Bag
 
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Monad
+import HsToCoq.ConvertHaskell.TypeInfo (lookupConstructorType)
 import HsToCoq.ConvertHaskell.InfixNames
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Definitions
@@ -110,8 +112,11 @@ convertBinding sigs (ConvertedDefinitionBinding cdef@ConvertedDefinition{_convDe
   withCurrentDefinition name $ do
     t  <- view (edits.termination.at name)
     obl <- view (edits.obligations.at name)
+    useEqs <- view (edits.equations.contains name)
     useProgram <- useProgramHere
-    if | Just (WellFoundedTA order) <- t  -- turn into Program Fixpoint
+    if | useEqs                           -- turn into Equations definition
+       -> toEquationsSentence cdef t
+       | Just (WellFoundedTA order) <- t  -- turn into Program Fixpoint
        ->  pure <$> toProgramFixpointSentence cdef (fromWFOrder order) obl
        | otherwise                   -- no edit
        -> let def = DefinitionDef Global (cdef^.convDefName)
@@ -144,6 +149,148 @@ convertBinding _ (RedefinedBinding _ def) =
 
 convertBinding _ (SkippedBinding name) =
   pure [CommentSentence . Comment $ "Skipping definition `" <> textP name <> "'"]
+
+-- | Convert a function definition to use Coq Equations syntax.
+-- Extracts match equations from the body and emits them as Equations clauses.
+-- When the body has no match (direct expression), emits a single equation.
+toEquationsSentence :: ConversionMonad r m
+                    => ConvertedDefinition -> Maybe TerminationArgument -> m [Sentence]
+toEquationsSentence cdef mterm = do
+  let name = cdef^.convDefName
+      args = cdef^.convDefArgs
+      mty  = cdef^.convDefType
+      body = cdef^.convDefBody
+      -- Decompose the body: extract binders and the inner expression.
+      -- decomposeFixpoint handles both Fix (FixOne ...) and App wfFix [...].
+      (allBinders, innerBody) = case decomposeFixpoint body of
+        Just (_fixName, fixBinders, _fixTy, matchBody) ->
+          (args ++ Data.List.NonEmpty.toList fixBinders, matchBody)
+        Nothing ->
+          let (funBinders, inner) = stripFun body
+          in  (args ++ funBinders, inner)
+      eqns = extractEqns innerBody
+      whereClauses = extractWheres innerBody :: [EquationsWhere]
+      matchEqns | null eqns = varPatternEqn allBinders innerBody
+                | otherwise = eqns
+      -- Annotate bare binders with types from the function signature.
+      -- Equations requires explicit types on pattern-matching arguments.
+      annotatedBinders = case mty of
+        Just ty -> fst (annotateAndStrip allBinders ty)
+        Nothing -> allBinders
+      retTy = fmap (snd . annotateAndStrip allBinders) mty >>= id
+  -- Rename pattern variables that shadow binder names (appends underscore).
+  -- Uses Data.Generics.everywhere to traverse all Term/Pattern constructors.
+  let binderNames = S.fromList [ n | Bare n <- concatMap (toListOf binderIdents) annotatedBinders ]
+      renameTerm (Qualid (Bare n))
+        | n `S.member` binderNames = Qualid (Bare (n <> "_"))
+      renameTerm t = t
+      renamePat (QualidPat (Bare n))
+        | n `S.member` binderNames = QualidPat (Bare (n <> "_"))
+      renamePat p = p
+      renameInTerm :: Term -> Term
+      renameInTerm = everywhere (mkT renameTerm)
+      renameInPat :: Pattern -> Pattern
+      renameInPat  = everywhere (mkT renamePat)
+      renamedEqns = [ (fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- matchEqns ]
+  -- Annotate where-clause binder types from: set type edits, let type
+  -- annotations, or constructor pattern inference via lookupConstructorType.
+  renamedWheres <- forM whereClauses $ \(EquationsWhere wn wbs wty weqns) -> do
+    overrideTy <- view (edits.replacedTypes.at wn)
+    (finalBs, finalTy) <- case overrideTy of
+      Just (Just fullTy) ->
+        pure (annotateAndStrip wbs fullTy)
+      _ -> case wty of
+        Just ty -> pure (annotateAndStrip wbs ty)
+        Nothing -> do
+          annBs <- annotateFromPatterns wbs (map (Data.List.NonEmpty.toList . fst) weqns)
+          pure (annBs, Nothing)
+    pure $ EquationsWhere wn finalBs finalTy [(fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- weqns]
+  case annotatedBinders of
+    [] -> editFailure "equations edit requires a function with at least one argument"
+    (b:bs) ->
+      let mwf = case mterm of
+            Just (WellFoundedTA (MeasureOrder_ expr _)) ->
+              Just (expr, Bare "lt")
+            Just (WellFoundedTA (WFOrder_ expr rel)) ->
+              Just (expr, rel)
+            _ -> Nothing
+      in pure [EquationsSentence name (b :| bs) retTy mwf renamedEqns renamedWheres]
+  where
+    -- Annotate ExplicitBinder names from an Arrow-chain type, returning
+    -- the annotated binders and the remaining (return) type.
+    annotateAndStrip :: [Binder] -> Term -> ([Binder], Maybe Term)
+    annotateAndStrip [] ty = ([], Just ty)
+    annotateAndStrip (ExplicitBinder (Ident n) : bs) ty
+      | (argTy, restTy) <- splitArrow ty =
+        let (bs', ret) = annotateAndStrip bs restTy
+        in (Typed Ungeneralizable Explicit (Ident n :| []) argTy : bs', ret)
+    annotateAndStrip (b:bs) ty =
+      let (bs', ret) = annotateAndStrip bs (dropArrow ty)
+      in (b : bs', ret)
+
+    splitArrow (Arrow a rest) = (a, rest)
+    splitArrow (Forall _ rest) = splitArrow rest
+    splitArrow t = (t, t)
+    dropArrow (Arrow _ rest) = rest
+    dropArrow (Forall _ rest) = dropArrow rest
+    dropArrow t = t
+
+    -- Infer binder types from constructor patterns in the equations.
+    annotateFromPatterns :: ConversionMonad r m => [Binder] -> [[Pattern]] -> m [Binder]
+    annotateFromPatterns [] _ = pure []
+    annotateFromPatterns (ExplicitBinder (Ident n) : bs) patSets = do
+      let firstPats = [ p | (p:_) <- patSets ]
+          tailPats  = [ ps | (_:ps) <- patSets, not (null ps) ]
+      mty <- inferTypeFromPats firstPats
+      rest <- annotateFromPatterns bs tailPats
+      case mty of
+        Just ty -> pure $ Typed Ungeneralizable Explicit (Ident n :| []) (Qualid ty) : rest
+        Nothing -> pure $ ExplicitBinder (Ident n) : rest
+    annotateFromPatterns (b:bs) patSets =
+      (b :) <$> annotateFromPatterns bs patSets
+
+    inferTypeFromPats :: ConversionMonad r m => [Pattern] -> m (Maybe Qualid)
+    inferTypeFromPats [] = pure Nothing
+    inferTypeFromPats (QualidPat con : _) = lookupConstructorType con
+    inferTypeFromPats (ArgsPat con _ : _) = lookupConstructorType con
+    inferTypeFromPats (_ : rest) = inferTypeFromPats rest
+
+    stripFun (Fun bs inner) = (Data.List.NonEmpty.toList bs, inner)
+    stripFun t = ([], t)
+
+    extractEqns (HsToCoq.Coq.Gallina.Match _ _ eqns) =
+      [(pats, rhs) | Equation mpats rhs <- eqns
+                    , let MultPattern pats = Data.List.NonEmpty.head mpats ]
+    extractEqns _ = []
+
+    -- Extract a single let binding as an Equations where clause, if the
+    -- let's value is a function with pattern matching.  Only the outermost
+    -- let is extracted; Coq Equations supports at most one where clause.
+    extractWheres (Let localName _localBinders localTy localVal _outerBody) =
+      let (localFunBinders, localInner) = stripFun localVal
+          localEqns = extractEqns localInner
+          (annotatedWhereBinders, whereRetTy) = case localTy of
+            Just ty -> annotateAndStrip localFunBinders ty
+            Nothing -> (localFunBinders, Nothing)
+      in if null localEqns then []
+         else [EquationsWhere localName annotatedWhereBinders whereRetTy localEqns]
+    extractWheres _ = []
+
+    -- Generate a single equation with variable patterns for all explicit binders.
+    varPatternEqn binders inner =
+      let explicitNames = [ n | b <- binders, Bare n <- toListOf binderIdents b
+                              , not (isImplicitBinder b) ]
+          pats = fmap (QualidPat . Bare) (fromList explicitNames)
+          hasWheres = not (null (extractWheres inner :: [EquationsWhere]))
+          rhs = case inner of
+                  Let _ _ _ _ outerBody | hasWheres -> outerBody
+                  _                                 -> inner
+      in if null explicitNames then [] else [(pats, rhs)]
+
+    isImplicitBinder (ImplicitBinders _) = True
+    isImplicitBinder (Generalized Implicit _) = True
+    isImplicitBinder (Typed Ungeneralizable Implicit _ _) = True
+    isImplicitBinder _ = False
 
 convertHsGroup :: ConversionMonad r m => HsGroup GhcRn -> m ConvertedModuleDeclarations
 convertHsGroup HsGroup{..} = do
@@ -272,7 +419,14 @@ convertModule convModData group = do
     notationModules <- skipModules $ S.toList $ S.fromList notationModules
     imported_modules <- view $ edits.importedModules
 
+    let needsEquations = any isEquationsSentence allSentences
+        isEquationsSentence (EquationsSentence {}) = True
+        isEquationsSentence _ = False
+
     let convModImports =
+            [ ModuleSentence (Require (Just "Equations") (Just Import) ["Equations"])
+            | needsEquations
+            ] ++
             [ ModuleSentence (Require Nothing imp [moduleNameText mn])
             | mn <- modules
             , let imp | mn `S.member` imported_modules = Just Import
