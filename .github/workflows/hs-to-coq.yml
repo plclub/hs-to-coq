@@ -43,6 +43,9 @@ jobs:
             startGroup "Workaround permission issue"
             sudo chown -R coq:coq .
             endGroup
+            startGroup "Install coq-equations (needed by graph theories)"
+            opam install -y coq-equations
+            endGroup
           script: |
             startGroup "Lint opam files"
             opam lint base/coq-hs-to-coq-base.opam
@@ -162,7 +165,7 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git submodule update --init examples/ghc/ghc
           git submodule update --init examples/containers/containers
-          git submodule update --init examples/graph/graph
+          git submodule update --init --depth 1 examples/graph/graph
       - name: Installing dependencies
         run: apt-get update && apt-get install -y xutils-dev
       - name: Caching Stack
