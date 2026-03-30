@@ -626,6 +626,11 @@ instance Gallina Inductive where
   renderGallina' _ (Inductive   bodies nots) = renderUnivPoly bodies <> render_mutual_def "Inductive"   renderIndBody bodies nots
   renderGallina' _ (CoInductive bodies nots) = renderUnivPoly bodies <> render_mutual_def "CoInductive" renderIndBody bodies nots
 
+-- | Emit a @#[universes(...)]@ attribute for the entire mutual inductive block.
+-- In Coq, this attribute applies to the whole @Inductive@/@CoInductive@ sentence,
+-- not to individual bodies.  If any body requires cumulativity, the whole block
+-- is marked cumulative; if any requires polymorphism, the whole block is
+-- marked polymorphic.
 renderUnivPoly :: NonEmpty IndBody -> Doc
 renderUnivPoly bodies
   | any (\(IndBody _ _ _ _ us) -> us == UnivPolyCumulative) bodies = "#[universes(polymorphic, cumulative)]" <> line

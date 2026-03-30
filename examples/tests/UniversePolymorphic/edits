@@ -1,5 +1,7 @@
 universe polymorphic UniversePolymorphic.MyList
 universe cumulative UniversePolymorphic.Tree
-# Both edits on the same type: cumulative takes priority (implies polymorphic)
+# Both edits on the same type: when both present, cumulative subsumes polymorphic
 universe polymorphic UniversePolymorphic.Either_
 universe cumulative UniversePolymorphic.Either_
+# Three-word combined syntax
+universe polymorphic cumulative UniversePolymorphic.Maybe_

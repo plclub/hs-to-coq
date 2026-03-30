@@ -337,7 +337,7 @@ data UniverseStatus = NotUnivPoly         -- ^Monomorphic (default)
                     deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/ind_body/ ::=@
-data IndBody = IndBody Qualid [Binder] Term [(Qualid, [Binder], Maybe Term)] UniverseStatus
+data IndBody = IndBody Qualid [Binder] Term [(Qualid, [Binder], Maybe Term)] UniverseStatus -- ^@/ident/ [/binders/] : /term/ := [[|] /ident/ [/binders/] [: /term/] | … | /ident/ [/binders/] [: /term/]]@; 'UniverseStatus' is an hs-to-coq extension
              deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/fixpoint/ ::=@
