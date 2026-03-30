@@ -330,7 +330,8 @@ data Inductive = Inductive   (NonEmpty IndBody) [NotationBinding]               
                deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/ind_body/ ::=@
-data IndBody = IndBody Qualid [Binder] Term [(Qualid, [Binder], Maybe Term)]                   -- ^@/ident/ [/binders/] : /term/ := [[|] /ident/ [/binders/] [: /term/] | … | /ident/ [/binders/] [: /term/]]@
+-- The final Bool is True when the inductive should be universe-polymorphic (@#[universes(polymorphic)]@).
+data IndBody = IndBody Qualid [Binder] Term [(Qualid, [Binder], Maybe Term)] Bool
              deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/fixpoint/ ::=@

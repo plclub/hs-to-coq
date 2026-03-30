@@ -101,6 +101,8 @@ import HsToCoq.Edits.ParserState
   polyrec         { TokWord    "polyrec"        }
   except          { TokWord    "except"         }
   polykinds       { TokWord    "polykinds"      }
+  universe        { TokWord    "universe"       }
+  polymorphic     { TokWord    "polymorphic"    }
   invariant       { TokWord    "invariant"      }
   useSigmaType    { TokWord    "useSigmaType"   }
   qid             { TokWord    "qid"            }
@@ -361,6 +363,7 @@ Edit :: { Edit }
   | 'in' Qualid Edit                                      { InEdit                           $2 $3                                 }
   | promote Qualid                                        { PromoteEdit                      $2                                    }
   | polyrec Qualid                                        { PolyrecEdit                      $2                                    }
+  | universe polymorphic Qualid                            { UniversePolymorphicEdit          $3                                    }
   | except 'in' SepBy1(Qualid, ',') Edit                  { ExceptInEdit                     $3 $4                                 }
   | InvariantEdit_                                        { $1 }
 
@@ -564,7 +567,7 @@ Inductive :: { Inductive }
   | 'CoInductive' MutualDefinitions(IndBody)    { uncurry CoInductive $2 }
 
 IndBody :: { IndBody }
-  : Qualid Many(Binder) Optional(TypeAnnotation) ':=' Constructors    { IndBody $1 $2 (fromMaybe (Sort Type) $3) $5 }
+  : Qualid Many(Binder) Optional(TypeAnnotation) ':=' Constructors    { IndBody $1 $2 (fromMaybe (Sort Type) $3) $5 False }
 
 Constructors :: { [(Qualid, [Binder], Maybe Term)] }
   : SepByIf(Optional('|'), Constructor, '|')    { $1 }

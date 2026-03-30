@@ -83,7 +83,7 @@ instance HasBV Qualid ConvertedDeclaration where
   bvOf (ConvFailure _ sen) = bvOf sen
 
 convDeclName :: ConvertedDeclaration -> Qualid
-convDeclName (ConvData    _ (IndBody                    tyName  _ _ _))    = tyName
+convDeclName (ConvData    _ (IndBody                    tyName  _ _ _ _))    = tyName
 convDeclName (ConvSyn       (SynBody                    synName _ _ _))    = synName
 convDeclName (ConvClass     (ClassBody (ClassDefinition clsName _ _ _) _)) = clsName
 convDeclName (ConvAxiom     (axName, _))                                   = axName
@@ -179,7 +179,7 @@ convertTyClDecl env decl = do
     -- "Data.Monoid.Mk_Ap"); we qualify them using the module from tyName
     -- since store' in TypeInfo.hs rejects Bare keys.
     storeRedefinedConstructors :: LocalConvMonad r m => IndBody -> m ()
-    storeRedefinedConstructors (IndBody tyName _params _resTy cons) = do
+    storeRedefinedConstructors (IndBody tyName _params _resTy cons _) = do
       let qualifyLike (Qualified m _) (Bare b) = Qualified m b
           qualifyLike _               q        = q
           qCons = [(qualifyLike tyName cn, binders, mty) | (cn, binders, mty) <- cons]
@@ -267,7 +267,7 @@ convertDeclarationGroup DeclarationGroup{..} =
       pure []
     
     (_, _, _, _, _) ->
-      let indName (IndBody name _ _ _)                       = name
+      let indName (IndBody name _ _ _ _)                       = name
           clsName (ClassBody (ClassDefinition name _ _ _) _) = name
           axmName (name, _)                                  = name
           
@@ -291,7 +291,7 @@ convertDeclarationGroup DeclarationGroup{..} =
        let map' = M.map (subst map) map
        in if map == map' then map' else expandAllDefs map'
 
-    indParams (IndBody _ params _ _) = S.fromList $ foldMap (toListOf binderIdents) params
+    indParams (IndBody _ params _ _ _) = S.fromList $ foldMap (toListOf binderIdents) params
 
     -- FIXME use real substitution
     avoidParams params = until (`S.notMember` params) (qualidExtendBase "_")
@@ -319,10 +319,10 @@ convertDeclarationGroup DeclarationGroup{..} =
 
     recSynType :: SynBody -> [Sentence] -- Otherwise GHC infers a type containing @~@.
     recSynType (SynBody name _ _ _) =
-      [ InductiveSentence $ Inductive [IndBody (synName name) [] (Sort Type) []] []
+      [ InductiveSentence $ Inductive [IndBody (synName name) [] (Sort Type) [] False] []
       , NotationSentence $ ReservedNotationIdent (qualidBase name) ]
 
-    indParams (IndBody _ params _ _) = S.fromList $ foldMap (toListOf binderIdents) params
+    indParams (IndBody _ params _ _ _) = S.fromList $ foldMap (toListOf binderIdents) params
 
 
     recSynMapping params (SynBody name args oty def) =
@@ -359,7 +359,7 @@ convertDeclarationGroup DeclarationGroup{..} =
 -- TODO: GADTs.
 -- TODO: Keep the argument specifiers with the data types.
 generateArgumentSpecifiers :: ConversionMonad r m => IndBody -> m [Arguments]
-generateArgumentSpecifiers (IndBody _ params _resTy cons)
+generateArgumentSpecifiers (IndBody _ params _resTy cons _)
   | null params = pure []
   | otherwise   = catMaybes <$> traverse setImplicits cons
   where
@@ -394,7 +394,7 @@ generateGroupArgumentSpecifiers = fmap (fmap ArgumentsSentence)
 --------------------------------------------------------------------------------
 
 generateDefaultInstance :: ConversionMonad r m => IndBody -> m [Sentence]
-generateDefaultInstance (IndBody tyName _ _ cons)
+generateDefaultInstance (IndBody tyName _ _ cons _)
     | Just (con, bndrs, _) <- find suitableCon cons
         -- Instance Default_TupleSort : GHC.Err.Default TupleSort :=
         --  GHC.Err.Build_Default _ BoxedTuple.
@@ -416,7 +416,7 @@ generateGroupDefaultInstances :: ConversionMonad r m => DeclarationGroup -> m [S
 generateGroupDefaultInstances = foldTraverse generateDefaultInstance . dgInductives
 
 generateRecordAccessors :: ConversionMonad r m => IndBody -> m [Definition]
-generateRecordAccessors (IndBody tyName params resTy cons) = do
+generateRecordAccessors (IndBody tyName params resTy cons _) = do
   let conNames = view _1 <$> cons
 
   allFields <- catMaybes <$> mapM lookupConstructorFields conNames
@@ -477,7 +477,7 @@ generateGroupRecordAccessors = fmap (fmap DefinitionSentence)
 --------------------------------------------------------------------------------
 
 indNames :: IndBody -> [Qualid]
-indNames (IndBody tyName _params _resTy cons) = tyName : map (\(name, _, _) -> name) cons
+indNames (IndBody tyName _params _resTy cons _) = tyName : map (\(name, _, _) -> name) cons
 
 generateGroupDataInfixNotations :: ConversionMonad r m => DeclarationGroup -> m [Sentence]
 generateGroupDataInfixNotations =
