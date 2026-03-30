@@ -35,8 +35,8 @@ subst1 :: Subst t => Qualid -> Term -> t -> t
 subst1 = subst .: M.singleton
 
 instance Subst IndBody where
-  subst f (IndBody tyName params indicesUnivers cons) =
-    IndBody tyName params indicesUnivers (map (substCon f) cons)
+  subst f (IndBody tyName params indicesUnivers cons univPoly) =
+    IndBody tyName params indicesUnivers (map (substCon f) cons) univPoly
        where substCon f (qid,binders, Nothing) = (qid, map (subst f) binders, Nothing)
              substCon f (qid,binders, Just t)  = (qid, map (subst f) binders, Just (subst f t))
 

@@ -1,0 +1,15 @@
+universe polymorphic UniversePolymorphic.MyList
+universe cumulative UniversePolymorphic.Tree
+# Both edits on the same type: when both present, cumulative subsumes polymorphic
+universe polymorphic UniversePolymorphic.Either_
+universe cumulative UniversePolymorphic.Either_
+# Three-word combined syntax
+universe polymorphic cumulative UniversePolymorphic.Maybe_
+# Universe edit works with redefine Inductive
+redefine Inductive UniversePolymorphic.Box (a : Type) : Type := | MkBox : a -> Box a.
+universe polymorphic UniversePolymorphic.Box
+# Coinductive + universe polymorphic
+coinductive UniversePolymorphic.Stream
+universe polymorphic UniversePolymorphic.Stream
+# Mutual inductive: only Rose has the edit, but Forest shares the block
+universe polymorphic UniversePolymorphic.Rose

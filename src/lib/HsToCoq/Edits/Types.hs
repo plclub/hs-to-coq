@@ -9,7 +9,7 @@
 {-# LANGUAGE TemplateHaskell            #-}
 
 module HsToCoq.Edits.Types (
-  Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, polyKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs, invariants,
+  Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, polyKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs, universePolymorphic, universeCumulative, lookupUniverseStatus, invariants,
   HsNamespace(..), NamespacedIdent(..), Renamings,
   DataTypeArguments(..), dtParameters, dtIndices,
   CoqDefinition(..), definitionSentence,
@@ -194,6 +194,8 @@ data Edit = TypeSynonymTypeEdit              Ident Ident
           | ExceptInEdit                     (NonEmpty Qualid) Edit
           | PromoteEdit                      Qualid
           | PolyrecEdit                      Qualid
+          | UniversePolymorphicEdit          Qualid
+          | UniverseCumulativeEdit           Qualid
           | InvariantEdit                    ModuleName Qualid [Binder] Ident [Qualid] CoqDefinition
           deriving (Eq, Ord, Show)
 
@@ -265,6 +267,8 @@ data Edits = Edits { _typeSynonymTypes               :: !(Map Ident Ident)
                    , _exceptInEdits                  :: !(Map Qualid Edits)
                    , _promotions                     :: !(Set Qualid)
                    , _polyrecs                       :: !(Set Qualid)
+                   , _universePolymorphic            :: !(Set Qualid)
+                   , _universeCumulative             :: !(Set Qualid)
                    , _invariants                     :: !(Map Qualid InvEditInfo)
 
                    }
@@ -322,6 +326,8 @@ subtractEdits edits1 edits2 =
   , _exceptInEdits                  = edits1^.exceptInEdits
   , _promotions                     = edits1^.promotions
   , _polyrecs                       = (edits1^.polyrecs) S.\\ (edits2^.polyrecs)
+  , _universePolymorphic            = edits1^.universePolymorphic
+  , _universeCumulative             = edits1^.universeCumulative
   , _invariants                     = edits1^.invariants
   }
 
@@ -335,6 +341,14 @@ useProgram name edits = or
   where
    isWellFounded WellFoundedTA {} = True
    isWellFounded _                = False
+
+-- | Look up the universe polymorphism/cumulativity status for a type name.
+-- Cumulative subsumes polymorphic when both edits are present.
+lookupUniverseStatus :: Qualid -> Edits -> UniverseStatus
+lookupUniverseStatus name edits
+  | name `S.member` _universeCumulative edits = UnivPolyCumulative
+  | name `S.member` _universePolymorphic edits = UnivPoly
+  | otherwise = NotUnivPoly
 
 -- Module-local'
 duplicate_for' :: String -> (a -> String) -> a -> String
@@ -396,6 +410,8 @@ descDuplEdit = \case
   ExceptInEdit                     _ _          -> error "ExceptIn Edits are never duplicates"
   PromoteEdit                      _            -> error "Promote edits are never duplicates"
   PolyrecEdit                      _            -> error "Polyrec edits are never duplicates"
+  UniversePolymorphicEdit          qid          -> duplicateQ_for  "universe polymorphic requests"                  qid
+  UniverseCumulativeEdit           qid          -> duplicateQ_for  "universe cumulative requests"                   qid
   InvariantEdit                    _ qid _ _ _ _  -> duplicateQ_for "Duplicate invariant for the same definition"   qid
   where
     prettyScoped place name = let pplace = case place of
@@ -444,6 +460,8 @@ addEdit e = case e of
   InEdit                           qid edit         -> inEdits.at qid.non mempty %%~ addEdit edit
   PromoteEdit                      qid              -> addFresh e promotions                             qid                         ()
   PolyrecEdit                      qid              -> addFresh e polyrecs                               qid                         ()
+  UniversePolymorphicEdit          qid              -> addFresh e universePolymorphic                    qid                         ()
+  UniverseCumulativeEdit           qid              -> addFresh e universeCumulative                     qid                         ()
   ExceptInEdit                     qids edit        -> addExceptInEdit qids edit
   InvariantEdit                    mod qid binderList cName useSigmaQids def -> addInvariantEdit mod qid binderList cName useSigmaQids def
 
@@ -590,8 +608,8 @@ defName (CoqDefinitionDef (DefinitionDef _ x _ _ _ _))              = x
 defName (CoqDefinitionDef (LetDef          x _ _ _))                = x
 defName (CoqFixpointDef   (Fixpoint    (FixBody x _ _ _ _ :| _) _)) = x
 defName (CoqFixpointDef   (CoFixpoint  (FixBody x _ _ _ _ :| _) _)) = x
-defName (CoqInductiveDef  (Inductive   (IndBody x _ _ _   :| _) _)) = x
-defName (CoqInductiveDef  (CoInductive (IndBody x _ _ _   :| _) _)) = x
+defName (CoqInductiveDef  (Inductive   (IndBody x _ _ _ _   :| _) _)) = x
+defName (CoqInductiveDef  (CoInductive (IndBody x _ _ _ _   :| _) _)) = x
 defName (CoqInstanceDef   (InstanceDefinition x _ _ _ _))           = x
 defName (CoqInstanceDef   (InstanceTerm       x _ _ _ _))           = x
 defName (CoqInstanceDef   (InstanceProof x _ _ _))                  = x
