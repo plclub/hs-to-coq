@@ -30,6 +30,19 @@ Definition maybe_upcast@{u v | u <= v} (A : Type@{u}) (m : Maybe_@{u} A) : Maybe
 (* Box uses redefine Inductive + universe polymorphic *)
 Check @MkBox@{Set}.
 
+(* Coinductive + polymorphic *)
+Check @SCons@{Set}.
+
+(* === Mutual inductive tests === *)
+(* In Coq, #[universes(polymorphic)] is a sentence-level attribute that applies
+   to the entire Inductive ... with ... block.  All types in a mutual block share
+   a single universe context, so it is not possible to make one type polymorphic
+   while keeping another monomorphic.  Here only Rose has the universe edit, but
+   Forest must also become polymorphic because they are in the same block. *)
+Check @MkRose@{Set}.
+Check @NilF@{Set}.
+Check @ConsF@{Set}.
+
 (* MyList is polymorphic but NOT cumulative: upcast must fail *)
 Fail #[universes(polymorphic)]
 Definition mylist_upcast@{u v | u <= v} (A : Type@{u}) (l : MyList@{u} A) : MyList@{v} A := l.

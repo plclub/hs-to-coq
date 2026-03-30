@@ -11,3 +11,8 @@ data Either_ a b = Left_ a | Right_ b
 data Maybe_ a = Nothing_ | Just_ a
 
 data Box a = MkBox a
+
+data Stream a = SCons a (Stream a)
+
+data Rose a = MkRose a (Forest a)
+data Forest a = NilF | ConsF (Rose a) (Forest a)

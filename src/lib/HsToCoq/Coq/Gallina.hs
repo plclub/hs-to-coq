@@ -331,6 +331,11 @@ data Inductive = Inductive   (NonEmpty IndBody) [NotationBinding]               
                deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |Universe polymorphism and cumulativity flags for inductive types.
+--
+-- /Invariant/: Constructor ordering is load-bearing — the derived 'Ord'
+-- instance is used via 'maximum' in "HsToCoq.Coq.Pretty" to merge statuses
+-- across a mutual inductive block, so later constructors must represent
+-- stronger universe settings.
 data UniverseStatus = NotUnivPoly         -- ^Monomorphic (default)
                     | UnivPoly            -- ^@#[universes(polymorphic)]@
                     | UnivPolyCumulative  -- ^@#[universes(polymorphic, cumulative)]@

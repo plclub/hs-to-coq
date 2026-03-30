@@ -1033,7 +1033,17 @@ Effect:
   If both ``universe polymorphic`` and ``universe cumulative`` are given for the
   same type, the result is cumulative (which subsumes polymorphic).
 
-  These edits also work with ``redefine Inductive``.
+  These edits also work with ``redefine Inductive`` and ``redefine CoInductive``.
+
+  .. note::
+
+     In Coq, ``#[universes(...)]`` is a sentence-level attribute that applies to
+     the entire ``Inductive ... with ...`` block — all types in a mutual block
+     share a single universe context and cannot have independent universe settings.
+     If different types in the block have different universe edits, the strongest
+     setting is applied to the whole block (e.g., if one type has
+     ``universe polymorphic`` and another has ``universe cumulative``, the entire
+     block becomes ``#[universes(polymorphic, cumulative)]``).
 
 Examples:
   .. code-block:: shell
