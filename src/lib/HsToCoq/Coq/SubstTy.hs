@@ -30,8 +30,8 @@ class SubstTy t where
   substTy :: Map Qualid Term -> t -> t
 
 instance SubstTy IndBody where
-  substTy f (IndBody tyName params indicesUnivers cons) =
-    IndBody tyName params indicesUnivers (map (substCon f) cons)
+  substTy f (IndBody tyName params indicesUnivers cons univPoly) =
+    IndBody tyName params indicesUnivers (map (substCon f) cons) univPoly
        where substCon f (qid,binders, Nothing) = (qid, map (subst f) binders, Nothing)
              substCon f (qid,binders, Just t)  = (qid, map (subst f) binders, Just (substTy f t))
 

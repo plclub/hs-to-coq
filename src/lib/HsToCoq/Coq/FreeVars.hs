@@ -60,7 +60,7 @@ instance HasBV Qualid FixBodies where
 
 
 instance HasBV Qualid IndBody where
-  bvOf (IndBody tyName params indicesUniverse cons) =
+  bvOf (IndBody tyName params indicesUniverse cons _univPoly) =
     binder tyName `telescope`
     (bindsNothing (foldScopes bvOf params $ fvOf indicesUniverse) <>
      mconcat [ binder conName <>

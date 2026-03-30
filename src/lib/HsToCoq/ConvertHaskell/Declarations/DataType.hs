@@ -282,4 +282,7 @@ convertDataDecl name tvs defn = do
       hasArrows (Just (Coq.Arrow _ _))       = True
       hasArrows _                            = False
 
-  pure $ IndBody coqName params finalResTy cons
+  -- Universe edits are also applied to 'redefine Inductive' bodies
+  -- via applyUniverseEdit in TyCl.hs.
+  univStatus <- views edits (lookupUniverseStatus coqName)
+  pure $ IndBody coqName params finalResTy cons univStatus

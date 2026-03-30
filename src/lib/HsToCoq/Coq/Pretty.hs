@@ -623,11 +623,23 @@ instance Gallina Definition where
                      <+> ":=") <$$> renderGallina body <>  ".")
 
 instance Gallina Inductive where
-  renderGallina' _ (Inductive   bodies nots) = render_mutual_def "Inductive"   renderIndBody bodies nots
-  renderGallina' _ (CoInductive bodies nots) = render_mutual_def "CoInductive" renderIndBody bodies nots
+  renderGallina' _ (Inductive   bodies nots) = renderUnivPoly bodies <> render_mutual_def "Inductive"   renderIndBody bodies nots
+  renderGallina' _ (CoInductive bodies nots) = renderUnivPoly bodies <> render_mutual_def "CoInductive" renderIndBody bodies nots
+
+-- | Emit a @#[universes(...)]@ attribute for the entire mutual inductive block.
+-- In Coq, this attribute applies to the whole @Inductive@/@CoInductive@ sentence,
+-- not to individual bodies.  If any body requires cumulativity, the whole block
+-- is marked cumulative; if any requires polymorphism, the whole block is
+-- marked polymorphic.
+renderUnivPoly :: NonEmpty IndBody -> Doc
+renderUnivPoly bodies = case maximum (fmap indUnivStatus bodies) of
+  UnivPolyCumulative -> "#[universes(polymorphic, cumulative)]" <> line
+  UnivPoly           -> "#[universes(polymorphic)]" <> line
+  NotUnivPoly        -> mempty
+  where indUnivStatus (IndBody _ _ _ _ us) = us
 
 renderIndBody :: Doc -> IndBody -> Doc
-renderIndBody def (IndBody name params ty cons) = nest 2 $ group $
+renderIndBody def (IndBody name params ty cons _univPoly) = nest 2 $ group $
     def <+> renderGallina name <> spaceIf params <> render_args_ty H params ty <+> ":="
         <!> vsep (renderCon "|" <$> cons)
   where
