@@ -27,6 +27,9 @@ Definition either_upcast@{u1 u2 v1 v2 | u1 <= v1, u2 <= v2}
 #[universes(polymorphic)]
 Definition maybe_upcast@{u v | u <= v} (A : Type@{u}) (m : Maybe_@{u} A) : Maybe_@{v} A := m.
 
+(* Box uses redefine Inductive + universe polymorphic *)
+Check @MkBox@{Set}.
+
 (* MyList is polymorphic but NOT cumulative: upcast must fail *)
 Fail #[universes(polymorphic)]
 Definition mylist_upcast@{u v | u <= v} (A : Type@{u}) (l : MyList@{u} A) : MyList@{v} A := l.

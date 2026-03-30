@@ -121,10 +121,12 @@ convertTyClDecl env decl = do
                 case ind of
                   Inductive   (body :| [])  []    -> do
                     storeRedefinedConstructors body
-                    pure $ ConvData False body
+                    body' <- applyUniverseEdit coqName body
+                    pure $ ConvData False body'
                   CoInductive (body :| [])  []    -> do
                     storeRedefinedConstructors body
-                    pure $ ConvData True body
+                    body' <- applyUniverseEdit coqName body
+                    pure $ ConvData True body'
                   Inductive   (_    :| _:_) _     -> editFailure "cannot redefine data type to mutually-recursive types"
                   Inductive   _             (_:_) -> editFailure "cannot redefine data type to include notations"
                   CoInductive _             _     -> editFailure "cannot redefine data type to be coinductive"
@@ -192,6 +194,15 @@ convertTyClDecl env decl = do
         if not (null namedFields)
           then storeConstructorFields cn (RecordFields namedFields)
           else storeConstructorFields cn (NonRecordFields (length binders))
+
+    applyUniverseEdit :: LocalConvMonad r m => Qualid -> IndBody -> m IndBody
+    applyUniverseEdit name (IndBody n ps ty cs _) = do
+      isUnivPoly  <- view (edits.universePolymorphic.contains name)
+      isUnivCumul <- view (edits.universeCumulative.contains name)
+      let us | isUnivCumul = UnivPolyCumulative
+             | isUnivPoly  = UnivPoly
+             | otherwise   = NotUnivPoly
+      pure $ IndBody n ps ty cs us
 
     translateIt :: LocalConvMonad r m => Qualid -> m (Maybe ConvertedDeclaration)
     translateIt coqName =

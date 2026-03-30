@@ -1033,8 +1033,7 @@ Effect:
   If both ``universe polymorphic`` and ``universe cumulative`` are given for the
   same type, the result is cumulative (which subsumes polymorphic).
 
-  Note: these edits only apply to auto-generated inductives. For ``redefine
-  Inductive``, add ``#[universes(...)]`` directly in the preamble instead.
+  These edits also work with ``redefine Inductive``.
 
 Examples:
   .. code-block:: shell

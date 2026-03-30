@@ -5,3 +5,6 @@ universe polymorphic UniversePolymorphic.Either_
 universe cumulative UniversePolymorphic.Either_
 # Three-word combined syntax
 universe polymorphic cumulative UniversePolymorphic.Maybe_
+# Universe edit works with redefine Inductive
+redefine Inductive UniversePolymorphic.Box (a : Type) : Type := | MkBox : a -> Box a.
+universe polymorphic UniversePolymorphic.Box

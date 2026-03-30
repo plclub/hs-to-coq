@@ -282,10 +282,8 @@ convertDataDecl name tvs defn = do
       hasArrows (Just (Coq.Arrow _ _))       = True
       hasArrows _                            = False
 
-  -- Note: universe edits only apply to auto-generated inductives.
-  -- For 'redefine Inductive', the IndBody comes from the edit parser
-  -- with NotUnivPoly; use #[universes(...)] directly in the redefine body's
-  -- preamble if needed.
+  -- Universe edits are also applied to 'redefine Inductive' bodies
+  -- via applyUniverseEdit in TyCl.hs.
   isUnivPoly <- view (edits.universePolymorphic.contains coqName)
   isUnivCumul <- view (edits.universeCumulative.contains coqName)
   let univStatus | isUnivCumul = UnivPolyCumulative
