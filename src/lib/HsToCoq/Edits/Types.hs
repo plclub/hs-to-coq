@@ -9,7 +9,7 @@
 {-# LANGUAGE TemplateHaskell            #-}
 
 module HsToCoq.Edits.Types (
-  Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, polyKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs, universePolymorphic, universeCumulative, lookupUniverseStatus, invariants,
+  Edits(..), typeSynonymTypes, dataTypeArguments, termination, redefinitions, additions, skipped, skippedConstructors, skippedClasses, skippedMethods, skippedEquations, skippedCasePatterns, skippedModules, importedModules, hasManualNotation, axiomatizedModules, axiomatizedOriginalModuleNames, axiomatizedDefinitions, unaxiomatizedDefinitions, additionalScopes, orders, renamings, coinductiveTypes, classKinds, dataKinds, polyKinds, deleteUnusedTypeVariables, rewrites, obligations, renamedModules, simpleClasses, inlinedMutuals, replacedTypes, collapsedLets, inEdits, exceptInEdits, promotions, polyrecs, universePolymorphic, universeCumulative, lookupUniverseStatus, equations, invariants,
   HsNamespace(..), NamespacedIdent(..), Renamings,
   DataTypeArguments(..), dtParameters, dtIndices,
   CoqDefinition(..), definitionSentence,
@@ -196,6 +196,7 @@ data Edit = TypeSynonymTypeEdit              Ident Ident
           | PolyrecEdit                      Qualid
           | UniversePolymorphicEdit          Qualid
           | UniverseCumulativeEdit           Qualid
+          | EquationsEdit                    Qualid
           | InvariantEdit                    ModuleName Qualid [Binder] Ident [Qualid] CoqDefinition
           deriving (Eq, Ord, Show)
 
@@ -269,6 +270,7 @@ data Edits = Edits { _typeSynonymTypes               :: !(Map Ident Ident)
                    , _polyrecs                       :: !(Set Qualid)
                    , _universePolymorphic            :: !(Set Qualid)
                    , _universeCumulative             :: !(Set Qualid)
+                   , _equations                      :: !(Set Qualid)
                    , _invariants                     :: !(Map Qualid InvEditInfo)
 
                    }
@@ -328,6 +330,7 @@ subtractEdits edits1 edits2 =
   , _polyrecs                       = (edits1^.polyrecs) S.\\ (edits2^.polyrecs)
   , _universePolymorphic            = edits1^.universePolymorphic
   , _universeCumulative             = edits1^.universeCumulative
+  , _equations                      = edits1^.equations
   , _invariants                     = edits1^.invariants
   }
 
@@ -412,6 +415,7 @@ descDuplEdit = \case
   PolyrecEdit                      _            -> error "Polyrec edits are never duplicates"
   UniversePolymorphicEdit          qid          -> duplicateQ_for  "universe polymorphic requests"                  qid
   UniverseCumulativeEdit           qid          -> duplicateQ_for  "universe cumulative requests"                   qid
+  EquationsEdit                    qid          -> duplicateQ_for  "equations requests"                              qid
   InvariantEdit                    _ qid _ _ _ _  -> duplicateQ_for "Duplicate invariant for the same definition"   qid
   where
     prettyScoped place name = let pplace = case place of
@@ -462,6 +466,7 @@ addEdit e = case e of
   PolyrecEdit                      qid              -> addFresh e polyrecs                               qid                         ()
   UniversePolymorphicEdit          qid              -> addFresh e universePolymorphic                    qid                         ()
   UniverseCumulativeEdit           qid              -> addFresh e universeCumulative                     qid                         ()
+  EquationsEdit                    qid              -> addFresh e equations                              qid                         ()
   ExceptInEdit                     qids edit        -> addExceptInEdit qids edit
   InvariantEdit                    mod qid binderList cName useSigmaQids def -> addInvariantEdit mod qid binderList cName useSigmaQids def
 

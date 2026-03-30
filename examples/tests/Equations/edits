@@ -1,0 +1,34 @@
+skip module HsToCoq.Err
+equations Equations.not_
+equations Equations.id_
+equations Equations.through
+equations Equations.and_
+equations Equations.applyHelper
+equations Equations.applyAndKeep
+equations Equations.toNat
+equations Equations.halve
+
+# halve uses by-wf termination with a measure
+add Equations Fixpoint Equations.toNatural (n : N) : nat := match n with | Z => 0 | S m => Datatypes.S (Equations.toNatural m) end.
+termination Equations.halve {measure (Equations.toNatural arg_0__)}
+order Equations.toNatural Equations.halve
+
+# Verify Equations generated _equation_N lemmas (would not exist with plain Definition)
+add Equations Definition equations_test_not_1 := not__equation_1.
+add Equations Definition equations_test_not_2 := not__equation_2.
+add Equations Definition equations_test_id := id__equation_1.
+add Equations Definition equations_test_through := through_equation_1.
+add Equations Definition equations_test_and := and__equation_1.
+add Equations Definition equations_test_where := applyHelper_equation_1.
+add Equations Definition equations_test_nested := applyAndKeep_equation_1.
+add Equations Definition equations_test_rec := toNat_equation_1.
+add Equations Definition equations_test_bywf := halve_equation_1.
+
+order Equations.not_ equations_test_not_1 equations_test_not_2
+order Equations.id_ equations_test_id
+order Equations.through equations_test_through
+order Equations.and_ equations_test_and
+order Equations.applyHelper equations_test_where
+order Equations.applyAndKeep equations_test_nested
+order Equations.toNat equations_test_rec
+order Equations.halve equations_test_bywf

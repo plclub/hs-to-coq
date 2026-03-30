@@ -138,6 +138,11 @@ instance HasBV Qualid Sentence where
   bvOf (LocalModuleSentence   lmd)        = bvOf   lmd
   bvOf (ArgumentsSentence     _arg)       = mempty
   bvOf (CommentSentence       com)        = fvOf'  com
+  bvOf (EquationsSentence name bs mty mwf eqns wheres) =
+    binder name <> bindsNothing (foldScopes bvOf bs $ fvOf mty <> foldMap (\(m, r) -> fvOf m <> fvOf r) mwf
+      <> foldMap (\(pats, rhs) -> foldMap bvOf pats `scopesOver` fvOf rhs) eqns
+      <> foldMap (\(EquationsWhere _ wbs wty weqns) -> foldScopes bvOf wbs $ fvOf wty
+           <> foldMap (\(wpats, rhs) -> foldMap bvOf wpats `scopesOver` fvOf rhs) weqns) wheres)
 
 instance HasBV Qualid Assumption where
   bvOf (Assumption _kwd assumptions) = bvOf assumptions

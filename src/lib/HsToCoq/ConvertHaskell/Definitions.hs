@@ -3,7 +3,8 @@
 module HsToCoq.ConvertHaskell.Definitions (
   ConvertedDefinition(..), convDefName, convDefArgs, convDefType, convDefBody,
   ConvertedBinding(..),
-  toProgramFixpointSentence
+  toProgramFixpointSentence,
+  decomposeFixpoint
   ) where
 
 import Control.Lens

@@ -46,6 +46,7 @@ PASS = \
   PolyKindClass \
   ClassKinds \
   UniversePolymorphic \
+  Equations \
 
 # tests that *should* pass but currently fail
 TODO_PASS = \
