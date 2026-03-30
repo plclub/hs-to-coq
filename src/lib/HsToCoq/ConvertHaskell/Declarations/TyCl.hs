@@ -319,7 +319,7 @@ convertDeclarationGroup DeclarationGroup{..} =
 
     recSynType :: SynBody -> [Sentence] -- Otherwise GHC infers a type containing @~@.
     recSynType (SynBody name _ _ _) =
-      [ InductiveSentence $ Inductive [IndBody (synName name) [] (Sort Type) [] False] []
+      [ InductiveSentence $ Inductive [IndBody (synName name) [] (Sort Type) [] NotUnivPoly] []
       , NotationSentence $ ReservedNotationIdent (qualidBase name) ]
 
     indParams (IndBody _ params _ _ _) = S.fromList $ foldMap (toListOf binderIdents) params

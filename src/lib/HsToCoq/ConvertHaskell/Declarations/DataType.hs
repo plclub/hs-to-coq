@@ -283,4 +283,8 @@ convertDataDecl name tvs defn = do
       hasArrows _                            = False
 
   isUnivPoly <- view (edits.universePolymorphic.contains coqName)
-  pure $ IndBody coqName params finalResTy cons isUnivPoly
+  isUnivCumul <- view (edits.universeCumulative.contains coqName)
+  let univStatus | isUnivCumul = UnivPolyCumulative
+                 | isUnivPoly  = UnivPoly
+                 | otherwise   = NotUnivPoly
+  pure $ IndBody coqName params finalResTy cons univStatus

@@ -57,6 +57,7 @@ module HsToCoq.Coq.Gallina (
   Locality(..),
   Definition(..),
   Inductive(..),
+  UniverseStatus(..),
   IndBody(..),
   Fixpoint(..),
   Assertion(..),
@@ -329,9 +330,14 @@ data Inductive = Inductive   (NonEmpty IndBody) [NotationBinding]               
                | CoInductive (NonEmpty IndBody) [NotationBinding]                              -- ^@CoInductive /ind_body/ with … with /ind_body/ [where /notation_binding/ and … and /notation_binding/] .@
                deriving (Eq, Ord, Show, Read, Typeable, Data)
 
+-- |Universe polymorphism and cumulativity flags for inductive types.
+data UniverseStatus = NotUnivPoly         -- ^Monomorphic (default)
+                    | UnivPoly            -- ^@#[universes(polymorphic)]@
+                    | UnivPolyCumulative  -- ^@#[universes(polymorphic, cumulative)]@
+                    deriving (Eq, Ord, Show, Read, Typeable, Data)
+
 -- |@/ind_body/ ::=@
--- The final Bool is True when the inductive should be universe-polymorphic (@#[universes(polymorphic)]@).
-data IndBody = IndBody Qualid [Binder] Term [(Qualid, [Binder], Maybe Term)] Bool
+data IndBody = IndBody Qualid [Binder] Term [(Qualid, [Binder], Maybe Term)] UniverseStatus
              deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/fixpoint/ ::=@

@@ -628,7 +628,8 @@ instance Gallina Inductive where
 
 renderUnivPoly :: NonEmpty IndBody -> Doc
 renderUnivPoly bodies
-  | any (\(IndBody _ _ _ _ up) -> up) bodies = "#[universes(polymorphic)]" <> line
+  | any (\(IndBody _ _ _ _ us) -> us == UnivPolyCumulative) bodies = "#[universes(polymorphic, cumulative)]" <> line
+  | any (\(IndBody _ _ _ _ us) -> us == UnivPoly) bodies           = "#[universes(polymorphic)]" <> line
   | otherwise = mempty
 
 renderIndBody :: Doc -> IndBody -> Doc
