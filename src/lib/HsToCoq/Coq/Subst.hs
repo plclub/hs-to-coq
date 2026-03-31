@@ -95,10 +95,13 @@ instance Subst Sentence where
   subst f (LocalModuleSentence     lmd)       = LocalModuleSentence       (subst f lmd)
   subst _ s@(ArgumentsSentence  _)            = s
   subst _ s@(CommentSentence    _)            = s
-  subst f (EquationsSentence n bs ty mwf eqs ws) =
-    EquationsSentence n (subst f <$> bs) (subst f <$> ty) (fmap (\(m, r) -> (subst f m, r)) mwf)
-      (fmap (\(pats, rhs) -> (pats, subst f rhs)) eqs)
-      [EquationsWhere wn (map (subst f) wbs) (subst f <$> wty) (fmap (\(pats, rhs) -> (pats, subst f rhs)) weqs) | EquationsWhere wn wbs wty weqs <- ws]
+  subst f (EquationsSentence d) =
+    EquationsSentence d { eqnBinders = subst f <$> eqnBinders d
+                        , eqnRetType = subst f <$> eqnRetType d
+                        , eqnWf      = fmap (\(m, r) -> (subst f m, r)) (eqnWf d)
+                        , eqnClauses = fmap (\(pats, rhs) -> (pats, subst f rhs)) (eqnClauses d)
+                        , eqnWheres  = [EquationsWhere wn (map (subst f) wbs) (subst f <$> wty) (fmap (\(pats, rhs) -> (pats, subst f rhs)) weqs)
+                                       | EquationsWhere wn wbs wty weqs <- eqnWheres d] }
 
 instance Subst Assumption where
   subst f (Assumption kwd assumptions) =

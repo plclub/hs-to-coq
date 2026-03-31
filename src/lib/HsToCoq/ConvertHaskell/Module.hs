@@ -234,7 +234,13 @@ toEquationsSentence cdef mterm = do
             Just Corecursive ->
               Nothing <$ liftIO (hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignores corecursive termination (not supported by Equations)")
             _ -> pure Nothing
-      pure [EquationsSentence name (b :| bs) retTy mwf (fromList renamedEqns) renamedWheres]
+      pure [EquationsSentence EquationsDef
+              { eqnName    = name
+              , eqnBinders = b :| bs
+              , eqnRetType = retTy
+              , eqnWf      = mwf
+              , eqnClauses = fromList renamedEqns
+              , eqnWheres  = renamedWheres }]
   where
     -- Annotate ExplicitBinder names from an Arrow-chain type, returning
     -- the annotated binders and the remaining (return) type.
