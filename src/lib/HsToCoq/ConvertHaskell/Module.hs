@@ -118,7 +118,7 @@ convertBinding sigs (ConvertedDefinitionBinding cdef@ConvertedDefinition{_convDe
     useEqs <- view (edits.equations.contains name)
     useProgram <- useProgramHere
     if | useEqs                           -- turn into Equations definition
-       -> toEquationsSentence cdef t
+       -> (++ [ NotationSentence n | n <- buildInfixNotations sigs name ]) <$> toEquationsSentence cdef t
        | Just (WellFoundedTA order) <- t  -- turn into Program Fixpoint
        ->  pure <$> toProgramFixpointSentence cdef (fromWFOrder order) obl
        | otherwise                   -- no edit
@@ -235,7 +235,10 @@ toEquationsSentence cdef mterm = do
       -- MeasureOrder uses lt (measure maps to nat; lt is the wf relation on nat).
       -- WFOrder uses the user-specified relation directly.
       mwf <- case mterm of
-            Just (WellFoundedTA (MeasureOrder_ expr _)) ->
+            Just (WellFoundedTA (MeasureOrder_ expr mrel)) -> do
+              case mrel of
+                Just _ -> liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " ignores custom relation in measure (Equations measure always uses lt)"
+                Nothing -> pure ()
               pure $ Just (expr, Bare "lt")
             Just (WellFoundedTA (WFOrder_ expr rel)) ->
               pure $ Just (expr, rel)
@@ -254,10 +257,10 @@ toEquationsSentence cdef mterm = do
               , eqnWf      = mwf
               , eqnClauses = case Data.List.NonEmpty.nonEmpty renamedEqns of
                                Just ne -> ne
-                               Nothing -> error "INTERNAL: renamedEqns empty after guard"
+                               Nothing -> error "INTERNAL: renamedEqns empty after guard (unreachable: guarded by editFailure at line above)"
               , eqnWheres  = renamedWheres }]
   where
-    -- Annotate ExplicitBinder names from an Arrow-chain type, returning
+    -- Annotate ExplicitBinder names from an Arrow/Forall-chain type, returning
     -- the annotated binders and the remaining (return) type.
     annotateAndStrip :: [Binder] -> Term -> ([Binder], Maybe Term)
     annotateAndStrip [] ty = ([], Just ty)
@@ -314,6 +317,8 @@ toEquationsSentence cdef mterm = do
     -- Extract the top-level let binding as an Equations where clause, if its
     -- value is a function with pattern matching.  Does not recurse into nested
     -- lets — only the immediately enclosing let is examined.
+    extractWheres (Parens t)     = extractWheres t
+    extractWheres (HasType t _)  = extractWheres t
     extractWheres (Let localName _localBinders localTy localVal _outerBody) =
       let (localFunBinders, localInner) = stripFun localVal
           localEqns = extractEqns localInner
