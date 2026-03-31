@@ -190,9 +190,11 @@ toEquationsSentence cdef mterm = do
       annotatedBinders = case mty of
         Just ty -> fst (annotateAndStrip allBinders ty)
         Nothing -> allBinders
-      retTy = fmap (snd . annotateAndStrip allBinders) mty >>= id
+      retTy = fmap (snd . annotateAndStrip allBinders) mty >>= id  -- join: flatten Maybe (Maybe Term)
   -- Rename pattern variables that shadow binder names (appends underscore).
   -- Uses Data.Generics.everywhere to traverse all Term/Pattern constructors.
+  when (null eqns && not (null matchEqns)) $
+    liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " could not extract multi-clause equations from body; emitting single equation"
   let binderNames = S.fromList [ n | Bare n <- concatMap (toListOf binderIdents) annotatedBinders ]
       -- Append underscores until the name doesn't collide with any binder
       freshen n | (n <> "_") `S.member` binderNames = freshen (n <> "_")
@@ -236,7 +238,8 @@ toEquationsSentence cdef mterm = do
             Just (WellFoundedTA (WFOrder_ expr rel)) ->
               pure $ Just (expr, rel)
             Just (StructOrderTA _) ->
-              Nothing <$ liftIO (hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignores structural termination hint (Equations infers structural recursion automatically)")
+              -- Note, not error: Equations handles structural recursion automatically
+              Nothing <$ liftIO (hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " ignores structural termination hint (Equations infers structural recursion automatically)")
             Just Deferred ->
               editFailure $ "equations edit for " ++ show name ++ " is incompatible with deferred termination (use deferredFix instead)"
             Just Corecursive ->
@@ -287,6 +290,7 @@ toEquationsSentence cdef mterm = do
     inferTypeFromPats [] = pure Nothing
     inferTypeFromPats (QualidPat con : _) = lookupConstructorType con
     inferTypeFromPats (ArgsPat con _ : _) = lookupConstructorType con
+    inferTypeFromPats (InfixPat _ op _ : _) = lookupConstructorType (Bare op)
     inferTypeFromPats (_ : rest) = inferTypeFromPats rest
 
     stripFun (Fun bs inner) = (Data.List.NonEmpty.toList bs, inner)
@@ -303,9 +307,9 @@ toEquationsSentence cdef mterm = do
     extractEqns (HasType t _)    = extractEqns t
     extractEqns _ = []
 
-    -- Extract a single let binding as an Equations where clause, if the
-    -- let's value is a function with pattern matching.  Only the outermost
-    -- let with match equations is extracted as a where clause.
+    -- Extract the top-level let binding as an Equations where clause, if its
+    -- value is a function with pattern matching.  Does not recurse into nested
+    -- lets — only the immediately enclosing let is examined.
     extractWheres (Let localName _localBinders localTy localVal _outerBody) =
       let (localFunBinders, localInner) = stripFun localVal
           localEqns = extractEqns localInner
