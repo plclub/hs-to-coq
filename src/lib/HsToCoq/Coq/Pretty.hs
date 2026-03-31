@@ -578,7 +578,7 @@ instance Gallina Sentence where
             <> maybe mempty (\(m, r) -> " " <> "by wf" <+> parens (renderGallina m) <+> renderGallina r) mwf
             <+> ":=" <$$>
             vsep (punctuate " ;" [ renderGallina name <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
-                                 | (pats, rhs) <- eqns ]))
+                                 | (pats, rhs) <- Data.List.NonEmpty.toList eqns ]))
     <> foldMap renderWhere wheres <> "."
     where
       renderWhere (EquationsWhere wname wbinders wmty weqns) =
@@ -586,7 +586,7 @@ instance Gallina Sentence where
         nest 2 ("where" <+> renderGallina wname <> renderBinderList wbinders
                 <+> ":" <+> maybe "_" renderGallina wmty <+> ":=" <$$>
                 vsep (punctuate " ;" [ renderGallina wname <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
-                                     | (pats, rhs) <- weqns ]))
+                                     | (pats, rhs) <- Data.List.NonEmpty.toList weqns ]))
       renderBinderList [] = mempty
       renderBinderList bs = " " <> render_args H (Data.List.NonEmpty.fromList bs)
 

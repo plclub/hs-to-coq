@@ -53,6 +53,9 @@ import Bag
 import HsToCoq.Edits.Types
 import HsToCoq.ConvertHaskell.Monad
 import HsToCoq.ConvertHaskell.TypeInfo (lookupConstructorType)
+import Control.Monad (when)
+import Control.Monad.IO.Class (liftIO)
+import System.IO (hPutStrLn, stderr)
 import HsToCoq.ConvertHaskell.InfixNames
 import HsToCoq.ConvertHaskell.Variables
 import HsToCoq.ConvertHaskell.Definitions
@@ -138,7 +141,10 @@ convertBinding _ (ConvertedPatternBinding _ _) =
 
 convertBinding _ (ConvertedAxiomBinding ax ty) = pure [typedAxiom ax ty]
 
-convertBinding _ (RedefinedBinding _ def) =
+convertBinding _ (RedefinedBinding name def) = do
+  useEqs <- view (edits.equations.contains name)
+  when useEqs $
+    liftIO $ hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignored because the binding is redefined"
   [definitionSentence def] <$ case def of
     CoqInductiveDef _   -> editFailure   "cannot redefine a value definition into an Inductive"
     CoqInstanceDef  _   -> editFailure   "cannot redefine a value definition into an Instance"
@@ -202,19 +208,30 @@ toEquationsSentence cdef mterm = do
       _ -> case wty of
         Just ty -> pure (annotateAndStrip wbs ty)
         Nothing -> do
-          annBs <- annotateFromPatterns wbs (map (Data.List.NonEmpty.toList . fst) weqns)
+          annBs <- annotateFromPatterns wbs (map (Data.List.NonEmpty.toList . fst) (Data.List.NonEmpty.toList weqns))
           pure (annBs, Nothing)
-    pure $ EquationsWhere wn finalBs finalTy [(fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- weqns]
+    pure $ EquationsWhere wn finalBs finalTy (fromList [(fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- Data.List.NonEmpty.toList weqns])
+  when (null renamedEqns) $
+    editFailure $ "equations edit for " ++ show name ++ " produced no equations (body may have only implicit binders or unsupported structure)"
   case annotatedBinders of
     [] -> editFailure "equations edit requires a function with at least one argument"
-    (b:bs) ->
-      let mwf = case mterm of
+    (b:bs) -> do
+      -- Convert termination argument to by-wf annotation.
+      -- MeasureOrder uses lt (measure maps to nat; lt is the wf relation on nat).
+      -- WFOrder uses the user-specified relation directly.
+      mwf <- case mterm of
             Just (WellFoundedTA (MeasureOrder_ expr _)) ->
-              Just (expr, Bare "lt")
+              pure $ Just (expr, Bare "lt")
             Just (WellFoundedTA (WFOrder_ expr rel)) ->
-              Just (expr, rel)
-            _ -> Nothing
-      in pure [EquationsSentence name (b :| bs) retTy mwf renamedEqns renamedWheres]
+              pure $ Just (expr, rel)
+            Just (StructOrderTA _) ->
+              Nothing <$ liftIO (hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignores structural termination hint (Equations infers structural recursion automatically)")
+            Just Deferred ->
+              Nothing <$ liftIO (hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignores deferred termination (use deferredFix instead)")
+            Just Corecursive ->
+              Nothing <$ liftIO (hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignores corecursive termination (not supported by Equations)")
+            _ -> pure Nothing
+      pure [EquationsSentence name (b :| bs) retTy mwf (fromList renamedEqns) renamedWheres]
   where
     -- Annotate ExplicitBinder names from an Arrow-chain type, returning
     -- the annotated binders and the remaining (return) type.
@@ -230,7 +247,7 @@ toEquationsSentence cdef mterm = do
 
     splitArrow (Arrow a rest) = (a, rest)
     splitArrow (Forall _ rest) = splitArrow rest
-    splitArrow t = (t, t)
+    splitArrow t = (Underscore, t)  -- type exhausted: use _ for binder, preserve remaining
     dropArrow (Arrow _ rest) = rest
     dropArrow (Forall _ rest) = dropArrow rest
     dropArrow t = t
@@ -265,15 +282,16 @@ toEquationsSentence cdef mterm = do
 
     -- Extract a single let binding as an Equations where clause, if the
     -- let's value is a function with pattern matching.  Only the outermost
-    -- let is extracted; Coq Equations supports at most one where clause.
+    -- let with match equations is extracted as a where clause.
     extractWheres (Let localName _localBinders localTy localVal _outerBody) =
       let (localFunBinders, localInner) = stripFun localVal
           localEqns = extractEqns localInner
           (annotatedWhereBinders, whereRetTy) = case localTy of
             Just ty -> annotateAndStrip localFunBinders ty
             Nothing -> (localFunBinders, Nothing)
-      in if null localEqns then []
-         else [EquationsWhere localName annotatedWhereBinders whereRetTy localEqns]
+      in case localEqns of
+           [] -> []
+           (e:es) -> [EquationsWhere localName annotatedWhereBinders whereRetTy (e :| es)]
     extractWheres _ = []
 
     -- Generate a single equation with variable patterns for all explicit binders.

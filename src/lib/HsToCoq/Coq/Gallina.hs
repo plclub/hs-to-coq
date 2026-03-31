@@ -290,12 +290,13 @@ data Sentence = AssumptionSentence       Assumption                             
               | ArgumentsSentence        Arguments                                             -- ^@/arguments/@ – extra
               | CommentSentence          Comment                                               -- ^@/comment/@ – extra
               | LocalModuleSentence      LocalModule
-              | EquationsSentence        Qualid Binders (Maybe Term) (Maybe (Term, Qualid)) [(NonEmpty Pattern, Term)] [EquationsWhere]
-                                                                                                  -- ^@Equations /ident/ /binders/ [: /term/] [by wf /term/ /qualid/] := /ident/ /pat/ … := /term/ ; … [where …] .@
+              | EquationsSentence        Qualid Binders (Maybe Term) (Maybe (Term, Qualid)) (NonEmpty (NonEmpty Pattern, Term)) [EquationsWhere]
+                                                                                                  -- ^@Equations /ident/ /binders/ : /term/ [by wf (/term/) /qualid/] := /ident/ /pat/ … := /term/ ; … [where …] .@
               deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@Equations@ where clause for auxiliary definitions.
-data EquationsWhere = EquationsWhere Qualid [Binder] (Maybe Term) [(NonEmpty Pattern, Term)]
+-- Fields: function name, typed binders, optional return type, equations (non-empty).
+data EquationsWhere = EquationsWhere Qualid [Binder] (Maybe Term) (NonEmpty (NonEmpty Pattern, Term))
                     deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/assumption/ ::=@

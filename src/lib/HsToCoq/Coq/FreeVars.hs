@@ -140,7 +140,9 @@ instance HasBV Qualid Sentence where
   bvOf (CommentSentence       com)        = fvOf'  com
   bvOf (EquationsSentence name bs mty mwf eqns wheres) =
     binder name <> bindsNothing (foldScopes bvOf bs $ fvOf mty <> foldMap (\(m, r) -> fvOf m <> fvOf r) mwf
-      <> foldMap (\(pats, rhs) -> foldMap bvOf pats `scopesOver` fvOf rhs) eqns
+      -- Where-clause names scope over the main equations (they are local helpers)
+      <> foldMap (\(EquationsWhere wn _ _ _) -> binder wn) wheres `scopesOver`
+         foldMap (\(pats, rhs) -> foldMap bvOf pats `scopesOver` fvOf rhs) eqns
       <> foldMap (\(EquationsWhere _ wbs wty weqns) -> foldScopes bvOf wbs $ fvOf wty
            <> foldMap (\(wpats, rhs) -> foldMap bvOf wpats `scopesOver` fvOf rhs) weqns) wheres)
 
