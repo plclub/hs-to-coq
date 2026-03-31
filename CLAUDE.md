@@ -95,6 +95,19 @@ Key lemmas: `bin_Desc0` (combine Desc0), `Desc_outside` (f=None outside range), 
 ### Typeclass loops + unbounded N
 `Require SetProofs` + IntSetProofs triggers WFSet nesting loop. Fix: `Set Typeclasses Iterative Deepening. Set Typeclasses Depth 3.` before import, `Unset` after (place after proofs needing normal depth). Coq's `N` is unbounded (Haskell `Word` is 64-bit) — bit-width properties may need explicit bounds (`k < 2^63`). Example: `thm_MaskPow2_bounded`.
 
+## Translation Principles
+
+**Prefer hs-to-coq + edits over manual definitions.** Follow this priority order:
+
+1. **Auto-generate with hs-to-coq** — try the default translation first.
+2. **Use edits** (`skip`, `rename`, `rewrite`, `order`, `termination`, `equations`, etc.) — guide the translation without replacing it.
+3. **Fix hs-to-coq itself** — if the tool can't handle a case but could be made to, fix the tool rather than working around it.
+4. **`redefine`** — only when the translated output is fundamentally wrong and hs-to-coq cannot reasonably be fixed to handle it.
+5. **`midamble.v`** — only for definitions that must appear mid-file (e.g., mutual recursion helpers, termination measures) and cannot be expressed via edits.
+6. **Manual files** — last resort, only when the Haskell source has no meaningful Coq translation (e.g., axiomatized types, FFI, GHC internals with no Coq equivalent).
+
+**When unsure whether hs-to-coq can handle a case, ask the user** rather than defaulting to `redefine` or manual definitions. Many cases that seem to require manual intervention can be solved with the right combination of edits or a targeted fix to hs-to-coq.
+
 ## Test Structure
 
 - `examples/tests/` — Unit tests: each `.hs` file is translated to `.v` and type-checked with `coqc`. Tests categorized as `PASS`, `TODO_PASS` (known failures), `TODO_TRANSLATE`.
