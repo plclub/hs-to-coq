@@ -45,22 +45,23 @@ halve Z = Z
 halve (S Z) = S Z
 halve (S (S n)) = S (halve n)
 
--- Guards: hs-to-coq converts guards to if/then/else,
--- which the equations edit emits as a single equation with the if body
+-- Helper for guard test below
 isZ :: N -> Bool
 isZ Z = True
 isZ _ = False
 
+-- Guards: hs-to-coq converts guards to if/then/else,
+-- which the equations edit emits as a single equation with the if body
 clamp :: N -> N
 clamp n
   | isZ n     = Z
   | otherwise = S Z
 
--- Polymorphic function (exercises implicit type binder handling)
+-- Multi-argument function (exercises binder annotation for 2+ explicit args)
 constN :: N -> N -> N
 constN x _ = x
 
--- Well-founded recursion with explicit wf relation (not measure)
+-- Non-structural pattern match with explicit wf relation (exercises WFOrder_ path)
 pred_ :: N -> N
 pred_ Z = Z
 pred_ (S n) = n

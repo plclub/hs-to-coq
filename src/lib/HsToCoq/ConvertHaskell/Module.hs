@@ -144,7 +144,7 @@ convertBinding _ (ConvertedAxiomBinding ax ty) = pure [typedAxiom ax ty]
 convertBinding _ (RedefinedBinding name def) = do
   useEqs <- view (edits.equations.contains name)
   when useEqs $
-    liftIO $ hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignored because the binding is redefined"
+    editFailure $ "equations edit for " ++ show name ++ " conflicts with redefine (remove one)"
   [definitionSentence def] <$ case def of
     CoqInductiveDef _   -> editFailure   "cannot redefine a value definition into an Inductive"
     CoqInstanceDef  _   -> editFailure   "cannot redefine a value definition into an Instance"
@@ -230,9 +230,9 @@ toEquationsSentence cdef mterm = do
             Just (StructOrderTA _) ->
               Nothing <$ liftIO (hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignores structural termination hint (Equations infers structural recursion automatically)")
             Just Deferred ->
-              Nothing <$ liftIO (hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignores deferred termination (use deferredFix instead)")
+              editFailure $ "equations edit for " ++ show name ++ " is incompatible with deferred termination (use deferredFix instead)"
             Just Corecursive ->
-              Nothing <$ liftIO (hPutStrLn stderr $ "Warning: equations edit for " ++ show name ++ " ignores corecursive termination (not supported by Equations)")
+              editFailure $ "equations edit for " ++ show name ++ " is incompatible with corecursive termination"
             _ -> pure Nothing
       pure [EquationsSentence EquationsDef
               { eqnName    = name
@@ -319,7 +319,7 @@ toEquationsSentence cdef mterm = do
 
     isImplicitBinder (ImplicitBinders _) = True
     isImplicitBinder (Generalized Implicit _) = True
-    isImplicitBinder (Typed Ungeneralizable Implicit _ _) = True
+    isImplicitBinder (Typed _ Implicit _ _) = True
     isImplicitBinder _ = False
 
 convertHsGroup :: ConversionMonad r m => HsGroup GhcRn -> m ConvertedModuleDeclarations
