@@ -575,8 +575,8 @@ instance Gallina Sentence where
   renderGallina' _ (EquationsSentence eqd) =
     nest 2 ("Equations" <+> renderGallina (eqnName eqd) <> spaceIf (eqnBinders eqd) <> render_args H (eqnBinders eqd)
             <+> ":" <+> maybe "_" renderGallina (eqnRetType eqd)
-            <> maybe mempty (\(m, r) -> " " <> "by wf" <+> parens (renderGallina m) <+> renderGallina r) (eqnWf eqd)
-            <+> ":=" <$$>
+            <> maybe " " (\(m, r) -> " " <> "by wf" <+> parens (renderGallina m) <+> renderGallina r <> " ") (eqnWf eqd)
+            <> ":=" <$$>
             vsep (punctuate " ;" [ renderGallina (eqnName eqd) <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
                                  | (pats, rhs) <- Data.List.NonEmpty.toList (eqnClauses eqd) ]))
     <> foldMap renderWhere (eqnWheres eqd) <> "."

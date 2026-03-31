@@ -99,6 +99,7 @@ instance Subst Sentence where
     EquationsSentence d { eqnBinders = subst f <$> eqnBinders d
                         , eqnRetType = subst f <$> eqnRetType d
                         , eqnWf      = fmap (\(m, r) -> (subst f m, r)) (eqnWf d)
+                          -- r is a Qualid (e.g., lt); Subst maps Qualid→Term, not Qualid→Qualid
                         , eqnClauses = fmap (\(pats, rhs) -> (pats, subst f rhs)) (eqnClauses d)
                         , eqnWheres  = [EquationsWhere wn (map (subst f) wbs) (subst f <$> wty) (fmap (\(pats, rhs) -> (pats, subst f rhs)) weqs)
                                        | EquationsWhere wn wbs wty weqs <- eqnWheres d] }

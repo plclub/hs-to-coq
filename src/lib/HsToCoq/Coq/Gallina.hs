@@ -297,7 +297,7 @@ data Sentence = AssumptionSentence       Assumption                             
 -- |@Equations /name/ /binders/ : /retTy/ [by wf (/measure/) /relation/] := /clauses/ [where …] .@
 data EquationsDef = EquationsDef
   { eqnName    :: Qualid                                 -- ^Function name
-  , eqnBinders :: Binders                                -- ^Typed binders (non-empty)
+  , eqnBinders :: Binders                                -- ^Binders (non-empty; annotated with types when available)
   , eqnRetType :: Maybe Term                             -- ^Return type
   , eqnWf      :: Maybe (Term, Qualid)                   -- ^Optional @by wf (measure) relation@
   , eqnClauses :: NonEmpty (NonEmpty Pattern, Term)      -- ^Equation clauses (non-empty)

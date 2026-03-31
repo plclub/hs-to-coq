@@ -330,7 +330,7 @@ subtractEdits edits1 edits2 =
   , _polyrecs                       = (edits1^.polyrecs) S.\\ (edits2^.polyrecs)
   , _universePolymorphic            = edits1^.universePolymorphic
   , _universeCumulative             = edits1^.universeCumulative
-  , _equations                      = edits1^.equations
+  , _equations                      = (edits1^.equations) S.\\ (edits2^.equations)
   , _invariants                     = edits1^.invariants
   }
 
