@@ -52,6 +52,7 @@ module HsToCoq.Coq.Gallina (
   -- $Vernacular
   Sentence(..),
   EquationsDef(..),
+  WfAnnotation,
   EquationsClause(..),
   EquationsWhere(..),
   Assumption(..),
@@ -296,14 +297,20 @@ data Sentence = AssumptionSentence       Assumption                             
               deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@Equations /name/ /binders/ : /retTy/ [by wf (/measure/) /relation/] := /name/ /pat/ … := /rhs/ ; … [where /name/ /binders/ : /retTy/ := …] .@
+--
+-- Note: does not model @Equations?@, @noind@, @transparent@, or recursive
+-- where-clauses with @wf@ — these Equations plugin features are unsupported.
 data EquationsDef = EquationsDef
   { eqnName    :: Qualid                                 -- ^Function name
   , eqnBinders :: Binders                                -- ^Binders (non-empty; annotated with types when available)
   , eqnRetType :: Maybe Term                             -- ^Return type
-  , eqnWf      :: Maybe (Term, Qualid)                   -- ^Optional @by wf (measure) relation@
+  , eqnWf      :: Maybe WfAnnotation                      -- ^Optional @by wf (measure) relation@
   , eqnClauses :: NonEmpty EquationsClause               -- ^Equation clauses (non-empty)
   , eqnWheres  :: [EquationsWhere]                       -- ^Where clauses for local helpers
   } deriving (Eq, Ord, Show, Read, Typeable, Data)
+
+-- |Well-founded recursion annotation: @by wf (measure) relation@.
+type WfAnnotation = (Term, Qualid)
 
 -- |A single equation clause: patterns on the LHS and a term on the RHS.
 data EquationsClause = EquationsClause

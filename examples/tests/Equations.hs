@@ -61,7 +61,7 @@ clamp n
 constN :: N -> N -> N
 constN x _ = x
 
--- Non-structural pattern match with explicit wf relation (exercises WFOrder_ path)
+-- Non-recursive function with explicit wf annotation (exercises WFOrder_ path)
 pred_ :: N -> N
 pred_ Z = Z
 pred_ (S n) = n
