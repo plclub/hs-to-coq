@@ -187,11 +187,14 @@ toEquationsSentence cdef mterm = do
   -- Rename pattern variables that shadow binder names (appends underscore).
   -- Uses Data.Generics.everywhere to traverse all Term/Pattern constructors.
   let binderNames = S.fromList [ n | Bare n <- concatMap (toListOf binderIdents) annotatedBinders ]
+      -- Append underscores until the name doesn't collide with any binder
+      freshen n | (n <> "_") `S.member` binderNames = freshen (n <> "_")
+                | otherwise = n <> "_"
       renameTerm (Qualid (Bare n))
-        | n `S.member` binderNames = Qualid (Bare (n <> "_"))
+        | n `S.member` binderNames = Qualid (Bare (freshen n))
       renameTerm t = t
       renamePat (QualidPat (Bare n))
-        | n `S.member` binderNames = QualidPat (Bare (n <> "_"))
+        | n `S.member` binderNames = QualidPat (Bare (freshen n))
       renamePat p = p
       renameInTerm :: Term -> Term
       renameInTerm = everywhere (mkT renameTerm)
@@ -278,6 +281,9 @@ toEquationsSentence cdef mterm = do
     extractEqns (HsToCoq.Coq.Gallina.Match _ _ eqns) =
       [(pats, rhs) | Equation mpats rhs <- eqns
                     , let MultPattern pats = Data.List.NonEmpty.head mpats ]
+    -- Look through common wrappers to find a Match inside
+    extractEqns (Parens t)       = extractEqns t
+    extractEqns (HasType t _)    = extractEqns t
     extractEqns _ = []
 
     -- Extract a single let binding as an Equations where clause, if the

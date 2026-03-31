@@ -44,3 +44,14 @@ halve :: N -> N
 halve Z = Z
 halve (S Z) = S Z
 halve (S (S n)) = S (halve n)
+
+-- Guards: hs-to-coq converts guards to if/then/else,
+-- which the equations edit emits as a single equation with the if body
+isZ :: N -> Bool
+isZ Z = True
+isZ _ = False
+
+clamp :: N -> N
+clamp n
+  | isZ n     = Z
+  | otherwise = S Z
