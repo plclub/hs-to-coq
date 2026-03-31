@@ -577,16 +577,16 @@ instance Gallina Sentence where
             <+> ":" <+> maybe "_" renderGallina (eqnRetType eqd)
             <> maybe " " (\(m, r) -> " " <> "by wf" <+> parens (renderGallina m) <+> renderGallina r <> " ") (eqnWf eqd)
             <> ":=" <$$>
-            vsep (punctuate " ;" [ renderGallina (eqnName eqd) <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
-                                 | (pats, rhs) <- Data.List.NonEmpty.toList (eqnClauses eqd) ]))
+            vsep (punctuate " ;" [ renderGallina (eqnName eqd) <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList (ecPats cl))) <+> ":=" <+> renderGallina (ecRHS cl)
+                                 | cl <- Data.List.NonEmpty.toList (eqnClauses eqd) ]))
     <> foldMap renderWhere (eqnWheres eqd) <> "."
     where
       renderWhere ew =
         line <> line <>
         nest 2 ("where" <+> renderGallina (ewName ew) <> renderBinderList (ewBinders ew)
                 <+> ":" <+> maybe "_" renderGallina (ewRetType ew) <+> ":=" <$$>
-                vsep (punctuate " ;" [ renderGallina (ewName ew) <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
-                                     | (pats, rhs) <- Data.List.NonEmpty.toList (ewClauses ew) ]))
+                vsep (punctuate " ;" [ renderGallina (ewName ew) <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList (ecPats cl))) <+> ":=" <+> renderGallina (ecRHS cl)
+                                     | cl <- Data.List.NonEmpty.toList (ewClauses ew) ]))
       renderBinderList [] = mempty
       renderBinderList bs = " " <> render_args H (Data.List.NonEmpty.fromList bs)
 
