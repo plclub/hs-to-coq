@@ -305,7 +305,6 @@ data EquationsDef = EquationsDef
   , eqnWheres  :: [EquationsWhere]                       -- ^Where clauses for local helpers
   } deriving (Eq, Ord, Show, Read, Typeable, Data)
 
--- |@Equations@ where clause for auxiliary definitions.
 -- |A single equation clause: patterns on the LHS and a term on the RHS.
 type EquationsClause = (NonEmpty Pattern, Term)
 

@@ -1017,6 +1017,12 @@ Effect:
   syntax for well-founded recursion.  Measure-based termination uses ``lt``
   as the relation; ``wf``-based termination uses the user-specified relation.
 
+  Conflicts with ``skip``, ``redefine``, and ``axiomatize definition`` — using
+  both on the same function is an error.  ``termination deferred`` and
+  ``coinductive`` are also incompatible (use ``deferredFix`` instead).
+  ``termination {struct}`` is silently ignored since Equations infers structural
+  recursion automatically.
+
 Examples:
   .. code-block:: shell
 
