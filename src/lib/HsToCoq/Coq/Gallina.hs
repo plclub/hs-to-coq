@@ -52,7 +52,7 @@ module HsToCoq.Coq.Gallina (
   -- $Vernacular
   Sentence(..),
   EquationsDef(..),
-  EquationsClause,
+  EquationsClause(..),
   EquationsWhere(..),
   Assumption(..),
   AssumptionKeyword(..),
@@ -295,7 +295,7 @@ data Sentence = AssumptionSentence       Assumption                             
               | EquationsSentence        EquationsDef                                          -- ^@Equations …@
               deriving (Eq, Ord, Show, Read, Typeable, Data)
 
--- |@Equations /name/ /binders/ : /retTy/ [by wf (/measure/) /relation/] := /clauses/ [where …] .@
+-- |@Equations /name/ /binders/ : /retTy/ [by wf (/measure/) /relation/] := /name/ /pat/ … := /rhs/ ; … [where /name/ /binders/ : /retTy/ := …] .@
 data EquationsDef = EquationsDef
   { eqnName    :: Qualid                                 -- ^Function name
   , eqnBinders :: Binders                                -- ^Binders (non-empty; annotated with types when available)
@@ -306,7 +306,10 @@ data EquationsDef = EquationsDef
   } deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |A single equation clause: patterns on the LHS and a term on the RHS.
-type EquationsClause = (NonEmpty Pattern, Term)
+data EquationsClause = EquationsClause
+  { ecPats :: NonEmpty Pattern  -- ^LHS patterns
+  , ecRHS  :: Term              -- ^RHS body
+  } deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@Equations@ where clause for auxiliary definitions.
 -- Uses @[Binder]@ (not @Binders@) because where clauses can have zero explicit

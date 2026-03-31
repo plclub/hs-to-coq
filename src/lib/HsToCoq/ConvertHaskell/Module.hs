@@ -195,6 +195,8 @@ toEquationsSentence cdef mterm = do
   -- Uses Data.Generics.everywhere to traverse all Term/Pattern constructors.
   when (null eqns && not (null matchEqns)) $
     liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " could not extract multi-clause equations from body; emitting single equation"
+  when (any isUnderscoredBinder annotatedBinders) $
+    liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " has binders with inferred types (_); type signature may be incomplete"
   let binderNames = S.fromList [ n | Bare n <- concatMap (toListOf binderIdents) annotatedBinders ]
       -- Append underscores until the name doesn't collide with any binder
       freshen n | (n <> "_") `S.member` binderNames = freshen (n <> "_")
@@ -209,7 +211,7 @@ toEquationsSentence cdef mterm = do
       renameInTerm = everywhere (mkT renameTerm)
       renameInPat :: Pattern -> Pattern
       renameInPat  = everywhere (mkT renamePat)
-      renamedEqns = [ (fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- matchEqns ]
+      renamedEqns = [ EquationsClause (fmap renameInPat (ecPats cl)) (renameInTerm (ecRHS cl)) | cl <- matchEqns ]
   -- Annotate where-clause binder types from: set type edits, let type
   -- annotations, or constructor pattern inference via lookupConstructorType.
   renamedWheres <- forM whereClauses $ \ew -> do
@@ -220,10 +222,10 @@ toEquationsSentence cdef mterm = do
       _ -> case ewRetType ew of
         Just ty -> pure (annotateAndStrip (ewBinders ew) ty)
         Nothing -> do
-          annBs <- annotateFromPatterns (ewBinders ew) (map (Data.List.NonEmpty.toList . fst) (Data.List.NonEmpty.toList (ewClauses ew)))
+          annBs <- annotateFromPatterns (ewBinders ew) (map (Data.List.NonEmpty.toList . ecPats) (Data.List.NonEmpty.toList (ewClauses ew)))
           pure (annBs, Nothing)
     pure $ ew { ewBinders = finalBs, ewRetType = finalTy
-              , ewClauses = fromList [(fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- Data.List.NonEmpty.toList (ewClauses ew)] }
+              , ewClauses = fromList [EquationsClause (fmap renameInPat (ecPats cl)) (renameInTerm (ecRHS cl)) | cl <- Data.List.NonEmpty.toList (ewClauses ew)] }
   when (null renamedEqns) $
     editFailure $ "equations edit for " ++ show name ++ " produced no equations (body may have only implicit binders or unsupported structure)"
   case annotatedBinders of
@@ -250,7 +252,9 @@ toEquationsSentence cdef mterm = do
               , eqnBinders = b :| bs
               , eqnRetType = retTy
               , eqnWf      = mwf
-              , eqnClauses = fromList renamedEqns
+              , eqnClauses = case Data.List.NonEmpty.nonEmpty renamedEqns of
+                               Just ne -> ne
+                               Nothing -> error "INTERNAL: renamedEqns empty after guard"
               , eqnWheres  = renamedWheres }]
   where
     -- Annotate ExplicitBinder names from an Arrow-chain type, returning
@@ -300,8 +304,8 @@ toEquationsSentence cdef mterm = do
     -- separate Equations clauses.  Most equations have a single alternative;
     -- multi-pattern alternatives (| pat1 | pat2 => rhs) are expanded.
     extractEqns (HsToCoq.Coq.Gallina.Match _ _ eqns) =
-      [(pats, rhs) | Equation mpats rhs <- eqns
-                    , MultPattern pats <- Data.List.NonEmpty.toList mpats ]
+      [EquationsClause pats rhs | Equation mpats rhs <- eqns
+                                , MultPattern pats <- Data.List.NonEmpty.toList mpats ]
     -- Look through common wrappers to find a Match inside
     extractEqns (Parens t)       = extractEqns t
     extractEqns (HasType t _)    = extractEqns t
@@ -332,7 +336,10 @@ toEquationsSentence cdef mterm = do
                   _                                 -> inner
       in case Data.List.NonEmpty.nonEmpty explicitNames of
            Nothing -> []
-           Just names -> [(fmap (QualidPat . Bare) names, rhs)]
+           Just names -> [EquationsClause (fmap (QualidPat . Bare) names) rhs]
+
+    isUnderscoredBinder (Typed _ _ _ Underscore) = True
+    isUnderscoredBinder _ = False
 
     isImplicitBinder (ImplicitBinders _) = True
     isImplicitBinder (Generalized Implicit _) = True
