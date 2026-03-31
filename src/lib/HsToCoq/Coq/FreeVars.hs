@@ -141,10 +141,10 @@ instance HasBV Qualid Sentence where
   bvOf (EquationsSentence eqd) =
     binder (eqnName eqd) <> bindsNothing (foldScopes bvOf (eqnBinders eqd) $ fvOf (eqnRetType eqd) <> foldMap (\(m, r) -> fvOf m <> fvOf r) (eqnWf eqd)
       -- Where-clause names scope over the main equations (they are local helpers)
-      <> foldMap (\(EquationsWhere wn _ _ _) -> binder wn) (eqnWheres eqd) `scopesOver`
+      <> foldMap (binder . ewName) (eqnWheres eqd) `scopesOver`
          foldMap (\(pats, rhs) -> foldMap bvOf pats `scopesOver` fvOf rhs) (eqnClauses eqd)
-      <> foldMap (\(EquationsWhere _ wbs wty weqns) -> foldScopes bvOf wbs $ fvOf wty
-           <> foldMap (\(wpats, rhs) -> foldMap bvOf wpats `scopesOver` fvOf rhs) weqns) (eqnWheres eqd))
+      <> foldMap (\ew -> foldScopes bvOf (ewBinders ew) $ fvOf (ewRetType ew)
+           <> foldMap (\(wpats, rhs) -> foldMap bvOf wpats `scopesOver` fvOf rhs) (ewClauses ew)) (eqnWheres eqd))
 
 instance HasBV Qualid Assumption where
   bvOf (Assumption _kwd assumptions) = bvOf assumptions
