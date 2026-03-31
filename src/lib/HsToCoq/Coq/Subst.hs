@@ -101,8 +101,10 @@ instance Subst Sentence where
                         , eqnWf      = fmap (\(m, r) -> (subst f m, r)) (eqnWf d)
                           -- r is a Qualid (e.g., lt); Subst maps Qualid→Term, not Qualid→Qualid
                         , eqnClauses = fmap (\(pats, rhs) -> (pats, subst f rhs)) (eqnClauses d)
-                        , eqnWheres  = [EquationsWhere wn (map (subst f) wbs) (subst f <$> wty) (fmap (\(pats, rhs) -> (pats, subst f rhs)) weqs)
-                                       | EquationsWhere wn wbs wty weqs <- eqnWheres d] }
+                        , eqnWheres  = [ew { ewBinders = map (subst f) (ewBinders ew)
+                                           , ewRetType = subst f <$> ewRetType ew
+                                           , ewClauses = fmap (\(pats, rhs) -> (pats, subst f rhs)) (ewClauses ew) }
+                                       | ew <- eqnWheres d] }
 
 instance Subst Assumption where
   subst f (Assumption kwd assumptions) =

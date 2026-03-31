@@ -139,7 +139,11 @@ convertBinding _ (ConvertedPatternBinding _ _) =
   -- Already skipped with a warning in 'HsToCoq.ConvertnHaskell.Expr.withHsBindName'
   pure [] -- convUnsupported' "top-level pattern bindings"
 
-convertBinding _ (ConvertedAxiomBinding ax ty) = pure [typedAxiom ax ty]
+convertBinding _ (ConvertedAxiomBinding ax ty) = do
+  useEqs <- view (edits.equations.contains ax)
+  when useEqs $
+    editFailure $ "equations edit for " ++ show ax ++ " conflicts with axiomatize (remove one)"
+  pure [typedAxiom ax ty]
 
 convertBinding _ (RedefinedBinding name def) = do
   useEqs <- view (edits.equations.contains name)
@@ -153,7 +157,10 @@ convertBinding _ (RedefinedBinding name def) = do
     CoqFixpointDef   _  -> pure ()
     CoqAxiomDef      _  -> pure ()
 
-convertBinding _ (SkippedBinding name) =
+convertBinding _ (SkippedBinding name) = do
+  useEqs <- view (edits.equations.contains name)
+  when useEqs $
+    editFailure $ "equations edit for " ++ show name ++ " conflicts with skip (remove one)"
   pure [CommentSentence . Comment $ "Skipping definition `" <> textP name <> "'"]
 
 -- | Convert a function definition to use Coq Equations syntax.
@@ -203,17 +210,18 @@ toEquationsSentence cdef mterm = do
       renamedEqns = [ (fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- matchEqns ]
   -- Annotate where-clause binder types from: set type edits, let type
   -- annotations, or constructor pattern inference via lookupConstructorType.
-  renamedWheres <- forM whereClauses $ \(EquationsWhere wn wbs wty weqns) -> do
-    overrideTy <- view (edits.replacedTypes.at wn)
+  renamedWheres <- forM whereClauses $ \ew -> do
+    overrideTy <- view (edits.replacedTypes.at (ewName ew))
     (finalBs, finalTy) <- case overrideTy of
       Just (Just fullTy) ->
-        pure (annotateAndStrip wbs fullTy)
-      _ -> case wty of
-        Just ty -> pure (annotateAndStrip wbs ty)
+        pure (annotateAndStrip (ewBinders ew) fullTy)
+      _ -> case ewRetType ew of
+        Just ty -> pure (annotateAndStrip (ewBinders ew) ty)
         Nothing -> do
-          annBs <- annotateFromPatterns wbs (map (Data.List.NonEmpty.toList . fst) (Data.List.NonEmpty.toList weqns))
+          annBs <- annotateFromPatterns (ewBinders ew) (map (Data.List.NonEmpty.toList . fst) (Data.List.NonEmpty.toList (ewClauses ew)))
           pure (annBs, Nothing)
-    pure $ EquationsWhere wn finalBs finalTy (fromList [(fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- Data.List.NonEmpty.toList weqns])
+    pure $ ew { ewBinders = finalBs, ewRetType = finalTy
+              , ewClauses = fromList [(fmap renameInPat pats, renameInTerm rhs) | (pats, rhs) <- Data.List.NonEmpty.toList (ewClauses ew)] }
   when (null renamedEqns) $
     editFailure $ "equations edit for " ++ show name ++ " produced no equations (body may have only implicit binders or unsupported structure)"
   case annotatedBinders of
@@ -284,9 +292,12 @@ toEquationsSentence cdef mterm = do
     stripFun (Fun bs inner) = (Data.List.NonEmpty.toList bs, inner)
     stripFun t = ([], t)
 
+    -- Expand each Equation's alternatives (NonEmpty MultPattern) into
+    -- separate Equations clauses.  Most equations have a single alternative;
+    -- multi-pattern alternatives (| pat1 | pat2 => rhs) are expanded.
     extractEqns (HsToCoq.Coq.Gallina.Match _ _ eqns) =
       [(pats, rhs) | Equation mpats rhs <- eqns
-                    , let MultPattern pats = Data.List.NonEmpty.head mpats ]
+                    , MultPattern pats <- Data.List.NonEmpty.toList mpats ]
     -- Look through common wrappers to find a Match inside
     extractEqns (Parens t)       = extractEqns t
     extractEqns (HasType t _)    = extractEqns t
@@ -303,19 +314,21 @@ toEquationsSentence cdef mterm = do
             Nothing -> (localFunBinders, Nothing)
       in case localEqns of
            [] -> []
-           (e:es) -> [EquationsWhere localName annotatedWhereBinders whereRetTy (e :| es)]
+           (e:es) -> [EquationsWhere { ewName = localName, ewBinders = annotatedWhereBinders
+                                       , ewRetType = whereRetTy, ewClauses = e :| es }]
     extractWheres _ = []
 
     -- Generate a single equation with variable patterns for all explicit binders.
     varPatternEqn binders inner =
       let explicitNames = [ n | b <- binders, Bare n <- toListOf binderIdents b
                               , not (isImplicitBinder b) ]
-          pats = fmap (QualidPat . Bare) (fromList explicitNames)
           hasWheres = not (null (extractWheres inner :: [EquationsWhere]))
           rhs = case inner of
                   Let _ _ _ _ outerBody | hasWheres -> outerBody
                   _                                 -> inner
-      in if null explicitNames then [] else [(pats, rhs)]
+      in case Data.List.NonEmpty.nonEmpty explicitNames of
+           Nothing -> []
+           Just names -> [(fmap (QualidPat . Bare) names, rhs)]
 
     isImplicitBinder (ImplicitBinders _) = True
     isImplicitBinder (Generalized Implicit _) = True

@@ -52,6 +52,7 @@ module HsToCoq.Coq.Gallina (
   -- $Vernacular
   Sentence(..),
   EquationsDef(..),
+  EquationsClause,
   EquationsWhere(..),
   Assumption(..),
   AssumptionKeyword(..),
@@ -300,15 +301,23 @@ data EquationsDef = EquationsDef
   , eqnBinders :: Binders                                -- ^Binders (non-empty; annotated with types when available)
   , eqnRetType :: Maybe Term                             -- ^Return type
   , eqnWf      :: Maybe (Term, Qualid)                   -- ^Optional @by wf (measure) relation@
-  , eqnClauses :: NonEmpty (NonEmpty Pattern, Term)      -- ^Equation clauses (non-empty)
+  , eqnClauses :: NonEmpty EquationsClause               -- ^Equation clauses (non-empty)
   , eqnWheres  :: [EquationsWhere]                       -- ^Where clauses for local helpers
   } deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@Equations@ where clause for auxiliary definitions.
+-- |A single equation clause: patterns on the LHS and a term on the RHS.
+type EquationsClause = (NonEmpty Pattern, Term)
+
+-- |@Equations@ where clause for auxiliary definitions.
 -- Uses @[Binder]@ (not @Binders@) because where clauses can have zero explicit
 -- binders when only a full type annotation is provided (e.g., @where helper : bool -> bool :=@).
-data EquationsWhere = EquationsWhere Qualid [Binder] (Maybe Term) (NonEmpty (NonEmpty Pattern, Term))
-                    deriving (Eq, Ord, Show, Read, Typeable, Data)
+data EquationsWhere = EquationsWhere
+  { ewName    :: Qualid               -- ^Helper function name
+  , ewBinders :: [Binder]             -- ^Typed binders (may be empty)
+  , ewRetType :: Maybe Term           -- ^Return type
+  , ewClauses :: NonEmpty EquationsClause  -- ^Equation clauses (non-empty)
+  } deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |@/assumption/ ::=@
 data Assumption = Assumption AssumptionKeyword Assums                                          -- ^@/assumption_keyword/ /assums/ .@
