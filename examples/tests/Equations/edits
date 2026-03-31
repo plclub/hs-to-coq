@@ -7,6 +7,8 @@ equations Equations.applyHelper
 equations Equations.applyAndKeep
 equations Equations.toNat
 equations Equations.halve
+equations Equations.isZ
+equations Equations.clamp
 
 # halve uses by-wf termination with a measure
 add Equations Fixpoint Equations.toNatural (n : N) : nat := match n with | Z => 0 | S m => Datatypes.S (Equations.toNatural m) end.
@@ -23,6 +25,8 @@ add Equations Definition equations_test_where := applyHelper_equation_1.
 add Equations Definition equations_test_nested := applyAndKeep_equation_1.
 add Equations Definition equations_test_rec := toNat_equation_1.
 add Equations Definition equations_test_bywf := halve_equation_1.
+add Equations Definition equations_test_isZ := isZ_equation_1.
+add Equations Definition equations_test_clamp := clamp_equation_1.
 
 order Equations.not_ equations_test_not_1 equations_test_not_2
 order Equations.id_ equations_test_id
@@ -32,3 +36,5 @@ order Equations.applyHelper equations_test_where
 order Equations.applyAndKeep equations_test_nested
 order Equations.toNat equations_test_rec
 order Equations.halve equations_test_bywf
+order Equations.isZ equations_test_isZ
+order Equations.clamp equations_test_clamp
