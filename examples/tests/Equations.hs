@@ -26,8 +26,8 @@ applyHelper x = let helper True = False
                     helper False = True
                 in helper x
 
--- Nested let: outermost pattern-match helper becomes where clause,
--- inner simple let stays inline
+-- Nested let: simple let y=x is outermost so no where clause is extracted;
+-- the pattern-matching helper stays inline as a let binding
 applyAndKeep :: Bool -> Bool
 applyAndKeep x = let helper True = False
                      helper False = True

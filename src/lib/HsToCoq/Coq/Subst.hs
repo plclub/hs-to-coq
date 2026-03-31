@@ -97,8 +97,8 @@ instance Subst Sentence where
   subst _ s@(CommentSentence    _)            = s
   subst f (EquationsSentence n bs ty mwf eqs ws) =
     EquationsSentence n (subst f <$> bs) (subst f <$> ty) (fmap (\(m, r) -> (subst f m, r)) mwf)
-      [(pats, subst f rhs) | (pats, rhs) <- eqs]
-      [EquationsWhere wn (map (subst f) wbs) (subst f <$> wty) [(pats, subst f rhs) | (pats, rhs) <- weqs] | EquationsWhere wn wbs wty weqs <- ws]
+      (fmap (\(pats, rhs) -> (pats, subst f rhs)) eqs)
+      [EquationsWhere wn (map (subst f) wbs) (subst f <$> wty) (fmap (\(pats, rhs) -> (pats, subst f rhs)) weqs) | EquationsWhere wn wbs wty weqs <- ws]
 
 instance Subst Assumption where
   subst f (Assumption kwd assumptions) =
