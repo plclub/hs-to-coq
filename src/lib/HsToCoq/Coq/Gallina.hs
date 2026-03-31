@@ -51,6 +51,7 @@ module HsToCoq.Coq.Gallina (
   -- * The vernacular
   -- $Vernacular
   Sentence(..),
+  EquationsDef(..),
   EquationsWhere(..),
   Assumption(..),
   AssumptionKeyword(..),
@@ -290,12 +291,22 @@ data Sentence = AssumptionSentence       Assumption                             
               | ArgumentsSentence        Arguments                                             -- ^@/arguments/@ – extra
               | CommentSentence          Comment                                               -- ^@/comment/@ – extra
               | LocalModuleSentence      LocalModule
-              | EquationsSentence        Qualid Binders (Maybe Term) (Maybe (Term, Qualid)) (NonEmpty (NonEmpty Pattern, Term)) [EquationsWhere]
-                                                                                                  -- ^@Equations /ident/ /binders/ : /term/ [by wf (/term/) /qualid/] := /ident/ /pat/ … := /term/ ; … [where …] .@
+              | EquationsSentence        EquationsDef                                          -- ^@Equations …@
               deriving (Eq, Ord, Show, Read, Typeable, Data)
 
+-- |@Equations /name/ /binders/ : /retTy/ [by wf (/measure/) /relation/] := /clauses/ [where …] .@
+data EquationsDef = EquationsDef
+  { eqnName    :: Qualid                                 -- ^Function name
+  , eqnBinders :: Binders                                -- ^Typed binders (non-empty)
+  , eqnRetType :: Maybe Term                             -- ^Return type
+  , eqnWf      :: Maybe (Term, Qualid)                   -- ^Optional @by wf (measure) relation@
+  , eqnClauses :: NonEmpty (NonEmpty Pattern, Term)      -- ^Equation clauses (non-empty)
+  , eqnWheres  :: [EquationsWhere]                       -- ^Where clauses for local helpers
+  } deriving (Eq, Ord, Show, Read, Typeable, Data)
+
 -- |@Equations@ where clause for auxiliary definitions.
--- Fields: function name, typed binders, optional return type, equations (non-empty).
+-- Uses @[Binder]@ (not @Binders@) because where clauses can have zero explicit
+-- binders when only a full type annotation is provided (e.g., @where helper : bool -> bool :=@).
 data EquationsWhere = EquationsWhere Qualid [Binder] (Maybe Term) (NonEmpty (NonEmpty Pattern, Term))
                     deriving (Eq, Ord, Show, Read, Typeable, Data)
 

@@ -138,13 +138,13 @@ instance HasBV Qualid Sentence where
   bvOf (LocalModuleSentence   lmd)        = bvOf   lmd
   bvOf (ArgumentsSentence     _arg)       = mempty
   bvOf (CommentSentence       com)        = fvOf'  com
-  bvOf (EquationsSentence name bs mty mwf eqns wheres) =
-    binder name <> bindsNothing (foldScopes bvOf bs $ fvOf mty <> foldMap (\(m, r) -> fvOf m <> fvOf r) mwf
+  bvOf (EquationsSentence eqd) =
+    binder (eqnName eqd) <> bindsNothing (foldScopes bvOf (eqnBinders eqd) $ fvOf (eqnRetType eqd) <> foldMap (\(m, r) -> fvOf m <> fvOf r) (eqnWf eqd)
       -- Where-clause names scope over the main equations (they are local helpers)
-      <> foldMap (\(EquationsWhere wn _ _ _) -> binder wn) wheres `scopesOver`
-         foldMap (\(pats, rhs) -> foldMap bvOf pats `scopesOver` fvOf rhs) eqns
+      <> foldMap (\(EquationsWhere wn _ _ _) -> binder wn) (eqnWheres eqd) `scopesOver`
+         foldMap (\(pats, rhs) -> foldMap bvOf pats `scopesOver` fvOf rhs) (eqnClauses eqd)
       <> foldMap (\(EquationsWhere _ wbs wty weqns) -> foldScopes bvOf wbs $ fvOf wty
-           <> foldMap (\(wpats, rhs) -> foldMap bvOf wpats `scopesOver` fvOf rhs) weqns) wheres)
+           <> foldMap (\(wpats, rhs) -> foldMap bvOf wpats `scopesOver` fvOf rhs) weqns) (eqnWheres eqd))
 
 instance HasBV Qualid Assumption where
   bvOf (Assumption _kwd assumptions) = bvOf assumptions

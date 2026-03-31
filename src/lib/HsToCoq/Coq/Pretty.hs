@@ -572,14 +572,14 @@ instance Gallina Sentence where
   renderGallina' p (ArgumentsSentence       arg)    = renderGallina' p arg
   renderGallina' p (CommentSentence         com)    = renderGallina' p com
   renderGallina' p (LocalModuleSentence     lmd)    = renderGallina' p lmd
-  renderGallina' _ (EquationsSentence name binders mty mwf eqns wheres) =
-    nest 2 ("Equations" <+> renderGallina name <> spaceIf binders <> render_args H binders
-            <+> ":" <+> maybe "_" renderGallina mty
-            <> maybe mempty (\(m, r) -> " " <> "by wf" <+> parens (renderGallina m) <+> renderGallina r) mwf
+  renderGallina' _ (EquationsSentence eqd) =
+    nest 2 ("Equations" <+> renderGallina (eqnName eqd) <> spaceIf (eqnBinders eqd) <> render_args H (eqnBinders eqd)
+            <+> ":" <+> maybe "_" renderGallina (eqnRetType eqd)
+            <> maybe mempty (\(m, r) -> " " <> "by wf" <+> parens (renderGallina m) <+> renderGallina r) (eqnWf eqd)
             <+> ":=" <$$>
-            vsep (punctuate " ;" [ renderGallina name <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
-                                 | (pats, rhs) <- Data.List.NonEmpty.toList eqns ]))
-    <> foldMap renderWhere wheres <> "."
+            vsep (punctuate " ;" [ renderGallina (eqnName eqd) <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList pats)) <+> ":=" <+> renderGallina rhs
+                                 | (pats, rhs) <- Data.List.NonEmpty.toList (eqnClauses eqd) ]))
+    <> foldMap renderWhere (eqnWheres eqd) <> "."
     where
       renderWhere (EquationsWhere wname wbinders wmty weqns) =
         line <> line <>

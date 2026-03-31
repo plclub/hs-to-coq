@@ -55,3 +55,12 @@ clamp :: N -> N
 clamp n
   | isZ n     = Z
   | otherwise = S Z
+
+-- Polymorphic function (exercises implicit type binder handling)
+constN :: N -> N -> N
+constN x _ = x
+
+-- Well-founded recursion with explicit wf relation (not measure)
+pred_ :: N -> N
+pred_ Z = Z
+pred_ (S n) = n

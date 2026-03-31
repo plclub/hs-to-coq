@@ -9,11 +9,15 @@ equations Equations.toNat
 equations Equations.halve
 equations Equations.isZ
 equations Equations.clamp
+equations Equations.constN
+equations Equations.pred_
 
 # halve uses by-wf termination with a measure
+# pred_ uses explicit wf relation (not measure)
 add Equations Fixpoint Equations.toNatural (n : N) : nat := match n with | Z => 0 | S m => Datatypes.S (Equations.toNatural m) end.
 termination Equations.halve {measure (Equations.toNatural arg_0__)}
-order Equations.toNatural Equations.halve
+termination Equations.pred_ {wf (Equations.toNatural arg_0__) lt}
+order Equations.toNatural Equations.halve Equations.pred_
 
 # Verify Equations generated _equation_N lemmas (would not exist with plain Definition)
 add Equations Definition equations_test_not_1 := not__equation_1.
@@ -27,6 +31,8 @@ add Equations Definition equations_test_rec := toNat_equation_1.
 add Equations Definition equations_test_bywf := halve_equation_1.
 add Equations Definition equations_test_isZ := isZ_equation_1.
 add Equations Definition equations_test_clamp := clamp_equation_1.
+add Equations Definition equations_test_constN := constN_equation_1.
+add Equations Definition equations_test_pred := pred__equation_1.
 
 order Equations.not_ equations_test_not_1 equations_test_not_2
 order Equations.id_ equations_test_id
@@ -38,3 +44,5 @@ order Equations.toNat equations_test_rec
 order Equations.halve equations_test_bywf
 order Equations.isZ equations_test_isZ
 order Equations.clamp equations_test_clamp
+order Equations.constN equations_test_constN
+order Equations.pred_ equations_test_pred
