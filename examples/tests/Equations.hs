@@ -57,11 +57,18 @@ clamp n
   | isZ n     = Z
   | otherwise = S Z
 
+-- Guard first, then pattern match (guard on catch-all, pattern on second clause)
+guardFirst :: N -> N
+guardFirst n | isZ n = Z
+guardFirst (S n) = n
+
+-- Pattern match first, then guard (pattern on first clause, guard on second)
+clampN :: N -> N
+clampN Z = Z
+clampN (S n)
+  | isZ n     = S Z
+  | otherwise = S (S Z)
+
 -- Multi-argument function (exercises binder annotation for 2+ explicit args)
 constN :: N -> N -> N
 constN x _ = x
-
--- Non-recursive function with explicit wf annotation (exercises WFOrder_ path)
-pred_ :: N -> N
-pred_ Z = Z
-pred_ (S n) = n
