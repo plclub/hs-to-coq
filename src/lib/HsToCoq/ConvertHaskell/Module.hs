@@ -191,27 +191,32 @@ toEquationsSentence cdef mterm = do
         Just ty -> fst (annotateAndStrip allBinders ty)
         Nothing -> allBinders
       retTy = fmap (snd . annotateAndStrip allBinders) mty >>= id  -- join: flatten Maybe (Maybe Term)
-  -- Rename pattern variables that shadow binder names (appends underscore).
-  -- Uses Data.Generics.everywhere to traverse all Term/Pattern constructors.
+  -- Substitute binder names → pattern variable names in each clause's RHS.
+  -- When extractEqns extracts equations from an inner Match, the patterns may use
+  -- different names than the Equations binders (e.g., an inner Match binds 'n'
+  -- while the Equations binder is 'arg_0__').  In Equations syntax only the
+  -- pattern-bound names are in scope, so binder-name references in the RHS must
+  -- be replaced with the corresponding pattern variable name.
   when (null eqns && not (null matchEqns)) $
     liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " could not extract multi-clause equations from body; emitting single equation"
   when (any isUnderscoredBinder annotatedBinders) $
     liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " has binders with inferred types (_); type signature may be incomplete"
-  let binderNames = S.fromList [ n | Bare n <- concatMap (toListOf binderIdents) annotatedBinders ]
-      -- Append underscores until the name doesn't collide with any binder
-      freshen n | (n <> "_") `S.member` binderNames = freshen (n <> "_")
-                | otherwise = n <> "_"
-      renameTerm (Qualid (Bare n))
-        | n `S.member` binderNames = Qualid (Bare (freshen n))
-      renameTerm t = t
-      renamePat (QualidPat (Bare n))
-        | n `S.member` binderNames = QualidPat (Bare (freshen n))
-      renamePat p = p
-      renameInTerm :: Term -> Term
-      renameInTerm = everywhere (mkT renameTerm)
-      renameInPat :: Pattern -> Pattern
-      renameInPat  = everywhere (mkT renamePat)
-      renamedEqns = [ EquationsClause (fmap renameInPat (ecPats cl)) (renameInTerm (ecRHS cl)) | cl <- matchEqns ]
+  let binderNameList = [ n | b <- annotatedBinders
+                           , not (isImplicitBinder b)
+                           , Bare n <- toListOf binderIdents b ]
+      -- Per-clause substitution: replace binder names with corresponding pattern
+      -- variable names where they differ.
+      renameClause cl =
+        let subst = M.fromList
+              [ (bn, pn) | (bn, QualidPat (Bare pn)) <- zip binderNameList (Data.List.NonEmpty.toList (ecPats cl))
+                         , bn /= pn ]
+            substTerm (Qualid (Bare n))
+              | Just pn <- M.lookup n subst = Qualid (Bare pn)
+            substTerm t = t
+            substInTerm :: Term -> Term
+            substInTerm = everywhere (mkT substTerm)
+        in EquationsClause (ecPats cl) (substInTerm (ecRHS cl))
+      renamedEqns = map renameClause matchEqns
   -- Annotate where-clause binder types from: set type edits, let type
   -- annotations, or constructor pattern inference via lookupConstructorType.
   renamedWheres <- forM whereClauses $ \ew -> do
@@ -224,8 +229,7 @@ toEquationsSentence cdef mterm = do
         Nothing -> do
           annBs <- annotateFromPatterns (ewBinders ew) (map (Data.List.NonEmpty.toList . ecPats) (Data.List.NonEmpty.toList (ewClauses ew)))
           pure (annBs, Nothing)
-    pure $ ew { ewBinders = finalBs, ewRetType = finalTy
-              , ewClauses = fromList [EquationsClause (fmap renameInPat (ecPats cl)) (renameInTerm (ecRHS cl)) | cl <- Data.List.NonEmpty.toList (ewClauses ew)] }
+    pure $ ew { ewBinders = finalBs, ewRetType = finalTy }
   when (null renamedEqns) $
     editFailure $ "equations edit for " ++ show name ++ " produced no equations (body may have only implicit binders or unsupported structure)"
   case annotatedBinders of
