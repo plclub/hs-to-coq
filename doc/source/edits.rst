@@ -1011,8 +1011,7 @@ Effect:
 
   ``hs-to-coq`` extracts match arms from the function body and emits them as
   Equations clauses.  Local ``let`` bindings that contain pattern-matching functions
-  are emitted as ``where`` clauses (at most one per definition; only the outermost
-  ``let`` binding is considered).
+  are emitted as ``where`` clauses (at most one per definition).
 
   Binder types are inferred from the function's Haskell type signature.  For
   where-clause helpers without type signatures, types can be inferred from

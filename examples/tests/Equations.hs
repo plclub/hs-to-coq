@@ -26,8 +26,10 @@ applyHelper x = let helper True = False
                     helper False = True
                 in helper x
 
--- Nested let: simple let y=x is outermost so no where clause is extracted;
--- the pattern-matching helper stays inline as a let binding
+-- Two local let bindings: both a pattern-matching helper and a simple binding.
+-- hs-to-coq's foldrM in convertLocalBinds (Expr.hs) may place a non-pattern-
+-- matching let outermost; extractWheres recurses through nested lets to find
+-- the pattern-matching one and extract it as a where clause.
 applyAndKeep :: Bool -> Bool
 applyAndKeep x = let helper True = False
                      helper False = True
