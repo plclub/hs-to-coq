@@ -24,7 +24,7 @@ import Data.List (partition, sortBy)
 import HsToCoq.Util.List
 import HsToCoq.Util.Containers
 
-import Data.Generics (Data, everywhere, mkT)
+import Data.Generics (Data, everywhere, mkT, toConstr, showConstr)
 
 import Control.Monad.Reader
 
@@ -198,9 +198,11 @@ toEquationsSentence cdef mterm = do
   -- pattern-bound names are in scope, so binder-name references in the RHS must
   -- be replaced with the corresponding pattern variable name.
   when (null eqns && not (null matchEqns)) $
-    liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " could not extract multi-clause equations from body; emitting single equation"
+    liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " could not extract multi-clause equations from body (inner term is " ++ showConstr (toConstr innerBody) ++ "); emitting single equation"
   when (any isUnderscoredBinder annotatedBinders) $
     liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " has binders with inferred types (_); type signature may be incomplete"
+  when (null whereClauses && hasNestedPatLet innerBody) $
+    liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " has a nested let with pattern matching that was not extracted as a where clause (only the outermost let is considered)"
   let binderNameList = [ n | b <- annotatedBinders
                            , not (isImplicitBinder b)
                            , Bare n <- toListOf binderIdents b ]
@@ -216,7 +218,14 @@ toEquationsSentence cdef mterm = do
             substInTerm :: Term -> Term
             substInTerm = everywhere (mkT substTerm)
         in EquationsClause (ecPats cl) (substInTerm (ecRHS cl))
-      renamedEqns = map renameClause matchEqns
+  -- Warn when binder count and pattern count disagree (zip truncation risk).
+  forM_ matchEqns $ \cl -> do
+    let nPats = Data.List.NonEmpty.length (ecPats cl)
+    when (length binderNameList /= nPats) $
+      liftIO $ hPutStrLn stderr $ "Warning: equations edit for " ++ show name
+        ++ ": binder count (" ++ show (length binderNameList) ++ ") differs from pattern count ("
+        ++ show nPats ++ ") in a clause; substitution may be incomplete"
+  let renamedEqns = map renameClause matchEqns
   -- Annotate where-clause binder types from: set type edits, let type
   -- annotations, or constructor pattern inference via lookupConstructorType.
   renamedWheres <- forM whereClauses $ \ew -> do
@@ -243,9 +252,9 @@ toEquationsSentence cdef mterm = do
               case mrel of
                 Just _ -> liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " ignores custom relation in measure (Equations measure always uses lt)"
                 Nothing -> pure ()
-              pure $ Just (expr, Bare "lt")
+              pure $ Just (WfAnnotation expr (Bare "lt"))
             Just (WellFoundedTA (WFOrder_ expr rel)) ->
-              pure $ Just (expr, rel)
+              pure $ Just (WfAnnotation expr rel)
             Just (StructOrderTA _) ->
               -- Note, not error: Equations handles structural recursion automatically
               Nothing <$ liftIO (hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " ignores structural termination hint (Equations infers structural recursion automatically)")
@@ -254,14 +263,15 @@ toEquationsSentence cdef mterm = do
             Just Corecursive ->
               editFailure $ "equations edit for " ++ show name ++ " is incompatible with corecursive termination"
             _ -> pure Nothing
+      neClauses <- case Data.List.NonEmpty.nonEmpty renamedEqns of
+                     Just ne -> pure ne
+                     Nothing -> editFailure "INTERNAL: equations edit produced no clauses (this is a bug in hs-to-coq)"
       pure [EquationsSentence EquationsDef
               { eqnName    = name
               , eqnBinders = b :| bs
               , eqnRetType = retTy
               , eqnWf      = mwf
-              , eqnClauses = case Data.List.NonEmpty.nonEmpty renamedEqns of
-                               Just ne -> ne
-                               Nothing -> error "INTERNAL: renamedEqns empty after guard (unreachable: guarded by editFailure at line above)"
+              , eqnClauses = neClauses
               , eqnWheres  = renamedWheres }]
   where
     -- Annotate ExplicitBinder names from an Arrow/Forall-chain type, returning
@@ -273,7 +283,8 @@ toEquationsSentence cdef mterm = do
         let (bs', ret) = annotateAndStrip bs restTy
         in (Typed Ungeneralizable Explicit (Ident n :| []) argTy : bs', ret)
     annotateAndStrip (b:bs) ty =
-      let (bs', ret) = annotateAndStrip bs (dropArrow ty)
+      let ty' = if isImplicitBinder b then dropForall ty else dropArrow ty
+          (bs', ret) = annotateAndStrip bs ty'
       in (b : bs', ret)
 
     splitArrow (Arrow a rest) = (a, rest)
@@ -282,6 +293,9 @@ toEquationsSentence cdef mterm = do
     dropArrow (Arrow _ rest) = rest
     dropArrow (Forall _ rest) = dropArrow rest
     dropArrow t = t
+    -- Skip a Forall (for implicit binders that correspond to forall quantifiers, not arrows)
+    dropForall (Forall _ rest) = rest
+    dropForall t = t
 
     -- Infer binder types from constructor patterns in the equations.
     annotateFromPatterns :: ConversionMonad r m => [Binder] -> [[Pattern]] -> m [Binder]
@@ -320,7 +334,9 @@ toEquationsSentence cdef mterm = do
 
     -- Extract the top-level let binding as an Equations where clause, if its
     -- value is a function with pattern matching.  Does not recurse into nested
-    -- lets — only the immediately enclosing let is examined.
+    -- lets — only the immediately enclosing let is examined.  As a result, if
+    -- a non-pattern-matching let precedes a pattern-matching let (as in
+    -- applyAndKeep), neither is extracted as a where clause.
     extractWheres (Parens t)     = extractWheres t
     extractWheres (HasType t _)  = extractWheres t
     extractWheres (Let localName _localBinders localTy localVal _outerBody) =
@@ -334,6 +350,14 @@ toEquationsSentence cdef mterm = do
            (e:es) -> [EquationsWhere { ewName = localName, ewBinders = annotatedWhereBinders
                                        , ewRetType = whereRetTy, ewClauses = e :| es }]
     extractWheres _ = []
+
+    -- Check if the outer body of a non-pattern-matching let contains a nested
+    -- let with pattern matching (which extractWheres would have missed).
+    hasNestedPatLet (Let _ _ _ val body) =
+      not (null (extractEqns (snd (stripFun val)))) || hasNestedPatLet body
+    hasNestedPatLet (Parens t)    = hasNestedPatLet t
+    hasNestedPatLet (HasType t _) = hasNestedPatLet t
+    hasNestedPatLet _ = False
 
     -- Generate a single equation with variable patterns for all explicit binders.
     varPatternEqn binders inner =

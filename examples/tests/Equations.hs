@@ -72,3 +72,7 @@ clampN (S n)
 -- Multi-argument function (exercises binder annotation for 2+ explicit args)
 constN :: N -> N -> N
 constN x _ = x
+
+-- Polymorphic function (exercises implicit-binder filtering)
+myId :: a -> a
+myId x = x
