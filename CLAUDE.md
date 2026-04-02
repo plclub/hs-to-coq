@@ -138,8 +138,6 @@ GHC 9.10 moved most `base` implementations to `ghc-internal`. Source files are n
 These must use old versions from git master with manual fixes:
 - `Data/Functor/Classes` — hs-to-coq generates valid output, but Coq can't compile it: GHC 9.10 added quantified superclass constraints to Eq2/Ord2 (`forall a. Eq a => Eq1 (f a)`) that Coq can't resolve in the CPS encoding. The manual version has the same compilation failure. Nothing downstream imports Eq2/Ord2 so this is tolerated.
 
-Previously broken modules now regenerable:
-- `Data/Foldable`, `Data/Traversable`, `Data/Functor/Const`, `Data/Functor/Identity`, `Control/Category`, `Control/Arrow` — all now auto-generated via DerivSkipInfo filtering, SigPat support, RuntimeRep stripping, and expandCoerce improvements
 - **`(->)` TyCon in GHC 9.10**: `FunTyCon` reports 0 `tyConBinders`. `Type.hs` detects `GHC.Prim.arrow` with null binders → empty args to `convertTyConApp`. `lookupInstance` uses `termHead` for flexible matching.
 - `_CoqProject` ordering matters: Identity/Traversable must be listed early (EARLY_GHC_INTERNAL_MODULES in Makefile) to avoid Coq typeclass resolution stack overflow
 
@@ -162,6 +160,9 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **`order` with `redefine`**: When `redefine` introduces definition dependencies, add explicit `order` directives to ensure correct output ordering.
 - **`redefine Inductive` sorts**: The code generator's `Set` heuristic (for prop-lowerable types) doesn't apply to `redefine Inductive` — must specify `: Set` explicitly for empty/single-no-arg-constructor types.
 - **Parser extensions (ghc910-coq820)**: `if/then/else`, `#n` hash-number literals, and `let fix ... in` are supported in `redefine` bodies (added in Lexer.hs/Parser.y).
+- **`equations` edit directive**: Emits Coq Equations plugin syntax instead of Definition/Fixpoint. Requires `coq-equations`. Conflicts with skip/redefine/axiomatize. Test in `examples/tests/Equations/`.
+- **Let binding ordering**: `convertLocalBinds` (Expr.hs) uses `foldrM` over GHC's `NValBinds` groups, so the first group becomes the outermost `Let`. Independent bindings may appear in arbitrary order.
+- **Adding Gallina AST constructors**: New `Sentence` variants need cases in `Pretty.hs`, `FreeVars.hs`, `Subst.hs`. Export `(..)` for record types used across modules.
 
 ### GHC example (examples/ghc/)
 Translated from GHC 9.10.3. All lib/*.v and 29 theories/*.v compile. `make clean && make` regenerates lib/ (removes dir, rebuilds via hs-to-coq + lndir for ~48 manual files). Edit `manual/*.v` directly (not `lib/*.v` symlinks).
@@ -171,16 +172,16 @@ Key GHC 9.10 type changes: `Alt` uses `Mk_Alt` constructor (not tuple); `Mk_Id` 
 Proof bridge lemmas: `GHC.Base.foldl'` is CPS-via-`fold_right` (not `fold_left`). Use `Foldable.foldl'_is_foldl` (base-thy) to convert `foldl'` to `foldl` in proofs, or `hs_coq_foldl'_base` (base-thy/GHC/Base.v) to convert to `fold_left` directly.
 
 Un-axiomatized: `Subst` (concrete inductive in Core.v), `substExpr`/`substBind` (mutual Fixpoint in CoreSubst midamble), `exitifyRec` (concrete with `deferredFix2`), `Id.idJoinPointHood`. CoreSubst hybrid auto-generation: 4 auto-generated, 9 redefined (simplified for `TvSubstEnv=CvSubstEnv=unit`), core subst in midamble (ordering: midamble before generated code).
-Zero Admitted in: CoreInduct, CoreFVs, CoreSemantics, JoinPointInvariants, CoreSubst, ScopeInvariant, Var, VarSet, VarSetStrong, UniqSetInv, StateLogic, FV, VarEnv. Key axioms: `tyCoFVsOfType_is_emptyFV`/`tyCoFVsOfCo_is_emptyFV` (types axiomatized), `tyCoVarsOfTypeDSet_empty`. ContainerProofs: 97 proved lemmas, 0 Local Axioms. Still axiomatized: `cseExpr`/`cseBind`/`try_for_cse`, `floatExpr`/`floatBind`/`floatRhs`, `fiExpr`/`fiBinds`/`fiRhs`, `mkExitJoinId`.
+Key axioms: `tyCoFVsOfType_is_emptyFV`/`tyCoFVsOfCo_is_emptyFV` (types axiomatized), `tyCoVarsOfTypeDSet_empty`. Still axiomatized: `cseExpr`/`cseBind`/`try_for_cse`, `floatExpr`/`floatBind`/`floatRhs`, `fiExpr`/`fiBinds`/`fiRhs`, `mkExitJoinId`. Check current state: `grep -c Admitted examples/ghc/theories/*.v`.
 
 Build details: `manual/AxiomatizedTypes.v` instances must be `#[global]`. `axiomatize module OccurAnal` needs preamble.v + midamble.v. Midamble placed AFTER types+auto-Defaults, BEFORE values — use `skip` + midamble for custom Defaults. Makefile sed post-processing: BasicTypes/Literal (`#[global]`), UniqFM (phantom kinds), Core.v (mutual type fixes via `fix-files/`).
 Core.v post-processing uses `fix-files/` for multi-line insertions (portable across GNU/BSD sed). GHC and transformers regeneration on macOS requires GNU sed: `brew install gnu-sed && PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH" make -C examples/ghc vfiles`.
 
 ### Paper claims audit
-`paper-claims-audit.md` (project root) documents the status of formal verification claims from three publications (JFP 2021, arxiv:1910.11724, ICFP 2018) against the current codebase. Key results: all core verification theorems (WellScoped_substExpr, exitifyProgram_WellScoped_JPV, FSet/FMapInterface, type class laws) still hold. MonoidLaws for Map proved in TypeclassProofs.v (was a gap vs JFP Fig 4). Map fromList `Program Fixpoint` regressions from Coq 8.20 fixed (0 Admitted). Regressions: CSE (5 Admitted, axiomatized source), TrieMap (5 Admitted), VarSetFSet (9 Admitted, 4 proved), Exitify (3 Admitted, deferredFix2 engineering).
+`paper-claims-audit.md` (project root) documents the status of formal verification claims from three publications (JFP 2021, arxiv:1910.11724, ICFP 2018) against the current codebase. Core verification theorems hold. See `paper-claims-audit.md` for current regression details.
 
 ### Containers submodule
-Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates and builds everything. IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources. Full type class laws verified: EqLaws, OrdLaws, SemigroupLaws, MonoidLaws, FunctorLaws for Map (all Qed in TypeclassProofs.v). Map fromList proofs fully verified (0 Admitted in FromListProofs.v). IntMapProofs.v: 1 Admitted (restrictKeys_Desc Bin/Tip case needs restrictBM Desc lemma) + 4 Abort with formal counterexamples (mapKeys_Desc_false, isSubmapOfBy_Bin_false, Desc0_Desc_false, empty_no_elts_false). IntSetPropertyProofs.v: 1 Admitted (thm_isProperSubsetOf needs size reasoning via toSet_size + NoDup_incl_length) + 1 Abort (thm_MaskPow2 false for unbounded N; bounded version thm_MaskPow2_bounded proved with `k < 2^63`). SetProofs.v: 0 Admitted. IntSetWordProofs.v: ~73 Admitted (pre-existing).
+Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates and builds everything. IntSet/Set/Map have native v0.7 split/fromAscList/fromDescList definitions. `hs-spec/IntSetProperties.v` auto-generated from v0.7 test sources. Full type class laws verified in TypeclassProofs.v. Check proof status: `grep -c Admitted examples/containers/theories/*.v`. IntMapProofs has formal counterexamples (Abort) for false theorems (mapKeys_Desc, isSubmapOfBy_Bin, Desc0_Desc, empty_no_elts). thm_MaskPow2 false for unbounded N; bounded version proved with `k < 2^63`.
 
 ### Transformers example (examples/transformers/)
 Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../ghc/ghc/libraries/transformers`. Makefile strips MonadTrans quantified superclass constraint via sed post-processing. Uses `skip class` for `Contravariant` and `Foldable1` (not in base). WriterT `<*>` has envFor cross-type override (`in ... rename value` for both GHC.Base and GHC.Internal.Base liftA2).
@@ -196,10 +197,6 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 - Names from `Coq.Lists.List` (like `filter`, `partition`) may shadow project names — qualify explicitly
 - `eval unfold f` in sections: use `let x := constr:(@f args) in let rhs := eval unfold f in x`
 - `Foldable__list_foldMap` is now `mconcat ∘ map` (not direct `foldr`) — different unfolding chains needed
-- **Deprecated warnings (all fixed)**: `Hint` → `#[export]`; `Arguments` scope `%_` not `%`; inductives use `Set` not `Type`; `app_length` → `length_app` etc.; `N.mod_eq` → `N.Div0.*`; `Declare Scope` before `Bind Scope`
-- **Implicit binders in record literals (all fixed)**: Use `fun (a : Type)` (explicit) not `fun {a : Type}` inside `{| field := ... |}`. Code generator: `quantifyExplicit` + `toExplicitBinder`.
-- **Require inside Module/Section (all fixed)**: Move `Require` to top-level. **Danger**: Moving `Require Import GHC.Base` shadows `Nat.le` with bool `<=`.
-- **SSReflect `spurious-ssr-injection` (all fixed)**: Suppress with `#[local] Set Warnings "-spurious-ssr-injection"`.
 
 ### Coq 8.20 proof tactics
 - **`Program Fixpoint` obligations**: Coq 8.20 pre-introduces ALL obligation variables. Use `revert dependent P` to recover CPS structure, or work with auto-named `H`/`H0`/`H1`.
@@ -215,4 +212,3 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 - Every time before you commit, you should also check if other modules have been broken due to this change. For example, check `examples/test` even if you have only been working on `examples/containers`.
 - After significant functional changes (e.g., replacing `redefine` with native implementations), update README files, CLAUDE.md, and any plan documents to reflect the new state before committing.
 - Commit to git at each milestone with `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
-
