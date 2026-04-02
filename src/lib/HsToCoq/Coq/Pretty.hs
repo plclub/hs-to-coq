@@ -575,7 +575,7 @@ instance Gallina Sentence where
   renderGallina' _ (EquationsSentence eqd) =
     nest 2 ("Equations" <+> renderGallina (eqnName eqd) <> spaceIf (eqnBinders eqd) <> render_args H (eqnBinders eqd)
             <+> ":" <+> maybe "_" renderGallina (eqnRetType eqd)
-            <> maybe " " (\(m, r) -> " " <> "by wf" <+> parens (renderGallina m) <+> renderGallina r <> " ") (eqnWf eqd)
+            <> maybe " " (\wf -> " " <> "by wf" <+> parens (renderGallina (wfMeasure wf)) <+> renderGallina (wfRelation wf) <> " ") (eqnWf eqd)
             <> ":=" <$$>
             vsep (punctuate " ;" [ renderGallina (eqnName eqd) <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList (ecPats cl))) <+> ":=" <+> renderGallina (ecRHS cl)
                                  | cl <- Data.List.NonEmpty.toList (eqnClauses eqd) ]))
@@ -588,7 +588,9 @@ instance Gallina Sentence where
                 vsep (punctuate " ;" [ renderGallina (ewName ew) <+> hsep (map (renderGallina' (appPrec+1)) (Data.List.NonEmpty.toList (ecPats cl))) <+> ":=" <+> renderGallina (ecRHS cl)
                                      | cl <- Data.List.NonEmpty.toList (ewClauses ew) ]))
       renderBinderList [] = mempty
-      renderBinderList bs = " " <> render_args H (Data.List.NonEmpty.fromList bs)
+      renderBinderList bs = case Data.List.NonEmpty.nonEmpty bs of
+        Nothing -> mempty  -- unreachable: guarded by [] case above; defense-in-depth
+        Just ne -> " " <> render_args H ne
 
 instance Gallina Assumption where
   renderGallina' p (Assumption kw ass) = renderGallina' p kw <+> align (renderGallina ass) <> "."

@@ -95,11 +95,12 @@ instance Subst Sentence where
   subst f (LocalModuleSentence     lmd)       = LocalModuleSentence       (subst f lmd)
   subst _ s@(ArgumentsSentence  _)            = s
   subst _ s@(CommentSentence    _)            = s
+  -- eqnName is a binding site, not substituted (consistent with DefinitionDef, FixBody, etc.)
   subst f (EquationsSentence d) =
     EquationsSentence d { eqnBinders = subst f <$> eqnBinders d
                         , eqnRetType = subst f <$> eqnRetType d
-                        , eqnWf      = fmap (\(m, r) -> (subst f m, r)) (eqnWf d)
-                          -- r is a Qualid (e.g., lt); Subst maps Qualid→Term, not Qualid→Qualid
+                        , eqnWf      = fmap (\wf -> wf { wfMeasure = subst f (wfMeasure wf) }) (eqnWf d)
+                          -- wfRelation is a Qualid (e.g., lt); Subst maps Qualid→Term, not Qualid→Qualid, so left unsubstituted
                         , eqnClauses = fmap (substClause f) (eqnClauses d)
                         , eqnWheres  = [ew { ewBinders = map (subst f) (ewBinders ew)
                                            , ewRetType = subst f <$> ewRetType ew

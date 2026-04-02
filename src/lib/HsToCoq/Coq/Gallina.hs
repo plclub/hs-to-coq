@@ -52,7 +52,7 @@ module HsToCoq.Coq.Gallina (
   -- $Vernacular
   Sentence(..),
   EquationsDef(..),
-  WfAnnotation,
+  WfAnnotation(..),
   EquationsClause(..),
   EquationsWhere(..),
   Assumption(..),
@@ -296,25 +296,29 @@ data Sentence = AssumptionSentence       Assumption                             
               | EquationsSentence        EquationsDef                                          -- ^@Equations …@
               deriving (Eq, Ord, Show, Read, Typeable, Data)
 
--- |@Equations /name/ /binders/ : /retTy/ [by wf (/measure/) /relation/] := /name/ /pat/ … := /rhs/ ; … [where /name/ /binders/ : /retTy/ := …] .@
+-- |@Equations /name/ /binders/ : /retTy|_/ [by wf (/measure/) /relation/] := /name/ /pat/ … := /rhs/ ; … [where /name/ /binders/ : /retTy/ := …] .@
 --
--- Note: does not model @Equations?@, @noind@, @transparent@, or recursive
+-- When @retTy@ is absent, @_@ is emitted (Coq infers the type).
+-- Does not model @Equations?@, @noind@, @transparent@, or recursive
 -- where-clauses with @wf@ — these Equations plugin features are unsupported.
 data EquationsDef = EquationsDef
   { eqnName    :: Qualid                                 -- ^Function name
   , eqnBinders :: Binders                                -- ^Binders (non-empty; annotated with types when available)
-  , eqnRetType :: Maybe Term                             -- ^Return type
+  , eqnRetType :: Maybe Term                             -- ^Return type (emitted as @_@ when 'Nothing')
   , eqnWf      :: Maybe WfAnnotation                      -- ^Optional @by wf (measure) relation@
   , eqnClauses :: NonEmpty EquationsClause               -- ^Equation clauses (non-empty)
   , eqnWheres  :: [EquationsWhere]                       -- ^Where clauses for local helpers
   } deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |Well-founded recursion annotation: @by wf (measure) relation@.
-type WfAnnotation = (Term, Qualid)
+data WfAnnotation = WfAnnotation
+  { wfMeasure  :: Term    -- ^The measure expression
+  , wfRelation :: Qualid  -- ^The well-founded relation (e.g., @lt@)
+  } deriving (Eq, Ord, Show, Read, Typeable, Data)
 
 -- |A single equation clause: patterns on the LHS and a term on the RHS.
 data EquationsClause = EquationsClause
-  { ecPats :: NonEmpty Pattern  -- ^LHS patterns
+  { ecPats :: NonEmpty Pattern  -- ^LHS patterns (count should match explicit binder count in enclosing 'EquationsDef')
   , ecRHS  :: Term              -- ^RHS body
   } deriving (Eq, Ord, Show, Read, Typeable, Data)
 

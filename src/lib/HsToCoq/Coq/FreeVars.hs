@@ -139,8 +139,10 @@ instance HasBV Qualid Sentence where
   bvOf (ArgumentsSentence     _arg)       = mempty
   bvOf (CommentSentence       com)        = fvOf'  com
   bvOf (EquationsSentence eqd) =
-    binder (eqnName eqd) <> bindsNothing (foldScopes bvOf (eqnBinders eqd) $ fvOf (eqnRetType eqd) <> foldMap (\(m, r) -> fvOf m <> fvOf r) (eqnWf eqd)
-      -- Where-clause names scope over the main equations (they are local helpers)
+    binder (eqnName eqd) <> bindsNothing (foldScopes bvOf (eqnBinders eqd) $ fvOf (eqnRetType eqd) <> foldMap (\wf -> fvOf (wfMeasure wf) <> fvOf (wfRelation wf)) (eqnWf eqd)
+      -- Where-clause names scope over the main equations (they are local helpers).
+      -- Note: mutual recursion between where clauses is not modeled — each where clause's
+      -- body only sees its own binders, not sibling where-clause names.
       <> foldMap (binder . ewName) (eqnWheres eqd) `scopesOver`
          foldMap (\cl -> foldMap bvOf (ecPats cl) `scopesOver` fvOf (ecRHS cl)) (eqnClauses eqd)
       <> foldMap (\ew -> foldScopes bvOf (ewBinders ew) $ fvOf (ewRetType ew)

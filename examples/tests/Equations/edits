@@ -13,6 +13,7 @@ equations Equations.clamp
 equations Equations.guardFirst
 equations Equations.clampN
 equations Equations.constN
+equations Equations.myId
 
 # halve uses by-wf termination with a measure
 add Equations Fixpoint Equations.toNatural (n : N) : nat := match n with | Z => 0 | S m => Datatypes.S (Equations.toNatural m) end.
@@ -24,27 +25,32 @@ add Equations Definition equations_test_not_1 := not__equation_1.
 add Equations Definition equations_test_not_2 := not__equation_2.
 add Equations Definition equations_test_id := id__equation_1.
 add Equations Definition equations_test_through := through_equation_1.
-add Equations Definition equations_test_and := and__equation_1.
+add Equations Definition equations_test_and_1 := and__equation_1.
+add Equations Definition equations_test_and_2 := and__equation_2.
 add Equations Definition equations_test_where := applyHelper_equation_1.
 add Equations Definition equations_test_nested := applyAndKeep_equation_1.
 add Equations Definition equations_test_rec := toNat_equation_1.
-add Equations Definition equations_test_bywf := halve_equation_1.
+add Equations Definition equations_test_bywf_1 := halve_equation_1.
+add Equations Definition equations_test_bywf_2 := halve_equation_2.
+add Equations Definition equations_test_bywf_3 := halve_equation_3.
 add Equations Definition equations_test_isZ := isZ_equation_1.
 add Equations Definition equations_test_clamp := clamp_equation_1.
 add Equations Definition equations_test_guardFirst := guardFirst_equation_1.
 add Equations Definition equations_test_clampN := clampN_equation_1.
 add Equations Definition equations_test_constN := constN_equation_1.
+add Equations Definition equations_test_myId := myId_equation_1.
 
 order Equations.not_ equations_test_not_1 equations_test_not_2
 order Equations.id_ equations_test_id
 order Equations.through equations_test_through
-order Equations.and_ equations_test_and
+order Equations.and_ equations_test_and_1 equations_test_and_2
 order Equations.applyHelper equations_test_where
 order Equations.applyAndKeep equations_test_nested
 order Equations.toNat equations_test_rec
-order Equations.halve equations_test_bywf
+order Equations.halve equations_test_bywf_1 equations_test_bywf_2 equations_test_bywf_3
 order Equations.isZ equations_test_isZ
 order Equations.clamp equations_test_clamp
 order Equations.guardFirst equations_test_guardFirst
 order Equations.clampN equations_test_clampN
 order Equations.constN equations_test_constN
+order Equations.myId equations_test_myId
