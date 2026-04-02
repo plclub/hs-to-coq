@@ -201,8 +201,6 @@ toEquationsSentence cdef mterm = do
     liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " could not extract multi-clause equations from body (inner term is " ++ showConstr (toConstr innerBody) ++ "); emitting single equation"
   when (any isUnderscoredBinder annotatedBinders) $
     liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " has binders with inferred types (_); type signature may be incomplete"
-  when (null whereClauses && hasNestedPatLet innerBody) $
-    liftIO $ hPutStrLn stderr $ "Note: equations edit for " ++ show name ++ " has a nested let with pattern matching that was not extracted as a where clause (only the outermost let is considered)"
   let binderNameList = [ n | b <- annotatedBinders
                            , not (isImplicitBinder b)
                            , Bare n <- toListOf binderIdents b ]
@@ -332,44 +330,48 @@ toEquationsSentence cdef mterm = do
     extractEqns (HasType t _)    = extractEqns t
     extractEqns _ = []
 
-    -- Extract the top-level let binding as an Equations where clause, if its
-    -- value is a function with pattern matching.  Does not recurse into nested
-    -- lets — only the immediately enclosing let is examined.  As a result, if
-    -- a non-pattern-matching let precedes a pattern-matching let (as in
-    -- applyAndKeep), neither is extracted as a where clause.
+    -- Extract a where clause from nested let bindings: look through each Let
+    -- to find one whose value is a function with pattern matching.  Returns
+    -- at most one where clause (the first pattern-matching let found).
+    -- hs-to-coq's convertLocalBinds (Expr.hs) uses foldrM to build nested Coq
+    -- Lets from binding groups, so a simple let (e.g., y = x) may appear outermost
+    -- even when a pattern-matching helper was written first in the source.
+    -- Recursing into the outer body handles this (see applyAndKeep test case).
     extractWheres (Parens t)     = extractWheres t
     extractWheres (HasType t _)  = extractWheres t
-    extractWheres (Let localName _localBinders localTy localVal _outerBody) =
+    extractWheres (Let localName _localBinders localTy localVal outerBody) =
       let (localFunBinders, localInner) = stripFun localVal
           localEqns = extractEqns localInner
           (annotatedWhereBinders, whereRetTy) = case localTy of
             Just ty -> annotateAndStrip localFunBinders ty
             Nothing -> (localFunBinders, Nothing)
       in case localEqns of
-           [] -> []
+           [] -> extractWheres outerBody  -- recurse: this let has no patterns, check inner lets
            (e:es) -> [EquationsWhere { ewName = localName, ewBinders = annotatedWhereBinders
                                        , ewRetType = whereRetTy, ewClauses = e :| es }]
     extractWheres _ = []
 
-    -- Check if the outer body of a non-pattern-matching let contains a nested
-    -- let with pattern matching (which extractWheres would have missed).
-    hasNestedPatLet (Let _ _ _ val body) =
-      not (null (extractEqns (snd (stripFun val)))) || hasNestedPatLet body
-    hasNestedPatLet (Parens t)    = hasNestedPatLet t
-    hasNestedPatLet (HasType t _) = hasNestedPatLet t
-    hasNestedPatLet _ = False
-
     -- Generate a single equation with variable patterns for all explicit binders.
+    -- If a where clause was extracted, strip that specific let binding from the
+    -- body (it may be nested behind non-pattern-matching lets).
     varPatternEqn binders inner =
       let explicitNames = [ n | b <- binders, Bare n <- toListOf binderIdents b
                               , not (isImplicitBinder b) ]
           hasWheres = not (null (extractWheres inner :: [EquationsWhere]))
-          rhs = case inner of
-                  Let _ _ _ _ outerBody | hasWheres -> outerBody
-                  _                                 -> inner
+          rhs | hasWheres = stripWhereLet inner
+              | otherwise = inner
       in case Data.List.NonEmpty.nonEmpty explicitNames of
            Nothing -> []
            Just names -> [EquationsClause (fmap (QualidPat . Bare) names) rhs]
+
+    -- Remove the let binding that was extracted as a where clause from the body.
+    -- Walks through nested lets to find the pattern-matching one.
+    stripWhereLet (Parens t)    = Parens (stripWhereLet t)
+    stripWhereLet (HasType t k) = HasType (stripWhereLet t) k
+    stripWhereLet (Let n bs ty val outerBody)
+      | not (null (extractEqns (snd (stripFun val)))) = outerBody  -- this is the where-clause let; remove it
+      | otherwise = Let n bs ty val (stripWhereLet outerBody)      -- keep this let, recurse into body
+    stripWhereLet t = t
 
     isUnderscoredBinder (Typed _ _ _ Underscore) = True
     isUnderscoredBinder _ = False
