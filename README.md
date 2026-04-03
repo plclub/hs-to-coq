@@ -1,7 +1,7 @@
 
 # hs-to-coq
 
-![hs-to-coq](https://github.com/plclub/hs-to-coq/workflows/hs-to-coq/badge.svg?branch=master)
+[![hs-to-coq](https://github.com/plclub/hs-to-coq/actions/workflows/hs-to-coq.yml/badge.svg)](https://github.com/plclub/hs-to-coq/actions/workflows/hs-to-coq.yml)
 
 Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-coq-devs.20.26.20users)
 
