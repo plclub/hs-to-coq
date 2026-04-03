@@ -65,9 +65,8 @@ convertPat (GHC.VarPat NOEXTP (L _ x)) =
 
 convertPat (LazyPat NOEXTP p) = do
   p' <- convertLPat p
-  r <- refutability p'
-  if isRefutable r then return p' -- convUnsupported "lazy refutable pattern"
-                   else return p'
+  _ <- refutability p'
+  return p'
 
 convertPat (GHC.AsPat NOEXTP x p) =
   Coq.AsPat <$> convertLPat p <*> var ExprNS (unLoc x)
@@ -79,7 +78,7 @@ convertPat (BangPat NOEXTP p) =
   convertLPat p
 
 #if __GLASGOW_HASKELL__ >= 806
-convertPat (ListPat overloaded pats) =
+convertPat (ListPat _overloaded pats) =
 #else
 convertPat (ListPat pats PlaceHolder overloaded') | let overloaded = fmap snd overloaded' =
 #endif
@@ -156,7 +155,7 @@ convertPat (CoPat NOEXTP _ _ _) =
   convUnsupported "coercion patterns"
 #endif
 
-convertPat (ViewPat _ _ _) =
+convertPat ViewPat{} =
   convUnsupported "view patterns"
 
 convertPat (SplicePat NOEXTP _) =
@@ -174,13 +173,19 @@ convertPat (LitPat NOEXTP lit) =
     HsInt64Prim  _ _       -> convUnsupported "`Int64#' literal patterns"
     HsWord64Prim _ _       -> convUnsupported "`Word64#' literal patterns"
     HsInteger    _ int _ty -> convertIntegerPat "`Integer' literal patterns" int
-    HsRat        _ _ _     -> convUnsupported "`Rational' literal patterns"
+    HsRat{}               -> convUnsupported "`Rational' literal patterns"
     HsFloatPrim  _ _       -> convUnsupported "`Float#' literal patterns"
     HsDoublePrim _ _       -> convUnsupported "`Double#' literal patterns"
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 910
+    _                      -> convUnsupported "unhandled literal pattern"
+#elif __GLASGOW_HASKELL__ >= 806
     XLit v -> noExtCon v
+#endif
 
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
 convertPat (NPat _ (L _ (XOverLit v)) _negate _eq) = noExtCon v
+#endif
+#if __GLASGOW_HASKELL__ >= 806
 convertPat (NPat _ (L _ OverLit{..}) _negate _eq) = -- And strings
 #else
 convertPat (NPat (L _ OverLit{..}) _negate _eq PlaceHolder) = -- And strings
@@ -190,7 +195,7 @@ convertPat (NPat (L _ OverLit{..}) _negate _eq PlaceHolder) = -- And strings
     HsFractional _        -> convUnsupported "fractional literal patterns"
     HsIsString   _src str -> pure . StringPat $ fsToText str
 
-convertPat (NPlusKPat _ _ _ _ _ _) =
+convertPat NPlusKPat{} =
   convUnsupported "n+k-patterns"
 
 convertPat SumPat{} =
@@ -202,6 +207,12 @@ convertPat SumPat{} =
 -- and BangPat — the type info is redundant since Coq infers types.
 convertPat (SigPat NOEXTP p _) =
   convertLPat p
+#if __GLASGOW_HASKELL__ >= 910
+convertPat EmbTyPat{} =
+  convUnsupported "embedded type patterns"
+convertPat InvisPat{} =
+  convUnsupported "invisible type argument patterns"
+#endif
 convertPat XPat{} =
   convUnsupported "`XPat' constructor"  -- Can't use noExtCon to dispatch this on GHC 8.8
 #else
@@ -253,17 +264,17 @@ isRefutable Refutable = True
 isRefutable _ = False
 
 -- Module-local
-constructor_refutability :: ConversionMonad r m => Qualid -> [Pattern] -> m Refutability
-constructor_refutability con args =
+constructorRefutability :: ConversionMonad r m => Qualid -> [Pattern] -> m Refutability
+constructorRefutability con args =
   isSoleConstructor con >>= \case
     Nothing    -> pure Refutable -- Error
     Just True  -> maximum . (SoleConstructor :) <$> traverse refutability args
     Just False -> pure Refutable
 
 refutability :: ConversionMonad r m => Pattern -> m Refutability
-refutability (ArgsPat con args)         = constructor_refutability con args
-refutability (ExplicitArgsPat con args) = constructor_refutability con (toList args)
-refutability (InfixPat arg1 con arg2)   = constructor_refutability (Bare con) [arg1,arg2]
+refutability (ArgsPat con args)         = constructorRefutability con args
+refutability (ExplicitArgsPat con args) = constructorRefutability con (toList args)
+refutability (InfixPat arg1 con arg2)   = constructorRefutability (Bare con) [arg1,arg2]
 refutability (Coq.AsPat pat _)          = refutability pat
 refutability (InScopePat _ _)           = pure Refutable -- TODO: Handle scopes
 refutability (QualidPat name)           = isSoleConstructor name <&> \case
@@ -286,7 +297,7 @@ data PatternSummary = OtherSummary | ConApp Qualid [PatternSummary]
 patternSummary :: TypeInfoMonad m => Pattern -> m PatternSummary
 patternSummary (ArgsPat con args)         = ConApp con <$> mapM patternSummary args
 patternSummary (ExplicitArgsPat con args) = ConApp con <$> mapM patternSummary (toList args)
-patternSummary (InfixPat _ _ _)           = pure OtherSummary
+patternSummary InfixPat{}                 = pure OtherSummary
 patternSummary (Coq.AsPat pat _)          = patternSummary pat
 patternSummary (InScopePat pat _)         = patternSummary pat
 patternSummary (QualidPat name)           = isConstructor name <&> \case
@@ -332,7 +343,7 @@ isCompleteMultiPattern mpats = null <$> goGroup (reverse mpats)
     goMP missings mpats = multPatternSummary mpats >>= goPatsSet missings
 
     goPatsSet :: Missings -> [PatternSummary] -> m Missings
-    goPatsSet missingSet pats = concat <$> mapM (\missing -> gos missing pats) missingSet
+    goPatsSet missingSet pats = concat <$> mapM (`gos` pats) missingSet
 
     -- Combinding an conjunction of patterns
     gos :: Missing -> [PatternSummary] -> m Missings

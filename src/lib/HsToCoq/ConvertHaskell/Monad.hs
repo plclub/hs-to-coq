@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, TupleSections, LambdaCase, RecordWildCards,
              OverloadedLists, OverloadedStrings, ScopedTypeVariables,
              RankNTypes, ConstraintKinds, FlexibleContexts,
-             TemplateHaskell, MultiParamTypeClasses,
+             TemplateHaskell,
              FunctionalDependencies,
              FlexibleInstances,
              TypeApplications

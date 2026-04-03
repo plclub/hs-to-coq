@@ -76,7 +76,7 @@ toProgramFixpointSentence ConvertedDefinition{..} order tac
     , Just (name, binders, mty, body) <- decomposeFixpoint _convDefBody
     = if name /= _convDefName
       then editFailure "internal name and external name disagree?"
-      else let ty = fromMaybe (fromRight cty $ fst <$> useTypeInBinders' cty binders) mty
+      else let ty = fromMaybe (either (const cty) fst (useTypeInBinders' cty binders)) mty
                       -- Priority list:
                       --   (1) decomposed type;
                       --   (2) stripped converted type (the binders should already have been handled);

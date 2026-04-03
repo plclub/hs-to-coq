@@ -1,5 +1,4 @@
 {-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
@@ -40,9 +39,8 @@ aliasModule mkEdit alias orig = do
   pure (mkEdit alias orig)
 
 expandModuleIdent :: MonadParser s m => ModuleIdent -> m ModuleIdent
-expandModuleIdent mod = do
-  s <- getPart
-  pure (M.findWithDefault mod mod (aliasedModules s))
+expandModuleIdent mod =
+  M.findWithDefault mod mod . aliasedModules <$> getPart
 
 mkQualid :: MonadParser s m => ModuleIdent -> AccessIdent -> m Qualid
 mkQualid mod name = do

@@ -1,5 +1,4 @@
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -46,7 +45,7 @@ builtInClasses =
    infix 0 =:
 
 builtInDefaultMethods :: Map Qualid (Map Qualid Term)
-builtInDefaultMethods = fmap M.fromList $ M.fromList $
+builtInDefaultMethods = M.fromList <$> M.fromList
     [ "GHC.Base.Eq_" =:
         [ "GHC.Base.==" ~> Fun ["x", "y"] (App1 "negb" $ App2 "GHC.Base./=" "x" "y")
         , "GHC.Base./=" ~> Fun ["x", "y"] (App1 "negb" $ App2 "GHC.Base.==" "x" "y")

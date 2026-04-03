@@ -1,9 +1,7 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedLists       #-}
 {-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE TypeSynonymInstances  #-}
 
 module HsToCoq.Coq.Subst (
   -- * Things that can be substituted
@@ -163,6 +161,7 @@ instance Subst Notation where
   subst _f (ReservedNotationIdent _x)                 = error "subst"
   subst _f (NotationBinding _nb)                      = error "subst"
   subst _f (InfixDefinition _op _defn _oassoc _level) = error "subst"
+  subst _f (Abbreviation _qid _xs _defn _level)       = error "subst"
 
 instance Subst NotationBinding where
   subst _f _ = error "subst"
@@ -242,6 +241,8 @@ instance Subst Term where
   subst f (Bang t) = Bang (subst f t)
 
   subst f (Record defns) = Record [ (v, subst f t) | (v,t) <- defns ]
+
+  subst f (Sigma x ty body) = Sigma x (subst f ty) (subst f body)
 
 instance (Subst a, Functor f) => Subst (f a) where
   subst f = fmap (subst f)

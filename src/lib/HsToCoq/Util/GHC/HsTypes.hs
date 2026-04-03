@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, PartialTypeSignatures #-}
+{-# LANGUAGE CPP #-}
 
 module HsToCoq.Util.GHC.HsTypes (
   module HsTypes,
@@ -14,7 +14,7 @@ import GHC.Stack (HasCallStack)
 import GHC.Plugins
 import GHC.Hs.Type as HsTypes
 import GHC.Hs.Extension (GhcPass, GhcRn)
-import Language.Haskell.Syntax.Extension (IdP, DataConCantHappen, dataConCantHappen)
+import Language.Haskell.Syntax.Extension (IdP, XRec, DataConCantHappen, dataConCantHappen)
 #else
 #if __GLASGOW_HASKELL__ >= 810
 import GHC.Hs.Extension
@@ -54,7 +54,7 @@ selectorFieldOcc_ (FieldOcc n _) = n
 selectorFieldOcc_ (XFieldOcc v) = noExtCon v
 #endif
 
-fieldOcc :: GenLocated _ RdrName -> Name -> FieldOcc GhcRn
+fieldOcc :: XRec GhcRn RdrName -> Name -> FieldOcc GhcRn
 fieldOcc r n = FieldOcc n r
 
 -- GHC 9.x replaced NoExtCon with DataConCantHappen (an empty type used

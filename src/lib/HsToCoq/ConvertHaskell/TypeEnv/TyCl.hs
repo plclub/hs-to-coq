@@ -75,8 +75,8 @@ unpeelTyClVars t _className = t
 
 convertedTyClBinderArgs :: ConvertedTyCl -> [Binder]
 convertedTyClBinderArgs ConvertedTyCl{..} =
-  fmap (\(ex, (q, t)) -> mkTypedBinder ex (Ident q) t)
-   $ zip convertedTyClVisibility convertedTyClTyVars
+  (\(ex, (q, t)) -> mkTypedBinder ex (Ident q) t)
+   <$> zip convertedTyClVisibility convertedTyClTyVars
 
 convertedTyClBinders :: ConvertedTyCl -> [Binder]
 convertedTyClBinders tc@ConvertedTyCl{..} =
@@ -106,7 +106,7 @@ convertTyCl cl = do
   convertedTyClMethods   <- mapM convertId $ classMethods cl
   convertedTyClPredTypes <- mapM convertPredType $ classSCTheta cl
   let convertedTyClVisibility = (\b -> if isVisibleTyConBinder b then Explicit else Implicit)
-                               <$> (tyConBinders $ classTyCon cl)
+                               <$> tyConBinders (classTyCon cl)
   pure ConvertedTyCl{..}
 
 filterVisibleVars :: ConvertedTyCl -> [Term] -> [Term]

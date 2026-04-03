@@ -1,0 +1,17 @@
+- arguments:
+    - --cpp-define=__GLASGOW_HASKELL__=910
+    - --cpp-include=src/include
+
+# CPP macro expansions create apparent redundant brackets/eta-reduce opportunities
+# that cannot actually be simplified without breaking cross-version compatibility.
+- ignore: {name: "Redundant bracket", within: HsToCoq.ConvertHaskell.Expr}
+- ignore: {name: "Eta reduce", within: [getLoc_, noLoc_]}
+
+# CPP-separated imports cannot be merged
+- ignore: {name: "Use fewer imports", within: HsToCoq.ConvertHaskell.Pattern}
+
+# NonEmpty pattern synonyms cannot use list literal syntax
+- ignore: {name: "Use list literal pattern", within: HsToCoq.Coq.Gallina.Util}
+
+# Template Haskell splice brackets from CPP macro expansion
+- ignore: {name: "Redundant bracket", within: HsToCoq.Util.GHC.OnOff}

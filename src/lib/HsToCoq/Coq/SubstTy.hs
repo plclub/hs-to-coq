@@ -148,5 +148,7 @@ instance SubstTy Term where
 
   substTy f (Record defns) = Record [ (v, subst f t) | (v,t) <- defns ]
 
+  substTy f (Sigma x ty body) = Sigma x (subst f ty) (subst f body)
+
 instance (SubstTy a, Functor f) => SubstTy (f a) where
   substTy f = fmap (substTy f)

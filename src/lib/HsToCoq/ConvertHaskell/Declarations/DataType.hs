@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase,
              OverloadedStrings,
              FlexibleContexts #-}
+{-# OPTIONS_GHC -Wno-overlapping-patterns #-}
 
 #include "ghc-compat.h"
 
@@ -32,9 +33,9 @@ import Control.Monad.Trans.Maybe
 import GHC hiding (Name)
 import qualified GHC
 
-import HsToCoq.Util.GHC.HsTypes (selectorFieldOcc_)
-#if __GLASGOW_HASKELL__ >= 806
-import HsToCoq.Util.GHC.HsTypes (noExtCon)
+import HsToCoq.Util.GHC.HsTypes (selectorFieldOcc_, noExtCon)
+#if __GLASGOW_HASKELL__ >= 910
+import Language.Haskell.Syntax.Extension (dataConCantHappen)
 #endif
 
 import HsToCoq.Coq.Gallina as Coq
@@ -76,8 +77,10 @@ convertConDecl :: ConversionMonad r m
                => Term -> [Binder]
                -> ConDecl GhcRn
                -> m [Constructor]
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
 convertConDecl _ _ (XConDecl v) = noExtCon v
+#endif
+#if __GLASGOW_HASKELL__ >= 806
 convertConDecl curType extraArgs (ConDeclH98
     { con_name = lname, con_ex_tvs = lqvs, con_mb_cxt = mlcxt, con_args = details }) =
 #else
@@ -104,9 +107,9 @@ convertConDecl curType extraArgs (ConDeclH98 lname mlqvs mlcxt details _doc)
   case details of
     RecCon (L _ fields) ->
       do
-       let qualids =  traverse (var ExprNS) $
-                      map (selectorFieldOcc_ . unLoc) $
-                      concatMap (cd_fld_names . unLoc) fields
+       let qualids =  traverse
+                      (var ExprNS . selectorFieldOcc_ . unLoc)
+                      (concatMap (cd_fld_names . unLoc) fields)
        fieldInfo <- fmap RecordFields qualids
        storeConstructorFields con fieldInfo
        qualids <- qualids
@@ -143,10 +146,12 @@ convertConDecl curType extraArgs (ConDeclGADT lnames sigTy _doc) = do
       -- the specificity flag with HsBndrRequired (9.10) or () (9.0-9.8) so
       -- convertHsSigType_ can process them uniformly.
 #if __GLASGOW_HASKELL__ >= 910
-      let fqvars (L _ (HsOuterImplicit qvs)) = HsQTvs qvs []
+      let fqvars (L _ (HsOuterImplicit qvs))  = HsQTvs qvs []
           fqvars (L _ (HsOuterExplicit _ qvs)) = HsQTvs [] ((fmap . fmap) unanno qvs)
-          unanno (UserTyVar x _ i) = UserTyVar x (HsBndrRequired noExtField) i
-          unanno (KindedTyVar x _ i j) = KindedTyVar x (HsBndrRequired noExtField) i j in
+          fqvars (L _ (XHsOuterTyVarBndrs v))  = dataConCantHappen v
+          unanno (UserTyVar x _ i)      = UserTyVar x (HsBndrRequired noExtField) i
+          unanno (KindedTyVar x _ i j)  = KindedTyVar x (HsBndrRequired noExtField) i j
+          unanno (XTyVarBndr v)         = dataConCantHappen v in
 #elif __GLASGOW_HASKELL__ >= 900
       let fqvars (L _ (HsOuterImplicit qvs)) = HsQTvs qvs []
           fqvars (L _ (HsOuterExplicit _ qvs)) = HsQTvs [] ((fmap . fmap) unanno qvs)
@@ -196,7 +201,7 @@ rewriteDataTypeArguments dta bs = do
         let (tbs, bs') = flip span bs $ \case
                            Typed g' ei' _ ty' -> g == g' && ei == ei' && ty == ty'
                            _                  -> False
-        in Typed g ei (foldl' (\xs (Typed _ _ xs' _) -> xs <> xs') xs0 tbs) ty : coalesceTypedBinders bs'
+        in Typed g ei (foldl' (\xs b -> case b of Typed _ _ xs' _ -> xs <> xs'; _ -> xs) xs0 tbs) ty : coalesceTypedBinders bs'
       coalesceTypedBinders (b : bs) =
         b : coalesceTypedBinders bs
 
@@ -222,7 +227,7 @@ convertDataDefn curType extraArgs (HsDataDefn NOEXTP _nd lcxt _ctype ksig cons _
   (,) <$> maybe (pure $ Sort Type) convertLHsType ksig
       <*> (traverse addAdditionalConstructorScope =<<
            foldTraverse (convertConDecl curType extraArgs . unLoc) cons)
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
 convertDataDefn _ _ (XHsDataDefn v) = noExtCon v
 #endif
 

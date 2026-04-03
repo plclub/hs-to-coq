@@ -99,8 +99,9 @@ convertType_ b (FunTy ty1 ty2) | isPredTy ty1 = do
                                | otherwise    = Arrow <$> convertType_ b ty1 <*> convertType_ b ty2
 #endif                                   
 convertType_ _ (LitTy tl) = case tl of
-  NumTyLit int -> either convUnsupported' (pure . Num) $ convertInteger "type-level integers" int
-  StrTyLit str -> pure $ convertFastString str
+  NumTyLit int  -> either convUnsupported' (pure . Num) $ convertInteger "type-level integers" int
+  StrTyLit str  -> pure $ convertFastString str
+  CharTyLit _   -> convUnsupported' "type-level character literals"
 convertType_ _ (CastTy _ty _coercion) = convUnsupported' "Kind cast"
 convertType_ _ (CoercionTy _coercion) = convUnsupported' "Injection of a Coercion into a type"
   

@@ -336,11 +336,10 @@ subtractEdits edits1 edits2 =
 
 -- Derived edits
 useProgram :: Qualid -> Edits -> Bool
-useProgram name edits = or
-    [ any isWellFounded                      (M.lookup name (_termination edits))
-    , any (any isWellFounded . _termination) (M.lookup name (_inEdits edits))
-    , name `M.member`_obligations edits
-    ]
+useProgram name edits =
+    any isWellFounded (M.lookup name (_termination edits))
+    || any (any isWellFounded . _termination) (M.lookup name (_inEdits edits))
+    || name `M.member` _obligations edits
   where
    isWellFounded WellFoundedTA {} = True
    isWellFounded _                = False
@@ -354,69 +353,69 @@ lookupUniverseStatus name edits
   | otherwise = NotUnivPoly
 
 -- Module-local'
-duplicate_for' :: String -> (a -> String) -> a -> String
-duplicate_for' what disp x = "Duplicate " ++ what ++ " for " ++ disp x
+duplicateFor' :: String -> (a -> String) -> a -> String
+duplicateFor' what disp x = "Duplicate " ++ what ++ " for " ++ disp x
 
 -- Module-local
-duplicate_for :: String -> String -> String
-duplicate_for what = duplicate_for' what id
+duplicateFor :: String -> String -> String
+duplicateFor what = duplicateFor' what id
 
 -- Module-local
-duplicateI_for :: String -> Ident -> String
-duplicateI_for what = duplicate_for' what T.unpack
+duplicateIFor :: String -> Ident -> String
+duplicateIFor what = duplicateFor' what T.unpack
 
 -- Module-local
-duplicateQ_for :: String -> Qualid -> String
-duplicateQ_for what = duplicate_for' what (T.unpack . qualidToIdent)
+duplicateQFor :: String -> Qualid -> String
+duplicateQFor what = duplicateFor' what (T.unpack . qualidToIdent)
 
 -- Module-local
-duplicateP_for :: Gallina g => String -> g -> String
-duplicateP_for what = duplicate_for' what showP
+duplicatePFor :: Gallina g => String -> g -> String
+duplicatePFor what = duplicateFor' what showP
 
 descDuplEdit :: Edit                    -> String
 descDuplEdit = \case
-  TypeSynonymTypeEdit              syn        _ -> duplicateI_for  "type synonym result types"                      syn
-  DataTypeArgumentsEdit            ty         _ -> duplicateQ_for  "data type argument specifications"              ty
-  TerminationEdit                  what _       -> duplicateQ_for  "termination requests"                           what
-  RedefinitionEdit                 def          -> duplicateQ_for  "redefinitions"                                  (defName def)
-  SkipEdit                         what         -> duplicateQ_for  "skips"                                          what
-  SkipConstructorEdit              con          -> duplicateQ_for  "skipped constructor requests"                   con
-  SkipClassEdit                    cls          -> duplicateQ_for  "skipped class requests"                         cls
-  SkipMethodEdit                   cls meth     -> duplicate_for   "skipped method requests"                        (prettyLocalName cls meth)
-  SkipEquationEdit                 fun pats     -> duplicateP_for  "skipped equation requests"                      (ArgsPat fun $ toList pats)
-  SkipCasePatternEdit              pat          -> duplicateP_for  "skipped case pattern requests"                  pat
-  SkipModuleEdit                   mod          -> duplicate_for   "skipped module requests"                        (moduleNameString mod)
-  ImportModuleEdit                 mod          -> duplicate_for   "imported module requests"                       (moduleNameString mod)
-  HasManualNotationEdit            what         -> duplicate_for   "has manual notation"                            (moduleNameString what)
-  AxiomatizeModuleEdit             mod          -> duplicate_for   "module axiomatizations"                         (moduleNameString mod)
-  AxiomatizeOriginalModuleNameEdit mod          -> duplicate_for   "module axiomatizations under the original name" (moduleNameString mod)
-  AxiomatizeDefinitionEdit         what         -> duplicateQ_for  "definition axiomatizations"                     what
-  UnaxiomatizeDefinitionEdit       what         -> duplicateQ_for  "definition unaxiomatizations"                   what
-  AdditionalScopeEdit              place name _ -> duplicate_for   "additions of a scope"                           (prettyScoped place name)
-  RenameEdit                       hs _         -> duplicate_for   "renamings"                                      (prettyNSIdent hs)
-  ClassKindEdit                    cls _        -> duplicateQ_for  "class kinds"                                    cls
-  DataKindEdit                     dat _        -> duplicateQ_for  "data kinds"                                     dat
-  PolyKindEdit                     dat _        -> duplicateQ_for  "polykinds"                                      dat
-  DeleteUnusedTypeVariablesEdit    qid          -> duplicateQ_for  "unused type variables deletions"                qid
-  ObligationsEdit                  what _       -> duplicateQ_for  "obligation kinds"                               what
-  CoinductiveEdit                  ty           -> duplicateQ_for  "coinductive data types"                         ty
-  RenameModuleEdit                 m1 _         -> duplicate_for   "renamed modules"                                (moduleNameString m1)
+  TypeSynonymTypeEdit              syn        _ -> duplicateIFor  "type synonym result types"                      syn
+  DataTypeArgumentsEdit            ty         _ -> duplicateQFor  "data type argument specifications"              ty
+  TerminationEdit                  what _       -> duplicateQFor  "termination requests"                           what
+  RedefinitionEdit                 def          -> duplicateQFor  "redefinitions"                                  (defName def)
+  SkipEdit                         what         -> duplicateQFor  "skips"                                          what
+  SkipConstructorEdit              con          -> duplicateQFor  "skipped constructor requests"                   con
+  SkipClassEdit                    cls          -> duplicateQFor  "skipped class requests"                         cls
+  SkipMethodEdit                   cls meth     -> duplicateFor   "skipped method requests"                        (prettyLocalName cls meth)
+  SkipEquationEdit                 fun pats     -> duplicatePFor  "skipped equation requests"                      (ArgsPat fun $ toList pats)
+  SkipCasePatternEdit              pat          -> duplicatePFor  "skipped case pattern requests"                  pat
+  SkipModuleEdit                   mod          -> duplicateFor   "skipped module requests"                        (moduleNameString mod)
+  ImportModuleEdit                 mod          -> duplicateFor   "imported module requests"                       (moduleNameString mod)
+  HasManualNotationEdit            what         -> duplicateFor   "has manual notation"                            (moduleNameString what)
+  AxiomatizeModuleEdit             mod          -> duplicateFor   "module axiomatizations"                         (moduleNameString mod)
+  AxiomatizeOriginalModuleNameEdit mod          -> duplicateFor   "module axiomatizations under the original name" (moduleNameString mod)
+  AxiomatizeDefinitionEdit         what         -> duplicateQFor  "definition axiomatizations"                     what
+  UnaxiomatizeDefinitionEdit       what         -> duplicateQFor  "definition unaxiomatizations"                   what
+  AdditionalScopeEdit              place name _ -> duplicateFor   "additions of a scope"                           (prettyScoped place name)
+  RenameEdit                       hs _         -> duplicateFor   "renamings"                                      (prettyNSIdent hs)
+  ClassKindEdit                    cls _        -> duplicateQFor  "class kinds"                                    cls
+  DataKindEdit                     dat _        -> duplicateQFor  "data kinds"                                     dat
+  PolyKindEdit                     dat _        -> duplicateQFor  "polykinds"                                      dat
+  DeleteUnusedTypeVariablesEdit    qid          -> duplicateQFor  "unused type variables deletions"                qid
+  ObligationsEdit                  what _       -> duplicateQFor  "obligation kinds"                               what
+  CoinductiveEdit                  ty           -> duplicateQFor  "coinductive data types"                         ty
+  RenameModuleEdit                 m1 _         -> duplicateFor   "renamed modules"                                (moduleNameString m1)
   AliasModuleEdit                  _ _          -> error "Alias module edits are never duplicates"
-  AddEdit                          _ _ _        -> error "Add edits are never duplicates"
+  AddEdit{}                                     -> error "Add edits are never duplicates"
   RewriteEdit                      _            -> error "Rewrites are never duplicates"
   OrderEdit                        _            -> error "Order edits are never duplicates"
-  SimpleClassEdit                  cls          -> duplicateQ_for  "simple class requests"                          cls
-  InlineMutualEdit                 fun          -> duplicateQ_for  "inlined mutually recursive functions"           fun
-  SetTypeEdit                      qid _        -> duplicateQ_for  "set types"                                      qid
-  CollapseLetEdit                  qid          -> duplicateQ_for  "collapsed lets"                                 qid
+  SimpleClassEdit                  cls          -> duplicateQFor  "simple class requests"                          cls
+  InlineMutualEdit                 fun          -> duplicateQFor  "inlined mutually recursive functions"           fun
+  SetTypeEdit                      qid _        -> duplicateQFor  "set types"                                      qid
+  CollapseLetEdit                  qid          -> duplicateQFor  "collapsed lets"                                 qid
   InEdit                           _ _          -> error "In Edits are never duplicates"
   ExceptInEdit                     _ _          -> error "ExceptIn Edits are never duplicates"
   PromoteEdit                      _            -> error "Promote edits are never duplicates"
   PolyrecEdit                      _            -> error "Polyrec edits are never duplicates"
-  UniversePolymorphicEdit          qid          -> duplicateQ_for  "universe polymorphic requests"                  qid
-  UniverseCumulativeEdit           qid          -> duplicateQ_for  "universe cumulative requests"                   qid
-  EquationsEdit                    qid          -> duplicateQ_for  "equations requests"                              qid
-  InvariantEdit                    _ qid _ _ _ _  -> duplicateQ_for "Duplicate invariant for the same definition"   qid
+  UniversePolymorphicEdit          qid          -> duplicateQFor  "universe polymorphic requests"                  qid
+  UniverseCumulativeEdit           qid          -> duplicateQFor  "universe cumulative requests"                   qid
+  EquationsEdit                    qid          -> duplicateQFor  "equations requests"                              qid
+  InvariantEdit                    _ qid _ _ _ _  -> duplicateQFor "Duplicate invariant for the same definition"   qid
   where
     prettyScoped place name = let pplace = case place of
                                     SPValue       -> "value"
@@ -500,7 +499,7 @@ addExceptInEdit qids edit =
 -- So instead, we have the below function that accepts a Sentence and returns
 -- an (Edits -> m Edits)
 sentenceEdit :: MonadError String m => ModuleName -> Sentence -> Phase -> Edits -> m Edits
-sentenceEdit mod sent ph = return . (additions.at mod.non mempty %~ (addPhase ph sent))
+sentenceEdit mod sent ph = return . (additions.at mod.non mempty %~ addPhase ph sent)
 
 
 
@@ -548,8 +547,8 @@ addInvariantEdit modname qid binderList constrName useSigmaQids@(_:_) def@(CoqDe
       sigmaBVTypeParams = foldMap (toListOf binderIdents) binderList
       tyArgs = fromList $ fmap (PosArg . Qualid) sigmaBVTypeParams -- could raise an error!
       sigmaBVType = if null binderList
-        then (Qualid rawTypeQid)
-        else (App (Qualid rawTypeQid) tyArgs)
+        then Qualid rawTypeQid
+        else App (Qualid rawTypeQid) tyArgs
 
       sigmaArg = PosArg (Qualid sigmaBoundVar)
       sigmaPredicate = App (Qualid invariantQualid) (sigmaArg :| [])

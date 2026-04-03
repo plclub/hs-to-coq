@@ -221,11 +221,10 @@ loadIFace mi filepath = liftIO (decodeFileEither filepath) >>= \case
                            | key <- M.keys (iface^.lens)
                            , typeInfo & has (lens.ix key) ]
         unless (null conflictKeys) $ conflictKeysErr lensName conflictKeys
-        return ()
 
     parseErr = liftIO $ do
         hPutStrLn stderr $ "Could not parse interface file " ++ filepath
-        hPutStrLn stderr $ "(please delete or regenerate)"
+        hPutStrLn stderr "(please delete or regenerate)"
         exitFailure
 
     shouldBeEmptyErr field = liftIO $ do
@@ -234,15 +233,15 @@ loadIFace mi filepath = liftIO (decodeFileEither filepath) >>= \case
         exitFailure
 
     badKeysErr field badKeys = liftIO $ do
-        hPutStrLn stderr $ "Unexpected keys"
+        hPutStrLn stderr "Unexpected keys"
         hPutStrLn stderr $ "In field \"" ++ field ++ "\" of interface file " ++ filepath ++ ":"
-        mapM_ (hPutStrLn stderr . showP) $ badKeys
+        mapM_ (hPutStrLn stderr . showP) badKeys
         exitFailure
 
     conflictKeysErr field conflictKeys = liftIO $ do
-        hPutStrLn stderr $ "Keys already present in TypeInfo map"
+        hPutStrLn stderr "Keys already present in TypeInfo map"
         hPutStrLn stderr $ "In field \"" ++ field ++ "\" of interface file " ++ filepath ++ ":"
-        mapM_ (hPutStrLn stderr . showP) $ conflictKeys
+        mapM_ (hPutStrLn stderr . showP) conflictKeys
         exitFailure
 
 findIFace :: forall m. MonadIO m => ModuleIdent -> String -> TypeInfoT m ()
@@ -313,7 +312,7 @@ class Monad m => TypeInfoMonad m where
     loadedInterfaceFiles    :: m [FilePath]
 
 lookup' :: MonadIO m =>
-    String -> (Lens' TypeInfo (Map Qualid a)) ->
+    String -> Lens' TypeInfo (Map Qualid a) ->
     Qualid -> TypeInfoT m (Maybe a)
 lookup' _ lens key | Just x <- builtIns ^. lens . at key = pure (Just x)
  -- Looking up a built in thing does not trigger loading an interface
@@ -323,9 +322,9 @@ lookup' fieldName lens key = do
   where
     errContext = "When looking up information about " ++ showP key ++ " in " ++ fieldName
 
-store' :: MonadIO m => (Lens' TypeInfo (Map Qualid a)) -> Qualid -> a -> TypeInfoT m ()
+store' :: MonadIO m => Lens' TypeInfo (Map Qualid a) -> Qualid -> a -> TypeInfoT m ()
 store' _ (Bare n) _ = liftIO $ do
-    hPutStrLn stderr $ "Cannot store bare name in the TypeInfo map:"
+    hPutStrLn stderr "Cannot store bare name in the TypeInfo map:"
     hPutStrLn stderr $ T.unpack n
     --exitFailure
 store' lens key _ | Just _ <- builtIns ^. lens . at key = liftIO $ do
@@ -355,14 +354,14 @@ serializeIfaceFor' mi filepath =
             hPutStrLn stderr $ "Module " ++ T.unpack mi ++ " is not a processed one."
             exitFailure
         True -> do
-            ti <- TypeInfoT $ get
+            ti <- TypeInfoT get
             liftIO $ encodeFile filepath $ M.fromList
                 [ (fieldName, textified)
                 | AField fieldName lens <- typeInfoFields
                 , let content = ti ^. lens
                 , let filtered = M.filterWithKey inThisMod content
                 , not (M.null filtered)
-                , let textified = M.mapKeys qualidToIdent $ M.map show $ filtered
+                , let textified = M.mapKeys qualidToIdent $ M.map show filtered
                 ]
   where
     inThisMod ::  Qualid -> a -> Bool
@@ -438,7 +437,7 @@ instance TypeInfoMonad m => TypeInfoMonad (I.IdentityT m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance TypeInfoMonad m => TypeInfoMonad (R.ReaderT r m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -464,7 +463,7 @@ instance TypeInfoMonad m => TypeInfoMonad (R.ReaderT r m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance (TypeInfoMonad m, Monoid w) => TypeInfoMonad (WS.WriterT w m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -490,7 +489,7 @@ instance (TypeInfoMonad m, Monoid w) => TypeInfoMonad (WS.WriterT w m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance (TypeInfoMonad m, Monoid w) => TypeInfoMonad (WL.WriterT w m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -516,7 +515,7 @@ instance (TypeInfoMonad m, Monoid w) => TypeInfoMonad (WL.WriterT w m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance TypeInfoMonad m => TypeInfoMonad (SS.StateT s m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -542,7 +541,7 @@ instance TypeInfoMonad m => TypeInfoMonad (SS.StateT s m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance TypeInfoMonad m => TypeInfoMonad (SL.StateT s m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -568,7 +567,7 @@ instance TypeInfoMonad m => TypeInfoMonad (SL.StateT s m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance (TypeInfoMonad m, Monoid w) => TypeInfoMonad (RWSS.RWST r w s m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -594,7 +593,7 @@ instance (TypeInfoMonad m, Monoid w) => TypeInfoMonad (RWSS.RWST r w s m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance (TypeInfoMonad m, Monoid w) => TypeInfoMonad (RWSL.RWST r w s m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -620,7 +619,7 @@ instance (TypeInfoMonad m, Monoid w) => TypeInfoMonad (RWSL.RWST r w s m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance TypeInfoMonad m => TypeInfoMonad (M.MaybeT m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -646,7 +645,7 @@ instance TypeInfoMonad m => TypeInfoMonad (M.MaybeT m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance TypeInfoMonad m => TypeInfoMonad (E.ExceptT e m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -672,7 +671,7 @@ instance TypeInfoMonad m => TypeInfoMonad (E.ExceptT e m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance TypeInfoMonad m => TypeInfoMonad (C.ContT r m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -698,7 +697,7 @@ instance TypeInfoMonad m => TypeInfoMonad (C.ContT r m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 instance TypeInfoMonad m => TypeInfoMonad (Ct.CounterT m) where
     isProcessedModule mi = lift $ isProcessedModule mi
@@ -724,6 +723,6 @@ instance TypeInfoMonad m => TypeInfoMonad (Ct.CounterT m) where
     storeSuperclassCount         cl x = lift $ storeSuperclassCount         cl x
 
     serializeIfaceFor m fp = lift $ serializeIfaceFor m fp
-    loadedInterfaceFiles   = lift $ loadedInterfaceFiles
+    loadedInterfaceFiles   = lift loadedInterfaceFiles
 
 -- Don't put anything interesting down here!  Boilerplate instances only!

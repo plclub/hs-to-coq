@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 #if __GLASGOW_HASKELL__ >= 806
@@ -28,7 +27,6 @@ import qualified Data.Text as T
 #if __GLASGOW_HASKELL__ >= 900
 import GHC.Plugins
 import GHC.Parser.Annotation (noAnn)
-import GHC.Types.SourceText
 #elif __GLASGOW_HASKELL__ >= 808
 import GhcPlugins (SourceText(NoSourceText), PromotionFlag(NotPromoted))
 #else
@@ -157,7 +155,7 @@ filterDerivingClause :: DerivSkipInfo -> LHsDerivingClause GhcRn -> Maybe (LHsDe
 filterDerivingClause dsi (L loc clause) =
   let (L dctLoc dct) = deriv_clause_tys clause
   in case dct of
-    DctSingle ext ty ->
+    DctSingle _ext ty ->
       let names = collectNamesFromHsType (unLoc (sig_body (unLoc ty)))
       in if any (shouldSkipName dsi) names
          then Nothing
@@ -246,7 +244,7 @@ addDerivedInstances dsi tcm = do
           Nothing    -> do  -- If tcTyAndClassDecls itself failed, proceed without derived instances
             liftIO $ putStrLn "hs-to-coq: WARNING: entire deriving pipeline failed, proceeding with 0 derived instances"
             pure []
-    let inst_decls = map instInfoToDecl $ inst_infos
+    let inst_decls = map instInfoToDecl inst_infos
 
 #if __GLASGOW_HASKELL__ >= 806
     let mkTyClGroup decls instds = TyClGroup
@@ -267,8 +265,8 @@ addDerivedInstances dsi tcm = do
     return $ tcm { tm_renamed_source = Just (hsgroup', a, b, c) }
 #endif
 
-initTcHack :: GhcMonad m => TypecheckedModule -> TcM a -> m a
-initTcHack tcm action = do
+_initTcHack :: GhcMonad m => TypecheckedModule -> TcM a -> m a
+_initTcHack tcm action = do
  hsc_env <- getSession
  let hsc_env_tmp = hsc_env
         { hsc_dflags = ms_hspp_opts (pm_mod_summary (tm_parsed_module tcm)) }
@@ -415,8 +413,9 @@ typeToLHsType' ty
     go (TyVarTy tv)         = nlHsTyVar (getName tv)
 #endif
     go (AppTy t1 t2)        = nlHsAppTy (go t1) (go t2)
-    go (LitTy (NumTyLit n)) = noLoc $ HsTyLit NOEXT (HsNumTy NoSourceText n)
-    go (LitTy (StrTyLit s)) = noLoc $ HsTyLit NOEXT (HsStrTy NoSourceText s)
+    go (LitTy (NumTyLit n))  = noLoc $ HsTyLit NOEXT (HsNumTy NoSourceText n)
+    go (LitTy (StrTyLit s))  = noLoc $ HsTyLit NOEXT (HsStrTy NoSourceText s)
+    go (LitTy (CharTyLit c)) = noLoc $ HsTyLit NOEXT (HsCharTy NoSourceText c)
     go ty@(TyConApp tc args)
       | any isInvisibleTyConBinder (tyConBinders tc)
         -- We must produce an explicit kind signature here to make certain

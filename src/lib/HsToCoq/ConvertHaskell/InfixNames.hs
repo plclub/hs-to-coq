@@ -77,7 +77,7 @@ splitModule = fmap fixup . either (const Nothing) Just . parse qualid "" where
     let modFrag = T.cons <$> upper <*> (T.pack <$> many (alphaNum <|> char '_' <|> char '\''))
     mod <- T.intercalate "." <$> many1 (try (modFrag <* char '.'))
     base <- T.pack <$> some anyChar -- since we're assuming we get a valid name
-    pure $ (mod, base)
+    pure (mod, base)
 
   -- When we have a module name that ends in .Z or .N then that should be
   -- considered part of the name of the function. This is a hack to make the

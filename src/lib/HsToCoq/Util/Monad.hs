@@ -35,7 +35,7 @@ whenM :: Monad m => m Bool -> m () -> m ()
 whenM c t = ifM c t (pure ())
 
 unlessM :: Monad m => m Bool -> m () -> m ()
-unlessM c f = ifM c (pure ()) f
+unlessM c = ifM c (pure ())
 
 spanM :: Monad m => (a -> m Bool) -> [a] -> m ([a],[a])
 spanM p = go where
@@ -48,24 +48,24 @@ untilJustM :: Monad m => m (Maybe a) -> m a
 untilJustM act = maybe (untilJustM act) pure =<< act
 
 -- Module-local
-via_Kleisli :: (Kleisli m a a' -> Kleisli m b b' -> Kleisli m r r')
+viaKleisli :: (Kleisli m a a' -> Kleisli m b b' -> Kleisli m r r')
             -> (a -> m a') -> (b -> m b') -> r -> m r'
-via_Kleisli (>><<) f g = runKleisli $ Kleisli f >><< Kleisli g
+viaKleisli (>><<) f g = runKleisli $ Kleisli f >><< Kleisli g
 
 (<***>) :: Monad m => (a -> m b) -> (a' -> m b') -> (a,a') -> m (b,b')
-(<***>) = via_Kleisli (***)
+(<***>) = viaKleisli (***)
 infixr 3 <***>
 
 (<&&&>) :: Monad m => (a -> m b) -> (a -> m b') -> a -> m (b, b')
-(<&&&>) = via_Kleisli (&&&)
+(<&&&>) = viaKleisli (&&&)
 infixr 3 <&&&>
 
 (<+++>) :: Monad m => (a -> m b) -> (a' -> m b') -> Either a a' -> m (Either b b')
-(<+++>) = via_Kleisli (+++)
+(<+++>) = viaKleisli (+++)
 infixr 2 <+++>
 
 (<|||>) :: Monad m => (a -> m b) -> (a' -> m b) -> Either a a' -> m b
-(<|||>) = via_Kleisli (|||)
+(<|||>) = viaKleisli (|||)
 infixr 2 <|||>
 
 exceptEither :: MonadError e m => Either e a -> m a

@@ -7,6 +7,7 @@ module HsToCoq.ProcessFiles (ProcessingMode(..), processFiles) where
 import Control.Lens
 
 import Data.Foldable
+import Data.Maybe (catMaybes)
 import Control.Monad
 import Control.Monad.IO.Class
 
@@ -69,7 +70,7 @@ processFiles mode files = do
   filterModules <- case mode of
     Recursive    -> pure pure
     NonRecursive -> do
-      let canonicalizePaths trav = traverse (liftIO . canonicalizePath) trav
+      let canonicalizePaths trav = traverse (liftIO . canonicalizePath) trav {- HLINT ignore "Eta reduce" -}
       filePaths <- S.fromList . map Just <$> canonicalizePaths files
       let moduleFile = canonicalizePaths . ml_hs_file . ms_location
       pure . filterM $ fmap (`S.member` filePaths) . moduleFile
@@ -99,7 +100,7 @@ processFiles mode files = do
             -- typecheck, then re-derive. Modules that still fail are skipped
             -- (handleSourceError in processWithStrippedDerivs returns Nothing).
             results <- traverse (processWithStrippedDerivs skipInfo) modSummaries
-            let successes = [tcm | Just tcm <- results]
+            let successes = catMaybes results
             let failed = length results - length successes
             when (failed > 0) $
               liftIO $ putStrLn $ "hs-to-coq: warning: " ++ show failed ++ " of " ++ show (length results)

@@ -1,6 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts,
-             TypeSynonymInstances, FlexibleInstances,
-             OverloadedStrings, GeneralizedNewtypeDeriving  #-}
+             FlexibleInstances #-}
 
 module Control.Monad.DefinedIdents (
   ) where
