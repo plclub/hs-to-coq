@@ -59,13 +59,13 @@ type Activatable x = ActivatableT x Identity
 
 runActivatableT :: forall m x a. Functor m => ActivatableT x m a -> m (Either (x,a) a)
 runActivatableT (ActivatableT act) =
-  flip runStateT Base act <&> \case
+  runStateT act Base <&> \case
     (res, Residuating x) -> Left  (x,res)
     (res, _)             -> Right res
 
 finalizeActivatableT :: forall m x a. Monad m => (x -> m a) -> ActivatableT x m a -> m a
 finalizeActivatableT throwR (ActivatableT act) =
-  flip runStateT Base act >>= \case
+  runStateT act Base >>= \case
     (_,   Residuating x) -> throwR x
     (res, _)             -> pure res
 

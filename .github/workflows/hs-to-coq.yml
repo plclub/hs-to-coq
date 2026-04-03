@@ -10,6 +10,21 @@ env:
 
 jobs:
 
+  hlint:
+    name: HLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up HLint
+        uses: haskell-actions/hlint-setup@v2
+        with:
+          version: '3.8'
+      - name: Run HLint
+        uses: haskell-actions/hlint-run@v2
+        with:
+          path: '["src/lib", "src/exe"]'
+          fail-on: hint
+
   build-haskell:
     name: Build hs-to-coq (GHC 9.10)
     runs-on: ubuntu-latest

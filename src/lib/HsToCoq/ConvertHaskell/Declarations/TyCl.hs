@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE TupleSections, LambdaCase, RecordWildCards,
+{-# LANGUAGE LambdaCase, RecordWildCards,
              OverloadedLists, OverloadedStrings,
              FlexibleContexts, ScopedTypeVariables,
              MultiParamTypeClasses,
@@ -48,7 +48,7 @@ import HsToCoq.Coq.FreeVars
 import HsToCoq.Coq.Pretty
 import HsToCoq.Coq.Subst        
 import HsToCoq.Util.FVs
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
 import HsToCoq.Util.GHC.HsTypes (noExtCon)
 #endif
 import HsToCoq.Util.GHC.Module
@@ -139,19 +139,13 @@ convertTyClDecl env decl = do
               
               _ ->
                 let from = case decl of
-                             FamDecl{}   -> "a type/data family"
                              SynDecl{}   -> "a type synonym"
                              DataDecl{}  -> "a data type"
-                             ClassDecl{} -> "a type class"
-#if __GLASGOW_HASKELL__ >= 806
-                             XTyClDecl v -> noExtCon v
-#endif
                     to   = case redef of
                              CoqDefinitionDef _   -> "a Definition"
                              CoqFixpointDef   _   -> "a Fixpoint"
                              CoqInductiveDef  _   -> "an Inductive"
                              CoqInstanceDef   _   -> "an Instance"
-                             CoqAxiomDef      _   -> "an Axiom"
                              CoqAssertionDef  apf -> anAssertionVariety apf
                 in editFailure $ "cannot redefine " ++ from ++ " to be " ++ to
           
@@ -161,7 +155,7 @@ convertTyClDecl env decl = do
                                   SynDecl{}   -> ("type synonym",     "type synonyms")
                                   DataDecl{}  -> ("data type",        "data types")
                                   ClassDecl{} -> ("type class",       "type classes")
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
                                   XTyClDecl v -> noExtCon v
 #endif
             in convUnsupportedIn ("axiomatizing " ++ whats ++ " (without `redefine Axiom')") what (showP coqName)
@@ -214,7 +208,7 @@ convertTyClDecl env decl = do
 #else
              where tcdCtxt' = tcdCtxt
 #endif
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
            XTyClDecl v -> noExtCon v
 #endif
 
@@ -254,8 +248,8 @@ convertDeclarationGroup DeclarationGroup{..} =
     
     (Nothing, Nothing, Just (SynBody name args oty def :| []), Nothing, Nothing) ->
       let sigs = M.empty  -- TODO: fixity information
-      in pure $  [DefinitionSentence $ DefinitionDef Global name args oty def NotExistingClass]
-              ++ (NotationSentence <$> buildInfixNotations sigs name)
+      in pure $  DefinitionSentence (DefinitionDef Global name args oty def NotExistingClass)
+              : (NotationSentence <$> buildInfixNotations sigs name)
     
 {-    (Just inds, Nothing, Just syns, Nothing, Nothing) ->
       pure $  foldMap recSynType syns
@@ -264,8 +258,8 @@ convertDeclarationGroup DeclarationGroup{..} =
     (Just inds, Nothing, Just syns, Nothing, Nothing) ->
       let synDefs  = recSynDefs inds syns
           synDefs' = expandAllDefs synDefs
-      in pure $  [InductiveSentence $ Inductive (subst synDefs' inds) []]
-              ++ orderRecSynDefs synDefs
+      in pure $  InductiveSentence (Inductive (subst synDefs' inds) [])
+              : orderRecSynDefs synDefs
     
     (Nothing, Nothing, Nothing, Just (classDef :| []), Nothing) ->
       classSentences classDef

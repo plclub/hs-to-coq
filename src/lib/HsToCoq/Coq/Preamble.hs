@@ -40,8 +40,9 @@ staticPreamble = T.unlines
 -- | When a free variable of this name appears in the output,
 -- an axiom of the type given here is added to the preamble
 builtInAxioms :: M.Map Qualid Term
-builtInAxioms = M.fromList $ map (first Bare)
-    [ "missingValue"   =: Forall [ ImplicitBinders (pure (Ident (Bare "a"))) ] a
+builtInAxioms = M.fromList
+    [ first Bare
+      ("missingValue"   =: Forall [ ImplicitBinders (pure (Ident (Bare "a"))) ] a)
     ]
   where
    a = "a"

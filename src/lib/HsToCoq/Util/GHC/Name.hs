@@ -25,16 +25,16 @@ isOperator = isSymOcc . nameOccName
 {-# INLINABLE isOperator #-}
 
 -- Module-local
-freshInternalName_uniqSupply :: IORef UniqSupply
-freshInternalName_uniqSupply = unsafePerformIO $ newIORef =<< mkSplitUniqSupply '殊'
-{-# NOINLINE freshInternalName_uniqSupply #-}
+freshInternalNameUniqSupply :: IORef UniqSupply
+freshInternalNameUniqSupply = unsafePerformIO $ newIORef =<< mkSplitUniqSupply '殊'
+{-# NOINLINE freshInternalNameUniqSupply #-}
 
 -- Module-local
-freshInternalName_newUnique :: MonadIO m => m Unique
-freshInternalName_newUnique = liftIO $ do
-  supply <- readIORef freshInternalName_uniqSupply
+freshInternalNameNewUnique :: MonadIO m => m Unique
+freshInternalNameNewUnique = liftIO $ do
+  supply <- readIORef freshInternalNameUniqSupply
   let (u, supply') = takeUniqFromSupply supply
-  u <$ writeIORef freshInternalName_uniqSupply supply'
+  u <$ writeIORef freshInternalNameUniqSupply supply'
 
 freshInternalName :: MonadIO m => String -> m Name
 freshInternalName var
@@ -47,8 +47,8 @@ freshInternalName var
             (stringToUnitId "hs-to-coq")
 #endif
             (mkModuleName mn)
-      u <- freshInternalName_newUnique
+      u <- freshInternalNameNewUnique
       pure $ mkExternalName u mod (mkVarOcc base) noSrcSpan
     | otherwise = do
-      u <- freshInternalName_newUnique
+      u <- freshInternalNameNewUnique
       pure $ mkInternalName u (mkVarOcc var) noSrcSpan

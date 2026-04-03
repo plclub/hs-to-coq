@@ -314,14 +314,16 @@ convertInstanceNameAndTy n = do
     skip (InScope t _) = skip t
     skip t             = do
       t' <- bfTerm t
-      -- The [head $ tail] below will not be correct with multi-param type classes
-      pure (bfToName t', head $ tail t')
+      -- The pattern match below will not be correct with multi-param type classes
+      case t' of
+        (_:x:_) -> pure (bfToName t', x)
+        _       -> error "bfTerm returned fewer than 2 elements"
 
     bfToName :: [Qualid] -> T.Text
     bfToName qids | isVanilla = name
                   | otherwise = name <> "__" <> T.pack (show shapeNum)
       where
-        tyCons = catMaybes (unTyCon <$> qids)
+        tyCons = mapMaybe unTyCon qids
         name = T.intercalate "__" tyCons
         shapeNum = bitsToInt $ map isTyCon qids
 
@@ -405,25 +407,25 @@ convertClsInstDeclInfo ClsInstDecl{..} = do
                                  pure
 
   pure InstanceInfo{..}
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
 convertClsInstDeclInfo (XClsInstDecl v) = noExtCon v
 #endif
 
 --------------------------------------------------------------------------------
 
-no_class_error :: MonadIO m => Qualid -> String -> m a
-no_class_error cls extra = throwProgramError $  "Could not find information for the class " ++ quote_qualid cls
+noClassError :: MonadIO m => Qualid -> String -> m a
+noClassError cls extra = throwProgramError $  "Could not find information for the class " ++ quoteQualid cls
                                              ++ if null extra then [] else ' ':extra
 
-no_class_instance_error :: MonadIO m => Qualid -> Qualid -> m a
-no_class_instance_error cls inst = no_class_error cls $ "when defining the instance " ++ quote_qualid inst
+noClassInstanceError :: MonadIO m => Qualid -> Qualid -> m a
+noClassInstanceError cls inst = noClassError cls $ "when defining the instance " ++ quoteQualid inst
 
-no_class_method_error :: MonadIO m => Qualid -> Qualid -> m a
-no_class_method_error cls meth = no_class_error cls $ "when defining the method " ++ quote_qualid meth
+noClassMethodError :: MonadIO m => Qualid -> Qualid -> m a
+noClassMethodError cls meth = noClassError cls $ "when defining the method " ++ quoteQualid meth
 
 
-quote_qualid :: Qualid -> String
-quote_qualid qid = "`" ++ showP qid ++ "'"
+quoteQualid :: Qualid -> String
+quoteQualid qid = "`" ++ showP qid ++ "'"
 
 --------------------------------------------------------------------------------
 
@@ -454,12 +456,12 @@ clsInstFamiliesToMap assocTys =
     (, unLoc feqn_rhs) <$> var TypeNS (unLoc feqn_tycon)
 
 -- Module-local
-data Conv_Method = CM_Renamed            Sentence
-                 | CM_Defined Conv_Level Term
+data ConvMethod = CMRenamed            Sentence
+                 | CMDefined ConvLevel Term
                  deriving (Eq, Ord, Show, Read)
 
 -- Module-local
-data Conv_Level = CL_Term | CL_Type deriving (Eq, Ord, Enum, Bounded, Show, Read)
+data ConvLevel = CLTerm | CLType deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
 convertClsInstDecl :: forall r m. ConversionMonad r m => ConvertedInstanceEnv -> ClsInstDecl GhcRn -> m [Sentence]
 convertClsInstDecl env cid@ClsInstDecl{..} = do
@@ -490,7 +492,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             pure [ InstanceSentence $ InstanceProof instanceName [] instanceHead $ ProofAdmitted ""]
         Nothing -> case axMode of
           GeneralAxiomatize  -> pure []
-          SpecificAxiomatize -> no_class_instance_error instanceClass instanceName
+          SpecificAxiomatize -> noClassInstanceError instanceClass instanceName
 
     TranslateIt -> do
       cid_binds_map <- bindsToMap (map unLoc $ bagToList cid_binds)
@@ -508,7 +510,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
       -- Get the methods of this class (this should already exclude skipped ones)
       (classMethods, classArgs) <- lookupClassDefn className >>= \case
         Just (ClassDefinition _ args _ sigs) -> pure (map fst sigs, args)
-        _ -> no_class_instance_error className instanceName
+        _ -> noClassInstanceError className instanceName
 
       -- Associated types for this class
       classTypes <- fromMaybe mempty <$> lookupClassTypes className
@@ -552,8 +554,8 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             [ edits.renamings.at (NamespacedIdent ns preM) ?~ localNameFor m
             | m <- classMethods
             , m /= meth
-            , preM <- preRenameVariants m
             , let ns = if m `elem` classTypes then TypeNS else ExprNS
+            , preM <- preRenameVariants m
             ]
 
       let allLocalNames = M.fromList $  [ (m, Qualid (localNameFor m)) | m <- classMethods ]
@@ -574,7 +576,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
           (Just bind, _, _) ->
             local (envFor meth) $ convertMethodBinding localMeth bind >>= \case
               ConvertedDefinitionBinding cd ->
-                pure . CM_Defined CL_Term $ maybeFun (cd^.convDefArgs) (cd^.convDefBody)
+                pure . CMDefined CLTerm $ maybeFun (cd^.convDefArgs) (cd^.convDefBody)
               -- Hard errors (not convUnsupported): these indicate edit misconfiguration,
               -- not missing hs-to-coq features, so we fail immediately.
               ConvertedPatternBinding {} ->
@@ -582,7 +584,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
               ConvertedAxiomBinding {} ->
                 throwProgramError "axiom bindings in instances"
               RedefinedBinding _ def ->
-                CM_Renamed (definitionSentence def) <$ case def of
+                CMRenamed (definitionSentence def) <$ case def of
                   CoqInductiveDef        _   -> editFailure   "cannot redefine an instance method definition into an Inductive"
                   CoqDefinitionDef       _   -> pure ()
                   CoqFixpointDef         _   -> pure ()
@@ -595,7 +597,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
           (Nothing, Just assoc, _) ->
             let convertedType = withCurrentDefinition meth $ convertHsType assoc in
 
-            CM_Defined CL_Type <$> local (envFor meth) convertedType
+            CMDefined CLType <$> local (envFor meth) convertedType
             -- TODO: Permit rewriting or renaming or similar here
 
           (Nothing, Nothing, Just term) ->
@@ -608,19 +610,19 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             in -- In the body of the default definition, make methods names
                -- refer to their local version
                -- TODO: Associated type defaults should remember that they're types
-               pure . CM_Defined CL_Term $ subst (allLocalNames <> extraSubst) term
+               pure . CMDefined CLTerm $ subst (allLocalNames <> extraSubst) term
 
           (Nothing, Nothing, Nothing) ->
             throwProgramError $ "The method `" <> showP meth <> "' has no definition and no default definition"
 
         case methBody of
-          CM_Renamed renamed ->
+          CMRenamed renamed ->
             pure renamed
-          CM_Defined level body    -> do
+          CMDefined level body    -> do
 
             let (params, sub') = (case level of
-                                    CL_Term -> makeInstanceMethodSubst
-                                    CL_Type -> makeAssociatedTypeSubst) binds
+                                    CLTerm -> makeInstanceMethodSubst
+                                    CLType -> makeAssociatedTypeSubst) binds
 
             -- Why the nested substitution?  The only place the per-instance variable name
             -- can show up is in the specific instance type!  It can't show up in the
@@ -632,7 +634,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
             -- Expand GHC.Prim.coerce into explicit newtype wrapping/unwrapping
             -- to avoid Coq Coercible/Unpeel resolution loops
             expandedBody <- case level of
-              CL_Term -> expandCoerce (Just ty) body
+              CLTerm -> expandCoerce (Just ty) body
               _       -> pure body
             qbody <- quantify sub meth $ substTy sub' expandedBody
             pure . DefinitionSentence $ DefinitionDef Local
@@ -671,7 +673,7 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
           pure $ ProgramSentence (InstanceSentence instTerm) Nothing
 
       pure $ methodSentences ++ [instance_sentence]
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
 convertClsInstDecl _env (XClsInstDecl v) = noExtCon v
 #endif
 
@@ -688,8 +690,8 @@ lookupInstanceMethodTy className memberName =
     Just (ClassDefinition _ _ _ sigs) ->
       case lookup memberName sigs of
         Just sigType -> pure sigType
-        Nothing      -> throwProgramError $ "Cannot find signature for " ++ quote_qualid memberName
-    _ -> no_class_method_error className memberName
+        Nothing      -> throwProgramError $ "Cannot find signature for " ++ quoteQualid memberName
+    _ -> noClassMethodError className memberName
 
 makeTy :: ConversionMonad r m => M.Map Qualid Term -> Qualid -> Qualid -> m Term
 makeTy instSub className memberName = subst instSub <$> lookupInstanceMethodTy className memberName

@@ -127,13 +127,13 @@ convertBinding sigs (ConvertedDefinitionBinding cdef@ConvertedDefinition{_convDe
                                          (cdef^.convDefType)
                                          (cdef^.convDefBody) NotExistingClass
           in pure $
-             [ case cdef^.convDefBody of
+             (case cdef^.convDefBody of
                  Fix (FixOne (FixBody qual bind ord mterm term))
                    -> FixpointSentence (Fixpoint [FixBody qual (fromList $ (cdef^.convDefArgs) ++ annotateFixpoint (toList bind) (cdef^.convDefType)) ord mterm term] [])
                  _ -> if useProgram
                       then ProgramSentence (DefinitionSentence def) obl
-                      else DefinitionSentence def ] ++
-             [ NotationSentence n | n <- buildInfixNotations sigs (cdef^.convDefName) ]
+                      else DefinitionSentence def)
+             : [ NotationSentence n | n <- buildInfixNotations sigs (cdef^.convDefName) ]
 
 convertBinding _ (ConvertedPatternBinding _ _) =
   -- Already skipped with a warning in 'HsToCoq.ConvertnHaskell.Expr.withHsBindName'
@@ -190,7 +190,7 @@ toEquationsSentence cdef mterm = do
       annotatedBinders = case mty of
         Just ty -> fst (annotateAndStrip allBinders ty)
         Nothing -> allBinders
-      retTy = fmap (snd . annotateAndStrip allBinders) mty >>= id  -- join: flatten Maybe (Maybe Term)
+      retTy = (snd . annotateAndStrip allBinders) =<< mty  -- flatten Maybe (Maybe Term)
   -- Substitute binder names → pattern variable names in each clause's RHS.
   -- When extractEqns extracts equations from an inner Match, the patterns may use
   -- different names than the Equations binders (e.g., an inner Match binds 'n'
@@ -355,8 +355,8 @@ toEquationsSentence cdef mterm = do
     -- If a where clause was extracted, strip that specific let binding from the
     -- body (it may be nested behind non-pattern-matching lets).
     varPatternEqn binders inner =
-      let explicitNames = [ n | b <- binders, Bare n <- toListOf binderIdents b
-                              , not (isImplicitBinder b) ]
+      let explicitNames = [ n | b <- binders, not (isImplicitBinder b)
+                              , Bare n <- toListOf binderIdents b ]
           hasWheres = not (null (extractWheres inner :: [EquationsWhere]))
           rhs | hasWheres = stripWhereLet inner
               | otherwise = inner
@@ -429,7 +429,7 @@ convertHsGroup HsGroup{..} = do
         let (promotedSentences, namedSentences') =
               partition (\(name, _) -> name `S.member` depsSet) namedSentences
 
-        pure (unnamedSentences ++ concat (snd <$> namedSentences'), concat (snd <$> promotedSentences))
+        pure (unnamedSentences ++ concatMap snd namedSentences', concatMap snd promotedSentences)
 
   -- Derived instances have an UnhelpfulSpan, we put those to the top because
   -- they tend to be self-contained and everything else depends on them.
@@ -458,7 +458,7 @@ convertHsGroup HsGroup{..} = do
       pure (Nothing, [CommentSentence $ Comment $
         "While translating non-function binding: " <> T.pack (show exn)])
 
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
 convertHsGroup (XHsGroup v) = noExtCon v
 #endif
 
@@ -529,21 +529,21 @@ convertModule convModData group = do
     pure (ConvertedModule{..}, modules)
 
 -- Module-local
-data Convert_Module_Mode = Mode_Initial
-                         | Mode_Axiomatize
-                         | Mode_Convert
-                         | Mode_Both
+data ConvertModuleMode = ModeInitial
+                         | ModeAxiomatize
+                         | ModeConvert
+                         | ModeBoth
                          deriving (Eq, Ord, Show, Read)
 
-instance Semigroup Convert_Module_Mode where
-  Mode_Initial    <> mode2           = mode2
-  mode1           <> Mode_Initial    = mode1
-  Mode_Axiomatize <> Mode_Axiomatize = Mode_Axiomatize
-  Mode_Convert    <> Mode_Convert    = Mode_Convert
-  _               <> _               = Mode_Both
+instance Semigroup ConvertModuleMode where
+  ModeInitial    <> mode2           = mode2
+  mode1           <> ModeInitial    = mode1
+  ModeAxiomatize <> ModeAxiomatize = ModeAxiomatize
+  ModeConvert    <> ModeConvert    = ModeConvert
+  _               <> _               = ModeBoth
 
-instance Monoid Convert_Module_Mode where
-  mempty = Mode_Initial
+instance Monoid ConvertModuleMode where
+  mempty = ModeInitial
 
   
 
@@ -551,16 +551,16 @@ convertModules :: GlobalMonad r m => [(ModuleData, HsGroup GhcRn)] -> m [NonEmpt
 convertModules sources = do
   -- Collect modules with the same post-`rename module` name
   mergedModulesNELs <-  traverse (foldrM buildGroups (emptyRnGroup, emptyRnGroup, mempty, mempty, mempty))
-                    =<< M.fromListWith (<>)
-                    <$> traverse (renameModule . _modName . fst <&&&> pure . pure @NonEmpty) sources
+                    .   M.fromListWith (<>)
+                    =<< traverse (renameModule . _modName . fst <&&&> pure . pure @NonEmpty) sources
 
   cmods <- for (M.toList mergedModulesNELs) $ \(name, (axGrp, convGrp, mode, combinedExports, combinedDetails)) -> 
             let modData = ModuleData {_modName = name, _modExports = combinedExports, _modDetails = combinedDetails} in 
               case mode of
-                Mode_Axiomatize -> axiomatizeModule' modData (axGrp `appendGroups` convGrp)
-                Mode_Convert    -> convertModule modData convGrp
-                Mode_Both       -> combineModules <$> axiomatizeModule' modData axGrp <*> convertModule modData convGrp
-                Mode_Initial    -> error "INTERNAL ERROR: impossible, `foldrM` over a `NonEmpty`"
+                ModeAxiomatize -> axiomatizeModule' modData (axGrp `appendGroups` convGrp)
+                ModeConvert    -> convertModule modData convGrp
+                ModeBoth       -> combineModules <$> axiomatizeModule' modData axGrp <*> convertModule modData convGrp
+                ModeInitial    -> error "INTERNAL ERROR: impossible, `foldrM` over a `NonEmpty`"
 
   pure $ stronglyConnCompNE [(cmod, convModName cmod, imps) | (cmod, imps) <- cmods]
 
@@ -569,12 +569,12 @@ convertModules sources = do
       view (edits.axiomatizedOriginalModuleNames.contains (modData^.modName)) <&> \case
         True  -> ( modGrp{hs_tyclds = []}                     `appendGroups` axGrp
                  , emptyRnGroup{hs_tyclds = hs_tyclds modGrp} `appendGroups` convGrp
-                 , Mode_Axiomatize <> mode
+                 , ModeAxiomatize <> mode
                  , (modData^.modExports) <> combinedExports
                  , (modData^.modDetails) <> combinedDetails )
         False -> ( axGrp
                  , modGrp `appendGroups` convGrp
-                 , Mode_Convert <> mode
+                 , ModeConvert <> mode
                  , (modData^.modExports) <> combinedExports
                  , (modData^.modDetails) <> combinedDetails )
 
@@ -585,8 +585,8 @@ convertModules sources = do
                         (                             tyClDecls1    <> tyClDecls2)
                         (                             valDecls1     <> valDecls2)
                         (                             clsInstDecls1 <> clsInstDecls2)
-                        (                             addedTyCls1   ) -- only need one copy of the added components
-                        (                             addedDecls1   ) --
+                                                      addedTyCls1     -- only need one copy of the added components
+                                                      addedDecls1     --
       , S.toList $ ((<>) `on` S.fromList) imps1 imps2 )
       -- It's OK not to worry about ordering the declarations
       -- because we 'topoSortByVariablesBy' them in 'moduleDeclarations'.

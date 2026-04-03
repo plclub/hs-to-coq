@@ -63,28 +63,28 @@ connectedComponents graph =
   in stronglyConnComp [(n, k, S.toList $ edges ! k) | (n,k,_) <- graph]
 
 -- Module-local
-nonEmpty_SCC :: SCC a -> NonEmpty a
-nonEmpty_SCC (AcyclicSCC v)      = v :| []
-nonEmpty_SCC (CyclicSCC  (v:vs)) = v :| vs
-nonEmpty_SCC (CyclicSCC  [])     = error "[internal] nonEmpty_SCC: empty connected component!"
+nonEmptySCC :: SCC a -> NonEmpty a
+nonEmptySCC (AcyclicSCC v)      = v :| []
+nonEmptySCC (CyclicSCC  (v:vs)) = v :| vs
+nonEmptySCC (CyclicSCC  [])     = error "[internal] nonEmptySCC: empty connected component!"
 
 stronglyConnCompNE :: Ord key => [(node, key, [key])] -> [NonEmpty node]
-stronglyConnCompNE = map nonEmpty_SCC . stronglyConnComp
+stronglyConnCompNE = map nonEmptySCC . stronglyConnComp
 
 connectedComponentsNE :: Ord key => [(node, key, [key])] -> [NonEmpty node]
-connectedComponentsNE = map nonEmpty_SCC . connectedComponents
+connectedComponentsNE = map nonEmptySCC . connectedComponents
 
 -- Module-local
-simple_sccs :: Ord vertex
+simpleSccs :: Ord vertex
             => ([(vertex, vertex, [vertex])] -> [SCC vertex])
             -> [(vertex, [vertex])] -> [NonEmpty vertex]
-simple_sccs makeCCs graph = map nonEmpty_SCC $ makeCCs [(v,v,es) | (v,es) <- graph] where
+simpleSccs makeCCs graph = map nonEmptySCC $ makeCCs [(v,v,es) | (v,es) <- graph]
 
 stronglyConnComp' :: Ord vertex => [(vertex, [vertex])] -> [NonEmpty vertex]
-stronglyConnComp' = simple_sccs stronglyConnComp
+stronglyConnComp' = simpleSccs stronglyConnComp
 
 connectedComponents' :: Ord vertex => [(vertex, [vertex])] -> [NonEmpty vertex]
-connectedComponents' = simple_sccs connectedComponents
+connectedComponents' = simpleSccs connectedComponents
 
 -- |Implements a relatively stable topological sort.  Given
 --

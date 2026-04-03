@@ -62,8 +62,8 @@ escapeReservedNames x =
     <> if | T.all (== '.') x  -> pure $ T.map (const '∘') x
           | T.all (== '∘') x  -> pure $ "⟨" <> x <> "⟩"
 -- these type operators aren't parsed by the renaming file
-          | x == "(->)"       -> pure $ "arrow"
-          | x == "#."         -> pure $ "hash_compose"  -- Data.Foldable
+          | x == "(->)"       -> pure "arrow"
+          | x == "#."         -> pure "hash_compose"  -- Data.Foldable
 -- Maybe add this as part of an Int# solution? But don't want to
 -- always replace these, if we make "Int#" a notation for "Int_h"
 --          | T.isInfixOf "#" x -> pure $ T.replace "#" "_h" x
@@ -125,7 +125,9 @@ var ns name = do
 
 
 recordField :: (ConversionMonad r m) => AmbiguousFieldOcc GhcRn -> m Qualid
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 910
+recordField (Unambiguous sel _) = var ExprNS sel
+#elif __GLASGOW_HASKELL__ >= 806
 recordField (XAmbiguousFieldOcc v) = noExtCon v
 recordField (Unambiguous sel _) = var ExprNS sel
 #else

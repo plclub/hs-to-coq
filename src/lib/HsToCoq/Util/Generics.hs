@@ -18,15 +18,15 @@ class GSemigroup f where
   (%<>%) :: f p -> f p -> f p
 
 instance GSemigroup V1 where
-  (%<>%) = \v1 _ -> case v1 of {}
+  (%<>%) v1 _ = case v1 of {}
   {-# INLINE (%<>%) #-}
 
 instance GSemigroup U1 where
-  (%<>%) = \_ _ -> U1
+  (%<>%) _ _ = U1
   {-# INLINE (%<>%) #-}
 
 instance (GSemigroup f, GSemigroup g) => GSemigroup (f :*: g) where
-  (%<>%) = \(fst1 :*: snd1) (fst2 :*: snd2) -> (fst1 %<>% fst2) :*: (snd1 %<>% snd2)
+  (%<>%) (fst1 :*: snd1) (fst2 :*: snd2) = (fst1 %<>% fst2) :*: (snd1 %<>% snd2)
   {-# INLINE (%<>%) #-}
 
 instance Semigroup c => GSemigroup (K1 i c) where
@@ -39,7 +39,7 @@ instance GSemigroup f => GSemigroup (M1 i t f) where
   {-# INLINE (%<>%) #-}
 
 (%<>) :: (Generic a, GSemigroup (Rep a)) => a -> a -> a
-(%<>) = \s t -> to $ from s %<>% from t
+(%<>) s t = to $ from s %<>% from t
 {-# INLINE (%<>) #-}
 
 class GSemigroup f => GMonoid f where

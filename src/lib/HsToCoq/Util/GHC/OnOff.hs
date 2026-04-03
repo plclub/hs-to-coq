@@ -15,14 +15,10 @@ import Language.Haskell.TH.Syntax
 #define TYPE_QUOTES ''
 #define VAL_QUOTES  '
 
-#define NAME_DynFlags(con,q,name) \
-  (con $ case q DynFlags of Name _ nf -> Name (OccName name) nf)
+#define DYN_NAME(q,name) \
+  case q DynFlags of Name _ nf -> Name (OccName name) nf
 
-#define TYPE_DynFlags(name) NAME_DynFlags(conT, TYPE_QUOTES, name)
-#define PAT_DynFlags(name)  NAME_DynFlags(conP, VAL_QUOTES,  name)
-#define VAL_DynFlags(name)  NAME_DynFlags(conE, VAL_QUOTES,  name)
-
-type OnOff = $(TYPE_DynFlags("OnOff"))
+type OnOff = $(conT $ DYN_NAME(TYPE_QUOTES,"OnOff"))
 
 pattern On  :: a -> OnOff a
 pattern Off :: a -> OnOff a
@@ -31,12 +27,12 @@ pattern On  a <- (onOffToEither -> Left  a) where On  a = eitherToOnOff (Left  a
 pattern Off a <- (onOffToEither -> Right a) where Off a = eitherToOnOff (Right a)
 
 onOffToEither :: OnOff a -> Either a a
-onOffToEither $(PAT_DynFlags("On")  [varP $ mkName "a"]) = Left  a
-onOffToEither $(PAT_DynFlags("Off") [varP $ mkName "a"]) = Right a
+onOffToEither $((conP $ DYN_NAME(VAL_QUOTES,"On"))  [varP $ mkName "a"]) = Left  a
+onOffToEither $((conP $ DYN_NAME(VAL_QUOTES,"Off")) [varP $ mkName "a"]) = Right a
 
 eitherToOnOff :: Either a a -> OnOff a
-eitherToOnOff (Left  a) = $(VAL_DynFlags("On"))  a
-eitherToOnOff (Right a) = $(VAL_DynFlags("Off")) a
+eitherToOnOff (Left  a) = $(conE $ DYN_NAME(VAL_QUOTES,"On"))  a
+eitherToOnOff (Right a) = $(conE $ DYN_NAME(VAL_QUOTES,"Off")) a
 
 instance Show a => Show (OnOff a) where
   show oo = case show (onOffToEither oo) of

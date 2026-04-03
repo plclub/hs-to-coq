@@ -3,8 +3,6 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE TypeSynonymInstances  #-}
 
 -- For TypeError
 {-# LANGUAGE UndecidableInstances  #-}
@@ -247,7 +245,7 @@ instance HasFV Qualid Term where
     binder x  `scopesOver` fvOf body
 
   fvOf (LetTuple xs oret val body) =
-    fvOf oret <> fvOf val <> (foldScopes bvOf xs (fvOf body))
+    fvOf oret <> fvOf val <> foldScopes bvOf xs (fvOf body)
 
   fvOf (LetTick pat def body) =
     fvOf def <> bvOf pat `scopesOver` fvOf body
@@ -274,7 +272,7 @@ instance HasFV Qualid Term where
   fvOf (Record defns)          = fvOf defns
 
   fvOf (Sigma x oty body) =    
-    (fvOf oty) <> binder x  `scopesOver` fvOf body -- ECG: Is this correct?
+    fvOf oty <> binder x  `scopesOver` fvOf body -- ECG: Is this correct?
 
 instance HasFV Qualid Arg where
   fvOf (PosArg      t) = fvOf t

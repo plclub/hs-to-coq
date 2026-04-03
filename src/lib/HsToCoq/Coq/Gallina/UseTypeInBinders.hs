@@ -29,14 +29,14 @@ data UTIBError = UTIBMismatchedGeneralizability
                deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
 -- Module-local
-drain_binder :: MonadState Term m => m (Maybe BinderInfo)
-drain_binder = gets unconsOneBinderFromType >>= \case
+drainBinder :: MonadState Term m => m (Maybe BinderInfo)
+drainBinder = gets unconsOneBinderFromType >>= \case
   Just (bi, t) -> Just bi <$ put t
   Nothing      -> pure Nothing
 
 -- Module-local
-binder_match_errors :: Binder -> BinderInfo -> Maybe UTIBError
-binder_match_errors b bi
+binderMatchErrors :: Binder -> BinderInfo -> Maybe UTIBError
+binderMatchErrors b bi
   | badGeneralizability && badExplicitness = Just UTIBMismatchedBoth
   | badGeneralizability                    = Just UTIBMismatchedGeneralizability
   | badExplicitness                        = Just UTIBMismatchedExplicitness
@@ -46,10 +46,10 @@ binder_match_errors b bi
     badExplicitness     = binderExplicitness     b /= _biExplicitness bi
 
 useTypeInBindersM :: (MonadError UTIBError m, MonadState Term m) => Binders -> m (Binders, UTIBIsTypeTooShort)
-useTypeInBindersM (b :| bs) = drain_binder >>= \case
+useTypeInBindersM (b :| bs) = drainBinder >>= \case
   Nothing                          -> pure (b :| bs, UTIBIsTypeTooShort True)
   Just bi@(BinderInfo g ei _ mtyp) -> do
-    traverse_ throwError $ binder_match_errors b bi
+    traverse_ throwError $ binderMatchErrors b bi
     
     let newBinderNamed x = case mtyp of
           Just typ -> Typed g ei (x :| []) typ

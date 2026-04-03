@@ -186,26 +186,26 @@ renderQPrefix qid = case qualidToPrefix qid of
     Nothing -> error $ "Cannot turn " ++ show qid ++ " into a prefix operator"
 
 -- Module-local
-render_type :: Term -> Doc
-render_type ty = softline <> ":" <+> align (renderGallina ty)
+renderType :: Term -> Doc
+renderType ty = softline <> ":" <+> align (renderGallina ty)
 
 -- Module-local
-render_opt_type :: Maybe Term -> Doc
-render_opt_type = maybe mempty render_type
+renderOptType :: Maybe Term -> Doc
+renderOptType = maybe mempty renderType
 
 -- Module-local
-render_rtype :: Gallina a => a -> Doc
-render_rtype rty = nest 2 $ softline <> "return" <+> renderGallina rty
+renderRtype :: Gallina a => a -> Doc
+renderRtype rty = nest 2 $ softline <> "return" <+> renderGallina rty
 
 -- Module-local
-render_opt_rtype :: Gallina a => Maybe a -> Doc
-render_opt_rtype = maybe mempty render_rtype
+renderOptRtype :: Gallina a => Maybe a -> Doc
+renderOptRtype = maybe mempty renderRtype
 
 -- Module-local
-render_in_annot :: Maybe (Qualid, [Pattern]) -> Doc
-render_in_annot Nothing           = mempty
-render_in_annot (Just (qid,pats)) = softline <> "in" <+> renderGallina qid
-                                                     <+> render_args H pats
+renderInAnnot :: Maybe (Qualid, [Pattern]) -> Doc
+renderInAnnot Nothing           = mempty
+renderInAnnot (Just (qid,pats)) = softline <> "in" <+> renderGallina qid
+                                                     <+> renderArgs H pats
 
 -- Module-local
 data Orientation = H | V
@@ -217,25 +217,25 @@ ocat H = fillSep
 ocat V = vsep
 
 -- Module-local
-render_args :: (Functor f, Foldable f, Gallina a) => Orientation -> f a -> Doc
-render_args = render_args' 0
+renderArgs :: (Functor f, Foldable f, Gallina a) => Orientation -> f a -> Doc
+renderArgs = renderArgs' 0
 
 -- Module-local
-render_args' :: (Functor f, Foldable f, Gallina a) => Int -> Orientation -> f a -> Doc
-render_args' p o = group . ocat o . fmap (renderGallina' p)
+renderArgs' :: (Functor f, Foldable f, Gallina a) => Int -> Orientation -> f a -> Doc
+renderArgs' p o = group . ocat o . fmap (renderGallina' p)
 
 
 -- Module-local
-render_args_ty :: (Functor f, Foldable f, Gallina a) => Orientation -> f a -> Term -> Doc
-render_args_ty o args t = group $ render_args o args <$$> render_type t
+renderArgsTy :: (Functor f, Foldable f, Gallina a) => Orientation -> f a -> Term -> Doc
+renderArgsTy o args t = group $ renderArgs o args <$$> renderType t
 
 -- Module-local
-render_args_oty :: (Functor f, Foldable f, Gallina a) => Orientation -> f a -> Maybe Term -> Doc
-render_args_oty o args ot = group $ render_args o args <$$> render_opt_type ot
+renderArgsOty :: (Functor f, Foldable f, Gallina a) => Orientation -> f a -> Maybe Term -> Doc
+renderArgsOty o args ot = group $ renderArgs o args <$$> renderOptType ot
 
 -- Module-local
-render_mutual_def :: Doc -> (Doc -> a -> Doc) -> NonEmpty a -> [NotationBinding] -> Doc
-render_mutual_def def renderBody bodies notations =
+renderMutualDef :: Doc -> (Doc -> a -> Doc) -> NonEmpty a -> [NotationBinding] -> Doc
+renderMutualDef def renderBody bodies notations =
     foldr1 (<$$>) (renderedBodies :| renderedNotations) <> "."
   where
     renderedBodies = renderBodies def renderBody bodies
@@ -255,7 +255,7 @@ renderBodies def renderBody (body1 :| bodies) = foldr1 (<$$>) rendered
 -- TODO: Precedence!
 instance Gallina Term where
   renderGallina' p (Forall vars body) = maybeParen (p > forallPrec) $
-    group $ "forall" <+> render_args V vars <> "," <!> renderGallina body
+    group $ "forall" <+> renderArgs V vars <> "," <!> renderGallina body
 
   -- Special case: Fun followed by a case with one pattern can use refutable syntax
   renderGallina' p (Fun vars (Match scruts Nothing [Equation mps body]))
@@ -271,7 +271,7 @@ instance Gallina Term where
           check _ _ = False
 
   renderGallina' p (Fun vars body) = maybeParen (p > funPrec) $
-    group $ "fun" <+> render_args V vars <+> nest 2 ("=>" <!> renderGallina' funPrec body)
+    group $ "fun" <+> renderArgs V vars <+> nest 2 ("=>" <!> renderGallina' funPrec body)
 
   renderGallina' p (Fix fbs) = group $ maybeParen (p > fixPrec) $
     renderFixBodies "fix" fbs
@@ -288,14 +288,14 @@ instance Gallina Term where
 
   renderGallina' p (Let var args oty val body) = group $ maybeParen (p > letPrec) $
          "let" <+> group (   renderGallina var
-                         <>  spaceIf args <> render_args_oty V args oty
+                         <>  spaceIf args <> renderArgsOty V args oty
                          <+> nest 2 (":=" <!> renderGallina val))
                <+> "in"
     <!>  align (renderGallina body)
 
   renderGallina' p (LetTuple vars orty val body) = group $ maybeParen (p > letPrec) $
         "let" <+> group (   (parensN . commaList $ renderGallina <$> vars)
-                        <>  render_opt_rtype orty
+                        <>  renderOptRtype orty
                         <+> nest 2 (":=" <!> renderGallina val))
     <+> "in" <!> align (renderGallina body)
 
@@ -305,12 +305,12 @@ instance Gallina Term where
     <+> "in" <!> align (renderGallina body)
 
   renderGallina' p (If SymmetricIf c odrty t f) = maybeParen (p > ifPrec) $
-        "if"   <+> align (renderGallina c <> render_opt_rtype odrty)
+        "if"   <+> align (renderGallina c <> renderOptRtype odrty)
     <!> "then" <+> align (renderGallina t)
     <!> "else" <+> align (renderGallina f)
 
   renderGallina' p (If LinearIf c odrty t f) = maybeParen (p > ifPrec) $ align $
-    group ( "if"   <+> align (renderGallina c <> render_opt_rtype odrty)
+    group ( "if"   <+> align (renderGallina c <> renderOptRtype odrty)
         <!> "then" <+> align (renderGallina t) <+> "else")
     <!> align (renderGallina f)
 
@@ -355,10 +355,10 @@ instance Gallina Term where
         renderedFunction
           | Qualid qf <- f, any (\case NamedArg _ _ -> True ; _ -> False) args = renderGallina' appPrec qf
           | otherwise                                                          = renderGallina' appPrec f
-    in renderedFunction </> align (render_args' (appPrec + 1) H args)
+    in renderedFunction </> align (renderArgs' (appPrec + 1) H args)
 
   renderGallina' _p (ExplicitApp qid args) = parensN $
-    "@" <> renderGallina qid <> softlineIf args <> render_args' (appPrec + 1) H args
+    "@" <> renderGallina qid <> softlineIf args <> renderArgs' (appPrec + 1) H args
 
   renderGallina' p (InScope tm scope) = maybeParen (p > scopePrec) $
     renderGallina' scopePrec tm <> "%" <> renderIdent scope
@@ -421,7 +421,7 @@ instance Gallina Term where
 
   renderGallina' _ (Sigma x oty body) = "{" 
     <+> renderGallina x 
-    <> render_opt_type oty 
+    <> renderOptType oty 
     <+> "&" <+> renderGallina body 
     <+> "}"
     
@@ -438,7 +438,7 @@ renderFixBody def (FixBody f args oannot oty body) =
       =   renderGallina f
       </> align (    fillSep (renderGallina <$> args)
                 </?> (renderGallina <$> oannot))
-      <>  render_opt_type oty
+      <>  renderOptType oty
 
 instance Gallina Arg where
   renderGallina' p (PosArg t) =
@@ -447,25 +447,25 @@ instance Gallina Arg where
     hang 2 . parensN $ renderIdent name </> ":=" <+> align (renderGallina t)
 
 -- Module-local
-if_explicit :: Explicitness -> (Doc -> Doc) -> Doc -> Doc
-if_explicit Explicit = ($)
-if_explicit Implicit = const braces
+ifExplicit :: Explicitness -> (Doc -> Doc) -> Doc -> Doc
+ifExplicit Explicit = ($)
+ifExplicit Implicit = const braces
 
 -- Module-local
 -- The 'Bool' is 'True' if parentheses are always necessary and 'False' otherwise.
-binder_decoration :: Generalizability -> Explicitness -> Bool -> Doc -> Doc
-binder_decoration Ungeneralizable ex b = if_explicit ex (if b then parensN else id)
-binder_decoration Generalizable   ex _ = ("`" <>) . if_explicit ex parensN
+binderDecoration :: Generalizability -> Explicitness -> Bool -> Doc -> Doc
+binderDecoration Ungeneralizable ex b = ifExplicit ex (if b then parensN else id)
+binderDecoration Generalizable   ex _ = ("`" <>) . ifExplicit ex parensN
 
 instance Gallina Binder where
   renderGallina' _ (ExplicitBinder name)  =
-    binder_decoration Ungeneralizable Explicit False $ renderGallina name
+    binderDecoration Ungeneralizable Explicit False $ renderGallina name
   renderGallina' _ (ImplicitBinders names)  =
-    binder_decoration Ungeneralizable Implicit False $ render_args H names
+    binderDecoration Ungeneralizable Implicit False $ renderArgs H names
   renderGallina' _ (Typed gen ex names ty) =
-    binder_decoration gen ex True $ render_args_ty H names ty
+    binderDecoration gen ex True $ renderArgsTy H names ty
   renderGallina' _ (Generalized ex ty)  =
-    binder_decoration Generalizable ex True $ renderGallina ty
+    binderDecoration Generalizable ex True $ renderGallina ty
 
 instance Gallina Name where
   renderGallina' _ (Ident ident)  = renderGallina ident
@@ -485,7 +485,7 @@ instance Gallina MatchItem where
     hang 2 $
       renderGallina' (letPrec + 1) scrutinee
         <> maybe mempty (\as -> softline <> "as" <+> renderGallina as) oas
-        <> render_in_annot oin
+        <> renderInAnnot oin
 
 instance Gallina DepRetType where
   renderGallina' _ (DepRetType oname rty) =
@@ -506,10 +506,10 @@ instance Gallina Pattern where
   renderGallina' _ (ArgsPat qid []) = renderGallina qid
 
   renderGallina' p (ArgsPat qid args) = maybeParen (p > appPrec) $
-    renderGallina' appPrec qid </> render_args' (appPrec + 1) H args
+    renderGallina' appPrec qid </> renderArgs' (appPrec + 1) H args
 
   renderGallina' p (ExplicitArgsPat qid args) = maybeParen (p > appPrec) $
-    "@" <> renderGallina' appPrec qid <> softlineIf args <> render_args' (appPrec +1) H args
+    "@" <> renderGallina' appPrec qid <> softlineIf args <> renderArgs' (appPrec +1) H args
 
   renderGallina' _p (InfixPat l op r) = parensN $ -- TODO precedence
     renderGallina l </> renderOp op </> renderGallina r
@@ -523,7 +523,7 @@ instance Gallina Pattern where
   renderGallina' _p (QualidPat qid) =
     renderGallina qid
 
-  renderGallina' _ (UnderscorePat) =
+  renderGallina' _ UnderscorePat =
     char '_'
 
   renderGallina' _ (NumPat n) =
@@ -573,7 +573,7 @@ instance Gallina Sentence where
   renderGallina' p (CommentSentence         com)    = renderGallina' p com
   renderGallina' p (LocalModuleSentence     lmd)    = renderGallina' p lmd
   renderGallina' _ (EquationsSentence eqd) =
-    nest 2 ("Equations" <+> renderGallina (eqnName eqd) <> spaceIf (eqnBinders eqd) <> render_args H (eqnBinders eqd)
+    nest 2 ("Equations" <+> renderGallina (eqnName eqd) <> spaceIf (eqnBinders eqd) <> renderArgs H (eqnBinders eqd)
             <+> ":" <+> maybe "_" renderGallina (eqnRetType eqd)
             <> maybe " " (\wf -> " " <> "by wf" <+> parens (renderGallina (wfMeasure wf)) <+> renderGallina (wfRelation wf) <> " ") (eqnWf eqd)
             <> ":=" <$$>
@@ -590,7 +590,7 @@ instance Gallina Sentence where
       renderBinderList [] = mempty
       renderBinderList bs = case Data.List.NonEmpty.nonEmpty bs of
         Nothing -> mempty  -- unreachable: guarded by [] case above; defense-in-depth
-        Just ne -> " " <> render_args H ne
+        Just ne -> " " <> renderArgs H ne
 
 instance Gallina Assumption where
   renderGallina' p (Assumption kw ass) = renderGallina' p kw <+> align (renderGallina ass) <> "."
@@ -609,7 +609,7 @@ instance Gallina AssumptionKeyword where
 instance Gallina Assums where
   renderGallina' _ (Assums ids ty) = renderAss ids ty
     where
-      renderAss ids ty = fillSep (renderGallina <$> ids) <> nest 2 (render_type ty)
+      renderAss ids ty = fillSep (renderGallina <$> ids) <> nest 2 (renderType ty)
 
 -- Coq 8.20: Locality is now expressed via attributes (#[global], #[local],
 -- #[export]) instead of keywords (Global, Local).
@@ -639,12 +639,12 @@ instance Gallina Definition where
       renderEx ExistingClass qid  = "Existing Class" <+> renderGallina qid <> "."
       renderDef def name args oty body =
         nest 2 ((def <+> renderGallina name
-                     <>  spaceIf args <> render_args_oty H args oty
+                     <>  spaceIf args <> renderArgsOty H args oty
                      <+> ":=") <$$> renderGallina body <>  ".")
 
 instance Gallina Inductive where
-  renderGallina' _ (Inductive   bodies nots) = renderUnivPoly bodies <> render_mutual_def "Inductive"   renderIndBody bodies nots
-  renderGallina' _ (CoInductive bodies nots) = renderUnivPoly bodies <> render_mutual_def "CoInductive" renderIndBody bodies nots
+  renderGallina' _ (Inductive   bodies nots) = renderUnivPoly bodies <> renderMutualDef "Inductive"   renderIndBody bodies nots
+  renderGallina' _ (CoInductive bodies nots) = renderUnivPoly bodies <> renderMutualDef "CoInductive" renderIndBody bodies nots
 
 -- | Emit a @#[universes(...)]@ attribute for the entire mutual inductive block.
 -- In Coq, this attribute applies to the whole @Inductive@/@CoInductive@ sentence,
@@ -660,15 +660,15 @@ renderUnivPoly bodies = case maximum (fmap indUnivStatus bodies) of
 
 renderIndBody :: Doc -> IndBody -> Doc
 renderIndBody def (IndBody name params ty cons _univPoly) = nest 2 $ group $
-    def <+> renderGallina name <> spaceIf params <> render_args_ty H params ty <+> ":="
+    def <+> renderGallina name <> spaceIf params <> renderArgsTy H params ty <+> ":="
         <!> vsep (renderCon "|" <$> cons)
   where
     renderCon delim (cname, cargs, coty) =
-      delim <+> renderGallina cname <> spaceIf cargs <> render_args_oty H cargs coty
+      delim <+> renderGallina cname <> spaceIf cargs <> renderArgsOty H cargs coty
 
 instance Gallina Fixpoint where
-  renderGallina' _ (Fixpoint   bodies nots) = render_mutual_def "Fixpoint"   renderFixBody bodies nots
-  renderGallina' _ (CoFixpoint bodies nots) = render_mutual_def "CoFixpoint" renderFixBody bodies nots
+  renderGallina' _ (Fixpoint   bodies nots) = renderMutualDef "Fixpoint"   renderFixBody bodies nots
+  renderGallina' _ (CoFixpoint bodies nots) = renderMutualDef "CoFixpoint" renderFixBody bodies nots
 
 instance Gallina Order where
   renderGallina' _ (StructOrder var) = braces $
@@ -681,7 +681,7 @@ instance Gallina Order where
 
 instance Gallina Assertion where
   renderGallina' _ (Assertion kw name args ty) =
-    renderGallina kw <+> renderGallina name <> spaceIf args <> group (render_args V args)
+    renderGallina kw <+> renderGallina name <> spaceIf args <> group (renderArgs V args)
                      <+> group (nest 2 $ ":" </> renderGallina ty)
                      <>  "."
 
@@ -721,14 +721,14 @@ instance Gallina ModuleSentence where
 
 instance Gallina ClassDefinition where
   renderGallina' _ (ClassDefinition cl params osort fields) =
-    "Class" <+> renderGallina cl <> spaceIf params <> render_args_oty H params (Sort <$> osort)
+    "Class" <+> renderGallina cl <> spaceIf params <> renderArgsOty H params (Sort <$> osort)
             <+> nest 2 (":=" </> "{" <> lineIf fields
                                      <> sepWith (<+>) (<!>) ";" (map (\(f,ty) -> renderGallina f <+> ":" <+> renderGallina ty) fields)
                                      <> spaceIf fields <> "}.")
 
 instance Gallina RecordDefinition where
   renderGallina' _ (RecordDefinition cl params osort build fields) =
-    "Record" <+> renderGallina cl <> spaceIf params <> render_args_oty H params (Sort <$> osort)
+    "Record" <+> renderGallina cl <> spaceIf params <> renderArgsOty H params (Sort <$> osort)
             <+> nest 2 (":=" </> maybe empty renderGallina build <+>
                                  "{" <> lineIf fields
                                      <> sepWith (<+>) (<!>) ";" (map (\(f,ty) -> renderGallina f <+> ":" <+> renderGallina ty) fields)
@@ -736,17 +736,17 @@ instance Gallina RecordDefinition where
 
 instance Gallina InstanceDefinition where
   renderGallina' _ (InstanceDefinition inst params cl defns mpf) = group (nest 2 $
-    "Instance" <+> renderGallina inst <> spaceIf params <> render_args_ty H params cl <+> ":="
+    "Instance" <+> renderGallina inst <> spaceIf params <> renderArgsTy H params cl <+> ":="
         <!> "{" <> lineIf defns
                 <> sepWith (<+>) (<!>) ";" (map (\(f,def) -> renderGallina f <+> ":=" <+> renderGallina def) defns)
                 <> spaceIf defns <> "}."
     ) <!> maybe empty renderGallina mpf
   renderGallina' _ (InstanceTerm inst params cl term mpf) = group (nest 2 $
-    "Instance" <+> renderGallina inst <> spaceIf params <> render_args_ty H params cl <+> ":="
+    "Instance" <+> renderGallina inst <> spaceIf params <> renderArgsTy H params cl <+> ":="
         <!> renderGallina term <> "."
     ) <!> maybe empty renderGallina mpf
   renderGallina' _ (InstanceProof inst params cl pf) = group (nest 2 $
-    "Instance" <+> renderGallina inst <> spaceIf params <> render_args_ty H params cl <> "."
+    "Instance" <+> renderGallina inst <> spaceIf params <> renderArgsTy H params cl <> "."
     ) <!> renderGallina pf
 
 instance Gallina Associativity where
@@ -770,7 +770,7 @@ instance Gallina Notation where
     renderDef (renderLocality loc <> "Notation") (Bare name) (fmap Bare args) body
     where 
       renderDef def name args body = hang 2 ((def <+> renderGallina name
-                    <>  spaceIf args <> render_args H args
+                    <>  spaceIf args <> renderArgs H args
                     <+> ":=") <$$> parensN (renderGallina body) <>  ".")
     -- ECG: should parens be optional?
     -- ECG: renderDef is quite similar to the renderDef defined in Definition
@@ -782,7 +782,7 @@ instance Gallina NotationBinding where
 -- TODO: Collapse successive arguments with the same spec?
 instance Gallina Arguments where
   renderGallina' _ (Arguments floc qid args) =
-    renderFullLocality floc <> "Arguments" <+> renderGallina qid <> softlineIf args <> render_args H args <> "."
+    renderFullLocality floc <> "Arguments" <+> renderGallina qid <> softlineIf args <> renderArgs H args <> "."
 
 instance Gallina ArgumentSpec where
   renderGallina' _ (ArgumentSpec eim arg oscope) =

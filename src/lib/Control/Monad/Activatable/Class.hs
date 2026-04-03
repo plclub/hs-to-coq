@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies,
+{-# LANGUAGE FunctionalDependencies,
              FlexibleInstances, UndecidableInstances,
              FlexibleContexts,
              LambdaCase #-}
@@ -10,7 +10,7 @@ module Control.Monad.Activatable.Class (
   -- * Activation-related types
   ActivationError(..), Switched(..)
 ) where
-  
+
 import HsToCoq.Util.Functor
 import Control.Monad.Error.Class
 import Control.Monad.Trans
@@ -41,7 +41,7 @@ import Control.Monad.Trans.Activatable hiding (tryActivate, switching, switching
 -- @
 --
 -- Or, in code:
--- 
+--
 -- @
 --     >>> basic         = pure 'b'
 --     >>> activated     = pure ('A','X')
@@ -102,82 +102,82 @@ instance MonadActivatable x m => MonadActivatable x (R.ReaderT r m) where
 instance (MonadActivatable x m, Monoid w) => MonadActivatable x (WS.WriterT w m) where
   tryActivate                                         = lift tryActivate
   switching (WS.WriterT basic) (WS.WriterT activated) =
-    WS.WriterT $ lift_switching (switch_pair_strict mempty) push_pair_strict basic activated
+    WS.WriterT $ liftSwitching (switchPairStrict mempty) pushPairStrict basic activated
 
 instance (MonadActivatable x m, Monoid w) => MonadActivatable x (WL.WriterT w m) where
   tryActivate                                         = lift tryActivate
   switching (WL.WriterT basic) (WL.WriterT activated) =
-    WL.WriterT $ lift_switching (switch_pair_lazy mempty) push_pair_lazy basic activated
+    WL.WriterT $ liftSwitching (switchPairLazy mempty) pushPairLazy basic activated
 
 instance MonadActivatable x m => MonadActivatable x (SS.StateT s m) where
   tryActivate                                       = lift tryActivate
   switching (SS.StateT basic) (SS.StateT activated) =
-    SS.StateT $ \s -> lift_switching (switch_pair_strict s) push_pair_strict (basic s) (activated s)
+    SS.StateT $ \s -> liftSwitching (switchPairStrict s) pushPairStrict (basic s) (activated s)
 
 instance MonadActivatable x m => MonadActivatable x (SL.StateT s m) where
   tryActivate                                       = lift tryActivate
   switching (SL.StateT basic) (SL.StateT activated) =
-    SL.StateT $ \s -> lift_switching (switch_pair_lazy s) push_pair_lazy (basic s) (activated s)
+    SL.StateT $ \s -> liftSwitching (switchPairLazy s) pushPairLazy (basic s) (activated s)
 
 instance (MonadActivatable x m, Monoid w) => MonadActivatable x (RWSS.RWST r w s m) where
   tryActivate                                       = lift tryActivate
   switching (RWSS.RWST basic) (RWSS.RWST activated) =
-    RWSS.RWST $ \r s -> lift_switching (switch_triple_strict s mempty) push_triple_strict (basic r s) (activated r s)
+    RWSS.RWST $ \r s -> liftSwitching (switchTripleStrict s mempty) pushTripleStrict (basic r s) (activated r s)
 
 instance (MonadActivatable x m, Monoid w) => MonadActivatable x (RWSL.RWST r w s m) where
   tryActivate                                       = lift tryActivate
   switching (RWSL.RWST basic) (RWSL.RWST activated) =
-    RWSL.RWST $ \r s -> lift_switching (switch_triple_lazy s mempty) push_triple_lazy (basic r s) (activated r s)
+    RWSL.RWST $ \r s -> liftSwitching (switchTripleLazy s mempty) pushTripleLazy (basic r s) (activated r s)
 
 --------------------------------------------------------------------------------
 -- Instance helpers (module-local)
 
-push_pair_lazy :: ((a,x),o) -> ((a,o),x)
-push_pair_lazy ~((a,x),o) = ((a,o),x)
-{-# INLINE push_pair_lazy #-}
+pushPairLazy :: ((a,x),o) -> ((a,o),x)
+pushPairLazy ~((a,x),o) = ((a,o),x)
+{-# INLINE pushPairLazy #-}
 
-switch_pair_lazy :: o -> Switched (b,o) (a,o) x -> (Switched b a x, o)
-switch_pair_lazy o' = \case
+switchPairLazy :: o -> Switched (b,o) (a,o) x -> (Switched b a x, o)
+switchPairLazy o' = \case
   Basic     ~(b,o) -> (Basic     b, o)
   Activated ~(a,o) -> (Activated a, o)
   Residual  x      -> (Residual  x, o')
-{-# INLINE switch_pair_lazy #-}
+{-# INLINE switchPairLazy #-}
 
-push_pair_strict :: ((a,x),o) -> ((a,o),x)
-push_pair_strict ((a,x),o) = ((a,o),x)
-{-# INLINE push_pair_strict #-}
+pushPairStrict :: ((a,x),o) -> ((a,o),x)
+pushPairStrict ((a,x),o) = ((a,o),x)
+{-# INLINE pushPairStrict #-}
 
-switch_pair_strict :: o -> Switched (b,o) (a,o) x -> (Switched b a x, o)
-switch_pair_strict o_strict = \case
+switchPairStrict :: o -> Switched (b,o) (a,o) x -> (Switched b a x, o)
+switchPairStrict o_strict = \case
   Basic     (b,o) -> (Basic     b, o)
   Activated (a,o) -> (Activated a, o)
   Residual  x     -> (Residual  x, o_strict)
-{-# INLINE switch_pair_strict #-}
+{-# INLINE switchPairStrict #-}
 
-push_triple_lazy :: ((a,x),s,w) -> ((a,s,w),x)
-push_triple_lazy ~((a,x),s,w) = ((a,s,w),x)
-{-# INLINE push_triple_lazy #-}
+pushTripleLazy :: ((a,x),s,w) -> ((a,s,w),x)
+pushTripleLazy ~((a,x),s,w) = ((a,s,w),x)
+{-# INLINE pushTripleLazy #-}
 
-switch_triple_lazy :: s -> w -> Switched (b,s,w) (a,s,w) x -> (Switched b a x, s, w)
-switch_triple_lazy s wempty = \case
+switchTripleLazy :: s -> w -> Switched (b,s,w) (a,s,w) x -> (Switched b a x, s, w)
+switchTripleLazy s wempty = \case
   Basic     ~(b,s',w) -> (Basic     b, s', w)
   Activated ~(a,s',w) -> (Activated a, s', w)
-  Residual  x         -> (Residual  x, s,  wempty) 
-{-# INLINE switch_triple_lazy #-}
+  Residual  x         -> (Residual  x, s,  wempty)
+{-# INLINE switchTripleLazy #-}
 
-push_triple_strict :: ((a,x),s,w) -> ((a,s,w),x)
-push_triple_strict ((a,x),s,w) = ((a,s,w),x)
-{-# INLINE push_triple_strict #-}
+pushTripleStrict :: ((a,x),s,w) -> ((a,s,w),x)
+pushTripleStrict ((a,x),s,w) = ((a,s,w),x)
+{-# INLINE pushTripleStrict #-}
 
-switch_triple_strict :: s -> w -> Switched (b,s,w) (a,s,w) x -> (Switched b a x, s, w)
-switch_triple_strict s wempty = \case
+switchTripleStrict :: s -> w -> Switched (b,s,w) (a,s,w) x -> (Switched b a x, s, w)
+switchTripleStrict s wempty = \case
   Basic     (b,s',w) -> (Basic     b, s', w)
   Activated (a,s',w) -> (Activated a, s', w)
-  Residual  x        -> (Residual  x, s,  wempty) 
-{-# INLINE switch_triple_strict #-}
+  Residual  x        -> (Residual  x, s,  wempty)
+{-# INLINE switchTripleStrict #-}
 
-lift_switching :: MonadActivatable x m
+liftSwitching :: MonadActivatable x m
                => (Switched b a x -> r) -> (a' -> (a, x))
                -> m b -> m a' -> m r
-lift_switching switch push basic activated = switch <$> switching basic (push <$> activated)
-{-# INLINE lift_switching #-}
+liftSwitching switch push basic activated = switch <$> switching basic (push <$> activated)
+{-# INLINE liftSwitching #-}

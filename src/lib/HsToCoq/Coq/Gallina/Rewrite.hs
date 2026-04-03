@@ -18,7 +18,6 @@ Another improvemet would be to detect bad patterns (non-linear ones,
 unsupported AST nodes) and report such errors upon parsing.
 -}
 
-{-# LANGUAGE OverloadedLists #-}
 module HsToCoq.Coq.Gallina.Rewrite (Rewrite(..), Rewrites, rewrite) where
 
 import qualified Data.Map as M

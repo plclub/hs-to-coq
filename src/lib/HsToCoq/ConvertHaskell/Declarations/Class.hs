@@ -75,7 +75,7 @@ getImplicitBindersForClassMember className memberName = do
 -- strip off any implicit binders at the beginning of a (Coq) type
 getImplicits :: Term -> [Binder]
 getImplicits (Forall bs t) = if length bs == length imps then imps ++ getImplicits t else imps where
-    imps = NE.takeWhile (\b -> case b of
+    imps = NE.takeWhile (\case
                                  ImplicitBinders _ -> True
                                  Generalized Implicit _ -> True
                                  Typed _ Implicit _ _ -> True
@@ -83,14 +83,14 @@ getImplicits (Forall bs t) = if length bs == length imps then imps ++ getImplici
 getImplicits _ = []
 
 -- Module-local
-convUnsupportedIn_lname :: (ConversionMonad r m, Outputable nm) => String -> String -> GenLocated l nm -> m a
-convUnsupportedIn_lname what whatFam lname = do
+convUnsupportedInLname :: (ConversionMonad r m, Outputable nm) => String -> String -> GenLocated l nm -> m a
+convUnsupportedInLname what whatFam lname = do
   name <- T.unpack <$> ghcPpr (unLoc lname)
   convUnsupportedIn what whatFam name
 
 convertAssociatedType :: ConversionMonad r m => [Qualid] -> FamilyDecl GhcRn -> m (Qualid, Term)
 convertAssociatedType classArgs FamilyDecl{..} = do
-  let badAssociation what whatFam = convUnsupportedIn_lname what whatFam fdLName
+  let badAssociation what whatFam = convUnsupportedInLname what whatFam fdLName
         
   case fdInfo of
     OpenTypeFamily     -> pure ()
@@ -109,18 +109,18 @@ convertAssociatedType classArgs FamilyDecl{..} = do
   result <- case unLoc fdResultSig of
     NoSig NOEXTP                     -> pure $ Sort Type
     KindSig NOEXTP k                 -> withCurrentDefinition name $ convertLHsType k
-    TyVarSig NOEXTP (L _ (UserTyVar NOEXTP GHC_900(_) _))
+    TyVarSig NOEXTP (L _ (UserTyVar{}))
       -> pure $ Sort Type -- Maybe not a thing inside type classes?
     TyVarSig NOEXTP (L _ (KindedTyVar NOEXTP GHC_900(_) _ k))
       -> withCurrentDefinition name $ convertLHsType k   -- Maybe not a thing inside type classes?
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
     TyVarSig _ (L _ (XTyVarBndr v)) -> noExtCon v
     XFamilyResultSig v -> noExtCon v
 #endif
   
   pure (name, result)
 
-#if __GLASGOW_HASKELL__ >= 806
+#if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
 convertAssociatedType _ (XFamilyDecl v) = noExtCon v
 #endif
 
@@ -149,19 +149,19 @@ convertAssociatedTypeDefault classArgs
   n <- var TypeNS (unLoc feqn_tycon)
   args <- withCurrentDefinition n (convertLHsTyVarBndrs Coq.Explicit params)
   unless (classArgs == foldMap (toListOf binderIdents) args) $
-    convUnsupportedIn_lname "associated type family defaults with argument lists that differ from the class's"
+    convUnsupportedInLname "associated type family defaults with argument lists that differ from the class's"
                             "associated type equation"
                             feqn_tycon
   ty <- withCurrentDefinition n $ convertLHsType feqn_rhs
   pure (n, ty)
   -- Skipping feqn_fixity
 
-#if __GLASGOW_HASKELL__ >= 900
+#if __GLASGOW_HASKELL__ >= 900 && __GLASGOW_HASKELL__ < 910
 convertAssociatedTypeDefault _ (TyFamInstDecl _ (XFamEqn v)) = noExtCon v
-#elif __GLASGOW_HASKELL__ >= 810
+#elif __GLASGOW_HASKELL__ >= 810 && __GLASGOW_HASKELL__ < 900
 convertAssociatedTypeDefault _ (TyFamInstDecl (HsIB { hsib_body = XFamEqn v })) = noExtCon v
 convertAssociatedTypeDefault _ (TyFamInstDecl (XHsImplicitBndrs v)) = noExtCon v
-#elif __GLASGOW_HASKELL__ >= 806
+#elif __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 810
 convertAssociatedTypeDefault _ (XFamEqn v) = noExtCon v
 #endif
 

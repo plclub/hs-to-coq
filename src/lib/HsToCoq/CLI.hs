@@ -44,7 +44,7 @@ import qualified Data.Text.IO as T
 import System.IO
 import System.Exit
 
-import GHC hiding (outputFile)
+import GHC
 #if __GLASGOW_HASKELL__ >= 910
 import GHC.Driver.Session hiding (outputFile)
 import GHC.Unit.Module
@@ -276,9 +276,9 @@ processFilesMain process = do
 
   let parseConfigFiles files builder parser =
         liftIO . forFold (conf^.files) $ \filename ->
-          (runParser parser <$> T.readFile filename) >>= \case
+          T.readFile filename >>= (\case
             Left  err -> die $ unlines $ map (prettyParseError filename) err
-            Right res -> either die pure $ builder res
+            Right res -> either die pure $ builder res) . runParser parser
 
   edits <- parseConfigFiles editsFiles buildEdits parseEditList
 

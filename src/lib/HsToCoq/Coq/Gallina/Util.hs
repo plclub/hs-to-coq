@@ -256,7 +256,7 @@ qualidHasValidCoqOp qid = case identToOp (qualidBase qid) of
                       || c > '\x7f'  -- Unicode symbols
     -- Operators that start with a built-in operator prefix create ambiguity
     -- when qualified (e.g., "GHC.Base.<*" parses as "GHC.Base.<" then "*").
-    isAmbiguousCoqOp op = op `elem` ["<*"]
+    isAmbiguousCoqOp op = op == "<*"
 
 qualidToOp :: Qualid -> Maybe Op
 qualidToOp (Qualified qid aid) = ((qid <> ".") <>) <$> identToOp aid
@@ -296,7 +296,7 @@ collectArgs (Qualid qid) = return (qid, [])
 collectArgs (App t args) = do
     (f, args1) <- collectArgs t
     args2 <- mapM fromArg (toList args)
-    return $ (f, args1 ++ args2)
+    return (f, args1 ++ args2)
   where
     fromArg (PosArg t) = return t
     fromArg _          = Left "non-positional argument"

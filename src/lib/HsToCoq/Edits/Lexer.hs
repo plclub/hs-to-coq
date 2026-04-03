@@ -1,5 +1,4 @@
 {-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TupleSections, LambdaCase, FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
@@ -119,18 +118,18 @@ tokenDescription TokEOF         = "end of file"
 --------------------------------------------------------------------------------
 
 -- Module-local
-empty_brackets :: MonadParse m => Char -> Char -> m Text
-empty_brackets open close = T.pack [open,close] <$ parseChar (== open)
+emptyBrackets :: MonadParse m => Char -> Char -> m Text
+emptyBrackets open close = T.pack [open,close] <$ parseChar (== open)
                                                 <* many (parseChar isSpace)
                                                 <* parseChar (== close)
 
-tuple_operator :: MonadParse m => m Text
-tuple_operator = (\x y z -> T.pack $ [x] ++ y ++ [z]) <$>
+tupleOperator :: MonadParse m => m Text
+tupleOperator = (\x y z -> T.pack $ [x] ++ y ++ [z]) <$>
                  parseChar (== '(') <*> many (parseChar (== ',')) <*> parseChar (== ')')
 
 
-infix_datacon :: MonadParse m => m Text
-infix_datacon = (\x y -> T.pack (x:y)) <$> parseChar (== ':') <*> some (parseChar isOperator)
+infixDatacon :: MonadParse m => m Text
+infixDatacon = (\x y -> T.pack (x:y)) <$> parseChar (== ':') <*> some (parseChar isOperator)
 
 -- Module-local
 none :: Char -> Bool
@@ -148,11 +147,11 @@ uword = parseToken id isUpper    isWord
 word  = parseToken id isWordInit isWord
 op    = parseToken id isOperator isOperator
 tick  = parseToken id isTick isTick
-unit  = empty_brackets '(' ')'
-nil   = empty_brackets '[' ']'
+unit  = emptyBrackets '(' ')'
+nil   = emptyBrackets '[' ']'
 
 unqualified :: MonadParse m => m (NameCategory, Ident)
-unqualified = asumFmap (CatWord,) [word] <|> asumFmap (CatSym,) [op,unit,nil,tuple_operator,infix_datacon]
+unqualified = asumFmap (CatWord,) [word] <|> asumFmap (CatSym,) [op,unit,nil,tupleOperator,infixDatacon]
 
 qualified :: MonadParse m => m (NameCategory, Ident)
 qualified = do
@@ -202,7 +201,7 @@ data NewlineStatus = NewlineSeparators | NewlineWhitespace
 type MonadNewlineStatus s m = (MonadParse m, MonadState s m, Has s NewlineStatus)
 
 token' :: MonadNewlineStatus s m => m (Maybe Token)
-token' = asum $
+token' = asum
   [ Just (TokWord "#") <$  hashNum  -- #digit: hash-number prefix (before comment!)
   , Nothing          <$  comment
   , Nothing          <$  space
@@ -218,7 +217,7 @@ token' = asum $
     -- GHC 9.10 generates hash-number literals (#n) in unboxed patterns.
     -- Parse '#' only when immediately followed by a digit; the following
     -- nat token will be parsed by the next call to token'.
-    hashNum = parseCharTokenLookahead (const "#") (is '#') (maybe False isDigit)
+    hashNum = parseCharTokenLookahead (const ("#" :: Text)) (is '#') (maybe False isDigit)
     newlineToken = getPart <&> \case
                      NewlineSeparators -> Just TokNewline
                      NewlineWhitespace -> Nothing

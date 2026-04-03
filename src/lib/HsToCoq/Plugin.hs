@@ -125,6 +125,7 @@ instance ToTerm Name where
                   App1 "External" (t (nameModule n))
                 | isInternalName n -> "Internal"
                 | isSystemName n   -> "System"
+                | otherwise        -> "System"
            , t (nameOccName n)
            , t (nameUnique n)
            , t (nameSrcSpan n)

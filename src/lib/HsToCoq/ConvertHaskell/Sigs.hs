@@ -80,7 +80,7 @@ collectSigs sigs = do
 #endif
     SCCFunSig{}          -> pure []
     CompleteMatchSig{}   -> pure []
-    PatSynSig NOEXTP _ _ -> pure []
+    PatSynSig{}          -> pure []
 #if __GLASGOW_HASKELL__ < 910
     IdSig     NOEXTP _   -> throwError "generated-code signatures"
 #endif
