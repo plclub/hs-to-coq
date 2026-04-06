@@ -283,8 +283,8 @@ _initTcHack tcm action = do
                snd msgs
 #endif
 
--- | Like 'initTcHack' but returns 'Maybe' instead of crashing on failure.
--- 'initTcHack' throws a 'SourceError' when the TcM action fails;
+-- | Like '_initTcHack' but returns 'Maybe' instead of crashing on failure.
+-- '_initTcHack' throws a 'SourceError' when the TcM action fails;
 -- this variant catches all exceptions and returns 'Nothing', allowing
 -- graceful fallback when typechecking fails (e.g. missing TyCon info).
 initTcHackSafe :: GhcMonad m => TypecheckedModule -> TcM a -> m (Maybe a)

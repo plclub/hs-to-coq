@@ -3,6 +3,9 @@
 {-# LANGUAGE LambdaCase,
              OverloadedStrings,
              FlexibleContexts #-}
+-- GHC 9.10 TTG extension-point constructors (XTyVarBndr, XHsOuterTyVarBndrs)
+-- are DataConCantHappen (uninhabited), so cases on them are "overlapping" yet
+-- required by -Wincomplete-patterns.  Suppress the former to keep the latter.
 {-# OPTIONS_GHC -Wno-overlapping-patterns #-}
 
 #include "ghc-compat.h"

@@ -2,9 +2,14 @@
     - --cpp-define=__GLASGOW_HASKELL__=910
     - --cpp-include=src/include
 
-# CPP macro expansions create apparent redundant brackets/eta-reduce opportunities
-# that cannot actually be simplified without breaking cross-version compatibility.
+# CPP macros (NOT_GHC_900, NOT_GHC_910, GHC_900, GHC_910, NOEXTP) expand to
+# parenthesised expressions or nothing, producing apparent redundant brackets
+# that are required for the pre-expansion source to parse on other GHC versions.
 - ignore: {name: "Redundant bracket", within: HsToCoq.ConvertHaskell.Expr}
+
+# getLoc_/noLoc_ are defined point-free in some CPP branches and with explicit
+# arguments in others; keeping the eta-expanded form is consistent across
+# branches and avoids type-inference differences under CPP.
 - ignore: {name: "Eta reduce", within: [getLoc_, noLoc_]}
 
 # CPP-separated imports cannot be merged

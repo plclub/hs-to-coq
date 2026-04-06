@@ -33,8 +33,10 @@ import qualified GHC
 
 #if __GLASGOW_HASKELL__ >= 900
 import GHC.Types.SourceText (il_value)
+import qualified GHC.Utils.Outputable as GHC
 #else
 import BasicTypes (IntegralLit(..))
+import qualified Outputable as GHC
 #endif
 
 import HsToCoq.Util.GHC.FastString
@@ -177,7 +179,7 @@ convertPat (LitPat NOEXTP lit) =
     HsFloatPrim  _ _       -> convUnsupported "`Float#' literal patterns"
     HsDoublePrim _ _       -> convUnsupported "`Double#' literal patterns"
 #if __GLASGOW_HASKELL__ >= 910
-    _                      -> convUnsupported "unhandled literal pattern"
+    _                      -> convUnsupported $ "unhandled literal pattern: " ++ GHC.showPprUnsafe lit
 #elif __GLASGOW_HASKELL__ >= 806
     XLit v -> noExtCon v
 #endif
