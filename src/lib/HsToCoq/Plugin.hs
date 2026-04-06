@@ -125,7 +125,11 @@ instance ToTerm Name where
                   App1 "External" (t (nameModule n))
                 | isInternalName n -> "Internal"
                 | isSystemName n   -> "System"
-                | otherwise        -> "System"
+                -- All four NameSort cases above are exhaustive in GHC 9.10;
+                -- the guard is kept so GHC does not warn about non-exhaustive
+                -- guards, and we error rather than silently misclassify if a
+                -- new NameSort is added upstream.
+                | otherwise        -> error $ "ToTerm Name: unknown NameSort for " ++ Outputable.showPprUnsafe n
            , t (nameOccName n)
            , t (nameUnique n)
            , t (nameSrcSpan n)

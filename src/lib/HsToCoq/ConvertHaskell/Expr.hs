@@ -3,6 +3,9 @@
              OverloadedLists, OverloadedStrings,
              FlexibleContexts, RankNTypes, ScopedTypeVariables,
              ViewPatterns  #-}
+-- GHC API compatibility shims (getLoc_, noLoc_, reLocA, conPatIn, unboundVarOcc)
+-- live inside CPP blocks with version-dependent types; adding portable type
+-- signatures across all supported GHC versions would be fragile.
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 
 #include "ghc-compat.h"
@@ -192,7 +195,7 @@ convertExpr_ (HsLit NOEXTP lit) =
     HsFloatPrim  _ _       -> convUnsupported "`Float#' literals"
     HsDoublePrim _ _       -> convUnsupported "`Double#' literals"
 #if __GLASGOW_HASKELL__ >= 910
-    _                      -> convUnsupported "unhandled literal type"
+    _                      -> convUnsupported $ "unhandled literal type: " ++ GHC.showPprUnsafe lit
 #elif __GLASGOW_HASKELL__ >= 806
     XLit v -> noExtCon v
 #endif
