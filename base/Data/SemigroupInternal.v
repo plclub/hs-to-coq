@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -21,8 +21,8 @@ Implicit Type inst_k: unit_class.
 
 Require GHC.Base.
 Require GHC.Num.
-Require HsToCoq.Err.
-Require HsToCoq.Unpeel.
+Require HsToRocq.Err.
+Require HsToRocq.Unpeel.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
@@ -53,11 +53,11 @@ Arguments Mk_Dual {_} _.
 
 Arguments Mk_Alt {_} {_} {_} _.
 
-Instance Default__Any : HsToCoq.Err.Default Any :=
-  HsToCoq.Err.Build_Default _ (Mk_Any HsToCoq.Err.default).
+Instance Default__Any : HsToRocq.Err.Default Any :=
+  HsToRocq.Err.Build_Default _ (Mk_Any HsToRocq.Err.default).
 
-Instance Default__All : HsToCoq.Err.Default All :=
-  HsToCoq.Err.Build_Default _ (Mk_All HsToCoq.Err.default).
+Instance Default__All : HsToRocq.Err.Default All :=
+  HsToRocq.Err.Build_Default _ (Mk_All HsToRocq.Err.default).
 
 #[global] Definition getSum {a} (arg_0__ : Sum a) :=
   let 'Mk_Sum getSum := arg_0__ in
@@ -90,8 +90,8 @@ Instance Default__All : HsToCoq.Err.Default All :=
 
 (* Midamble *)
 
-Instance Unpeel_Alt (k : Type) (f : k -> Type) (a : k) : HsToCoq.Unpeel.Unpeel (Alt f a) (f a) :=
-    HsToCoq.Unpeel.Build_Unpeel _ _ getAlt Mk_Alt.
+Instance Unpeel_Alt (k : Type) (f : k -> Type) (a : k) : HsToRocq.Unpeel.Unpeel (Alt f a) (f a) :=
+    HsToRocq.Unpeel.Build_Unpeel _ _ getAlt Mk_Alt.
 
 (* Converted value declarations: *)
 
@@ -186,8 +186,8 @@ Program Instance Monad__Alt {f : Type -> Type} `{GHC.Base.Monad f}
            GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Alt_op_zgzgze__ ;
            GHC.Base.return___ := fun (a : Type) => Monad__Alt_return_ |}.
 
-Instance Unpeel_Dual a : HsToCoq.Unpeel.Unpeel (Dual a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getDual Mk_Dual.
+Instance Unpeel_Dual a : HsToRocq.Unpeel.Unpeel (Dual a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getDual Mk_Dual.
 
 #[local] Definition Semigroup__Dual_op_zlzlzgzg__ {inst_a : Type}
   `{GHC.Base.Semigroup inst_a}
@@ -293,8 +293,8 @@ Program Instance Monad__Dual : GHC.Base.Monad Dual :=
            GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Dual_op_zgzgze__ ;
            GHC.Base.return___ := fun (a : Type) => Monad__Dual_return_ |}.
 
-Instance Unpeel_Endo a : HsToCoq.Unpeel.Unpeel (Endo a) (a -> a) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ appEndo Mk_Endo.
+Instance Unpeel_Endo a : HsToRocq.Unpeel.Unpeel (Endo a) (a -> a) :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ appEndo Mk_Endo.
 
 #[local] Definition Semigroup__Endo_op_zlzlzgzg__ {inst_a : Type}
    : Endo inst_a -> Endo inst_a -> Endo inst_a :=
@@ -324,8 +324,8 @@ Program Instance Monoid__Endo {a : Type} : GHC.Base.Monoid (Endo a) :=
            GHC.Base.mconcat__ := Monoid__Endo_mconcat ;
            GHC.Base.mempty__ := Monoid__Endo_mempty |}.
 
-Instance Unpeel_All : HsToCoq.Unpeel.Unpeel All bool :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getAll Mk_All.
+Instance Unpeel_All : HsToRocq.Unpeel.Unpeel All bool :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getAll Mk_All.
 
 #[local] Definition Semigroup__All_op_zlzlzgzg__ : All -> All -> All :=
   fun arg_0__ arg_1__ => Mk_All (andb (getAll arg_0__) (getAll arg_1__)).
@@ -350,8 +350,8 @@ Program Instance Monoid__All : GHC.Base.Monoid All :=
            GHC.Base.mconcat__ := Monoid__All_mconcat ;
            GHC.Base.mempty__ := Monoid__All_mempty |}.
 
-Instance Unpeel_Any : HsToCoq.Unpeel.Unpeel Any bool :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getAny Mk_Any.
+Instance Unpeel_Any : HsToRocq.Unpeel.Unpeel Any bool :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getAny Mk_Any.
 
 #[local] Definition Semigroup__Any_op_zlzlzgzg__ : Any -> Any -> Any :=
   fun arg_0__ arg_1__ => Mk_Any (orb (getAny arg_0__) (getAny arg_1__)).
@@ -376,8 +376,8 @@ Program Instance Monoid__Any : GHC.Base.Monoid Any :=
            GHC.Base.mconcat__ := Monoid__Any_mconcat ;
            GHC.Base.mempty__ := Monoid__Any_mempty |}.
 
-Instance Unpeel_Sum a : HsToCoq.Unpeel.Unpeel (Sum a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getSum Mk_Sum.
+Instance Unpeel_Sum a : HsToRocq.Unpeel.Unpeel (Sum a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getSum Mk_Sum.
 
 #[local] Definition Semigroup__Sum_op_zlzlzgzg__ {inst_a : Type} `{GHC.Num.Num
   inst_a}
@@ -476,8 +476,8 @@ Program Instance Monad__Sum : GHC.Base.Monad Sum :=
            GHC.Base.op_zgzgze____ := fun (a : Type) (b : Type) => Monad__Sum_op_zgzgze__ ;
            GHC.Base.return___ := fun (a : Type) => Monad__Sum_return_ |}.
 
-Instance Unpeel_Product a : HsToCoq.Unpeel.Unpeel (Product a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getProduct Mk_Product.
+Instance Unpeel_Product a : HsToRocq.Unpeel.Unpeel (Product a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getProduct Mk_Product.
 
 #[local] Definition Semigroup__Product_op_zlzlzgzg__ {inst_a : Type}
   `{GHC.Num.Num inst_a}
@@ -611,6 +611,6 @@ Program Instance Monad__Product : GHC.Base.Monad Product :=
      GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg__
      GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return_
      GHC.Base.return___ GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
-     GHC.Num.op_zt__ HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     HsToCoq.Err.default HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
+     GHC.Num.op_zt__ HsToRocq.Err.Build_Default HsToRocq.Err.Default
+     HsToRocq.Err.default HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel
 *)

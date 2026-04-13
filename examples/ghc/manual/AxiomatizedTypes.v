@@ -1,5 +1,5 @@
 Require GHC.Base.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom Coercion           : Type.
 Axiom Type_              : Type.
@@ -35,75 +35,75 @@ Axiom DataConBoxer       : Type.
 (* -------------------- assumed default instances ------------------- *)
 
 #[global] Instance Default__Coercion
-   : HsToCoq.Err.Default Coercion.
+   : HsToRocq.Err.Default Coercion.
 Admitted.
 
 #[global] Instance Default__Type_
-   : HsToCoq.Err.Default Type_.
+   : HsToRocq.Err.Default Type_.
 Admitted.
 
 #[global] Instance Default__ThetaType
-   : HsToCoq.Err.Default ThetaType.
+   : HsToRocq.Err.Default ThetaType.
 Admitted.
 
 
 #[global] Instance Default__TyBinder
-   : HsToCoq.Err.Default TyBinder.
+   : HsToRocq.Err.Default TyBinder.
 Admitted.
 
 #[global] Instance Default__TyThing
-   : HsToCoq.Err.Default TyThing.
+   : HsToRocq.Err.Default TyThing.
 Admitted.
 
 #[global] Instance Default__CoAxiom
-   : forall {a}, HsToCoq.Err.Default (CoAxiom a).
+   : forall {a}, HsToRocq.Err.Default (CoAxiom a).
 Admitted.
 
 
 #[global] Instance Default__BuiltInSynFamily
-   : HsToCoq.Err.Default BuiltInSynFamily.
+   : HsToRocq.Err.Default BuiltInSynFamily.
 Admitted.
 
 
 #[global] Instance Default__TcTyVarDetails
-   : HsToCoq.Err.Default TcTyVarDetails.
+   : HsToRocq.Err.Default TcTyVarDetails.
 Admitted.
 
 #[global] Instance Default__Role
-   : HsToCoq.Err.Default Role.
+   : HsToRocq.Err.Default Role.
 Admitted.
 
 
 #[global] Instance Default__BranchIndex
-   : HsToCoq.Err.Default BranchIndex.
+   : HsToRocq.Err.Default BranchIndex.
 Admitted.
 
 #[global] Instance Default__CoAxiomRule
-   : HsToCoq.Err.Default CoAxiomRule.
+   : HsToRocq.Err.Default CoAxiomRule.
 Admitted.
 
 #[global] Instance Default__CoAxiomBranch
-   : HsToCoq.Err.Default CoAxBranch.
+   : HsToRocq.Err.Default CoAxBranch.
 Admitted.
 
 
 #[global] Instance Default__CostCentre
-   : HsToCoq.Err.Default CostCentre.
+   : HsToRocq.Err.Default CostCentre.
 Admitted.
 
 #[global] Instance Default__DataConBoxer
-   : HsToCoq.Err.Default DataConBoxer.
+   : HsToRocq.Err.Default DataConBoxer.
 Admitted.
 
 
 #[global] Instance Default__PrimOp
-   : HsToCoq.Err.Default PrimOp.
+   : HsToRocq.Err.Default PrimOp.
 Admitted.
 #[global] Instance Default__ForeignCall
-   : HsToCoq.Err.Default ForeignCall.
+   : HsToRocq.Err.Default ForeignCall.
 Admitted.
 #[global] Instance Default__CType
-   : HsToCoq.Err.Default CType.
+   : HsToRocq.Err.Default CType.
 Admitted.
 
 

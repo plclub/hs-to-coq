@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -15,7 +15,7 @@ Require Coq.Program.Wf.
 Require FastString.
 Require GHC.Base.
 Require GHC.Types.TyThing.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Maybes.
 Require Module.
 Require OccName.
@@ -57,11 +57,11 @@ Existing Class NamedThing.
    : a -> OccName.OccName :=
   g__0__ _ (getOccName__ a).
 
-Instance Default__BuiltInSyntax : HsToCoq.Err.Default BuiltInSyntax :=
-  HsToCoq.Err.Build_Default _ Mk_BuiltInSyntax.
+Instance Default__BuiltInSyntax : HsToRocq.Err.Default BuiltInSyntax :=
+  HsToRocq.Err.Build_Default _ Mk_BuiltInSyntax.
 
-Instance Default__NameSort : HsToCoq.Err.Default NameSort :=
-  HsToCoq.Err.Build_Default _ Internal.
+Instance Default__NameSort : HsToRocq.Err.Default NameSort :=
+  HsToRocq.Err.Build_Default _ Internal.
 
 #[global] Definition n_loc (arg_0__ : Name) :=
   let 'Mk_Name _ _ _ n_loc := arg_0__ in
@@ -82,7 +82,7 @@ Instance Default__NameSort : HsToCoq.Err.Default NameSort :=
 (* Midamble *)
 
 (* ------------- Name midamble.v ------------ *)
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 #[global] Instance Default__Name : Default Name := Build_Default _ (Mk_Name default default default default).
 
 
@@ -466,7 +466,7 @@ Program Instance NamedThing__Located {e : Type} `{NamedThing e}
      GHC.Base.compare__ GHC.Base.max__ GHC.Base.min__ GHC.Base.op_z2218U__
      GHC.Base.op_zeze__ GHC.Base.op_zeze____ GHC.Base.op_zg____ GHC.Base.op_zgze____
      GHC.Base.op_zl____ GHC.Base.op_zlze____ GHC.Base.op_zsze__ GHC.Base.op_zsze____
-     GHC.Types.TyThing.TyThing HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     GHC.Types.TyThing.TyThing HsToRocq.Err.Build_Default HsToRocq.Err.Default
      Maybes.orElse Module.Module Module.isInteractiveModule Module.moduleUnit
      OccName.HasOccName OccName.NameSpace OccName.OccName OccName.isDataOcc
      OccName.isFieldOcc OccName.isTcOcc OccName.isTvOcc OccName.isValOcc

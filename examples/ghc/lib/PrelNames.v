@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 

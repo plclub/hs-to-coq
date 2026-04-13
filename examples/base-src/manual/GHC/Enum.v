@@ -46,8 +46,8 @@ Instance instance__Bounded_unit__141__ : (Bounded unit) := {
 
 #[global]
 Instance instance__Enum_unit__142__ : (Enum unit) := {
-  succ := HsToCoq.Err.default;
-  pred := HsToCoq.Err.default;
+  succ := HsToRocq.Err.default;
+  pred := HsToRocq.Err.default;
   toEnum := fun _ => tt ;
   fromEnum := (fun arg_146__ => (match arg_146__ with | tt => #0 end)) ;
   enumFrom := (fun arg_147__ => (match arg_147__ with | tt => (tt :: nil) end)) ;
@@ -341,13 +341,13 @@ Instance instance__Enum_Int__184__ : (Enum Int) := {
   succ := (fun arg_185__ =>
     (match arg_185__ with
       | x => (if (x == maxBound)
-             then HsToCoq.Err.default
+             then HsToRocq.Err.default
              else (x + #1))
     end)) ;
   pred := (fun arg_186__ =>
     (match arg_186__ with
       | x => (if (x == minBound)
-             then HsToCoq.Err.default
+             then HsToRocq.Err.default
              else (x - #1))
     end)) ;
   toEnum := (fun arg_187__ => (match arg_187__ with | x => x end)) ;
@@ -471,7 +471,7 @@ Definition fromEnumChar (c : Char) : Integer :=
 #[global]
 Instance instance__Enum_N : (Enum N) := {
   succ := N.succ ;
-  pred := fun x => if N.eqb x 0%N then HsToCoq.Err.default else N.pred x;
+  pred := fun x => if N.eqb x 0%N then HsToRocq.Err.default else N.pred x;
   toEnum := Z.to_N ;
   fromEnum := Z.of_N ;
   enumFrom := fun _ => nil; (* we do not support infinite lists *)

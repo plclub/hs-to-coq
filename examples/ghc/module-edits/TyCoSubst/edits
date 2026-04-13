@@ -23,8 +23,8 @@ skip Core.emptyTvSubstEnv
 skip Core.emptyCvSubstEnv
 skip Core.composeTCvSubst
 # Default instance for Subst (needed by Err.error calls)
-add Core Instance Core.Default__Subst : HsToCoq.Err.Default Core.Subst :=
-  HsToCoq.Err.Build_Default _ (Core.Mk_Subst (Core.InScope Core.emptyVarSet) Core.emptyVarEnv tt tt).
+add Core Instance Core.Default__Subst : HsToRocq.Err.Default Core.Subst :=
+  HsToRocq.Err.Build_Default _ (Core.Mk_Subst (Core.InScope Core.emptyVarSet) Core.emptyVarEnv tt tt).
 order Core.Default__Subst Core.emptySubst
 
 # emptySubst and mkEmptySubst: redefined since their helpers are skipped

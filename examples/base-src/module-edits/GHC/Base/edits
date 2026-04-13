@@ -1,4 +1,4 @@
-# We have notation in the midamble, and we have to tell hs-to-coq
+# We have notation in the midamble, and we have to tell hs-to-rocq
 # to include the ManualNotations module in the Notations module
 manual notation GHC.Base
 
@@ -91,7 +91,7 @@ skip GHC.Base.primCharToInt
 skip GHC.Base.primUnicodeMaxChar
 
 # GHC 9.10 generates dataToTag#-based Eq/Ord for Maybe/option and NonEmpty
-# which hs-to-coq can't translate. Skip them; defined manually in midamble.
+# which hs-to-rocq can't translate. Skip them; defined manually in midamble.
 skip GHC.Base.Eq___option_op_zeze__
 skip GHC.Base.Eq___option_op_zsze__
 skip GHC.Base.Eq___option

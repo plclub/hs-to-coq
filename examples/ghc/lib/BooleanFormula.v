@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -20,7 +20,7 @@ Require Data.Traversable.
 Require GHC.Base.
 Require GHC.Num.
 Require GHC.Prim.
-Require HsToCoq.DeferredFix.
+Require HsToRocq.DeferredFix.
 Require SrcLoc.
 Require UniqSet.
 Require Unique.
@@ -428,58 +428,56 @@ Fixpoint impliesAtom {a : Type} `{GHC.Base.Eq_ a} (arg_0__ : BooleanFormula a)
    : BooleanFormula a -> BooleanFormula a -> bool :=
   fun e1 e2 =>
     let go {a} `{Unique.Uniquable a} : Clause a -> Clause a -> bool :=
-      HsToCoq.DeferredFix.deferredFix1 (fun go (arg_0__ arg_1__ : Clause a) =>
-                                          match arg_0__, arg_1__ with
-                                          | (Mk_Clause _ (cons hyp hyps) as l), r =>
-                                              match hyp with
-                                              | Var x =>
-                                                  if memberClauseAtoms x r : bool then true else
-                                                  go (let 'Mk_Clause clauseAtoms_2__ clauseExprs_3__ :=
-                                                        (extendClauseAtoms l x) in
-                                                      Mk_Clause clauseAtoms_2__ hyps) r
-                                              | Parens hyp' =>
-                                                  go (let 'Mk_Clause clauseAtoms_9__ clauseExprs_10__ := l in
-                                                      Mk_Clause clauseAtoms_9__ (cons (SrcLoc.unLoc hyp') hyps)) r
-                                              | And hyps' =>
-                                                  go (let 'Mk_Clause clauseAtoms_14__ clauseExprs_15__ := l in
-                                                      Mk_Clause clauseAtoms_14__ (Coq.Init.Datatypes.app (GHC.Base.map
-                                                                                                          SrcLoc.unLoc
-                                                                                                          hyps') hyps))
-                                                  r
-                                              | Or hyps' =>
-                                                  Data.Foldable.all (fun hyp' =>
-                                                                       go (let 'Mk_Clause clauseAtoms_19__
-                                                                              clauseExprs_20__ := l in
-                                                                           Mk_Clause clauseAtoms_19__ (cons
-                                                                                      (SrcLoc.unLoc hyp') hyps)) r)
-                                                  hyps'
-                                              end
-                                          | l, (Mk_Clause _ (cons con cons_) as r) =>
-                                              match con with
-                                              | Var x =>
-                                                  if memberClauseAtoms x l : bool then true else
-                                                  go l (let 'Mk_Clause clauseAtoms_27__ clauseExprs_28__ :=
-                                                          (extendClauseAtoms r x) in
-                                                        Mk_Clause clauseAtoms_27__ cons_)
-                                              | Parens con' =>
-                                                  go l (let 'Mk_Clause clauseAtoms_34__ clauseExprs_35__ := r in
-                                                        Mk_Clause clauseAtoms_34__ (cons (SrcLoc.unLoc con') cons_))
-                                              | And cons' =>
-                                                  Data.Foldable.all (fun con' =>
-                                                                       go l (let 'Mk_Clause clauseAtoms_39__
-                                                                                clauseExprs_40__ := r in
-                                                                             Mk_Clause clauseAtoms_39__ (cons
-                                                                                        (SrcLoc.unLoc con') cons_)))
-                                                  cons'
-                                              | Or cons' =>
-                                                  go l (let 'Mk_Clause clauseAtoms_45__ clauseExprs_46__ := r in
-                                                        Mk_Clause clauseAtoms_45__ (Coq.Init.Datatypes.app (GHC.Base.map
-                                                                                                            SrcLoc.unLoc
-                                                                                                            cons')
-                                                                                                           cons_))
-                                              end
-                                          | _, _ => false
-                                          end) in
+      HsToRocq.DeferredFix.deferredFix1 (fun go (arg_0__ arg_1__ : Clause a) =>
+                                           match arg_0__, arg_1__ with
+                                           | (Mk_Clause _ (cons hyp hyps) as l), r =>
+                                               match hyp with
+                                               | Var x =>
+                                                   if memberClauseAtoms x r : bool then true else
+                                                   go (let 'Mk_Clause clauseAtoms_2__ clauseExprs_3__ :=
+                                                         (extendClauseAtoms l x) in
+                                                       Mk_Clause clauseAtoms_2__ hyps) r
+                                               | Parens hyp' =>
+                                                   go (let 'Mk_Clause clauseAtoms_9__ clauseExprs_10__ := l in
+                                                       Mk_Clause clauseAtoms_9__ (cons (SrcLoc.unLoc hyp') hyps)) r
+                                               | And hyps' =>
+                                                   go (let 'Mk_Clause clauseAtoms_14__ clauseExprs_15__ := l in
+                                                       Mk_Clause clauseAtoms_14__ (Coq.Init.Datatypes.app (GHC.Base.map
+                                                                                                           SrcLoc.unLoc
+                                                                                                           hyps') hyps))
+                                                   r
+                                               | Or hyps' =>
+                                                   Data.Foldable.all (fun hyp' =>
+                                                                        go (let 'Mk_Clause clauseAtoms_19__
+                                                                               clauseExprs_20__ := l in
+                                                                            Mk_Clause clauseAtoms_19__ (cons
+                                                                                       (SrcLoc.unLoc hyp') hyps)) r)
+                                                   hyps'
+                                               end
+                                           | l, (Mk_Clause _ (cons con cons_) as r) =>
+                                               match con with
+                                               | Var x =>
+                                                   if memberClauseAtoms x l : bool then true else
+                                                   go l (let 'Mk_Clause clauseAtoms_27__ clauseExprs_28__ :=
+                                                           (extendClauseAtoms r x) in
+                                                         Mk_Clause clauseAtoms_27__ cons_)
+                                               | Parens con' =>
+                                                   go l (let 'Mk_Clause clauseAtoms_34__ clauseExprs_35__ := r in
+                                                         Mk_Clause clauseAtoms_34__ (cons (SrcLoc.unLoc con') cons_))
+                                               | And cons' =>
+                                                   Data.Foldable.all (fun con' =>
+                                                                        go l (let 'Mk_Clause clauseAtoms_39__
+                                                                                 clauseExprs_40__ := r in
+                                                                              Mk_Clause clauseAtoms_39__ (cons
+                                                                                         (SrcLoc.unLoc con') cons_)))
+                                                   cons'
+                                               | Or cons' =>
+                                                   go l (let 'Mk_Clause clauseAtoms_45__ clauseExprs_46__ := r in
+                                                         Mk_Clause clauseAtoms_45__ (Coq.Init.Datatypes.app
+                                                                    (GHC.Base.map SrcLoc.unLoc cons') cons_))
+                                               end
+                                           | _, _ => false
+                                           end) in
     go (Mk_Clause UniqSet.emptyUniqSet (cons e1 nil)) (Mk_Clause
                                                        UniqSet.emptyUniqSet (cons e2 nil)).
 
@@ -511,7 +509,7 @@ Fixpoint impliesAtom {a : Type} `{GHC.Base.Eq_ a} (arg_0__ : BooleanFormula a)
      GHC.Base.id GHC.Base.map GHC.Base.mempty GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zlzd____ GHC.Base.op_zlzlzgzg__ GHC.Num.Int GHC.Num.Num
      GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.seq
-     HsToCoq.DeferredFix.deferredFix1 SrcLoc.GenLocated SrcLoc.L SrcLoc.SrcSpan
+     HsToRocq.DeferredFix.deferredFix1 SrcLoc.GenLocated SrcLoc.L SrcLoc.SrcSpan
      SrcLoc.unLoc UniqSet.UniqSet UniqSet.addOneToUniqSet UniqSet.elementOfUniqSet
      UniqSet.emptyUniqSet Unique.Uniquable
 *)

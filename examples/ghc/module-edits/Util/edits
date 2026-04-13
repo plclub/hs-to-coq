@@ -15,10 +15,10 @@ axiomatize definition Util.looksLikePackageName
 # HasCallStack is now a trivial typeclass in GHC.Prim
 skip Util.HasDebugCallStack
 # GHC 9.10: these functions use HasCallStack + panic, need Default or skip
-set type Util.expectOnly : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> (list a) -> a
+set type Util.expectOnly : forall {a} `{HsToRocq.Err.Default a}, GHC.Base.String -> (list a) -> a
 skip Util.expectNonEmpty
-set type Util.expectNonEmptyPanic : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> a
-set type Util.changeLast : forall {a} `{HsToCoq.Err.Default a}, list a -> a -> list a
+set type Util.expectNonEmptyPanic : forall {a} `{HsToRocq.Err.Default a}, GHC.Base.String -> a
+set type Util.changeLast : forall {a} `{HsToRocq.Err.Default a}, list a -> a -> list a
 
 # GHC 9.10: structural recursion issue + dependency
 skip Util.isSortedBy
@@ -38,8 +38,8 @@ skip Util.readSignificandExponentPair
 skip Util.readHexSignificandExponentPair
 
 ## partial
-set type Util.only : forall {a}`{HsToCoq.Err.Default a}, (list a) -> a
-set type Util.foldl2 : forall {acc} {a} {b} `{HsToCoq.Err.Default acc}, (acc -> (a -> (b -> acc))) -> (acc -> ((list a) -> ((list b) -> acc)))
+set type Util.only : forall {a}`{HsToRocq.Err.Default a}, (list a) -> a
+set type Util.foldl2 : forall {acc} {a} {b} `{HsToRocq.Err.Default acc}, (acc -> (a -> (b -> acc))) -> (acc -> ((list a) -> ((list b) -> acc)))
 
 ## termination
 skip Util.nTimes

@@ -5,7 +5,7 @@
 # CPP macros (NOT_GHC_900, NOT_GHC_910, GHC_900, GHC_910, NOEXTP) expand to
 # parenthesised expressions or nothing, producing apparent redundant brackets
 # that are required for the pre-expansion source to parse on other GHC versions.
-- ignore: {name: "Redundant bracket", within: HsToCoq.ConvertHaskell.Expr}
+- ignore: {name: "Redundant bracket", within: HsToRocq.ConvertHaskell.Expr}
 
 # getLoc_/noLoc_ are defined point-free in some CPP branches and with explicit
 # arguments in others; keeping the eta-expanded form is consistent across
@@ -13,10 +13,10 @@
 - ignore: {name: "Eta reduce", within: [getLoc_, noLoc_]}
 
 # CPP-separated imports cannot be merged
-- ignore: {name: "Use fewer imports", within: HsToCoq.ConvertHaskell.Pattern}
+- ignore: {name: "Use fewer imports", within: HsToRocq.ConvertHaskell.Pattern}
 
 # NonEmpty pattern synonyms cannot use list literal syntax
-- ignore: {name: "Use list literal pattern", within: HsToCoq.Coq.Gallina.Util}
+- ignore: {name: "Use list literal pattern", within: HsToRocq.Rocq.Gallina.Util}
 
 # Template Haskell splice brackets from CPP macro expansion
-- ignore: {name: "Redundant bracket", within: HsToCoq.Util.GHC.OnOff}
+- ignore: {name: "Redundant bracket", within: HsToRocq.Util.GHC.OnOff}

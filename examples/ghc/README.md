@@ -3,7 +3,7 @@ Coqified GHC Core
 
 This directory contains a Coq translation of key GHC compiler modules
 (core language, optimization passes, utility types), generated from
-**GHC 9.10.3** using hs-to-coq with **Coq 8.20**.
+**GHC 9.10.3** using hs-to-rocq with **Coq 8.20**.
 
 Compilation
 -----------
@@ -204,7 +204,7 @@ check mark.
 | CSE.v | 5 | `cseExpr`/`cseBind` axiomatized — cannot unfold |
 | Exitify.v | 3 | Deep inductive proofs (`exitifyRec_WellScoped`, `exitifyRec_JPI`, `top_go_WellScoped_JPI`); theoretically provable since `exitifyRec` is concrete |
 | TrieMap.v | 4 | `TrieMapLaws__IntMap` and `TrieMapLaws__Map` need alter/fold specs; `TrieMapLaws__ListMap` and `TrieMapLaws__GenMap` blocked by axiomatized types |
-| VarSetFSet.v | 14 | `elements`/`choose`/`partition` defined as `HsToCoq.Err.default`; `for_all`/`exists_` need IntMap `foldr` spec; `equal_1`/`is_empty_1`/`subset_1` need key-surjectivity |
+| VarSetFSet.v | 14 | `elements`/`choose`/`partition` defined as `HsToRocq.Err.default`; `for_all`/`exists_` need IntMap `foldr` spec; `equal_1`/`is_empty_1`/`subset_1` need key-surjectivity |
 
 ### ContainerProofs Axioms (0 Local Axioms)
 

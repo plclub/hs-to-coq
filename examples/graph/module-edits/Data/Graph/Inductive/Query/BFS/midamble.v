@@ -1,14 +1,14 @@
-Instance LPath__Default {a} : HsToCoq.Err.Default (Data.Graph.Inductive.Graph.LPath a) :=
+Instance LPath__Default {a} : HsToRocq.Err.Default (Data.Graph.Inductive.Graph.LPath a) :=
   { default := Data.Graph.Inductive.Graph.LP nil }.
 
-Instance Queue__Default {a} : HsToCoq.Err.Default (Data.Graph.Inductive.Internal.Queue.Queue a) :=
+Instance Queue__Default {a} : HsToRocq.Err.Default (Data.Graph.Inductive.Internal.Queue.Queue a) :=
   { default := Data.Graph.Inductive.Internal.Queue.MkQueue nil nil }.
 
 (*Need to rewrite this because of laziness issue - We cannot call queueGet before knowing that the queue is non-empty*)
 Definition bf {gr} {a} {b} `{(Data.Graph.Inductive.Graph.Graph gr)}
    : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Path ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.RTree :=
-  HsToCoq.DeferredFix.deferredFix2 (fun bf
+  HsToRocq.DeferredFix.deferredFix2 (fun bf
                                 (q : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Path)
                                 (g : gr a b) =>
                                  if orb (Data.Graph.Inductive.Internal.Queue.queueEmpty q)
@@ -33,7 +33,7 @@ Definition lbf {gr} {b} {a} `{(Data.Graph.Inductive.Graph.Graph gr)}
    : Data.Graph.Inductive.Internal.Queue.Queue (Data.Graph.Inductive.Graph.LPath
                                                 b) ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.LRTree b :=
-  HsToCoq.DeferredFix.deferredFix2 (fun lbf
+  HsToRocq.DeferredFix.deferredFix2 (fun lbf
                                 (q
                                   : Data.Graph.Inductive.Internal.Queue.Queue (Data.Graph.Inductive.Graph.LPath
                                                                                b))

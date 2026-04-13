@@ -15,7 +15,7 @@ module Control.Monad.Parse.Class (
 
 import Control.Monad
 
-import HsToCoq.Util.Function
+import HsToRocq.Util.Function
 
 import Data.Text (Text)
 import qualified Data.Text as T

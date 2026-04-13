@@ -1626,11 +1626,11 @@ Proof.
   apply disjoint_eq.
   - move=> k1.
     unfold Equal, In, elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in E1.
-    specialize (E1 (Mk_Id HsToCoq.Err.default (Unique.MkUnique k1) HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default)).
+    specialize (E1 (Mk_Id HsToRocq.Err.default (Unique.MkUnique k1) HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default)).
     simpl in E1. auto.
   - move=> k1.
     unfold Equal, In, elemVarSet, UniqSet.elementOfUniqSet, UniqFM.elemUFM in E2.
-    specialize (E2 (Mk_Id HsToCoq.Err.default (Unique.MkUnique k1) HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default)).
+    specialize (E2 (Mk_Id HsToRocq.Err.default (Unique.MkUnique k1) HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default)).
     simpl in E2. auto.
 Qed.
 

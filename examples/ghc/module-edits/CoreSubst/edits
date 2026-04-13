@@ -10,7 +10,7 @@ skip module GHC.Core.TyCo.Subst
 skip CoreSubst.lookupTCvSubst
 
 # === Auto-generated functions ===
-# These are generated from GHC 9.10 source by hs-to-coq.
+# These are generated from GHC 9.10 source by hs-to-rocq.
 # They just pass tvs/cvs through without calling VarEnv operations on unit.
 # extendIdSubst, extendIdSubstList, extendSubstList, lookupIdSubst_maybe
 # substBndrs, substRecBndrs
@@ -66,7 +66,7 @@ redefine Definition CoreSubst.substIdOcc (subst : Core.Subst) (v : Id) : Id := m
 redefine Definition CoreSubst.substIdType (_ : Core.Subst) (id : Id) : Id := id.
 
 # substExpr/substBind: mutually recursive; provided by midamble
-# (hs-to-coq can't handle the mutual recursion + Tick case properly)
+# (hs-to-rocq can't handle the mutual recursion + Tick case properly)
 skip CoreSubst.substExpr
 skip CoreSubst.substBind
 skip CoreSubst.substExprSC

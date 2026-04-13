@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -20,7 +20,7 @@ Require GHC.Base.
 Require GHC.Char.
 Require GHC.Num.
 Require HsSyn.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Name.
 Require UniqSupply.
 Require Unique.
@@ -37,9 +37,9 @@ Inductive FloatBind : Type :=
   | FloatCase
    : Core.CoreExpr -> Core.Id -> Core.AltCon -> list Core.Var -> FloatBind.
 
-Instance Default__MkStringIds : HsToCoq.Err.Default MkStringIds :=
-  HsToCoq.Err.Build_Default _ (Mk_MkStringIds HsToCoq.Err.default
-                             HsToCoq.Err.default).
+Instance Default__MkStringIds : HsToRocq.Err.Default MkStringIds :=
+  HsToRocq.Err.Build_Default _ (Mk_MkStringIds HsToRocq.Err.default
+                              HsToRocq.Err.default).
 
 #[global] Definition unpackCStringId (arg_0__ : MkStringIds) :=
   let 'Mk_MkStringIds unpackCStringId _ := arg_0__ in
@@ -274,8 +274,8 @@ Axiom mkRuntimeErrorTy : BasicTypes.TypeOrConstraint -> AxiomatizedTypes.Type_.
      Core.AltCon Core.CoreAlt Core.CoreBind Core.CoreBndr Core.CoreExpr Core.DataCon
      Core.Demand Core.Id Core.IdInfo Core.Mult Core.Scaled Core.Var
      FastString.FastString GHC.Base.Applicative GHC.Base.Monad GHC.Base.String
-     GHC.Char.Char GHC.Num.Integer HsSyn.Boxity HsToCoq.Err.Build_Default
-     HsToCoq.Err.Default HsToCoq.Err.default Name.Name Platform.Platform
+     GHC.Char.Char GHC.Num.Integer HsSyn.Boxity HsToRocq.Err.Build_Default
+     HsToRocq.Err.Default HsToRocq.Err.default Name.Name Platform.Platform
      UniqSupply.MonadUnique UniqSupply.UniqSupply Unique.Unique
      Util.HasDebugCallStack
 *)

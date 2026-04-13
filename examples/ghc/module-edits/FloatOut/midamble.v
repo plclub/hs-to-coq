@@ -1,3 +1,3 @@
-#[global] Instance Default_FloatStats : HsToCoq.Err.Default FloatStats :=
-  HsToCoq.Err.Build_Default _ (FlS HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default_FloatStats : HsToRocq.Err.Default FloatStats :=
+  HsToRocq.Err.Build_Default _ (FlS HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default).
 

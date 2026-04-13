@@ -126,7 +126,7 @@ Definition lookupIdSubst `{Util.HasDebugCallStack}
 
 (* substExpr and substBind: mutually recursive substitution.
    Uses Fixpoint ... with ... on the mutually inductive Expr/Bind types.
-   Must be in midamble because hs-to-coq can't generate the mutual Fixpoint. *)
+   Must be in midamble because hs-to-rocq can't generate the mutual Fixpoint. *)
 Fixpoint substExpr_ (subst : Subst)
   (expr : CoreExpr) {struct expr} : CoreExpr :=
   match expr with

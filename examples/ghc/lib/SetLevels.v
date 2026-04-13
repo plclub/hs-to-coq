@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -20,7 +20,7 @@ Require CoreFVs.
 Require CoreMonad.
 Require GHC.Base.
 Require GHC.Types.Cpr.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require UniqSupply.
 
 (* Converted type declarations: *)
@@ -52,8 +52,8 @@ Inductive LevelEnv : Type :=
   (le_env : Core.IdEnv (list Core.OutVar * LevelledExpr)%type)
    : LevelEnv.
 
-Instance Default__LevelType : HsToCoq.Err.Default LevelType :=
-  HsToCoq.Err.Build_Default _ BndrLvl.
+Instance Default__LevelType : HsToRocq.Err.Default LevelType :=
+  HsToRocq.Err.Build_Default _ BndrLvl.
 
 #[global] Definition le_ctxt_lvl (arg_0__ : LevelEnv) :=
   let 'LE _ le_ctxt_lvl _ _ _ _ := arg_0__ in
@@ -249,9 +249,9 @@ Axiom cloneLetVars : BasicTypes.RecFlag ->
 Axiom add_id : Core.IdEnv (list Core.Var * LevelledExpr)%type ->
                (Core.Var * Core.Var)%type -> Core.IdEnv (list Core.Var * LevelledExpr)%type.
 
-Instance Default__Level : HsToCoq.Err.Default Level :=
-  HsToCoq.Err.Build_Default _ (Mk_Level HsToCoq.Err.default HsToCoq.Err.default
-                                        HsToCoq.Err.default).
+Instance Default__Level : HsToRocq.Err.Default Level :=
+  HsToRocq.Err.Build_Default _ (Mk_Level HsToRocq.Err.default HsToRocq.Err.default
+                                         HsToRocq.Err.default).
 
 (* External variables:
      bool list nat op_zt__ option AxiomatizedTypes.Type_ BasicTypes.Arity
@@ -260,6 +260,7 @@ Instance Default__Level : HsToCoq.Err.Default Level :=
      Core.InVar Core.OutId Core.OutVar Core.Subst Core.TaggedBind Core.TaggedBndr
      Core.TaggedExpr Core.TyCoVarSet Core.Var Core.VarEnv CoreFVs.CoreAltWithFVs
      CoreFVs.CoreBindWithFVs CoreFVs.CoreExprWithFVs CoreMonad.FloatOutSwitches
-     GHC.Base.Eq_ GHC.Types.Cpr.CprSig HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     HsToCoq.Err.default UniqSupply.UniqSM UniqSupply.UniqSupply
+     GHC.Base.Eq_ GHC.Types.Cpr.CprSig HsToRocq.Err.Build_Default
+     HsToRocq.Err.Default HsToRocq.Err.default UniqSupply.UniqSM
+     UniqSupply.UniqSupply
 *)

@@ -37,8 +37,8 @@ skip UniqFM.Semigroup__UniqFM
 skip UniqFM.Monoid__UniqFM
 
 # GHC 9.10: UniqFM uses Word64Map, alias to IntMap in Coq
-add UniqFM Instance Unpeel_UniqFM key ele : HsToCoq.Unpeel.Unpeel (UniqFM key ele) (GHC.Data.Word64Map.Internal.Word64Map ele) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | UFM y => y end) UFM.
+add UniqFM Instance Unpeel_UniqFM key ele : HsToRocq.Unpeel.Unpeel (UniqFM key ele) (GHC.Data.Word64Map.Internal.Word64Map ele) :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ (fun x => match x with | UFM y => y end) UFM.
 
 rename value GHC.Types.Unique.getKey = Unique.getWordKey
 

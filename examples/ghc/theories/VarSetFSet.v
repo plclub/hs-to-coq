@@ -792,15 +792,15 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   (* These operations are part of the FSet interface but are not
      supported by GHC VarSets. *)
 
-  Definition min_elt : t -> option elt := HsToCoq.Err.default.
-  Definition max_elt : t -> option elt := HsToCoq.Err.default.
+  Definition min_elt : t -> option elt := HsToRocq.Err.default.
+  Definition max_elt : t -> option elt := HsToRocq.Err.default.
 
 
-  Definition partition : (elt -> bool) -> t -> t * t := HsToCoq.Err.default.
+  Definition partition : (elt -> bool) -> t -> t * t := HsToRocq.Err.default.
 
-  Definition elements : t -> list elt := HsToCoq.Err.default.
+  Definition elements : t -> list elt := HsToRocq.Err.default.
 
-  Definition choose : t -> option elt := HsToCoq.Err.default.
+  Definition choose : t -> option elt := HsToRocq.Err.default.
 
 
 
@@ -841,7 +841,7 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   Defined.
 
   (* BLOCKER (fold_1): `fold` is defined as nonDetFoldUFM (a real fold over
-     the IntMap), but `elements` is HsToCoq.Err.default = fun _ => nil.
+     the IntMap), but `elements` is HsToRocq.Err.default = fun _ => nil.
      So the RHS reduces to fold_left _ nil i = i, but the LHS is a real
      fold over the map contents. Unprovable for nonempty sets.
      FIX: implement `elements` as a real function (e.g., via nonDetFoldUFM
@@ -856,14 +856,14 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
   Admitted.
 
   (* BLOCKER (cardinal_1): `cardinal` is sizeVarSet (returns actual size),
-     but `elements` is HsToCoq.Err.default = fun _ => nil, so length = 0.
+     but `elements` is HsToRocq.Err.default = fun _ => nil, so length = 0.
      Unprovable for nonempty sets. FIX: implement `elements` properly. *)
   Lemma cardinal_1 : forall s : t, cardinal s = length (elements s).
   Proof.
     intros.
   Admitted.
 
-  (* BLOCKER (partition_1): `partition` is HsToCoq.Err.default (returns a
+  (* BLOCKER (partition_1): `partition` is HsToRocq.Err.default (returns a
      pair of empty sets), but `filter` is the real filterVarSet. The
      equality fails for any set with elements passing f.
      FIX: implement `partition` using filterVarSet for both halves. *)
@@ -888,7 +888,7 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     unfold Equal, partition; simpl.
   Admitted.
 
-  (* BLOCKER (elements_1): `elements` is HsToCoq.Err.default = fun _ => nil.
+  (* BLOCKER (elements_1): `elements` is HsToRocq.Err.default = fun _ => nil.
      The goal becomes In x s -> InA E.eq x nil, which is impossible for
      nonempty sets. FIX: implement `elements` properly (e.g., via
      nonDetFoldUFM cons nil) and prove membership correspondence. *)
@@ -898,7 +898,7 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     intros.
   Admitted.
 
-  (* PROVED: elements is HsToCoq.Err.default = fun _ => nil, so
+  (* PROVED: elements is HsToRocq.Err.default = fun _ => nil, so
      InA E.eq x nil is always False — the premise is vacuously false. *)
   Lemma elements_2 :
     forall (s : t) (x : elt), InA E.eq x (elements s) -> In x s.
@@ -907,7 +907,7 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     unfold elements in H. simpl in H. inversion H.
   Qed.
 
-  (* PROVED: choose is HsToCoq.Err.default = fun _ => None, so the
+  (* PROVED: choose is HsToRocq.Err.default = fun _ => None, so the
      premise choose s = Some x is always False — vacuously true. *)
   Lemma choose_1 :
     forall (s : t) (x : elt), choose s = Some x -> In x s.
@@ -916,7 +916,7 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     unfold choose in H. simpl in H. discriminate.
   Qed.
 
-  (* BLOCKER (choose_2): choose is HsToCoq.Err.default = fun _ => None,
+  (* BLOCKER (choose_2): choose is HsToRocq.Err.default = fun _ => None,
      so the premise is always true, but Empty s is false for nonempty sets.
      Would require all sets to be empty. Unprovable.
      FIX: implement `choose` properly (e.g., head of elements). *)
@@ -936,7 +936,7 @@ Module VarSetFSet <: WSfun(Var_as_DT) <: WS.
     unfold choose in H1. simpl in H1. discriminate.
   Qed.
 
-  (* PROVED: elements is HsToCoq.Err.default = fun _ => nil, so
+  (* PROVED: elements is HsToRocq.Err.default = fun _ => nil, so
      NoDupA E.eq nil holds trivially. *)
   Lemma elements_3w (s : t) : NoDupA E.eq (elements s).
   Proof.

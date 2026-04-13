@@ -1,1 +1,0 @@
-../../examples/base-src/manual/HsToCoq/Skip.v

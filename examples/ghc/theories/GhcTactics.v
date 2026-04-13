@@ -1,6 +1,6 @@
 Require Import Coq.Bool.Bool.
 Require GHC.Base.
-Require HsToCoq.Nat.
+Require HsToRocq.Nat.
 Require Data.Foldable.
 Require Import Data.Foldable.
 Require Import GHC.List.

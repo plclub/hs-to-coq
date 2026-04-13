@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -14,7 +14,7 @@ Require Coq.Program.Wf.
 
 Require BinNums.
 Require GHC.Base.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Module.
 
 (* Converted type declarations: *)
@@ -131,40 +131,40 @@ Arguments On {_} _.
 
 Arguments Off {_} _.
 
-Instance Default__RtsOptsEnabled : HsToCoq.Err.Default RtsOptsEnabled :=
-  HsToCoq.Err.Build_Default _ RtsOptsNone.
+Instance Default__RtsOptsEnabled : HsToRocq.Err.Default RtsOptsEnabled :=
+  HsToRocq.Err.Build_Default _ RtsOptsNone.
 
-Instance Default__PkgDbRef : HsToCoq.Err.Default PkgDbRef :=
-  HsToCoq.Err.Build_Default _ GlobalPkgDb.
+Instance Default__PkgDbRef : HsToRocq.Err.Default PkgDbRef :=
+  HsToRocq.Err.Build_Default _ GlobalPkgDb.
 
-Instance Default__ParMakeCount : HsToCoq.Err.Default ParMakeCount :=
-  HsToCoq.Err.Build_Default _ ParMakeNumProcessors.
+Instance Default__ParMakeCount : HsToRocq.Err.Default ParMakeCount :=
+  HsToRocq.Err.Build_Default _ ParMakeNumProcessors.
 
-Instance Default__PackageDBFlag : HsToCoq.Err.Default PackageDBFlag :=
-  HsToCoq.Err.Build_Default _ NoUserPackageDB.
+Instance Default__PackageDBFlag : HsToRocq.Err.Default PackageDBFlag :=
+  HsToRocq.Err.Build_Default _ NoUserPackageDB.
 
-Instance Default__ModRenaming : HsToCoq.Err.Default ModRenaming :=
-  HsToCoq.Err.Build_Default _ (Mk_ModRenaming HsToCoq.Err.default
-                             HsToCoq.Err.default).
+Instance Default__ModRenaming : HsToRocq.Err.Default ModRenaming :=
+  HsToRocq.Err.Build_Default _ (Mk_ModRenaming HsToRocq.Err.default
+                              HsToRocq.Err.default).
 
-Instance Default__IncludeSpecs : HsToCoq.Err.Default IncludeSpecs :=
-  HsToCoq.Err.Build_Default _ (Mk_IncludeSpecs HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__IncludeSpecs : HsToRocq.Err.Default IncludeSpecs :=
+  HsToRocq.Err.Build_Default _ (Mk_IncludeSpecs HsToRocq.Err.default
+                              HsToRocq.Err.default HsToRocq.Err.default).
 
-Instance Default__GhcMode : HsToCoq.Err.Default GhcMode :=
-  HsToCoq.Err.Build_Default _ CompManager.
+Instance Default__GhcMode : HsToRocq.Err.Default GhcMode :=
+  HsToRocq.Err.Build_Default _ CompManager.
 
-Instance Default__GhcLink : HsToCoq.Err.Default GhcLink :=
-  HsToCoq.Err.Build_Default _ NoLink.
+Instance Default__GhcLink : HsToRocq.Err.Default GhcLink :=
+  HsToRocq.Err.Build_Default _ NoLink.
 
-Instance Default__DynamicTooState : HsToCoq.Err.Default DynamicTooState :=
-  HsToCoq.Err.Build_Default _ DT_Dont.
+Instance Default__DynamicTooState : HsToRocq.Err.Default DynamicTooState :=
+  HsToRocq.Err.Build_Default _ DT_Dont.
 
-Instance Default__DynLibLoader : HsToCoq.Err.Default DynLibLoader :=
-  HsToCoq.Err.Build_Default _ Deployable.
+Instance Default__DynLibLoader : HsToRocq.Err.Default DynLibLoader :=
+  HsToRocq.Err.Build_Default _ Deployable.
 
-Instance Default__CompilerInfo : HsToCoq.Err.Default CompilerInfo :=
-  HsToCoq.Err.Build_Default _ GCC.
+Instance Default__CompilerInfo : HsToRocq.Err.Default CompilerInfo :=
+  HsToRocq.Err.Build_Default _ GCC.
 
 #[global] Definition includePathsGlobal (arg_0__ : IncludeSpecs) :=
   let 'Mk_IncludeSpecs _ includePathsGlobal _ := arg_0__ in
@@ -180,12 +180,12 @@ Instance Default__CompilerInfo : HsToCoq.Err.Default CompilerInfo :=
 
 (* Midamble *)
 
-Instance Unpeel_IgnorePackageFlag : HsToCoq.Unpeel.Unpeel IgnorePackageFlag GHC.Base.String :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun x => match x with | IgnorePackage y => y end) IgnorePackage.
+Instance Unpeel_IgnorePackageFlag : HsToRocq.Unpeel.Unpeel IgnorePackageFlag GHC.Base.String :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ (fun x => match x with | IgnorePackage y => y end) IgnorePackage.
 
 
 #[global] Instance Default__DynFlags
-   : HsToCoq.Err.Default DynFlags.
+   : HsToRocq.Err.Default DynFlags.
 Admitted.
 
 (* Converted value declarations: *)
@@ -378,6 +378,6 @@ Axiom isBmi2Enabled : DynFlags -> bool.
 
 (* External variables:
      Type bool list op_zt__ option BinNums.N GHC.Base.String
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
+     HsToRocq.Err.Build_Default HsToRocq.Err.Default HsToRocq.Err.default
      Module.ModuleName Module.Unit
 *)

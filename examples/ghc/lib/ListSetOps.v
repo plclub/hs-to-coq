@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -26,7 +26,7 @@ Require Data.Tuple.
 Require GHC.Base.
 Require GHC.List.
 Require GHC.Prim.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Panic.
 Require Util.
 Import GHC.Base.Notations.
@@ -107,7 +107,7 @@ Fixpoint assocDefaultUsing {a : Type} {b : Type} (arg_0__ : a -> a -> bool)
          assocDefaultUsing eq deflt rest key
      end.
 
-#[global] Definition assoc {a} {b} `{GHC.Base.Eq_ a} `{HsToCoq.Err.Default b}
+#[global] Definition assoc {a} {b} `{GHC.Base.Eq_ a} `{HsToRocq.Err.Default b}
    : GHC.Base.String -> Assoc a b -> a -> b :=
   fun crash_msg list key =>
     assocDefaultUsing _GHC.Base.==_ (Panic.panic (Coq.Init.Datatypes.app
@@ -117,7 +117,7 @@ Fixpoint assocDefaultUsing {a : Type} {b : Type} (arg_0__ : a -> a -> bool)
    : b -> Assoc a b -> a -> b :=
   fun deflt list key => assocDefaultUsing _GHC.Base.==_ deflt list key.
 
-#[global] Definition assocUsing {a} {b} `{HsToCoq.Err.Default b}
+#[global] Definition assocUsing {a} {b} `{HsToRocq.Err.Default b}
    : (a -> a -> bool) -> GHC.Base.String -> Assoc a b -> a -> b :=
   fun eq crash_msg list key =>
     assocDefaultUsing eq (Panic.panic (Coq.Init.Datatypes.app (GHC.Base.hs_string__
@@ -190,6 +190,6 @@ Axiom equivClasses : forall {a : Type},
      Data.Set.Internal.member Data.Set.Internal.notMember Data.Traversable.mapAccumR
      Data.Tuple.fst GHC.Base.Eq_ GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.Ord
      GHC.Base.String GHC.Base.op_zeze__ GHC.Base.op_zsze__ GHC.List.filter
-     GHC.Prim.rightSection HsToCoq.Err.Default Outputable.Outputable Panic.panic
+     GHC.Prim.rightSection HsToRocq.Err.Default Outputable.Outputable Panic.panic
      Util.HasDebugCallStack
 *)

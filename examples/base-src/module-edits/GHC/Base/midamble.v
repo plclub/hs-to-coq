@@ -433,7 +433,7 @@ Export String.StringSyntax Ascii.AsciiSyntax.
 End ManualNotations.
 
 (* Eq/Ord for option (Maybe) -- GHC 9.10 derives these using dataToTag#
-   which hs-to-coq can't translate *)
+   which hs-to-rocq can't translate *)
 
 Definition eq_option {a} `{Eq_ a} (x y : option a) : bool :=
   match x, y with

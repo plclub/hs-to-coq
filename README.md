@@ -1,9 +1,9 @@
 
-# hs-to-coq
+# hs-to-rocq
 
-[![hs-to-coq](https://github.com/plclub/hs-to-coq/actions/workflows/hs-to-coq.yml/badge.svg)](https://github.com/plclub/hs-to-coq/actions/workflows/hs-to-coq.yml)
+[![hs-to-rocq](https://github.com/plclub/hs-to-rocq/actions/workflows/hs-to-rocq.yml/badge.svg)](https://github.com/plclub/hs-to-rocq/actions/workflows/hs-to-rocq.yml)
 
-Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-coq-devs.20.26.20users)
+Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-rocq-devs.20.26.20users)
 
 This repository contains a converter from Haskell code to equivalent
 Coq code, as part of the [CoreSpec] component of the [DeepSpec]
@@ -19,7 +19,7 @@ paper describes the following examples:
   * [base-src](examples/base-src) The sources of the `base/` directory
 
 
-ICFP'18 paper ["Ready, set, verify! applying hs-to-coq to real-world
+ICFP'18 paper ["Ready, set, verify! applying hs-to-rocq to real-world
 Haskell code (experience
 report)"](https://dl.acm.org/citation.cfm?id=3236784) by Joachim
 Breitner, Antal Spector-Zabusky, Yao Li, Christine Rizkallah, John
@@ -30,8 +30,8 @@ See [paper-claims-audit.md](paper-claims-audit.md) for a detailed audit of which
 paper claims still hold on the current codebase (GHC 9.10.3, Coq 8.20,
 containers v0.7).
 
-[**Documentation for the `hs-to-coq` tool is
-available!**](https://hs-to-coq.readthedocs.io/en/latest/)
+[**Documentation for the `hs-to-rocq` tool is
+available!**](https://hs-to-rocq.readthedocs.io/en/latest/)
 
 # Installation
 
@@ -39,12 +39,12 @@ available!**](https://hs-to-coq.readthedocs.io/en/latest/)
 
 ## Compilation
 
-The recommended way of building `hs-to-coq` is to use `stack`. If you have not
+The recommended way of building `hs-to-rocq` is to use `stack`. If you have not
 setup stack before, run:
 
     stack setup
 
-To build `hs-to-coq`, then run
+To build `hs-to-rocq`, then run
 
     stack build
 
@@ -80,7 +80,7 @@ To regenerate from Haskell source (requires the `ghc-internal` submodule):
     make -C examples/base-src clean
     make -C examples/base-src
 
-This runs hs-to-coq on the GHC 9.10 base/ghc-internal sources and
+This runs hs-to-rocq on the GHC 9.10 base/ghc-internal sources and
 compiles the resulting Coq files. Set `LANG=C.utf8` if you encounter
 encoding errors (generated files contain Unicode characters like `∘`).
 
@@ -89,7 +89,7 @@ encoding errors (generated files contain Unicode characters like `∘`).
 To use the tool, run it (using `stack`), passing the Haskell file to be
 translated and an output directory to write to:
 
-    stack exec hs-to-coq -- -o output-directory/ Input/File.hs
+    stack exec hs-to-rocq -- -o output-directory/ Input/File.hs
 
 Very likely you want to make use of the `base/` library. In that case, make
 sure you pass `-e base/edits`.
@@ -99,7 +99,7 @@ convenient `Makefile` based setup.
 
 ## Edits
 
-The `edits` file contains directives to `hs-to-coq` for ignoring or
+The `edits` file contains directives to `hs-to-rocq` for ignoring or
 transforming some Haskell constructs into proper Coq.
 
 For example, it is common in Haskell to have the following code:
@@ -120,7 +120,7 @@ rename value Foo.SomeType = Foo.MkSomeType
 ```
 
 
-See the [manual](https://hs-to-coq.readthedocs.io/en/latest/) for documentation
+See the [manual](https://hs-to-rocq.readthedocs.io/en/latest/) for documentation
 for the edits files.
 
 
@@ -158,7 +158,7 @@ base → base-thy → containers/lib → containers/theories
 | `transformers/lib` | Generated lib | **PASS** | 14/14 .v | Regenerated for GHC 9.10 |
 | `graph/lib` | Generated lib + proofs | **PASS** | 6/6 .v | Omega→Lia fixed |
 | `graph/theories` | Proofs | **PARTIAL** | 8/11 .v | 3 files need `coq-equations` |
-| **hs-to-coq generation examples** | | | | |
+| **hs-to-rocq generation examples** | | | | |
 | `bag/` | Hand-written proofs | **PASS** | 8/8 .v | Multiset from GHC |
 | `compiler/` | Generate + verify | **PASS** | 8/8 .v | Hutton's razor |
 | `coinduction/` | Generate + verify | **PASS** | 2/2 .v | Infinite data structures |

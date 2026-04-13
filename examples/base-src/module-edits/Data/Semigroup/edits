@@ -1,16 +1,16 @@
 rename value Data.Semigroup.option = Data.Semigroup.destruct_option
 
 # GHC 9.10: Option type removed from Data.Semigroup
-add Data.Semigroup Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
-      HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
-add Data.Semigroup Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) a :=
-      HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
-add Data.Semigroup Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) a :=
-      HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
-add Data.Semigroup Instance Unpeel_Max a : HsToCoq.Unpeel.Unpeel (Max a) a :=
-      HsToCoq.Unpeel.Build_Unpeel _ _ getMax Mk_Max.
-add Data.Semigroup Instance Unpeel_Min a : HsToCoq.Unpeel.Unpeel (Min a) a :=
-      HsToCoq.Unpeel.Build_Unpeel _ _ getMin Mk_Min.
+add Data.Semigroup Instance Unpeel_WrappedMonoid a : HsToRocq.Unpeel.Unpeel (WrappedMonoid a) a :=
+      HsToRocq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
+add Data.Semigroup Instance Unpeel_Last a : HsToRocq.Unpeel.Unpeel (Last a) a :=
+      HsToRocq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
+add Data.Semigroup Instance Unpeel_First a : HsToRocq.Unpeel.Unpeel (First a) a :=
+      HsToRocq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
+add Data.Semigroup Instance Unpeel_Max a : HsToRocq.Unpeel.Unpeel (Max a) a :=
+      HsToRocq.Unpeel.Build_Unpeel _ _ getMax Mk_Max.
+add Data.Semigroup Instance Unpeel_Min a : HsToRocq.Unpeel.Unpeel (Min a) a :=
+      HsToRocq.Unpeel.Build_Unpeel _ _ getMin Mk_Min.
 
 
 # partial (and type inference can't handle it, and termination is tricky)

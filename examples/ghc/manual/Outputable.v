@@ -25,7 +25,7 @@ Inductive JoinPointHood : Type :=
   | NotJoinPoint : JoinPointHood
   | JoinPoint : nat -> JoinPointHood.
 
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 #[global] Instance Default__JoinPointHood : Default JoinPointHood :=
   Build_Default _ NotJoinPoint.
 

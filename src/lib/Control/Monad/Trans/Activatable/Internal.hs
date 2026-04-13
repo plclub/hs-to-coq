@@ -19,7 +19,7 @@ module Control.Monad.Trans.Activatable.Internal (
 -- If you update this list with something else external, don't forget to update
 -- "Control.Monad.Trans.Activatable"!
   
-import HsToCoq.Util.Functor
+import HsToRocq.Util.Functor
 import Data.Functor.Identity
 import Control.Applicative
 import Control.Monad

@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -25,7 +25,7 @@ Require Core.
 Require Digraph.
 Require GHC.Err.
 Require GHC.Types.Tickish.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Module.
 Require Unique.
 
@@ -108,21 +108,21 @@ Arguments WTUD {_} _ _.
 
 Arguments WUD {_} _ _.
 
-Instance Default__OccEncl : HsToCoq.Err.Default OccEncl :=
-  HsToCoq.Err.Build_Default _ OccRhs.
+Instance Default__OccEncl : HsToRocq.Err.Default OccEncl :=
+  HsToRocq.Err.Build_Default _ OccRhs.
 
-Instance Default__UsageDetails : HsToCoq.Err.Default UsageDetails :=
-  HsToCoq.Err.Build_Default _ (UD HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__UsageDetails : HsToRocq.Err.Default UsageDetails :=
+  HsToRocq.Err.Build_Default _ (UD HsToRocq.Err.default HsToRocq.Err.default
+                              HsToRocq.Err.default HsToRocq.Err.default).
 
-Instance Default__OccEnv : HsToCoq.Err.Default OccEnv :=
-  HsToCoq.Err.Build_Default _ (Mk_OccEnv HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default).
+Instance Default__OccEnv : HsToRocq.Err.Default OccEnv :=
+  HsToRocq.Err.Build_Default _ (Mk_OccEnv HsToRocq.Err.default
+                              HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default
+                              HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default).
 
-Instance Default__SimpleNodeDetails : HsToCoq.Err.Default SimpleNodeDetails :=
-  HsToCoq.Err.Build_Default _ (SND HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default).
+Instance Default__SimpleNodeDetails : HsToRocq.Err.Default SimpleNodeDetails :=
+  HsToRocq.Err.Build_Default _ (SND HsToRocq.Err.default HsToRocq.Err.default
+                              HsToRocq.Err.default).
 
 #[global] Definition lo_int_cxt (arg_0__ : LocalOcc) :=
   match arg_0__ with
@@ -235,18 +235,18 @@ Instance Default__SimpleNodeDetails : HsToCoq.Err.Default SimpleNodeDetails :=
    but these need types defined after the auto-generated defaults.
    With skip directives, the problematic auto-generated instances are removed. *)
 
-#[global] Instance Default__TailUsageDetails : HsToCoq.Err.Default TailUsageDetails :=
-  HsToCoq.Err.Build_Default _ (TUD HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default__TailUsageDetails : HsToRocq.Err.Default TailUsageDetails :=
+  HsToRocq.Err.Build_Default _ (TUD HsToRocq.Err.default HsToRocq.Err.default).
 
-#[global] Instance Default__WithTailUsageDetails {a} `{HsToCoq.Err.Default a}
-  : HsToCoq.Err.Default (WithTailUsageDetails a) :=
-  HsToCoq.Err.Build_Default _ (WTUD HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default__WithTailUsageDetails {a} `{HsToRocq.Err.Default a}
+  : HsToRocq.Err.Default (WithTailUsageDetails a) :=
+  HsToRocq.Err.Build_Default _ (WTUD HsToRocq.Err.default HsToRocq.Err.default).
 
-#[global] Instance Default__LocalOcc : HsToCoq.Err.Default LocalOcc :=
-  HsToCoq.Err.Build_Default _ (OneOccL HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default__LocalOcc : HsToRocq.Err.Default LocalOcc :=
+  HsToRocq.Err.Build_Default _ (OneOccL HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default).
 
-#[global] Instance Default__NodeDetails : HsToCoq.Err.Default NodeDetails :=
-  HsToCoq.Err.Build_Default _ (ND HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default__NodeDetails : HsToRocq.Err.Default NodeDetails :=
+  HsToRocq.Err.Build_Default _ (ND HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default).
 
 (* Converted value declarations: *)
 
@@ -537,7 +537,7 @@ Axiom andTailCallInfo : BasicTypes.TailCallInfo ->
      Core.CoreBind Core.CoreBndr Core.CoreExpr Core.CoreProgram Core.CoreRule
      Core.Expr Core.Id Core.IdEnv Core.IdSet Core.MCoercion Core.OutExpr Core.OutId
      Core.OutVar Core.Unfolding Core.Var Core.VarEnv Core.VarSet Digraph.Node
-     GHC.Err.error GHC.Types.Tickish.CoreTickish HsToCoq.Err.Build_Default
-     HsToCoq.Err.Default HsToCoq.Err.default Module.Module Outputable.JoinPointHood
+     GHC.Err.error GHC.Types.Tickish.CoreTickish HsToRocq.Err.Build_Default
+     HsToRocq.Err.Default HsToRocq.Err.default Module.Module Outputable.JoinPointHood
      Unique.Unique
 *)

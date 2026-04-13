@@ -32,7 +32,7 @@ $(OUT)/Makefile: $(OUT)/_CoqProject
 
 $(OUT): $(PREAMBLE) $(EDITS) 
 	mkdir -p $(OUT)
-	$(HS_TO_COQ) \
+	$(HS_TO_ROCQ) \
 	  -e ../../base/edits      --iface-dir ../../base          \
 	  -e ../containers/edits   --iface-dir ../containers/lib   \
 	  -e ../transformers/edits --iface-dir ../transformers/lib \

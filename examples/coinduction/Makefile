@@ -14,7 +14,7 @@ VFILES   = $(VFILES_GEN) $(VFILES_MAN)
 all: coq
 
 $(VFILES_GEN): %.v : %.hs edits preamble.v ../../base/edits
-	$(HS_TO_COQ) -e edits -p preamble.v -e ../../base/edits $< -o .
+	$(HS_TO_ROCQ) -e edits -p preamble.v -e ../../base/edits $< -o .
 
 _CoqProject : Makefile
 	> $@

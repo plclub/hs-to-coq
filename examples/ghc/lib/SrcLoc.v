@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -24,7 +24,7 @@ Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
 Require GHC.Prim.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Panic.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -99,17 +99,17 @@ Arguments EpaSpan {_} _.
 Arguments EpaDelta {_} _ _.
 
 Instance Default__UnhelpfulSpanReason
-   : HsToCoq.Err.Default UnhelpfulSpanReason :=
-  HsToCoq.Err.Build_Default _ UnhelpfulNoLocationInfo.
+   : HsToRocq.Err.Default UnhelpfulSpanReason :=
+  HsToRocq.Err.Build_Default _ UnhelpfulNoLocationInfo.
 
-Instance Default__NoComments : HsToCoq.Err.Default NoComments :=
-  HsToCoq.Err.Build_Default _ Mk_NoComments.
+Instance Default__NoComments : HsToRocq.Err.Default NoComments :=
+  HsToRocq.Err.Build_Default _ Mk_NoComments.
 
-Instance Default__DeltaPos : HsToCoq.Err.Default DeltaPos :=
-  HsToCoq.Err.Build_Default _ (SameLine HsToCoq.Err.default).
+Instance Default__DeltaPos : HsToRocq.Err.Default DeltaPos :=
+  HsToRocq.Err.Build_Default _ (SameLine HsToRocq.Err.default).
 
-Instance Default__BufPos : HsToCoq.Err.Default BufPos :=
-  HsToCoq.Err.Build_Default _ (Mk_BufPos HsToCoq.Err.default).
+Instance Default__BufPos : HsToRocq.Err.Default BufPos :=
+  HsToRocq.Err.Build_Default _ (Mk_BufPos HsToRocq.Err.default).
 
 #[global] Definition srcSpanECol (arg_0__ : RealSrcSpan) :=
   let 'RealSrcSpan' _ _ _ _ srcSpanECol := arg_0__ in
@@ -168,26 +168,26 @@ Instance Default__BufPos : HsToCoq.Err.Default BufPos :=
 (* Midamble *)
 
 (* Default values *)
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 #[global] Instance Default__SrcSpan : Default SrcSpan := Build_Default _ (UnhelpfulSpan default).
 
 #[global] Instance Default__RealSrcLoc : Default RealSrcLoc :=
   Build_Default _ (ASrcLoc (@default _ FastString.instance_FastString_Default)
-                   HsToCoq.Err.default HsToCoq.Err.default).
+                   HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Instance Default__RealSrcSpan : Default RealSrcSpan :=
   Build_Default _ (RealSrcSpan' (@default _ FastString.instance_FastString_Default)
-                   HsToCoq.Err.default  HsToCoq.Err.default
-                   HsToCoq.Err.default HsToCoq.Err.default).
+                   HsToRocq.Err.default  HsToRocq.Err.default
+                   HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Instance Default__BufSpan : Default BufSpan :=
-  Build_Default _ (Mk_BufSpan HsToCoq.Err.default HsToCoq.Err.default).
+  Build_Default _ (Mk_BufSpan HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Instance Default__PsSpan : Default PsSpan :=
-  Build_Default _ (Mk_PsSpan HsToCoq.Err.default HsToCoq.Err.default).
+  Build_Default _ (Mk_PsSpan HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Instance Default__PsLoc : Default PsLoc :=
-  Build_Default _ (Mk_PsLoc HsToCoq.Err.default HsToCoq.Err.default).
+  Build_Default _ (Mk_PsLoc HsToRocq.Err.default HsToRocq.Err.default).
 
 
 (* Field accessors for redefined BufSpan *)
@@ -948,6 +948,6 @@ Program Instance Ord__RealSrcSpan : GHC.Base.Ord RealSrcSpan :=
      GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl____ GHC.Base.op_zlzd____
      GHC.Base.op_zlze__ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
      GHC.Base.op_zsze__ GHC.Err.error GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zp__ GHC.Prim.seq HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     HsToCoq.Err.default Panic.someSDoc
+     GHC.Num.op_zp__ GHC.Prim.seq HsToRocq.Err.Build_Default HsToRocq.Err.Default
+     HsToRocq.Err.default Panic.someSDoc
 *)

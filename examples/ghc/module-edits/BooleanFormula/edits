@@ -35,7 +35,7 @@ redefine Local Definition BooleanFormula.Foldable__BooleanFormula_foldr
 	 := BooleanFormula_foldr.
 
 
-# hs-to-coq gets the method operations all wrong - defined in midamble
+# hs-to-rocq gets the method operations all wrong - defined in midamble
 redefine Local Definition BooleanFormula.Foldable__BooleanFormula_null {a} : (BooleanFormula a) -> bool := bf_null.
 
 # GHC 9.10: inner polymorphic let binding in mkAnd/mkOr can't be inferred

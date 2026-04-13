@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -fplugin=HsToCoq.Plugin #-}
+{-# OPTIONS_GHC -fplugin=HsToRocq.Plugin #-}
 
 module Fib where
 

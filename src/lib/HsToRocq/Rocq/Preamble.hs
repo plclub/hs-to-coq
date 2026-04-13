@@ -1,0 +1,50 @@
+{-|
+Module      : HsToRocq.Rocq.Preamble
+Description : Static preamble for all hs-to-rocq output
+Copyright   : Copyright © 2017 Antal Spector-Zabusky, University of Pennsylvania
+License     : MIT
+Maintainer  : antal.b.sz@gmail.com
+Stability   : experimental
+-}
+
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedLists #-}
+
+module HsToRocq.Rocq.Preamble
+    ( staticPreamble
+    , builtInAxioms
+    ) where
+
+import Data.Text (Text)
+import qualified Data.Text as T
+import HsToRocq.Rocq.Gallina
+import HsToRocq.Rocq.Gallina.Orphans ()
+import qualified Data.Map as M
+import Data.Bifunctor
+
+staticPreamble :: Text
+staticPreamble = T.unlines
+ [ "(* Default settings (from HsToRocq.Rocq.Preamble) *)"
+ , ""
+ , "Generalizable All Variables."
+ , ""
+ , "Unset Implicit Arguments."
+ , "Set Maximal Implicit Insertion."
+ , "Unset Strict Implicit."
+ , "Unset Printing Implicit Defensive."
+ , ""
+ , "Require Coq.Program.Tactics."
+ , "Require Coq.Program.Wf."
+ ]
+
+-- | When a free variable of this name appears in the output,
+-- an axiom of the type given here is added to the preamble
+builtInAxioms :: M.Map Qualid Term
+builtInAxioms = M.fromList
+    [ first Bare
+      ("missingValue"   =: Forall [ ImplicitBinders (pure (Ident (Bare "a"))) ] a)
+    ]
+  where
+   a = "a"
+   (=:) = (,)
+   infix 0 =:

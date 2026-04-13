@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -15,7 +15,7 @@ Require Coq.Program.Wf.
 Require Coq.Lists.List.
 Require Data.Foldable.
 Require GHC.Base.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Name.
 Require OccName.
 Require OrdList.
@@ -45,8 +45,8 @@ Inductive NonCaffySet : Type :=
 #[global] Definition DefUses :=
   (OrdList.OrdList DefUse)%type.
 
-Instance Default__NonCaffySet : HsToCoq.Err.Default NonCaffySet :=
-  HsToCoq.Err.Build_Default _ (Mk_NonCaffySet HsToCoq.Err.default).
+Instance Default__NonCaffySet : HsToRocq.Err.Default NonCaffySet :=
+  HsToRocq.Err.Build_Default _ (Mk_NonCaffySet HsToRocq.Err.default).
 
 (* Converted value declarations: *)
 
@@ -210,8 +210,8 @@ Instance Default__NonCaffySet : HsToCoq.Err.Default NonCaffySet :=
 (* External variables:
      None Some bool cons list negb nil op_zt__ option orb pair
      Coq.Lists.List.flat_map Data.Foldable.foldl' Data.Foldable.foldr
-     GHC.Base.op_z2218U__ HsToCoq.Err.Build_Default HsToCoq.Err.Default
-     HsToCoq.Err.default Name.Name Name.nameOccName OccName.startsWithUnderscore
+     GHC.Base.op_z2218U__ HsToRocq.Err.Build_Default HsToRocq.Err.Default
+     HsToRocq.Err.default Name.Name Name.nameOccName OccName.startsWithUnderscore
      OrdList.OrdList OrdList.appOL OrdList.nilOL OrdList.toOL OrdList.unitOL
      UniqSet.UniqSet UniqSet.addListToUniqSet UniqSet.addOneToUniqSet
      UniqSet.delOneFromUniqSet UniqSet.disjointUniqSets UniqSet.elementOfUniqSet

@@ -1,4 +1,4 @@
-# The `hs-to-coq` manual
+# The `hs-to-rocq` manual
 
 To contribute to this manual edit the rst files in the [source](source/)
 subdirectory.

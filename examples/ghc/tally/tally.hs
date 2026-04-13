@@ -373,7 +373,7 @@ main = do
     args <- getArgs
     let path = case args of
                 [d] -> d
-                _ ->    error "Usage: ./tally .../hs-to-coq/examples/ghc"
+                _ ->    error "Usage: ./tally .../hs-to-rocq/examples/ghc"
 
     table <- concat <$> (for files $ \(fn, pats, mod, col) -> do
         f <- BS.readFile (path </> fn)

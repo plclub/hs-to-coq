@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -15,7 +15,7 @@ Require Coq.Program.Wf.
 Require Data.Foldable.
 Require GHC.Base.
 Require GHC.Prim.
-Require HsToCoq.Unpeel.
+Require HsToRocq.Unpeel.
 Require UniqFM.
 Require Unique.
 Import GHC.Base.Notations.
@@ -45,8 +45,8 @@ Program Instance Semigroup__UniqSet {a : Type}
     k__ {| GHC.Base.op_zlzlzgzg____ := Semigroup__UniqSet_op_zlzlzgzg__ |}.
 
 Instance Unpeel_UniqSet ele
-   : HsToCoq.Unpeel.Unpeel (UniqSet ele) (UniqFM.UniqFM ele ele) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(Mk_UniqSet y) => y) Mk_UniqSet.
+   : HsToRocq.Unpeel.Unpeel (UniqSet ele) (UniqFM.UniqFM ele ele) :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ (fun '(Mk_UniqSet y) => y) Mk_UniqSet.
 
 #[local] Definition Monoid__UniqSet_mappend {inst_a}
    : UniqSet inst_a -> UniqSet inst_a -> UniqSet inst_a :=
@@ -274,8 +274,8 @@ Program Instance Monoid__UniqSet {a : Type} : GHC.Base.Monoid (UniqSet a) :=
      GHC.Base.Monoid GHC.Base.Semigroup GHC.Base.map GHC.Base.mappend
      GHC.Base.mappend__ GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__
      GHC.Base.op_z2218U__ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
-     GHC.Prim.coerce HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel UniqFM.UniqFM
-     UniqFM.addToUFM UniqFM.allUFM UniqFM.anyUFM UniqFM.delFromUFM
+     GHC.Prim.coerce HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel
+     UniqFM.UniqFM UniqFM.addToUFM UniqFM.allUFM UniqFM.anyUFM UniqFM.delFromUFM
      UniqFM.delFromUFM_Directly UniqFM.delListFromUFM UniqFM.delListFromUFM_Directly
      UniqFM.disjointUFM UniqFM.elemUFM UniqFM.elemUFM_Directly UniqFM.emptyUFM
      UniqFM.filterUFM UniqFM.filterUFM_Directly UniqFM.intersectUFM UniqFM.isNullUFM

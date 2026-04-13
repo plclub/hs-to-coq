@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -14,7 +14,7 @@ Require Coq.Program.Wf.
 
 Require FastStringEnv.
 Require HsSyn.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Name.
 Require OccName.
 Require Unique.
@@ -37,16 +37,16 @@ Inductive FieldLabel : Type :=
 #[global] Definition FieldLabelEnv :=
   (FastStringEnv.DFastStringEnv FieldLabel)%type.
 
-Instance Default__FieldSelectors : HsToCoq.Err.Default FieldSelectors :=
-  HsToCoq.Err.Build_Default _ Mk_FieldSelectors.
+Instance Default__FieldSelectors : HsToRocq.Err.Default FieldSelectors :=
+  HsToRocq.Err.Build_Default _ Mk_FieldSelectors.
 
 Instance Default__DuplicateRecordFields
-   : HsToCoq.Err.Default DuplicateRecordFields :=
-  HsToCoq.Err.Build_Default _ Mk_DuplicateRecordFields.
+   : HsToRocq.Err.Default DuplicateRecordFields :=
+  HsToRocq.Err.Build_Default _ Mk_DuplicateRecordFields.
 
-Instance Default__FieldLabel : HsToCoq.Err.Default FieldLabel :=
-  HsToCoq.Err.Build_Default _ (Mk_FieldLabel HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__FieldLabel : HsToRocq.Err.Default FieldLabel :=
+  HsToRocq.Err.Build_Default _ (Mk_FieldLabel HsToRocq.Err.default
+                              HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Definition flHasDuplicateRecordFields (arg_0__ : FieldLabel) :=
   let 'Mk_FieldLabel flHasDuplicateRecordFields _ _ := arg_0__ in
@@ -62,7 +62,7 @@ Instance Default__FieldLabel : HsToCoq.Err.Default FieldLabel :=
 
 (* Midamble *)
 
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 
 #[global] Instance Default__FieldSelectors_G : Default FieldSelectors :=
   Build_Default _ Mk_FieldSelectors.
@@ -114,6 +114,6 @@ Axiom flIsOverloaded : FieldLabel -> bool.
 
 (* External variables:
      bool FastStringEnv.DFastStringEnv HsSyn.FieldLabelString
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default Name.Name
+     HsToRocq.Err.Build_Default HsToRocq.Err.Default HsToRocq.Err.default Name.Name
      OccName.HasOccName Unique.Uniquable
 *)

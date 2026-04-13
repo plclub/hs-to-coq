@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -22,7 +22,7 @@ Require Data.IntSet.Internal.
 Require GHC.Base.
 Require GHC.Data.Word64Map.Internal.
 Require GHC.Prim.
-Require HsToCoq.Unpeel.
+Require HsToRocq.Unpeel.
 Require IntMap.
 Require Unique.
 Import GHC.Base.Notations.
@@ -649,9 +649,9 @@ Program Instance Monoid__UniqFM {key : Type} {a : Type}
 (* Skipping definition `UniqFM.pluralUFM' *)
 
 Instance Unpeel_UniqFM key ele
-   : HsToCoq.Unpeel.Unpeel (UniqFM key ele) (GHC.Data.Word64Map.Internal.Word64Map
-                            ele) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(UFM y) => y) UFM.
+   : HsToRocq.Unpeel.Unpeel (UniqFM key ele)
+                            (GHC.Data.Word64Map.Internal.Word64Map ele) :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ (fun '(UFM y) => y) UFM.
 
 (* External variables:
      None Some Type andb bool cons false list mergeUFM nat nil op_zt__ option orb
@@ -677,7 +677,7 @@ Instance Unpeel_UniqFM key ele
      Data.IntSet.Internal.IntSet GHC.Base.Eq_ GHC.Base.Monad GHC.Base.String
      GHC.Base.flip GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zgzgze__ GHC.Base.return_ GHC.Data.Word64Map.Internal.Word64Map
-     GHC.Prim.seq HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel IntMap.IntMap
+     GHC.Prim.seq HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel IntMap.IntMap
      Unique.Uniquable Unique.Unique Unique.getUnique Unique.getWordKey
      Unique.mkUniqueGrimily
 *)

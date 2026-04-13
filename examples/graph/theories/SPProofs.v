@@ -7,7 +7,7 @@ Require Import Equations.Prop.Equations.
 Require Import Coq.Bool.Bool.
 Require Import Data.Graph.Inductive.Graph.
 Require Import Coq.Lists.List.
-Require Import HsToCoq.DeferredFix.
+Require Import HsToRocq.DeferredFix.
 Require Import GHC.Num.
 Import GHC.Num.Notations.
 Require Import HeapProofs.
@@ -357,7 +357,7 @@ Proof.
 Qed.
 End Multi.
 
-(*The executable, tail recursive version of this, which we will prove equivalent to the hs-to-coq version*)
+(*The executable, tail recursive version of this, which we will prove equivalent to the hs-to-rocq version*)
 Section Exec.
 
 Program Instance default_state : Default state.

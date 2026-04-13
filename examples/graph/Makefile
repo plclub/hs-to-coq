@@ -9,7 +9,7 @@ OUT=lib
 HS_SPEC=hs-spec
 
 # Not all of these need to be handwritten. Eventually we should be able to
-# generate some of these modules as hs-to-coq is improved.
+# generate some of these modules as hs-to-rocq is improved.
 # see [notes.md] for discussion of issues
 
 # Handwritten modules (usually by modification of generated version)
@@ -96,7 +96,7 @@ $(HS_SPEC)/README.md:
 coq: $(OUT)/Makefile $(VFILES)
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
 
-HS_TO_COQ_OPTS := \
+HS_TO_ROCQ_OPTS := \
   -e ../../base/edits \
   -e edits \
   --iface-dir ../../base/ \
@@ -111,11 +111,11 @@ HS_TO_COQ_OPTS := \
 # KEEP THIS IN SYNC WITH THE NEXT RULE (there ought to be a better way)
 .SECONDEXPANSION:
 $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) $(wildcard module-edits/$$*/flags) edits $(OUT)/README.md
-	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	$(HS_TO_ROCQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
-		     $(HS_TO_COQ_OPTS) \
+		     $(HS_TO_ROCQ_OPTS) \
 	             -o $(OUT) \
 	             $(wildcard graph/$*.hs) \
 		     $(wildcard graph/tests/$*.hs) \
@@ -125,10 +125,10 @@ $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard
 # KEEP THIS IN SYNC WITH THE PREVIOUS RULE (there ought to be a better way)
 .SECONDEXPANSION:
 $(VFILES_HS_SPEC_GEN): $(HS_SPEC)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) $$(wildcard module-edits/$$*/flags) edits $(HS_SPEC)/README.md
-	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	$(HS_TO_ROCQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
-		     $(HS_TO_COQ_OPTS) \
+		     $(HS_TO_ROCQ_OPTS) \
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 	             -o $(HS_SPEC) \
 	             $(wildcard graph/$*.hs) \
@@ -143,7 +143,7 @@ $(VFILES_MAN): $(OUT)/%.v : manual/%.v
 
 
 $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preamble.v drop-in/%.hs $(OUT)/README.md
-	$(HS_TO_COQ) -e module-edits/$*/edits \
+	$(HS_TO_ROCQ) -e module-edits/$*/edits \
 	             -e edits \
 	       -o $(OUT) \
 	       -N \

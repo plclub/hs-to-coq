@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Preamble *)
 
-Require HsToCoq.Nat.
+Require HsToRocq.Nat.
 
 (* Converted imports: *)
 
@@ -32,8 +32,8 @@ Require GHC.List.
 Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Tuple.
-Require HsToCoq.DeferredFix.
-Require HsToCoq.Err.
+Require HsToRocq.DeferredFix.
+Require HsToRocq.Err.
 Require Panic.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -45,8 +45,8 @@ Import GHC.Num.Notations.
 
 Inductive Direction : Type := | Forwards : Direction | Backwards : Direction.
 
-Instance Default__Direction : HsToCoq.Err.Default Direction :=
-  HsToCoq.Err.Build_Default _ Forwards.
+Instance Default__Direction : HsToRocq.Err.Default Direction :=
+  HsToRocq.Err.Build_Default _ Forwards.
 
 (* Midamble *)
 
@@ -371,14 +371,14 @@ Fixpoint compareLength {a : Type} {b : Type} (arg_0__ : list a) (arg_1__
 #[global] Definition isSingleton {a : Type} : list a -> bool :=
   fun arg_0__ => match arg_0__ with | cons _ nil => true | _ => false end.
 
-#[global] Definition only {a} `{HsToCoq.Err.Default a} : list a -> a :=
+#[global] Definition only {a} `{HsToRocq.Err.Default a} : list a -> a :=
   fun arg_0__ =>
     match arg_0__ with
     | cons a _ => a
     | _ => Panic.panic (GHC.Base.hs_string__ "Util: only")
     end.
 
-#[global] Definition expectOnly {a} `{HsToCoq.Err.Default a}
+#[global] Definition expectOnly {a} `{HsToRocq.Err.Default a}
    : GHC.Base.String -> list a -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -393,7 +393,7 @@ Fixpoint holes {a : Type} (arg_0__ : list a) : list (a * list a)%type
      | cons x xs => cons (pair x xs) (mapSnd (cons x) (holes xs))
      end.
 
-Fixpoint changeLast {a} `{HsToCoq.Err.Default a} (arg_0__ : list a) (arg_1__
+Fixpoint changeLast {a} `{HsToRocq.Err.Default a} (arg_0__ : list a) (arg_1__
                       : a) : list a
   := match arg_0__, arg_1__ with
      | nil, _ => Panic.panic (GHC.Base.hs_string__ "changeLast")
@@ -403,7 +403,7 @@ Fixpoint changeLast {a} `{HsToCoq.Err.Default a} (arg_0__ : list a) (arg_1__
 
 (* Skipping definition `Util.expectNonEmpty' *)
 
-#[global] Definition expectNonEmptyPanic {a} `{HsToCoq.Err.Default a}
+#[global] Definition expectNonEmptyPanic {a} `{HsToRocq.Err.Default a}
    : GHC.Base.String -> a :=
   fun msg =>
     Panic.panic (Coq.Init.Datatypes.app (GHC.Base.hs_string__ "expectNonEmpty: ")
@@ -450,16 +450,16 @@ Fixpoint changeLast {a} `{HsToCoq.Err.Default a} (arg_0__ : list a) (arg_1__
          | x, cons y ys => if eq x y : bool then true else is_in x ys
          end in
     let go :=
-      HsToCoq.DeferredFix.deferredFix2 (fun go arg_5__ arg_6__ =>
-                                          match arg_5__, arg_6__ with
-                                          | done, nil => done
-                                          | done, cons x xs =>
-                                              if is_in x done : bool then go done xs else
-                                              go (cons x done) (Coq.Init.Datatypes.app (succ x) xs)
-                                          end) in
+      HsToRocq.DeferredFix.deferredFix2 (fun go arg_5__ arg_6__ =>
+                                           match arg_5__, arg_6__ with
+                                           | done, nil => done
+                                           | done, cons x xs =>
+                                               if is_in x done : bool then go done xs else
+                                               go (cons x done) (Coq.Init.Datatypes.app (succ x) xs)
+                                           end) in
     go nil xs.
 
-Fixpoint foldl2 {acc} {a} {b} `{HsToCoq.Err.Default acc} (arg_0__
+Fixpoint foldl2 {acc} {a} {b} `{HsToRocq.Err.Default acc} (arg_0__
                   : acc -> a -> b -> acc) (arg_1__ : acc) (arg_2__ : list a) (arg_3__ : list b)
   : acc
   := match arg_0__, arg_1__, arg_2__, arg_3__ with
@@ -562,15 +562,15 @@ Fixpoint dropList {b : Type} {a : Type} (arg_0__ : list b) (arg_1__ : list a)
 
 #[global] Definition split
    : GHC.Char.Char -> GHC.Base.String -> list GHC.Base.String :=
-  HsToCoq.DeferredFix.deferredFix2 (fun split
-                                    (c : GHC.Char.Char)
-                                    (s : GHC.Base.String) =>
-                                      let 'pair chunk rest := GHC.List.break (GHC.Prim.rightSection _GHC.Base.==_ c)
-                                                                s in
-                                      match rest with
-                                      | nil => cons chunk nil
-                                      | cons _ rest => cons chunk (split c rest)
-                                      end).
+  HsToRocq.DeferredFix.deferredFix2 (fun split
+                                     (c : GHC.Char.Char)
+                                     (s : GHC.Base.String) =>
+                                       let 'pair chunk rest := GHC.List.break (GHC.Prim.rightSection _GHC.Base.==_ c)
+                                                                 s in
+                                       match rest with
+                                       | nil => cons chunk nil
+                                       | cons _ rest => cons chunk (split c rest)
+                                       end).
 
 #[global] Definition capitalise : GHC.Base.String -> GHC.Base.String :=
   fun arg_0__ => match arg_0__ with | nil => nil | cons c cs => cons c cs end.
@@ -734,6 +734,6 @@ End Notations.
      GHC.Base.return_ GHC.Char.Char GHC.List.break GHC.List.filter GHC.List.reverse
      GHC.List.zip GHC.List.zipWith GHC.List.zipWith3 GHC.Num.fromInteger
      GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.rightSection GHC.Prim.seq
-     GHC.Tuple.pair2 HsToCoq.DeferredFix.deferredFix2 HsToCoq.Err.Build_Default
-     HsToCoq.Err.Default Panic.panic
+     GHC.Tuple.pair2 HsToRocq.DeferredFix.deferredFix2 HsToRocq.Err.Build_Default
+     HsToRocq.Err.Default Panic.panic
 *)

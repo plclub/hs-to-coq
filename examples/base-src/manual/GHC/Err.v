@@ -1,7 +1,7 @@
 Require Import GHC.Base.
 Require Import GHC.Num.
 
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 
 Export String.StringSyntax.
 Export Ascii.AsciiSyntax.

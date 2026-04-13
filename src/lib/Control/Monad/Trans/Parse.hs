@@ -16,7 +16,7 @@ module Control.Monad.Trans.Parse (
   Location(..), ParseError(..), prettyParseError
 ) where
 
-import HsToCoq.Util.Coerce
+import HsToRocq.Util.Coerce
 
 import Data.Functor.Identity
 import Control.Applicative
@@ -25,7 +25,7 @@ import Control.Monad.Fail
 import Control.Monad.Fix
 import Control.Monad.State
 import Control.Monad.Except
-import HsToCoq.Util.Function
+import HsToRocq.Util.Function
 
 import Data.Text (Text)
 import qualified Data.Text as T

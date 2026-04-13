@@ -1,6 +1,6 @@
 (* Stub module for GHC.Core.Rules.Config *)
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom RuleOpts : Type.
 
-#[global] Instance Default__RuleOpts : HsToCoq.Err.Default RuleOpts. Admitted.
+#[global] Instance Default__RuleOpts : HsToRocq.Err.Default RuleOpts. Admitted.

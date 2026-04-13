@@ -75,7 +75,7 @@ coq: $(OUT)/Makefile $(OUTFILES)
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
 
 
-HS_TO_COQ_OPTS=\
+HS_TO_ROCQ_OPTS=\
      -i wc/src \
      -e ../../base/edits \
      -e ../containers/edits \
@@ -96,10 +96,10 @@ HS_TO_COQ_OPTS=\
 
 .SECONDEXPANSION:
 $(OUTFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
-	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	$(HS_TO_ROCQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
-		     $(HS_TO_COQ_OPTS) -o $(OUT) wc/src/$*.hs
+		     $(HS_TO_ROCQ_OPTS) -o $(OUT) wc/src/$*.hs
 	test -e $@
 
 
@@ -110,10 +110,10 @@ $(OUTFILES_MAN): $(OUT)/%.v : manual/%.v
 
 
 $(OUTFILES_DROPIN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) drop-in/%.hs
-	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	$(HS_TO_ROCQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
-		     $(HS_TO_COQ_OPTS) -o $(OUT) drop-in/$*.hs
+		     $(HS_TO_ROCQ_OPTS) -o $(OUT) drop-in/$*.hs
 
 
 clean:

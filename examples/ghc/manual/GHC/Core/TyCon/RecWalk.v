@@ -1,6 +1,6 @@
 (* Stub module for GHC.Core.TyCon.RecWalk *)
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom RecTcChecker : Type.
 
-#[global] Instance Default__RecTcChecker : HsToCoq.Err.Default RecTcChecker. Admitted.
+#[global] Instance Default__RecTcChecker : HsToRocq.Err.Default RecTcChecker. Admitted.

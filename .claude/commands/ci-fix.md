@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Agent, mcp__rocq-mcp__rocq_g
 argument-hint: "[job] (build|test-coq|tests|test-translation|all)"
 ---
 
-Run CI checks locally (mirroring `.github/workflows/hs-to-coq.yml`), diagnose and fix any failures, then commit the fixes. All tools (stack, coqc, coq_makefile) are already installed — no Docker or opam setup needed. Do NOT use `--allow-different-user` (that's only for CI containers).
+Run CI checks locally (mirroring `.github/workflows/hs-to-rocq.yml`), diagnose and fix any failures, then commit the fixes. All tools (stack, coqc, coq_makefile) are already installed — no Docker or opam setup needed. Do NOT use `--allow-different-user` (that's only for CI containers).
 
 All commands run from the workspace root using relative paths.
 
@@ -65,7 +65,7 @@ coqc -Q base "" examples/resources/list_monad.v
 
 When coqc fails, the error message tells you the file, line, and nature of the problem. The fix strategy depends on the file type:
 
-**Generated files** (`lib/*.v` under examples): These are produced by hs-to-coq. Don't edit them directly — the fix goes in the corresponding edits/preamble/midamble:
+**Generated files** (`lib/*.v` under examples): These are produced by hs-to-rocq. Don't edit them directly — the fix goes in the corresponding edits/preamble/midamble:
   - `module-edits/<Module>/edits` — skip, rename, redefine, rewrite, order directives
   - `module-edits/<Module>/preamble.v` — Coq code prepended to output
   - `module-edits/<Module>/midamble.v` — Coq code inserted mid-file
@@ -140,7 +140,7 @@ git submodule update --init examples/ghc/ghc
 git submodule update --init examples/containers/containers
 git submodule update --init examples/graph/graph
 
-# Build hs-to-coq first
+# Build hs-to-rocq first
 stack build
 ```
 
@@ -168,7 +168,7 @@ git add examples/graph/lib && git diff-index --cached --quiet HEAD -- examples/g
 git reset HEAD examples/graph/lib
 ```
 
-**If `git diff-index` exits non-zero**: The convenience copy is out of date. This usually means someone edited hs-to-coq source or edits files without regenerating. Show `git diff --cached --stat` before resetting to see what changed. The fix is simple — the regenerated files ARE the fix. Stage and commit them.
+**If `git diff-index` exits non-zero**: The convenience copy is out of date. This usually means someone edited hs-to-rocq source or edits files without regenerating. Show `git diff --cached --stat` before resetting to see what changed. The fix is simple — the regenerated files ARE the fix. Stage and commit them.
 
 Before committing regenerated files, first verify they compile by running the test-coq steps for the affected directories.
 

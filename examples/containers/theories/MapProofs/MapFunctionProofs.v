@@ -11,7 +11,7 @@ Require Import MapProofs.ToListProofs.
 Require Import MapProofs.FilterPartitionProofs.
 Require Import MapProofs.FromListProofs.
 Require Import Coq.Classes.Morphisms.
-Require Import HsToCoq.DeferredFix.
+Require Import HsToRocq.DeferredFix.
 
 (** ** Verification of [mapWithKey] *)
 

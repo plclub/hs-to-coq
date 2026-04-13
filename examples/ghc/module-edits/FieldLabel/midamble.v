@@ -1,4 +1,4 @@
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 
 #[global] Instance Default__FieldSelectors_G : Default FieldSelectors :=
   Build_Default _ Mk_FieldSelectors.

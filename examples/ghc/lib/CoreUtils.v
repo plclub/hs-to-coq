@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -29,7 +29,7 @@ Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Types.Tickish.
 Require HsSyn.
-Require HsToCoq.DeferredFix.
+Require HsToRocq.DeferredFix.
 Require Id.
 Require Literal.
 Require OrdList.
@@ -351,18 +351,18 @@ Axiom exprOkForSpeculation : Core.CoreExpr -> bool.
 
 #[global] Definition mergeAlts {a : Type}
    : list (Core.Alt a) -> list (Core.Alt a) -> list (Core.Alt a) :=
-  HsToCoq.DeferredFix.deferredFix1 (fun mergeAlts
-                                    (arg_0__ arg_1__ : list (Core.Alt a)) =>
-                                      match arg_0__, arg_1__ with
-                                      | nil, as2 => as2
-                                      | as1, nil => as1
-                                      | cons a1 as1, cons a2 as2 =>
-                                          match Core.cmpAlt a1 a2 with
-                                          | Lt => cons a1 (mergeAlts as1 (cons a2 as2))
-                                          | Eq => cons a1 (mergeAlts as1 as2)
-                                          | Gt => cons a2 (mergeAlts (cons a1 as1) as2)
-                                          end
-                                      end).
+  HsToRocq.DeferredFix.deferredFix1 (fun mergeAlts
+                                     (arg_0__ arg_1__ : list (Core.Alt a)) =>
+                                       match arg_0__, arg_1__ with
+                                       | nil, as2 => as2
+                                       | as1, nil => as1
+                                       | cons a1 as1, cons a2 as2 =>
+                                           match Core.cmpAlt a1 a2 with
+                                           | Lt => cons a1 (mergeAlts as1 (cons a2 as2))
+                                           | Eq => cons a1 (mergeAlts as1 as2)
+                                           | Gt => cons a2 (mergeAlts (cons a1 as1) as2)
+                                           end
+                                       end).
 
 #[global] Definition trimConArgs
    : Core.AltCon -> list Core.CoreArg -> list Core.CoreArg :=
@@ -725,7 +725,7 @@ Axiom isUnsafeEqualityCase : Core.CoreExpr ->
      GHC.Base.op_zeze__ GHC.Base.op_zl__ GHC.Core.TyCo.FVs.occCheckExpand
      GHC.Core.TyCo.FVs.tyCoVarsOfType GHC.Num.fromInteger GHC.Num.op_zm__
      GHC.Prim.rightSection GHC.Types.Tickish.CoreTickish HsSyn.Representational
-     HsToCoq.DeferredFix.deferredFix1 Id.idArity Id.idDemandInfo Id.idName Id.idType
+     HsToRocq.DeferredFix.deferredFix1 Id.idArity Id.idDemandInfo Id.idName Id.idType
      Id.isConLikeId Id.isDataConWorkId Id.isJoinId Id.scaleVarBy Id.zapIdUnfolding
      Literal.LitString Literal.Literal Literal.litIsDupable OrdList.OrdList
      OrdList.appOL OrdList.concatOL OrdList.fromOL OrdList.nilOL Panic.assertPpr

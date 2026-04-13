@@ -1,4 +1,4 @@
-# hs-to-coq
+# hs-to-rocq
 .ghc-tmp
 
 # Stack
@@ -10,7 +10,7 @@ dist-newstyle
 dist
 cabal.project.local
 .ghc.environment.*
-/hs-to-coq
+/hs-to-rocq
 
 # Coq
 *.vo

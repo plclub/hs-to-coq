@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -19,7 +19,7 @@ Require FV.
 Require GHC.Base.
 Require GHC.Core.TyCo.FVs.
 Require GHC.List.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Id.
 Require Lists.List.
 Require Maybes.
@@ -49,8 +49,8 @@ Inductive RuleFVsFrom : Type :=
 #[global] Definition CoreAltWithFVs :=
   (Core.AnnAlt Core.Id FVAnn)%type.
 
-Instance Default__RuleFVsFrom : HsToCoq.Err.Default RuleFVsFrom :=
-  HsToCoq.Err.Build_Default _ LhsOnly.
+Instance Default__RuleFVsFrom : HsToRocq.Err.Default RuleFVsFrom :=
+  HsToRocq.Err.Build_Default _ LhsOnly.
 
 (* Converted value declarations: *)
 
@@ -468,7 +468,7 @@ Fixpoint expr_fvs `(arg_0__ : Core.CoreExpr) arg_1__ arg_2__ arg_3__
      GHC.Base.op_z2218U__ GHC.Core.TyCo.FVs.tyCoFVsOfCo
      GHC.Core.TyCo.FVs.tyCoFVsOfType GHC.Core.TyCo.FVs.tyCoVarsOfCoDSet
      GHC.Core.TyCo.FVs.tyCoVarsOfTypeDSet GHC.List.unzip GHC.List.zip
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default Id.idType Id.realIdUnfolding
+     HsToRocq.Err.Build_Default HsToRocq.Err.Default Id.idType Id.realIdUnfolding
      Lists.List.map Maybes.orElse NameSet.NameSet NameSet.emptyNameSet
      NameSet.unionNameSet NestedRecursionHelpers.mapAndUnzipFix
 *)

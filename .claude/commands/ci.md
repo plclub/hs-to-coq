@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Glob, Grep
 argument-hint: "[job-name] (build|test-coq|tests|test-translation|all)"
 ---
 
-Run CI checks locally, mirroring the GitHub Actions workflow in `.github/workflows/hs-to-coq.yml`. Assume all tools (stack, coqc, coq_makefile) are already installed — no Docker or opam setup needed. Do NOT use `--allow-different-user` (that's only for CI containers).
+Run CI checks locally, mirroring the GitHub Actions workflow in `.github/workflows/hs-to-rocq.yml`. Assume all tools (stack, coqc, coq_makefile) are already installed — no Docker or opam setup needed. Do NOT use `--allow-different-user` (that's only for CI containers).
 
 All commands must be run from the workspace root using relative paths.
 
@@ -101,7 +101,7 @@ git submodule update --init examples/containers/containers
 Then for each target, regenerate and compare:
 
 ```bash
-# Build hs-to-coq first
+# Build hs-to-rocq first
 stack build
 
 # Translate base

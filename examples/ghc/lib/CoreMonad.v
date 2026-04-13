@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -25,7 +25,7 @@ Require GHC.Core.Rules.
 Require GHC.Runtime.Context.
 Require GHC.Unit.External.
 Require GHC.Unit.Module.ModGuts.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Module.
 Require SrcLoc.
 Require UniqSupply.
@@ -49,12 +49,12 @@ Inductive CoreM a : Type :=
 
 Arguments Mk_CoreM {_} _.
 
-Instance Default__FloatOutSwitches : HsToCoq.Err.Default FloatOutSwitches :=
-  HsToCoq.Err.Build_Default _ (Mk_FloatOutSwitches HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__FloatOutSwitches : HsToRocq.Err.Default FloatOutSwitches :=
+  HsToRocq.Err.Build_Default _ (Mk_FloatOutSwitches HsToRocq.Err.default
+                              HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default).
 
-Instance Default__CoreWriter : HsToCoq.Err.Default CoreWriter :=
-  HsToCoq.Err.Build_Default _ (Mk_CoreWriter HsToCoq.Err.default).
+Instance Default__CoreWriter : HsToRocq.Err.Default CoreWriter :=
+  HsToRocq.Err.Build_Default _ (Mk_CoreWriter HsToRocq.Err.default).
 
 #[global] Definition floatOutConstants (arg_0__ : FloatOutSwitches) :=
   let 'Mk_FloatOutSwitches _ floatOutConstants _ _ := arg_0__ in
@@ -190,6 +190,6 @@ Axiom debugTraceMsg : GHC.Base.String -> CoreM unit.
      GHC.Char.Char GHC.Core.Opt.Stats.SimplCount GHC.Core.Rules.RuleBase
      GHC.Core.Rules.RuleEnv GHC.Runtime.Context.InteractiveContext
      GHC.Unit.External.ExternalPackageState GHC.Unit.Module.ModGuts.ModGuts
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
+     HsToRocq.Err.Build_Default HsToRocq.Err.Default HsToRocq.Err.default
      Module.HasModule SrcLoc.SrcSpan UniqSupply.MonadUnique
 *)

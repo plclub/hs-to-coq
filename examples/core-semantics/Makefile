@@ -9,7 +9,7 @@ endif
 OUT=lib
 
 # Not all of these need to be handwritten. Eventually we should be able to
-# generate some of these modules as hs-to-coq is improved.
+# generate some of these modules as hs-to-rocq is improved.
 # see [notes.md] for discussion of issues
 
 # Handwritten modules (usually by modification of generated version)
@@ -58,7 +58,7 @@ $(OUT)/README.md:
 coq: $(OUT)/Makefile $(VFILES)
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
 
-HS_TO_COQ_OPTS := \
+HS_TO_ROCQ_OPTS := \
   --ghc -package=ghc-boot-th \
   --ghc -package=ghc \
   -e ../../base/edits \
@@ -79,10 +79,10 @@ include  deps/*.mk
 
 .SECONDEXPANSION:
 $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) edits
-	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	$(HS_TO_ROCQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
-		     $(HS_TO_COQ_OPTS) \
+		     $(HS_TO_ROCQ_OPTS) \
 		     $(SRC)/$*.hs
 	test -e $@
 

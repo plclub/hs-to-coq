@@ -130,15 +130,15 @@ todo_translate: $(foreach f, $(TODO_TRANSLATE), $(f).fail_translate)
 	@if [ -e $*/preamble.v ]; then P_ARG="--preamble $*/preamble.v"; else P_ARG=; fi;\
 	 if [ -e $*/midamble.v ]; then M_ARG="--midamble $*/midamble.v"; else M_ARG=; fi;\
 	 if [ -e $*/edits ];      then E_ARG="--edits    $*/edits";      else E_ARG=; fi;\
-	 $(HS_TO_COQ) $${E_ARG} -N -e renamings -o . $${P_ARG} $${M_ARG} $*.hs 1>/dev/null || true
+	 $(HS_TO_ROCQ) $${E_ARG} -N -e renamings -o . $${P_ARG} $${M_ARG} $*.hs 1>/dev/null || true
 
 Renamed.v: RenameMe.hs RenameMe.hs-boot RenameMeToo.hs RenameMe/edits
 	@rm -f Renamed.v
-	$(HS_TO_COQ) -N -e RenameMe/edits -e renamings -o . RenameMe.hs RenameMeToo.hs 1>/dev/null
+	$(HS_TO_ROCQ) -N -e RenameMe/edits -e renamings -o . RenameMe.hs RenameMeToo.hs 1>/dev/null
 
 RenameModule.v:: Renamed.vo
 
-# We always want to re-build the .v files, to test the current build of hs-to-coq
+# We always want to re-build the .v files, to test the current build of hs-to-rocq
 FORCE:
 
 clean:

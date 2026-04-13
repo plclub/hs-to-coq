@@ -11,7 +11,7 @@ skip Maybes.liftMaybeT
 #
 # add Default constraint to partial function
 #
-set type Maybes.expectJust : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> ((option a) -> a)
+set type Maybes.expectJust : forall {a} `{HsToRocq.Err.Default a}, GHC.Base.String -> ((option a) -> a)
 
 #
 # fmap and <*> defined in terms of liftM and ap

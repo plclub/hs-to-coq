@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Preamble *)
 
-Require HsToCoq.Nat.
+Require HsToRocq.Nat.
 Require Platform.
 
 (* Converted imports: *)
@@ -26,7 +26,7 @@ Require GHC.Char.
 Require GHC.Enum.
 Require GHC.Num.
 Require GHC.Real.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 (* Converted type declarations: *)
 
@@ -56,11 +56,11 @@ Inductive Literal : Type :=
    : FastString.FastString ->
      (option nat) -> BasicTypes.FunctionOrData -> Literal.
 
-#[global] Instance Default__LitNumType : HsToCoq.Err.Default LitNumType :=
-  HsToCoq.Err.Build_Default _ LitNumBigNat.
+#[global] Instance Default__LitNumType : HsToRocq.Err.Default LitNumType :=
+  HsToRocq.Err.Build_Default _ LitNumBigNat.
 
-#[global] Instance Default__Literal : HsToCoq.Err.Default Literal :=
-  HsToCoq.Err.Build_Default _ LitNullAddr.
+#[global] Instance Default__Literal : HsToRocq.Err.Default Literal :=
+  HsToRocq.Err.Build_Default _ LitNullAddr.
 
 (* Converted value declarations: *)
 
@@ -267,6 +267,6 @@ Axiom cmpLit : Literal -> Literal -> comparison.
      AxiomatizedTypes.Type_ BasicTypes.FunctionOrData BasicTypes.TypeOrConstraint
      Data.ByteString.Internal.Type.ByteString FastString.FastString GHC.Base.Eq_
      GHC.Base.Ord GHC.Base.String GHC.Char.Char GHC.Enum.Bounded GHC.Num.Integer
-     GHC.Num.Word GHC.Real.Integral GHC.Real.Rational HsToCoq.Err.Build_Default
-     HsToCoq.Err.Default Platform.Platform
+     GHC.Num.Word GHC.Real.Integral GHC.Real.Rational HsToRocq.Err.Build_Default
+     HsToRocq.Err.Default Platform.Platform
 *)

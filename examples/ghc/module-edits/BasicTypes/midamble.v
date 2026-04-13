@@ -1,12 +1,12 @@
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
-#[global] Instance Default__SourceText : HsToCoq.Err.Default SourceText :=
-  HsToCoq.Err.Build_Default _ NoSourceText.
+#[global] Instance Default__SourceText : HsToRocq.Err.Default SourceText :=
+  HsToRocq.Err.Build_Default _ NoSourceText.
 
-#[global] Instance Default__TyConFlavour {tc} : HsToCoq.Err.Default (TyConFlavour tc) :=
-  HsToCoq.Err.Build_Default _ ClassFlavour.
+#[global] Instance Default__TyConFlavour {tc} : HsToRocq.Err.Default (TyConFlavour tc) :=
+  HsToRocq.Err.Build_Default _ ClassFlavour.
 
-(* GHC 9.10: hs-to-coq does not generate derived Eq instances.
+(* GHC 9.10: hs-to-rocq does not generate derived Eq instances.
    Add the ones needed by downstream code. *)
 
 Definition Eq__IntWithInf_op_zeze : IntWithInf -> IntWithInf -> bool :=

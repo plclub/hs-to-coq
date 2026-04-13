@@ -1,11 +1,11 @@
 # How to use this file:
 #
-# To work on the Coq code related to hs-to-coq:
-#   nix-shell -A coqPackages.hs-to-coq
+# To work on the Coq code related to hs-to-rocq:
+#   nix-shell -A coqPackages.hs-to-rocq
 #
-# To build the hs-to-coq utility:
-#   nix-build -A haskellPackages.hs-to-coq
-# After building, you can run result/bin/hs-to-coq
+# To build the hs-to-rocq utility:
+#   nix-build -A haskellPackages.hs-to-rocq
+# After building, you can run result/bin/hs-to-rocq
 
 { coqPackages ? "coqPackages_8_10"
 , ghcVersion  ? "ghc884"
@@ -23,8 +23,8 @@
 
 let
   coqPackages' = pkgs.${coqPackages} // {
-    hs-to-coq = with pkgs.${coqPackages}; pkgs.stdenv.mkDerivation rec {
-      name = "coq${coq.coq-version}-hs-to-coq-${version}";
+    hs-to-rocq = with pkgs.${coqPackages}; pkgs.stdenv.mkDerivation rec {
+      name = "coq${coq.coq-version}-hs-to-rocq-${version}";
       version = "1.0";
 
       src =
@@ -52,7 +52,7 @@ let
   };
 
   haskellPackages' = pkgs.haskell.packages.${ghcVersion} // {
-    hs-to-coq =
+    hs-to-rocq =
       with pkgs.haskell.lib;
       with pkgs.haskell.packages.${ghcVersion}.override {
         overrides = self: super: {
@@ -61,7 +61,7 @@ let
           validation = doJailbreak super.validation;
         };
       };
-      callCabal2nix "hs-to-coq" ./. {};
+      callCabal2nix "hs-to-rocq" ./. {};
   };
 
 in {

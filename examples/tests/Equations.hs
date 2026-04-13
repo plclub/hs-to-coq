@@ -27,7 +27,7 @@ applyHelper x = let helper True = False
                 in helper x
 
 -- Two local let bindings: both a pattern-matching helper and a simple binding.
--- hs-to-coq's foldrM in convertLocalBinds (Expr.hs) may place a non-pattern-
+-- hs-to-rocq's foldrM in convertLocalBinds (Expr.hs) may place a non-pattern-
 -- matching let outermost; extractWheres recurses through nested lets to find
 -- the pattern-matching one and extract it as a where clause.
 applyAndKeep :: Bool -> Bool
@@ -52,7 +52,7 @@ isZ :: N -> Bool
 isZ Z = True
 isZ _ = False
 
--- Guards: hs-to-coq converts guards to if/then/else,
+-- Guards: hs-to-rocq converts guards to if/then/else,
 -- which the equations edit emits as a single equation with the if body
 clamp :: N -> N
 clamp n

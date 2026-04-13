@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -13,7 +13,7 @@ Require Coq.Program.Wf.
 (* Converted imports: *)
 
 Require GHC.Base.
-Require HsToCoq.Unpeel.
+Require HsToRocq.Unpeel.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
@@ -234,8 +234,8 @@ Program Instance Monad__Down : GHC.Base.Monad Down :=
     | pair low high, a => GHC.Base.min high (GHC.Base.max a low)
     end.
 
-Instance Unpeel_Down a : HsToCoq.Unpeel.Unpeel (Down a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(Mk_Down x) => x) Mk_Down.
+Instance Unpeel_Down a : HsToRocq.Unpeel.Unpeel (Down a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ (fun '(Mk_Down x) => x) Mk_Down.
 
 (* External variables:
      Type bool comparison list op_zt__ pair GHC.Base.Applicative GHC.Base.Functor
@@ -249,5 +249,5 @@ Instance Unpeel_Down a : HsToCoq.Unpeel.Unpeel (Down a) a :=
      GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlze__ GHC.Base.op_zlze____
      GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____
      GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return___
-     HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
+     HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel
 *)

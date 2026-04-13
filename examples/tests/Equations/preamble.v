@@ -1,9 +1,9 @@
-(* Stub for HsToCoq.Err since tests don't link against base *)
-Module HsToCoq.
+(* Stub for HsToRocq.Err since tests don't link against base *)
+Module HsToRocq.
 Module Err.
 Class Default (a : Type) := Build_Default { default : a }.
 End Err.
-End HsToCoq.
+End HsToRocq.
 
 (* Stub for GHC.Err.patternFailure — needed by guardFirst (incomplete guard pattern) *)
 Module GHC.

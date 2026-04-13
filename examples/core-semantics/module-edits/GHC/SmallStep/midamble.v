@@ -1,11 +1,11 @@
 Require CoreStats.
 
-Instance Default_Step {a} : HsToCoq.Err.Default (Step a) :=
-  HsToCoq.Err.Build_Default _ Done.
-Instance Default_Value : HsToCoq.Err.Default Value :=
-  HsToCoq.Err.Build_Default _ (LitVal HsToCoq.Err.default).
-Instance Default_StackElem : HsToCoq.Err.Default StackElem :=
-  HsToCoq.Err.Build_Default _ (Update HsToCoq.Err.default).
+Instance Default_Step {a} : HsToRocq.Err.Default (Step a) :=
+  HsToRocq.Err.Build_Default _ Done.
+Instance Default_Value : HsToRocq.Err.Default Value :=
+  HsToRocq.Err.Build_Default _ (LitVal HsToRocq.Err.default).
+Instance Default_StackElem : HsToRocq.Err.Default StackElem :=
+  HsToRocq.Err.Build_Default _ (Update HsToRocq.Err.default).
 
 (* ----------- termination metric for step function --------------- *)
 

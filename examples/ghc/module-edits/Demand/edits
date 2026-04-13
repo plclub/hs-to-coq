@@ -3,7 +3,7 @@ skip Core.toCleanDmd
 skip Core.strictifyDictDmd
 
 # GHC 9.10: Eq instances for Demand types need prerequisite Eq instances
-# (Boxity, Card, etc.) that hs-to-coq doesn't generate.
+# (Boxity, Card, etc.) that hs-to-rocq doesn't generate.
 # Skip them all.
 skip Core.Eq___SubDemand
 skip Core.Eq___SubDemand_op_zeze__

@@ -1,5 +1,5 @@
-#[global] Instance Default_CallArityRes : HsToCoq.Err.Default CallArityRes :=
-HsToCoq.Err.Build_Default _ (HsToCoq.Err.default, HsToCoq.Err.default).
+#[global] Instance Default_CallArityRes : HsToRocq.Err.Default CallArityRes :=
+HsToRocq.Err.Build_Default _ (HsToRocq.Err.default, HsToRocq.Err.default).
 
 
 (* ------------------------- mutual recursion hack -------------------- *)

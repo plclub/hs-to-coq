@@ -1,4 +1,4 @@
-# this module silently fails with hs-to-coq
+# this module silently fails with hs-to-rocq
 # I don't know why
 
 axiomatize module TysPrim

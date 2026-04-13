@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -18,7 +18,7 @@ Require Core.
 Require CoreUtils.
 Require GHC.Base.
 Require GHC.Types.Cpr.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require UnVarGraph.
 Require Util.
 
@@ -45,16 +45,16 @@ Inductive ArityEnv : Type :=
     : bool)
    : ArityEnv.
 
-Instance Default__Cost : HsToCoq.Err.Default Cost :=
-  HsToCoq.Err.Build_Default _ IsCheap.
+Instance Default__Cost : HsToRocq.Err.Default Cost :=
+  HsToRocq.Err.Build_Default _ IsCheap.
 
-Instance Default__ArityOpts : HsToCoq.Err.Default ArityOpts :=
-  HsToCoq.Err.Build_Default _ (Mk_ArityOpts HsToCoq.Err.default
-                             HsToCoq.Err.default).
+Instance Default__ArityOpts : HsToRocq.Err.Default ArityOpts :=
+  HsToRocq.Err.Build_Default _ (Mk_ArityOpts HsToRocq.Err.default
+                              HsToRocq.Err.default).
 
-Instance Default__ArityEnv : HsToCoq.Err.Default ArityEnv :=
-  HsToCoq.Err.Build_Default _ (AE HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default).
+Instance Default__ArityEnv : HsToRocq.Err.Default ArityEnv :=
+  HsToRocq.Err.Build_Default _ (AE HsToRocq.Err.default HsToRocq.Err.default
+                              HsToRocq.Err.default).
 
 #[global] Definition ao_dicts_cheap (arg_0__ : ArityOpts) :=
   let 'Mk_ArityOpts _ ao_dicts_cheap := arg_0__ in
@@ -271,6 +271,6 @@ Axiom freshEtaId : nat ->
      Core.DmdSig Core.ForAllTyBinder Core.Id Core.IdEnv Core.InScopeSet
      Core.MCoercion Core.MCoercionR Core.Scaled Core.SubDemand Core.Subst Core.Var
      CoreUtils.CheapAppFun GHC.Base.String GHC.Types.Cpr.CprSig
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Err.default
+     HsToRocq.Err.Build_Default HsToRocq.Err.Default HsToRocq.Err.default
      UnVarGraph.UnVarSet Util.HasDebugCallStack
 *)

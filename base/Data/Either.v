@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -28,7 +28,7 @@ Arguments Right {_} {_} _.
 
 (* Midamble *)
 
-(* Eq/Ord for Either -- GHC 9.10 derives using dataToTag# which hs-to-coq can't translate *)
+(* Eq/Ord for Either -- GHC 9.10 derives using dataToTag# which hs-to-rocq can't translate *)
 
 Definition eq_Either {a} {b} `{GHC.Base.Eq_ a} `{GHC.Base.Eq_ b}
   (x y : Either a b) : bool :=

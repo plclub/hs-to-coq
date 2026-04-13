@@ -5,7 +5,7 @@ Require Import GHC.List.
 Require Import Util.
 Require Import Data.Traversable.
 Require Import Data.Functor.Utils.
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 
 Require Import Core.
 Require Import Panic.

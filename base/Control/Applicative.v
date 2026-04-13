@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -16,7 +16,7 @@ Require Control.Arrow.
 Require Control.Category.
 Require Data.Tuple.
 Require GHC.Base.
-Require HsToCoq.Unpeel.
+Require HsToRocq.Unpeel.
 Import Control.Arrow.Notations.
 Import Control.Category.Notations.
 Import GHC.Base.Notations.
@@ -46,8 +46,8 @@ Arguments WrapArrow {_} {_} {_} _.
 (* Converted value declarations: *)
 
 Instance Unpeel_WrappedMonad {m} {a}
-   : HsToCoq.Unpeel.Unpeel (WrappedMonad m a) (m a) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonad WrapMonad.
+   : HsToRocq.Unpeel.Unpeel (WrappedMonad m a) (m a) :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ unwrapMonad WrapMonad.
 
 #[local] Definition Monad__WrappedMonad_op_zgzg__ {inst_m : Type -> Type}
   `{GHC.Base.Monad inst_m}
@@ -252,8 +252,8 @@ Program Instance Applicative__WrappedArrow {a : Type -> Type -> Type} {b : Type}
 (* Skipping definition `Control.Applicative.optional' *)
 
 Instance Unpeel_WrappedArrow {a} {b} {c}
-   : HsToCoq.Unpeel.Unpeel (WrappedArrow a b c) (a b c) :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ unwrapArrow WrapArrow.
+   : HsToRocq.Unpeel.Unpeel (WrappedArrow a b c) (a b c) :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ unwrapArrow WrapArrow.
 
 (* External variables:
      Type Control.Arrow.Arrow Control.Arrow.arr Control.Arrow.op_zazaza__
@@ -263,6 +263,6 @@ Instance Unpeel_WrappedArrow {a} {b} {c}
      GHC.Base.op_z2218U__ GHC.Base.op_zgzg__ GHC.Base.op_zgzg____
      GHC.Base.op_zgzgze__ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__
      GHC.Base.op_zlzd____ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
-     GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ HsToCoq.Unpeel.Build_Unpeel
-     HsToCoq.Unpeel.Unpeel
+     GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ HsToRocq.Unpeel.Build_Unpeel
+     HsToRocq.Unpeel.Unpeel
 *)
