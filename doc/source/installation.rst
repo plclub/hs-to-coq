@@ -5,7 +5,7 @@ Installation
 Latest release
 --------------
 
-`hs-to-coq` is not published on Hackage. Install from source (see below).
+`hs-to-rocq` is not published on Hackage. Install from source (see below).
 
 Development version
 -------------------
@@ -15,17 +15,17 @@ repository includes everything that you need.
  
 .. code-block:: shell
 
-    $ git clone https://github.com/plclub/hs-to-coq.git
-    $ cd hs-to-coq
+    $ git clone https://github.com/plclub/hs-to-rocq.git
+    $ cd hs-to-rocq
 
-The recommended way of building `hs-to-coq` is to use the `stack` tool which you can get from https://docs.haskellstack.org/en/stable/README/. If you
+The recommended way of building `hs-to-rocq` is to use the `stack` tool which you can get from https://docs.haskellstack.org/en/stable/README/. If you
 have not setup stack before
 
 .. code-block:: shell
 
    $ stack setup
 
-To build ``hs-to-coq``
+To build ``hs-to-rocq``
 
 .. code-block:: shell
 
@@ -35,8 +35,8 @@ Coq Requirements
 ----------------
 
 This repository comes with a Coq version of the Haskell `base
-<https://github.com/plclub/hs-to-coq/tree/master/base>`_ library, used by the
-output of ``hs-to-coq``.
+<https://github.com/plclub/hs-to-rocq/tree/master/base>`_ library, used by the
+output of ``hs-to-rocq``.
 
 You must have `Coq 8.20` and `MathComp` (with Hierarchy Builder) to build
 the base library and containers proofs. You can install these tools using
@@ -56,7 +56,7 @@ Once installed, you can build the base library from the project root with
     $ cd base && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
 The directory `base-thy
-<https://github.com/plclub/hs-to-coq/tree/master/base-thy>`_ contains auxiliary
+<https://github.com/plclub/hs-to-rocq/tree/master/base-thy>`_ contains auxiliary
 definitions and lemmas, such as lawful type-class instances. You can build
 these with
 
@@ -64,10 +64,10 @@ these with
 
     $ cd base-thy && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
-Test your hs-to-coq installation
+Test your hs-to-rocq installation
 --------------------------------
 
-To test whether your `hs-to-coq` installation is successful, you can try to
+To test whether your `hs-to-rocq` installation is successful, you can try to
 compile the examples that are distributed with the tool.
 
 Some examples use git submodules. If you only want to **build the
@@ -78,7 +78,7 @@ pre-generated Coq files** (proofs, libraries), a shallow init is enough:
     $ git submodule update --init
 
 If you want to **regenerate Coq modules from Haskell source** (e.g. to test
-edits or work on hs-to-coq itself), you also need the GHC and containers
+edits or work on hs-to-rocq itself), you also need the GHC and containers
 source trees:
 
 .. code-block:: shell

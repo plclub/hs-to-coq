@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -15,8 +15,8 @@ Require Coq.Program.Wf.
 Require Data.Foldable.
 Require GHC.Base.
 Require GHC.List.
-Require HsToCoq.DeferredFix.
-Require HsToCoq.Err.
+Require HsToRocq.DeferredFix.
+Require HsToRocq.Err.
 
 (* Converted type declarations: *)
 
@@ -38,13 +38,13 @@ Arguments MkQueue {_} _ _.
 #[global] Definition queuePutList {a : Type} : list a -> Queue a -> Queue a :=
   fun xs q => Data.Foldable.foldl' (GHC.Base.flip queuePut) q xs.
 
-#[global] Definition queueGet {a} `{HsToCoq.Err.Default (a * Queue a)}
+#[global] Definition queueGet {a} `{HsToRocq.Err.Default (a * Queue a)}
    : Queue a -> a * Queue a :=
-  HsToCoq.DeferredFix.deferredFix1 (fun queueGet (arg_0__ : Queue a) =>
-                                      match arg_0__ with
-                                      | MkQueue ins (cons item rest) => pair item (MkQueue ins rest)
-                                      | MkQueue ins nil => queueGet (MkQueue nil (GHC.List.reverse ins))
-                                      end).
+  HsToRocq.DeferredFix.deferredFix1 (fun queueGet (arg_0__ : Queue a) =>
+                                       match arg_0__ with
+                                       | MkQueue ins (cons item rest) => pair item (MkQueue ins rest)
+                                       | MkQueue ins nil => queueGet (MkQueue nil (GHC.List.reverse ins))
+                                       end).
 
 #[global] Definition queueEmpty {a : Type} : Queue a -> bool :=
   fun '(MkQueue ins outs) =>
@@ -53,5 +53,5 @@ Arguments MkQueue {_} _ _.
 (* External variables:
      Type andb bool cons list nil op_zt__ pair Data.Foldable.foldl'
      Data.Foldable.null GHC.Base.flip GHC.List.reverse
-     HsToCoq.DeferredFix.deferredFix1 HsToCoq.Err.Default
+     HsToRocq.DeferredFix.deferredFix1 HsToRocq.Err.Default
 *)

@@ -1,4 +1,4 @@
-hs-to-coq
+hs-to-rocq
 =========
 
 .. toctree::

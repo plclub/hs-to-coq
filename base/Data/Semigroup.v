@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -23,7 +23,7 @@ Require Data.Traversable.
 Require GHC.Base.
 Require GHC.Num.
 Require GHC.Prim.
-Require HsToCoq.Unpeel.
+Require HsToRocq.Unpeel.
 Import Data.Functor.Notations.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
@@ -1482,20 +1482,20 @@ Program Instance Monoid__WrappedMonoid {m : Type} `{GHC.Base.Monoid m}
 
 (* Skipping definition `Data.Semigroup.mtimesDefault' *)
 
-Instance Unpeel_Min a : HsToCoq.Unpeel.Unpeel (Min a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getMin Mk_Min.
+Instance Unpeel_Min a : HsToRocq.Unpeel.Unpeel (Min a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getMin Mk_Min.
 
-Instance Unpeel_Max a : HsToCoq.Unpeel.Unpeel (Max a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getMax Mk_Max.
+Instance Unpeel_Max a : HsToRocq.Unpeel.Unpeel (Max a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getMax Mk_Max.
 
-Instance Unpeel_First a : HsToCoq.Unpeel.Unpeel (First a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
+Instance Unpeel_First a : HsToRocq.Unpeel.Unpeel (First a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getFirst Mk_First.
 
-Instance Unpeel_Last a : HsToCoq.Unpeel.Unpeel (Last a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
+Instance Unpeel_Last a : HsToRocq.Unpeel.Unpeel (Last a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getLast Mk_Last.
 
-Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
+Instance Unpeel_WrappedMonoid a : HsToRocq.Unpeel.Unpeel (WrappedMonoid a) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
 
 (* External variables:
      Type bool false list negb true Coq.Program.Basics.compose
@@ -1525,5 +1525,5 @@ Instance Unpeel_WrappedMonoid a : HsToCoq.Unpeel.Unpeel (WrappedMonoid a) a :=
      GHC.Base.op_zlztzg____ GHC.Base.op_zsze____ GHC.Base.op_ztzg__
      GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return___
      GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.seq
-     HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
+     HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel
 *)

@@ -3,7 +3,7 @@ include ../../common.mk
 all: coq
 
 RLE.v: RLE.hs edits preamble.v
-	$(HS_TO_COQ) -e edits -p preamble.v -e ../../base/edits RLE.hs -o .
+	$(HS_TO_ROCQ) -e edits -p preamble.v -e ../../base/edits RLE.hs -o .
 
 Makefile.coq: _CoqProject
 	coq_makefile -f _CoqProject -o $@

@@ -1,7 +1,7 @@
 (* DEMAND midamble file. Termination defs and tactics . *)
 
-Require Import HsToCoq.Nat.
-Require Import HsToCoq.Unpeel.
+Require Import HsToRocq.Nat.
+Require Import HsToRocq.Unpeel.
 Require Import Lia.
 
 Ltac solve_not_zero_N := match goal with

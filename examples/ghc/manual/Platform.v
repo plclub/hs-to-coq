@@ -1,6 +1,6 @@
 (* Stub module for Platform *)
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom Platform : Type.
 
-#[global] Instance Default__Platform : HsToCoq.Err.Default Platform. Admitted.
+#[global] Instance Default__Platform : HsToRocq.Err.Default Platform. Admitted.

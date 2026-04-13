@@ -1,2 +1,2 @@
-Require HsToCoq.Nat.
+Require HsToRocq.Nat.
 Require Platform.

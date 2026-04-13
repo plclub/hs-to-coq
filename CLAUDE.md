@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**hs-to-coq** converts Haskell source code to Coq (Gallina) using the GHC API. It is part of the DeepSpec/CoreSpec project. The tool parses Haskell via GHC, applies user-specified "edits" to guide the translation, and pretty-prints valid Coq output.
+**hs-to-rocq** converts Haskell source code to Coq (Gallina) using the GHC API. It is part of the DeepSpec/CoreSpec project. The tool parses Haskell via GHC, applies user-specified "edits" to guide the translation, and pretty-prints valid Coq output.
 
 - **Current target**: GHC 9.10.3, Coq 8.20 (branch `ghc910-coq820`)
 - **Languages**: Haskell (the tool, ~14K LOC in `src/`), Coq (generated output and proofs)
@@ -12,8 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build Commands
 
 ```bash
-stack build                                    # Build hs-to-coq executable
-stack exec hs-to-coq -- -e edits -o output/ Input.hs  # Run on a file
+stack build                                    # Build hs-to-rocq executable
+stack exec hs-to-rocq -- -e edits -o output/ Input.hs  # Run on a file
 make                                           # Build base + base-thy + containers
 make -C examples/base-src vfiles               # Re-generate base/ from Haskell sources
 make -C examples/tests                         # Unit tests (.hs → .v → coqc)
@@ -35,26 +35,26 @@ Use relative path instead of absolute path when `cd` to a directory.
 
 ### Translation Pipeline
 
-1. **Parse & typecheck** Haskell via GHC API (`src/lib/HsToCoq/ProcessFiles.hs`)
-2. **Load edits** from `.edits` files (`src/lib/HsToCoq/Edits/Parser.y`, `Types.hs`)
-3. **Convert** GHC AST → Coq Gallina AST (`src/lib/HsToCoq/ConvertHaskell/`)
-4. **Pretty-print** Gallina to `.v` files (`src/lib/HsToCoq/Coq/Pretty.hs`)
+1. **Parse & typecheck** Haskell via GHC API (`src/lib/HsToRocq/ProcessFiles.hs`)
+2. **Load edits** from `.edits` files (`src/lib/HsToRocq/Edits/Parser.y`, `Types.hs`)
+3. **Convert** GHC AST → Coq Gallina AST (`src/lib/HsToRocq/ConvertHaskell/`)
+4. **Pretty-print** Gallina to `.v` files (`src/lib/HsToRocq/Rocq/Pretty.hs`)
 5. **Output** `.h2ci` interface files for cross-module translation
 
 ### Key Source Directories
 
-- `src/lib/HsToCoq/Coq/Gallina.hs` — Coq AST data types (Term, Sentence, Definition, Inductive, etc.)
-- `src/lib/HsToCoq/Coq/Pretty.hs` — Pretty-printer rendering Gallina AST as Coq source
-- `src/lib/HsToCoq/ConvertHaskell/` — Core conversion engine:
+- `src/lib/HsToRocq/Rocq/Gallina.hs` — Coq AST data types (Term, Sentence, Definition, Inductive, etc.)
+- `src/lib/HsToRocq/Rocq/Pretty.hs` — Pretty-printer rendering Gallina AST as Coq source
+- `src/lib/HsToRocq/ConvertHaskell/` — Core conversion engine:
   - `Expr.hs` — Expression conversion (largest file, ~1700 lines)
   - `Module.hs` — Whole-module conversion
   - `Monad.hs` — Conversion monad carrying edits/renamings/state
   - `Declarations/` — Data types, classes, instances, type synonyms
   - `HsType.hs`, `Pattern.hs`, `Variables.hs` — Type/pattern/variable conversion
-- `src/lib/HsToCoq/Edits/` — Edit DSL parser and types
-- `src/lib/HsToCoq/CLI.hs` — Command-line interface and file processing orchestration
+- `src/lib/HsToRocq/Edits/` — Edit DSL parser and types
+- `src/lib/HsToRocq/CLI.hs` — Command-line interface and file processing orchestration
 - `src/include/ghc-compat.h` — CPP macros for GHC version compatibility (8.4–9.10)
-- `src/lib/HsToCoq/Util/GHC/` — GHC API compatibility wrappers
+- `src/lib/HsToRocq/Util/GHC/` — GHC API compatibility wrappers
 
 ### The Edits System
 
@@ -75,7 +75,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 
 ### Build Plumbing
 
-- `common.mk` — Included by all example Makefiles; defines `HS_TO_COQ` variable (resolves to `stack exec hs-to-coq --`)
+- `common.mk` — Included by all example Makefiles; defines `HS_TO_ROCQ` variable (resolves to `stack exec hs-to-rocq --`)
 - Each Coq directory uses `_CoqProject` + `coq_makefile` to generate its Makefile
 - `.h2ci` files store interface information for cross-module translation
 - `make vfiles` (base-src) skips existing `.v` files — `rm` the target file before running to force regeneration
@@ -97,16 +97,16 @@ Key lemmas: `bin_Desc0` (combine Desc0), `Desc_outside` (f=None outside range), 
 
 ## Translation Principles
 
-**Prefer hs-to-coq + edits over manual definitions.** Follow this priority order:
+**Prefer hs-to-rocq + edits over manual definitions.** Follow this priority order:
 
-1. **Auto-generate with hs-to-coq** — try the default translation first.
+1. **Auto-generate with hs-to-rocq** — try the default translation first.
 2. **Use edits** (`skip`, `rename`, `rewrite`, `order`, `termination`, `equations`, etc.) — guide the translation without replacing it.
-3. **Fix hs-to-coq itself** — if the tool can't handle a case but could be made to, fix the tool rather than working around it.
-4. **`redefine`** — only when the translated output is fundamentally wrong and hs-to-coq cannot reasonably be fixed to handle it.
+3. **Fix hs-to-rocq itself** — if the tool can't handle a case but could be made to, fix the tool rather than working around it.
+4. **`redefine`** — only when the translated output is fundamentally wrong and hs-to-rocq cannot reasonably be fixed to handle it.
 5. **`midamble.v`** — only for definitions that must appear mid-file (e.g., mutual recursion helpers, termination measures) and cannot be expressed via edits.
 6. **Manual files** — last resort, only when the Haskell source has no meaningful Coq translation (e.g., axiomatized types, FFI, GHC internals with no Coq equivalent).
 
-**When unsure whether hs-to-coq can handle a case, ask the user** rather than defaulting to `redefine` or manual definitions. Many cases that seem to require manual intervention can be solved with the right combination of edits or a targeted fix to hs-to-coq.
+**When unsure whether hs-to-rocq can handle a case, ask the user** rather than defaulting to `redefine` or manual definitions. Many cases that seem to require manual intervention can be solved with the right combination of edits or a targeted fix to hs-to-rocq.
 
 ## Test Structure
 
@@ -114,11 +114,11 @@ Key lemmas: `bin_Desc0` (combine Desc0), `Desc_outside` (f=None outside range), 
 - `examples/base-tests/` — Tests requiring the `base/` Coq library to be built first.
 - Test-specific edits/preambles go in `examples/tests/<TestName>/edits` and `<TestName>/preamble.v`.
 
-## CI (`.github/workflows/hs-to-coq.yml`)
+## CI (`.github/workflows/hs-to-rocq.yml`)
 
 Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker, builds base+containers+ghc lib and theories), `tests` (haskell-actions + opam for Coq), `test-translation` (haskell:9.10.3 Docker, verifies base/containers/ghc regeneration matches). Sets `LANG=C.utf8` globally for Unicode support.
 
-**Container job gotcha**: Container jobs use `--allow-different-user` for stack commands (ownership mismatch between host-mounted workspace and container user). For docker-coq-action, use `before_script` with `sudo chown -R coq:coq .` (not `custom_script`, which bypasses permission setup). `common.mk` already includes `--allow-different-user` in the `HS_TO_COQ` variable.
+**Container job gotcha**: Container jobs use `--allow-different-user` for stack commands (ownership mismatch between host-mounted workspace and container user). For docker-coq-action, use `before_script` with `sudo chown -R coq:coq .` (not `custom_script`, which bypasses permission setup). `common.mk` already includes `--allow-different-user` in the `HS_TO_ROCQ` variable.
 
 **test-translation job**: Uses `git submodule update --init examples/ghc/ghc` (not `submodules: recursive`) — GHC has ~20 nested submodules that are not needed.
 
@@ -128,7 +128,7 @@ Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/m
 
 ## GHC Version Compatibility
 
-Cross-version compatibility is managed via CPP macros in `src/include/ghc-compat.h`. Key macros: `NOEXT`/`NOEXTP` (for "Trees That Grow" extension fields), `GHC_910()`, `GHC_900()` (version-gated code blocks). When updating for a new GHC version, these macros and the wrappers in `src/lib/HsToCoq/Util/GHC/` are the primary adaptation points.
+Cross-version compatibility is managed via CPP macros in `src/include/ghc-compat.h`. Key macros: `NOEXT`/`NOEXTP` (for "Trees That Grow" extension fields), `GHC_910()`, `GHC_900()` (version-gated code blocks). When updating for a new GHC version, these macros and the wrappers in `src/lib/HsToRocq/Util/GHC/` are the primary adaptation points.
 
 ## GHC 9.10 Migration (ghc910-coq820 branch)
 
@@ -136,7 +136,7 @@ GHC 9.10 moved most `base` implementations to `ghc-internal`. Source files are n
 
 ### Modules that can't be regenerated
 These must use old versions from git master with manual fixes:
-- `Data/Functor/Classes` — hs-to-coq generates valid output, but Coq can't compile it: GHC 9.10 added quantified superclass constraints to Eq2/Ord2 (`forall a. Eq a => Eq1 (f a)`) that Coq can't resolve in the CPS encoding. The manual version has the same compilation failure. Nothing downstream imports Eq2/Ord2 so this is tolerated.
+- `Data/Functor/Classes` — hs-to-rocq generates valid output, but Coq can't compile it: GHC 9.10 added quantified superclass constraints to Eq2/Ord2 (`forall a. Eq a => Eq1 (f a)`) that Coq can't resolve in the CPS encoding. The manual version has the same compilation failure. Nothing downstream imports Eq2/Ord2 so this is tolerated.
 
 - **`(->)` TyCon in GHC 9.10**: `FunTyCon` reports 0 `tyConBinders`. `Type.hs` detects `GHC.Prim.arrow` with null binders → empty args to `convertTyConApp`. `lookupInstance` uses `termHead` for flexible matching.
 - `_CoqProject` ordering matters: Identity/Traversable must be listed early (EARLY_GHC_INTERNAL_MODULES in Makefile) to avoid Coq typeclass resolution stack overflow
@@ -165,7 +165,7 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **Adding Gallina AST constructors**: New `Sentence` variants need cases in `Pretty.hs`, `FreeVars.hs`, `Subst.hs`. Export `(..)` for record types used across modules.
 
 ### GHC example (examples/ghc/)
-Translated from GHC 9.10.3. All lib/*.v and 29 theories/*.v compile. `make clean && make` regenerates lib/ (removes dir, rebuilds via hs-to-coq + lndir for ~48 manual files). Edit `manual/*.v` directly (not `lib/*.v` symlinks).
+Translated from GHC 9.10.3. All lib/*.v and 29 theories/*.v compile. `make clean && make` regenerates lib/ (removes dir, rebuilds via hs-to-rocq + lndir for ~48 manual files). Edit `manual/*.v` directly (not `lib/*.v` symlinks).
 
 Key GHC 9.10 type changes: `Alt` uses `Mk_Alt` constructor (not tuple); `Mk_Id` has 7 fields (`varMult : Mult` added 4th); `realUnique` is `Unique` not `N`; `Var` has single constructor `Mk_Id` (no `TyVar`); `cse_bind` has 5 args; `lookupIdSubst` dropped `String` doc param; State monad is bare function type; `mkVarApps` uses `foldl'`. GoDom: use `alt_rhs` projection (strict positivity).
 

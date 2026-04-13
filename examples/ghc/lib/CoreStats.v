@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -19,7 +19,7 @@ Require Import Data.Foldable.
 Require Import GHC.Base.
 Require Import GHC.Num.
 Require GHC.Types.Tickish.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Id.
 
 (* Converted type declarations: *)
@@ -28,9 +28,9 @@ Inductive CoreStats : Type :=
   | CS (cs_tm : nat) (cs_ty : nat) (cs_co : nat) (cs_vb : nat) (cs_jb : nat)
    : CoreStats.
 
-Instance Default__CoreStats : HsToCoq.Err.Default CoreStats :=
-  HsToCoq.Err.Build_Default _ (CS HsToCoq.Err.default HsToCoq.Err.default
-                             HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+Instance Default__CoreStats : HsToRocq.Err.Default CoreStats :=
+  HsToRocq.Err.Build_Default _ (CS HsToRocq.Err.default HsToRocq.Err.default
+                              HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Definition cs_co (arg_0__ : CoreStats) :=
   let 'CS _ _ cs_co _ _ := arg_0__ in
@@ -233,6 +233,6 @@ Axiom tickSize : GHC.Types.Tickish.CoreTickish -> nat.
      Mk_Var NonRec Rec Var bool foldl' isTyVar list map nat op_z2218U__ op_zp__
      op_zt__ orb pair sum varType AxiomatizedTypes.Coercion AxiomatizedTypes.Type_
      BasicTypes.NotTopLevel BasicTypes.TopLevel BasicTypes.TopLevelFlag
-     BasicTypes.isTopLevel GHC.Types.Tickish.CoreTickish HsToCoq.Err.Build_Default
-     HsToCoq.Err.Default HsToCoq.Err.default Id.isJoinId
+     BasicTypes.isTopLevel GHC.Types.Tickish.CoreTickish HsToRocq.Err.Build_Default
+     HsToRocq.Err.Default HsToRocq.Err.default Id.isJoinId
 *)

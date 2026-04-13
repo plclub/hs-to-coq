@@ -1,24 +1,24 @@
 (* Default values *)
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 #[global] Instance Default__SrcSpan : Default SrcSpan := Build_Default _ (UnhelpfulSpan default).
 
 #[global] Instance Default__RealSrcLoc : Default RealSrcLoc :=
   Build_Default _ (ASrcLoc (@default _ FastString.instance_FastString_Default)
-                   HsToCoq.Err.default HsToCoq.Err.default).
+                   HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Instance Default__RealSrcSpan : Default RealSrcSpan :=
   Build_Default _ (RealSrcSpan' (@default _ FastString.instance_FastString_Default)
-                   HsToCoq.Err.default  HsToCoq.Err.default
-                   HsToCoq.Err.default HsToCoq.Err.default).
+                   HsToRocq.Err.default  HsToRocq.Err.default
+                   HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Instance Default__BufSpan : Default BufSpan :=
-  Build_Default _ (Mk_BufSpan HsToCoq.Err.default HsToCoq.Err.default).
+  Build_Default _ (Mk_BufSpan HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Instance Default__PsSpan : Default PsSpan :=
-  Build_Default _ (Mk_PsSpan HsToCoq.Err.default HsToCoq.Err.default).
+  Build_Default _ (Mk_PsSpan HsToRocq.Err.default HsToRocq.Err.default).
 
 #[global] Instance Default__PsLoc : Default PsLoc :=
-  Build_Default _ (Mk_PsLoc HsToCoq.Err.default HsToCoq.Err.default).
+  Build_Default _ (Mk_PsLoc HsToRocq.Err.default HsToRocq.Err.default).
 
 
 (* Field accessors for redefined BufSpan *)

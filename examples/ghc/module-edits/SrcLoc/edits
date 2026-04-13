@@ -18,7 +18,7 @@ skip SrcLoc.Default__PsSpan
 skip SrcLoc.Default__PsLoc
 skip SrcLoc.Default__BufSpan
 
-# GHC 9.10: BufSpan has two fields but hs-to-coq drops the second one (UNPACK issue)
+# GHC 9.10: BufSpan has two fields but hs-to-rocq drops the second one (UNPACK issue)
 redefine Inductive SrcLoc.BufSpan : Type := | Mk_BufSpan (bufSpanStart : BufPos) (bufSpanEnd : BufPos) : BufSpan.
 order SrcLoc.BufPos SrcLoc.BufSpan
 

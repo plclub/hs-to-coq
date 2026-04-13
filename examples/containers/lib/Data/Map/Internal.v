@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -33,8 +33,8 @@ Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
 Require GHC.Prim.
-Require HsToCoq.DeferredFix.
-Require HsToCoq.Err.
+Require HsToRocq.DeferredFix.
+Require HsToRocq.Err.
 Require Nat.
 Require Utils.Containers.Internal.PtrEquality.
 Import Data.Functor.Notations.
@@ -125,8 +125,8 @@ Arguments AltAdj {_} {_} _.
 
 Arguments AltSame {_} {_}.
 
-Instance Default__AreWeStrict : HsToCoq.Err.Default AreWeStrict :=
-  HsToCoq.Err.Build_Default _ Strict.
+Instance Default__AreWeStrict : HsToRocq.Err.Default AreWeStrict :=
+  HsToRocq.Err.Build_Default _ Strict.
 
 #[global] Definition matchedKey {f} {k} {x} {y} {z} (arg_0__
     : WhenMatched f k x y z) :=
@@ -157,7 +157,7 @@ Fixpoint map_size {a} {b} (s : Map a b) : nat :=
   | Bin _ _ _ s1 s2 => 1 + map_size s1 + map_size s2
   end.
 
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 
 Instance Map_Default {k}{v} : Default (Map k v) :=
   Build_Default _ Tip.
@@ -2413,38 +2413,38 @@ Fixpoint mapAccumRWithKey {a : Type} {k : Type} {b : Type} {c : Type} (arg_0__
             | kx, cons (pair ky _) _ => kx GHC.Base.>= ky
             end in
         let create :=
-          HsToCoq.DeferredFix.deferredFix2 (fun create arg_11__ arg_12__ =>
-                                              match arg_11__, arg_12__ with
-                                              | _, nil => pair (pair Tip nil) nil
-                                              | s, (cons xp xss as xs) =>
-                                                  if s GHC.Base.== #1 : bool
-                                                  then let 'pair kx x := xp in
-                                                       if not_ordered kx xss : bool
-                                                       then pair (pair (Bin #1 kx x Tip Tip) nil) xss else
-                                                       pair (pair (Bin #1 kx x Tip Tip) xss) nil else
-                                                  match create (Data.Bits.shiftR s #1) xs with
-                                                  | (pair (pair _ nil) _ as res) => res
-                                                  | pair (pair l (cons (pair ky y) nil)) zs =>
-                                                      pair (pair (insertMax ky y l) nil) zs
-                                                  | pair (pair l (cons (pair ky y) yss as ys)) _ =>
-                                                      if not_ordered ky yss : bool then pair (pair l nil) ys else
-                                                      let 'pair (pair r zs) ws := create (Data.Bits.shiftR s #1) yss in
-                                                      pair (pair (link ky y l r) zs) ws
-                                                  end
-                                              end) in
+          HsToRocq.DeferredFix.deferredFix2 (fun create arg_11__ arg_12__ =>
+                                               match arg_11__, arg_12__ with
+                                               | _, nil => pair (pair Tip nil) nil
+                                               | s, (cons xp xss as xs) =>
+                                                   if s GHC.Base.== #1 : bool
+                                                   then let 'pair kx x := xp in
+                                                        if not_ordered kx xss : bool
+                                                        then pair (pair (Bin #1 kx x Tip Tip) nil) xss else
+                                                        pair (pair (Bin #1 kx x Tip Tip) xss) nil else
+                                                   match create (Data.Bits.shiftR s #1) xs with
+                                                   | (pair (pair _ nil) _ as res) => res
+                                                   | pair (pair l (cons (pair ky y) nil)) zs =>
+                                                       pair (pair (insertMax ky y l) nil) zs
+                                                   | pair (pair l (cons (pair ky y) yss as ys)) _ =>
+                                                       if not_ordered ky yss : bool then pair (pair l nil) ys else
+                                                       let 'pair (pair r zs) ws := create (Data.Bits.shiftR s #1) yss in
+                                                       pair (pair (link ky y l r) zs) ws
+                                                   end
+                                               end) in
         let go :=
-          HsToCoq.DeferredFix.deferredFix3 (fun go arg_28__ arg_29__ arg_30__ =>
-                                              match arg_28__, arg_29__, arg_30__ with
-                                              | _, t, nil => t
-                                              | _, t, cons (pair kx x) nil => insertMax kx x t
-                                              | s, l, (cons (pair kx x) xss as xs) =>
-                                                  if not_ordered kx xss : bool then fromList' l xs else
-                                                  match create s xss with
-                                                  | pair (pair r ys) nil =>
-                                                      go (Data.Bits.shiftL s #1) (link kx x l r) ys
-                                                  | pair (pair r _) ys => fromList' (link kx x l r) ys
-                                                  end
-                                              end) in
+          HsToRocq.DeferredFix.deferredFix3 (fun go arg_28__ arg_29__ arg_30__ =>
+                                               match arg_28__, arg_29__, arg_30__ with
+                                               | _, t, nil => t
+                                               | _, t, cons (pair kx x) nil => insertMax kx x t
+                                               | s, l, (cons (pair kx x) xss as xs) =>
+                                                   if not_ordered kx xss : bool then fromList' l xs else
+                                                   match create s xss with
+                                                   | pair (pair r ys) nil =>
+                                                       go (Data.Bits.shiftL s #1) (link kx x l r) ys
+                                                   | pair (pair r _) ys => fromList' (link kx x l r) ys
+                                                   end
+                                               end) in
         if not_ordered kx0 xs0 : bool then fromList' (Bin #1 kx0 x0 Tip Tip) xs0 else
         go (#1 : GHC.Num.Int) (Bin #1 kx0 x0 Tip Tip) xs0
     end.
@@ -2795,7 +2795,7 @@ End Notations.
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Base.pure GHC.Err.error
      GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
      GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.coerce GHC.Prim.seq
-     HsToCoq.DeferredFix.deferredFix2 HsToCoq.DeferredFix.deferredFix3
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default Nat.add
+     HsToRocq.DeferredFix.deferredFix2 HsToRocq.DeferredFix.deferredFix3
+     HsToRocq.Err.Build_Default HsToRocq.Err.Default Nat.add
      Utils.Containers.Internal.PtrEquality.ptrEq
 *)

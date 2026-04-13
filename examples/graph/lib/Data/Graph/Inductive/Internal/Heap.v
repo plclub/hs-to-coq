@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -23,7 +23,7 @@ Require Data.Foldable.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Err.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require List.
 Require Nat.
 Import GHC.Base.Notations.
@@ -79,7 +79,7 @@ Fixpoint mergeAll {a : Type} {b : Type} `{GHC.Base.Ord a} (arg_0__
 #[global] Definition isEmpty {a : Type} {b : Type} : Heap a b -> bool :=
   fun arg_0__ => match arg_0__ with | Empty => true | _ => false end.
 
-#[global] Definition findMin {a} {b} `{HsToCoq.Err.Default (a * b)}
+#[global] Definition findMin {a} {b} `{HsToRocq.Err.Default (a * b)}
    : Heap a b -> a * b :=
   fun arg_0__ =>
     match arg_0__ with
@@ -95,10 +95,8 @@ Fixpoint mergeAll {a : Type} {b : Type} `{GHC.Base.Ord a} (arg_0__
     | Node _ _ hs => mergeAll hs
     end.
 
-#[global] Definition splitMin {a} {b} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a
-                                                                               *
-                                                                               b *
-                                                                               Heap a b)}
+#[global] Definition splitMin {a} {b} `{GHC.Base.Ord a} `{HsToRocq.Err.Default
+  (a * b * Heap a b)}
    : Heap a b -> a * b * Heap a b :=
   fun arg_0__ =>
     match arg_0__ with
@@ -154,16 +152,17 @@ Proof.
   intros. assert (A: h <> Empty) by auto; apply deleteMin_size in A; lia.
 Qed.
 
-Program Fixpoint toList {a} {b} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a * b)}
-                        (arg_0__ : Heap a b) {measure (size arg_0__)} : list (a * b)
+Program Fixpoint toList {a} {b} `{GHC.Base.Ord a} `{HsToRocq.Err.Default (a *
+                                                                          b)} (arg_0__ : Heap a b) {measure (size
+                         arg_0__)} : list (a * b)
   := match arg_0__ with
      | Empty => nil
      | h => let 'pair x r := pair (findMin h) (deleteMin h) in cons x (toList r)
      end.
 Solve Obligations with ((Tactics.program_simpl; apply toList_termination; auto)).
 
-#[global] Definition heapsort {a} `{GHC.Base.Ord a} `{HsToCoq.Err.Default (a *
-                                                                           a)}
+#[global] Definition heapsort {a} `{GHC.Base.Ord a} `{HsToRocq.Err.Default (a *
+                                                                            a)}
    : list a -> list a :=
   GHC.Base.map Data.Tuple.fst GHC.Base.∘
   (toList GHC.Base.∘ (build GHC.Base.∘ GHC.Base.map (fun x => pair x x))).
@@ -171,6 +170,6 @@ Solve Obligations with ((Tactics.program_simpl; apply toList_termination; auto))
 (* External variables:
      Type bool cons false list nil op_ze__ op_zl__ op_zlzg__ op_zp__ op_zt__ pair
      plus true Data.Foldable.foldr Data.Tuple.fst GHC.Base.Ord GHC.Base.map
-     GHC.Base.op_z2218U__ GHC.Base.op_zl__ GHC.Err.error HsToCoq.Err.Default
+     GHC.Base.op_z2218U__ GHC.Base.op_zl__ GHC.Err.error HsToRocq.Err.Default
      List.fold_right List.map Nat.add
 *)

@@ -4,9 +4,9 @@ No user interventions were needed during this task.
 
 ## Summary of changes
 
-### hs-to-coq code generator changes
-1. **`src/lib/HsToCoq/Coq/Gallina/Util.hs`**: Added `toExplicitBinder` function (converts implicit binders to explicit)
-2. **`src/lib/HsToCoq/ConvertHaskell/Declarations/Instances.hs`**: Added `quantifyExplicit` and used it in both CPS record and simple class paths to avoid `fun {a : Type}` inside `{| ... |}`
+### hs-to-rocq code generator changes
+1. **`src/lib/HsToRocq/Rocq/Gallina/Util.hs`**: Added `toExplicitBinder` function (converts implicit binders to explicit)
+2. **`src/lib/HsToRocq/ConvertHaskell/Declarations/Instances.hs`**: Added `quantifyExplicit` and used it in both CPS record and simple class paths to avoid `fun {a : Type}` inside `{| ... |}`
 
 ### Manual/edit file fixes for "Require inside Module/Section"
 3. **`examples/base-src/manual/GHC/Num.v`**: Moved `Require Export BinInt.` before `Module Notations.`

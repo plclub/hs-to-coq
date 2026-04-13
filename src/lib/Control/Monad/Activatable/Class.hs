@@ -11,7 +11,7 @@ module Control.Monad.Activatable.Class (
   ActivationError(..), Switched(..)
 ) where
 
-import HsToCoq.Util.Functor
+import HsToRocq.Util.Functor
 import Control.Monad.Error.Class
 import Control.Monad.Trans
 

@@ -1,5 +1,5 @@
 Require Import GHC.Base.
-Require Import HsToCoq.DeferredFix.
+Require Import HsToRocq.DeferredFix.
 Require Import Data.Semigroup.
 Import GHC.Base.Notations.
 Require Import Proofs.GHC.Base.

@@ -1,6 +1,6 @@
 (* Stub module for GHC.StgToCmm.Types *)
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom LambdaFormInfo : Type.
 
-#[global] Instance Default__LambdaFormInfo : HsToCoq.Err.Default LambdaFormInfo. Admitted.
+#[global] Instance Default__LambdaFormInfo : HsToRocq.Err.Default LambdaFormInfo. Admitted.

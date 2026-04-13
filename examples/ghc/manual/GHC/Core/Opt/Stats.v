@@ -1,8 +1,8 @@
 (* Stub module for GHC.Core.Opt.Stats *)
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom SimplCount : Type.
 Axiom defaultSimplCount : SimplCount.
 
-#[global] Instance Default__SimplCount : HsToCoq.Err.Default SimplCount :=
-  HsToCoq.Err.Build_Default _ defaultSimplCount.
+#[global] Instance Default__SimplCount : HsToRocq.Err.Default SimplCount :=
+  HsToRocq.Err.Build_Default _ defaultSimplCount.

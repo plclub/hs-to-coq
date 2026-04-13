@@ -60,7 +60,7 @@ Qed.
 (**
 In this module, we prove that the exitification pass preserves the various
 invariants of Core. But first we need to do some yak-shaving to deal
-with the kind of definitions that we get out of hs-to-coq here.
+with the kind of definitions that we get out of hs-to-rocq here.
 *)
 
 

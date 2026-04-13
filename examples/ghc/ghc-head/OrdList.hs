@@ -1,4 +1,4 @@
--- Simplified OrdList without UnboxedTuples/UnboxedSums for hs-to-coq
+-- Simplified OrdList without UnboxedTuples/UnboxedSums for hs-to-rocq
 -- Based on GHC 9.10 GHC.Data.OrdList
 module GHC.Data.OrdList (
         OrdList,

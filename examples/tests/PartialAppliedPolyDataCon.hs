@@ -1,6 +1,6 @@
 module PartialAppliedPolyDataCon where
 
--- See https://github.com/antalsz/hs-to-coq/issues/7
+-- See https://github.com/antalsz/hs-to-rocq/issues/7
 
 data Foo a = MkFoo a
 

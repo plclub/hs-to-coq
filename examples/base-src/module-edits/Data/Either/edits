@@ -1,4 +1,4 @@
-# GHC 9.10: Eq/Ord for Either derived using dataToTag# which hs-to-coq can't translate
+# GHC 9.10: Eq/Ord for Either derived using dataToTag# which hs-to-rocq can't translate
 # Skip generated versions; defined manually in midamble
 skip Data.Either.Eq___Either_op_zeze__
 skip Data.Either.Eq___Either_op_zsze__

@@ -5,7 +5,7 @@ COQFILES=Simple.v
 all: coq
 
 %.v: %.hs Makefile
-	$(HS_TO_COQ) -e ../../base/edits $*.hs -o .
+	$(HS_TO_ROCQ) -e ../../base/edits $*.hs -o .
 
 _CoqProject: Makefile
 	> $@

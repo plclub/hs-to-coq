@@ -52,22 +52,22 @@ Fixpoint size_AnnExpr' {a}{b} (e: AnnExpr' a b) :=
 
 (* ---------------------------------- *)
 
-#[global] Instance Default__Expr {b} : HsToCoq.Err.Default (Expr b) :=
-  HsToCoq.Err.Build_Default _ (Mk_Var HsToCoq.Err.default).
+#[global] Instance Default__Expr {b} : HsToRocq.Err.Default (Expr b) :=
+  HsToRocq.Err.Build_Default _ (Mk_Var HsToRocq.Err.default).
 
 (* Default__Tickish removed: Tickish is now GHC.Types.Tickish.CoreTickish (axiomatized) *)
 
-#[global] Instance Default_TaggedBndr {t}`{HsToCoq.Err.Default t} : HsToCoq.Err.Default (TaggedBndr t) :=
-  HsToCoq.Err.Build_Default _ (TB HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default_TaggedBndr {t}`{HsToRocq.Err.Default t} : HsToRocq.Err.Default (TaggedBndr t) :=
+  HsToRocq.Err.Build_Default _ (TB HsToRocq.Err.default HsToRocq.Err.default).
 
-#[global] Instance Default__AnnExpr' {a}{b} : HsToCoq.Err.Default (AnnExpr' a b) :=
-  HsToCoq.Err.Build_Default _ (AnnVar HsToCoq.Err.default). 
+#[global] Instance Default__AnnExpr' {a}{b} : HsToRocq.Err.Default (AnnExpr' a b) :=
+  HsToRocq.Err.Build_Default _ (AnnVar HsToRocq.Err.default). 
 
-#[global] Instance Default__AnnBind {a}{b} : HsToCoq.Err.Default (AnnBind a b) :=
-  HsToCoq.Err.Build_Default _ (AnnRec HsToCoq.Err.default). 
+#[global] Instance Default__AnnBind {a}{b} : HsToRocq.Err.Default (AnnBind a b) :=
+  HsToRocq.Err.Build_Default _ (AnnRec HsToRocq.Err.default). 
 
-#[global] Instance Default__Bind {b} : HsToCoq.Err.Default (Bind b) :=
-  HsToCoq.Err.Build_Default _ (Rec HsToCoq.Err.default). 
+#[global] Instance Default__Bind {b} : HsToRocq.Err.Default (Bind b) :=
+  HsToRocq.Err.Build_Default _ (Rec HsToRocq.Err.default). 
 
 (* Default__CoreVect removed: CoreVect doesn't exist in GHC 9.10 *)
 
@@ -107,7 +107,7 @@ Definition collectArgs {b : Type} : Expr b -> (Expr b * list (Expr b))%type :=
 
 (* See comments in CoreSyn/edits file. We can't use termination edits for collect. *)
 
-Definition collectNAnnBndrs {bndr} {annot}`{HsToCoq.Err.Default annot}
+Definition collectNAnnBndrs {bndr} {annot}`{HsToRocq.Err.Default annot}
     : nat -> AnnExpr bndr annot -> (list bndr * AnnExpr bndr annot)%type :=
           fun orig_n e =>
             let fix collect (arg_0__:nat) (arg_1__ : list bndr) (arg_2__:AnnExpr bndr annot) :=

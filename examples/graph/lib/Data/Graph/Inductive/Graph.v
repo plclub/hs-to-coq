@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -34,7 +34,7 @@ Require GHC.List.
 Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Tuple.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require String.
 Import Data.OldList.Notations.
 Import GHC.Base.Notations.
@@ -390,7 +390,7 @@ Solve Obligations with ((Tactics.program_simpl; eapply matchAny_decr_size; try (
    : LNode a -> gr a b -> gr a b :=
   fun '(pair v l) => (_&_ (pair (pair (pair nil v) l) nil)).
 
-#[global] Definition insEdge {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default
+#[global] Definition insEdge {gr} {b} {a} `{DynGraph gr} `{HsToRocq.Err.Default
   (Context a b)}
    : LEdge b -> gr a b -> gr a b :=
   fun arg_0__ arg_1__ =>
@@ -468,7 +468,7 @@ Infix ".:" := (op_ziZC__) (at level 99).
    : list (LNode a) -> gr a b -> gr a b :=
   fun vs g => Data.Foldable.foldl' (GHC.Base.flip insNode) g vs.
 
-#[global] Definition insEdges {gr} {b} {a} `{DynGraph gr} `{HsToCoq.Err.Default
+#[global] Definition insEdges {gr} {b} {a} `{DynGraph gr} `{HsToRocq.Err.Default
   (Context a b)}
    : list (LEdge b) -> gr a b -> gr a b :=
   fun es g => Data.Foldable.foldl' (GHC.Base.flip insEdge) g es.
@@ -519,7 +519,7 @@ Infix ".:" := (op_ziZC__) (at level 99).
     let vs' := Data.IntSet.Internal.fromList vs in
     nfilter (GHC.Prim.rightSection Data.IntSet.Internal.member vs').
 
-#[global] Definition context {gr} {a} {b} `{Graph gr} `{HsToCoq.Err.Default
+#[global] Definition context {gr} {a} {b} `{Graph gr} `{HsToRocq.Err.Default
   (Context a b)}
    : gr a b -> Node -> Context a b :=
   fun g v =>
@@ -620,8 +620,8 @@ Infix ".:" := (op_ziZC__) (at level 99).
   fun '(pair (pair (pair p _) _) s) =>
     GHC.List.length p GHC.Num.+ GHC.List.length s.
 
-#[global] Definition deg {gr} {a} {b} `{Graph gr} `{HsToCoq.Err.Default (Context
-                                                                         a b)}
+#[global] Definition deg {gr} {a} {b} `{Graph gr} `{HsToRocq.Err.Default
+  (Context a b)}
    : gr a b -> Node -> GHC.Num.Int :=
   op_ziZC__ deg' context.
 
@@ -735,5 +735,5 @@ End Notations.
      GHC.Base.id GHC.Base.map GHC.Base.op_z2218U__ GHC.Base.op_zeze__
      GHC.Base.op_zsze__ GHC.Err.error GHC.List.elem GHC.List.filter GHC.List.length
      GHC.Num.Int GHC.Num.op_zp__ GHC.Prim.rightSection GHC.Tuple.pair2
-     HsToCoq.Err.Default String.EmptyString
+     HsToRocq.Err.Default String.EmptyString
 *)

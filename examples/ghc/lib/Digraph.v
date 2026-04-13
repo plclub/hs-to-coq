@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -16,7 +16,7 @@ Require Data.IntSet.Internal.
 Require Data.Map.Internal.
 Require Data.Set.Internal.
 Require GHC.Base.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require IntMap.
 Require Unique.
 
@@ -50,8 +50,8 @@ Arguments DigraphNode {_} {_} _ _ _.
 
 Arguments Mk_Edge {_} _ _.
 
-Instance Default__EdgeType : HsToCoq.Err.Default EdgeType :=
-  HsToCoq.Err.Build_Default _ Forward.
+Instance Default__EdgeType : HsToRocq.Err.Default EdgeType :=
+  HsToRocq.Err.Build_Default _ Forward.
 
 #[global] Definition node_dependencies {key} {payload} (arg_0__
     : Node key payload) :=
@@ -189,5 +189,5 @@ Axiom graphFromVerticesAndAdjacency : forall {key : Type},
 (* External variables:
      Type bool list nat op_zt__ option Data.IntSet.Internal.IntSet
      Data.Map.Internal.Map Data.Set.Internal.Set_ GHC.Base.Functor GHC.Base.Ord
-     HsToCoq.Err.Build_Default HsToCoq.Err.Default IntMap.IntMap Unique.Uniquable
+     HsToRocq.Err.Build_Default HsToRocq.Err.Default IntMap.IntMap Unique.Uniquable
 *)

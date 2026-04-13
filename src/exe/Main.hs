@@ -1,8 +1,8 @@
 module Main (main) where
 
 import GHC.IO.Encoding (setLocaleEncoding, utf8)
-import HsToCoq.Util.GHC
-import HsToCoq.CLI
+import HsToRocq.Util.GHC
+import HsToRocq.CLI
 
 main :: IO ()
 main = do

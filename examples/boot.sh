@@ -73,7 +73,7 @@ esac
 
 cd $(dirname $0)
 
-if [ -z "$NO_BUILD_HS_TO_COQ" ] && which stack >/dev/null
+if [ -z "$NO_BUILD_HS_TO_ROCQ" ] && which stack >/dev/null
 then
   echo "Rebuilding the tool if necessary"
   stack build

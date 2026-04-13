@@ -36,7 +36,7 @@ Require Import Lia.
 
 (* Make sure that we don't try to reduce any strings to normal form. *)
 Opaque Base.hs_string__.
-Opaque HsToCoq.Err.default.
+Opaque HsToRocq.Err.default.
 
 Open Scope nat_scope.
 Set Bullet Behavior "Strict Subproofs".

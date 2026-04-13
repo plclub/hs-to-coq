@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Converted imports: *)
 
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 (* Converted type declarations: *)
 
@@ -36,17 +36,17 @@ Inductive Role : Type :=
 
 Inductive Boxity : Type := | Boxed : Boxity | Unboxed : Boxity.
 
-Instance Default__SrcUnpackedness : HsToCoq.Err.Default SrcUnpackedness :=
-  HsToCoq.Err.Build_Default _ SrcUnpack.
+Instance Default__SrcUnpackedness : HsToRocq.Err.Default SrcUnpackedness :=
+  HsToRocq.Err.Build_Default _ SrcUnpack.
 
-Instance Default__SrcStrictness : HsToCoq.Err.Default SrcStrictness :=
-  HsToCoq.Err.Build_Default _ SrcLazy.
+Instance Default__SrcStrictness : HsToRocq.Err.Default SrcStrictness :=
+  HsToRocq.Err.Build_Default _ SrcLazy.
 
-Instance Default__Role : HsToCoq.Err.Default Role :=
-  HsToCoq.Err.Build_Default _ Nominal.
+Instance Default__Role : HsToRocq.Err.Default Role :=
+  HsToRocq.Err.Build_Default _ Nominal.
 
-Instance Default__Boxity : HsToCoq.Err.Default Boxity :=
-  HsToCoq.Err.Build_Default _ Boxed.
+Instance Default__Boxity : HsToRocq.Err.Default Boxity :=
+  HsToRocq.Err.Build_Default _ Boxed.
 
 (* Midamble *)
 
@@ -80,5 +80,5 @@ Program Instance Eq___Role : GHC.Base.Eq_ Role :=
   fun arg_0__ => match arg_0__ with | Boxed => true | Unboxed => false end.
 
 (* External variables:
-     bool false nat true HsToCoq.Err.Build_Default HsToCoq.Err.Default
+     bool false nat true HsToRocq.Err.Build_Default HsToRocq.Err.Default
 *)

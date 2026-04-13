@@ -7,7 +7,7 @@
 module Control.Monad.Trans.Counter (CounterT(), runCounterT, Counter, runCounter, MonadCounter(..)) where
 
 import Numeric.Natural
-import HsToCoq.Util.GHC.Exception ()
+import HsToRocq.Util.GHC.Exception ()
 import Control.Monad.IO.Class
 import Control.Monad.State.Strict
 

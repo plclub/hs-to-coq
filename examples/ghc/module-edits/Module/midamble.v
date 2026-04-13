@@ -1,5 +1,5 @@
-Require Import HsToCoq.Err.
-Require Import HsToCoq.Unpeel.
+Require Import HsToRocq.Err.
+Require Import HsToRocq.Unpeel.
 Require Import GHC.Base.
 
 #[global] Instance Default__InstalledUnitId : Default InstalledUnitId :=

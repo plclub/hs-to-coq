@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -26,8 +26,8 @@ Require Data.Maybe.
 Require Data.Tuple.
 Require GHC.Base.
 Require GHC.Num.
-Require HsToCoq.Err.
-Require HsToCoq.Wf.
+Require HsToRocq.Err.
+Require HsToRocq.Wf.
 Require Utils.Containers.Internal.BitUtil.
 Import Data.Bits.Notations.
 Import GHC.Base.Notations.
@@ -55,8 +55,8 @@ Inductive IntSet : Type :=
   | Tip : Prefix -> BitMap -> IntSet
   | Nil : IntSet.
 
-Instance Default__IntSet : HsToCoq.Err.Default IntSet :=
-  HsToCoq.Err.Build_Default _ Nil.
+Instance Default__IntSet : HsToRocq.Err.Default IntSet :=
+  HsToRocq.Err.Build_Default _ Nil.
 
 (* Midamble *)
 
@@ -260,20 +260,20 @@ Program Instance Eq___IntSet : GHC.Base.Eq_ IntSet :=
      (Coq.Numbers.BinNums.N -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
-      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                           Coq.NArith.BinNat.N.to_nat arg_0__) _ (fun arg_0__ arg_1__ go =>
-                           match arg_0__, arg_1__ with
-                           | num_2__, acc =>
-                               if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
-                               match arg_0__, arg_1__ with
-                               | bm, acc =>
-                                   let bitmask := Utils.Containers.Internal.BitUtil.lowestBitMask bm in
-                                   let bi := indexOfTheOnlyBit bitmask in
-                                   go (Data.Bits.xor bm bitmask) ((f ((prefix GHC.Num.+ (#64 GHC.Num.- #1))
-                                                                      GHC.Num.-
-                                                                      bi)) acc)
-                               end
-                           end) in
+      HsToRocq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                            Coq.NArith.BinNat.N.to_nat arg_0__) _ (fun arg_0__ arg_1__ go =>
+                            match arg_0__, arg_1__ with
+                            | num_2__, acc =>
+                                if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+                                match arg_0__, arg_1__ with
+                                | bm, acc =>
+                                    let bitmask := Utils.Containers.Internal.BitUtil.lowestBitMask bm in
+                                    let bi := indexOfTheOnlyBit bitmask in
+                                    go (Data.Bits.xor bm bitmask) ((f ((prefix GHC.Num.+ (#64 GHC.Num.- #1))
+                                                                       GHC.Num.-
+                                                                       bi)) acc)
+                                end
+                            end) in
     go (revNatSafe bitmap) z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
@@ -816,18 +816,18 @@ Solve Obligations with (termination_by_omega).
      (a -> Coq.Numbers.BinNums.N -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
-      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                           Coq.NArith.BinNat.N.to_nat arg_0__) _ (fun arg_0__ arg_1__ go =>
-                           match arg_0__, arg_1__ with
-                           | num_2__, acc =>
-                               if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
-                               match arg_0__, arg_1__ with
-                               | bm, acc =>
-                                   let bitmask := Utils.Containers.Internal.BitUtil.lowestBitMask bm in
-                                   let bi := indexOfTheOnlyBit bitmask in
-                                   go (Data.Bits.xor bm bitmask) (f acc (prefix GHC.Num.+ bi))
-                               end
-                           end) in
+      HsToRocq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                            Coq.NArith.BinNat.N.to_nat arg_0__) _ (fun arg_0__ arg_1__ go =>
+                            match arg_0__, arg_1__ with
+                            | num_2__, acc =>
+                                if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+                                match arg_0__, arg_1__ with
+                                | bm, acc =>
+                                    let bitmask := Utils.Containers.Internal.BitUtil.lowestBitMask bm in
+                                    let bi := indexOfTheOnlyBit bitmask in
+                                    go (Data.Bits.xor bm bitmask) (f acc (prefix GHC.Num.+ bi))
+                                end
+                            end) in
     go bitmap z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
@@ -1029,20 +1029,20 @@ Fixpoint filter (predicate : Key -> bool) (t : IntSet) : IntSet
      (Coq.Numbers.BinNums.N -> a -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
-      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                           Coq.NArith.BinNat.N.to_nat arg_0__) _ (fun arg_0__ arg_1__ go =>
-                           match arg_0__, arg_1__ with
-                           | num_2__, acc =>
-                               if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
-                               match arg_0__, arg_1__ with
-                               | bm, acc =>
-                                   let bitmask := Utils.Containers.Internal.BitUtil.lowestBitMask bm in
-                                   let bi := indexOfTheOnlyBit bitmask in
-                                   go (Data.Bits.xor bm bitmask) ((f ((prefix GHC.Num.+ (#64 GHC.Num.- #1))
-                                                                      GHC.Num.-
-                                                                      bi)) acc)
-                               end
-                           end) in
+      HsToRocq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                            Coq.NArith.BinNat.N.to_nat arg_0__) _ (fun arg_0__ arg_1__ go =>
+                            match arg_0__, arg_1__ with
+                            | num_2__, acc =>
+                                if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+                                match arg_0__, arg_1__ with
+                                | bm, acc =>
+                                    let bitmask := Utils.Containers.Internal.BitUtil.lowestBitMask bm in
+                                    let bi := indexOfTheOnlyBit bitmask in
+                                    go (Data.Bits.xor bm bitmask) ((f ((prefix GHC.Num.+ (#64 GHC.Num.- #1))
+                                                                       GHC.Num.-
+                                                                       bi)) acc)
+                                end
+                            end) in
     go (revNatSafe bitmap) z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
@@ -1065,18 +1065,18 @@ Solve Obligations with (BitTerminationProofs.termination_foldl).
      (a -> Coq.Numbers.BinNums.N -> a) -> a -> Nat -> a :=
   fun prefix f z bitmap =>
     let go :=
-      HsToCoq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
-                           Coq.NArith.BinNat.N.to_nat arg_0__) _ (fun arg_0__ arg_1__ go =>
-                           match arg_0__, arg_1__ with
-                           | num_2__, acc =>
-                               if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
-                               match arg_0__, arg_1__ with
-                               | bm, acc =>
-                                   let bitmask := Utils.Containers.Internal.BitUtil.lowestBitMask bm in
-                                   let bi := indexOfTheOnlyBit bitmask in
-                                   go (Data.Bits.xor bm bitmask) (f acc (prefix GHC.Num.+ bi))
-                               end
-                           end) in
+      HsToRocq.Wf.wfFix2 Coq.Init.Peano.lt (fun arg_0__ arg_1__ =>
+                            Coq.NArith.BinNat.N.to_nat arg_0__) _ (fun arg_0__ arg_1__ go =>
+                            match arg_0__, arg_1__ with
+                            | num_2__, acc =>
+                                if Bool.Sumbool.sumbool_of_bool (num_2__ GHC.Base.== #0) then acc else
+                                match arg_0__, arg_1__ with
+                                | bm, acc =>
+                                    let bitmask := Utils.Containers.Internal.BitUtil.lowestBitMask bm in
+                                    let bi := indexOfTheOnlyBit bitmask in
+                                    go (Data.Bits.xor bm bitmask) (f acc (prefix GHC.Num.+ bi))
+                                end
+                            end) in
     go bitmap z.
 Solve Obligations with (BitTerminationProofs.termination_foldl).
 
@@ -1210,8 +1210,8 @@ End Notations.
      GHC.Base.op_zgze__ GHC.Base.op_zgze____ GHC.Base.op_zl__ GHC.Base.op_zl____
      GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
      GHC.Base.op_zsze__ GHC.Base.op_zsze____ GHC.Num.fromInteger GHC.Num.op_zm__
-     GHC.Num.op_zp__ HsToCoq.Err.Build_Default HsToCoq.Err.Default HsToCoq.Wf.wfFix2
-     Utils.Containers.Internal.BitUtil.bitcount
+     GHC.Num.op_zp__ HsToRocq.Err.Build_Default HsToRocq.Err.Default
+     HsToRocq.Wf.wfFix2 Utils.Containers.Internal.BitUtil.bitcount
      Utils.Containers.Internal.BitUtil.lowestBitMask
      Utils.Containers.Internal.BitUtil.shiftLL
      Utils.Containers.Internal.BitUtil.shiftRL

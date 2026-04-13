@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -70,7 +70,7 @@ Require Data.Maybe.
 Require Import GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Import GHC.Num.Notations.
 
 (* No type declarations to convert. *)
@@ -80,16 +80,16 @@ Import GHC.Num.Notations.
 #[global] Definition prel_list_str : String :=
   GHC.Base.hs_string__ "Prelude.".
 
-#[global] Definition errorEmptyList {a} `{_ : HsToCoq.Err.Default a}
+#[global] Definition errorEmptyList {a} `{_ : HsToRocq.Err.Default a}
    : String -> a :=
   fun fun_ =>
     GHC.Err.error (Coq.Init.Datatypes.app prel_list_str (Coq.Init.Datatypes.app fun_
                                                                                 (GHC.Base.hs_string__ ": empty list"))).
 
-#[global] Definition badHead {a} `{_ : HsToCoq.Err.Default a} : a :=
+#[global] Definition badHead {a} `{_ : HsToRocq.Err.Default a} : a :=
   errorEmptyList (GHC.Base.hs_string__ "head").
 
-#[global] Definition head {a} `{_ : HsToCoq.Err.Default a} : list a -> a :=
+#[global] Definition head {a} `{_ : HsToRocq.Err.Default a} : list a -> a :=
   fun arg_0__ => match arg_0__ with | cons x _ => x | nil => badHead end.
 
 #[global] Definition uncons {a : Type} : list a -> option (a * list a)%type :=
@@ -104,7 +104,8 @@ Import GHC.Num.Notations.
            Some ∘ Data.Maybe.maybe (pair nil x) (fun '(pair a b) => pair (cons x a) b))
   None.
 
-#[global] Definition tail {a} `{_ : HsToCoq.Err.Default a} : list a -> list a :=
+#[global] Definition tail {a} `{_ : HsToRocq.Err.Default a}
+   : list a -> list a :=
   fun arg_0__ =>
     match arg_0__ with
     | cons _ xs => xs
@@ -113,15 +114,16 @@ Import GHC.Num.Notations.
 
 (* Skipping definition `GHC.Base.foldl' *)
 
-#[global] Definition lastError {a} `{_ : HsToCoq.Err.Default a} : a :=
+#[global] Definition lastError {a} `{_ : HsToRocq.Err.Default a} : a :=
   errorEmptyList (GHC.Base.hs_string__ "last").
 
-#[global] Definition last {a} `{_ : HsToCoq.Err.Default a} : list a -> a :=
+#[global] Definition last {a} `{_ : HsToRocq.Err.Default a} : list a -> a :=
   fun xs =>
     foldl (fun arg_0__ arg_1__ => match arg_0__, arg_1__ with | _, x => x end)
     lastError xs.
 
-#[global] Definition init {a} `{_ : HsToCoq.Err.Default a} : list a -> list a :=
+#[global] Definition init {a} `{_ : HsToRocq.Err.Default a}
+   : list a -> list a :=
   fun arg_0__ =>
     match arg_0__ with
     | nil => errorEmptyList (GHC.Base.hs_string__ "init")
@@ -170,7 +172,7 @@ Fixpoint filter {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : list a
 
 (* Skipping definition `GHC.Base.foldl'' *)
 
-#[global] Definition foldl1 {a} `{_ : HsToCoq.Err.Default a}
+#[global] Definition foldl1 {a} `{_ : HsToRocq.Err.Default a}
    : (a -> a -> a) -> list a -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -178,7 +180,7 @@ Fixpoint filter {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : list a
     | _, nil => errorEmptyList (GHC.Base.hs_string__ "foldl1")
     end.
 
-#[global] Definition foldl1' {a} `{_ : HsToCoq.Err.Default a}
+#[global] Definition foldl1' {a} `{_ : HsToRocq.Err.Default a}
    : (a -> a -> a) -> list a -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -234,7 +236,7 @@ Fixpoint filter {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : list a
    : (a -> b -> b) -> b -> list a -> b :=
   fun f z0 xs => let f' := fun k x z => k (f x z) in foldl f' id xs z0.
 
-#[global] Definition foldr1 {a} `{_ : HsToCoq.Err.Default a}
+#[global] Definition foldr1 {a} `{_ : HsToRocq.Err.Default a}
    : (a -> a -> a) -> list a -> a :=
   fun f =>
     let fix go arg_0__
@@ -259,7 +261,7 @@ Fixpoint filter {a : Type} (arg_0__ : a -> bool) (arg_1__ : list a) : list a
       | x, pair r est => pair (f x r) (c r est)
       end.
 
-Fixpoint scanr1 {a} `{_ : HsToCoq.Err.Default a} (arg_0__ : a -> a -> a)
+Fixpoint scanr1 {a} `{_ : HsToRocq.Err.Default a} (arg_0__ : a -> a -> a)
                 (arg_1__ : list a) : list a
   := match arg_0__, arg_1__ with
      | _, nil => nil
@@ -271,7 +273,7 @@ Fixpoint scanr1 {a} `{_ : HsToCoq.Err.Default a} (arg_0__ : a -> a -> a)
          end
      end.
 
-#[global] Definition maximum {a} `{_ : HsToCoq.Err.Default a} {_ : Eq_ a} {_
+#[global] Definition maximum {a} `{_ : HsToRocq.Err.Default a} {_ : Eq_ a} {_
    : Ord a}
    : list a -> a :=
   fun arg_0__ =>
@@ -280,7 +282,7 @@ Fixpoint scanr1 {a} `{_ : HsToCoq.Err.Default a} (arg_0__ : a -> a -> a)
     | xs => foldl1' max xs
     end.
 
-#[global] Definition minimum {a} `{_ : HsToCoq.Err.Default a} {_ : Eq_ a} {_
+#[global] Definition minimum {a} `{_ : HsToRocq.Err.Default a} {_ : Eq_ a} {_
    : Ord a}
    : list a -> a :=
   fun arg_0__ =>
@@ -416,17 +418,17 @@ Fixpoint lookup {a : Type} {b : Type} `{Eq_ a} (arg_0__ : a) (arg_1__
 #[global] Definition concat {a : Type} : list (list a) -> list a :=
   foldr Coq.Init.Datatypes.app nil.
 
-#[global] Definition tooLarge {a} `{_ : HsToCoq.Err.Default a}
+#[global] Definition tooLarge {a} `{_ : HsToRocq.Err.Default a}
    : GHC.Num.Int -> a :=
   fun arg_0__ =>
     GHC.Err.error (Coq.Init.Datatypes.app prel_list_str (GHC.Base.hs_string__
                                            "!!: index too large")).
 
-#[global] Definition negIndex {a} `{_ : HsToCoq.Err.Default a} : a :=
+#[global] Definition negIndex {a} `{_ : HsToRocq.Err.Default a} : a :=
   GHC.Err.error (Coq.Init.Datatypes.app prel_list_str (GHC.Base.hs_string__
                                          "!!: negative index")).
 
-#[global] Definition op_znzn__ {a} `{_ : HsToCoq.Err.Default a}
+#[global] Definition op_znzn__ {a} `{_ : HsToRocq.Err.Default a}
    : list a -> GHC.Num.Int -> a :=
   fun xs n =>
     if n < #0 : bool then negIndex else
@@ -571,5 +573,5 @@ End Notations.
      list max min nil op_z2218U__ op_zeze__ op_zl__ op_zsze__ op_zt__ option orb pair
      true Coq.Init.Datatypes.app Data.Maybe.maybe GHC.Err.error
      GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ HsToCoq.Err.Default
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ HsToRocq.Err.Default
 *)

@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -24,7 +24,7 @@ Require GHC.Num.
 Require GHC.Prim.
 Require GHC.Real.
 Require GHC.Tuple.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Import GHC.Num.Notations.
 
 (* Converted type declarations: *)
@@ -421,7 +421,7 @@ Fixpoint insertBy {a : Type} (arg_0__ : a -> a -> comparison) (arg_1__ : a)
 #[global] Definition insert {a : Type} `{Ord a} : a -> list a -> list a :=
   fun e ls => insertBy (compare) e ls.
 
-#[global] Definition maximumBy {a} {_ : HsToCoq.Err.Default a} {_ : Eq_ a} {_
+#[global] Definition maximumBy {a} {_ : HsToRocq.Err.Default a} {_ : Eq_ a} {_
    : Ord a}
    : (a -> a -> comparison) -> list a -> a :=
   fun arg_0__ arg_1__ =>
@@ -434,7 +434,7 @@ Fixpoint insertBy {a : Type} (arg_0__ : a -> a -> comparison) (arg_1__ : a)
         GHC.List.foldl1 maxBy xs
     end.
 
-#[global] Definition minimumBy {a} {_ : HsToCoq.Err.Default a} {_ : Eq_ a} {_
+#[global] Definition minimumBy {a} {_ : HsToRocq.Err.Default a} {_ : Eq_ a} {_
    : Ord a}
    : (a -> a -> comparison) -> list a -> a :=
   fun arg_0__ arg_1__ =>
@@ -886,5 +886,5 @@ End Notations.
      GHC.List.any GHC.List.filter GHC.List.foldl1 GHC.List.null GHC.List.reverse
      GHC.Num.Num GHC.Num.Word GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__
      GHC.Prim.seq GHC.Real.Integral GHC.Tuple.pair4 GHC.Tuple.pair5 GHC.Tuple.pair6
-     GHC.Tuple.pair7 HsToCoq.Err.Default
+     GHC.Tuple.pair7 HsToRocq.Err.Default
 *)

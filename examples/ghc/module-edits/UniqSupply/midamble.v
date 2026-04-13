@@ -1,3 +1,3 @@
 #[global] Instance Default__UniqSupply
-   : HsToCoq.Err.Default UniqSupply.
+   : HsToRocq.Err.Default UniqSupply.
 Admitted.

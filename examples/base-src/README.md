@@ -17,5 +17,5 @@ We have the following directories:
  * `../../base`: Output, including `_CoqProject`
 
 The generated files in `../../base/` are added to the repository for two reasons:
- * So that `hs-to-coq` is usable translating `base`.
+ * So that `hs-to-rocq` is usable translating `base`.
  * So that we can how its output changes.

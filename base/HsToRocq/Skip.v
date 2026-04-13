@@ -1,0 +1,1 @@
+../../examples/base-src/manual/HsToRocq/Skip.v

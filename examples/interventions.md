@@ -34,7 +34,7 @@
 - `lib/GHC/SmallStep.v`: `Require Omega` → `Require Import Lia`; `Omega.omega` → `lia`
 - `module-edits/GHC/SmallStep/midamble.v`: same Omega→Lia fix
 - Cannot regenerate from source: `ghc-core-smallstep` submodule uses pre-GHC 9.10 module names
-- `Id.mkSysLocalOrCoVar` → `Id.mkSysLocal` + added `Mult` argument (`HsToCoq.Err.default`)
+- `Id.mkSysLocalOrCoVar` → `Id.mkSysLocal` + added `Mult` argument (`HsToRocq.Err.default`)
 - `Unique.mkBuiltinUnique` → `GHC.Builtin.Uniques.mkBuiltinUnique` (module moved in GHC 9.10)
 - `CoreSubst.substExpr Panic.someSDoc` → `CoreSubst.substExpr` (SDoc parameter removed in GHC 9.10)
 - Alt patterns: `pair (pair altcon pats) rhs` → `Core.Mk_Alt altcon pats rhs` (Alt is now inductive, not tuple)
@@ -52,7 +52,7 @@
 - Moved `op_zlzt__` from manual base/GHC/Base.v edit to `add GHC.Base Definition` in module-edits/GHC/Base/edits
 - Removed `<*` and `GHC.Base.<*` notations (unused, and GHC.Base.<* is ambiguous with Coq's `<` operator)
 
-### src/lib/HsToCoq/Coq/Gallina/Util.hs
+### src/lib/HsToRocq/Coq/Gallina/Util.hs
 - Added `<*` to `isAmbiguousCoqOp` in `qualidHasValidCoqOp` — `GHC.Base.<*` parses as `GHC.Base.<` followed by `*`
 - Now renders as `op_zlzt__` instead of `<*` notation
 
@@ -66,14 +66,14 @@
 ## Phase 3: CI Fixes
 
 ### examples/ghc/Makefile
-- Moved `CallArity` from `EXTRAS` to `HANDMOD` — CallArity has a manual version in `manual/CallArity.v` but was listed in EXTRAS (which triggers hs-to-coq generation). In parallel Make, this caused a race condition: if hs-to-coq ran before `lndir` created the symlink, it produced `CallArity.h2ci` (not in git), causing the `test-translation` CI job to fail.
+- Moved `CallArity` from `EXTRAS` to `HANDMOD` — CallArity has a manual version in `manual/CallArity.v` but was listed in EXTRAS (which triggers hs-to-rocq generation). In parallel Make, this caused a race condition: if hs-to-rocq ran before `lndir` created the symlink, it produced `CallArity.h2ci` (not in git), causing the `test-translation` CI job to fail.
 
-### .github/workflows/hs-to-coq.yml
+### .github/workflows/hs-to-rocq.yml
 - Added `mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json` before cache steps in `build-haskell` and `test-translation` container jobs to suppress `WARNING: Error loading config file: open /root/.docker/config.json: permission denied`.
 
 ## Phase 4: CI Coverage Expansion
 
-### .github/workflows/hs-to-coq.yml
+### .github/workflows/hs-to-rocq.yml
 - Added transformers/lib to `test-coq-files` job
 - Added graph/lib + graph/theories (8 of 11 files, excluding 3 that need coq-equations: BFSProofs, HeapProofs, SPProofs) to `test-coq-files` job
 - Added core-semantics/lib to `test-coq-files` job (depends on ghc/lib + transformers)
@@ -83,7 +83,7 @@
 ## Phase 5: Proof Regression Fixes (ghc910-coq820)
 
 ### examples/ghc/manual/GHC/Utils/Monad/State/Strict.v
-- Replaced 3 `Admitted` typeclass instances (`Functor__State`, `Applicative__State`, `Monad__State`) with concrete CPS implementations matching hs-to-coq encoding. State is bare function type `s -> (a * s)` in GHC 9.10.
+- Replaced 3 `Admitted` typeclass instances (`Functor__State`, `Applicative__State`, `Monad__State`) with concrete CPS implementations matching hs-to-rocq encoding. State is bare function type `s -> (a * s)` in GHC 9.10.
 
 ### examples/ghc/theories/StateLogic.v
 - Restored all 14 Admitted proofs to Qed. Key proof patterns: unfold `op_zgzgze__`/`State.Monad__State`/`State.Monad__State_op_zgzgze__` chain, then `simpl` + `expand_pairs`. The `liftA2` proofs need similar `Applicative__State_liftA2` unfolding.

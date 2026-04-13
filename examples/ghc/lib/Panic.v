@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -15,7 +15,7 @@ Require Coq.Program.Wf.
 Require GHC.Base.
 Require GHC.Num.
 Require GHC.Prim.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 (* Converted type declarations: *)
 
@@ -44,7 +44,7 @@ Inductive GhcException : Type :=
 
 (* Skipping definition `Panic.showGhcException' *)
 
-Axiom throwGhcException : forall {a} `{HsToCoq.Err.Default a},
+Axiom throwGhcException : forall {a} `{HsToRocq.Err.Default a},
                           GhcException -> a.
 
 (* Skipping definition `Panic.throwGhcExceptionIO' *)
@@ -54,13 +54,13 @@ Axiom throwGhcException : forall {a} `{HsToCoq.Err.Default a},
 Axiom pprPanic : forall {a : Type},
                  forall `{GHC.Prim.HasCallStack}, GHC.Base.String -> GHC.Base.String -> a.
 
-Axiom panicDoc : forall {a} `{HsToCoq.Err.Default a},
+Axiom panicDoc : forall {a} `{HsToRocq.Err.Default a},
                  GHC.Base.String -> GHC.Base.String -> a.
 
-Axiom sorryDoc : forall {a} `{HsToCoq.Err.Default a},
+Axiom sorryDoc : forall {a} `{HsToRocq.Err.Default a},
                  GHC.Base.String -> GHC.Base.String -> a.
 
-Axiom pgmErrorDoc : forall {a} `{HsToCoq.Err.Default a},
+Axiom pgmErrorDoc : forall {a} `{HsToRocq.Err.Default a},
                     GHC.Base.String -> GHC.Base.String -> a.
 
 (* Skipping definition `Panic.tryMost' *)
@@ -90,19 +90,19 @@ Axiom assertPprM : forall {m : Type -> Type},
                    forall `{GHC.Prim.HasCallStack},
                    forall `{GHC.Base.Monad m}, m bool -> GHC.Base.String -> m unit.
 
-Axiom panic : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> a.
+Axiom panic : forall {a} `{HsToRocq.Err.Default a}, GHC.Base.String -> a.
 
-Axiom panicStr : forall {a} `{HsToCoq.Err.Default a},
+Axiom panicStr : forall {a} `{HsToRocq.Err.Default a},
                  GHC.Base.String -> GHC.Base.String -> a.
 
 Inductive panicked {a} : a -> Prop :=
-  | PlainPanic `{HsToCoq.Err.Default a} {s} : panicked (panic s)
-  | StrPanic `{HsToCoq.Err.Default a} {s} {d} : panicked (panicStr s d).
+  | PlainPanic `{HsToRocq.Err.Default a} {s} : panicked (panic s)
+  | StrPanic `{HsToRocq.Err.Default a} {s} {d} : panicked (panicStr s d).
 
-Axiom pgmError : forall {a} `{HsToCoq.Err.Default a}, GHC.Base.String -> a.
+Axiom pgmError : forall {a} `{HsToRocq.Err.Default a}, GHC.Base.String -> a.
 
 #[global] Definition warnPprTrace
-   : forall {a} `{HsToCoq.Err.Default a},
+   : forall {a} `{HsToRocq.Err.Default a},
      bool -> GHC.Base.String -> GHC.Num.Integer -> GHC.Base.String -> a -> a :=
   fun {a} {_} b msg i msg2 x => if b then pgmError msg : a else x.
 
@@ -112,5 +112,5 @@ Axiom someSDoc : GHC.Base.String.
 
 (* External variables:
      Prop Type bool option unit GHC.Base.Applicative GHC.Base.Monad GHC.Base.String
-     GHC.Num.Int GHC.Num.Integer GHC.Prim.HasCallStack HsToCoq.Err.Default
+     GHC.Num.Int GHC.Num.Integer GHC.Prim.HasCallStack HsToRocq.Err.Default
 *)

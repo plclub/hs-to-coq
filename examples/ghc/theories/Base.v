@@ -4,7 +4,7 @@ Set Warnings "-notation-overridden".
 From Coq Require Import ssreflect ssrbool ssrfun.
 
 Require Import GHC.Base.
-Require Import HsToCoq.Nat.
+Require Import HsToRocq.Nat.
 Require Import Proofs.GHC.Base.
 Require Import Proofs.GHC.List.
 Require Import Proofs.Data.Foldable.

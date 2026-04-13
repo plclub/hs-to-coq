@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Coq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -72,12 +72,12 @@ Arguments Mk_Step {_} _.
 
 Require CoreStats.
 
-Instance Default_Step {a} : HsToCoq.Err.Default (Step a) :=
-  HsToCoq.Err.Build_Default _ Done.
-Instance Default_Value : HsToCoq.Err.Default Value :=
-  HsToCoq.Err.Build_Default _ (LitVal HsToCoq.Err.default).
-Instance Default_StackElem : HsToCoq.Err.Default StackElem :=
-  HsToCoq.Err.Build_Default _ (Update HsToCoq.Err.default).
+Instance Default_Step {a} : HsToRocq.Err.Default (Step a) :=
+  HsToRocq.Err.Build_Default _ Done.
+Instance Default_Value : HsToRocq.Err.Default Value :=
+  HsToRocq.Err.Build_Default _ (LitVal HsToRocq.Err.default).
+Instance Default_StackElem : HsToRocq.Err.Default StackElem :=
+  HsToRocq.Err.Build_Default _ (Update HsToRocq.Err.default).
 
 (* ----------- termination metric for step function --------------- *)
 
@@ -234,7 +234,7 @@ Definition etaExpandDCWorker : Core.DataCon -> Core.CoreExpr :=
     let params :=
       GHC.List.zipWith (fun n t =>
                           Id.mkSysLocal (FastString.fsLit (GHC.Base.hs_string__ "eta"))
-                          (GHC.Builtin.Uniques.mkBuiltinUnique n) HsToCoq.Err.default t) nil (nil) in
+                          (GHC.Builtin.Uniques.mkBuiltinUnique n) HsToRocq.Err.default t) nil (nil) in
     Core.mkLams params (Core.mkConApp dc (GHC.Base.map Core.Mk_Var params)).
 
 Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
@@ -270,7 +270,7 @@ Definition valStep : (Heap * Value * Stack)%type -> Step Conf :=
       | pair (pair heap (LamVal v e)) (cons (ApplyTo a) s) =>
           let fresh_tmpl :=
             Id.mkSysLocal (FastString.fsLit (GHC.Base.hs_string__ "arg"))
-            (GHC.Builtin.Uniques.mkBuiltinUnique #1) HsToCoq.Err.default (CoreUtils.exprType a) in
+            (GHC.Builtin.Uniques.mkBuiltinUnique #1) HsToRocq.Err.default (CoreUtils.exprType a) in
           let fresh := Core.uniqAway (in_scope heap) fresh_tmpl in
           let subst :=
             CoreSubst.extendSubstWithVar (Core.mkEmptySubst (in_scope heap)) v fresh in

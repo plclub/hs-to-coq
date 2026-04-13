@@ -1,4 +1,4 @@
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 Require Import Coq.NArith.BinNat.
 
 #[global] Instance Default__OccName : Default OccName :=

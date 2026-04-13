@@ -7,7 +7,7 @@ skip Id.idFunRepArity
 # unfolding info 
 skip Id.setCaseBndrEvald
 
-# GHC 9.10: hs-to-coq generates Core.Scaled (the type) instead of Core.Mk_Scaled (the constructor)
+# GHC 9.10: hs-to-rocq generates Core.Scaled (the type) instead of Core.Mk_Scaled (the constructor)
 redefine Definition Id.idScaledType : Core.Id -> Core.Scaled AxiomatizedTypes.Type_ :=
   fun id => Core.Mk_Scaled (Id.idMult id) (Id.idType id).
 

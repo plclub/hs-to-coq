@@ -1,4 +1,4 @@
-Require Import HsToCoq.Unpeel.
+Require Import HsToRocq.Unpeel.
 Require Import GHC.Types.
 
 Definition arrow  := (fun (x y :Type) => x -> y).

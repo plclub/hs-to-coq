@@ -1,1 +1,1 @@
-Require HsToCoq.Nat.
+Require HsToRocq.Nat.

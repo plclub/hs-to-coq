@@ -1,5 +1,5 @@
 Require Import Equations.Prop.Equations.
-Require Import HsToCoq.DeferredFix.
+Require Import HsToRocq.DeferredFix.
 Require Import Data.Graph.Inductive.Query.BFS.
 Require Import Coq.Lists.List.
 Require Import Data.Graph.Inductive.Internal.Queue.
@@ -194,7 +194,7 @@ Qed.
 
 Definition done (s: state) := null (get_queue s) || isEmpty (get_graph s).
 
-(*The executable, tail recursive version of this, which we will prove equivalent to the hs-to-coq version*)
+(*The executable, tail recursive version of this, which we will prove equivalent to the hs-to-rocq version*)
 Section Exec.
 
 Lemma match_none_size: forall g v g',

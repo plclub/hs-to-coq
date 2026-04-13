@@ -1,6 +1,6 @@
 (* Stub module for Data.ByteString.Internal.Type *)
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom ByteString : Type.
 
-#[global] Instance Default__ByteString : HsToCoq.Err.Default ByteString. Admitted.
+#[global] Instance Default__ByteString : HsToRocq.Err.Default ByteString. Admitted.

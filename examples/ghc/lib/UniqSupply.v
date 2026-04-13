@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -57,7 +57,7 @@ Arguments USM {_} _.
 (* Midamble *)
 
 #[global] Instance Default__UniqSupply
-   : HsToCoq.Err.Default UniqSupply.
+   : HsToRocq.Err.Default UniqSupply.
 Admitted.
 
 (* Converted value declarations: *)

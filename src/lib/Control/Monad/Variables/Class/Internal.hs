@@ -9,8 +9,8 @@ module Control.Monad.Variables.Class.Internal (
   
 import Data.Foldable
 import Control.Monad.Trans
-import HsToCoq.Util.Monad
-import HsToCoq.Util.Function
+import HsToRocq.Util.Monad
+import HsToRocq.Util.Function
 import Data.Maybe
 
 import Data.Set (Set)
@@ -31,7 +31,7 @@ import qualified Control.Monad.Trans.RWS.Lazy           as RWSL
 import qualified Control.Monad.Trans.Maybe              as M
 import qualified Control.Monad.Trans.Except             as E
 import qualified Control.Monad.Trans.Cont               as C
-import qualified HsToCoq.Util.GHC.Monad                 as GHC
+import qualified HsToRocq.Util.GHC.Monad                 as GHC
 
 class (Monad m, Ord i) => MonadVariables i d m | m -> i d where
   bind     :: i -> d  -> m a -> m a

@@ -1,8 +1,8 @@
 HAVE_STACK := $(shell command -v stack 2> /dev/null)
 ifdef HAVE_STACK
-HS_TO_COQ = stack exec hs-to-coq --
+HS_TO_ROCQ = stack exec hs-to-rocq --
 else
-HS_TO_COQ = cabal new-run -v0 exe:hs-to-coq --
+HS_TO_ROCQ = cabal new-run -v0 exe:hs-to-rocq --
 endif
 SHELL = bash
 
@@ -15,7 +15,7 @@ RENAMED=renamed
 HS_SPEC=hs-spec
 
 # Not all of these need to be handwritten. Eventually we should be able to
-# generate some of these modules as hs-to-coq is improved.
+# generate some of these modules as hs-to-rocq is improved.
 # see [notes.md] for discussion of issues
 
 # Handwritten modules (usually by modification of generated version)
@@ -94,7 +94,7 @@ $(OUT)/README.md:
 coq: $(OUT)/Makefile $(VFILES)
 	$(MAKE) -C $(OUT) -f Makefile OPT=$(COQFLAGS)
 
-HS_TO_COQ_OPTS := \
+HS_TO_ROCQ_OPTS := \
   -e ../../base/edits \
   -e edits \
   --iface-dir ../../base \
@@ -111,10 +111,10 @@ include  deps/*.mk
 
 .SECONDEXPANSION:
 $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard module-edits/$$*/midamble.v)  $$(wildcard module-edits/$$*/edits) $(wildcard module-edits/$$*/flags) edits
-	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	$(HS_TO_ROCQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
-		     $(HS_TO_COQ_OPTS) \
+		     $(HS_TO_ROCQ_OPTS) \
 	             $(addprefix `cat , $(addsuffix ` , $(wildcard module-edits/$*/flags))) \
 	             $(wildcard $(SRC)/$*.hs) $(wildcard $(SRC)/tests/$*.hs)
 	test -e $@
@@ -129,8 +129,8 @@ $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) $$(wildcard
 	fi
 
 $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preamble.v drop-in/%.hs
-	$(HS_TO_COQ) -e module-edits/$*/edits \
-	             $(HS_TO_COQ_OPTS) \
+	$(HS_TO_ROCQ) -e module-edits/$*/edits \
+	             $(HS_TO_ROCQ_OPTS) \
 	             drop-in/$*.hs
 
 .SECONDEXPANSION:

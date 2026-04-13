@@ -26,7 +26,7 @@ skip BasicTypes.Ord__TyPrec
 ##########
 
 #
-# GHC 9.10: hs-to-coq does not generate derived Eq instances from
+# GHC 9.10: hs-to-rocq does not generate derived Eq instances from
 # "deriving Eq". The needed Eq instances are provided via midamble.v.
 # Remove order directives for non-existent generated Eq instances.
 

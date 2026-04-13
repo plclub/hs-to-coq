@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -12,7 +12,7 @@ Require Coq.Program.Wf.
 
 (* Preamble *)
 
-Require HsToCoq.Nat.
+Require HsToRocq.Nat.
 
 (* No imports to convert. *)
 

@@ -1,6 +1,6 @@
 (* Stub module for GHC.Types.Tickish *)
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom CoreTickish : Type.
 
-#[global] Instance Default__CoreTickish : HsToCoq.Err.Default CoreTickish. Admitted.
+#[global] Instance Default__CoreTickish : HsToRocq.Err.Default CoreTickish. Admitted.

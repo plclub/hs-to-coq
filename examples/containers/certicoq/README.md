@@ -1,7 +1,7 @@
 # Certicoq Demo
 
 This directory demonstrates Certicoq being used to compile 
-the output of `hs-to-coq`.
+the output of `hs-to-rocq`.
 
 ## Certicoq is a plugin for coq-8.7.1
 

@@ -1,1 +1,0 @@
-../../examples/base-src/manual/HsToCoq/Err.v

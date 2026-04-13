@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -20,7 +20,7 @@ Require FastStringEnv.
 Require GHC.Base.
 Require GHC.Err.
 Require GHC.Num.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require UniqFM.
 Require UniqSet.
 Require Unique.
@@ -64,8 +64,8 @@ Existing Class HasOccName.
 
 Arguments MkOccEnv {_} _.
 
-Instance Default__NameSpace : HsToCoq.Err.Default NameSpace :=
-  HsToCoq.Err.Build_Default _ VarName.
+Instance Default__NameSpace : HsToRocq.Err.Default NameSpace :=
+  HsToRocq.Err.Build_Default _ VarName.
 
 #[global] Definition fldParent (arg_0__ : NameSpace) :=
   match arg_0__ with
@@ -94,7 +94,7 @@ Instance Default__NameSpace : HsToCoq.Err.Default NameSpace :=
 
 (* Midamble *)
 
-Require Import HsToCoq.Err.
+Require Import HsToRocq.Err.
 Require Import Coq.NArith.BinNat.
 
 #[global] Instance Default__OccName : Default OccName :=
@@ -992,12 +992,12 @@ Axiom tidyOccName : TidyOccEnv -> OccName -> (TidyOccEnv * OccName)%type.
      GHC.Base.op_zgzgze__ GHC.Base.op_zl____ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
      GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zsze__
      GHC.Base.op_zsze____ GHC.Base.return_ GHC.Err.error GHC.Num.Int
-     GHC.Num.fromInteger HsToCoq.Err.Build_Default HsToCoq.Err.Default UniqFM.UniqFM
-     UniqFM.addToUFM UniqFM.alterUFM UniqFM.delFromUFM UniqFM.delListFromUFM
-     UniqFM.elemUFM UniqFM.emptyUFM UniqFM.filterUFM UniqFM.intersectUFM_C
-     UniqFM.isNullUFM UniqFM.lookupUFM UniqFM.mapMaybeUFM UniqFM.minusUFM
-     UniqFM.minusUFM_C UniqFM.nonDetEltsUFM UniqFM.nonDetFoldUFM UniqFM.plusUFM
-     UniqFM.plusUFM_C UniqFM.seqEltsUFM UniqFM.strictMapUFM UniqFM.unitUFM
-     UniqSet.UniqSet UniqSet.elementOfUniqSet UniqSet.unionUniqSets
+     GHC.Num.fromInteger HsToRocq.Err.Build_Default HsToRocq.Err.Default
+     UniqFM.UniqFM UniqFM.addToUFM UniqFM.alterUFM UniqFM.delFromUFM
+     UniqFM.delListFromUFM UniqFM.elemUFM UniqFM.emptyUFM UniqFM.filterUFM
+     UniqFM.intersectUFM_C UniqFM.isNullUFM UniqFM.lookupUFM UniqFM.mapMaybeUFM
+     UniqFM.minusUFM UniqFM.minusUFM_C UniqFM.nonDetEltsUFM UniqFM.nonDetFoldUFM
+     UniqFM.plusUFM UniqFM.plusUFM_C UniqFM.seqEltsUFM UniqFM.strictMapUFM
+     UniqFM.unitUFM UniqSet.UniqSet UniqSet.elementOfUniqSet UniqSet.unionUniqSets
      UniqSet.unitUniqSet Unique.Unique Util.HasDebugCallStack
 *)

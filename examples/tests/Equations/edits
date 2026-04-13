@@ -1,4 +1,4 @@
-skip module HsToCoq.Err
+skip module HsToRocq.Err
 skip module GHC.Err
 equations Equations.not_
 equations Equations.id_

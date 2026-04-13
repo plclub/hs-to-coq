@@ -109,7 +109,7 @@ rewrite forall x, GHC.Internal.IsList.toList x = match x with | GHC.Base.NEcons 
 # GHC 9.10: ConLike is inlined into Core.v mutual block via sed
 skip module GHC.Core.ConLike
 
-# GHC 9.10: Alt/AnnAlt/Scaled constructors — hs-to-coq generates type name, need constructor name
+# GHC 9.10: Alt/AnnAlt/Scaled constructors — hs-to-rocq generates type name, need constructor name
 rename value GHC.Core.Alt = Core.Mk_Alt
 rename value GHC.Core.AnnAlt = Core.Mk_AnnAlt
 rename value GHC.Core.TyCo.Rep.Scaled = Core.Mk_Scaled

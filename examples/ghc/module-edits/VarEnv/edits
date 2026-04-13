@@ -26,10 +26,10 @@ in Core.uniqAway' rewrite forall , n = (BinNat.N.of_nat n)
 # skip Core.rnBndrs2
 
 # add default constraint
-redefine Definition Core.lookupVarEnv_NF {a} `{_ : HsToCoq.Err.Default a} (env : VarEnv a) id : a :=
+redefine Definition Core.lookupVarEnv_NF {a} `{_ : HsToRocq.Err.Default a} (env : VarEnv a) id : a :=
       match lookupVarEnv env id with
       | Some xx => xx
-      | None => HsToCoq.Err.default
+      | None => HsToRocq.Err.default
     end.
 
 

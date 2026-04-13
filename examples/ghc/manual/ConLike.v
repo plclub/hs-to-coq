@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Coq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -38,7 +38,7 @@ Import GHC.Base.Notations.
 
 (* Midamble — no extra Default instances needed; they are in Core.v *)
 
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 (* Converted value declarations: *)
 
@@ -165,7 +165,7 @@ Program Instance NamedThing__ConLike : Name.NamedThing ConLike :=
   fun arg_0__ =>
     match arg_0__ with
     | RealDataCon data_con => Core.dataConStupidTheta data_con
-    | PatSynCon _ => HsToCoq.Err.default
+    | PatSynCon _ => HsToRocq.Err.default
     end.
 
 #[global] Definition conLikeHasBuilder : ConLike -> bool :=
@@ -201,7 +201,7 @@ Program Instance NamedThing__ConLike : Name.NamedThing ConLike :=
     | RealDataCon con =>
         let 'pair (pair (pair (pair (pair univ_tvs ex_tvs) eq_spec) theta) arg_tys)
            res_ty := Core.dataConFullSig con in
-        pair (pair (pair (pair (pair (pair univ_tvs ex_tvs) eq_spec) theta) (HsToCoq.Err.default : ThetaType))
+        pair (pair (pair (pair (pair (pair univ_tvs ex_tvs) eq_spec) theta) (HsToRocq.Err.default : ThetaType))
                    arg_tys) res_ty
     | PatSynCon pat_syn =>
         let 'pair (pair (pair (pair (pair univ_tvs req) ex_tvs) prov) arg_tys) res_ty :=

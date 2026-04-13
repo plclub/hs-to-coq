@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -62,7 +62,7 @@ Inductive NDModule : Type :=
 (* Converted imports: *)
 
 Require FastString.
-Require HsToCoq.Unpeel.
+Require HsToRocq.Unpeel.
 
 (* Converted type declarations: *)
 
@@ -88,8 +88,8 @@ Existing Class ContainsModule.
 
 (* Midamble *)
 
-Require Import HsToCoq.Err.
-Require Import HsToCoq.Unpeel.
+Require Import HsToRocq.Err.
+Require Import HsToRocq.Unpeel.
 Require Import GHC.Base.
 
 #[global] Instance Default__InstalledUnitId : Default InstalledUnitId :=
@@ -209,10 +209,11 @@ Axiom thisGhcUnit : UnitId.
 (* Skipping definition `Module.mkHoleModule' *)
 
 Instance Unpeel_ComponentId
-   : HsToCoq.Unpeel.Unpeel ComponentId FastString.FastString :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ (fun '(Mk_ComponentId fs) => fs) Mk_ComponentId.
+   : HsToRocq.Unpeel.Unpeel ComponentId FastString.FastString :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ (fun '(Mk_ComponentId fs) => fs)
+                               Mk_ComponentId.
 
 (* External variables:
      ComponentId Mk_ComponentId Module Type FastString.FastString
-     HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
+     HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel
 *)

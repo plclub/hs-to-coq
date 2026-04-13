@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -52,11 +52,11 @@ Inductive FloatInBind : Type :=
 
 (* Midamble *)
 
-#[global] Instance Default_FloatBind : HsToCoq.Err.Default MkCore.FloatBind.
+#[global] Instance Default_FloatBind : HsToRocq.Err.Default MkCore.FloatBind.
 Admitted.
 
-#[global] Instance Default_FloatInBind : HsToCoq.Err.Default FloatInBind :=
-  HsToCoq.Err.Build_Default _ (FB HsToCoq.Err.default HsToCoq.Err.default HsToCoq.Err.default).
+#[global] Instance Default_FloatInBind : HsToRocq.Err.Default FloatInBind :=
+  HsToRocq.Err.Build_Default _ (FB HsToRocq.Err.default HsToRocq.Err.default HsToRocq.Err.default).
 
 (* Converted value declarations: *)
 

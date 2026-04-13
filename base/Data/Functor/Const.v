@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -28,7 +28,7 @@ Require Data.SemigroupInternal.
 Require GHC.Base.
 Require GHC.Num.
 Require GHC.Prim.
-Require HsToCoq.Unpeel.
+Require HsToRocq.Unpeel.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
@@ -266,8 +266,8 @@ Program Instance Applicative__Const {m : Type} `{GHC.Base.Monoid m}
            GHC.Base.pure__ := fun (a : Type) => Applicative__Const_pure |}.
 
 Instance Unpeel_Const (k a : Type) (b : k)
-   : HsToCoq.Unpeel.Unpeel (Const a b) a :=
-  HsToCoq.Unpeel.Build_Unpeel _ _ getConst Mk_Const.
+   : HsToRocq.Unpeel.Unpeel (Const a b) a :=
+  HsToRocq.Unpeel.Build_Unpeel _ _ getConst Mk_Const.
 
 (* External variables:
      Type bool false list true Coq.Program.Basics.compose Data.Foldable.Foldable
@@ -286,5 +286,5 @@ Instance Unpeel_Const (k a : Type) (b : k)
      GHC.Base.op_z2218U__ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
      GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____
      GHC.Base.op_ztzg____ GHC.Base.pure__ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zp__ GHC.Prim.seq HsToCoq.Unpeel.Build_Unpeel HsToCoq.Unpeel.Unpeel
+     GHC.Num.op_zp__ GHC.Prim.seq HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel
 *)

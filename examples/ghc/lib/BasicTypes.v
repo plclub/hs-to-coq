@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -59,7 +59,7 @@ Require GHC.Err.
 Require GHC.Num.
 Require GHC.Prim.
 Require HsSyn.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Require Panic.
 Import Data.Bits.Notations.
 Import GHC.Base.Notations.
@@ -275,90 +275,91 @@ Arguments VanillaDM {_}.
 
 Arguments GenericDM {_} _.
 
-#[global] Instance Default__UnfoldingSource : HsToCoq.Err.Default UnfoldingSource :=
-  HsToCoq.Err.Build_Default _ VanillaSrc.
+#[global] Instance Default__UnfoldingSource : HsToRocq.Err.Default UnfoldingSource :=
+  HsToRocq.Err.Build_Default _ VanillaSrc.
 
-#[global] Instance Default__UnboxedTupleOrSum : HsToCoq.Err.Default UnboxedTupleOrSum :=
-  HsToCoq.Err.Build_Default _ UnboxedTupleType.
+#[global] Instance Default__UnboxedTupleOrSum : HsToRocq.Err.Default UnboxedTupleOrSum :=
+  HsToRocq.Err.Build_Default _ UnboxedTupleType.
 
-#[global] Instance Default__TypeOrKind : HsToCoq.Err.Default TypeOrKind :=
-  HsToCoq.Err.Build_Default _ TypeLevel.
+#[global] Instance Default__TypeOrKind : HsToRocq.Err.Default TypeOrKind :=
+  HsToRocq.Err.Build_Default _ TypeLevel.
 
-#[global] Instance Default__TypeOrData : HsToCoq.Err.Default TypeOrData :=
-  HsToCoq.Err.Build_Default _ IAmData.
+#[global] Instance Default__TypeOrData : HsToRocq.Err.Default TypeOrData :=
+  HsToRocq.Err.Build_Default _ IAmData.
 
-#[global] Instance Default__TypeOrConstraint : HsToCoq.Err.Default TypeOrConstraint :=
-  HsToCoq.Err.Build_Default _ TypeLike.
+#[global] Instance Default__TypeOrConstraint : HsToRocq.Err.Default TypeOrConstraint :=
+  HsToRocq.Err.Build_Default _ TypeLike.
 
-#[global] Instance Default__TupleSort : HsToCoq.Err.Default TupleSort :=
-  HsToCoq.Err.Build_Default _ BoxedTuple.
+#[global] Instance Default__TupleSort : HsToRocq.Err.Default TupleSort :=
+  HsToRocq.Err.Build_Default _ BoxedTuple.
 
-#[global] Instance Default__TopLevelFlag : HsToCoq.Err.Default TopLevelFlag :=
-  HsToCoq.Err.Build_Default _ TopLevel.
+#[global] Instance Default__TopLevelFlag : HsToRocq.Err.Default TopLevelFlag :=
+  HsToRocq.Err.Build_Default _ TopLevel.
 
-#[global] Instance Default__SwapFlag : HsToCoq.Err.Default SwapFlag :=
-  HsToCoq.Err.Build_Default _ NotSwapped.
+#[global] Instance Default__SwapFlag : HsToRocq.Err.Default SwapFlag :=
+  HsToRocq.Err.Build_Default _ NotSwapped.
 
-#[global] Instance Default__SuccessFlag : HsToCoq.Err.Default SuccessFlag :=
-  HsToCoq.Err.Build_Default _ Succeeded.
+#[global] Instance Default__SuccessFlag : HsToRocq.Err.Default SuccessFlag :=
+  HsToRocq.Err.Build_Default _ Succeeded.
 
-#[global] Instance Default__RuleMatchInfo : HsToCoq.Err.Default RuleMatchInfo :=
-  HsToCoq.Err.Build_Default _ ConLike.
+#[global] Instance Default__RuleMatchInfo : HsToRocq.Err.Default RuleMatchInfo :=
+  HsToRocq.Err.Build_Default _ ConLike.
 
-#[global] Instance Default__RecFlag : HsToCoq.Err.Default RecFlag :=
-  HsToCoq.Err.Build_Default _ Recursive.
+#[global] Instance Default__RecFlag : HsToRocq.Err.Default RecFlag :=
+  HsToRocq.Err.Build_Default _ Recursive.
 
-#[global] Instance Default__OneShotInfo : HsToCoq.Err.Default OneShotInfo :=
-  HsToCoq.Err.Build_Default _ NoOneShotInfo.
+#[global] Instance Default__OneShotInfo : HsToRocq.Err.Default OneShotInfo :=
+  HsToRocq.Err.Build_Default _ NoOneShotInfo.
 
 #[global] Instance Default__NonStandardDefaultingStrategy
-   : HsToCoq.Err.Default NonStandardDefaultingStrategy :=
-  HsToCoq.Err.Build_Default _ DefaultNonStandardTyVars.
+   : HsToRocq.Err.Default NonStandardDefaultingStrategy :=
+  HsToRocq.Err.Build_Default _ DefaultNonStandardTyVars.
 
-#[global] Instance Default__Levity : HsToCoq.Err.Default Levity :=
-  HsToCoq.Err.Build_Default _ Lifted.
+#[global] Instance Default__Levity : HsToRocq.Err.Default Levity :=
+  HsToRocq.Err.Build_Default _ Lifted.
 
-#[global] Instance Default__LeftOrRight : HsToCoq.Err.Default LeftOrRight :=
-  HsToCoq.Err.Build_Default _ CLeft.
+#[global] Instance Default__LeftOrRight : HsToRocq.Err.Default LeftOrRight :=
+  HsToRocq.Err.Build_Default _ CLeft.
 
-#[global] Instance Default__TailCallInfo : HsToCoq.Err.Default TailCallInfo :=
-  HsToCoq.Err.Build_Default _ NoTailCallInfo.
+#[global] Instance Default__TailCallInfo : HsToRocq.Err.Default TailCallInfo :=
+  HsToRocq.Err.Build_Default _ NoTailCallInfo.
 
-#[global] Instance Default__InterestingCxt : HsToCoq.Err.Default InterestingCxt :=
-  HsToCoq.Err.Build_Default _ IsInteresting.
+#[global] Instance Default__InterestingCxt : HsToRocq.Err.Default InterestingCxt :=
+  HsToRocq.Err.Build_Default _ IsInteresting.
 
-#[global] Instance Default__IntWithInf : HsToCoq.Err.Default IntWithInf :=
-  HsToCoq.Err.Build_Default _ Infinity.
+#[global] Instance Default__IntWithInf : HsToRocq.Err.Default IntWithInf :=
+  HsToRocq.Err.Build_Default _ Infinity.
 
-#[global] Instance Default__InsideLam : HsToCoq.Err.Default InsideLam :=
-  HsToCoq.Err.Build_Default _ IsInsideLam.
+#[global] Instance Default__InsideLam : HsToRocq.Err.Default InsideLam :=
+  HsToRocq.Err.Build_Default _ IsInsideLam.
 
-#[global] Instance Default__InlineSpec : HsToCoq.Err.Default InlineSpec :=
-  HsToCoq.Err.Build_Default _ NoUserInlinePrag.
+#[global] Instance Default__InlineSpec : HsToRocq.Err.Default InlineSpec :=
+  HsToRocq.Err.Build_Default _ NoUserInlinePrag.
 
-#[global] Instance Default__FunctionOrData : HsToCoq.Err.Default FunctionOrData :=
-  HsToCoq.Err.Build_Default _ IsFunction.
+#[global] Instance Default__FunctionOrData : HsToRocq.Err.Default FunctionOrData :=
+  HsToRocq.Err.Build_Default _ IsFunction.
 
-#[global] Instance Default__DoPmc : HsToCoq.Err.Default DoPmc :=
-  HsToCoq.Err.Build_Default _ SkipPmc.
+#[global] Instance Default__DoPmc : HsToRocq.Err.Default DoPmc :=
+  HsToRocq.Err.Build_Default _ SkipPmc.
 
-#[global] Instance Default__DefaultingStrategy : HsToCoq.Err.Default DefaultingStrategy :=
-  HsToCoq.Err.Build_Default _ DefaultKindVars.
+#[global] Instance Default__DefaultingStrategy
+   : HsToRocq.Err.Default DefaultingStrategy :=
+  HsToRocq.Err.Build_Default _ DefaultKindVars.
 
-#[global] Instance Default__CompilerPhase : HsToCoq.Err.Default CompilerPhase :=
-  HsToCoq.Err.Build_Default _ InitialPhase.
+#[global] Instance Default__CompilerPhase : HsToRocq.Err.Default CompilerPhase :=
+  HsToRocq.Err.Build_Default _ InitialPhase.
 
-#[global] Instance Default__CbvMark : HsToCoq.Err.Default CbvMark :=
-  HsToCoq.Err.Build_Default _ MarkedCbv.
+#[global] Instance Default__CbvMark : HsToRocq.Err.Default CbvMark :=
+  HsToRocq.Err.Build_Default _ MarkedCbv.
 
-#[global] Instance Default__OccInfo : HsToCoq.Err.Default OccInfo :=
-  HsToCoq.Err.Build_Default _ (ManyOccs HsToCoq.Err.default).
+#[global] Instance Default__OccInfo : HsToRocq.Err.Default OccInfo :=
+  HsToRocq.Err.Build_Default _ (ManyOccs HsToRocq.Err.default).
 
-#[global] Instance Default__Alignment : HsToCoq.Err.Default Alignment :=
-  HsToCoq.Err.Build_Default _ (Mk_Alignment HsToCoq.Err.default).
+#[global] Instance Default__Alignment : HsToRocq.Err.Default Alignment :=
+  HsToRocq.Err.Build_Default _ (Mk_Alignment HsToRocq.Err.default).
 
-#[global] Instance Default__Activation : HsToCoq.Err.Default Activation :=
-  HsToCoq.Err.Build_Default _ AlwaysActive.
+#[global] Instance Default__Activation : HsToRocq.Err.Default Activation :=
+  HsToRocq.Err.Build_Default _ AlwaysActive.
 
 #[global] Definition isSafeOverlap (arg_0__ : OverlapFlag) :=
   let 'Mk_OverlapFlag _ isSafeOverlap := arg_0__ in
@@ -468,15 +469,15 @@ Arguments GenericDM {_} _.
 
 (* Midamble *)
 
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
-#[global] Instance Default__SourceText : HsToCoq.Err.Default SourceText :=
-  HsToCoq.Err.Build_Default _ NoSourceText.
+#[global] Instance Default__SourceText : HsToRocq.Err.Default SourceText :=
+  HsToRocq.Err.Build_Default _ NoSourceText.
 
-#[global] Instance Default__TyConFlavour {tc} : HsToCoq.Err.Default (TyConFlavour tc) :=
-  HsToCoq.Err.Build_Default _ ClassFlavour.
+#[global] Instance Default__TyConFlavour {tc} : HsToRocq.Err.Default (TyConFlavour tc) :=
+  HsToRocq.Err.Build_Default _ ClassFlavour.
 
-(* GHC 9.10: hs-to-coq does not generate derived Eq instances.
+(* GHC 9.10: hs-to-rocq does not generate derived Eq instances.
    Add the ones needed by downstream code. *)
 
 Definition Eq__IntWithInf_op_zeze : IntWithInf -> IntWithInf -> bool :=
@@ -1441,6 +1442,6 @@ Program Instance Ord__IntWithInf : GHC.Base.Ord IntWithInf :=
      GHC.Base.op_zlzd____ GHC.Base.op_zlze____ GHC.Base.op_zlzlzgzg__
      GHC.Base.op_zlzlzgzg____ GHC.Base.op_zsze__ GHC.Err.error GHC.Num.Int
      GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ GHC.Prim.seq
-     HsSyn.Boxed HsSyn.Boxity HsSyn.ConTag HsSyn.Unboxed HsToCoq.Err.Build_Default
-     HsToCoq.Err.Default HsToCoq.Err.default Panic.panic Panic.someSDoc
+     HsSyn.Boxed HsSyn.Boxity HsSyn.ConTag HsSyn.Unboxed HsToRocq.Err.Build_Default
+     HsToRocq.Err.Default HsToRocq.Err.default Panic.panic Panic.someSDoc
 *)

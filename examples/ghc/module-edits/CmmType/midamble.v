@@ -1,4 +1,4 @@
-Require Import HsToCoq.Nat.
+Require Import HsToRocq.Nat.
 
-#[global] Instance Default__CmmType : HsToCoq.Err.Default CmmType :=
-	 { default := Mk_CmmType HsToCoq.Err.default HsToCoq.Err.default }.
+#[global] Instance Default__CmmType : HsToRocq.Err.Default CmmType :=
+	 { default := Mk_CmmType HsToRocq.Err.default HsToRocq.Err.default }.

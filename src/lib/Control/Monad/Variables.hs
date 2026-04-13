@@ -11,9 +11,9 @@ module Control.Monad.Variables (
   isBound, areBound,
   ) where
 
-import HsToCoq.Util.Generics
+import HsToRocq.Util.Generics
 
-import HsToCoq.Util.Monad
+import HsToRocq.Util.Monad
 import Control.Monad.Reader
 import Control.Monad.Writer.Strict
 

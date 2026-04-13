@@ -1,6 +1,6 @@
-# New hs-to-coq Example
+# New hs-to-rocq Example
 
-Create a new hs-to-coq example that translates a Haskell library to Coq. This skill sets up the directory structure, configures the build system, and iteratively translates the library following the Translation Principles from CLAUDE.md.
+Create a new hs-to-rocq example that translates a Haskell library to Coq. This skill sets up the directory structure, configures the build system, and iteratively translates the library following the Translation Principles from CLAUDE.md.
 
 ## Arguments
 
@@ -88,7 +88,7 @@ coq: $(OUT)/_CoqProject $(VFILES)
 	cd $(OUT) && coq_makefile -f _CoqProject -o Makefile
 	$(MAKE) -C $(OUT)
 
-HS_TO_COQ_OPTS := \
+HS_TO_ROCQ_OPTS := \
   -e ../../base/edits \
   -e edits \
   --iface-dir ../../base/ \
@@ -102,10 +102,10 @@ $(VFILES_GEN): $(OUT)/%.v : $$(wildcard module-edits/$$*/preamble.v) \
                             $$(wildcard module-edits/$$*/edits) \
                             $$(wildcard module-edits/$$*/flags) \
                             edits $(OUT)/README.md
-	$(HS_TO_COQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
+	$(HS_TO_ROCQ) $(addprefix -e , $(wildcard module-edits/$*/edits)) \
 	             $(addprefix -p , $(wildcard module-edits/$*/preamble.v)) \
 	             $(addprefix --midamble , $(wildcard module-edits/$*/midamble.v)) \
-	             $(HS_TO_COQ_OPTS) \
+	             $(HS_TO_ROCQ_OPTS) \
 	             -o $(OUT) \
 	             <name>/<src-path>/$*.hs
 	test -e $@
@@ -128,7 +128,7 @@ Start with an EMPTY edits file. Do not presume any edits are needed.
 ```markdown
 # <Name> Example
 
-Coq translation of the [<name>](REPO_URL) Haskell library using hs-to-coq.
+Coq translation of the [<name>](REPO_URL) Haskell library using hs-to-rocq.
 
 ## Building
 
@@ -153,7 +153,7 @@ Follow this strict priority order for handling translation issues:
 
 1. **Auto-generate** — try `make vfiles` first with no edits
 2. **Use edits** — `skip`, `rename`, `rewrite`, `order`, `termination`, `equations`, etc.
-3. **Fix hs-to-coq** — if the tool should handle a case but can't
+3. **Fix hs-to-rocq** — if the tool should handle a case but can't
 4. **`redefine`** — only when translation is fundamentally wrong
 5. **`midamble.v`** — only for mid-file definitions that can't be expressed via edits
 6. **Manual files** — absolute last resort
@@ -210,7 +210,7 @@ Before adding ANY edit, verify the issue exists:
    a) skip the entire module
    b) skip just the problematic definition
    c) redefine it manually
-   d) fix hs-to-coq to handle this case
+   d) fix hs-to-rocq to handle this case
    Which would you prefer?"
    ```
 
@@ -240,7 +240,7 @@ Fix Coq compilation errors by adjusting edits, preambles, or midambles.
 Ask the user:
 ```
 "Should I commit the generated lib/*.v files to Git as convenience copies?
-This lets people build without running hs-to-coq, but means the files
+This lets people build without running hs-to-rocq, but means the files
 need to stay in sync with edits changes. (The base/, containers/, ghc/,
 and graph/ examples all do this.)"
 ```
@@ -260,7 +260,7 @@ This would add it to:
 "
 ```
 
-If yes, update `.github/workflows/hs-to-coq.yml`.
+If yes, update `.github/workflows/hs-to-rocq.yml`.
 
 ### 3.3 Ask about theories
 

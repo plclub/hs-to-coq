@@ -1,5 +1,5 @@
 GENERATE=generate-edits-mode.rb
-PARSERS=../src/lib/HsToCoq/Edits/Parser.y
+PARSERS=../src/lib/HsToRocq/Edits/Parser.y
 EDITS=edits.el
 
 all: $(EDITS)

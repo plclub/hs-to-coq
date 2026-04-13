@@ -4,7 +4,7 @@ module Existential where
 
 data Step s a = Yield a s | Done
 
--- https://github.com/antalsz/hs-to-coq/issues/12
+-- https://github.com/antalsz/hs-to-rocq/issues/12
 data Stream a = forall s. MkStream (s -> Step s a) s
 
 

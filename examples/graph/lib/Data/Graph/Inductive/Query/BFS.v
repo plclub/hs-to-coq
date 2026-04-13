@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -27,7 +27,7 @@ Require GHC.Base.
 Require GHC.Err.
 Require GHC.List.
 Require GHC.Num.
-Require HsToCoq.DeferredFix.
+Require HsToRocq.DeferredFix.
 Import GHC.Base.Notations.
 Import GHC.Num.Notations.
 
@@ -35,17 +35,17 @@ Import GHC.Num.Notations.
 
 (* Midamble *)
 
-Instance LPath__Default {a} : HsToCoq.Err.Default (Data.Graph.Inductive.Graph.LPath a) :=
+Instance LPath__Default {a} : HsToRocq.Err.Default (Data.Graph.Inductive.Graph.LPath a) :=
   { default := Data.Graph.Inductive.Graph.LP nil }.
 
-Instance Queue__Default {a} : HsToCoq.Err.Default (Data.Graph.Inductive.Internal.Queue.Queue a) :=
+Instance Queue__Default {a} : HsToRocq.Err.Default (Data.Graph.Inductive.Internal.Queue.Queue a) :=
   { default := Data.Graph.Inductive.Internal.Queue.MkQueue nil nil }.
 
 (*Need to rewrite this because of laziness issue - We cannot call queueGet before knowing that the queue is non-empty*)
 Definition bf {gr} {a} {b} `{(Data.Graph.Inductive.Graph.Graph gr)}
    : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Path ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.RTree :=
-  HsToCoq.DeferredFix.deferredFix2 (fun bf
+  HsToRocq.DeferredFix.deferredFix2 (fun bf
                                 (q : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Path)
                                 (g : gr a b) =>
                                  if orb (Data.Graph.Inductive.Internal.Queue.queueEmpty q)
@@ -70,7 +70,7 @@ Definition lbf {gr} {b} {a} `{(Data.Graph.Inductive.Graph.Graph gr)}
    : Data.Graph.Inductive.Internal.Queue.Queue (Data.Graph.Inductive.Graph.LPath
                                                 b) ->
      gr a b -> Data.Graph.Inductive.Internal.RootPath.LRTree b :=
-  HsToCoq.DeferredFix.deferredFix2 (fun lbf
+  HsToRocq.DeferredFix.deferredFix2 (fun lbf
                                 (q
                                   : Data.Graph.Inductive.Internal.Queue.Queue (Data.Graph.Inductive.Graph.LPath
                                                                                b))
@@ -101,20 +101,20 @@ Definition lbf {gr} {b} {a} `{(Data.Graph.Inductive.Graph.Graph gr)}
    : (Data.Graph.Inductive.Graph.Context a b -> c) ->
      Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Node ->
      gr a b -> list c :=
-  HsToCoq.DeferredFix.deferredFix3 (fun bfsnInternal
-                                    (f : (Data.Graph.Inductive.Graph.Context a b -> c))
-                                    (q : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Node)
-                                    (g : gr a b) =>
-                                      let 'pair v q' := Data.Graph.Inductive.Internal.Queue.queueGet q in
-                                      if orb (Data.Graph.Inductive.Internal.Queue.queueEmpty q)
-                                             (Data.Graph.Inductive.Graph.isEmpty g) : bool
-                                      then nil else
-                                      match Data.Graph.Inductive.Graph.match_ v g with
-                                      | pair (Some c) g' =>
-                                          cons (f c) (bfsnInternal f (Data.Graph.Inductive.Internal.Queue.queuePutList
-                                                                      (Data.Graph.Inductive.Graph.suc' c) q') g')
-                                      | pair None g' => bfsnInternal f q' g'
-                                      end).
+  HsToRocq.DeferredFix.deferredFix3 (fun bfsnInternal
+                                     (f : (Data.Graph.Inductive.Graph.Context a b -> c))
+                                     (q : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Node)
+                                     (g : gr a b) =>
+                                       let 'pair v q' := Data.Graph.Inductive.Internal.Queue.queueGet q in
+                                       if orb (Data.Graph.Inductive.Internal.Queue.queueEmpty q)
+                                              (Data.Graph.Inductive.Graph.isEmpty g) : bool
+                                       then nil else
+                                       match Data.Graph.Inductive.Graph.match_ v g with
+                                       | pair (Some c) g' =>
+                                           cons (f c) (bfsnInternal f (Data.Graph.Inductive.Internal.Queue.queuePutList
+                                                                       (Data.Graph.Inductive.Graph.suc' c) q') g')
+                                       | pair None g' => bfsnInternal f q' g'
+                                       end).
 
 #[global] Definition bfsnWith {gr : Type -> Type -> Type} {a : Type} {b : Type}
   {c : Type} `{Data.Graph.Inductive.Graph.Graph gr}
@@ -155,25 +155,25 @@ Definition lbf {gr} {b} {a} `{(Data.Graph.Inductive.Graph.Graph gr)}
   `{Data.Graph.Inductive.Graph.Graph gr}
    : list (Data.Graph.Inductive.Graph.Node * GHC.Num.Int)%type ->
      gr a b -> list (Data.Graph.Inductive.Graph.Node * GHC.Num.Int)%type :=
-  HsToCoq.DeferredFix.deferredFix2 (fun leveln
-                                    (arg_0__ : list (Data.Graph.Inductive.Graph.Node * GHC.Num.Int)%type)
-                                    (arg_1__ : gr a b) =>
-                                      match arg_0__, arg_1__ with
-                                      | nil, _ => nil
-                                      | _, g =>
-                                          if Data.Graph.Inductive.Graph.isEmpty g : bool then nil else
-                                          match arg_0__, arg_1__ with
-                                          | cons (pair v j) vs, g =>
-                                              match Data.Graph.Inductive.Graph.match_ v g with
-                                              | pair (Some c) g' =>
-                                                  cons (pair v j) (leveln (Coq.Init.Datatypes.app vs (suci c (j
-                                                                                                              GHC.Num.+
-                                                                                                              #1))) g')
-                                              | pair None g' => leveln vs g'
-                                              end
-                                          | _, _ => GHC.Err.patternFailure
-                                          end
-                                      end).
+  HsToRocq.DeferredFix.deferredFix2 (fun leveln
+                                     (arg_0__ : list (Data.Graph.Inductive.Graph.Node * GHC.Num.Int)%type)
+                                     (arg_1__ : gr a b) =>
+                                       match arg_0__, arg_1__ with
+                                       | nil, _ => nil
+                                       | _, g =>
+                                           if Data.Graph.Inductive.Graph.isEmpty g : bool then nil else
+                                           match arg_0__, arg_1__ with
+                                           | cons (pair v j) vs, g =>
+                                               match Data.Graph.Inductive.Graph.match_ v g with
+                                               | pair (Some c) g' =>
+                                                   cons (pair v j) (leveln (Coq.Init.Datatypes.app vs (suci c (j
+                                                                                                               GHC.Num.+
+                                                                                                               #1))) g')
+                                               | pair None g' => leveln vs g'
+                                               end
+                                           | _, _ => GHC.Err.patternFailure
+                                           end
+                                       end).
 
 #[global] Definition level {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
@@ -192,19 +192,19 @@ Definition lbf {gr} {b} {a} `{(Data.Graph.Inductive.Graph.Graph gr)}
   `{(Data.Graph.Inductive.Graph.Graph gr)}
    : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Edge ->
      gr a b -> list Data.Graph.Inductive.Graph.Edge :=
-  HsToCoq.DeferredFix.deferredFix2 (fun bfenInternal
-                                    (q : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Edge)
-                                    (g : gr a b) =>
-                                      let 'pair (pair u v) q' := Data.Graph.Inductive.Internal.Queue.queueGet q in
-                                      if orb (Data.Graph.Inductive.Internal.Queue.queueEmpty q)
-                                             (Data.Graph.Inductive.Graph.isEmpty g) : bool
-                                      then nil else
-                                      match Data.Graph.Inductive.Graph.match_ v g with
-                                      | pair (Some c) g' =>
-                                          cons (pair u v) (bfenInternal
-                                                (Data.Graph.Inductive.Internal.Queue.queuePutList (outU c) q') g')
-                                      | pair None g' => bfenInternal q' g'
-                                      end).
+  HsToRocq.DeferredFix.deferredFix2 (fun bfenInternal
+                                     (q : Data.Graph.Inductive.Internal.Queue.Queue Data.Graph.Inductive.Graph.Edge)
+                                     (g : gr a b) =>
+                                       let 'pair (pair u v) q' := Data.Graph.Inductive.Internal.Queue.queueGet q in
+                                       if orb (Data.Graph.Inductive.Internal.Queue.queueEmpty q)
+                                              (Data.Graph.Inductive.Graph.isEmpty g) : bool
+                                       then nil else
+                                       match Data.Graph.Inductive.Graph.match_ v g with
+                                       | pair (Some c) g' =>
+                                           cons (pair u v) (bfenInternal
+                                                 (Data.Graph.Inductive.Internal.Queue.queuePutList (outU c) q') g')
+                                       | pair None g' => bfenInternal q' g'
+                                       end).
 
 #[global] Definition bfen {gr : Type -> Type -> Type} {a : Type} {b : Type}
   `{Data.Graph.Inductive.Graph.Graph gr}
@@ -278,6 +278,6 @@ Definition lbf {gr} {b} {a} `{(Data.Graph.Inductive.Graph.Graph gr)}
      Data.Graph.Inductive.Internal.RootPath.getLPath
      Data.Graph.Inductive.Internal.RootPath.getPath GHC.Base.map GHC.Base.op_z2218U__
      GHC.Err.patternFailure GHC.List.length GHC.List.zip GHC.Num.Int
-     GHC.Num.fromInteger GHC.Num.op_zp__ HsToCoq.DeferredFix.deferredFix2
-     HsToCoq.DeferredFix.deferredFix3
+     GHC.Num.fromInteger GHC.Num.op_zp__ HsToRocq.DeferredFix.deferredFix2
+     HsToRocq.DeferredFix.deferredFix3
 *)

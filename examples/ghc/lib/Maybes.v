@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -18,7 +18,7 @@ Require Data.Foldable.
 Require Data.Maybe.
 Require GHC.Base.
 Require GHC.Err.
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 Import GHC.Base.Notations.
 
 (* Converted type declarations: *)
@@ -153,7 +153,7 @@ Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
       end in
   Data.Foldable.foldlM go None.
 
-#[global] Definition expectJust {a} `{HsToCoq.Err.Default a}
+#[global] Definition expectJust {a} `{HsToRocq.Err.Default a}
    : GHC.Base.String -> option a -> a :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
@@ -199,5 +199,5 @@ Program Instance Monad__MaybeErr {err : Type} : GHC.Base.Monad (MaybeErr err) :=
      GHC.Base.op_zgzg____ GHC.Base.op_zgzgze____ GHC.Base.op_zlzd__
      GHC.Base.op_zlzd____ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
      GHC.Base.pure__ GHC.Base.return_ GHC.Base.return___ GHC.Err.error
-     HsToCoq.Err.Default
+     HsToRocq.Err.Default
 *)

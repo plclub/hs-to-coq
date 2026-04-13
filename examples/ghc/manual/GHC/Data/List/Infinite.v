@@ -1,6 +1,6 @@
 (* Stub module for GHC.Data.List.Infinite *)
-Require HsToCoq.Err.
+Require HsToRocq.Err.
 
 Axiom Infinite : Type -> Type.
 
-Instance Default__Infinite {a} : HsToCoq.Err.Default (Infinite a). Admitted.
+Instance Default__Infinite {a} : HsToRocq.Err.Default (Infinite a). Admitted.

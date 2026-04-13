@@ -2,7 +2,7 @@
 Edit Files
 ==========
 
-The edit files contain declarations that control the output of ``hs-to-coq`` on
+The edit files contain declarations that control the output of ``hs-to-rocq`` on
 various Haskell files.
 
 General format of edit files
@@ -23,7 +23,7 @@ module).
 Reserved names have an underscore appended and renames (see below) have already
 been applied.
 
-More details about how ``hs-to-coq`` treats see Section :ref:`mangling`.
+More details about how ``hs-to-rocq`` treats see Section :ref:`mangling`.
 
 
 Gallina expressions
@@ -36,7 +36,7 @@ associativity, so add plenty of parentheses!
 Skipping Haskell
 ----------------
 
-Sometimes, ``hs-to-coq`` should ignore various Haskell declarations, because
+Sometimes, ``hs-to-rocq`` should ignore various Haskell declarations, because
 they are not translatable, or they are out-of-scope, or for other reasons.
 
 ``skip`` – skip a function, type, or type class instance
@@ -58,7 +58,7 @@ Effect:
   that you can use other methods, e.g. a preamble, to make it available.
 
   You can skip type class instances, but as they do not have names in Haskell,
-  you must use the name ``hs-to-coq`` generates for them.  The name generation
+  you must use the name ``hs-to-rocq`` generates for them.  The name generation
   is systematic, but you might want to first attempt the translation and check
   the output for the precise name.
 
@@ -298,14 +298,14 @@ Format:
 Effect:
   Do not generate an ``Require`` statemnt for *module*.
 
-  This is mostly useful during development: ``hs-to-coq`` automatically requires
+  This is mostly useful during development: ``hs-to-rocq`` automatically requires
   the modules of all names it encounters, in the beginning of the resulting file.
   If there are names from modules that you do not intent to translate, Coq will
   already abort there. It is more convenient to have it fail when the name is actually
   encountered, to then decide how to fix it (e.g. using ``skip``, ``rename`` or ``rewrite``).
 
   In the end, all mentions of names in the give module ought to be gone, in
-  which case ``hs-to-coq`` would not generate an ``Require`` statement anyways.
+  which case ``hs-to-rocq`` would not generate an ``Require`` statement anyways.
   So in complete formalizations, this edit should not be needed.
 
 Examples:
@@ -445,12 +445,12 @@ Effect:
   ``Inductive``, an ``Instance``, an ``Axiom``, or a ``Theorem`` (with a ``Proof``).
 
   The name in the definition should be fully qualified. (If it is not, some
-  dependency calculations inside ``hs-to-coq`` might go wrong – but this is not
+  dependency calculations inside ``hs-to-rocq`` might go wrong – but this is not
   always critical.)
 
   Our Coq parser is dramatically incomplete, and you may need to add parentheses
   or pick a simpler syntactic representation of terms to get them to parse
-  correctly or at all.  One example is that ``hs-to-coq`` does not understand
+  correctly or at all.  One example is that ``hs-to-rocq`` does not understand
   the associativity of the function arrow when parsing: ``a -> b -> c`` will not
   parse, and needs to be given as ``a -> (b -> c)``.
 
@@ -502,7 +502,7 @@ Effect:
   Inject a ``Import`` statement into the Coq code, which makes the definitions
   from the given module available unqualified.
 
-  When used to import the hs-to-coq base library, this makes the output look
+  When used to import the hs-to-rocq base library, this makes the output look
   more like standard Haskell.
 
   Note, however, that Coq's module system lacks the ``import ... hiding``
@@ -577,7 +577,7 @@ Effect:
 Note:
   If two modules are renamed to the same name, they will be combined
   into a single joint module, as long as they are processed during the same
-  execution of ``hs-to-coq``. This feature is useful to translate mutually
+  execution of ``hs-to-rocq``. This feature is useful to translate mutually
   recursive modules.
 
 Examples:
@@ -756,7 +756,7 @@ Format:
 Effect:
 
   For Haskell programs written with the ``PolyKind`` extension, the user can
-  provide the polymorphic kind variables to help hs-to-coq to include those kind
+  provide the polymorphic kind variables to help hs-to-rocq to include those kind
   variables.
 
 Examples:
@@ -868,10 +868,10 @@ Format:
   | **order** *qualified_name* ...
 
 Effect:
-  ``hs-to-coq`` topologically sorts definitions so that they appear in
+  ``hs-to-rocq`` topologically sorts definitions so that they appear in
   dependency order. However, this sorting is not always correct --- type
   classes introduce implicit dependencies that are invisible to
-  ``hs-to-coq``. This edit adds a new ordering constraint into the
+  ``hs-to-rocq``. This edit adds a new ordering constraint into the
   topological sort so that the output definitions appear in the order indicate
   in this edit.
 
@@ -906,7 +906,7 @@ Format:
   | **promote** *qualified_name* ...
 
 Effect:
-  `hs-to-coq` divides Haskell definitions into two "levels": type-level and term-level.
+  `hs-to-rocq` divides Haskell definitions into two "levels": type-level and term-level.
   Type-level definitions always appear above term-level definitions in the Coq output.
   The ``promote`` edit moves a term-level definition to the type level.
   It also recursively moves the transitive closure of all definitions on which the
@@ -948,7 +948,7 @@ Effect:
   If your preamble includes custom notation (usually for operators), you need
   to indicate this using this edit.
   See Section :ref:`mangling` for more information about
-  how ``hs-to-coq`` implements custom notation.
+  how ``hs-to-rocq`` implements custom notation.
 
 Examples:
   .. code-block:: shell
@@ -1009,7 +1009,7 @@ Effect:
   plugin syntax.  This automatically adds ``From Equations Require Import Equations``
   to the module's imports.
 
-  ``hs-to-coq`` extracts match arms from the function body and emits them as
+  ``hs-to-rocq`` extracts match arms from the function body and emits them as
   Equations clauses.  Local ``let`` bindings that contain pattern-matching functions
   are emitted as ``where`` clauses (at most one per definition).
 
@@ -1113,17 +1113,17 @@ Examples:
 
 Effect:
 
-  By default, ``hs-to-coq`` translates recursive definitions using Coq’s
+  By default, ``hs-to-rocq`` translates recursive definitions using Coq’s
   ``fix`` operator, which requires that the recursion is obviously structurally
   recursive. This is not always the right choice, and a ``termination`` edit tells
-  ``hs-to-coq`` to construct the recursive definition differently, where *termination_argument* is one of the following:
+  ``hs-to-rocq`` to construct the recursive definition differently, where *termination_argument* is one of the following:
 
   * .. index::
        single: corecursive, termination argument
 
     **corecursive**
 
-    This causes ``hs-to-coq`` to use ``cofix`` instead of ``fix``.
+    This causes ``hs-to-rocq`` to use ``cofix`` instead of ``fix``.
 
   * .. index::
        single: struct, termination argument
@@ -1150,16 +1150,16 @@ Effect:
 
     **{** **wf** *relation* *expr* **}**
 
-    With one of these forms for *termination_argument*, ``hs-to-coq`` uses
+    With one of these forms for *termination_argument*, ``hs-to-rocq`` uses
     ``Program Fixpoint`` to declare the function, passing these termination arguments
     along. See the documentation of ``Program Fixpoint`` for their precise meaning.
 
     The *expr* is a Coq expression that mentions the parameters of the current
-    functions. These often have names generated by ``hs-to-coq`` -- look at the
+    functions. These often have names generated by ``hs-to-rocq`` -- look at the
     generated Coq code to see what they are.
 
     ``Program Fixpoint`` only supports top-level declaration. When these
-    termination edits are applied to local definitions, ``hs-to-coq`` therefore
+    termination edits are applied to local definitions, ``hs-to-rocq`` therefore
     uses the fixed-point operator ``wfFix1`` defined in ``GHC.Wf`` in our
     ``base`` library.
 
@@ -1173,7 +1173,7 @@ Effect:
 
     **deferred**
 
-    This causes ``hs-to-coq`` to use the axiom ``deferredFix`` from the module
+    This causes ``hs-to-rocq`` to use the axiom ``deferredFix`` from the module
     ``GHC.DeferredFix`` to translate the recursive definition. This defers
     the termination proof until the verification stage, where the axiom
     ``deferredFix_eq_on`` is needed to learn anything about the recursive
@@ -1492,7 +1492,7 @@ Format:
 
   The definitions specified in ``useSigmaType`` will use the sigma type instead
   of the original type. Thus, we need a way to provide the proof part of the sigma type.
-  To this end, hs-to-coq will re-define these definitions using the ``Program`` keyword.
+  To this end, hs-to-rocq will re-define these definitions using the ``Program`` keyword.
   As a result, when Coq encounters these definitions, it will enter Program mode.
   ``Program`` mode automatically applies or unwraps sigma types, which may
   generate proof obligations for the user.

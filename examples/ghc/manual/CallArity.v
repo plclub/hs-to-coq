@@ -1,4 +1,4 @@
-(* Default settings (from HsToCoq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Coq.Preamble) *)
 
 Generalizable All Variables.
 
@@ -23,8 +23,8 @@ Require UnVarGraph.
 
 (* Midamble *)
 
-#[global] Instance Default_CallArityRes : HsToCoq.Err.Default CallArityRes :=
-HsToCoq.Err.Build_Default _ (HsToCoq.Err.default, HsToCoq.Err.default).
+#[global] Instance Default_CallArityRes : HsToRocq.Err.Default CallArityRes :=
+HsToRocq.Err.Build_Default _ (HsToRocq.Err.default, HsToRocq.Err.default).
 
 
 (* ------------------------- mutual recursion hack -------------------- *)
