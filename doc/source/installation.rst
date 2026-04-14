@@ -15,7 +15,7 @@ repository includes everything that you need.
  
 .. code-block:: shell
 
-    $ git clone https://github.com/plclub/hs-to-coq.git
+    $ git clone https://github.com/plclub/hs-to-coq.git hs-to-rocq
     $ cd hs-to-rocq
 
 The recommended way of building `hs-to-rocq` is to use the `stack` tool which you can get from https://docs.haskellstack.org/en/stable/README/. If you
