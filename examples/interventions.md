@@ -52,8 +52,8 @@
 - Moved `op_zlzt__` from manual base/GHC/Base.v edit to `add GHC.Base Definition` in module-edits/GHC/Base/edits
 - Removed `<*` and `GHC.Base.<*` notations (unused, and GHC.Base.<* is ambiguous with Coq's `<` operator)
 
-### src/lib/HsToRocq/Coq/Gallina/Util.hs
-- Added `<*` to `isAmbiguousCoqOp` in `qualidHasValidCoqOp` — `GHC.Base.<*` parses as `GHC.Base.<` followed by `*`
+### src/lib/HsToRocq/Rocq/Gallina/Util.hs
+- Added `<*` to `isAmbiguousRocqOp` in `qualidHasValidRocqOp` — `GHC.Base.<*` parses as `GHC.Base.<` followed by `*`
 - Now renders as `op_zlzt__` instead of `<*` notation
 
 ### examples/ghc/Makefile
