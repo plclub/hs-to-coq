@@ -1,7 +1,7 @@
 (** This file has been manually derived from UniqSet.hs, with modifications in support of 
     the UniqSet invariant. *)
 
-(* Default settings (from HsToRocq.Coq.Preamble) *)
+(* Default settings (from HsToRocq.Rocq.Preamble) *)
 
 Generalizable All Variables.
 
