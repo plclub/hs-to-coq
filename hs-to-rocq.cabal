@@ -20,7 +20,7 @@ tested-with: GHC == 8.10.7, GHC == 9.10.3
 
 source-repository head
   type:     git
-  location: https://github.com/plclub/hs-to-rocq
+  location: https://github.com/plclub/hs-to-coq
 
 library
   exposed-modules:     HsToRocq.Util.GHC

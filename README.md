@@ -1,9 +1,9 @@
 
 # hs-to-rocq
 
-[![hs-to-rocq](https://github.com/plclub/hs-to-rocq/actions/workflows/hs-to-rocq.yml/badge.svg)](https://github.com/plclub/hs-to-rocq/actions/workflows/hs-to-rocq.yml)
+[![hs-to-rocq](https://github.com/plclub/hs-to-coq/actions/workflows/hs-to-rocq.yml/badge.svg)](https://github.com/plclub/hs-to-coq/actions/workflows/hs-to-rocq.yml)
 
-Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-rocq-devs.20.26.20users)
+Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-coq-devs.20.26.20users)
 
 This repository contains a converter from Haskell code to equivalent
 Coq code, as part of the [CoreSpec] component of the [DeepSpec]
@@ -19,7 +19,7 @@ paper describes the following examples:
   * [base-src](examples/base-src) The sources of the `base/` directory
 
 
-ICFP'18 paper ["Ready, set, verify! applying hs-to-rocq to real-world
+ICFP'18 paper ["Ready, set, verify! applying hs-to-coq to real-world
 Haskell code (experience
 report)"](https://dl.acm.org/citation.cfm?id=3236784) by Joachim
 Breitner, Antal Spector-Zabusky, Yao Li, Christine Rizkallah, John
@@ -31,7 +31,7 @@ paper claims still hold on the current codebase (GHC 9.10.3, Coq 8.20,
 containers v0.7).
 
 [**Documentation for the `hs-to-rocq` tool is
-available!**](https://hs-to-rocq.readthedocs.io/en/latest/)
+available!**](https://hs-to-coq.readthedocs.io/en/latest/)
 
 # Installation
 
@@ -120,7 +120,7 @@ rename value Foo.SomeType = Foo.MkSomeType
 ```
 
 
-See the [manual](https://hs-to-rocq.readthedocs.io/en/latest/) for documentation
+See the [manual](https://hs-to-coq.readthedocs.io/en/latest/) for documentation
 for the edits files.
 
 
