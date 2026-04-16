@@ -1,7 +1,7 @@
 
 # hs-to-rocq
 
-[![hs-to-rocq](https://github.com/plclub/hs-to-coq/actions/workflows/hs-to-rocq.yml/badge.svg)](https://github.com/plclub/hs-to-coq/actions/workflows/hs-to-rocq.yml)
+[![hs-to-rocq](https://github.com/plclub/hs-to-rocq/actions/workflows/hs-to-rocq.yml/badge.svg)](https://github.com/plclub/hs-to-rocq/actions/workflows/hs-to-rocq.yml)
 
 Join our discussion on: [![Zulip](https://img.shields.io/badge/Zulip-chat-informational.svg)](https://coq.zulipchat.com/#narrow/stream/240767-hs-to-coq-devs.20.26.20users)
 

@@ -15,7 +15,7 @@ repository includes everything that you need.
  
 .. code-block:: shell
 
-    $ git clone https://github.com/plclub/hs-to-coq.git hs-to-rocq
+    $ git clone https://github.com/plclub/hs-to-rocq.git
     $ cd hs-to-rocq
 
 The recommended way of building `hs-to-rocq` is to use the `stack` tool which you can get from https://docs.haskellstack.org/en/stable/README/. If you
@@ -35,7 +35,7 @@ Coq Requirements
 ----------------
 
 This repository comes with a Coq version of the Haskell `base
-<https://github.com/plclub/hs-to-coq/tree/master/base>`_ library, used by the
+<https://github.com/plclub/hs-to-rocq/tree/master/base>`_ library, used by the
 output of ``hs-to-rocq``.
 
 You must have `Coq 8.20` and `MathComp` (with Hierarchy Builder) to build
@@ -56,7 +56,7 @@ Once installed, you can build the base library from the project root with
     $ cd base && coq_makefile -f _CoqProject -o Makefile && make -j && cd ..
 
 The directory `base-thy
-<https://github.com/plclub/hs-to-coq/tree/master/base-thy>`_ contains auxiliary
+<https://github.com/plclub/hs-to-rocq/tree/master/base-thy>`_ contains auxiliary
 definitions and lemmas, such as lawful type-class instances. You can build
 these with
 
