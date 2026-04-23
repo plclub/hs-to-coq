@@ -47,10 +47,10 @@ PASS = \
   ClassKinds \
   UniversePolymorphic \
   Equations \
+  TypeAnnotations \
 
 # tests that *should* pass but currently fail
 TODO_PASS = \
-  TypeAnnotations \
   MutrecInst \
   TopBind \
   ExceptInDataDefinition \
