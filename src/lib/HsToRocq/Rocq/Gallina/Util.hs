@@ -40,7 +40,10 @@ module HsToRocq.Rocq.Gallina.Util (
   normalizeType,
 
   -- * Manipulating 'Sentence's
-  isComment
+  isComment,
+
+  -- * Version-conditional rewriting
+  coqToStdlib,
   ) where
 
 import Control.Lens
@@ -54,6 +57,8 @@ import qualified Data.List.NonEmpty as NEL
 
 import qualified Data.Text as T
 
+import Data.Data (Data)
+import Data.Generics (everywhere, mkT, extT)
 import GHC.Stack
 
 import HsToRocq.Util.Monad (ErrorString)
@@ -367,3 +372,29 @@ normalizeType (Parens t)                = normalizeType t
 normalizeType (App (App t args1) args2) = normalizeType $ App t $ args1 <> args2
 normalizeType (HasType t _)             = normalizeType t
 normalizeType t                         = t
+
+-- | Rewrite all @Coq.*@ references to @Stdlib.*@ in the AST.
+-- Used when targeting Rocq 9.0, where the standard library was renamed.
+coqToStdlib :: Data a => a -> a
+coqToStdlib = everywhere (mkT renameQualid `extT` renameModuleSentence)
+  where
+    renameQualid :: Qualid -> Qualid
+    renameQualid (Qualified modId accId)
+      | "Coq." `T.isPrefixOf` modId = Qualified ("Stdlib" <> T.drop 3 modId) accId
+    renameQualid q = q
+
+    renameModuleIdent :: ModuleIdent -> ModuleIdent
+    renameModuleIdent m
+      | "Coq." `T.isPrefixOf` m = "Stdlib" <> T.drop 3 m
+      | m == "Coq"              = "Stdlib"
+      | otherwise               = m
+
+    -- ModuleIdent is a type alias for Text, so we can't use mkT on it directly.
+    -- Instead we pattern-match on ModuleSentence constructors that contain ModuleIdents.
+    renameModuleSentence :: ModuleSentence -> ModuleSentence
+    renameModuleSentence (ModuleImport ie mods) =
+      ModuleImport ie (fmap renameModuleIdent mods)
+    renameModuleSentence (Require from ie mods) =
+      Require (fmap renameModuleIdent from) ie (fmap renameModuleIdent mods)
+    renameModuleSentence (ModuleAssignment m1 m2) =
+      ModuleAssignment (renameModuleIdent m1) (renameModuleIdent m2)

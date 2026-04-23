@@ -164,6 +164,81 @@ jobs:
           make -C examples/bag
           # resources/list_monad.v needs mathcomp; tested in test-coq-files job
 
+  test-rocq9:
+    name: Rocq 9.0 base + tests
+    runs-on: ubuntu-latest
+    needs: build-haskell
+    container:
+      image: haskell:9.10.3
+    env:
+      HOME: /root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix Docker config permissions
+        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
+      - name: Initialize required submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git submodule update --init examples/ghc/ghc
+      - name: Caching Stack
+        uses: actions/cache@v4
+        with:
+          path: |
+            /root/.stack
+            .stack-work
+          key: stack-ghc9.10.3-${{ hashFiles('hs-to-rocq.cabal', 'stack.yaml', 'src/**') }}
+      - name: Build hs-to-rocq
+        run: stack --no-terminal --system-ghc --allow-different-user build
+      - name: Install Rocq 9.0
+        run: |
+          apt-get update && apt-get install -y opam
+          opam init -j 2 -n -y -c ocaml-base-compiler.4.14.2
+          opam repo add coq-released https://coq.inria.fr/opam/released || true
+          opam install -y rocq-prover.9.0.0 coq-equations
+      - name: Build Rocq 9.0 base
+        run: |
+          eval $(opam env)
+          (cd examples/rocq9.0/base; coq_makefile -f _CoqProject -o Makefile)
+          make -j -C examples/rocq9.0/base
+      - name: Run Rocq 9.0 unit tests
+        run: |
+          eval $(opam env)
+          make -C examples/rocq9.0/tests || test $? -eq 2
+
+  test-rocq9-translation:
+    name: Rocq 9.0 translation (ensures convenience copy is up-to-date)
+    runs-on: ubuntu-latest
+    container:
+      image: haskell:9.10.3
+    env:
+      HOME: /root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix Docker config permissions
+        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
+      - name: Initialize required submodules
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git submodule update --init examples/ghc/ghc
+      - name: Caching Stack
+        uses: actions/cache@v4
+        with:
+          path: |
+            /root/.stack
+            .stack-work
+          key: stack-ghc9.10.3-${{ hashFiles('hs-to-rocq.cabal', 'stack.yaml', 'src/**') }}
+      - name: Build hs-to-rocq
+        run: stack --no-terminal --system-ghc --allow-different-user build
+      - name: Regenerating Rocq 9.0 base
+        run: |
+          make -C examples/rocq9.0/base-src clean
+          make -C examples/rocq9.0/base-src vfiles
+      - name: Comparing convenience copy of Rocq 9.0 base
+        run: |
+          git add examples/rocq9.0/base
+          git status
+          git diff-index --cached --quiet HEAD -- examples/rocq9.0/base
+
   test-translation:
     name: Translation (ensures convenience copy is up-to-date)
     runs-on: ubuntu-latest

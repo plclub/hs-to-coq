@@ -22,8 +22,8 @@ import HsToRocq.Rocq.Gallina.Orphans ()
 import qualified Data.Map as M
 import Data.Bifunctor
 
-staticPreamble :: Text
-staticPreamble = T.unlines
+staticPreamble :: RocqVersion -> Text
+staticPreamble version = T.unlines
  [ "(* Default settings (from HsToRocq.Rocq.Preamble) *)"
  , ""
  , "Generalizable All Variables."
@@ -33,9 +33,12 @@ staticPreamble = T.unlines
  , "Unset Strict Implicit."
  , "Unset Printing Implicit Defensive."
  , ""
- , "Require Coq.Program.Tactics."
- , "Require Coq.Program.Wf."
+ , "Require " <> stdlibPrefix version <> "Program.Tactics."
+ , "Require " <> stdlibPrefix version <> "Program.Wf."
  ]
+  where
+    stdlibPrefix Rocq_8_20 = "Coq."
+    stdlibPrefix Rocq_9_0  = "Stdlib."
 
 -- | When a free variable of this name appears in the output,
 -- an axiom of the type given here is added to the preamble
