@@ -74,8 +74,8 @@ VFILES    = $(addsuffix .v,$(MODULES)) Renamed.v
 VOFILES   = $(patsubst %.v,%.vo,$(VFILES))
 COQFLAGS  = ""
 
-# typecheck *quietly*
-TYPECHECK=coqc 1>/dev/null
+# typecheck *quietly* (Rocq 9 replaced coqc with `rocq c`)
+TYPECHECK=rocq c 1>/dev/null
 
 main:
 	# Call ourselves with -k, so that we see all test outputs,
@@ -131,7 +131,7 @@ todo_translate: $(foreach f, $(TODO_TRANSLATE), $(f).fail_translate)
 	 fi
 
 %.vo : %.v
-	@coqc -Q . "" $*.v
+	@rocq c -Q . "" $*.v
 
 .SECONDEXPANSION:
 # Generate .v from .hs using source tests directory
