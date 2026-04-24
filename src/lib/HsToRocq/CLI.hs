@@ -303,7 +303,7 @@ processFilesMain process = do
                        <*> pure (conf^.directInputFiles)
 
   let rewriteVFileContent s = case conf^.cfgRocqVersion of
-        Rocq_9_0  -> T.replace "Coq." "Stdlib." (T.pack s)
+        Rocq_9_0  -> rocq9RewriteText (T.pack s)
         Rocq_8_20 -> T.pack s
 
   preambles <- liftIO $ traverse readFile (conf^.preambleFile)

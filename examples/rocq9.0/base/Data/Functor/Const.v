@@ -22,7 +22,7 @@ Implicit Type inst_k: unit_class.
 
 (* Converted imports: *)
 
-Require Stdlib.Program.Basics.
+Require Corelib.Program.Basics.
 Require Data.Foldable.
 Require Data.SemigroupInternal.
 Require GHC.Base.
@@ -107,7 +107,7 @@ Program Instance Monoid__Const {a : Type} {k : Type} {b : k} `{GHC.Base.Monoid
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__Const_foldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Const_foldl' {inst_m : Type}
    : forall {b : Type},
@@ -164,14 +164,14 @@ Program Instance Monoid__Const {a : Type} {k : Type} {b : k} `{GHC.Base.Monoid
 #[local] Definition Foldable__Const_product {inst_m : Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Const inst_m a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
-                                  (Foldable__Const_foldMap' Data.SemigroupInternal.Mk_Product).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
+                                   (Foldable__Const_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Const_sum {inst_m : Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Const inst_m a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
-                                  (Foldable__Const_foldMap' Data.SemigroupInternal.Mk_Sum).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
+                                   (Foldable__Const_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Const_toList {inst_m : Type}
    : forall {a : Type}, Const inst_m a -> list a :=
@@ -270,21 +270,21 @@ Instance Unpeel_Const (k a : Type) (b : k)
   HsToRocq.Unpeel.Build_Unpeel _ _ getConst Mk_Const.
 
 (* External variables:
-     Type bool false list true Data.Foldable.Foldable Data.Foldable.foldMap'__
-     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
-     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
-     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
-     Data.Foldable.sum__ Data.Foldable.toList__ Data.SemigroupInternal.Mk_Dual
-     Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
-     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
-     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
-     Data.SemigroupInternal.getSum GHC.Base.Applicative GHC.Base.Functor
-     GHC.Base.Monoid GHC.Base.Semigroup GHC.Base.build' GHC.Base.const GHC.Base.flip
-     GHC.Base.fmap__ GHC.Base.id GHC.Base.liftA2__ GHC.Base.map GHC.Base.mappend
-     GHC.Base.mappend__ GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty
-     GHC.Base.mempty__ GHC.Base.op_z2218U__ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
+     Type bool false list true Corelib.Program.Basics.compose Data.Foldable.Foldable
+     Data.Foldable.foldMap'__ Data.Foldable.foldMap__ Data.Foldable.fold__
+     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
+     Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
+     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
+     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
+     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
+     Data.SemigroupInternal.appEndo Data.SemigroupInternal.getDual
+     Data.SemigroupInternal.getProduct Data.SemigroupInternal.getSum
+     GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monoid GHC.Base.Semigroup
+     GHC.Base.build' GHC.Base.const GHC.Base.flip GHC.Base.fmap__ GHC.Base.id
+     GHC.Base.liftA2__ GHC.Base.map GHC.Base.mappend GHC.Base.mappend__
+     GHC.Base.mconcat GHC.Base.mconcat__ GHC.Base.mempty GHC.Base.mempty__
+     GHC.Base.op_z2218U__ GHC.Base.op_zlzd__ GHC.Base.op_zlzd____
      GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____ GHC.Base.op_zlztzg____
      GHC.Base.op_ztzg____ GHC.Base.pure__ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
      GHC.Num.op_zp__ GHC.Prim.seq HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel
-     Stdlib.Program.Basics.compose
 *)

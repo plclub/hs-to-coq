@@ -12,7 +12,7 @@ Require Stdlib.Program.Wf.
 
 (* Converted imports: *)
 
-Require Stdlib.Program.Basics.
+Require Corelib.Program.Basics.
 Require Data.Either.
 Require Data.Functor.Const.
 Require Data.Monoid.
@@ -108,8 +108,8 @@ Existing Class Bifoldable.
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__pair_type_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__pair_type : Bifoldable GHC.Tuple.pair_type :=
@@ -165,8 +165,8 @@ Program Instance Bifoldable__pair_type : Bifoldable GHC.Tuple.pair_type :=
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__Const_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__Const : Bifoldable Data.Functor.Const.Const :=
@@ -222,8 +222,8 @@ Program Instance Bifoldable__Const : Bifoldable Data.Functor.Const.Const :=
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__triple_type_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__triple_type {x : Type}
@@ -283,8 +283,8 @@ Program Instance Bifoldable__triple_type {x : Type}
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__quad_type_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__quad_type {x : Type} {y : Type}
@@ -346,8 +346,8 @@ Program Instance Bifoldable__quad_type {x : Type} {y : Type}
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__quint_type_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__quint_type {x : Type} {y : Type} {z : Type}
@@ -413,8 +413,8 @@ Program Instance Bifoldable__quint_type {x : Type} {y : Type} {z : Type}
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__sext_type_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__sext_type {x : Type} {y : Type} {z : Type} {w
@@ -481,8 +481,8 @@ Program Instance Bifoldable__sext_type {x : Type} {y : Type} {z : Type} {w
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__sept_type_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__sept_type {x : Type} {y : Type} {z : Type} {w
@@ -541,8 +541,8 @@ Program Instance Bifoldable__sept_type {x : Type} {y : Type} {z : Type} {w
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__Either_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__Either : Bifoldable Data.Either.Either :=
@@ -655,10 +655,10 @@ Program Instance Bifoldable__Either : Bifoldable Data.Either.Either :=
   `{Bifoldable t}
    : (a -> bool) -> (b -> bool) -> t a b -> bool :=
   fun p q =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getAny (bifoldMap
-                                   (Data.SemigroupInternal.Mk_Any GHC.Base.∘ p) (Data.SemigroupInternal.Mk_Any
-                                    GHC.Base.∘
-                                    q)).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getAny (bifoldMap
+                                    (Data.SemigroupInternal.Mk_Any GHC.Base.∘ p) (Data.SemigroupInternal.Mk_Any
+                                     GHC.Base.∘
+                                     q)).
 
 #[global] Definition bielem {t : Type -> Type -> Type} {a : Type} `{Bifoldable
   t} `{GHC.Base.Eq_ a}
@@ -679,14 +679,14 @@ Program Instance Bifoldable__Either : Bifoldable Data.Either.Either :=
 #[global] Definition bisum {t : Type -> Type -> Type} {a : Type} `{Bifoldable t}
   `{GHC.Num.Num a}
    : t a a -> a :=
-  Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum (bifoldMap
-                                 Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.Mk_Sum).
+  Corelib.Program.Basics.compose Data.SemigroupInternal.getSum (bifoldMap
+                                  Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.Mk_Sum).
 
 #[global] Definition biproduct {t : Type -> Type -> Type} {a : Type}
   `{Bifoldable t} `{GHC.Num.Num a}
    : t a a -> a :=
-  Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct (bifoldMap
-                                 Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Product).
+  Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct (bifoldMap
+                                  Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Product).
 
 #[global] Definition biconcatMap {t : Type -> Type -> Type} {a : Type} {c
    : Type} {b : Type} `{Bifoldable t}
@@ -695,22 +695,22 @@ Program Instance Bifoldable__Either : Bifoldable Data.Either.Either :=
 
 #[global] Definition biand {t : Type -> Type -> Type} `{Bifoldable t}
    : t bool bool -> bool :=
-  Stdlib.Program.Basics.compose Data.SemigroupInternal.getAll (bifoldMap
-                                 Data.SemigroupInternal.Mk_All Data.SemigroupInternal.Mk_All).
+  Corelib.Program.Basics.compose Data.SemigroupInternal.getAll (bifoldMap
+                                  Data.SemigroupInternal.Mk_All Data.SemigroupInternal.Mk_All).
 
 #[global] Definition bior {t : Type -> Type -> Type} `{Bifoldable t}
    : t bool bool -> bool :=
-  Stdlib.Program.Basics.compose Data.SemigroupInternal.getAny (bifoldMap
-                                 Data.SemigroupInternal.Mk_Any Data.SemigroupInternal.Mk_Any).
+  Corelib.Program.Basics.compose Data.SemigroupInternal.getAny (bifoldMap
+                                  Data.SemigroupInternal.Mk_Any Data.SemigroupInternal.Mk_Any).
 
 #[global] Definition biall {t : Type -> Type -> Type} {a : Type} {b : Type}
   `{Bifoldable t}
    : (a -> bool) -> (b -> bool) -> t a b -> bool :=
   fun p q =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getAll (bifoldMap
-                                   (Data.SemigroupInternal.Mk_All GHC.Base.∘ p) (Data.SemigroupInternal.Mk_All
-                                    GHC.Base.∘
-                                    q)).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getAll (bifoldMap
+                                    (Data.SemigroupInternal.Mk_All GHC.Base.∘ p) (Data.SemigroupInternal.Mk_All
+                                     GHC.Base.∘
+                                     q)).
 
 (* Skipping definition `Data.Bifoldable.bimaximumBy' *)
 
@@ -731,19 +731,19 @@ Program Instance Bifoldable__Either : Bifoldable Data.Either.Either :=
 
 (* External variables:
      None Some Type bool cons false list negb nil option pair true tt unit
-     Data.Either.Either Data.Either.Left Data.Either.Right Data.Functor.Const.Const
-     Data.Functor.Const.Mk_Const Data.Monoid.Mk_First Data.Monoid.getFirst
-     Data.SemigroupInternal.Mk_All Data.SemigroupInternal.Mk_Any
-     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
-     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
-     Data.SemigroupInternal.appEndo Data.SemigroupInternal.getAll
-     Data.SemigroupInternal.getAny Data.SemigroupInternal.getDual
-     Data.SemigroupInternal.getProduct Data.SemigroupInternal.getSum
-     GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Monad GHC.Base.Monoid GHC.Base.flip
-     GHC.Base.id GHC.Base.mappend GHC.Base.op_z2218U__ GHC.Base.op_zeze__
-     GHC.Base.op_zgzgze__ GHC.Base.op_ztzg__ GHC.Base.pure GHC.Base.return_
-     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
+     Corelib.Program.Basics.compose Data.Either.Either Data.Either.Left
+     Data.Either.Right Data.Functor.Const.Const Data.Functor.Const.Mk_Const
+     Data.Monoid.Mk_First Data.Monoid.getFirst Data.SemigroupInternal.Mk_All
+     Data.SemigroupInternal.Mk_Any Data.SemigroupInternal.Mk_Dual
+     Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
+     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
+     Data.SemigroupInternal.getAll Data.SemigroupInternal.getAny
+     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
+     Data.SemigroupInternal.getSum GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Monad
+     GHC.Base.Monoid GHC.Base.flip GHC.Base.id GHC.Base.mappend GHC.Base.op_z2218U__
+     GHC.Base.op_zeze__ GHC.Base.op_zgzgze__ GHC.Base.op_ztzg__ GHC.Base.pure
+     GHC.Base.return_ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
      GHC.Prim.rightSection GHC.Tuple.pair_type GHC.Tuple.quad_type
      GHC.Tuple.quint_type GHC.Tuple.sept_type GHC.Tuple.sext_type
-     GHC.Tuple.triple_type Stdlib.Program.Basics.compose
+     GHC.Tuple.triple_type
 *)

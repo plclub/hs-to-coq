@@ -12,7 +12,7 @@ Require Stdlib.Program.Wf.
 
 (* Converted imports: *)
 
-Require Stdlib.Program.Basics.
+Require Corelib.Program.Basics.
 Require Data.Bifoldable.
 Require Data.Bifunctor.
 Require Data.Bitraversable.
@@ -188,7 +188,7 @@ Program Instance Functor__Min : GHC.Base.Functor Min :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__Min_foldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Min_foldl'
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Min a -> b :=
@@ -240,14 +240,14 @@ Program Instance Functor__Min : GHC.Base.Functor Min :=
 #[local] Definition Foldable__Min_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, Min a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
-                                  (Foldable__Min_foldMap' Data.SemigroupInternal.Mk_Product).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
+                                   (Foldable__Min_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Min_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, Min a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
-                                  (Foldable__Min_foldMap' Data.SemigroupInternal.Mk_Sum).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
+                                   (Foldable__Min_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Min_toList : forall {a : Type}, Min a -> list a :=
   fun {a : Type} =>
@@ -432,7 +432,7 @@ Program Instance Functor__Max : GHC.Base.Functor Max :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__Max_foldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Max_foldl'
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Max a -> b :=
@@ -484,14 +484,14 @@ Program Instance Functor__Max : GHC.Base.Functor Max :=
 #[local] Definition Foldable__Max_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, Max a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
-                                  (Foldable__Max_foldMap' Data.SemigroupInternal.Mk_Product).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
+                                   (Foldable__Max_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Max_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, Max a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
-                                  (Foldable__Max_foldMap' Data.SemigroupInternal.Mk_Sum).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
+                                   (Foldable__Max_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Max_toList : forall {a : Type}, Max a -> list a :=
   fun {a : Type} =>
@@ -663,7 +663,7 @@ Program Instance Functor__Arg {a : Type} : GHC.Base.Functor (Arg a) :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__Arg_foldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Arg_foldl' {inst_a : Type}
    : forall {b : Type},
@@ -719,14 +719,14 @@ Program Instance Functor__Arg {a : Type} : GHC.Base.Functor (Arg a) :=
 #[local] Definition Foldable__Arg_product {inst_a : Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Arg inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
-                                  (Foldable__Arg_foldMap' Data.SemigroupInternal.Mk_Product).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
+                                   (Foldable__Arg_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Arg_sum {inst_a : Type}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Arg inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
-                                  (Foldable__Arg_foldMap' Data.SemigroupInternal.Mk_Sum).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
+                                   (Foldable__Arg_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Arg_toList {inst_a : Type}
    : forall {a : Type}, Arg inst_a a -> list a :=
@@ -924,8 +924,8 @@ Program Instance Bifunctor__Arg : Data.Bifunctor.Bifunctor Arg :=
   fun {a : Type} {c : Type} {b : Type} =>
     fun f g z t =>
       Data.SemigroupInternal.appEndo (Bifoldable__Arg_bifoldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f)
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo g) t) z.
 
 #[global]
 Program Instance Bifoldable__Arg : Data.Bifoldable.Bifoldable Arg :=
@@ -999,7 +999,7 @@ Program Instance Functor__First : GHC.Base.Functor First :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__First_foldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__First_foldl'
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> First a -> b :=
@@ -1051,14 +1051,14 @@ Program Instance Functor__First : GHC.Base.Functor First :=
 #[local] Definition Foldable__First_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, First a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
-                                  (Foldable__First_foldMap' Data.SemigroupInternal.Mk_Product).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
+                                   (Foldable__First_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__First_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, First a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
-                                  (Foldable__First_foldMap' Data.SemigroupInternal.Mk_Sum).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
+                                   (Foldable__First_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__First_toList
    : forall {a : Type}, First a -> list a :=
@@ -1241,7 +1241,7 @@ Program Instance Functor__Last : GHC.Base.Functor Last :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__Last_foldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Last_foldl'
    : forall {b : Type}, forall {a : Type}, (b -> a -> b) -> b -> Last a -> b :=
@@ -1293,14 +1293,14 @@ Program Instance Functor__Last : GHC.Base.Functor Last :=
 #[local] Definition Foldable__Last_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, Last a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
-                                  (Foldable__Last_foldMap' Data.SemigroupInternal.Mk_Product).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
+                                   (Foldable__Last_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Last_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, Last a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
-                                  (Foldable__Last_foldMap' Data.SemigroupInternal.Mk_Sum).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
+                                   (Foldable__Last_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Last_toList
    : forall {a : Type}, Last a -> list a :=
@@ -1498,21 +1498,22 @@ Instance Unpeel_WrappedMonoid a : HsToRocq.Unpeel.Unpeel (WrappedMonoid a) a :=
   HsToRocq.Unpeel.Build_Unpeel _ _ unwrapMonoid WrapMonoid.
 
 (* External variables:
-     Type bool false list negb true Data.Bifoldable.Bifoldable
-     Data.Bifoldable.bifoldMap__ Data.Bifoldable.bifold__ Data.Bifoldable.bifoldl__
-     Data.Bifoldable.bifoldr__ Data.Bifunctor.Bifunctor Data.Bifunctor.bimap__
-     Data.Bifunctor.first__ Data.Bifunctor.second__ Data.Bitraversable.Bitraversable
-     Data.Bitraversable.bitraverse__ Data.Foldable.Foldable Data.Foldable.foldMap'__
-     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
-     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
-     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
-     Data.Foldable.sum__ Data.Foldable.toList__ Data.Functor.op_zlzdzg__
-     Data.SemigroupInternal.Endo Data.SemigroupInternal.Mk_Dual
-     Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
-     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
-     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
-     Data.SemigroupInternal.getSum Data.Traversable.Traversable
-     Data.Traversable.mapM__ Data.Traversable.sequenceA__ Data.Traversable.sequence__
+     Type bool false list negb true Corelib.Program.Basics.compose
+     Data.Bifoldable.Bifoldable Data.Bifoldable.bifoldMap__ Data.Bifoldable.bifold__
+     Data.Bifoldable.bifoldl__ Data.Bifoldable.bifoldr__ Data.Bifunctor.Bifunctor
+     Data.Bifunctor.bimap__ Data.Bifunctor.first__ Data.Bifunctor.second__
+     Data.Bitraversable.Bitraversable Data.Bitraversable.bitraverse__
+     Data.Foldable.Foldable Data.Foldable.foldMap'__ Data.Foldable.foldMap__
+     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
+     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
+     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
+     Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.SemigroupInternal.Endo
+     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
+     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
+     Data.SemigroupInternal.appEndo Data.SemigroupInternal.getDual
+     Data.SemigroupInternal.getProduct Data.SemigroupInternal.getSum
+     Data.Traversable.Traversable Data.Traversable.mapM__
+     Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse__ GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Functor
      GHC.Base.Monad GHC.Base.Monoid GHC.Base.Ord GHC.Base.Semigroup GHC.Base.build'
      GHC.Base.const GHC.Base.flip GHC.Base.fmap GHC.Base.fmap__ GHC.Base.id
@@ -1525,5 +1526,4 @@ Instance Unpeel_WrappedMonoid a : HsToRocq.Unpeel.Unpeel (WrappedMonoid a) a :=
      GHC.Base.op_ztzg____ GHC.Base.pure GHC.Base.pure__ GHC.Base.return___
      GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.seq
      HsToRocq.Unpeel.Build_Unpeel HsToRocq.Unpeel.Unpeel
-     Stdlib.Program.Basics.compose
 *)

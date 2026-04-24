@@ -65,7 +65,7 @@ Defined.
 
 (* Converted imports: *)
 
-Require Stdlib.Init.Datatypes.
+Require Corelib.Init.Datatypes.
 Require Data.Maybe.
 Require Import GHC.Base.
 Require GHC.Err.
@@ -83,8 +83,8 @@ Import GHC.Num.Notations.
 #[global] Definition errorEmptyList {a} `{_ : HsToRocq.Err.Default a}
    : String -> a :=
   fun fun_ =>
-    GHC.Err.error (Stdlib.Init.Datatypes.app prel_list_str
-                                             (Stdlib.Init.Datatypes.app fun_ (GHC.Base.hs_string__ ": empty list"))).
+    GHC.Err.error (Corelib.Init.Datatypes.app prel_list_str
+                                              (Corelib.Init.Datatypes.app fun_ (GHC.Base.hs_string__ ": empty list"))).
 
 #[global] Definition badHead {a} `{_ : HsToRocq.Err.Default a} : a :=
   errorEmptyList (GHC.Base.hs_string__ "head").
@@ -416,17 +416,17 @@ Fixpoint lookup {a : Type} {b : Type} `{Eq_ a} (arg_0__ : a) (arg_1__
 (* Skipping definition `Coq.Lists.List.flat_map' *)
 
 #[global] Definition concat {a : Type} : list (list a) -> list a :=
-  foldr Stdlib.Init.Datatypes.app nil.
+  foldr Corelib.Init.Datatypes.app nil.
 
 #[global] Definition tooLarge {a} `{_ : HsToRocq.Err.Default a}
    : GHC.Num.Int -> a :=
   fun arg_0__ =>
-    GHC.Err.error (Stdlib.Init.Datatypes.app prel_list_str (GHC.Base.hs_string__
-                                              "!!: index too large")).
+    GHC.Err.error (Corelib.Init.Datatypes.app prel_list_str (GHC.Base.hs_string__
+                                               "!!: index too large")).
 
 #[global] Definition negIndex {a} `{_ : HsToRocq.Err.Default a} : a :=
-  GHC.Err.error (Stdlib.Init.Datatypes.app prel_list_str (GHC.Base.hs_string__
-                                            "!!: negative index")).
+  GHC.Err.error (Corelib.Init.Datatypes.app prel_list_str (GHC.Base.hs_string__
+                                             "!!: negative index")).
 
 #[global] Definition op_znzn__ {a} `{_ : HsToRocq.Err.Default a}
    : list a -> GHC.Num.Int -> a :=
@@ -571,7 +571,7 @@ End Notations.
 (* External variables:
      Eq_ None Ord Some String Type andb bool cons const false foldl foldl' foldr id
      list max min nil op_z2218U__ op_zeze__ op_zl__ op_zsze__ op_zt__ option orb pair
-     true Data.Maybe.maybe GHC.Err.error GHC.Err.patternFailure GHC.Num.Int
-     GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__
-     HsToRocq.Err.Default Stdlib.Init.Datatypes.app
+     true Corelib.Init.Datatypes.app Data.Maybe.maybe GHC.Err.error
+     GHC.Err.patternFailure GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
+     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Num.op_zt__ HsToRocq.Err.Default
 *)

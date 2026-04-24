@@ -15,7 +15,7 @@ Require Stdlib.Program.Wf.
 
 (* Converted imports: *)
 
-Require Stdlib.Init.Datatypes.
+Require Corelib.Init.Datatypes.
 Require Stdlib.Lists.List.
 Require GHC.Tuple.
 
@@ -204,7 +204,7 @@ Inductive IOError : Set :=.
 (****************************************************)
 
 (* function composition *)
-Require Export Stdlib.Program.Basics.
+Require Export Corelib.Program.Basics.
 
 Notation "[,]"  := (fun x y => (x,y)).
 Notation "[,,]" := (fun x0 y1 z2 => (x0, y1, z2)).
@@ -638,7 +638,7 @@ Instance Ord__NonEmpty {a} `{Ord a} : Ord (NonEmpty a) :=
 
 #[local] Definition Semigroup__list_op_zlzlzgzg__ {inst_a : Type}
    : list inst_a -> list inst_a -> list inst_a :=
-  Stdlib.Init.Datatypes.app.
+  Corelib.Init.Datatypes.app.
 
 #[global]
 Program Instance Semigroup__list {a : Type} : Semigroup (list a) :=
@@ -676,7 +676,7 @@ Program Instance Semigroup__Void : Semigroup Void :=
   fun arg_0__ arg_1__ =>
     match arg_0__, arg_1__ with
     | NEcons a as_, NEcons b bs =>
-        NEcons a (Stdlib.Init.Datatypes.app as_ (cons b bs))
+        NEcons a (Corelib.Init.Datatypes.app as_ (cons b bs))
     end.
 
 #[global]
@@ -1486,7 +1486,7 @@ Program Instance Monad__list : Monad list :=
           let toList := fun '(NEcons c cs) => cons c cs in
           let bs' := as_ >>= (toList ∘ f) in
           let 'NEcons b bs := f a in
-          NEcons b (Stdlib.Init.Datatypes.app bs bs')
+          NEcons b (Corelib.Init.Datatypes.app bs bs')
       end.
 
 #[local] Definition Applicative__NonEmpty_liftA2 {a} {b} {c}
@@ -1763,8 +1763,8 @@ End Notations.
 
 (* External variables:
      Eq Gt Lt None Some String Type andb bool comparison cons false list nil
-     op_zeze__ option pair true tt unit GHC.Tuple.pair_type GHC.Tuple.quad_type
-     GHC.Tuple.quint_type GHC.Tuple.sept_type GHC.Tuple.sext_type
-     GHC.Tuple.triple_type Stdlib.Init.Datatypes.app Stdlib.Lists.List.flat_map
+     op_zeze__ option pair true tt unit Corelib.Init.Datatypes.app
+     GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type
+     GHC.Tuple.sext_type GHC.Tuple.triple_type Stdlib.Lists.List.flat_map
      Stdlib.Lists.List.map
 *)

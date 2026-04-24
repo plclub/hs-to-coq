@@ -12,7 +12,7 @@ Require Stdlib.Program.Wf.
 
 (* Converted imports: *)
 
-Require Stdlib.Program.Basics.
+Require Corelib.Program.Basics.
 Require Data.Foldable.
 Require Data.Functor.
 Require Data.Functor.Classes.
@@ -147,7 +147,7 @@ Program Instance Functor__Sum {f : Type -> Type} {g : Type -> Type}
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__Sum_foldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Sum_foldl' {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -218,16 +218,16 @@ Program Instance Functor__Sum {f : Type -> Type} {g : Type -> Type}
   inst_g}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Sum inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
-                                  (Foldable__Sum_foldMap' Data.SemigroupInternal.Mk_Product).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
+                                   (Foldable__Sum_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Sum_sum {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Sum inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
-                                  (Foldable__Sum_foldMap' Data.SemigroupInternal.Mk_Sum).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
+                                   (Foldable__Sum_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Sum_toList {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -329,24 +329,24 @@ Program Instance Traversable__Sum {f : Type -> Type} {g : Type -> Type}
              Traversable__Sum_traverse |}.
 
 (* External variables:
-     Gt Lt Type bool comparison false list true Data.Foldable.Foldable
-     Data.Foldable.foldMap Data.Foldable.foldMap'__ Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
-     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
-     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
-     Data.Foldable.toList__ Data.Functor.op_zlzdzg__ Data.Functor.Classes.Eq1
-     Data.Functor.Classes.Ord1 Data.Functor.Classes.liftCompare
-     Data.Functor.Classes.liftCompare__ Data.Functor.Classes.liftEq
-     Data.Functor.Classes.liftEq__ Data.SemigroupInternal.Mk_Dual
-     Data.SemigroupInternal.Mk_Endo Data.SemigroupInternal.Mk_Product
-     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.appEndo
-     Data.SemigroupInternal.getDual Data.SemigroupInternal.getProduct
-     Data.SemigroupInternal.getSum Data.Traversable.Traversable
-     Data.Traversable.mapM__ Data.Traversable.sequenceA__ Data.Traversable.sequence__
+     Gt Lt Type bool comparison false list true Corelib.Program.Basics.compose
+     Data.Foldable.Foldable Data.Foldable.foldMap Data.Foldable.foldMap'__
+     Data.Foldable.foldMap__ Data.Foldable.fold__ Data.Foldable.foldl'__
+     Data.Foldable.foldl__ Data.Foldable.foldr'__ Data.Foldable.foldr__
+     Data.Foldable.length__ Data.Foldable.null__ Data.Foldable.product__
+     Data.Foldable.sum__ Data.Foldable.toList__ Data.Functor.op_zlzdzg__
+     Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1
+     Data.Functor.Classes.liftCompare Data.Functor.Classes.liftCompare__
+     Data.Functor.Classes.liftEq Data.Functor.Classes.liftEq__
+     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
+     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
+     Data.SemigroupInternal.appEndo Data.SemigroupInternal.getDual
+     Data.SemigroupInternal.getProduct Data.SemigroupInternal.getSum
+     Data.Traversable.Traversable Data.Traversable.mapM__
+     Data.Traversable.sequenceA__ Data.Traversable.sequence__
      Data.Traversable.traverse Data.Traversable.traverse__ GHC.Base.Applicative
      GHC.Base.Functor GHC.Base.Monad GHC.Base.Monoid GHC.Base.build' GHC.Base.flip
      GHC.Base.fmap GHC.Base.fmap__ GHC.Base.id GHC.Base.mempty GHC.Base.op_z2218U__
      GHC.Base.op_zlzd__ GHC.Base.op_zlzd____ GHC.Base.op_zlzlzgzg__ GHC.Num.Int
      GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.seq
-     Stdlib.Program.Basics.compose
 *)

@@ -2,9 +2,9 @@
 Utility definitions for well-founded recursion
 *)
 
-Require Import Stdlib.Program.Wf.
+Require Import Stdlib.Program.Wf. Require Import Stdlib.Program.WfExtensionality.
 Require Import Stdlib.Wellfounded.Wellfounded.
-Require Import Stdlib.Init.Specif.
+Require Import Corelib.Init.Specif.
 
 Definition wfFix1 {a n r}
   (R : n -> n -> Prop)
@@ -57,7 +57,7 @@ Lemma wfFix1_eq:
   @wfFix1 a n r R m Hwf F x = F x (fun xH => wfFix1 R m Hwf F (proj1_sig xH)).
 Proof.
   intros.
-  apply Stdlib.Program.Wf.WfExtensionality.fix_sub_eq_ext with (P := fun _ : a => r).
+  apply Stdlib.Program.WfExtensionality.WfExtensionality.fix_sub_eq_ext with (P := fun _ : a => r).
 Qed.
 
 Lemma wfFix2_eq:

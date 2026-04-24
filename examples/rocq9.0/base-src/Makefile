@@ -228,11 +228,25 @@ $(OUT)/GHC/Base.v: $(GHC_BASE_PRE) $(GHC_BASE_MID) $(GHC_BASE_EDITS) $(BASE_SRC)
 	test -e $(OUT)/GHC/Base.v
 	rm -f Base_preamble.v Base_midamble.v
 
-# Handwritten modules: copy from base-src/manual/ with Coq.→Stdlib. substitution
-# Also copy .h2ci files if they exist (needed for cross-module type info)
+# Handwritten modules: copy from base-src/manual/ rewriting Coq.* paths to
+# their Rocq-9 equivalents. Order matters:
+#   1. Rocq 9 moved WfExtensionality out of Program/Wf.v into a sibling file,
+#      so rewrite Coq.Program.Wf.WfExtensionality → Stdlib.Program.WfExtensionality.WfExtensionality
+#      (the inner module still exists in the new file) and inject an extra
+#      `Require Import Stdlib.Program.WfExtensionality.` whenever we import
+#      Coq.Program.Wf.
+#   2. Coq.Init.* modules are Corelib re-exports; fully-qualified references
+#      must use Corelib, not Stdlib.
+#   3. Everything else: Coq. → Stdlib.
+# Also copy .h2ci files if they exist (needed for cross-module type info).
 $(VFILES_MAN): $(OUT)/%.v : $(BASE_SRC)/manual/%.v
 	mkdir -p $(dir $@)
-	sed 's/Coq\./Stdlib./g' $< > $@
+	sed \
+	    -e 's#Coq\.Program\.Wf\.WfExtensionality#Stdlib.Program.WfExtensionality.WfExtensionality#g' \
+	    -e 's#^Require Import Coq\.Program\.Wf\.$$#Require Import Coq.Program.Wf. Require Import Stdlib.Program.WfExtensionality.#' \
+	    -e 's#Coq\.Init\.#Corelib.Init.#g' \
+	    -e 's#Coq\.#Stdlib.#g' \
+	    $< > $@
 	@if [ -e $(BASE_SRC)/manual/$*.h2ci ]; then cp $(BASE_SRC)/manual/$*.h2ci $(OUT)/$*.h2ci; fi
 
 %.h2ci: %.v

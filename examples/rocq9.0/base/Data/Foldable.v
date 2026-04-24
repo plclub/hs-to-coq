@@ -15,7 +15,7 @@ Require Stdlib.Program.Wf.
 Require Import Data.Monoid.
 (* Converted imports: *)
 
-Require Stdlib.Program.Basics.
+Require Corelib.Program.Basics.
 Require Data.Either.
 Require Data.Maybe.
 Require Data.Monoid.
@@ -112,9 +112,9 @@ Definition default_foldable {f:Type -> Type}
       (fun b a =>
          fun f  z t => Data.SemigroupInternal.appEndo
                     (Data.SemigroupInternal.getDual
-                       (foldMap _ _ _ _ (Stdlib.Program.Basics.compose
+                       (foldMap _ _ _ _ (Corelib.Program.Basics.compose
                                    Data.SemigroupInternal.Mk_Dual
-                                   (Stdlib.Program.Basics.compose
+                                   (Corelib.Program.Basics.compose
                                       Data.SemigroupInternal.Mk_Endo
                                       (GHC.Base.flip f))) t)) z)
   in
@@ -157,11 +157,11 @@ Definition default_foldable {f:Type -> Type}
     (fun a => @foldr _ _ (fun arg_61__ arg_62__ => false) true)
     (* product *)
     (fun a (H : GHC.Num.Num a) =>
-       Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
+       Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
                                   (foldMap _ _ _ _ Data.SemigroupInternal.Mk_Product))
     (* sum *)
     (fun a (H : GHC.Num.Num a) =>
-       Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
+       Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
                                   (foldMap _ _ _ _ Data.SemigroupInternal.Mk_Sum))
     (* toList *)
     (fun a => fun t => GHC.Base.build (fun _ c n => @foldr _ _ c n t)).
@@ -173,7 +173,7 @@ Definition default_foldable_foldMap {f : Type -> Type}
   fun a b f z t =>
     Data.SemigroupInternal.appEndo
       (foldMap
-         (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z
+         (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z
   in
   default_foldable (fun m a (S : GHC.Base.Semigroup m) (M : GHC.Base.Monoid m) => foldMap) foldr.
 
@@ -182,7 +182,7 @@ Definition default_foldable_foldr (f : Type -> Type)
   let foldMap :  forall {m} {a} `{GHC.Base.Monoid m}, (a -> m) -> f a -> m :=
   fun m a (S : GHC.Base.Semigroup m) (H : GHC.Base.Monoid m) =>
     fun f => foldr
-            (Stdlib.Program.Basics.compose GHC.Base.mappend
+            (Corelib.Program.Basics.compose GHC.Base.mappend
                                         f) GHC.Base.mempty
   in
   default_foldable foldMap (fun a b => foldr).
@@ -259,12 +259,13 @@ Definition default_foldable_foldr (f : Type -> Type)
 #[local] Definition Foldable__option_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, option a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getProduct (Foldable__option_foldMap' Mk_Product).
+    Corelib.Program.Basics.compose getProduct (Foldable__option_foldMap'
+                                    Mk_Product).
 
 #[local] Definition Foldable__option_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, option a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getSum (Foldable__option_foldMap' Mk_Sum).
+    Corelib.Program.Basics.compose getSum (Foldable__option_foldMap' Mk_Sum).
 
 #[local] Definition Foldable__option_toList
    : forall {a : Type}, option a -> list a :=
@@ -437,13 +438,13 @@ Program Instance Foldable__list : Foldable list :=
 #[local] Definition Foldable__NonEmpty_product
    : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Base.NonEmpty a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getProduct (Foldable__NonEmpty_foldMap'
-                                   Mk_Product).
+    Corelib.Program.Basics.compose getProduct (Foldable__NonEmpty_foldMap'
+                                    Mk_Product).
 
 #[local] Definition Foldable__NonEmpty_sum
    : forall {a : Type}, forall `{GHC.Num.Num a}, GHC.Base.NonEmpty a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getSum (Foldable__NonEmpty_foldMap' Mk_Sum).
+    Corelib.Program.Basics.compose getSum (Foldable__NonEmpty_foldMap' Mk_Sum).
 
 #[local] Definition Foldable__NonEmpty_toList
    : forall {a : Type}, GHC.Base.NonEmpty a -> list a :=
@@ -549,13 +550,14 @@ Program Instance Foldable__NonEmpty : Foldable GHC.Base.NonEmpty :=
    : forall {a : Type},
      forall `{GHC.Num.Num a}, Data.Either.Either inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getProduct (Foldable__Either_foldMap' Mk_Product).
+    Corelib.Program.Basics.compose getProduct (Foldable__Either_foldMap'
+                                    Mk_Product).
 
 #[local] Definition Foldable__Either_sum {inst_a : Type}
    : forall {a : Type},
      forall `{GHC.Num.Num a}, Data.Either.Either inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getSum (Foldable__Either_foldMap' Mk_Sum).
+    Corelib.Program.Basics.compose getSum (Foldable__Either_foldMap' Mk_Sum).
 
 #[local] Definition Foldable__Either_toList {inst_a : Type}
    : forall {a : Type}, Data.Either.Either inst_a a -> list a :=
@@ -652,14 +654,14 @@ Program Instance Foldable__Either {a : Type}
    : forall {a : Type},
      forall `{GHC.Num.Num a}, GHC.Tuple.pair_type inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getProduct (Foldable__pair_type_foldMap'
-                                   Mk_Product).
+    Corelib.Program.Basics.compose getProduct (Foldable__pair_type_foldMap'
+                                    Mk_Product).
 
 #[local] Definition Foldable__pair_type_sum {inst_a : Type}
    : forall {a : Type},
      forall `{GHC.Num.Num a}, GHC.Tuple.pair_type inst_a a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getSum (Foldable__pair_type_foldMap' Mk_Sum).
+    Corelib.Program.Basics.compose getSum (Foldable__pair_type_foldMap' Mk_Sum).
 
 #[local] Definition Foldable__pair_type_toList {inst_a : Type}
    : forall {a : Type}, GHC.Tuple.pair_type inst_a a -> list a :=
@@ -1031,7 +1033,7 @@ Program Instance Foldable__Product : Foldable Product :=
      forall {b : Type}, (a -> b -> b) -> b -> Alt inst_f a -> b :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
-      appEndo (Foldable__Alt_foldMap (Stdlib.Program.Basics.compose Mk_Endo f) t) z.
+      appEndo (Foldable__Alt_foldMap (Corelib.Program.Basics.compose Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Alt_foldl' {inst_f : Type -> Type} `{(Foldable
    inst_f)}
@@ -1092,13 +1094,13 @@ Program Instance Foldable__Product : Foldable Product :=
    inst_f)}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Alt inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getProduct (Foldable__Alt_foldMap' Mk_Product).
+    Corelib.Program.Basics.compose getProduct (Foldable__Alt_foldMap' Mk_Product).
 
 #[local] Definition Foldable__Alt_sum {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Alt inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getSum (Foldable__Alt_foldMap' Mk_Sum).
+    Corelib.Program.Basics.compose getSum (Foldable__Alt_foldMap' Mk_Sum).
 
 #[local] Definition Foldable__Alt_toList {inst_f : Type -> Type} `{(Foldable
    inst_f)}
@@ -1145,7 +1147,7 @@ Program Instance Foldable__Alt {f : Type -> Type} `{(Foldable f)}
      forall {b : Type}, (a -> b -> b) -> b -> Data.Monoid.Ap inst_f a -> b :=
   fun {a : Type} {b : Type} =>
     fun f z t =>
-      appEndo (Foldable__Ap_foldMap (Stdlib.Program.Basics.compose Mk_Endo f) t) z.
+      appEndo (Foldable__Ap_foldMap (Corelib.Program.Basics.compose Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Ap_foldl' {inst_f : Type -> Type} `{(Foldable
    inst_f)}
@@ -1207,13 +1209,13 @@ Program Instance Foldable__Alt {f : Type -> Type} `{(Foldable f)}
    inst_f)}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Monoid.Ap inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getProduct (Foldable__Ap_foldMap' Mk_Product).
+    Corelib.Program.Basics.compose getProduct (Foldable__Ap_foldMap' Mk_Product).
 
 #[local] Definition Foldable__Ap_sum {inst_f : Type -> Type} `{(Foldable
    inst_f)}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Data.Monoid.Ap inst_f a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose getSum (Foldable__Ap_foldMap' Mk_Sum).
+    Corelib.Program.Basics.compose getSum (Foldable__Ap_foldMap' Mk_Sum).
 
 #[local] Definition Foldable__Ap_toList {inst_f : Type -> Type} `{(Foldable
    inst_f)}
@@ -1302,22 +1304,22 @@ Program Instance Foldable__Ap {f : Type -> Type} `{(Foldable f)}
                        fun c n => foldr (fun x y => (@foldr _ Foldable__list _ _ c y x)) n xs).
 
 #[global] Definition and {t : Type -> Type} `{Foldable t} : t bool -> bool :=
-  Stdlib.Program.Basics.compose getAll (foldMap Mk_All).
+  Corelib.Program.Basics.compose getAll (foldMap Mk_All).
 
 #[global] Definition or {t : Type -> Type} `{Foldable t} : t bool -> bool :=
-  Stdlib.Program.Basics.compose getAny (foldMap Mk_Any).
+  Corelib.Program.Basics.compose getAny (foldMap Mk_Any).
 
 #[global] Definition any {t : Type -> Type} {a : Type} `{Foldable t}
    : (a -> bool) -> t a -> bool :=
   fun p =>
-    Stdlib.Program.Basics.compose getAny (foldMap (Stdlib.Program.Basics.compose
-                                                   Mk_Any p)).
+    Corelib.Program.Basics.compose getAny (foldMap (Corelib.Program.Basics.compose
+                                                    Mk_Any p)).
 
 #[global] Definition all {t : Type -> Type} {a : Type} `{Foldable t}
    : (a -> bool) -> t a -> bool :=
   fun p =>
-    Stdlib.Program.Basics.compose getAll (foldMap (Stdlib.Program.Basics.compose
-                                                   Mk_All p)).
+    Corelib.Program.Basics.compose getAll (foldMap (Corelib.Program.Basics.compose
+                                                    Mk_All p)).
 
 (* Skipping definition `Data.Foldable.maximumBy' *)
 
@@ -1341,15 +1343,16 @@ Program Instance Foldable__Ap {f : Type -> Type} `{(Foldable f)}
 (* External variables:
      Alt Dual Mk_All Mk_Any Mk_Dual Mk_Endo Mk_Product Mk_Sum None Product Some Sum
      Type appEndo bool cons false getAll getAlt getAny getDual getProduct getSum list
-     negb nil option pair true tt unit Data.Either.Either Data.Either.Left
-     Data.Either.Right Data.Either.isLeft Data.Maybe.maybe Data.Monoid.Ap
-     Data.Monoid.Mk_First Data.Monoid.getAp Data.Monoid.getFirst Data.Proxy.Proxy
-     GHC.Base.Applicative GHC.Base.Eq_ GHC.Base.Monad GHC.Base.Monoid GHC.Base.NEcons
-     GHC.Base.NonEmpty GHC.Base.build' GHC.Base.flip GHC.Base.foldl GHC.Base.foldl'
-     GHC.Base.foldr GHC.Base.id GHC.Base.map GHC.Base.mappend GHC.Base.mconcat
-     GHC.Base.mempty GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zgzg__
-     GHC.Base.op_zgzgze__ GHC.Base.op_zlzlzgzg__ GHC.Base.op_ztzg__ GHC.Base.pure
-     GHC.Base.return_ GHC.List.foldr' GHC.List.length GHC.List.null GHC.List.product
-     GHC.List.sum GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__
-     GHC.Prim.coerce GHC.Prim.seq GHC.Tuple.pair_type Stdlib.Program.Basics.compose
+     negb nil option pair true tt unit Corelib.Program.Basics.compose
+     Data.Either.Either Data.Either.Left Data.Either.Right Data.Either.isLeft
+     Data.Maybe.maybe Data.Monoid.Ap Data.Monoid.Mk_First Data.Monoid.getAp
+     Data.Monoid.getFirst Data.Proxy.Proxy GHC.Base.Applicative GHC.Base.Eq_
+     GHC.Base.Monad GHC.Base.Monoid GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.build'
+     GHC.Base.flip GHC.Base.foldl GHC.Base.foldl' GHC.Base.foldr GHC.Base.id
+     GHC.Base.map GHC.Base.mappend GHC.Base.mconcat GHC.Base.mempty
+     GHC.Base.op_z2218U__ GHC.Base.op_zeze__ GHC.Base.op_zgzg__ GHC.Base.op_zgzgze__
+     GHC.Base.op_zlzlzgzg__ GHC.Base.op_ztzg__ GHC.Base.pure GHC.Base.return_
+     GHC.List.foldr' GHC.List.length GHC.List.null GHC.List.product GHC.List.sum
+     GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger GHC.Num.op_zp__ GHC.Prim.coerce
+     GHC.Prim.seq GHC.Tuple.pair_type
 *)

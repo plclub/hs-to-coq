@@ -12,7 +12,7 @@ Require Stdlib.Program.Wf.
 
 (* Converted imports: *)
 
-Require Stdlib.Init.Datatypes.
+Require Corelib.Init.Datatypes.
 Require Stdlib.Lists.List.
 Require Data.Maybe.
 Require Data.Ord.
@@ -326,7 +326,7 @@ Infix "\\" := (_\\_) (at level 99).
 #[global] Definition unionBy {a : Type}
    : (a -> a -> bool) -> list a -> list a -> list a :=
   fun eq xs ys =>
-    Stdlib.Init.Datatypes.app xs (foldl (flip (deleteBy eq)) (nubBy eq ys) xs).
+    Corelib.Init.Datatypes.app xs (foldl (flip (deleteBy eq)) (nubBy eq ys) xs).
 
 #[global] Definition union {a : Type} `{Eq_ a} : list a -> list a -> list a :=
   unionBy _==_.
@@ -852,16 +852,16 @@ Axiom unlines : list String -> String.
           := match arg_2__ with
              | nil => GHC.Base.hs_string__ ""
              | cons v vs =>
-                 cons (GHC.Char.hs_char__ " ") (Stdlib.Init.Datatypes.app v (go vs))
+                 cons (GHC.Char.hs_char__ " ") (Corelib.Init.Datatypes.app v (go vs))
              end in
-        Stdlib.Init.Datatypes.app w (go ws)
+        Corelib.Init.Datatypes.app w (go ws)
     end.
 
 #[global] Definition tailUnwords : String -> String :=
   fun arg_0__ => match arg_0__ with | nil => nil | cons _ xs => xs end.
 
 #[global] Definition unwordsFB : String -> String -> String :=
-  fun w r => cons (GHC.Char.hs_char__ " ") (Stdlib.Init.Datatypes.app w r).
+  fun w r => cons (GHC.Char.hs_char__ " ") (Corelib.Init.Datatypes.app w r).
 
 (* Skipping definition `Data.OldList.sb' *)
 
@@ -871,7 +871,8 @@ Axiom unlines : list String -> String.
 (* Skipping definition `Data.OldList.snocSB' *)
 
 #[global] Definition toListSB {a} : SnocBuilder a -> list a :=
-  fun '(Mk_SnocBuilder _ f r) => Stdlib.Init.Datatypes.app f (GHC.List.reverse r).
+  fun '(Mk_SnocBuilder _ f r) =>
+    Corelib.Init.Datatypes.app f (GHC.List.reverse r).
 
 Module Notations.
 Notation "'_Data.OldList.\\_'" := (op_zrzr__).
@@ -881,11 +882,11 @@ End Notations.
 (* External variables:
      Eq_ Gt None Ord Some String Type andb bool build' compare comparison cons false
      flip foldl foldr id list map nil op_z2218U__ op_zeze__ op_zgzgze__ op_zlze__
-     op_zt__ option orb pair return_ sortBy true Data.Maybe.listToMaybe
-     Data.Maybe.maybe Data.Ord.comparing Data.Tuple.fst Data.Tuple.snd
-     GHC.Err.errorWithoutStackTrace GHC.List.any GHC.List.filter GHC.List.foldl1
-     GHC.List.null GHC.List.reverse GHC.Num.Num GHC.Num.Word GHC.Num.fromInteger
-     GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq GHC.Real.Integral GHC.Tuple.pair4
-     GHC.Tuple.pair5 GHC.Tuple.pair6 GHC.Tuple.pair7 HsToRocq.Err.Default
-     Stdlib.Init.Datatypes.app Stdlib.Lists.List.flat_map
+     op_zt__ option orb pair return_ sortBy true Corelib.Init.Datatypes.app
+     Data.Maybe.listToMaybe Data.Maybe.maybe Data.Ord.comparing Data.Tuple.fst
+     Data.Tuple.snd GHC.Err.errorWithoutStackTrace GHC.List.any GHC.List.filter
+     GHC.List.foldl1 GHC.List.null GHC.List.reverse GHC.Num.Num GHC.Num.Word
+     GHC.Num.fromInteger GHC.Num.op_zm__ GHC.Num.op_zp__ GHC.Prim.seq
+     GHC.Real.Integral GHC.Tuple.pair4 GHC.Tuple.pair5 GHC.Tuple.pair6
+     GHC.Tuple.pair7 HsToRocq.Err.Default Stdlib.Lists.List.flat_map
 *)

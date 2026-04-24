@@ -13,7 +13,7 @@ Require Stdlib.Program.Wf.
 (* Converted imports: *)
 
 Require Control.Monad.Zip.
-Require Stdlib.Program.Basics.
+Require Corelib.Program.Basics.
 Require Data.Foldable.
 Require Data.Functor.Classes.
 Require Data.SemigroupInternal.
@@ -145,7 +145,7 @@ Program Instance Functor__Product {f : Type -> Type} {g : Type -> Type}
   fun {a : Type} {b : Type} =>
     fun f z t =>
       Data.SemigroupInternal.appEndo (Foldable__Product_foldMap
-                                      (Stdlib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
+                                      (Corelib.Program.Basics.compose Data.SemigroupInternal.Mk_Endo f) t) z.
 
 #[local] Definition Foldable__Product_foldl' {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -216,16 +216,16 @@ Program Instance Functor__Product {f : Type -> Type} {g : Type -> Type}
   inst_g}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Product inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getProduct
-                                  (Foldable__Product_foldMap' Data.SemigroupInternal.Mk_Product).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getProduct
+                                   (Foldable__Product_foldMap' Data.SemigroupInternal.Mk_Product).
 
 #[local] Definition Foldable__Product_sum {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
   inst_g}
    : forall {a : Type}, forall `{GHC.Num.Num a}, Product inst_f inst_g a -> a :=
   fun {a : Type} `{GHC.Num.Num a} =>
-    Stdlib.Program.Basics.compose Data.SemigroupInternal.getSum
-                                  (Foldable__Product_foldMap' Data.SemigroupInternal.Mk_Sum).
+    Corelib.Program.Basics.compose Data.SemigroupInternal.getSum
+                                   (Foldable__Product_foldMap' Data.SemigroupInternal.Mk_Sum).
 
 #[local] Definition Foldable__Product_toList {inst_f : Type -> Type} {inst_g
    : Type -> Type} `{Data.Foldable.Foldable inst_f} `{Data.Foldable.Foldable
@@ -527,12 +527,13 @@ Program Instance Monoid__Product {k : Type} {f : k -> Type} {a : k} {g
 (* External variables:
      Type andb bool comparison false list op_zt__ pair true
      Control.Monad.Zip.MonadZip Control.Monad.Zip.munzip__ Control.Monad.Zip.mzipWith
-     Control.Monad.Zip.mzipWith__ Control.Monad.Zip.mzip__ Data.Foldable.Foldable
-     Data.Foldable.foldMap Data.Foldable.foldMap'__ Data.Foldable.foldMap__
-     Data.Foldable.fold__ Data.Foldable.foldl'__ Data.Foldable.foldl__
-     Data.Foldable.foldr'__ Data.Foldable.foldr__ Data.Foldable.length__
-     Data.Foldable.null__ Data.Foldable.product__ Data.Foldable.sum__
-     Data.Foldable.toList__ Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1
+     Control.Monad.Zip.mzipWith__ Control.Monad.Zip.mzip__
+     Corelib.Program.Basics.compose Data.Foldable.Foldable Data.Foldable.foldMap
+     Data.Foldable.foldMap'__ Data.Foldable.foldMap__ Data.Foldable.fold__
+     Data.Foldable.foldl'__ Data.Foldable.foldl__ Data.Foldable.foldr'__
+     Data.Foldable.foldr__ Data.Foldable.length__ Data.Foldable.null__
+     Data.Foldable.product__ Data.Foldable.sum__ Data.Foldable.toList__
+     Data.Functor.Classes.Eq1 Data.Functor.Classes.Ord1
      Data.Functor.Classes.liftCompare Data.Functor.Classes.liftCompare__
      Data.Functor.Classes.liftEq Data.Functor.Classes.liftEq__
      Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Endo
@@ -551,5 +552,5 @@ Program Instance Monoid__Product {k : Type} {f : k -> Type} {a : k} {g
      GHC.Base.op_zlzd____ GHC.Base.op_zlzlzgzg__ GHC.Base.op_zlzlzgzg____
      GHC.Base.op_zlztzg__ GHC.Base.op_zlztzg____ GHC.Base.op_ztzg____ GHC.Base.pure
      GHC.Base.pure__ GHC.Base.return___ GHC.Num.Int GHC.Num.Num GHC.Num.fromInteger
-     GHC.Num.op_zp__ GHC.Prim.seq GHC.Tuple.pair2 Stdlib.Program.Basics.compose
+     GHC.Num.op_zp__ GHC.Prim.seq GHC.Tuple.pair2
 *)
