@@ -40,7 +40,11 @@ module HsToRocq.Rocq.Gallina.Util (
   normalizeType,
 
   -- * Manipulating 'Sentence's
-  isComment
+  isComment,
+
+  -- * Version-conditional rewriting
+  coqToStdlib,
+  rocq9RewriteText,
   ) where
 
 import Control.Lens
@@ -53,7 +57,11 @@ import Data.List.NonEmpty (NonEmpty(..), nonEmpty)
 import qualified Data.List.NonEmpty as NEL
 
 import qualified Data.Text as T
+import qualified Data.Set as Set
+import Data.Set (Set)
 
+import Data.Data (Data)
+import Data.Generics (everywhere, mkT, extT)
 import GHC.Stack
 
 import HsToRocq.Util.Monad (ErrorString)
@@ -367,3 +375,90 @@ normalizeType (Parens t)                = normalizeType t
 normalizeType (App (App t args1) args2) = normalizeType $ App t $ args1 <> args2
 normalizeType (HasType t _)             = normalizeType t
 normalizeType t                         = t
+
+-- | Rewrite all @Coq.*@ references to their Rocq 9 equivalents in the AST.
+--
+-- Rocq 9 splits the old @Coq.*@ namespace between @Corelib.*@ and @Stdlib.*@.
+-- Many former @Coq.X.Y@ modules are now one-line re-exports inside
+-- @Stdlib.X.Y@ whose actual content lives at @Corelib.X.Y@. Fully-qualified
+-- names do not follow @Require Export@ aliases, so e.g.
+-- @Stdlib.Init.Datatypes.app@ does not resolve — the correct path is
+-- @Corelib.Init.Datatypes.app@.
+--
+-- The set 'corelibShimModules' below lists every @Coq.X.Y@ path whose Stdlib
+-- counterpart is a Corelib re-export (derived from the Rocq 9.2 distribution).
+-- For those, we rewrite @Coq.@ → @Corelib.@. Everything else becomes
+-- @Stdlib.@.
+coqToStdlib :: Data a => a -> a
+coqToStdlib = everywhere (mkT renameQualid `extT` renameModuleSentence)
+  where
+    renameQualid :: Qualid -> Qualid
+    renameQualid (Qualified modId accId) =
+      Qualified (rocq9RenameModule modId) accId
+    renameQualid q = q
+
+    -- ModuleIdent is a type alias for Text, so we can't use mkT on it directly.
+    -- Instead we pattern-match on ModuleSentence constructors that contain ModuleIdents.
+    renameModuleSentence :: ModuleSentence -> ModuleSentence
+    renameModuleSentence (ModuleImport ie mods) =
+      ModuleImport ie (fmap rocq9RenameModule mods)
+    renameModuleSentence (Require from ie mods) =
+      Require (fmap rocq9RenameModule from) ie (fmap rocq9RenameModule mods)
+    renameModuleSentence (ModuleAssignment m1 m2) =
+      ModuleAssignment (rocq9RenameModule m1) (rocq9RenameModule m2)
+
+-- | Rewrite a single module identifier from the Coq-8.20 @Coq.*@ namespace
+-- to its Rocq-9 equivalent (@Corelib.*@ for shim paths, @Stdlib.*@ otherwise).
+rocq9RenameModule :: ModuleIdent -> ModuleIdent
+rocq9RenameModule m
+  | m == "Coq"                           = "Stdlib"
+  | Just rest <- T.stripPrefix "Coq." m
+  , rest `Set.member` corelibShimModules = "Corelib." <> rest
+  | Just rest <- T.stripPrefix "Coq." m  = "Stdlib."  <> rest
+  | otherwise                            = m
+
+-- | Apply the Rocq-9 @Coq.*@ → @Corelib.*@/@Stdlib.*@ rewrite to plain text
+-- (used for preamble/midamble files and handwritten-module copies).
+-- Performs the Corelib substitution for every shim prefix first, then rewrites
+-- any remaining @Coq.@ to @Stdlib.@.
+rocq9RewriteText :: T.Text -> T.Text
+rocq9RewriteText =
+    T.replace "Coq." "Stdlib."
+  . (\t -> foldr replaceOne t (Set.toList corelibShimModules))
+  where
+    replaceOne path =
+      T.replace ("Coq." <> path) ("Corelib." <> path)
+
+-- | @Coq.X.Y@ paths whose Stdlib counterpart is a one-line Corelib re-export
+-- in Rocq 9. Fully-qualified names beneath these paths must use @Corelib.@
+-- rather than @Stdlib.@. Derived from the Rocq 9.2 distribution.
+corelibShimModules :: Set T.Text
+corelibShimModules = Set.fromList
+  [ "Array.ArrayAxioms", "Array.PrimArray"
+  , "BinNums.IntDef", "BinNums.NatDef", "BinNums.PosDef"
+  , "Classes.CMorphisms", "Classes.CRelationClasses", "Classes.Equivalence"
+  , "Classes.Init", "Classes.Morphisms", "Classes.Morphisms_Prop"
+  , "Classes.RelationClasses", "Classes.SetoidTactics"
+  , "Compat.Coq818", "Compat.Coq819", "Compat.Coq820"
+  , "Floats.FloatAxioms", "Floats.FloatClass", "Floats.FloatOps"
+  , "Floats.PrimFloat", "Floats.SpecFloat"
+  , "Init.Byte", "Init.Datatypes", "Init.Decimal", "Init.Hexadecimal"
+  , "Init.Logic", "Init.Ltac", "Init.Nat", "Init.Notations", "Init.Number"
+  , "Init.Peano", "Init.Prelude", "Init.Specif", "Init.Sumbool"
+  , "Init.Tactics", "Init.Tauto", "Init.Wf"
+  , "Lists.ListDef"
+  , "Numbers.BinNums"
+  , "Numbers.Cyclic.Int63.CarryType"
+  , "Numbers.Cyclic.Int63.PrimInt63"
+  , "Numbers.Cyclic.Int63.Sint63Axioms"
+  , "Numbers.Cyclic.Int63.Uint63Axioms"
+  , "Program.Basics", "Program.Tactics", "Program.Utils", "Program.Wf"
+  , "Relations.Relation_Definitions"
+  , "Setoids.Setoid"
+  , "Strings.PrimString", "Strings.PrimStringAxioms"
+  , "derive.Derive"
+  , "extraction.ExtrHaskellBasic", "extraction.ExtrOcamlBasic", "extraction.Extraction"
+  , "ssr.ssrbool", "ssr.ssrclasses", "ssr.ssreflect", "ssr.ssrfun"
+  , "ssr.ssrsetoid", "ssr.ssrunder"
+  , "ssrmatching.ssrmatching"
+  ]
