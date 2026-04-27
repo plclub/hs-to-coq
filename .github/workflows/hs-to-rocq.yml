@@ -126,15 +126,16 @@ jobs:
         run: stack --no-terminal --system-ghc --allow-different-user build
       - name: Set up Coq
         run: |
+          set -x
           apt-get update
           apt-get install -y opam libgmp-dev m4 pkg-config
-          opam init -y --bare --disable-sandboxing
-          opam switch create coq-8.20 ocaml-base-compiler.4.14.2
-          eval $(opam env --switch=coq-8.20)
+          opam --version
+          opam init -j 2 -n -y --disable-sandboxing -c ocaml-base-compiler.4.14.2
+          eval $(opam env)
           opam repo add coq-released https://coq.inria.fr/opam/released
           # Only install coq + equations (not coq-mathcomp-ssreflect) to avoid
           # rocq-elpi build failures. mathcomp is tested in test-coq-files.
-          opam install -y --confirm-level=unsafe-yes coq.8.20.1 coq-equations.1.3.1+8.20
+          opam install -y coq.8.20.1 coq-equations.1.3.1+8.20
       - name: Build base
         run: |
           eval $(opam env)
@@ -195,13 +196,14 @@ jobs:
         run: stack --no-terminal --system-ghc --allow-different-user build
       - name: Install Rocq 9.0
         run: |
+          set -x
           apt-get update
           apt-get install -y opam libgmp-dev m4 pkg-config
-          opam init -y --bare --disable-sandboxing
-          opam switch create rocq-9 ocaml-base-compiler.4.14.2
-          eval $(opam env --switch=rocq-9)
+          opam --version
+          opam init -j 2 -n -y --disable-sandboxing -c ocaml-base-compiler.4.14.2
+          eval $(opam env)
           opam repo add coq-released https://coq.inria.fr/opam/released
-          opam install -y --confirm-level=unsafe-yes \
+          opam install -y \
             rocq-prover.9.0.0 \
             rocq-core.9.0.0 \
             rocq-runtime.9.0.0 \
