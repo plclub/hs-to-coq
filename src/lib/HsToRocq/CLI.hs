@@ -187,8 +187,8 @@ argParser = ProgramArgs <$> optional (strOption       $  long    "output"
                         <*> many     (strArgument     $  metavar "FILES"
                                                       <> help    "Haskell files to translate into Coq")
 
-                        <*> (option (eitherReader parseRocqVersion)
-                                                      $  long    "target-version"
+                        <*> option   (eitherReader parseRocqVersion)
+                                                      (  long    "target-version"
                                                       <> metavar "VERSION"
                                                       <> value   Rocq_8_20
                                                       <> help    "Target Rocq version: 8.20 (default) or 9.0")

@@ -149,9 +149,9 @@ $(OUT)/coq-hs-to-rocq-base.opam : Makefile
 	echo '  "Stephanie Weirich"' >> $@
 	echo ']' >> $@
 	echo 'license: "MIT"' >> $@
-	echo 'homepage: "https://github.com/plclub/hs-to-coq"' >> $@
-	echo 'bug-reports: "https://github.com/plclub/hs-to-coq/issues"' >> $@
-	echo 'dev-repo: "git+https://github.com/plclub/hs-to-coq.git"' >> $@
+	echo 'homepage: "https://github.com/plclub/hs-to-rocq"' >> $@
+	echo 'bug-reports: "https://github.com/plclub/hs-to-rocq/issues"' >> $@
+	echo 'dev-repo: "git+https://github.com/plclub/hs-to-rocq.git"' >> $@
 	echo 'depends: [' >> $@
 	echo '  "coq" {>= "8.20" & < "8.21~"}' >> $@
 	echo ']' >> $@
