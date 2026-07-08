@@ -229,15 +229,26 @@ $(OUT)/GHC/Base.v: $(GHC_BASE_PRE) $(GHC_BASE_MID) $(GHC_BASE_EDITS) $(BASE_SRC)
 	rm -f Base_preamble.v Base_midamble.v
 
 # Handwritten modules: copy from base-src/manual/ rewriting Coq.* paths to
-# their Rocq-9 equivalents. Order matters:
-#   1. Rocq 9 moved WfExtensionality out of Program/Wf.v into a sibling file,
-#      so rewrite Coq.Program.Wf.WfExtensionality → Stdlib.Program.WfExtensionality.WfExtensionality
+# their Rocq-9 equivalents.
+#
+# The authoritative Coq.* -> Corelib.*/Stdlib.* rewrite lives in
+# rocq9RewriteText (src/lib/HsToRocq/Rocq/Gallina/Util.hs), which the hs-to-rocq
+# driver applies to generated output and to user preamble/midamble text. These
+# manual files are plain Coq copied verbatim (they are not Haskell, so the tool
+# never processes them), so this rule is a shell-level re-implementation of that
+# same rewrite for the copy step. Keep the two in sync; rocq9RewriteText is the
+# source of truth.
+#
+# The sed order matters:
+#   1. Structural move (NOT a namespace rename): Rocq 9 pulled WfExtensionality
+#      out of Program/Wf.v into a sibling file, so rewrite
+#      Coq.Program.Wf.WfExtensionality -> Stdlib.Program.WfExtensionality.WfExtensionality
 #      (the inner module still exists in the new file) and inject an extra
 #      `Require Import Stdlib.Program.WfExtensionality.` whenever we import
 #      Coq.Program.Wf.
 #   2. Coq.Init.* modules are Corelib re-exports; fully-qualified references
 #      must use Corelib, not Stdlib.
-#   3. Everything else: Coq. → Stdlib.
+#   3. Everything else: Coq. -> Stdlib.
 # Also copy .h2ci files if they exist (needed for cross-module type info).
 $(VFILES_MAN): $(OUT)/%.v : $(BASE_SRC)/manual/%.v
 	mkdir -p $(dir $@)
