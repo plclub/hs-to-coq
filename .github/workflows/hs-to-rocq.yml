@@ -33,18 +33,7 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
-      - name: Fix Docker config permissions
-        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
-      - name: Caching Stack
-        uses: actions/cache@v4
-        with:
-          path: |
-            /root/.stack
-            .stack-work
-          key: stack-ghc9.10.3-${{ hashFiles('hs-to-rocq.cabal', 'stack.yaml', 'src/**') }}
-      - name: Build hs-to-rocq
-        run: stack --no-terminal --system-ghc --allow-different-user build
+      - uses: ./.github/actions/setup-hs-to-rocq
 
   test-coq-files:
     name: Testing all Coq examples (Coq 8.20)
@@ -112,18 +101,7 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
-      - name: Fix Docker config permissions
-        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
-      - name: Caching Stack
-        uses: actions/cache@v4
-        with:
-          path: |
-            /root/.stack
-            .stack-work
-          key: stack-ghc9.10.3-${{ hashFiles('hs-to-rocq.cabal', 'stack.yaml', 'src/**') }}
-      - name: Build hs-to-rocq
-        run: stack --no-terminal --system-ghc --allow-different-user build
+      - uses: ./.github/actions/setup-hs-to-rocq
       - name: Set up Coq
         run: |
           set -x
@@ -144,13 +122,11 @@ jobs:
       - name: Run unit tests
         run: |
           eval $(opam env)
-          # The test Makefile uses make -k which returns exit 2 when
-          # TODO_PASS tests fail as expected. This is not a real failure.
-          make -C examples/tests || test $? -eq 2
+          make -C examples/tests
       - name: Run base-tests
         run: |
           eval $(opam env)
-          make -C examples/base-tests || test $? -eq 2
+          make -C examples/base-tests
       - name: Build base-thy and examples
         run: |
           eval $(opam env)
@@ -178,22 +154,9 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
-      - name: Fix Docker config permissions
-        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
-      - name: Initialize required submodules
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git submodule update --init examples/ghc/ghc
-      - name: Caching Stack
-        uses: actions/cache@v4
+      - uses: ./.github/actions/setup-hs-to-rocq
         with:
-          path: |
-            /root/.stack
-            .stack-work
-          key: stack-ghc9.10.3-${{ hashFiles('hs-to-rocq.cabal', 'stack.yaml', 'src/**') }}
-      - name: Build hs-to-rocq
-        run: stack --no-terminal --system-ghc --allow-different-user build
+          submodules: examples/ghc/ghc
       - name: Install Rocq 9.0
         run: |
           set -x
@@ -217,7 +180,7 @@ jobs:
       - name: Run Rocq 9.0 unit tests
         run: |
           eval $(opam env)
-          make -C examples/rocq9.0/tests || test $? -eq 2
+          make -C examples/rocq9.0/tests
 
   test-rocq9-translation:
     name: Rocq 9.0 translation (ensures convenience copy is up-to-date)
@@ -228,22 +191,9 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
-      - name: Fix Docker config permissions
-        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
-      - name: Initialize required submodules
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git submodule update --init examples/ghc/ghc
-      - name: Caching Stack
-        uses: actions/cache@v4
+      - uses: ./.github/actions/setup-hs-to-rocq
         with:
-          path: |
-            /root/.stack
-            .stack-work
-          key: stack-ghc9.10.3-${{ hashFiles('hs-to-rocq.cabal', 'stack.yaml', 'src/**') }}
-      - name: Build hs-to-rocq
-        run: stack --no-terminal --system-ghc --allow-different-user build
+          submodules: examples/ghc/ghc
       - name: Regenerating Rocq 9.0 base
         run: |
           make -C examples/rocq9.0/base-src clean
@@ -263,26 +213,11 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
-      - name: Fix Docker config permissions
-        run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json
-      - name: Initialize required submodules
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git submodule update --init examples/ghc/ghc
-          git submodule update --init examples/containers/containers
-          git submodule update --init --depth 1 examples/graph/graph
-      - name: Installing dependencies
-        run: apt-get update && apt-get install -y xutils-dev
-      - name: Caching Stack
-        uses: actions/cache@v4
+      - uses: ./.github/actions/setup-hs-to-rocq
         with:
-          path: |
-            /root/.stack
-            .stack-work
-          key: stack-ghc9.10.3-${{ hashFiles('hs-to-rocq.cabal', 'stack.yaml', 'src/**') }}
-      - name: Build hs-to-rocq
-        run: stack --no-terminal --system-ghc --allow-different-user build
+          submodules: examples/ghc/ghc examples/containers/containers
+          shallow-submodules: examples/graph/graph
+          extra-apt-packages: xutils-dev
       - name: Translating base
         run: |
           make -C examples/base-src clean
