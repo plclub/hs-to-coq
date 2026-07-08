@@ -302,9 +302,7 @@ processFilesMain process = do
                   (++) <$> parseModulesFiles (conf^.modulesRoot.non "") (conf^.modulesFiles)
                        <*> pure (conf^.directInputFiles)
 
-  let rewriteVFileContent s = case conf^.cfgRocqVersion of
-        Rocq_9_0  -> rocq9RewriteText (T.pack s)
-        Rocq_8_20 -> T.pack s
+  let rewriteVFileContent s = rewriteTextFor (conf^.cfgRocqVersion) (T.pack s)
 
   preambles <- liftIO $ traverse readFile (conf^.preambleFile)
   let printPreambles hOut = liftIO $ do
@@ -366,9 +364,7 @@ printConvertedModule withModulePrinter cmod@ConvertedModule{..} = do
 
   version <- view rocqVersion
   let rewrite :: [Sentence] -> [Sentence]
-      rewrite = case version of
-        Rocq_9_0  -> coqToStdlib
-        Rocq_8_20 -> id
+      rewrite = rewriteASTFor version
 
       imports'  = rewrite convModImports
       typDecls' = rewrite moduleTypeDeclarations

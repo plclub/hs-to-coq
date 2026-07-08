@@ -45,12 +45,15 @@ module HsToRocq.Rocq.Gallina.Util (
   -- * Version-conditional rewriting
   coqToStdlib,
   rocq9RewriteText,
+  rewriteTextFor,
+  rewriteASTFor,
   ) where
 
 import Control.Lens
 
 import Data.Bifunctor
 import Data.Semigroup ((<>))
+import Data.Char (isAlphaNum)
 import Data.Foldable
 import Data.Maybe
 import Data.List.NonEmpty (NonEmpty(..), nonEmpty)
@@ -421,17 +424,69 @@ rocq9RenameModule m
 -- (used for preamble/midamble files and handwritten-module copies).
 -- Performs the Corelib substitution for every shim prefix first, then rewrites
 -- any remaining @Coq.@ to @Stdlib.@.
+--
+-- The Corelib pass is boundary-aware: @Coq.@/@path@ is only rewritten when the
+-- following character is not an identifier character. This prevents a shim path
+-- that is a proper *prefix* of a non-shim path from matching — e.g.
+-- @Coq.Program.Wf@ (a shim) must NOT match inside @Coq.Program.WfExtensionality@
+-- (not a shim), which is supposed to become @Stdlib.Program.WfExtensionality@.
+-- A trailing @.@ counts as a boundary, so @Coq.Program.Wf.X@ still rewrites to
+-- @Corelib.Program.Wf.X@.
 rocq9RewriteText :: T.Text -> T.Text
 rocq9RewriteText =
     T.replace "Coq." "Stdlib."
   . (\t -> foldr replaceOne t (Set.toList corelibShimModules))
   where
     replaceOne path =
-      T.replace ("Coq." <> path) ("Corelib." <> path)
+      replaceAtModuleBoundary ("Coq." <> path) ("Corelib." <> path)
+
+-- | @replaceAtModuleBoundary needle repl haystack@ replaces every non-overlapping
+-- occurrence of @needle@ with @repl@, but only when the character immediately
+-- after the match is not a Coq identifier-continuation character
+-- (letter, digit, @_@, @'@). This makes module-prefix substitution respect
+-- token boundaries, so @Coq.Program.Wf@ does not match the longer identifier
+-- @Coq.Program.WfExtensionality@.
+replaceAtModuleBoundary :: T.Text -> T.Text -> T.Text -> T.Text
+replaceAtModuleBoundary needle repl = go
+  where
+    go h
+      | T.null h = h
+      | otherwise =
+          let (pre, rest) = T.breakOn needle h
+          in if T.null rest
+               then h   -- no (further) match
+               else let after = T.drop (T.length needle) rest
+                    in case T.uncons after of
+                         Just (c, _) | isIdentCont c ->
+                           -- false match (needle is a prefix of a longer
+                           -- identifier): keep the first char and rescan.
+                           pre <> T.singleton (T.head rest) <> go (T.drop 1 rest)
+                         _ -> pre <> repl <> go after
+
+    isIdentCont c = isAlphaNum c || c == '_' || c == '\''
+
+-- | The Rocq-version-aware text rewriter used by the driver for user-supplied
+-- preamble/midamble files. The Coq-8.20 target leaves text untouched (so the
+-- default output is byte-identical to the pre-Rocq-9 tool); the Rocq-9 target
+-- applies 'rocq9RewriteText'.
+rewriteTextFor :: RocqVersion -> T.Text -> T.Text
+rewriteTextFor Rocq_9_0  = rocq9RewriteText
+rewriteTextFor Rocq_8_20 = id
+
+-- | The Rocq-version-aware AST rewriter used by the driver for generated
+-- declarations. The Coq-8.20 target is the identity; the Rocq-9 target applies
+-- 'coqToStdlib'.
+rewriteASTFor :: Data a => RocqVersion -> a -> a
+rewriteASTFor Rocq_9_0  = coqToStdlib
+rewriteASTFor Rocq_8_20 = id
 
 -- | @Coq.X.Y@ paths whose Stdlib counterpart is a one-line Corelib re-export
 -- in Rocq 9. Fully-qualified names beneath these paths must use @Corelib.@
--- rather than @Stdlib.@. Derived from the Rocq 9.2 distribution.
+-- rather than @Stdlib.@.
+--
+-- Derived from the Rocq 9.2 distribution. The Corelib\/Stdlib split is stable
+-- across the Rocq 9.x series, and this list is verified against 9.0 by the
+-- @test-rocq9@ and @test-rocq9-translation@ CI jobs.
 corelibShimModules :: Set T.Text
 corelibShimModules = Set.fromList
   [ "Array.ArrayAxioms", "Array.PrimArray"
