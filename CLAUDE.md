@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **hs-to-rocq** converts Haskell source code to Coq (Gallina) using the GHC API. It is part of the DeepSpec/CoreSpec project. The tool parses Haskell via GHC, applies user-specified "edits" to guide the translation, and pretty-prints valid Coq output.
 
-- **Current target**: GHC 9.10.3, Coq 8.20 (branch `ghc910-coq820`)
+- **Current targets**: GHC 9.10.3; Coq 8.20 (default) or Rocq 9.0 via `--target-version` (branch `ghc910-coq820`)
 - **Languages**: Haskell (the tool, ~14K LOC in `src/`), Coq (generated output and proofs)
 
 ## Build Commands
@@ -116,11 +116,15 @@ Key lemmas: `bin_Desc0` (combine Desc0), `Desc_outside` (f=None outside range), 
 
 ## CI (`.github/workflows/hs-to-rocq.yml`)
 
-Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker, builds base+containers+ghc lib and theories), `tests` (haskell-actions + opam for Coq), `test-translation` (haskell:9.10.3 Docker, verifies base/containers/ghc regeneration matches). Sets `LANG=C.utf8` globally for Unicode support.
+Seven jobs: `hlint`; `build-haskell` (haskell:9.10.3 Docker, builds the executable once and is the cache producer); `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker, builds base+containers+ghc lib and theories); `tests` (haskell:9.10.3 Docker + opam for Coq 8.20, runs unit + base-tests + base-thy + small examples); `test-translation` (haskell:9.10.3 Docker, verifies base/containers/ghc/graph regeneration matches); `test-rocq9` (haskell:9.10.3 Docker + opam, builds `examples/rocq9.0/base` and runs `examples/rocq9.0/tests` on Rocq 9.0); `test-rocq9-translation` (Rocq 9.0 round-trip no-diff). Sets `LANG=C.utf8` globally for Unicode support. All hs-to-rocq-using jobs `needs: build-haskell` and share its Stack cache.
 
-**Container job gotcha**: Container jobs use `--allow-different-user` for stack commands (ownership mismatch between host-mounted workspace and container user). For docker-coq-action, use `before_script` with `sudo chown -R coq:coq .` (not `custom_script`, which bypasses permission setup). `common.mk` already includes `--allow-different-user` in the `HS_TO_ROCQ` variable.
+**Shared setup**: `build-haskell`, `tests`, `test-rocq9`, `test-rocq9-translation`, and `test-translation` all run `actions/checkout@v7` then `.github/actions/setup-hs-to-rocq` (composite), which does fix Docker permissions → init requested submodules (`submodules` / `shallow-submodules` inputs) → install extra apt packages (`extra-apt-packages`) → restore Stack cache via `actions/cache@v6` → `stack build`. A local action is not available until after checkout, so the checkout step must precede the composite action. Per-job variation is expressed via those inputs, not duplicated steps. `hlint` (native runner) and `test-coq-files` (docker-coq-action) keep their own checkout.
 
-**test-translation job**: Uses `git submodule update --init examples/ghc/ghc` (not `submodules: recursive`) — GHC has ~20 nested submodules that are not needed.
+**Container job gotcha**: Container jobs use `--allow-different-user` for stack commands (ownership mismatch between host-mounted workspace and container user). For docker-coq-action, use `before_script` with `sudo chown -R coq:coq .` (not `custom_script`, which bypasses permission setup). The `test-coq-files` job pre-pulls `mathcomp/mathcomp:2.5.0-coq-8.20` with retries before docker-coq-action so transient Docker Hub pull failures do not fail before project code runs. `common.mk` already includes `--allow-different-user` in the `HS_TO_ROCQ` variable. The opam-based jobs also pass `--disable-sandboxing` to `opam init` (bwrap sandboxing doesn't work in nested Docker without extra caps) and pre-install `libgmp-dev m4 pkg-config` so depext checks for zarith/conf-gmp don't fail.
+
+**test-translation job**: Inits `examples/ghc/ghc`, `examples/containers/containers` (full) and `examples/graph/graph` (`--depth 1`, via the composite action inputs), not `submodules: recursive` — GHC has ~20 nested submodules that are not needed.
+
+**Do not mask test failures**: the unit-test Makefiles already encode expected-vs-unexpected outcomes (`.pass` for PASS, `.fail` for TODO_PASS, `.fail_translate` for TODO_TRANSLATE), so `make -C examples/tests` returns 0 when everything is as expected and non-zero only on a real regression. Do not re-add `|| test $? -eq 2` or similar guards — they swallow genuine failures.
 
 **CI cache key**: Must include `src/**` in `hashFiles` — otherwise source changes don't invalidate the cache, and stale binaries persist in `.stack-work`.
 
@@ -129,6 +133,19 @@ Four jobs: `build-haskell` (haskell:9.10.3 Docker), `test-coq-files` (mathcomp/m
 ## GHC Version Compatibility
 
 Cross-version compatibility is managed via CPP macros in `src/include/ghc-compat.h`. Key macros: `NOEXT`/`NOEXTP` (for "Trees That Grow" extension fields), `GHC_910()`, `GHC_900()` (version-gated code blocks). When updating for a new GHC version, these macros and the wrappers in `src/lib/HsToRocq/Util/GHC/` are the primary adaptation points.
+
+## Rocq 9.0 support (`--target-version`)
+
+`hs-to-rocq` emits code for either Coq 8.20 (default, unchanged) or Rocq 9.0, selected by `--target-version {8.20|9.0}`. The `RocqVersion` type lives in `src/lib/HsToRocq/Rocq/Gallina.hs`; it is threaded through `GlobalEnv`/`ModuleEnv`/`LocalEnv` via a `HasRocqVersion` constraint on `GlobalMonad`.
+
+Rocq 9 split the old `Coq.*` namespace: `Stdlib.X.Y` is often a one-line `Require Export` shim whose real content is `Corelib.X.Y`, and fully-qualified names do not follow `Require Export` aliases (e.g. `Stdlib.Init.Datatypes.app` doesn't resolve; `Corelib.Init.Datatypes.app` does). Two rewriters, both in `src/lib/HsToRocq/Rocq/Gallina/Util.hs`, bridge this:
+
+- **`coqToStdlib`** — SYB rewrite over the Gallina AST (`Qualid`s and the three `ModuleSentence` forms), applied to generated declarations. Use `rewriteASTFor version` rather than calling it directly.
+- **`rocq9RewriteText`** — boundary-aware text rewrite applied to user preamble/midamble files (which are copied verbatim and never become an AST). Use `rewriteTextFor version`. The Corelib-shim pass only rewrites `Coq.<path>` when the next char is not an identifier char, so `Coq.Program.Wf` matches `…Wf` / `…Wf.X` but not the longer identifier `Coq.Program.WfExtensionality`. `corelibShimModules` is the explicit allow-list (derived from the Rocq 9.2 distribution; stable across 9.x, verified against 9.0 by CI).
+
+The 8.20 default path is byte-identical to the pre-Rocq-9 tool: both rewriters are the identity for `Rocq_8_20`, and `staticPreamble` (in `Rocq/Preamble.hs`) is parameterised by version. The cross-version surface is the unit-test tree, mirrored at `examples/rocq9.0/` (`base/`, `base-src/`, `tests/` reusing the `examples/tests/` `.hs` fixtures with `rocq c` instead of `coqc`). Large examples (`containers`, `ghc`, `transformers`) stay on Coq 8.20.
+
+**WfExtensionality structural move** (not a namespace rename): Rocq 9 pulled `WfExtensionality` out of `Program/Wf.v` into a sibling file. `rocq9RewriteText` now handles this for user preamble/midamble text: it rewrites `Coq.Program.Wf.WfExtensionality` → `Stdlib.Program.WfExtensionality.WfExtensionality` (structural move pass before the Corelib/Stdlib passes) and injects an extra `Require Import Stdlib.Program.WfExtensionality.` after any standalone `Require Import Coq.Program.Wf.` line. The handwritten-module copy rule in `examples/rocq9.0/base-src/Makefile` sed-rewrites the same two transformations for plain-Coq manual files the tool never processes; `rocq9RewriteText` is the source of truth — keep them in sync.
 
 ## GHC 9.10 Migration (ghc910-coq820 branch)
 
@@ -211,4 +228,4 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 
 - Every time before you commit, you should also check if other modules have been broken due to this change. For example, check `examples/test` even if you have only been working on `examples/containers`.
 - After significant functional changes (e.g., replacing `redefine` with native implementations), update README files, CLAUDE.md, and any plan documents to reflect the new state before committing.
-- Commit to git at each milestone with `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- Commit to git at each milestone with a `Co-Authored-By:` trailer crediting the coding agent that produced the work. Use the active agent and model name (e.g. `Co-Authored-By: Open Code (GLM-5.2) <noreply@opencode.ai>`), substituting whichever agent/model you are currently running.

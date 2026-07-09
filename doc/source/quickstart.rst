@@ -38,6 +38,16 @@ and are needed to translate any modules that use the ``base`` libraries.
 The ``-o`` argument specifies the output directory for the generated ``.v`` files.
 In this case, it is the current directory.
 
+.. option:: --target-version {8.20|9.0}
+
+Selects the target Rocq/Coq version. The default is ``8.20``, which emits
+``Coq.*`` qualified names and is unchanged from earlier releases. Passing
+``--target-version 9.0`` rewrites the generated code for Rocq 9.0, where the
+standard library was split into ``Stdlib.*`` (often one-line re-exports) and
+``Corelib.*`` (the actual definitions); the bundled preamble and every
+fully-qualified reference are adjusted accordingly. This option is exercised by
+the ``examples/rocq9.0/`` tree.
+
 An example translated in this way
 is `simple
 <https://github.com/plclub/hs-to-rocq/tree/master/examples/simple>`_. Check

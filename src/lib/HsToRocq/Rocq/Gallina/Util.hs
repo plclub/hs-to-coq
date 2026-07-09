@@ -40,20 +40,31 @@ module HsToRocq.Rocq.Gallina.Util (
   normalizeType,
 
   -- * Manipulating 'Sentence's
-  isComment
+  isComment,
+
+  -- * Version-conditional rewriting
+  coqToStdlib,
+  rocq9RewriteText,
+  rewriteTextFor,
+  rewriteASTFor,
   ) where
 
 import Control.Lens
 
 import Data.Bifunctor
 import Data.Semigroup ((<>))
+import Data.Char (isAlphaNum)
 import Data.Foldable
 import Data.Maybe
 import Data.List.NonEmpty (NonEmpty(..), nonEmpty)
 import qualified Data.List.NonEmpty as NEL
 
 import qualified Data.Text as T
+import qualified Data.Set as Set
+import Data.Set (Set)
 
+import Data.Data (Data)
+import Data.Generics (everywhere, mkT, extT)
 import GHC.Stack
 
 import HsToRocq.Util.Monad (ErrorString)
@@ -367,3 +378,172 @@ normalizeType (Parens t)                = normalizeType t
 normalizeType (App (App t args1) args2) = normalizeType $ App t $ args1 <> args2
 normalizeType (HasType t _)             = normalizeType t
 normalizeType t                         = t
+
+-- | Rewrite all @Coq.*@ references to their Rocq 9 equivalents in the AST.
+--
+-- Rocq 9 splits the old @Coq.*@ namespace between @Corelib.*@ and @Stdlib.*@.
+-- Many former @Coq.X.Y@ modules are now one-line re-exports inside
+-- @Stdlib.X.Y@ whose actual content lives at @Corelib.X.Y@. Fully-qualified
+-- names do not follow @Require Export@ aliases, so e.g.
+-- @Stdlib.Init.Datatypes.app@ does not resolve — the correct path is
+-- @Corelib.Init.Datatypes.app@.
+--
+-- The set 'corelibShimModules' below lists every @Coq.X.Y@ path whose Stdlib
+-- counterpart is a Corelib re-export (derived from the Rocq 9.2 distribution).
+-- For those, we rewrite @Coq.@ → @Corelib.@. Everything else becomes
+-- @Stdlib.@.
+coqToStdlib :: Data a => a -> a
+coqToStdlib = everywhere (mkT renameQualid `extT` renameModuleSentence)
+  where
+    renameQualid :: Qualid -> Qualid
+    renameQualid (Qualified modId accId) =
+      Qualified (rocq9RenameModule modId) accId
+    renameQualid q = q
+
+    -- ModuleIdent is a type alias for Text, so we can't use mkT on it directly.
+    -- Instead we pattern-match on ModuleSentence constructors that contain ModuleIdents.
+    renameModuleSentence :: ModuleSentence -> ModuleSentence
+    renameModuleSentence (ModuleImport ie mods) =
+      ModuleImport ie (fmap rocq9RenameModule mods)
+    renameModuleSentence (Require from ie mods) =
+      Require (fmap rocq9RenameModule from) ie (fmap rocq9RenameModule mods)
+    renameModuleSentence (ModuleAssignment m1 m2) =
+      ModuleAssignment (rocq9RenameModule m1) (rocq9RenameModule m2)
+
+-- | Rewrite a single module identifier from the Coq-8.20 @Coq.*@ namespace
+-- to its Rocq-9 equivalent (@Corelib.*@ for shim paths, @Stdlib.*@ otherwise).
+rocq9RenameModule :: ModuleIdent -> ModuleIdent
+rocq9RenameModule m
+  | m == "Coq"                           = "Stdlib"
+  | Just rest <- T.stripPrefix "Coq." m
+  , rest `Set.member` corelibShimModules = "Corelib." <> rest
+  | Just rest <- T.stripPrefix "Coq." m  = "Stdlib."  <> rest
+  | otherwise                            = m
+
+-- | Apply the Rocq-9 @Coq.*@ → @Corelib.*@/@Stdlib.*@ rewrite to plain text
+-- (used for preamble/midamble files and handwritten-module copies).
+--
+-- The rewrite has four phases, applied innermost-first:
+--
+-- 1. **WfExtensionality structural move.** Rocq 9 pulled @WfExtensionality@
+--    out of @Program/Wf.v@ into a sibling file. Fully-qualified references to
+--    @Coq.Program.Wf.WfExtensionality@ must become
+--    @Stdlib.Program.WfExtensionality.WfExtensionality@ (the inner module
+--    still exists in the new file). This is NOT a namespace rename, so it is
+--    handled before the Corelib\/Stdlib passes.
+--
+-- 2. **Require injection.** A standalone @Require Import Coq.Program.Wf.@
+--    line also needs @Require Import Stdlib.Program.WfExtensionality.@ so
+--    that the moved module is available.
+--
+-- 3. **Corelib shim pass.** For every path in 'corelibShimModules', rewrites
+--    @Coq.\<path>@ to @Corelib.\<path>@ at module boundaries.
+--
+-- 4. **Generic pass.** Rewrites any remaining @Coq.@ to @Stdlib.@.
+--
+-- The Corelib pass is boundary-aware: @Coq.@/@path@ is only rewritten when the
+-- following character is not an identifier character. This prevents a shim path
+-- that is a proper *prefix* of a non-shim path from matching — e.g.
+-- @Coq.Program.Wf@ (a shim) must NOT match inside @Coq.Program.WfExtensionality@
+-- (not a shim), which is supposed to become @Stdlib.Program.WfExtensionality@.
+-- A trailing @.@ counts as a boundary, so @Coq.Program.Wf.X@ still rewrites to
+-- @Corelib.Program.Wf.X@.
+rocq9RewriteText :: T.Text -> T.Text
+rocq9RewriteText =
+    T.replace "Coq." "Stdlib."
+  . (\t -> foldr replaceOne t (Set.toList corelibShimModules))
+  . T.intercalate "\n" . fmap injectWfExtRequire . T.splitOn "\n"
+  . replaceAtModuleBoundary
+      "Coq.Program.Wf.WfExtensionality"
+      "Stdlib.Program.WfExtensionality.WfExtensionality"
+  where
+    replaceOne path =
+      replaceAtModuleBoundary ("Coq." <> path) ("Corelib." <> path)
+
+    -- Rocq 9 moved WfExtensionality out of Program/Wf.v into a sibling file.
+    -- A Require Import of Coq.Program.Wf must also pull in the new module
+    -- (Stdlib.Program.WfExtensionality). The injected path uses @Stdlib.@
+    -- directly because the module only exists as a Stdlib file in Rocq 9.
+    injectWfExtRequire line
+      | line == "Require Import Coq.Program.Wf."
+      = "Require Import Coq.Program.Wf. Require Import Stdlib.Program.WfExtensionality."
+      | otherwise
+      = line
+
+-- | @replaceAtModuleBoundary needle repl haystack@ replaces every non-overlapping
+-- occurrence of @needle@ with @repl@, but only when the character immediately
+-- after the match is not a Coq identifier-continuation character
+-- (letter, digit, @_@, @'@). This makes module-prefix substitution respect
+-- token boundaries, so @Coq.Program.Wf@ does not match the longer identifier
+-- @Coq.Program.WfExtensionality@.
+replaceAtModuleBoundary :: T.Text -> T.Text -> T.Text -> T.Text
+replaceAtModuleBoundary needle repl = go
+  where
+    go h
+      | T.null h = h
+      | otherwise =
+          let (pre, rest) = T.breakOn needle h
+          in if T.null rest
+               then h   -- no (further) match
+               else let after = T.drop (T.length needle) rest
+                    in case T.uncons after of
+                         Just (c, _) | isIdentCont c ->
+                           -- false match (needle is a prefix of a longer
+                           -- identifier): keep the first char and rescan.
+                           pre <> T.singleton (T.head rest) <> go (T.drop 1 rest)
+                         _ -> pre <> repl <> go after
+
+    isIdentCont c = isAlphaNum c || c == '_' || c == '\''
+
+-- | The Rocq-version-aware text rewriter used by the driver for user-supplied
+-- preamble/midamble files. The Coq-8.20 target leaves text untouched (so the
+-- default output is byte-identical to the pre-Rocq-9 tool); the Rocq-9 target
+-- applies 'rocq9RewriteText'.
+rewriteTextFor :: RocqVersion -> T.Text -> T.Text
+rewriteTextFor Rocq_9_0  = rocq9RewriteText
+rewriteTextFor Rocq_8_20 = id
+
+-- | The Rocq-version-aware AST rewriter used by the driver for generated
+-- declarations. The Coq-8.20 target is the identity; the Rocq-9 target applies
+-- 'coqToStdlib'.
+rewriteASTFor :: Data a => RocqVersion -> a -> a
+rewriteASTFor Rocq_9_0  = coqToStdlib
+rewriteASTFor Rocq_8_20 = id
+
+-- | @Coq.X.Y@ paths whose Stdlib counterpart is a one-line Corelib re-export
+-- in Rocq 9. Fully-qualified names beneath these paths must use @Corelib.@
+-- rather than @Stdlib.@.
+--
+-- Derived from the Rocq 9.2 distribution. The Corelib\/Stdlib split is stable
+-- across the Rocq 9.x series, and this list is verified against 9.0 by the
+-- @test-rocq9@ and @test-rocq9-translation@ CI jobs.
+corelibShimModules :: Set T.Text
+corelibShimModules = Set.fromList
+  [ "Array.ArrayAxioms", "Array.PrimArray"
+  , "BinNums.IntDef", "BinNums.NatDef", "BinNums.PosDef"
+  , "Classes.CMorphisms", "Classes.CRelationClasses", "Classes.Equivalence"
+  , "Classes.Init", "Classes.Morphisms", "Classes.Morphisms_Prop"
+  , "Classes.RelationClasses", "Classes.SetoidTactics"
+  , "Compat.Coq818", "Compat.Coq819", "Compat.Coq820"
+  , "Floats.FloatAxioms", "Floats.FloatClass", "Floats.FloatOps"
+  , "Floats.PrimFloat", "Floats.SpecFloat"
+  , "Init.Byte", "Init.Datatypes", "Init.Decimal", "Init.Hexadecimal"
+  , "Init.Logic", "Init.Ltac", "Init.Nat", "Init.Notations", "Init.Number"
+  , "Init.Peano", "Init.Prelude", "Init.Specif", "Init.Sumbool"
+  , "Init.Tactics", "Init.Tauto", "Init.Wf"
+  , "Lists.ListDef"
+  , "Numbers.BinNums"
+  , "Numbers.Cyclic.Int63.CarryType"
+  , "Numbers.Cyclic.Int63.PrimInt63"
+  , "Numbers.Cyclic.Int63.Sint63Axioms"
+  , "Numbers.Cyclic.Int63.Uint63Axioms"
+  , "Program.Basics", "Program.Tactics", "Program.Utils", "Program.Wf"
+  , "Relations.Relation_Definitions"
+  , "Setoids.Setoid"
+  , "Strings.PrimString", "Strings.PrimStringAxioms"
+  , "derive.Derive"
+  , "extraction.ExtrHaskellBasic", "extraction.ExtrOcamlBasic", "extraction.Extraction"
+  , "ssr.ssrbool", "ssr.ssrclasses", "ssr.ssreflect", "ssr.ssrfun"
+  , "ssr.ssrsetoid", "ssr.ssrunder"
+  , "ssrmatching.ssrmatching"
+  ]
