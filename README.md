@@ -35,7 +35,7 @@ available!**](https://hs-to-coq.readthedocs.io/en/latest/)
 
 # Installation
 
-**Current target: GHC 9.10.3 and Coq 8.20**
+**Current target: GHC 9.10.3; Coq 8.20 (default) or Rocq 9.0 via `--target-version`**
 
 ## Compilation
 
@@ -126,8 +126,9 @@ for the edits files.
 
 # Examples Status
 
-All examples target **Coq 8.20** and **GHC 9.10.3**. The table below shows the
-build status of every example directory.
+All examples target **GHC 9.10.3**. Large examples use **Coq 8.20**;
+`examples/rocq9.0/` mirrors `base/` and `examples/tests/` for **Rocq 9.0**.
+The table below shows the build status of every example directory.
 
 ## Dependency Chain
 
@@ -150,6 +151,7 @@ base → base-thy → containers/lib → containers/theories
 | **Core libraries** | | | | |
 | `base/` | Generated lib | **PASS** | 57/57 .v | GHC 9.10 base library |
 | `base-thy/` | Hand-written proofs | **PASS** | 15/15 .v | Lawful instances |
+| `rocq9.0/base` | Generated lib (Rocq 9) | **PASS** | 54/54 .v | `--target-version 9.0` mirror of `base/` |
 | **Major verified examples** | | | | |
 | `containers/lib` | Generated lib | **PASS** | 16/16 .v | Containers v0.7 |
 | `containers/theories` | Proofs | **PASS** | 34/34 .v | Verified Set/IntSet/Map |
@@ -170,8 +172,9 @@ base → base-thy → containers/lib → containers/theories
 | `lambda/` | Generate + verify | **PASS** | 2/2 .v | Lambda calculus |
 | `simple/` | Generate + verify | **PASS** | 1/1 .v | Simple example |
 | **Test suites** | | | | |
-| `tests/` | Unit tests | **PASS** | 43 pass, 4 known-fail | Translation + type-check |
+| `tests/` | Unit tests | **PASS** | 46 pass, 3 known-fail | Translation + type-check |
 | `base-tests/` | Integration tests | **PASS** | 18 pass, 3 known-fail | Requires `base/` |
+| `rocq9.0/tests` | Unit tests (Rocq 9) | **PASS** | 46 pass, 3 known-fail | Reuses `examples/tests/` `.hs` with `rocq c` |
 | **Examples with external dependencies** | | | | |
 | `wc/lib` | Generated lib | **BLOCKED** | 0/14 .v | Needs `coq-itree` package |
 | `wc/theories` | Proofs | **BLOCKED** | 0/2 .v | Depends on wc/lib |

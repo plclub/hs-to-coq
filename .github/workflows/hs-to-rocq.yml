@@ -33,6 +33,7 @@ jobs:
     env:
       HOME: /root
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-hs-to-rocq
 
   test-coq-files:
@@ -101,6 +102,7 @@ jobs:
     env:
       HOME: /root
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-hs-to-rocq
       - name: Set up Coq
         run: |
@@ -154,6 +156,7 @@ jobs:
     env:
       HOME: /root
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-hs-to-rocq
         with:
           submodules: examples/ghc/ghc
@@ -191,6 +194,7 @@ jobs:
     env:
       HOME: /root
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-hs-to-rocq
         with:
           submodules: examples/ghc/ghc
@@ -213,6 +217,7 @@ jobs:
     env:
       HOME: /root
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-hs-to-rocq
         with:
           submodules: examples/ghc/ghc examples/containers/containers

@@ -1,8 +1,9 @@
 name: Set up hs-to-rocq
 description: >-
-  Shared setup for hs-to-rocq container CI jobs: checkout, fix Docker config
-  permissions, initialize requested submodules, install extra apt packages,
-  restore the Stack cache, and build hs-to-rocq.
+  Shared setup for hs-to-rocq container CI jobs: fix Docker config permissions,
+  initialize requested submodules, install extra apt packages, restore the Stack
+  cache, and build hs-to-rocq. Callers must run actions/checkout@v4 before this
+  action (a local action is not available until after checkout).
 
 inputs:
   submodules:
@@ -21,7 +22,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
     - name: Fix Docker config permissions
       shell: bash
       run: mkdir -p /root/.docker && echo '{}' > /root/.docker/config.json

@@ -422,8 +422,24 @@ rocq9RenameModule m
 
 -- | Apply the Rocq-9 @Coq.*@ → @Corelib.*@/@Stdlib.*@ rewrite to plain text
 -- (used for preamble/midamble files and handwritten-module copies).
--- Performs the Corelib substitution for every shim prefix first, then rewrites
--- any remaining @Coq.@ to @Stdlib.@.
+--
+-- The rewrite has four phases, applied innermost-first:
+--
+-- 1. **WfExtensionality structural move.** Rocq 9 pulled @WfExtensionality@
+--    out of @Program/Wf.v@ into a sibling file. Fully-qualified references to
+--    @Coq.Program.Wf.WfExtensionality@ must become
+--    @Stdlib.Program.WfExtensionality.WfExtensionality@ (the inner module
+--    still exists in the new file). This is NOT a namespace rename, so it is
+--    handled before the Corelib\/Stdlib passes.
+--
+-- 2. **Require injection.** A standalone @Require Import Coq.Program.Wf.@
+--    line also needs @Require Import Stdlib.Program.WfExtensionality.@ so
+--    that the moved module is available.
+--
+-- 3. **Corelib shim pass.** For every path in 'corelibShimModules', rewrites
+--    @Coq.\<path>@ to @Corelib.\<path>@ at module boundaries.
+--
+-- 4. **Generic pass.** Rewrites any remaining @Coq.@ to @Stdlib.@.
 --
 -- The Corelib pass is boundary-aware: @Coq.@/@path@ is only rewritten when the
 -- following character is not an identifier character. This prevents a shim path
@@ -436,9 +452,23 @@ rocq9RewriteText :: T.Text -> T.Text
 rocq9RewriteText =
     T.replace "Coq." "Stdlib."
   . (\t -> foldr replaceOne t (Set.toList corelibShimModules))
+  . T.intercalate "\n" . fmap injectWfExtRequire . T.splitOn "\n"
+  . replaceAtModuleBoundary
+      "Coq.Program.Wf.WfExtensionality"
+      "Stdlib.Program.WfExtensionality.WfExtensionality"
   where
     replaceOne path =
       replaceAtModuleBoundary ("Coq." <> path) ("Corelib." <> path)
+
+    -- Rocq 9 moved WfExtensionality out of Program/Wf.v into a sibling file.
+    -- A Require Import of Coq.Program.Wf must also pull in the new module
+    -- (Stdlib.Program.WfExtensionality). The injected path uses @Stdlib.@
+    -- directly because the module only exists as a Stdlib file in Rocq 9.
+    injectWfExtRequire line
+      | line == "Require Import Coq.Program.Wf."
+      = "Require Import Coq.Program.Wf. Require Import Stdlib.Program.WfExtensionality."
+      | otherwise
+      = line
 
 -- | @replaceAtModuleBoundary needle repl haystack@ replaces every non-overlapping
 -- occurrence of @needle@ with @repl@, but only when the character immediately
