@@ -13,17 +13,28 @@ jobs:
   hlint:
     name: HLint
     runs-on: ubuntu-latest
+    env:
+      HLINT_VERSION: '3.6.1'
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up HLint
-        uses: haskell-actions/hlint-setup@v2
+      - uses: actions/checkout@v7
+      - name: Cache HLint
+        id: cache-hlint
+        uses: actions/cache@v6
         with:
-          version: '3.6.1'
+          path: ~/.local/bin/hlint
+          key: hlint-${{ runner.os }}-${{ runner.arch }}-${{ env.HLINT_VERSION }}
+      - name: Install HLint
+        if: steps.cache-hlint.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL \
+            "https://github.com/ndmitchell/hlint/releases/download/v${HLINT_VERSION}/hlint-${HLINT_VERSION}-x86_64-linux.tar.gz" \
+            -o hlint.tar.gz
+          tar -xzf hlint.tar.gz
+          install -m 0755 "hlint-${HLINT_VERSION}/hlint" "$HOME/.local/bin/hlint"
       - name: Run HLint
-        uses: haskell-actions/hlint-run@v2
-        with:
-          path: '["src/lib", "src/exe"]'
-          fail-on: suggestion
+        run: |
+          "$HOME/.local/bin/hlint" src/lib src/exe
 
   build-haskell:
     name: Build hs-to-rocq (GHC 9.10)
@@ -33,17 +44,28 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-hs-to-rocq
 
   test-coq-files:
     name: Testing all Coq examples (Coq 8.20)
     runs-on: ubuntu-latest
+    env:
+      COQ_EXAMPLES_IMAGE: mathcomp/mathcomp:2.5.0-coq-8.20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+      - name: Pre-pull Coq image
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if docker pull "$COQ_EXAMPLES_IMAGE"; then
+              exit 0
+            fi
+            sleep $((attempt * 15))
+          done
+          docker pull "$COQ_EXAMPLES_IMAGE"
       - uses: coq-community/docker-coq-action@v1
         with:
-          custom_image: 'mathcomp/mathcomp:2.5.0-coq-8.20'
+          custom_image: ${{ env.COQ_EXAMPLES_IMAGE }}
           before_script: |
             startGroup "Workaround permission issue"
             sudo chown -R coq:coq .
@@ -102,7 +124,7 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-hs-to-rocq
       - name: Set up Coq
         run: |
@@ -156,7 +178,7 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-hs-to-rocq
         with:
           submodules: examples/ghc/ghc
@@ -194,7 +216,7 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-hs-to-rocq
         with:
           submodules: examples/ghc/ghc
@@ -217,7 +239,7 @@ jobs:
     env:
       HOME: /root
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-hs-to-rocq
         with:
           submodules: examples/ghc/ghc examples/containers/containers

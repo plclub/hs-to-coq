@@ -2,7 +2,7 @@ name: Set up hs-to-rocq
 description: >-
   Shared setup for hs-to-rocq container CI jobs: fix Docker config permissions,
   initialize requested submodules, install extra apt packages, restore the Stack
-  cache, and build hs-to-rocq. Callers must run actions/checkout@v4 before this
+  cache, and build hs-to-rocq. Callers must run actions/checkout@v7 before this
   action (a local action is not available until after checkout).
 
 inputs:
@@ -42,7 +42,7 @@ runs:
       shell: bash
       run: apt-get update && apt-get install -y ${{ inputs.extra-apt-packages }}
     - name: Caching Stack
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           /root/.stack
