@@ -32,6 +32,15 @@ Use relative path instead of absolute path when `cd` to a directory.
 - `/ci` — run CI checks locally, report pass/fail
 - `/ci-fix` — run CI checks, diagnose and fix failures, commit fixes
 
+Both commands use `.claude/commands/ci.md` as their shared catalog of all seven
+workflow jobs, including direct, harness, concurrent, and both Rocq checks. The
+compiler jobs use separate Coq 8.20 and Rocq 9.0 environments. Expected test
+failures already return zero; every nonzero Make status needs investigation.
+When changing either command or the workflow, run
+`stack exec -- runghc -package=yaml examples/tests/checks/CiCatalog.hs --self-test`.
+This `build-haskell` guard checks catalog coverage, delegation, failure masking,
+shell syntax, and regressions without running the documented builds.
+
 ## Architecture
 
 ### Translation Pipeline
@@ -112,10 +121,11 @@ Key lemmas: `bin_Desc0` (combine Desc0), `Desc_outside` (f=None outside range), 
 
 ## Test Structure
 
-- `examples/tests/` and `examples/rocq9.0/tests/` share `examples/tests/test-rules.mk` and the same fixtures, compiled with `coqc` and `rocq c -w +deprecated-dirpath-Coq` respectively. Each suite has 53 `PASS` cases and 3 expected compiler failures (`TODO_PASS`). The Rocq warning flag rejects unrewritten root `Coq.*` paths while permitting user-qualified and relative `Coq` components.
+- `examples/tests/` and `examples/rocq9.0/tests/` share `examples/tests/test-rules.mk` and the same fixtures, compiled with `coqc` and `rocq c -w +deprecated-dirpath-Coq` respectively. Each suite has 67 `PASS` cases and 3 expected compiler failures (`TODO_PASS`). The Rocq warning flag rejects unrewritten root `Coq.*` paths while permitting user-qualified and relative `Coq` components.
 - `examples/base-tests/` requires the `base/` Coq library to be built first; it has 18 `PASS` cases and 3 expected compiler failures.
 - Test-specific files go in `examples/tests/<TestName>/`: `edits`, `preamble.v`, and `midamble.v`.
-- `examples/tests/checks/` contains 805 direct Haskell assertions for CLI version parsing and rewrite definitions and 187 harness checks with fake tools. The harness invokes both production test wrappers, including nested helper dependency/compilation rules and clean rebuilds. It checks concurrent tool logging, dependency-directory creation, manual-file copying, fresh Coq builds with manual modules, and serial and parallel base-generation retries through the `base` and direct/top-level `vfiles` entry points. Forced and outdated regeneration must reject stale output, discard failed output even with unchanged timestamps, and preserve successful sources during retries. It supports macOS Bash 3.2 and Bash 5. See the README test commands. These fast checks do not replace compiler tests.
+- `examples/tests/checks/` contains 805 direct Haskell assertions for CLI version parsing and namespace rewriting, 237 edits parser/API assertions, and 213 harness checks with fake tools. The harness invokes both production test wrappers, including nested helper dependency/compilation rules and clean rebuilds. It checks concurrent tool logging, dependency-directory creation, manual-file copying, fresh Coq builds with manual modules, and serial and parallel base-generation retries through the `base` and direct/top-level `vfiles` entry points. Forced and outdated regeneration must reject stale output, discard failed output even with unchanged timestamps, and preserve successful sources during retries. It supports macOS Bash 3.2 and Bash 5. See the README test commands. These fast checks do not replace compiler tests.
+- When adding or changing edits tests, use the coverage matrix in `examples/tests/README.md`. Normal shared-suite Make runs include `edit-checks`: the parser/API assertions and 32 real-translator CLI cases for the selected target. All 42 edit constructors have exact grammar checks; `class kinds` remains parser-only because it has no translation consumer. Fixtures assert edit effects, including class defaults, scoped renaming, recursion modes, declaration phases, and invariant construction.
 - `examples/tests/checks/concurrent.sh` runs real translators concurrently with a shared Haskell dependency on both targets. It requires `.v` and `.h2ci` outputs and checks that default translation creates no shared `.ghc-tmp` artifacts. GHC defaults to `-fno-code` because translation only needs typechecking; native compilation otherwise races on shared `.o.tmp` files during fresh parallel base generation. The script also checks that an explicit `--ghc -fobject-code` overrides this default.
 
 Test categories distinguish translation from compilation:
@@ -142,7 +152,7 @@ Seven jobs: `hlint`; `build-haskell` (haskell:9.10.3-bookworm Docker, builds the
 
 Use the explicit Bookworm image tag: the unqualified `haskell:9.10.3` tag uses Debian 11 Bullseye, whose LTS ended in August 2026. Its security-package URLs returned 404 during compiler setup. Bookworm keeps GHC 9.10.3 while using a supported Debian package source.
 
-After setup, `build-haskell` runs `stack --allow-different-user exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs`, `bash examples/tests/checks/harness.sh`, and `bash examples/tests/checks/concurrent.sh`. The `test-rocq9` job runs `make -C examples/rocq9.0 clean`, then `make -j2 -C examples/rocq9.0 base`, before its unit-test step. These checks use the existing seven jobs.
+After setup, `build-haskell` runs the CI catalog guard above, `stack --allow-different-user exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs`, `bash examples/tests/checks/harness.sh`, and `bash examples/tests/checks/concurrent.sh`. The `test-rocq9` job runs `make -C examples/rocq9.0 clean`, then `make -j2 -C examples/rocq9.0 base`, before its unit-test step. These checks use the existing seven jobs.
 
 **Shared setup**: `build-haskell`, `tests`, `test-rocq9`, `test-rocq9-translation`, and `test-translation` all run `actions/checkout@v7` then `.github/actions/setup-hs-to-rocq` (composite), which does fix Docker permissions → init requested submodules (`submodules` / `shallow-submodules` inputs) → install extra apt packages (`extra-apt-packages`) → restore Stack cache via `actions/cache@v6` → `stack build`. A local action is not available until after checkout, so the checkout step must precede the composite action. Per-job variation is expressed via those inputs, not duplicated steps. `hlint` (native runner) and `test-coq-files` (docker-coq-action) keep their own checkout.
 
@@ -268,4 +278,4 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 
 - Every time before you commit, you should also check if other modules have been broken due to this change. For example, check `examples/test` even if you have only been working on `examples/containers`.
 - After significant functional changes (e.g., replacing `redefine` with native implementations), update README files, CLAUDE.md, and any plan documents to reflect the new state before committing.
-- Commit to git at each milestone with a `Co-Authored-By:` trailer crediting the coding agent that produced the work. Use the active agent and model name (e.g. `Co-Authored-By: Open Code (GLM-5.2) <noreply@opencode.ai>`), substituting whichever agent/model you are currently running.
+- Commit, stage, push, or otherwise change Git state only when the user explicitly requests it. Invoking `/ci-fix` authorizes its documented fix commits; `/ci` only reports results.

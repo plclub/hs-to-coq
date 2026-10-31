@@ -212,6 +212,7 @@ cd examples/graph/theories && coq_makefile -f _CoqProject -o Makefile && make -j
 cd examples/transformers && make
 
 # Fast checks (after stack build; no Coq/Rocq compiler required)
+stack --allow-different-user exec -- runghc -package=yaml examples/tests/checks/CiCatalog.hs --self-test
 stack --allow-different-user exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs
 bash examples/tests/checks/harness.sh
 bash examples/tests/checks/concurrent.sh
@@ -230,13 +231,21 @@ make -j2 -C examples/rocq9.0 base
 make -C examples/rocq9.0/tests
 ```
 
-The fast checks run 805 direct Haskell assertions about CLI version selection
+The local `/ci` and `/ci-fix` commands share the seven-job catalog in
+`.claude/commands/ci.md`. The catalog check uses the existing Haskell YAML
+dependency to compare workflow jobs and prerequisites with the catalog, check
+`/ci-fix` delegation, reject failure masking, and parse shell snippets with
+`bash -n` (including heredoc bodies). Its regressions cover a pinned old catalog,
+missing/duplicate jobs, and blocked prerequisites using stubbed tools. It runs
+in `build-haskell`; it does not execute the documented builds or regeneration.
+
+The other fast checks run 805 direct Haskell assertions about CLI version selection
 and rewrite definitions, including proof and obligation tactics, root and module
 boundaries, Unicode identifier and notation boundaries, user-name preservation, quoted string
 literals (including doubled quote escapes), comments, qualified paths split by
 whitespace/comments, relative `From` imports,
 unrelated AST text, header imports, and Coq 8.20 identity.
-They also run 187 harness checks with fake tools. These exercise both production
+They also run 213 harness checks with fake tools. These exercise both production
 test wrappers, nested helper compilation, clean rebuilds, concurrent tool logging,
 and serial and parallel base-generation retries through the `base` and `vfiles`
 entry points, plus fresh Coq builds with manual modules. Forced and outdated
@@ -254,6 +263,15 @@ that default translation creates no shared GHC object cache, so scheduling canno
 hide the object-file race. GHC only typechecks by default (`-fno-code`); the check
 also verifies that an explicit `--ghc -fobject-code` still enables native code
 generation.
+
+Both shared unit suites run 237 edits parser/API assertions and 32 real-translator
+CLI cases for their target, alongside 66 passing compiler fixtures and three
+expected compiler failures. The edit checks cover all 42 constructors at the
+grammar boundary, file precedence, scoped edits, rewrite ordering, and rejection
+diagnostics. Compiler assertions distinguish edit effects for class methods,
+recursion, declaration phases, and invariants. Explicit `class kinds` remains
+parser-only because it has no translation consumer. See the
+[test coverage matrix](examples/tests/README.md) for witnesses and limitations.
 
 The shared unit suites compile fixtures on both targets for nested Corelib
 references and moved theorems in generated definitions, raw proofs, `Program`
