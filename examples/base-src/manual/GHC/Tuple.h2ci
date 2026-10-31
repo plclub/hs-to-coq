@@ -1,0 +1,6 @@
+constructorFields:
+  GHC.Tuple.MkSolo: NonRecordFields 1
+constructorTypes:
+  GHC.Tuple.MkSolo: Qualified "GHC.Tuple" "Solo"
+constructors:
+  GHC.Tuple.Solo: '[Qualified "GHC.Tuple" "MkSolo"]'

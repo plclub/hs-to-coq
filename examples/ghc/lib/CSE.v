@@ -194,32 +194,6 @@ Require NestedRecursionHelpers.
     | CS sub _ _, x => CoreSubst.lookupIdSubst sub x
     end.
 
-#[local] Definition cse_identity_traverse {f} `{GHC.Base.Applicative f} {a b} (g
-    : a -> f b) (x : Data.Functor.Identity.Identity a)
-   : f (Data.Functor.Identity.Identity b) :=
-  GHC.Base.fmap Data.Functor.Identity.Mk_Identity (g
-                 (Data.Functor.Identity.runIdentity x)).
-
-#[local] Definition cse_identity_traversable
-   : Data.Traversable.Traversable Data.Functor.Identity.Identity :=
-  fun _ k =>
-    k (Data.Traversable.Traversable__Dict_Build Data.Functor.Identity.Identity
-                                                (fun m a b HF HA HM => (@cse_identity_traverse m HF HA a b)) (fun m
-                                                 a
-                                                 HF
-                                                 HA
-                                                 HM =>
-                                                   (@cse_identity_traverse m HF HA (m a) a (fun x => x))) (fun f
-                                                 a
-                                                 HF
-                                                 HA =>
-                                                   (@cse_identity_traverse f HF HA (f a) a (fun x => x))) (fun f
-                                                 a
-                                                 b
-                                                 HF
-                                                 HA =>
-                                                   (@cse_identity_traverse f HF HA a b))).
-
 #[global] Definition cseBind
    : BasicTypes.TopLevelFlag ->
      CSEnv -> Core.CoreBind -> (CSEnv * Core.CoreBind)%type :=
@@ -325,12 +299,8 @@ Require NestedRecursionHelpers.
            let 'pair env2 (pair b2 e2) := cse_bind toplevel env env1 (pair b e) b1 in
            pair env2 (Core.NonRec b2 e2)
        | toplevel, env, Core.Rec (cons (pair in_id rhs) nil) =>
-           let 'pair env1 (Data.Functor.Identity.Mk_Identity out_id) := (@addRecBinders
-                                                                           Data.Functor.Identity.Identity
-                                                                           Data.Functor.Identity.Functor__Identity
-                                                                           Data.Functor.Identity.Foldable__Identity
-                                                                           cse_identity_traversable env
-                                                                           (Data.Functor.Identity.Mk_Identity in_id)) in
+           let 'pair env1 (Data.Functor.Identity.Mk_Identity out_id) := addRecBinders env
+                                                                          (Data.Functor.Identity.Mk_Identity in_id) in
            let rhs' := cseExpr env1 rhs in
            let rhs'' := rhs' in
            let ticks := (@nil GHC.Types.Tickish.CoreTickish) in
@@ -476,12 +446,8 @@ Require NestedRecursionHelpers.
            let 'pair env2 (pair b2 e2) := cse_bind toplevel env env1 (pair b e) b1 in
            pair env2 (Core.NonRec b2 e2)
        | toplevel, env, Core.Rec (cons (pair in_id rhs) nil) =>
-           let 'pair env1 (Data.Functor.Identity.Mk_Identity out_id) := (@addRecBinders
-                                                                           Data.Functor.Identity.Identity
-                                                                           Data.Functor.Identity.Functor__Identity
-                                                                           Data.Functor.Identity.Foldable__Identity
-                                                                           cse_identity_traversable env
-                                                                           (Data.Functor.Identity.Mk_Identity in_id)) in
+           let 'pair env1 (Data.Functor.Identity.Mk_Identity out_id) := addRecBinders env
+                                                                          (Data.Functor.Identity.Mk_Identity in_id) in
            let rhs' := cseExpr env1 rhs in
            let rhs'' := rhs' in
            let ticks := (@nil GHC.Types.Tickish.CoreTickish) in
@@ -592,19 +558,9 @@ Require NestedRecursionHelpers.
     let ty' := CoreSubst.substTyUnchecked (csEnvSubst env) ty in
     Core.Case scrut1 bndr3 ty' (combineAlts (GHC.Base.map cse_alt alts)).
 
-Lemma cse_identity_mapAccumL {s a b} (step : s -> a -> prod s b) st x :
-  (@Data.Traversable.mapAccumL Data.Functor.Identity.Identity s a b
-   Data.Functor.Identity.Functor__Identity Data.Functor.Identity.Foldable__Identity
-   cse_identity_traversable step st (Data.Functor.Identity.Mk_Identity x)) =
-  (let 'pair st' y := step st x in
-   pair st' (Data.Functor.Identity.Mk_Identity y)).
-Proof.
-  cbv. destruct (step st x). reflexivity.
-Qed.
-
 (* External variables:
-     None Some andb bool cons false list negb nil op_ze__ op_zt__ option pair prod
-     true BasicTypes.NotTopLevel BasicTypes.TopLevel BasicTypes.TopLevelFlag
+     None Some andb bool cons false list negb nil op_zt__ option pair true
+     BasicTypes.NotTopLevel BasicTypes.TopLevel BasicTypes.TopLevelFlag
      BasicTypes.activateAfterInitial BasicTypes.inlinePragmaSpec
      BasicTypes.isAlwaysActive BasicTypes.isTopLevel BasicTypes.noUserInlineSpec
      Core.App Core.Case Core.Cast Core.CoreAlt Core.CoreBind Core.CoreExpr
@@ -617,11 +573,8 @@ Qed.
      CoreSubst.lookupIdSubst CoreSubst.substBndr CoreSubst.substBndrs
      CoreSubst.substCo CoreSubst.substRecBndrs CoreSubst.substTyUnchecked
      CoreUtils.exprIsTickedString CoreUtils.mkAltExpr Data.Foldable.null
-     Data.Functor.Identity.Foldable__Identity Data.Functor.Identity.Functor__Identity
-     Data.Functor.Identity.Identity Data.Functor.Identity.Mk_Identity
-     Data.Functor.Identity.runIdentity Data.Traversable.Traversable
-     Data.Traversable.Traversable__Dict_Build Data.Traversable.mapAccumL
-     Data.Tuple.fst Data.Tuple.snd GHC.Base.Applicative GHC.Base.fmap GHC.Base.map
+     Data.Functor.Identity.Mk_Identity Data.Traversable.Traversable
+     Data.Traversable.mapAccumL Data.Tuple.fst Data.Tuple.snd GHC.Base.map
      GHC.Core.Map.Expr.CoreMap GHC.Core.Map.Expr.emptyCoreMap
      GHC.Core.Map.Expr.eqCoreExpr GHC.Core.Map.Expr.extendCoreMap
      GHC.Core.Map.Expr.lookupCoreMap GHC.Err.patternFailure

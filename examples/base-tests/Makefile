@@ -35,13 +35,20 @@ VOFILES   = $(patsubst %.v,%.vo,$(VFILES))
 COQFLAGS  = ""
 
 TYPECHECK=coqc -Q ../../base/ ""
+BASE_CHECKS ?= deriving-checks identity-traversal
 
 main:
 	# Call ourselves with -k, so that we see all test outputs,
 	# even if some fail
 	$(MAKE) -k all
 
-all:  $(VFILES) pass todo_pass
+all:  $(VFILES) pass todo_pass $(BASE_CHECKS)
+
+deriving-checks:
+	bash ../tests/checks/deriving.sh
+
+identity-traversal:
+	bash ../tests/checks/identity-traversal.sh --target-version 8.20
 
 pass: $(addsuffix .pass,$(PASS))
 	@echo -------- END PASS ------------
@@ -90,3 +97,5 @@ clean:
 	rm -rf */*.vo */*.glob */*.v.d *.vo *.v.d *.glob $(VFILES) _CoqProject Makefile.coq *~
 
 .SECONDARY: $(VFILES)
+
+.PHONY: deriving-checks identity-traversal

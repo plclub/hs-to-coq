@@ -1,0 +1,4 @@
+skip DerivingInlineFailure.Missing__Failed
+skip DerivingInlineFailure.Default__Wrapped
+skip DerivingInlineFailure.Default__Failed
+order DerivingInlineFailure.Keep__bool DerivingInlineFailure.Keep__Wrapped_keep

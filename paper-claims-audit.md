@@ -6,7 +6,10 @@
 **Original branch**: ghc910-coq820 (GHC 9.10.3, Coq 8.20, containers v0.7)
 **Recovery update**: 2026-10-28, proof-recovery, starting at `1e4483ca`
 **Invariant recovery update**: 2026-10-29, proof-recovery, relative to `bd8b4f9d`
+**Key-only contract refinement**: 2026-10-30, proof-recovery, relative to `c8187b0c`
 **Logical-assumption cleanup**: 2026-10-31, proof-recovery, relative to `c14ff1f6`
+**Shared traversal update**: 2026-10-31, issue 228 at `e41f3c37`
+**Combined source**: PR 229 at `a038d05a` plus issue 228; full post-rebase validation pending
 
 This document preserves a source-search audit of claims from three publications.
 The dated updates distinguish later proof recovery from that historical
@@ -20,10 +23,17 @@ The 2026-10-28 recovery closed three Exitify admissions and four CSE equations,
 but retained inconsistent assumptions. The [2026-10-29 correction](#invariant-recovery-and-audit-correction-2026-10-29)
 removes the three rejected axioms and retains the exact final Exitify statement.
 Substitution retains its conclusion under a strengthened internal invariant.
-Intentional model assumptions remain. See
+The later key-only refinement and TrieMap/Eqdep cleanup are also retained in the
+combined tree. Issue 228 supplies the shared `Traversable Identity` instance
+used by native CSE in place of PR 229's local dictionary; it does not replace or
+undo the Exitify recovery. Intentional model assumptions remain. See
 [Exitify and CSE proof recovery](examples/ghc/README.md#exitify-and-cse-proof-recovery)
 and [WF contract recovery](examples/ghc/README.md#wf-contract-recovery) for
 implementation details and validation scope.
+
+**Validation boundary:** the build, `coqchk`, and `Print Assumptions` results
+below belong to the named pre-rebase revisions. They are not evidence of a full
+build or assumption audit of the combined tree.
 
 ## Papers Audited
 
@@ -114,6 +124,7 @@ G2, G6, G9, and G10 were updated on 2026-10-28. Other rows report the original
 2026-03-16 audit. The table is preserved as evidence of those assessments;
 the [2026-10-29 correction](#invariant-recovery-and-audit-correction-2026-10-29)
 below supersedes its substitution, Exitify, and VarSetFSet claims.
+The issue 228 CSE update is recorded separately in the detailed notes.
 
 | # | Claim | Status | Evidence |
 |---|-------|--------|----------|
@@ -122,7 +133,7 @@ below supersedes its substitution, Exitify, and VarSetFSet claims.
 | G3 | 0 Admitted in CoreSubst proofs | **HOLDS** | `CoreSubst.v`: 0 Admitted (verified by grep) |
 | G4 | Well-scopedness + join point definitions | **HOLDS** | `ScopeInvariant.v`, `JoinPointInvariants.v`: both 0 Admitted |
 | G5 | GHC 8.4.3 verified | **CHANGED** | Now GHC 9.10.3 |
-| G6 | CSE proofs | **FOUR EQUATIONS RECOVERED** | `CSE.v`: 7 Qed markers, 1 inherited `WS_cseExpr` admission; native translation compiled and kernel-checked |
+| G6 | CSE proofs | **FOUR EQUATIONS RECOVERED** | `theories/CSE.v`: 7 Qed markers and 1 inherited `WS_cseExpr` admission; an additional local Identity `mapAccumL` lemma was supplied through edits; native translation compiled and kernel-checked |
 | G7 | VarSetFSet interface | **PARTIAL** | `VarSetFSet.v`: 13 Admitted (was 18; 7 lemmas proved: subset_1, is_empty_1, for_all_1/2, exists_2, equal_1, eq_dec) |
 | G8 | 13K+ lines of proof | **EXPANDED** | Now 30 theory files |
 | G9 | Exitify bug fix verified | **RECOVERED UNDER MODEL ASSUMPTIONS** | `exitifyProgram_WellScoped_JPV` now uses proved target helpers; see the correction and remaining assumptions below |
@@ -140,7 +151,7 @@ and G9 by overlooking the final Exitify theorem's admitted dependency; the
 
 **G6 - CSE recovery (2026-10-28)**:
 The 2026-03-16 audit recorded five admissions while the generated CSE module was
-axiomatized. Four are control-flow equations, now proved against native
+axiomatized. The recovery proved four control-flow equations against native
 translation:
 1. `cseExpr_App` (original audit: line 47)
 2. `cseExpr_Let` (original audit: line 53)
@@ -151,13 +162,45 @@ translation:
 already admitted before PR209. It remains the only admission in `theories/CSE.v`.
 The earlier description of all five as unfolding lemmas was incorrect.
 
-The recovery preserves the distinct RHS/body environments in the five-argument
-`cse_bind`. CSE's Identity traversal, explicit local dictionary, and singleton
-`mapAccumL` lemma are supplied entirely through edits; all three are closed
-under the global context. They do not register an Identity instance or fix the
-shared standalone-deriving pipeline. The four equations still depend on existing
-opaque model APIs, including Core-map operations; they do not prove full CSE
-well-scopedness or semantic correctness.
+The recovery preserved the distinct RHS/body environments in the five-argument
+`cse_bind`. At this checkpoint, CSE's Identity traversal, explicit local
+dictionary, and singleton `mapAccumL` lemma were supplied entirely through edits;
+all three were closed under the global context. They did not register an
+Identity instance or fix the shared standalone-deriving pipeline. The four
+equations still depend on existing opaque model APIs, including Core-map
+operations; they do not prove full CSE well-scopedness or semantic correctness.
+
+**G6 - Shared traversal recovery (issue 228, 2026-10-31)**:
+`cseExpr`, `cseBind`, `try_for_cse`, and `cse_bind` now translate natively within
+the current Core model. CSE uses the shared, inferred `Traversable Identity`
+instance. This replaces PR 229's local dictionary while preserving all four
+methods (`traverse`, `sequenceA`, `mapM`, and `sequence`) and `mapAccumL` behavior.
+The local `cse_identity_traverse`, `cse_identity_traversable`, and
+`cse_identity_mapAccumL` declarations and the explicit-dictionary rewrite are
+removed in the combined tree.
+
+The combined `theories/CSE.v` retains the four recovered equations and adds
+`cseBind_Rec_singleton`, whose reflexivity proof exercises the shared traversal
+rather than the former local `mapAccumL` lemma. It has 8 `Qed` proofs and one
+admission, `WS_cseExpr`.
+
+The original issue 228 branch at `e41f3c37` recorded a successful full
+`make -j2 -C examples/ghc` regeneration and compilation after rebuilding base,
+base-thy, and containers library/theories. That result included all 29 theory
+files enabled at that revision and CSE's 8 `Qed` proofs and one admission.
+Both target base builds also passed 26 deriving CLI cases and the 14 closed
+assumption reports required by `IdentityTraversal.v`. Those reports concern
+six generated instances and eight proofs/examples, not the entire GHC theory.
+
+`WS_cseExpr` remains admitted. CoreMap operations and type abstractions remain
+opaque, so this recovery does not establish well-scopedness or axiom-freedom for
+the whole CSE theory. The original `e41f3c37` branch did not yet include PR 229's
+Exitify recovery and recorded no separate `coqchk` result. The combined tree
+does retain that recovery, its exact final theorem contract, and its cleaned
+assumption baseline. During the rebase, the proof agent reported eight closed
+scratch checks for the Identity replacement on each compiler. These focused
+checks do not replace full post-rebase generation, compilation, kernel checks,
+or theorem assumption reports, which remain pending.
 
 **G7 - VarSetFSet (2026-03-16 report: 15 Admitted, was 18)**:
 This historical account predates the replacement of the raw FSet adapter on
@@ -247,16 +290,28 @@ or exposed raw datatypes:
 
 For **G2 and G9**, `exitifyProgram_WellScoped_JPV` retains its exact statement,
 program input type, scoping predicates, and join-point-validity definitions.
+The contract checked by `RecoveryChecks.v` is:
+
+```coq
+forall pgm : CoreProgram,
+  WellScopedProgram pgm ->
+  isJoinPointsValidProgram pgm ->
+  WellScopedProgram (exitifyProgram pgm) /\
+  isJoinPointsValidProgram (exitifyProgram pgm).
+```
+
 The proof discharges the new helper premises from empty sets and
 `mkVarSet (bindersOfBinds pgm)`. No raw-map premise is added to the final theorem.
 
-Actual `Print Assumptions` checks for final Exitify and `WellScoped_substExpr`
-contain none of the rejected axioms or the blanket validity alias. Final Exitify
-still depends on `uniqAway`/locality contracts, type/FV model APIs, abstract GHC
-parameters, guarded `deferredFix_eq_on` and opaque `deferredFix`, functional
-extensionality, and `Eqdep.Eq_rect_eq.eq_rect_eq`. Opaque DSet functions remain
-in its dependency list, but the optional annotation theorem's DSet WF premises
-do not. Substitution retains its `uniqAway` contracts and abstract model APIs.
+At this 2026-10-29 checkpoint, `Print Assumptions` checks for final Exitify and
+`WellScoped_substExpr` contained none of the rejected axioms or the blanket
+validity alias. Final Exitify still depended on `uniqAway`/locality contracts,
+type/FV model APIs, abstract GHC parameters, guarded `deferredFix_eq_on` and
+opaque `deferredFix`, functional extensionality, and `Eqdep.Eq_rect_eq.eq_rect_eq`.
+Opaque DSet functions remain in its dependency list, but the optional annotation
+theorem's DSet WF premises do not. Substitution retains its `uniqAway` contracts
+and abstract model APIs.
+The 2026-10-31 cleanup below removes `eq_rect_eq` from this historical list.
 These results are not proofs about a fully concrete GHC model.
 
 **No new axioms or admissions were introduced relative to `bd8b4f9d`.** This
@@ -280,9 +335,10 @@ Validation for this update:
 
 ### Key-only contract refinement (2026-10-30)
 
-**Baseline: `c8187b0c` on `proof-recovery`.** Emptiness, subset, and disjointness
-specifications and their public set-algebra helpers now require structural WF
-without payload validity. Filter membership implies original membership without
+**Revision: `c14ff1f6`, relative to `c8187b0c` on `proof-recovery`.**
+Emptiness, subset, and disjointness specifications and their public set-algebra
+helpers now require structural WF without payload validity. Filter membership
+implies original membership without
 payload validity or predicate compatibility; predicate-sensitive filtering and
 lookup-payload comparisons retain their validity premises.
 
@@ -296,7 +352,7 @@ are introduced by this refinement; the model assumptions listed above remain.
 
 ### TrieMap and Eqdep cleanup (2026-10-31)
 
-**Baseline: `c14ff1f6` on `proof-recovery`.** The admitted
+**Revision: `81eb5d44`, relative to `c14ff1f6` on `proof-recovery`.** The admitted
 `TrieMapLaws__Map`, `TrieMapLaws__IntMap`, and `TrieMapLaws__UniqFM` instances
 are removed because their unconditional laws do not hold on raw map types.
 The remaining two admissions in `theories/TrieMap.v` are the law instances
@@ -321,14 +377,16 @@ final theorem type and rejects the removed instance names with `Fail Check`.
 
 ### Admitted Summary (GHC Theories, historical)
 
-Only the CSE and Exitify rows were rechecked on 2026-10-28. The other rows
-preserve the 2026-03-16 source-search counts; no current aggregate is claimed.
-In particular, the VarSetFSet row describes the old adapter removed on 2026-10-29.
+The CSE and Exitify rows were rechecked on 2026-10-28; issue 228's `e41f3c37`
+also recorded CSE's single remaining admission. Other rows preserve the
+2026-03-16 source-search counts, not current status: the VarSetFSet adapter was
+replaced on 2026-10-29, and three of the five TrieMap law instances were removed
+on 2026-10-31. No current aggregate is claimed.
 
 | File | Admitted | In Comments | Actual | Theorems |
 |------|----------|-------------|--------|----------|
 | VarSetFSet.v | 13 | 0 | 13 | 7 proved (subset_1, is_empty_1, for_all_1/2, exists_2, equal_1, eq_dec); 2 bridge + 1 sub-Admitted; 10 default-stub Admitted |
-| CSE.v | 1 | 0 | 1 | Inherited `WS_cseExpr`; four equations recovered (2026-10-28) |
+| CSE.v | 1 | 0 | 1 | Inherited `WS_cseExpr`; four equations recovered (2026-10-28); shared-instance singleton `Rec` compiled at `e41f3c37` |
 | TrieMap.v | 5 | 0 | 5 | `TrieMapLaws` instances for Map/IntMap/ListMap/UniqFM/GenMap |
 | Exitify.v | 0 | 0 | 0 | Three target proofs recovered; model assumptions remain (2026-10-28) |
 | UniqSetInv.v | 1 | 1 | 0 | (only occurrence is inside `(* ... *)` comment) |
@@ -365,7 +423,9 @@ JoinPointInvariantsInductive, OrdList, Unique, Util
 
 1. **CSE.v**: The four equation regressions were resolved on 2026-10-28 with
    native translation, edits, and a translator pattern-guard fix. The inherited
-   `WS_cseExpr` admission remains.
+   `WS_cseExpr` admission remains. Issue 228 replaces the local Identity support
+   with a shared instance and adds the singleton-`Rec` equation; its original
+   build results do not validate the combined tree.
 2. **TrieMap.v** (historical: 5 Admitted): On 2026-10-31, three unsupported raw-map
    law instances were removed. The two law instances for opaque ListMap and
    GenMap APIs remain admitted.
@@ -386,6 +446,8 @@ JoinPointInvariantsInductive, OrdList, Unique, Util
 
 The GHC entries below include the dated recoveries through 2026-10-31. Other
 entries retain the original audit's findings and have not been re-audited here.
+The combined source retains these recoveries; its full build and assumption
+checks remain pending.
 
 ### What Holds
 - `WellScoped_substExpr`: preserved conclusion under strengthened
@@ -417,6 +479,10 @@ entries retain the original audit's findings and have not been re-audited here.
 - Map fromList proofs: 0 Admitted (both Coq 8.20 `Program Fixpoint` regressions fixed)
 
 ### What Improved
+- CSE: four computational equations recovered and a singleton-`Rec` equation
+  added using shared Identity traversal; compiled against the refreshed
+  dependency chain on the original issue 228 branch (`e41f3c37`). The combined
+  tree retains PR 229's Exitify/WF recovery as well; post-rebase checks are pending.
 - MonoidLaws for Map proved (was missing vs JFP Fig 4 claim)
 - More translated functions (fromAscList/fromDescList for Set)
 - New proof modules (ContainerProofs, VarSetStrong, StateLogic, etc.)

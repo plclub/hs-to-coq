@@ -1,0 +1,4 @@
+skip Data.Foldable.Default__Wrap
+order Data.Foldable.Foldable__Down Data.Foldable.Foldable__Wrap_foldr
+order Data.Foldable.Foldable__Down Data.Foldable.Foldable__Wrap_foldMap
+order Data.Foldable.Foldable__Down Data.Foldable.Foldable__Wrap_null

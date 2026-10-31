@@ -57,6 +57,23 @@ Lemma cseBind_NonRec toplevel env b e :
 Proof. reflexivity. Qed.
 #[export] Hint Rewrite cseBind_NonRec : hs_simpl.
 
+(* The singleton Rec branch uses the shared Traversable Identity instance.
+   Reducing substRecBndrs's mapAccumL gives the same fresh binder as addBinder. *)
+Lemma cseBind_Rec_singleton toplevel env b rhs :
+  cseBind toplevel env (Rec ((b, rhs) :: nil)) =
+    let: (env1, out_id) := addBinder env b in
+    let rhs' := cseExpr env1 rhs in
+    if noCSE b then (env1, Rec ((out_id, rhs') :: nil))
+    else match lookupCSRecEnv env out_id rhs' with
+         | Some previous =>
+             (extendCSSubst env1 b previous,
+              NonRec (delayInlining toplevel out_id) previous)
+         | None =>
+             (extendCSRecEnv env1 out_id rhs' (varToCoreExpr out_id),
+              Rec ((Id.zapIdUsageInfo out_id, rhs') :: nil))
+         end.
+Proof. reflexivity. Qed.
+
 (** * Stripping ticks *)
 
 Lemma stripTicksE_id {b} p (e : Expr b) :
@@ -168,6 +185,7 @@ Qed.
 Print Assumptions cseExpr_App.
 Print Assumptions cseExpr_Let.
 Print Assumptions cseBind_NonRec.
+Print Assumptions cseBind_Rec_singleton.
 Print Assumptions stripTicksE_id.
 Print Assumptions stripTicksT_nil.
 Print Assumptions tryForCSE_simpl.
@@ -184,7 +202,7 @@ Record WellScopedCSEnv (env : CSEnv) (vars : VarSet) : Prop :=
    ; ws_map     : const True (cs_map env)
    ; ws_rec_map : const True (cs_rec_map env) }.
 
-(* Inherited well-scopedness admission, outside the control-flow equations. *)
+(* Inherited well-scopedness admission, outside the native control-flow equations. *)
 Definition WS_cseExpr vars env e :
   WellScopedCSEnv env             vars ->
   WellScoped      e               vars ->

@@ -57,8 +57,11 @@ bash examples/tests/checks/concurrent.sh
 
 `RocqVersion.hs` checks version parsing and namespace rewriting. The fake-tool
 `harness.sh` checks Make recipes, failure propagation, regeneration, helper
-dependencies, and cleanup, not edit semantics. `concurrent.sh` runs real
-translators with a shared Haskell dependency to check concurrent translation
+dependencies, and cleanup, not edit semantics. Its 221 cases include eight that
+restore missing manual `.h2ci` files when the corresponding `.v` files already
+exist. They exercise both base generators, direct and `vfiles` targets, and
+`-j1`/`-j2`, while preserving successfully generated sources. `concurrent.sh` runs
+real translators with a shared Haskell dependency to check concurrent translation
 and the explicit GHC code-generation override. These checks do not replace
 compiler tests.
 
@@ -70,11 +73,16 @@ compiler tests.
 | [edits.sh](checks/edits.sh) | 32 real-CLI cases per target, 64 for both. Success requires nonempty `.v` and `.h2ci` output plus selected source assertions; rejection requires a nonzero exit and a diagnostic substring. This script does not compile output. |
 | Shared compiler fixtures | Currently 67 `PASS` cases and 3 `TODO_PASS` cases per compiler. Generated proofs, type checks, and deliberate `Fail` commands distinguish selected edit effects from mere successful translation. |
 
-The compiler counts include 12 new edit fixtures, the reactivated `Records`
-and `RecordConstruction`, and `SoleCtorGuard`, up from 52 `PASS` cases. The record
+The compiler counts include 12 edit fixtures, the reactivated `Records` and
+`RecordConstruction`, and `SoleCtorGuard`, up from 52 `PASS` cases. The record
 assertions check field update, named-field construction, and projection of the
-constructed value. `SoleCtorGuard` checks refutable and irrefutable pattern guards.
-The lists in `test-rules.mk` determine which fixtures actually run.
+constructed value. `SoleCtorGuard` combines sole and nested constructors,
+refutable constructors, guarded case arms, and empty-list guards with
+computational assertions for exhaustive single-constructor guards and nested
+refutable fallbacks. It counts as one `PASS` module, so combining the two branches
+keeps the total at 67, not 68.
+The lists in `test-rules.mk` determine which fixtures run; these counts describe
+the inventory, not the outcome of a particular run.
 
 | Category | Required translation result | Required compiler result |
 | --- | --- | --- |
@@ -87,6 +95,81 @@ and `ExceptInDataDefinition`. Expected failures return success only when they
 match their category; an unexpected result must keep Make's nonzero status.
 Generation is forced on reruns, including helper dependencies, and a failed
 translator's partial `.v` output is discarded rather than reused.
+
+## Deriving and base integration
+
+Issue 228 adds base-dependent checks without adding a base dependency to either
+shared unit suite. After building the translator, use the matching compiler
+environment and compiled base library:
+
+```bash
+# Coq 8.20: existing base tests plus deriving and traversal checks
+make -C examples/base-tests
+
+# Rocq 9.0: compile base, then run its base-checks target
+make -C examples/rocq9.0 base
+
+# Run either check independently; use --target-version 9.0 for Rocq
+bash examples/tests/checks/deriving.sh --target-version 8.20
+bash examples/tests/checks/identity-traversal.sh --target-version 8.20
+
+# Focus on the two retained-instance/kind regressions
+bash examples/tests/checks/deriving.sh --target-version 8.20 --retained-only
+```
+
+[`deriving.sh`](checks/deriving.sh) contains 26 cases per target and defaults to
+8.20. Its successful translation cases compile generated modules and consumers
+that infer and compute with the derived dictionaries. Rejection cases require
+a nonzero exit, a relevant diagnostic, and no generated module. Coverage includes:
+
+- Inline and standalone recovery; renamed module, class, and instance skips;
+  method skips; and auxiliary bindings needed by retained instances.
+- Nonzero failures in default/strict mode and warnings with partial success in
+  permissive mode, including removal of a synthesized instance that fails the
+  final GHC typecheck.
+- The checked stock-generator bridge for the exact source modules
+  `GHC.Internal.Data.Foldable` and `GHC.Internal.Data.Traversable`, including
+  explicit `stock`, incompatible class APIs, invalid fields, hidden
+  constructors, and missing superclasses.
+- Retention of `Functor__Kleisli` and inline kind-polymorphic instances when
+  compiler-added kind names from `GHC.Types` must not trigger a module skip.
+  `--retained-only` selects these two cases.
+
+[`identity-traversal.sh`](checks/identity-traversal.sh) compiles the same
+[`IdentityTraversal.v`](../base-tests/IdentityTraversal.v) on both targets in a
+fresh temporary directory. The fixture uses public operations with inferred
+dictionaries for `Identity`, `Solo`, and `Down`; it supplies no local replacement
+instances. It checks `fmap`, `foldr`, `traverse`, and `mapAccumL`, including
+effects and state/value order. The runner requires 14 closed `Print Assumptions`
+reports and rejects any `Axioms:` report: six generated instances and eight
+proofs/examples. These checks do not establish axiom-freedom for unrelated base
+definitions or GHC proofs.
+
+The Make entry points enable both scripts through `BASE_CHECKS`. The fake-tool
+harness sets `BASE_CHECKS=` because it tests recipes rather than real translation
+or compilation; keep the default checks enabled for normal builds. Both base
+generators prepare manual `.h2ci` prerequisites even for direct file targets.
+In particular, `GHC/Tuple.h2ci` supplies metadata for the existing `Solo` datatype.
+
+### Issue 228 validation
+
+The issue 228 branch at `e41f3c37` recorded the following results before rebasing
+onto PR 229 (`a038d05a`). Both production base trees were regenerated after the
+retained-kind fix and compiled with Coq 8.20 and Rocq 9.0 respectively:
+
+- Coq base-tests: 18 `PASS` fixtures, 3 expected compiler failures, 26 deriving
+  cases, and 14 closed assumption reports.
+- Rocq parent `base`: 26 deriving cases and 14 closed assumption reports after
+  base compilation.
+- Both base-independent unit suites: 67 `PASS` fixtures and 3 expected compiler
+  failures, plus 237 edits assertions and 32 real-CLI cases per target.
+- All 805 version/rewrite assertions, the concurrent real-translator check,
+  and HLint.
+- All 221 harness cases on both Bash 3.2 and Bash 5.3.20.
+
+These results do not validate the combined tree. Full post-rebase validation is
+pending, including both shared suites with the combined `SoleCtorGuard` fixture,
+both targets' deriving/traversal checks, and the harness.
 
 ## Edit coverage matrix
 

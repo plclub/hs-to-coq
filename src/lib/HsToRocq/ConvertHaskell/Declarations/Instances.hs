@@ -8,7 +8,7 @@
 #include "ghc-compat.h"
 
 module HsToRocq.ConvertHaskell.Declarations.Instances (
-  convertClsInstDecls
+  convertClsInstDecls, convertInstanceNameAndTy
 ) where
 
 import Control.Lens

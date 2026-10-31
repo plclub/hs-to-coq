@@ -14,6 +14,12 @@ prepare-project:
 
 $(VFILES): | prepare-project
 
+# Manual constructor interfaces must be available even when their .v files
+# already exist. In particular, Solo's metadata is needed while translating
+# GHC.Base, before any recipe happens to copy the rest of the manual tree.
+MANUAL_IFACES := $(patsubst $(BASE_SRC)/manual/%,$(OUT)/%,$(wildcard $(addprefix $(BASE_SRC)/manual/,$(addsuffix .h2ci,$(HANDMOD)))))
+$(VFILES): | $(MANUAL_IFACES)
+
 # hs-to-rocq writes dependency files but does not create their parent directory.
 # This must hold for direct targets as well as serial and parallel vfiles builds.
 $(VFILES_GEN) $(VFILES_RENAMED) $(VFILES_SPECIAL) $(VFILES_DROPIN): | deps

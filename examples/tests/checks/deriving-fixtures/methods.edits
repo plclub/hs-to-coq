@@ -1,0 +1,7 @@
+skip method DerivingMethods.Keep ignored
+skip DerivingMethods.Default__Inline
+skip DerivingMethods.Default__Standalone
+order DerivingMethods.Keep__bool DerivingMethods.Keep__Inline_keep
+order DerivingMethods.Keep__bool DerivingMethods.Keep__Standalone_keep
+skip DerivingMethods.Default__Nested
+order DerivingMethods.Keep__Standalone DerivingMethods.Keep__Nested_keep

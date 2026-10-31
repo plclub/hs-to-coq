@@ -66,7 +66,7 @@ The `simple <https://github.com/plclub/hs-to-rocq/tree/master/examples/simple>`_
 example shows how to invoke ``hs-to-rocq`` from a ``Makefile``.
 
 Building the Rocq 9.0 examples
------------------------------
+------------------------------
 
 The ``examples/rocq9.0/`` tree provides the matching base library and reuses the
 shared unit tests with ``rocq c``. After building ``hs-to-rocq``, use a Rocq 9.0
@@ -75,6 +75,9 @@ environment with Equations installed and run this command from the repository ro
 .. code-block:: shell
 
      $ make -C examples/rocq9.0
+
+The parent ``base`` target runs deriving and public traversal checks after
+compiling the base library. The shared unit tests remain base-independent.
 
 The ``clean`` target deletes the convenience copy in ``examples/rocq9.0/base/``
 as well as test outputs. To regenerate and rebuild it, initialize the GHC submodule
@@ -160,6 +163,14 @@ development process.
 In permissive mode, ``hs-to-rocq`` will either attempt to axiomatize or skip
 failing definitions when possible.  This is particularly useful during
 development.
+
+On GHC 9.10, an unskipped inline or standalone derivation failure exits nonzero
+in default/strict mode. In permissive mode, the translator warns, removes only
+the diagnosed failed request, and retains successful derivations. The remaining
+module must still pass GHC's full typecheck; permissive mode cannot keep a value
+that needs a discarded instance. Explicit class, module, and instance skips
+respect renamings. Compiler-added kind annotations do not make a request depend
+on a skipped module such as ``GHC.Types``.
 
 Proofs
 ------

@@ -180,6 +180,10 @@ $(VFILES_MAN): $(OUT)/% : manual/%
 	rm -f $@
 	lndir ../examples/base-src/manual $(OUT)/
 
+$(MANUAL_IFACES): $(OUT)/%.h2ci: manual/%.h2ci
+	mkdir -p $(OUT)
+	lndir ../examples/base-src/manual $(OUT)/
+
 $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preamble.v drop-in/%.hs
 	rm -f $@
 	$(HS_TO_ROCQ) -e module-edits/$*/edits \

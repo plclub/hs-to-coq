@@ -1,26 +1,34 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 
 #if __GLASGOW_HASKELL__ >= 806
 {-# LANGUAGE TypeFamilies #-}
+#if __GLASGOW_HASKELL__ < 900
 {-# LANGUAGE TypeApplications #-}
+#endif
 #endif
 
 #include "ghc-compat.h"
 
-{- | Error-tolerant deriving pipeline for hs-to-rocq.
-Provides 'addDerivedInstances' which re-derives type class instances after
-typechecking, with skip-aware filtering ('DerivSkipInfo') and per-declaration
-retry on failure. Bridges the GHC deriving API with hs-to-rocq's conversion. -}
+{- | Expose GHC's derived source bindings to the converter. The retained
+declarations are typechecked by GHC first; re-deriving must agree with that
+module's instance metadata, and must retain supporting bindings. -}
 
-module HsToRocq.Util.GHC.Deriving (initForDeriving, addDerivedInstances, DerivSkipInfo(..)) where
+module HsToRocq.Util.GHC.Deriving (initForDeriving, addDerivedInstances
+#if __GLASGOW_HASKELL__ >= 910
+  , renameForDeriving, derivationIsSkipped, derivingRequests
+  , removeDerivingRequest, failedDerivationType, sameDerivingSpan
+#endif
+  ) where
 
 import GHC
 
 import Control.Monad
-import Data.Maybe (isNothing, mapMaybe)
+import Data.Maybe (mapMaybe, listToMaybe, isJust)
 import qualified Data.Set as S
-import qualified Data.Text as T
+import qualified Data.Map.Strict as M
 
 -- GHC version-gated imports: GHC 9.0+ reorganized internal modules under
 -- GHC.* hierarchies; older versions use flat module names (e.g. TcRnMonad).
@@ -50,7 +58,7 @@ import GHC.Types.Error
 import GHC.Driver.Errors.Types (GhcMessage(GhcTcRnMessage))
 import GHC.Core.Type as Type
 import GHC.Core.TyCo.Rep
-import GHC.Core.InstEnv (instanceSig)
+import GHC.Core.InstEnv (instanceSig, identicalClsInstHead, instEnvElts, is_dfun)
 #else
 import Outputable
 import TcRnMonad
@@ -73,178 +81,364 @@ import DynFlags
 #endif
 import qualified GHC.LanguageExtensions as LangExt
 
+#if __GLASGOW_HASKELL__ >= 910
+import qualified Control.Monad.Catch as MC
+import GHC.Driver.Plugins
+import GHC.Unit.Module.ModDetails (md_insts)
+import Control.Lens hiding (Strict)
+import HsToRocq.ConvertHaskell.Monad
+import HsToRocq.ConvertHaskell.Variables (var)
+import HsToRocq.ConvertHaskell.Declarations.Instances (convertInstanceNameAndTy)
+import qualified HsToRocq.Edits.Types as Edits
+import HsToRocq.Util.GHC.Module (ModuleData(..), mkModuleNameT)
+import HsToRocq.Rocq.Gallina (Qualid(..))
+import Data.Generics (everything, everythingBut, extQ, mkQ, everywhere, mkT)
+import Data.Data (Data)
+import GHC.Tc.Errors.Types (TcRnMessage(..), TcRnMessageDetailed(..), SolverReportWithCtxt(..), SolverReportErrCtxt(..), mkTcRnUnknownMessage)
+import GHC.Tc.Types.Constraint (ic_info)
+import GHC.Tc.Types.Origin (SkolemInfoAnon(DerivSkol), UserTypeCtxt(InstDeclCtxt))
+import GHC.Core.Predicate (mkClassPred)
+import GHC.Core.Unify (tcMatchTys, tcUnifyTy)
+import GHC.Core.TyCo.Subst (substTys)
+import GHC.Tc.Deriv (DerivInfo(..))
+import GHC.Tc.Gen.HsType (tcHsClsInstType, tcHsDeriv, tcDerivStrategy)
+import GHC.Builtin.Names (typeableClassName)
+
+-- Use the converter's instance-name calculation, including type renames and
+-- module renames, so a skip has the same meaning before and after recovery.
+derivationIsSkipped :: GlobalMonad r m => ModuleName -> LHsType GhcRn -> m Bool
+derivationIsSkipped mod ty = derivationIsSkippedUsing mod ty ty
+
+-- Only source syntax determines skipped dependencies. A checked head supplies
+-- the canonical instance name, including inferred kinds and eta reduction.
+derivationIsSkippedUsing :: GlobalMonad r m => ModuleName -> LHsType GhcRn -> LHsType GhcRn -> m Bool
+derivationIsSkippedUsing mod sourceTy headTy = uncurry (||) <$> derivationSkips mod sourceTy headTy
+
+-- Preserve the converter's skip-instance comment for a successful derivation,
+-- while keeping dependency-skipped instances and unused helpers out of output.
+derivationSkips :: GlobalMonad r m => ModuleName -> LHsType GhcRn -> LHsType GhcRn -> m (Bool, Bool)
+derivationSkips mod sourceTy headTy = do
+  targetMod <- view (edits.Edits.renamedModules.at mod.non mod)
+  withCurrentModule (ModuleData targetMod [] mempty) $ do
+    skipMods <- view (edits.Edits.skippedModules)
+    skipCls <- view (edits.Edits.skippedClasses)
+    moduleRenames <- view (edits.Edits.renamedModules)
+    let names = collectNamesFromHsType (unLoc sourceTy)
+        skippedModuleNames = skipMods `S.union` S.map (\m -> M.findWithDefault m m moduleRenames) skipMods
+    qids <- traverse (var Edits.TypeNS) names
+    let skippedName = any (`S.member` skipCls) qids
+          || any (maybe False ((`S.member` skipMods) . moduleName) . nameModule_maybe) names
+          || any (\case
+                    Qualified m _ -> mkModuleNameT m `S.member` skippedModuleNames
+                    _ -> False) qids
+    if skippedName then pure (True, False) else
+      -- Early kind errors can precede GHC's construction of the full inline
+      -- instance head. A bare class still supports class/module skips, but
+      -- cannot identify an individual instance. Preserve the GHC diagnostic.
+      if hasArgument (unLoc headTy) then do
+        (instName, _) <- convertInstanceNameAndTy (instanceHeadType headTy)
+        instanceSkip <- view (edits.Edits.skipped.contains instName)
+        pure (False, instanceSkip)
+      else pure (False, False)
+  where
+    hasArgument (HsAppTy {}) = True
+    hasArgument (HsOpTy {}) = True
+    hasArgument (HsForAllTy _ _ body) = hasArgument (unLoc body)
+    hasArgument (HsQualTy _ _ body) = hasArgument (unLoc body)
+    hasArgument (HsParTy _ body) = hasArgument (unLoc body)
+    hasArgument (HsKindSig _ body _) = hasArgument (unLoc body)
+    hasArgument _ = False
+
+instanceHeadType :: LHsType GhcRn -> LHsType GhcRn
+instanceHeadType ty = case unLoc ty of
+  HsForAllTy _ _ body -> instanceHeadType body
+  HsQualTy _ _ body -> instanceHeadType body
+  HsParTy _ body -> instanceHeadType body
+  _ -> ty
+
+data DerivingRequest = DerivingRequest
+  { requestSpan :: SrcSpan
+  , requestSyntax :: LHsType GhcRn
+  , requestClass :: Class
+  , requestTypes :: [Type]
+  , requestIsInline :: Bool
+  }
+
+requestHead :: DerivingRequest -> Type
+requestHead request = mkClassPred (requestClass request) (requestTypes request)
+
+requestMatches :: DerivingRequest -> ClsInst -> Bool
+requestMatches request spec =
+  let (_, _, cls, tys) = instanceSig spec
+  in getName (requestClass request) == getName cls
+     && isJust (tcMatchTys (requestTypes request) tys)
+
+requestMatchesExactly :: DerivingRequest -> ClsInst -> Bool
+requestMatchesExactly request spec =
+  let (_, _, _, tys) = instanceSig spec
+  in requestMatches request spec && isJust (tcMatchTys tys (requestTypes request))
+
+-- Inspect every declaration before generating bodies. These typed heads are
+-- independent of InstInfo and md_insts, so losing both cannot pass validation.
+checkedDerivingRequests :: [DerivInfo] -> [LDerivDecl GhcRn] -> TcM [DerivingRequest]
+checkedDerivingRequests infos standalone = do
+  standaloneRequests <- forM standalone $ \decl -> setSrcSpan (getLocA decl) $ do
+    let deriv = unLoc decl
+        L loc sig = hswc_body (deriv_type deriv)
+        syntax = sig_body sig
+        -- GHC also removes an extra-constraints wildcard before checking the
+        -- head; its inferred context does not change which instance is wanted.
+        checkedSig = case splitLHsQualTy syntax of
+          (Just (L _ [pred]), body) | HsWildCardTy {} <- unLoc (ignoreParens pred) ->
+            L loc sig { sig_body = body }
+          _ -> L loc sig
+    (_, viaTVs) <- tcDerivStrategy (deriv_strategy deriv)
+    dfun <- tcExtendTyVarEnv viaTVs $ tcHsClsInstType (InstDeclCtxt True) checkedSig
+    let (_, _, cls, tys) = tcSplitDFunTy dfun
+    pure (DerivingRequest (getLocA decl) syntax cls tys False)
+  inlineRequests <- fmap concat $ forM infos $ \info ->
+    tcExtendNameTyVarEnv (di_scoped_tvs info) $ fmap concat $ forM (di_clauses info) $ \(L _ clause) -> do
+      (_, viaTVs) <- tcDerivStrategy (deriv_clause_strategy clause)
+      tcExtendTyVarEnv viaTVs $ forM (clauseTypes clause) $ \ty -> setSrcSpan (getLocA ty) $ do
+        (_, cls, clsArgs, argKinds) <- tcHsDeriv ty
+        let rep = di_rep_tc info
+            (tc, args) = case tyConFamInstSig_maybe rep of
+              Just (family, patterns, _) -> (family, patterns)
+              Nothing -> (rep, mkTyVarTys (tyConTyVars rep))
+        case argKinds of
+          [argKind] -> do
+            let keep = length args - length (fst (splitFunTys argKind))
+                applied = mkTyConApp tc (take keep args)
+            case tcUnifyTy (Type.typeKind applied) argKind of
+              Just sub | keep >= 0 ->
+                pure (DerivingRequest (getLocA ty) (sig_body (unLoc ty)) cls
+                        (substTys sub (clsArgs ++ [applied])) True)
+              _ -> failWithTc $ mkTcRnUnknownMessage $ mkPlainDiagnostic ErrorWithoutFlag [] $
+                     text "Cannot recover the checked inline deriving head" <+> ppr ty
+          _ -> failWithTc (TcRnNonUnaryTypeclassConstraint ty)
+  pure (standaloneRequests ++ inlineRequests)
+  where
+    clauseTypes :: HsDerivingClause GhcRn -> [LHsSigType GhcRn]
+    clauseTypes clause = case unLoc (deriv_clause_tys clause) of
+      DctSingle _ ty -> [ty]
+      DctMulti _ tys -> tys
+
+parsedDerivingSpans :: ParsedModule -> [SrcSpan]
+parsedDerivingSpans pm =
+  [ getLocA decl | decl@(L _ (DerivD _ _)) <- hsmodDecls (unLoc (pm_parsed_source pm)) ]
+  ++ everything (++) ([] `mkQ` inline) (pm_parsed_source pm)
+  where
+    inline :: HsDataDefn GhcPs -> [SrcSpan]
+    inline defn = concatMap (types . unLoc) (dd_derivs defn)
+    types :: HsDerivingClause GhcPs -> [SrcSpan]
+    types clause = case unLoc (deriv_clause_tys clause) of
+      DctSingle _ ty -> [getLocA ty]
+      DctMulti _ tys -> map getLocA tys
+
+sameRequestSpans :: [SrcSpan] -> [SrcSpan] -> Bool
+sameRequestSpans [] b = null b
+sameRequestSpans (a:as) b = case break (sameDerivingSpan a) b of
+  (before, _:after) -> sameRequestSpans as (before ++ after)
+  _ -> False
+
+-- Stop at GHC's renamer boundary, before deriving or value typechecking can
+-- fail. In particular, value declarations may need one of the wanted instances.
+data RenamedForDeriving = RenamedForDeriving TcGblEnv (HsGroup GhcRn)
+instance Show RenamedForDeriving where
+  show _ = "RenamedForDeriving"
+instance E.Exception RenamedForDeriving
+
+renameForDeriving :: GhcMonad m => ParsedModule -> m (TcGblEnv, HsGroup GhcRn)
+renameForDeriving pm = MC.bracket getSession setSession $ \env -> do
+  let capture = defaultPlugin { renamedResultAction = \_ gbl group ->
+        liftIO $ E.throwIO (RenamedForDeriving gbl group) }
+      plugins = hsc_plugins env
+  setSession env { hsc_plugins = plugins
+    { staticPlugins = staticPlugins plugins ++ [StaticPlugin (PluginWithArgs capture [])] } }
+  MC.catch (typecheckModule pm >> error "renameForDeriving: renamer hook did not run")
+            (\(RenamedForDeriving gbl group) -> pure (gbl, group))
+#endif
+
 -- We need to allow IncoherentInstances for the hack in HsToRocq.Util.GHC.Deriving
 initForDeriving :: GhcMonad m => m ()
 initForDeriving =
   void $ getSessionDynFlags >>= setSessionDynFlags . (`xopt_set` LangExt.IncoherentInstances)
 
--- | Carries skip/axiomatize info from the edits system into the deriving
--- pipeline, so 'addDerivedInstances' can filter out deriving declarations
--- for types whose modules are skipped or whose classes are not available.
-data DerivSkipInfo = DerivSkipInfo
-  { dsi_skippedModules :: S.Set T.Text
-  , dsi_skippedClasses :: S.Set T.Text
-  }
-
 #if __GLASGOW_HASKELL__ >= 910
--- | Check if a Name belongs to a skipped module
-nameInSkippedModule :: DerivSkipInfo -> Name -> Bool
-nameInSkippedModule dsi name =
-  case nameModule_maybe name of
-    Just m  -> T.pack (moduleNameString (moduleName m)) `S.member` dsi_skippedModules dsi
-    Nothing -> False
-
--- | Check if a Name is a skipped class
-nameIsSkippedClass :: DerivSkipInfo -> Name -> Bool
-nameIsSkippedClass dsi name =
-  let occStr = T.pack (occNameString (nameOccName name))
-      qualName = case nameModule_maybe name of
-        Just m  -> T.pack (moduleNameString (moduleName m)) `T.append` T.pack "." `T.append` occStr
-        Nothing -> occStr
-  in qualName `S.member` dsi_skippedClasses dsi
-     || occStr `S.member` dsi_skippedClasses dsi
-
--- | Check if a Name belongs to a skipped module or is a skipped class.
-shouldSkipName :: DerivSkipInfo -> Name -> Bool
-shouldSkipName dsi n = nameInSkippedModule dsi n || nameIsSkippedClass dsi n
-
--- | Collect all Names from an HsType
+-- A kind annotation describes a type's kind, not another type/class used by
+-- the instance. GHC adds these annotations when reconstructing derived heads;
+-- treating their Type/RuntimeRep names as dependencies can skip valid requests.
 collectNamesFromHsType :: HsType GhcRn -> [Name]
-collectNamesFromHsType = go
+collectNamesFromHsType = everythingBut (++)
+  ((([], False) `mkQ` (\(name :: Name) -> ([name], True))) `extQ` kinds)
   where
-    go (HsTyVar _ _ (L _ name))      = [name]
-    go (HsAppTy _ (L _ t1) (L _ t2)) = go t1 ++ go t2
-    go (HsFunTy _ _ (L _ t1) (L _ t2)) = go t1 ++ go t2
-    go (HsListTy _ (L _ t))          = go t
-    go (HsTupleTy _ _ ts)            = concatMap (go . unLoc) ts
-    go (HsParTy _ (L _ t))           = go t
-    go (HsQualTy _ (L _ ctxt) (L _ t)) = concatMap (go . unLoc) ctxt ++ go t
-    go (HsForAllTy _ _ (L _ t))      = go t
-    go (HsKindSig _ (L _ t) (L _ k)) = go t ++ go k
-    go _                              = []
+    kinds :: HsType GhcRn -> ([Name], Bool)
+    kinds (HsKindSig _ body _) = (collectNamesFromHsType (unLoc body), True)
+    kinds (HsAppKindTy _ body _) = (collectNamesFromHsType (unLoc body), True)
+    kinds (HsForAllTy _ _ body) = (collectNamesFromHsType (unLoc body), True)
+    kinds _ = ([], False)
 
--- | Filter standalone deriving declarations based on 'DerivSkipInfo'.
--- Removes declarations that would fail during typechecking because they
--- reference types from skipped/axiomatized modules or skipped classes
--- (e.g. @deriving instance Generic Foo@ when Generic is skipped).
-filterStandaloneDerivs :: DerivSkipInfo -> [LDerivDecl GhcRn] -> [LDerivDecl GhcRn]
-filterStandaloneDerivs dsi = filter (not . shouldSkipDerivDecl dsi . unLoc)
+-- GHC error spans omit buffer offsets, while syntax annotations retain them.
+sameDerivingSpan :: SrcSpan -> SrcSpan -> Bool
+sameDerivingSpan (RealSrcSpan a _) (RealSrcSpan b _) = a == b
+sameDerivingSpan a b = a == b
 
-shouldSkipDerivDecl :: DerivSkipInfo -> DerivDecl GhcRn -> Bool
-shouldSkipDerivDecl dsi dd =
-  let wcType = deriv_type dd              -- LHsSigWcType GhcRn
-      sig = unLoc (hswc_body wcType)      -- HsSig GhcRn
-      body = unLoc (sig_body sig)         -- HsType GhcRn
-      names = collectNamesFromHsType body
-  in any (shouldSkipName dsi) names
-
--- | Filter deriving clauses from data declarations in TyClGroups
-filterTyClGroupDerivs :: DerivSkipInfo -> [TyClGroup GhcRn] -> [TyClGroup GhcRn]
-filterTyClGroupDerivs dsi = map filterGroup
+derivingRequests :: HsGroup GhcRn -> [(SrcSpan, LHsType GhcRn)]
+derivingRequests group =
+  [ (getLocA d, sig_body (unLoc (hswc_body (deriv_type (unLoc d)))))
+  | d <- hs_derivds group ]
+  ++ everything (++) ([] `mkQ` inline) group
   where
-    filterGroup g = g { group_tyclds = map (fmap filterTyClDecl) (group_tyclds g) }
+    inline :: HsDataDefn GhcRn -> [(SrcSpan, LHsType GhcRn)]
+    inline defn =
+      [ (getLocA ty, sig_body (unLoc ty))
+      | L _ clause <- dd_derivs defn, ty <- clauseTypes clause ]
 
-    filterTyClDecl (DataDecl ext name tvs fixity defn) =
-      DataDecl ext name tvs fixity (filterDataDefnDerivs dsi defn)
-    filterTyClDecl d = d
+    clauseTypes :: HsDerivingClause GhcRn -> [LHsSigType GhcRn]
+    clauseTypes clause = case unLoc (deriv_clause_tys clause) of
+      DctSingle _ ty -> [ty]
+      DctMulti _ tys -> tys
 
-filterDataDefnDerivs :: DerivSkipInfo -> HsDataDefn GhcRn -> HsDataDefn GhcRn
-filterDataDefnDerivs dsi defn = defn { dd_derivs = mapMaybe (filterDerivingClause dsi) (dd_derivs defn) }
+-- For inline requests, the diagnostic supplies the fully applied instance
+-- head, including eta reduction for higher-kinded classes. Do not guess it
+-- from the spelling of the class or the number of datatype parameters.
+failedDerivationType :: GhcMessage -> Maybe (LHsType GhcRn)
+failedDerivationType (GhcTcRnMessage msg) = go msg
+  where
+    go (TcRnMessageWithInfo _ (TcRnMessageDetailed _ inner)) = go inner
+    go (TcRnWithHsDocContext _ inner) = go inner
+    go (TcRnCannotDeriveInstance cls args _ _ _) = Just (typeToLHsType' (mkClassPred cls args))
+    go (TcRnSolverReport report _) = listToMaybe
+      [ typeToLHsType' ty
+      | implication <- cec_encl (reportContext report)
+      , DerivSkol ty <- [ic_info implication] ]
+    go _ = Nothing
+failedDerivationType _ = Nothing
 
-filterDerivingClause :: DerivSkipInfo -> LHsDerivingClause GhcRn -> Maybe (LHsDerivingClause GhcRn)
-filterDerivingClause dsi (L loc clause) =
-  let (L dctLoc dct) = deriv_clause_tys clause
-  in case dct of
-    DctSingle _ext ty ->
-      let names = collectNamesFromHsType (unLoc (sig_body (unLoc ty)))
-      in if any (shouldSkipName dsi) names
-         then Nothing
-         else Just (L loc clause)
-    DctMulti ext tys ->
-      let filtered = filter (not . hasSkippedName) tys
-          hasSkippedName ty =
-            let names = collectNamesFromHsType (unLoc (sig_body (unLoc ty)))
-            in any (shouldSkipName dsi) names
-      in if null filtered
-         then Nothing
-         else Just (L loc clause { deriv_clause_tys = L dctLoc (DctMulti ext filtered) })
+removeDerivingRequest :: SrcSpan -> ParsedModule -> ParsedModule
+removeDerivingRequest span pm =
+  let L loc hsmod = pm_parsed_source pm
+      keep (L declLoc (DerivD _ _)) = not (sameDerivingSpan span (locA declLoc))
+      keep (L declLoc (InstD _ (ClsInstD _ _))) = not (sameDerivingSpan span (locA declLoc))
+      keep _ = True
+      withoutStandalone = hsmod { hsmodDecls = filter keep (hsmodDecls hsmod) }
+      inline :: HsDataDefn GhcPs -> HsDataDefn GhcPs
+      inline defn = defn { dd_derivs = mapMaybe clause (dd_derivs defn) }
+      clause (L loc clause') =
+        let L tysLoc tys = deriv_clause_tys clause'
+            keepTy ty = not (sameDerivingSpan span (getLocA ty))
+        in case tys of
+          DctSingle _ ty | not (keepTy ty) -> Nothing
+          DctMulti ext ts -> case filter keepTy ts of
+            [] -> Nothing
+            retained -> Just (L loc clause' { deriv_clause_tys = L tysLoc (DctMulti ext retained) })
+          _ -> Just (L loc clause')
+  in pm { pm_parsed_source = L loc (everywhere (mkT inline) withoutStandalone) }
 #endif
 
--- | Re-derive instances after typechecking, using an error-tolerant strategy.
--- Unlike GHC's all-or-nothing approach, this tries all derivations at once
--- first, then falls back to processing each one individually on failure.
--- Individual failures (e.g. Generic, newtypes with unsupported coercions) are
--- silently dropped so that successful derivations still proceed.
-addDerivedInstances :: GhcMonad m => DerivSkipInfo -> TypecheckedModule -> m TypecheckedModule
-addDerivedInstances dsi tcm = do
+-- | Re-derive checked declarations. There is deliberately no per-request
+-- silent fallback: failures must pass through the caller's deriving policy.
+#if __GLASGOW_HASKELL__ >= 910
+addDerivedInstances :: GlobalMonad r m => TypecheckedModule -> m TypecheckedModule
+#else
+addDerivedInstances :: GhcMonad m => TypecheckedModule -> m TypecheckedModule
+#endif
+addDerivedInstances tcm = do
 #if __GLASGOW_HASKELL__ >= 910
     (hsgroup, a, b, c, d) <- case tm_renamed_source tcm of
       Just x  -> pure x
       Nothing -> error "addDerivedInstances: TypecheckedModule has no renamed source"
-    -- Filter out deriving declarations that reference skipped modules/classes
-    let filteredDerivds = filterStandaloneDerivs dsi (hs_derivds hsgroup)
-    let filteredTyclds  = filterTyClGroupDerivs dsi (hs_tyclds hsgroup)
-    let hsgroup_filtered = hsgroup { hs_derivds = filteredDerivds, hs_tyclds = filteredTyclds }
 #else
     (hsgroup, a, b, c) <- case tm_renamed_source tcm of
       Just x  -> pure x
       Nothing -> error "addDerivedInstances: TypecheckedModule has no renamed source"
-    let hsgroup_filtered = hsgroup
 #endif
 
-    -- Use error-tolerant deriving: if the all-at-once attempt fails,
-    -- fall back to per-declaration processing so that individual
-    -- failures (e.g. for Generic types, newtypes) don't block the
-    -- successful derivations.
-    mb_inst_infos <- initTcHackSafe tcm $ do
+#if __GLASGOW_HASKELL__ >= 910
+    (inst_infos, aux_binds, requests) <- _initTcHack tcm $ do
+#else
+    (inst_infos, aux_binds) <- _initTcHack tcm $ do
+#endif
         let tcg_env = fst (tm_internals_ tcm)
             tcg_env_hack = tcg_env { tcg_mod = fakeDerivingMod, tcg_semantic_mod = fakeDerivingMod }
                 -- Set the module to make it look like we are in GHCi
                 -- so that GHC will allow us to re-typecheck existing instances
         setGblEnv tcg_env_hack $
 #if __GLASGOW_HASKELL__ >= 910
-            do (_, _, deriv_infos, _) <- tcTyAndClassDecls (hs_tyclds hsgroup_filtered)
-               -- Try all derivations at once first
-               (mb_result, _msgs) <- tryTc (tcInstDeclsDeriv deriv_infos (hs_derivds hsgroup_filtered))
-               case mb_result of
-                 Just (_gbl, infos, _binds) -> return infos
-                 Nothing -> do
-                   -- Batch derivation failed; fall back to per-declaration retry
-                   liftIO $ putStrLn "hs-to-rocq: deriving: batch derivation failed, trying individually"
-                   derivResults <- forM deriv_infos $ \di -> do
-                     (mb, _) <- tryTc (tcInstDeclsDeriv [di] [])
-                     return $ case mb of
-                       Just (_, infos, _) -> infos
-                       Nothing -> []
-                   standaloneResults <- forM (hs_derivds hsgroup_filtered) $ \deriv_decl -> do
-                     (mb, _) <- tryTc (tcInstDeclsDeriv [] [deriv_decl])
-                     return $ case mb of
-                       Just (_, infos, _) -> infos
-                       Nothing -> []
-                   return (concat derivResults ++ concat standaloneResults)
+            do (gbl, _, deriv_infos, _) <- tcTyAndClassDecls (hs_tyclds hsgroup)
+               setGblEnv gbl $ do
+                 requests <- checkedDerivingRequests deriv_infos (hs_derivds hsgroup)
+                 (_, infos, binds) <- tcInstDeclsDeriv deriv_infos (hs_derivds hsgroup)
+                 failIfErrsM
+                 return (infos, binds, requests)
 #elif __GLASGOW_HASKELL__ >= 810
-            do (_, _, deriv_info) <- tcTyAndClassDecls (hs_tyclds hsgroup_filtered)
-               (mb_result, _msgs) <- tryTc (tcInstDeclsDeriv deriv_info (hs_derivds hsgroup_filtered))
-               case mb_result of
-                 Just (_gbl, infos, _binds) -> return infos
-                 Nothing -> do
-                   results <- forM (hs_derivds hsgroup_filtered) $ \deriv_decl -> do
-                     (mb, _) <- tryTc (tcInstDeclsDeriv deriv_info [deriv_decl])
-                     return $ case mb of
-                       Just (_, infos, _) -> infos
-                       Nothing -> []
-                   return (concat results)
+            do (gbl, _, deriv_info) <- tcTyAndClassDecls (hs_tyclds hsgroup)
+               setGblEnv gbl $ do
+                 (_, infos, binds) <- tcInstDeclsDeriv deriv_info (hs_derivds hsgroup)
+                 failIfErrsM
+                 return (infos, binds)
 #else
-            do (_gbl, infos, _binds) <- tcInstDeclsDeriv [] (hs_tyclds hsgroup_filtered >>= group_tyclds) (hs_derivds hsgroup_filtered)
-               return infos
+            do (_, infos, binds) <- tcInstDeclsDeriv [] (hs_tyclds hsgroup >>= group_tyclds) (hs_derivds hsgroup)
+               failIfErrsM
+               return (infos, binds)
 #endif
 
-    inst_infos <- case mb_inst_infos of
-          Just infos -> pure infos
-          Nothing    -> do  -- If tcTyAndClassDecls itself failed, proceed without derived instances
-            liftIO $ putStrLn "hs-to-rocq: WARNING: entire deriving pipeline failed, proceeding with 0 derived instances"
-            pure []
+#if __GLASGOW_HASKELL__ >= 910
+    let mod = ms_mod_name (pm_mod_summary (tm_parsed_module tcm))
+        checked_insts = instEnvElts (md_insts (snd (tm_internals_ tcm)))
+    let sourceSpans = map fst (derivingRequests hsgroup)
+    unless (sameRequestSpans (parsedDerivingSpans (tm_parsed_module tcm)) sourceSpans
+            && sameRequestSpans sourceSpans (map requestSpan requests)) $
+      throwProgramError $ "Deriving requests changed between parsed, renamed, and checked source in "
+        ++ moduleNameString mod ++ ":\n  parsed: "
+        ++ showSDocUnsafe (ppr (parsedDerivingSpans (tm_parsed_module tcm)))
+        ++ "\n  renamed: " ++ showSDocUnsafe (ppr sourceSpans)
+        ++ "\n  checked: " ++ showSDocUnsafe (ppr (map requestSpan requests))
+    policies <- forM (zip [0 :: Int ..] requests) $ \(index, request) -> do
+      (dependencySkip, instanceSkip) <- derivationSkips mod (requestSyntax request) (typeToLHsType' (requestHead request))
+      pure (index, request, dependencySkip, instanceSkip)
+    associations <- forM inst_infos $ \info -> do
+      let exact = [ policy | policy@(_, request, _, _) <- policies,
+                             requestMatchesExactly request (iSpec info) ]
+          -- Context inference may specialize an inline request's kinds
+          -- (e.g. Generic1 (Compose f g) fixes f :: Type -> Type). Prefer
+          -- exact matches, then allow these inline declaration templates.
+          candidates = if null exact
+            then [ policy | policy@(_, request, _, _) <- policies,
+                            requestIsInline request, requestMatches request (iSpec info) ]
+            else exact
+      case candidates of
+        [(index, _, dependencySkip, instanceSkip)] -> pure (info, index, dependencySkip, instanceSkip)
+        _ -> throwProgramError $ "Derived instance must match exactly one source request: "
+               ++ showSDocUnsafe (ppr (iSpec info))
+    let wantedInfos = [ info | (info, _, False, False) <- associations ]
+        retainedInfos = [ info | (info, _, False, _) <- associations ]
+    forM_ inst_infos $ \info ->
+      unless (any (identicalClsInstHead (iSpec info)) checked_insts) $
+        throwProgramError $ showSDocUnsafe (ppr (getSrcSpan (is_dfun (iSpec info))))
+          ++ ": derived instance has no matching checked metadata: " ++ showSDocUnsafe (ppr (iSpec info))
+    -- Start from source requests, not dictionary locations or reconstructed
+    -- signatures. Both metadata and the retained body must account for each
+    -- wanted request, even if GHC's metadata has a different source span.
+    -- Typeable deriving is a compiler-recognized no-op, not a local dictionary.
+    forM_ policies $ \(index, request, dependencySkip, instanceSkip) ->
+      unless (dependencySkip || instanceSkip || getName (requestClass request) == typeableClassName) $ do
+        let bodies = [ info | (info, index', False, False) <- associations, index == index' ]
+            metadataCount = case bodies of
+              [info] -> length (filter (identicalClsInstHead (iSpec info)) checked_insts)
+              _ -> length (filter (requestMatches request) checked_insts)
+            bodyCount = length bodies
+        unless (metadataCount == 1 && bodyCount == 1) $
+          throwProgramError $ showSDocUnsafe (ppr (requestSpan request))
+            ++ ": wanted deriving request must have exactly one checked dictionary and retained body: "
+            ++ showSDocUnsafe (ppr (requestHead request))
+            ++ " (metadata=" ++ show metadataCount ++ ", bodies=" ++ show bodyCount ++ ")"
+    let inst_decls = map instInfoToDecl retainedInfos
+        needed_aux_binds = neededDerivingBinds (map instInfoToDecl wantedInfos) aux_binds
+#else
     let inst_decls = map instInfoToDecl inst_infos
+        needed_aux_binds = aux_binds
+#endif
 
 #if __GLASGOW_HASKELL__ >= 806
     let mkTyClGroup decls instds = TyClGroup
@@ -258,6 +452,7 @@ addDerivedInstances dsi tcm = do
           }
 #endif
     let hsgroup' = hsgroup { hs_tyclds = mkTyClGroup [] inst_decls : hs_tyclds hsgroup }
+          `appendGroups` emptyRnGroup { hs_valds = needed_aux_binds }
 
 #if __GLASGOW_HASKELL__ >= 910
     return $ tcm { tm_renamed_source = Just (hsgroup', a, b, c, d) }
@@ -283,30 +478,26 @@ _initTcHack tcm action = do
                snd msgs
 #endif
 
--- | Like '_initTcHack' but returns 'Maybe' instead of crashing on failure.
--- '_initTcHack' throws a 'SourceError' when the TcM action fails;
--- this variant catches all exceptions and returns 'Nothing', allowing
--- graceful fallback when typechecking fails (e.g. missing TyCon info).
-initTcHackSafe :: GhcMonad m => TypecheckedModule -> TcM a -> m (Maybe a)
-initTcHackSafe tcm action = do
- hsc_env <- getSession
- let hsc_env_tmp = hsc_env
-        { hsc_dflags = ms_hspp_opts (pm_mod_summary (tm_parsed_module tcm)) }
- let mod = fakeDerivingMod
- let src_span = realSrcLocSpan (mkRealSrcLoc (fsLit "<deriving>") 1 1)
-
- result <- liftIO $ E.try @E.SomeException $
-   initTc hsc_env_tmp HsSrcFile False mod src_span action
- case result of
-   Right (_msgs, mba) -> do
-     when (isNothing mba) $
-       liftIO $ putStrLn "hs-to-rocq: deriving: initTc returned Nothing (type errors in derived code)"
-     return mba
-   Left exn
-     | Just (_ :: E.AsyncException) <- E.fromException exn -> liftIO $ E.throwIO exn
-     | otherwise -> do
-         liftIO $ putStrLn $ "hs-to-rocq: deriving: initTc threw exception: " ++ show exn
-         return Nothing
+#if __GLASGOW_HASKELL__ >= 910
+-- Keep complete binding groups reachable from retained instance bodies. GHC
+-- can return shared helpers separately (e.g. tag-to-constructor functions for Enum).
+-- Names bound inside a body may conservatively retain a helper, but a helper
+-- needed by a body or by another helper must never be lost.
+neededDerivingBinds :: [LInstDecl GhcRn] -> HsValBinds GhcRn -> HsValBinds GhcRn
+neededDerivingBinds insts (XValBindsLR (NValBinds groups sigs)) =
+  let names :: Data a => a -> S.Set Name
+      names = everything S.union (S.empty `mkQ` S.singleton)
+      bound = S.fromList . collectHsBindsBinders CollNoDictBinders . snd
+      close used =
+        let used' = used `S.union` S.unions
+              [ names binds | group@(_, binds) <- groups, not (S.disjoint used (bound group)) ]
+        in if used' == used then used else close used'
+      used = close (names insts)
+  in XValBindsLR (NValBinds
+       (filter (not . S.disjoint used . bound) groups)
+       (filter (not . S.disjoint used . names) sigs))
+neededDerivingBinds _ binds = pprPanic "neededDerivingBinds: unrenamed bindings" (ppr binds)
+#endif
 
 fakeDerivingMod :: Module
 fakeDerivingMod = mkModule

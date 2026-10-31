@@ -291,7 +291,7 @@ run_make() {
         FOREIGN_HS_TO_ROCQ=1 "HS_TO_ROCQ_DIR=$workspace"
         "HS_TO_ROCQ=bash \"$script\" --fake-translator"
         "PASS=$pass_modules" "TODO_PASS=$todo_pass_modules"
-        EDIT_CHECKS=
+        EDIT_CHECKS= BASE_CHECKS=
     )
     if [[ "$suite" == shared || "$suite" == rocq-tests ]]; then
         args+=("TODO_TRANSLATE=$todo_translate_modules")
@@ -840,6 +840,48 @@ for suite_name in rocq9 base-src8; do
     passed
 done
 
+# An existing manual .v must not hide missing constructor metadata. Exercise
+# both public generation targets without regenerating successful Base/Bool files.
+for suite_name in base-src8 rocq9; do
+    for jobs in 1 2; do
+        for entry in direct vfiles; do
+            new_case "$suite_name" "manual-iface-existing-v-j$jobs-$entry"
+            command=("-j$jobs")
+            output_dir=../../base
+            manual_dir=manual
+            direct_target=../../base/GHC/Base.v
+            if [[ "$suite" == rocq9 ]]; then
+                command+=(-C base-src)
+                output_dir=base
+                manual_dir=../base-src/manual
+                direct_target=../base/GHC/Base.v
+            fi
+            run_make 0 "${command[@]}" vfiles
+            mkdir -p "$test_dir/$manual_dir/GHC"
+            printf 'generated %s\n' "$generation" > "$test_dir/$manual_dir/GHC/Prim.v"
+            printf 'manual GHC.Prim\nconstructor PrimCtor\n' > "$test_dir/$manual_dir/GHC/Prim.h2ci"
+            # Keep the manual .v up to date so its recipe cannot supply metadata.
+            touch -t 200001010000 "$test_dir/$manual_dir/GHC/Prim.v"
+            cp "$test_dir/$manual_dir/GHC/Prim.v" "$test_dir/$output_dir/GHC/Prim.v"
+            assert_output "$output_dir/GHC/Prim.h2ci" absent
+
+            target=$direct_target
+            if [[ "$entry" == vfiles ]]; then target=vfiles; fi
+            run_make 0 "${command[@]}" HANDMOD=GHC/Prim "$target"
+            cmp -s "$test_dir/$manual_dir/GHC/Prim.h2ci" "$test_dir/$output_dir/GHC/Prim.h2ci" ||
+                fail "$suite/$name: manual constructor interface is missing or changed"
+            assert_output "$output_dir/GHC/Prim.v" present
+            for successful in GHC/Base Data/Bool; do
+                assert_output "$output_dir/$successful.v" present
+                assert_output "$output_dir/$successful.h2ci" present
+                assert_calls translate "$successful" 1
+            done
+            assert_calls translate GHC/Prim 0
+            passed
+        done
+    done
+done
+
 # A fresh coq entry point must create OUT before lndir copies a manual module.
 for jobs in 1 2; do
     new_case base-src8 "coq-fresh-manual-j$jobs"
@@ -850,7 +892,8 @@ for jobs in 1 2; do
     run_make 0 "-j$jobs" HANDMOD=GHC/Prim coq
     assert_output ../../base/GHC/Prim.v present
     assert_output ../../base/GHC/Prim.h2ci present
-    assert_calls manual Prim 1
+    # Fresh output visits both the interface and manual .v copy recipes.
+    assert_calls manual Prim 2
     assert_calls coq_makefile base 1
     assert_calls compile Prim 1
     assert_calls compile Base 1

@@ -34,6 +34,7 @@ library
                      , HsToRocq.Util.GHC.Exception
                      , HsToRocq.Util.GHC.Monad
                      , HsToRocq.Util.GHC.Deriving
+                     , HsToRocq.Util.GHC.StockDeriving
                      , HsToRocq.Util.Coerce
                      , HsToRocq.Util.Generics
                      , HsToRocq.Util.Function

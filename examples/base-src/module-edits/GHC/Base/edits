@@ -138,10 +138,9 @@ skip GHC.Base.MonadPlus__list
 skip GHC.Base.Alternative__option
 skip GHC.Base.MonadPlus__option
 
-# GHC 9.10: Solo type is in GHC.Tuple, not translated
+# Solo and its constructor metadata are provided by manual/GHC/Tuple.
 skip GHC.Base.Semigroup__Solo
 skip GHC.Base.Monoid__Solo
-skip GHC.Base.Functor__Solo
 skip GHC.Base.Applicative__Solo
 skip GHC.Base.Monad__Solo
 

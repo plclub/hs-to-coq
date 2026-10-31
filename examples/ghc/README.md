@@ -5,6 +5,14 @@ This directory contains a Coq translation of key GHC compiler modules
 (core language, optimization passes, utility types), generated from
 **GHC 9.10.3** using hs-to-rocq with **Coq 8.20**.
 
+The combined tree retains PR 229's Exitify, VarSet, and IntMap proof recovery
+from `a038d05a`, including the key-only contract refinement and TrieMap/Eqdep
+cleanup, together with issue 228's deriving recovery from `e41f3c37`. CSE now
+uses the shared `Traversable Identity` instance instead of PR 229's local
+dictionary. **Full post-rebase validation is pending.** The dated build,
+kernel-check, and assumption reports below describe their original revisions,
+not a fresh check of this combination.
+
 Compilation
 -----------
 
@@ -107,6 +115,29 @@ These functions remain `Axiom` in lib/ and cannot be unfolded in proofs:
  * **FloatIn**: `fiExpr`, `fiBinds`, `fiRhs`, `floatIsCase` (axiomatized module)
  * **OccurAnal**: Entire module axiomatized (view patterns + mutual recursion)
 
+### CSE recovery (issue 228)
+
+CSE now uses the generated, shared `Traversable Identity` instance through
+normal inference. This removes the need for PR 229's local dictionary without
+changing the class encoding. The shared instance must preserve all four methods
+(`traverse`, `sequenceA`, `mapM`, and `sequence`) and `mapAccumL` behavior.
+The related `Solo`/`Down` instances are also generated in both target base
+libraries; the GHC example itself still targets Coq 8.20.
+
+The CSE edits inline mutually recursive helpers, adapt nested recursion, and
+use the existing tick-free and type/coercion-substitution model. CoreMap
+operations and type abstractions remain opaque. Native control flow therefore
+does not make the entire pass or its theory axiom-free.
+
+In `theories/CSE.v`, `cseExpr_App`, `cseExpr_Let`, `cseBind_NonRec`, and
+`tryForCSE_simpl` are now proved with `Qed` instead of admitted. The new
+`cseBind_Rec_singleton` equation is proved by reflexivity and exercises the shared
+`Identity` traversal, rather than the old local `cse_identity_mapAccumL` lemma.
+`theories/CSE.v` has 8 `Qed` proofs and one admission, `WS_cseExpr`. The combined
+tree also includes PR 229's Exitify recovery. See
+[Exitify and CSE proof recovery](#exitify-and-cse-proof-recovery) for the
+revision-specific build and assumption evidence.
+
 ### Edit-induced semantic changes
 
 | Edit | Module | Change | Faithful? |
@@ -189,24 +220,29 @@ Tick-free model. `BasicTypes.activateAfterInitial` is generated from source
 with the exact scoped rewrite `nextPhase InitialPhase = Phase 2`; `nextPhase`
 itself remains skipped.
 
-All CSE-specific Identity support lives in `module-edits/CSE/edits`:
+At the PR 229 checkpoint (`a038d05a`), `module-edits/CSE/edits` supplied
+`cse_identity_traverse`, a local `cse_identity_traversable` dictionary, and
+`cse_identity_mapAccumL`. A scoped rewrite passed that dictionary explicitly
+to singleton `Rec` calls of `addRecBinders`, including inlined copies. All three
+support declarations were closed under the global context; the dictionary was
+not registered as an instance.
 
-* `add CSE Local Definition` supplies `cse_identity_traverse` and the
-  `cse_identity_traversable` dictionary.
-* A scoped rewrite passes that dictionary explicitly to `addRecBinders` at
-  singleton `Rec` calls, including their inlined copies.
-* `add CSE Lemma` supplies `cse_identity_mapAccumL`, which proves the singleton
-  traversal equation with the same explicit dictionary.
-
-All three support declarations are closed under the global context.
-The dictionary is a local definition, not a registered Identity instance.
-`module-edits/CSE/preamble.v` retains only its original two String import
-lines. Fixing the shared standalone-deriving pipeline is outside this recovery.
+Issue 228 replaces that support with the generated shared
+`Data.Traversable.Traversable__Identity` instance. The combined tree removes
+the three local declarations and the explicit-dictionary rewrite, and adds
+`cseBind_Rec_singleton` to `theories/CSE.v`. Its reflexivity proof exercises
+`substRecBndrs`'s `mapAccumL` through the inferred shared instance.
+`module-edits/CSE/preamble.v` retains its original two String import lines.
+The [base integration checks](../tests/README.md#deriving-and-base-integration)
+exercise the shared instances without local replacements.
 
 The translator's `guardTerm` now uses the existing refutability analysis to
 omit redundant wildcard branches for irrefutable patterns. The shared
 `SoleCtorGuard` PASS fixture covers sole and nested constructors, refutable
-constructors, guarded case arms, and empty-list guards.
+constructors, guarded case arms, and empty-list guards. The combined fixture
+also retains issue 228's computational assertions for exhaustive
+single-constructor guards and nested refutable fallbacks. It is one module in
+the current 67-PASS inventory, not an additional module for each branch.
 
 #### 2026-10-28 assumptions and validation
 
@@ -222,7 +258,7 @@ unfolding in Exitify alone did not remove the imported inconsistent assumptions.
 The 2026-10-29 recovery below supersedes this assumption report. The four CSE
 equations still retain opaque model APIs, including Core-map operations.
 
-Validation for this recovery:
+Historical validation for this 2026-10-28 recovery:
 
 * Production `make vfiles` regenerated the library. The complete GHC library
   and theory builds passed with Coq 8.20.1 after the final edits and proof
@@ -236,6 +272,28 @@ Validation for this recovery:
   checks confirmed the three closed Identity declarations and the remaining
   model dependencies. Both shared suites preceded this last edit-only
   reshaping; the full GHC builds followed it.
+
+#### Issue 228 validation and the combined tree
+
+On the original issue 228 branch (`e41f3c37`, 2026-10-31), the shared `Identity`,
+`Solo`, and `Down` instances were generated and compiled in both the Coq 8.20 and
+Rocq 9.0 base libraries. Each target passed 26 deriving CLI cases and the
+`IdentityTraversal.v` check requiring 14 closed assumption reports. See the
+[test validation record](../tests/README.md#issue-228-validation)
+for the remaining unit and harness results.
+
+That branch also recorded a full `make -j2 -C examples/ghc` regeneration and
+compilation after refreshing base, base-thy, and containers library/theories.
+All 29 theory files enabled at that revision compiled, including CSE with
+8 `Qed` proofs and one `WS_cseExpr` admission. That branch did not yet contain
+PR 229's Exitify/WF recovery, and it recorded no separate `coqchk` result.
+Those limitations describe `e41f3c37`, not the combined source tree.
+
+During the rebase, the proof agent reported eight closed scratch checks for
+the Identity replacement on both compilers. These focused checks support the
+replacement but do not validate the combined GHC development or replace the
+14-report base regression. Full post-rebase generation, compilation, kernel
+checks, and final theorem assumption reports remain pending.
 
 ### WF contract recovery
 
@@ -301,12 +359,12 @@ Thus `WellScoped_substExpr` keeps its well-scopedness conclusion but has
 stronger hypotheses through this internal predicate. `WellScoped` itself
 has not changed.
 
-#### Final Exitify boundary and 2026-10-29 assumptions
+#### Final Exitify boundary and assumption history
 
 `exitifyProgram_WellScoped_JPV` retains its exact statement:
 
 ```coq
-forall pgm,
+forall pgm : CoreProgram,
   WellScopedProgram pgm ->
   isJoinPointsValidProgram pgm ->
   WellScopedProgram (exitifyProgram pgm) /\
@@ -318,14 +376,18 @@ are unchanged. The proof discharges helper premises from `emptyVarSet` and
 `getInScopeVars (ep_in_scope pgm) = mkVarSet (bindersOfBinds pgm)`, using proved
 construction and preservation lemmas rather than new program hypotheses.
 
-Actual `Print Assumptions` checks for final Exitify and `WellScoped_substExpr`
-contain none of the three rejected axioms or the blanket validity alias.
-At this checkpoint, final Exitify depends on:
+The 2026-10-29 `Print Assumptions` checks for final Exitify and
+`WellScoped_substExpr` contained none of the three rejected axioms or the blanket
+validity alias. At that checkpoint, final Exitify depended on:
 
 * `uniqAway` contracts, the unique-locality axiom, and type/FV model APIs;
 * abstract GHC parameters, including opaque type builders and DSet functions;
 * guarded `DeferredFix.deferredFix_eq_on` and opaque `deferredFix`, functional
   extensionality, and `Eqdep.Eq_rect_eq.eq_rect_eq`.
+
+The 2026-10-31 cleanup removed `Eqdep.Eq_rect_eq.eq_rect_eq` from this list.
+That cleaned assumption baseline is retained from PR 229 in the combined tree;
+it must be rechecked after the rebase, not inferred from the earlier build.
 
 Substitution also retains its `uniqAway` contracts and abstract model APIs.
 Neither result establishes a fully concrete GHC model. `coqchk` checks proof
@@ -350,10 +412,11 @@ consistent.
 
 #### Key-only contract refinement (2026-10-30)
 
-Relative to `c8187b0c`, the emptiness, subset, and disjointness specifications and
-their public set-algebra helpers no longer require payload validity. WF premises
-remain explicit. Lookup-payload and predicate-sensitive filter laws retain their
-validity requirements. `ValidVarSet_iff_StrongValidVarSet` completes the two-way
+Commit `c14ff1f6`, relative to `c8187b0c`, removes payload-validity premises from
+the emptiness, subset, and disjointness specifications and their public
+set-algebra helpers. WF premises remain explicit. Lookup-payload and
+predicate-sensitive filter laws retain their validity requirements.
+`ValidVarSet_iff_StrongValidVarSet` completes the two-way
 relationship between the existing predicates while preserving the original
 `ValidVarSet_StrongValidVarSet` implication.
 
@@ -371,8 +434,8 @@ or admissions.
 
 #### TrieMap and Eqdep cleanup (2026-10-31)
 
-Relative to `c14ff1f6`, the admitted `TrieMapLaws__Map`,
-`TrieMapLaws__IntMap`, and `TrieMapLaws__UniqFM` instances are removed.
+Commit `81eb5d44`, relative to `c14ff1f6`, removes the admitted `TrieMapLaws__Map`,
+`TrieMapLaws__IntMap`, and `TrieMapLaws__UniqFM` instances.
 Their unconditional laws were false on the exposed raw map types: a fold can
 visit a stored value that lookup cannot reach. The generic laws and proved
 `MaybeMap` instance remain. `TrieMap.v` now has two admitted law instances,
@@ -402,9 +465,11 @@ the three removed TrieMap instance names with `Fail Check`.
 Theory proof scope and status
 -----------------------------
 
-This table describes the recovery's proof dependencies as of **2026-10-29**,
-not a census of `Qed` markers or an axiom-free verification claim. Historical
-publication evidence remains in [the paper claims audit](../../paper-claims-audit.md).
+This table describes the combined source state, including PR 229's recoveries
+through **2026-10-31** and issue 228's shared traversal. It is not a census of
+`Qed` markers, an axiom-free verification claim, or a post-rebase validation
+report. Historical publication evidence remains in
+[the paper claims audit](../../paper-claims-audit.md).
 
 | File | Scope and status |
 |------|------------------|
@@ -419,7 +484,8 @@ publication evidence remains in [the paper claims audit](../../paper-claims-audi
 | `ScopeInvariant.v`, `JoinPointInvariants.v` | Generic helpers carry invariant evidence; scoping and join-point-validity definitions are unchanged |
 | `CoreSubst.v` | Substitution preservation under strengthened `WellScoped_Subst` |
 | `Exitify.v` | Final program theorem proved with unchanged statement; remaining assumptions listed above |
-| `CSE.v` | Four recovered equations retained; existing `WS_cseExpr` admission remains |
+| `CSE.v` | Four recovered equations and shared-instance `cseBind_Rec_singleton`; 8 `Qed` proofs and the existing `WS_cseExpr` admission |
+| `TrieMap.v` | False raw `Map`/`IntMap`/`UniqFM` law instances removed; generic laws and proved `MaybeMap` instance retained; opaque `ListMap`/`GenMap` law instances remain admitted |
 | `ContainerContractCounterexamples.v`, `RecoveryChecks.v` | Refutations of rejected contracts and regression checks for the final theorem boundary |
 
 Unrelated admissions in `TrieMap.v` and the containers development remain.

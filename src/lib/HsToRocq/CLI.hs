@@ -356,7 +356,9 @@ processFilesMain process = do
 
 
   runGlobalMonad edits (conf^.translationLeniency) (conf^.ifaceDirs) (conf^.cfgRocqVersion) $
-    traverse_ (process withModulePrinter) =<< processFiles (conf^.processingMode) inputFiles
+    processFiles (conf^.processingMode) inputFiles >>= \case
+      Nothing -> liftIO $ die "hs-to-rocq: could not typecheck input modules"
+      Just modules -> process withModulePrinter modules
 
 printConvertedModule :: GlobalMonad r m
                      => WithModulePrinter m
@@ -428,4 +430,3 @@ convertAndPrintModules p = printConvertedModules p <=< convertModules <=< traver
           pure (modData, hs_group)
       | otherwise = throwProgramError $  "Renamer failed for `" ++ moduleNameString mod ++ "'"
       where mod = ms_mod_name . pm_mod_summary $ tm_parsed_module tcm
-

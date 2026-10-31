@@ -1,0 +1,6 @@
+polykinds DerivingInlineKinds.Phantom k
+data kinds DerivingInlineKinds.Phantom Type, k
+data kinds DerivingInlineKinds.Wrap (Type -> Type)
+delete unused type variables DerivingInlineKinds.Semigroup__Phantom
+polykinds DerivingInlineKinds.Compose k1 k2
+data kinds DerivingInlineKinds.Compose (k1 -> Type), (k2 -> k1), k2

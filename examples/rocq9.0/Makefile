@@ -1,7 +1,14 @@
 all: base tests
 
+BASE_CHECKS ?= base-checks
+
 base: base/Makefile
 	$(MAKE) -C base
+	$(if $(strip $(BASE_CHECKS)),$(MAKE) $(BASE_CHECKS),:)
+
+base-checks:
+	bash ../tests/checks/deriving.sh --target-version 9.0
+	bash ../tests/checks/identity-traversal.sh --target-version 9.0
 
 base/Makefile: base/_CoqProject
 	cd base && coq_makefile -f _CoqProject -o Makefile
@@ -22,4 +29,4 @@ clean:
 	$(MAKE) -C base-src clean
 	$(MAKE) -C tests clean
 
-.PHONY: all base vfiles tests clean
+.PHONY: all base base-checks vfiles tests clean

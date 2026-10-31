@@ -19,6 +19,7 @@ Require Data.Functor.Const.
 Require Import Data.Functor.Identity.
 Require Data.Functor.Utils.
 Require Data.Monoid.
+Require Data.Ord.
 Require Data.Proxy.
 Require Data.SemigroupInternal.
 Require GHC.Base.
@@ -282,6 +283,60 @@ Program Instance Traversable__Either {a : Type}
            (b : Type)
            `(GHC.Base.Applicative f) =>
              Traversable__Either_traverse |}.
+
+#[local] Definition Traversable__Solo_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> GHC.Tuple.Solo a -> f (GHC.Tuple.Solo b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, GHC.Tuple.MkSolo a1 => GHC.Base.fmap (fun b1 => GHC.Tuple.MkSolo b1) (f a1)
+      end.
+
+#[local] Definition Traversable__Solo_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> GHC.Tuple.Solo a -> m (GHC.Tuple.Solo b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__Solo_traverse.
+
+#[local] Definition Traversable__Solo_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f},
+     GHC.Tuple.Solo (f a) -> f (GHC.Tuple.Solo a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__Solo_traverse GHC.Base.id.
+
+#[local] Definition Traversable__Solo_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m}, GHC.Tuple.Solo (m a) -> m (GHC.Tuple.Solo a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__Solo_sequenceA.
+
+#[global]
+Program Instance Traversable__Solo : Traversable GHC.Tuple.Solo :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
+             Traversable__Solo_mapM ;
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
+             Traversable__Solo_sequence ;
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
+             Traversable__Solo_sequenceA ;
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
+             Traversable__Solo_traverse |}.
 
 #[local] Definition Traversable__pair_type_traverse {inst_a : Type}
    : forall {f : Type -> Type},
@@ -765,8 +820,112 @@ Program Instance Traversable__Ap {f : Type -> Type} `{(Traversable f)}
            `(GHC.Base.Applicative f) =>
              Traversable__Ap_traverse |}.
 
+#[local] Definition Traversable__Identity_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f}, (a -> f b) -> Identity a -> f (Identity b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, Mk_Identity a1 => GHC.Base.fmap (fun b1 => Mk_Identity b1) (f a1)
+      end.
+
+#[local] Definition Traversable__Identity_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m}, (a -> m b) -> Identity a -> m (Identity b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__Identity_traverse.
+
+#[local] Definition Traversable__Identity_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f}, Identity (f a) -> f (Identity a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__Identity_traverse GHC.Base.id.
+
+#[local] Definition Traversable__Identity_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m}, Identity (m a) -> m (Identity a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__Identity_sequenceA.
+
+#[global]
+Program Instance Traversable__Identity : Traversable Identity :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
+             Traversable__Identity_mapM ;
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
+             Traversable__Identity_sequence ;
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
+             Traversable__Identity_sequenceA ;
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
+             Traversable__Identity_traverse |}.
+
 (* Skipping instance `Data.Traversable.Traversable__U1' of class
    `Data.Traversable.Traversable' *)
+
+#[local] Definition Traversable__Down_traverse
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Applicative f},
+     (a -> f b) -> Data.Ord.Down a -> f (Data.Ord.Down b) :=
+  fun {f : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Applicative f} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, Data.Ord.Mk_Down a1 => GHC.Base.fmap (fun b1 => Data.Ord.Mk_Down b1) (f a1)
+      end.
+
+#[local] Definition Traversable__Down_mapM
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall {b : Type},
+     forall `{GHC.Base.Monad m},
+     (a -> m b) -> Data.Ord.Down a -> m (Data.Ord.Down b) :=
+  fun {m : Type -> Type} {a : Type} {b : Type} `{GHC.Base.Monad m} =>
+    Traversable__Down_traverse.
+
+#[local] Definition Traversable__Down_sequenceA
+   : forall {f : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Applicative f}, Data.Ord.Down (f a) -> f (Data.Ord.Down a) :=
+  fun {f : Type -> Type} {a : Type} `{GHC.Base.Applicative f} =>
+    Traversable__Down_traverse GHC.Base.id.
+
+#[local] Definition Traversable__Down_sequence
+   : forall {m : Type -> Type},
+     forall {a : Type},
+     forall `{GHC.Base.Monad m}, Data.Ord.Down (m a) -> m (Data.Ord.Down a) :=
+  fun {m : Type -> Type} {a : Type} `{GHC.Base.Monad m} =>
+    Traversable__Down_sequenceA.
+
+#[global]
+Program Instance Traversable__Down : Traversable Data.Ord.Down :=
+  fun _ k__ =>
+    k__ {| mapM__ := fun (m : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Monad m) =>
+             Traversable__Down_mapM ;
+           sequence__ := fun (m : Type -> Type) (a : Type) `(GHC.Base.Monad m) =>
+             Traversable__Down_sequence ;
+           sequenceA__ := fun (f : Type -> Type) (a : Type) `(GHC.Base.Applicative f) =>
+             Traversable__Down_sequenceA ;
+           traverse__ := fun (f : Type -> Type)
+           (a : Type)
+           (b : Type)
+           `(GHC.Base.Applicative f) =>
+             Traversable__Down_traverse |}.
 
 #[global] Definition for_ {t : Type -> Type} {f : Type -> Type} {a : Type} {b
    : Type} `{Traversable t} `{GHC.Base.Applicative f}
@@ -804,17 +963,18 @@ Program Instance Traversable__Ap {f : Type -> Type} `{(Traversable f)}
 (* Skipping definition `Data.Traversable.foldMapDefault' *)
 
 (* External variables:
-     Mk_Identity None Some Type cons list nil op_zt__ option pair runIdentity
-     Data.Either.Either Data.Either.Left Data.Either.Right Data.Foldable.Foldable
-     Data.Functor.op_zlzdzg__ Data.Functor.Const.Const Data.Functor.Const.Mk_Const
-     Data.Functor.Utils.Mk_StateL Data.Functor.Utils.Mk_StateR
-     Data.Functor.Utils.runStateL Data.Functor.Utils.runStateR Data.Monoid.Ap
-     Data.Monoid.Mk_Ap Data.Proxy.Mk_Proxy Data.Proxy.Proxy
-     Data.SemigroupInternal.Alt Data.SemigroupInternal.Dual
-     Data.SemigroupInternal.Mk_Alt Data.SemigroupInternal.Mk_Dual
-     Data.SemigroupInternal.Mk_Product Data.SemigroupInternal.Mk_Sum
-     Data.SemigroupInternal.Product Data.SemigroupInternal.Sum GHC.Base.Applicative
-     GHC.Base.Functor GHC.Base.Monad GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.flip
-     GHC.Base.foldr GHC.Base.id GHC.Base.liftA2 GHC.Base.op_z2218U__ GHC.Base.pure
-     GHC.Tuple.pair2 GHC.Tuple.pair_type
+     Identity Mk_Identity None Some Type cons list nil op_zt__ option pair
+     runIdentity Data.Either.Either Data.Either.Left Data.Either.Right
+     Data.Foldable.Foldable Data.Functor.op_zlzdzg__ Data.Functor.Const.Const
+     Data.Functor.Const.Mk_Const Data.Functor.Utils.Mk_StateL
+     Data.Functor.Utils.Mk_StateR Data.Functor.Utils.runStateL
+     Data.Functor.Utils.runStateR Data.Monoid.Ap Data.Monoid.Mk_Ap Data.Ord.Down
+     Data.Ord.Mk_Down Data.Proxy.Mk_Proxy Data.Proxy.Proxy Data.SemigroupInternal.Alt
+     Data.SemigroupInternal.Dual Data.SemigroupInternal.Mk_Alt
+     Data.SemigroupInternal.Mk_Dual Data.SemigroupInternal.Mk_Product
+     Data.SemigroupInternal.Mk_Sum Data.SemigroupInternal.Product
+     Data.SemigroupInternal.Sum GHC.Base.Applicative GHC.Base.Functor GHC.Base.Monad
+     GHC.Base.NEcons GHC.Base.NonEmpty GHC.Base.flip GHC.Base.fmap GHC.Base.foldr
+     GHC.Base.id GHC.Base.liftA2 GHC.Base.op_z2218U__ GHC.Base.pure GHC.Tuple.MkSolo
+     GHC.Tuple.Solo GHC.Tuple.pair2 GHC.Tuple.pair_type
 *)

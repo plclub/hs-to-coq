@@ -1,0 +1,36 @@
+add SoleCtorGuard Theorem SoleCtorGuard.sole_constructor_guard :
+  (SoleCtorGuard.unbox (SoleCtorGuard.MkBox true) = true) /\
+  (SoleCtorGuard.unbox (SoleCtorGuard.MkBox false) = false).
+Proof. split; reflexivity. Qed.
+
+add SoleCtorGuard Theorem SoleCtorGuard.nested_guard_fallback :
+  (SoleCtorGuard.nestedGuard (pair true (SoleCtorGuard.MkBox true)) = true) /\
+  ((SoleCtorGuard.nestedGuard (pair true (SoleCtorGuard.MkBox false)) = false) /\
+   (SoleCtorGuard.nestedGuard (pair false (SoleCtorGuard.MkBox true)) = false)).
+Proof. repeat split; reflexivity. Qed.
+
+# Preserve the computational behavior of the upstream guard fixtures too.
+add SoleCtorGuard Theorem SoleCtorGuard.upstream_single_guard_compute :
+  (SoleCtorGuard.single (SoleCtorGuard.MkSingle true false) = true) /\
+  (SoleCtorGuard.single (SoleCtorGuard.MkSingle false true) = false).
+Proof. split; reflexivity. Qed.
+
+add SoleCtorGuard Theorem SoleCtorGuard.upstream_nested_guard_compute :
+  (SoleCtorGuard.nested (SoleCtorGuard.MkNested (SoleCtorGuard.MkSingle true false)) = true) /\
+  (SoleCtorGuard.nested (SoleCtorGuard.MkNested (SoleCtorGuard.MkSingle false true)) = false).
+Proof. split; reflexivity. Qed.
+
+add SoleCtorGuard Theorem SoleCtorGuard.upstream_choice_guard_compute :
+  (SoleCtorGuard.choice (SoleCtorGuard.ChoiceA true) = true) /\
+  (SoleCtorGuard.choice (SoleCtorGuard.ChoiceB true) = false).
+Proof. split; reflexivity. Qed.
+
+add SoleCtorGuard Theorem SoleCtorGuard.upstream_case_guard_compute :
+  (SoleCtorGuard.inCase (Some (SoleCtorGuard.MkSingle true false)) = true) /\
+  (SoleCtorGuard.inCase None = false).
+Proof. split; reflexivity. Qed.
+
+add SoleCtorGuard Theorem SoleCtorGuard.upstream_empty_guard_compute :
+  (SoleCtorGuard.empty nil = true) /\
+  (SoleCtorGuard.empty (cons true nil) = false).
+Proof. split; reflexivity. Qed.

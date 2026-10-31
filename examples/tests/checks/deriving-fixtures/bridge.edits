@@ -1,0 +1,4 @@
+skip Data.Traversable.Default__Wrap
+skip Data.Traversable.Default__Bare
+skip Data.Traversable.Default__Bad
+order Data.Traversable.Traversable__Identity Data.Traversable.Traversable__Wrap_traverse
