@@ -167,7 +167,7 @@ case "${1:-}" in
 esac
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-workspace=$(cd "$script_dir/../../.." && pwd)
+workspace=$(cd "$script_dir/.." && pwd)
 script="$script_dir/harness.sh"
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/hs-to-rocq-harness.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT

@@ -21,7 +21,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-workspace=$(cd "$script_dir/../../.." && pwd)
+workspace=$(cd "$script_dir/.." && pwd)
 export STACK_YAML="$workspace/stack.yaml"
 fixtures="$script_dir/deriving-fixtures"
 translator=(stack --allow-different-user exec hs-to-rocq --)

@@ -45,10 +45,10 @@ main:
 all:  $(VFILES) pass todo_pass $(BASE_CHECKS)
 
 deriving-checks:
-	bash ../tests/checks/deriving.sh
+	bash ../../test/deriving.sh
 
 identity-traversal:
-	bash ../tests/checks/identity-traversal.sh --target-version 8.20
+	bash ../../test/identity-traversal.sh --target-version 8.20
 
 pass: $(addsuffix .pass,$(PASS))
 	@echo -------- END PASS ------------

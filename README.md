@@ -49,6 +49,11 @@ To build `hs-to-rocq`, then run
 
     stack build
 
+Run the Haskell test suites with `stack test` or `cabal test all`. They do not
+require a Coq/Rocq compiler or a generated base library. See the
+[tool test guide](test/README.md) for focused suites, dependencies, and the
+separate shell integration and compiler checks.
+
 ## Building the `base` library
 
 This repository comes with a version of (parts of the) Haskell base library
@@ -262,11 +267,13 @@ cd examples/graph/theories && coq_makefile -f _CoqProject -o Makefile && make -j
 # Transformers
 cd examples/transformers && make
 
-# Fast checks (after stack build; no Coq/Rocq compiler required)
-stack --allow-different-user exec -- runghc -package=yaml examples/tests/checks/CiCatalog.hs --self-test
-stack --allow-different-user exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs
-bash examples/tests/checks/harness.sh
-bash examples/tests/checks/concurrent.sh
+# Haskell suites (no Coq/Rocq compiler or generated base required)
+stack test
+
+# Explicit shell integration checks (after stack build; no Coq/Rocq compiler)
+bash test/harness.sh
+bash test/concurrent.sh
+bash test/edits.sh
 
 # Coq 8.20 tests (base-tests requires a compiled base)
 make -C examples/tests
@@ -283,20 +290,25 @@ make -C examples/rocq9.0/tests
 ```
 
 The local `/ci` and `/ci-fix` commands share the seven-job catalog in
-`.claude/commands/ci.md`. The catalog check uses the existing Haskell YAML
+`.claude/commands/ci.md`. The `ci-catalog` suite uses the existing Haskell YAML
 dependency to compare workflow jobs and prerequisites with the catalog, check
 `/ci-fix` delegation, reject failure masking, and parse shell snippets with
 `bash -n` (including heredoc bodies). Its regressions cover a pinned old catalog,
-missing/duplicate jobs, and blocked prerequisites using stubbed tools. It runs
-in `build-haskell`; it does not execute the documented builds or regeneration.
+missing/duplicate jobs, and blocked prerequisites using stubbed tools. The suite
+runs its complete self-tests by default, including through `stack test` in
+`build-haskell`; it does not execute the documented builds or regeneration.
 
-The other fast checks run 805 direct Haskell assertions about CLI version selection
+The Haskell suites and shell runners live in `test/`; compiler fixtures remain
+in `examples/tests/`. Shell integration and compiler checks are not part of
+`stack test` or `cabal test all`.
+
+The `rocq-version` suite runs 805 direct Haskell assertions about CLI version selection
 and rewrite definitions, including proof and obligation tactics, root and module
 boundaries, Unicode identifier and notation boundaries, user-name preservation, quoted string
 literals (including doubled quote escapes), comments, qualified paths split by
 whitespace/comments, relative `From` imports,
 unrelated AST text, header imports, and Coq 8.20 identity.
-They also run 221 harness checks with fake tools. These exercise both production
+`test/harness.sh` runs 221 checks with fake tools. These exercise both production
 test wrappers, nested helper compilation, clean rebuilds, concurrent tool logging,
 and serial and parallel base-generation retries through the `base` and `vfiles`
 entry points, plus fresh Coq builds with manual modules. Eight cases check that
@@ -312,16 +324,17 @@ compiler tests.
 The issue 228 branch at `e41f3c37` recorded all 221 harness cases passing with
 macOS Bash 3.2 and Bash 5.3.20. All 221 also passed at `1ca9107f`.
 
-A separate real-translator check runs two modules with a shared source dependency
+`test/concurrent.sh` runs two modules with a shared source dependency
 concurrently on each target. It requires both `.v` and `.h2ci` outputs and checks
 that default translation creates no shared GHC object cache, so scheduling cannot
 hide the object-file race. GHC only typechecks by default (`-fno-code`); the check
 also verifies that an explicit `--ghc -fobject-code` still enables native code
 generation.
 
-Both shared unit suites run 237 edits parser/API assertions and 32 real-translator
-CLI cases for their target, alongside 67 `PASS` compiler fixtures and three
-expected compiler failures. The combined `SoleCtorGuard` fixture retains both
+Both shared unit suites run the `edits` Cabal suite (237 parser/API assertions)
+and `test/edits.sh` (32 real-translator CLI cases for their target), alongside
+67 `PASS` compiler fixtures and three expected compiler failures. The combined
+`SoleCtorGuard` fixture retains both
 branches' cases and the computational assertions, but still counts as one
 module. The edit checks cover all 42 constructors at the grammar boundary,
 file precedence, scoped edits, rewrite ordering, and rejection diagnostics.
@@ -331,7 +344,7 @@ parser-only because it has no translation consumer. See the
 [test coverage matrix](examples/tests/README.md) for witnesses and limitations.
 
 Base-dependent checks run separately: `make -C examples/base-tests` includes
-`deriving.sh` and `identity-traversal.sh` for Coq 8.20; the Rocq parent
+`test/deriving.sh` and `test/identity-traversal.sh` for Coq 8.20; the Rocq parent
 `make -C examples/rocq9.0 base` runs both after compiling its base. The shared
 unit suites remain base-independent. `IdentityTraversal.v` checks public,
 inferred instances and requires 14 closed assumption reports: six generated

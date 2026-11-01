@@ -2,8 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -Werror #-}
 
--- Run against the installed library after stack build:
--- stack exec -- runghc -package=hs-to-rocq examples/tests/checks/Edits.hs
+-- Run with stack test hs-to-rocq:edits or cabal test edits.
 module Main (main) where
 
 import Control.Monad (unless)

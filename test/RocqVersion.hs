@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Run against the installed library after stack build:
--- stack exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs
+-- Run with stack test hs-to-rocq:rocq-version or cabal test rocq-version.
 module Main (main) where
 
 import Control.Monad (unless)

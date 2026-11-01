@@ -46,14 +46,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-hs-to-rocq
-      - name: Check local CI catalog and regressions
-        run: stack --allow-different-user exec -- runghc -package=yaml examples/tests/checks/CiCatalog.hs --self-test
-      - name: Check target-version rewriting
-        run: stack --allow-different-user exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs
+      - name: Run Haskell test suites
+        run: stack --allow-different-user test
       - name: Check test-harness failure propagation
-        run: bash examples/tests/checks/harness.sh
+        run: bash test/harness.sh
       - name: Check concurrent real translations
-        run: bash examples/tests/checks/concurrent.sh
+        run: bash test/concurrent.sh
 
   test-coq-files:
     name: Testing all Coq examples (Coq 8.20)

@@ -7,8 +7,8 @@ base: base/Makefile
 	$(if $(strip $(BASE_CHECKS)),$(MAKE) $(BASE_CHECKS),:)
 
 base-checks:
-	bash ../tests/checks/deriving.sh --target-version 9.0
-	bash ../tests/checks/identity-traversal.sh --target-version 9.0
+	bash ../../test/deriving.sh --target-version 9.0
+	bash ../../test/identity-traversal.sh --target-version 9.0
 
 base/Makefile: base/_CoqProject
 	cd base && coq_makefile -f _CoqProject -o Makefile
