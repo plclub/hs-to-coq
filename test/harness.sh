@@ -117,6 +117,13 @@ case "${1:-}" in
         module=${module%.v}
         log_call compile "$module" ${compiler_command[@]+"${compiler_command[@]}"} "${compiler_args[@]}"
         test -f "$source"
+        if [[ "$module" == IdentityTraversal ]]; then
+            cmp -s "$source" "$HARNESS_IDENTITY_SOURCE"
+            for ((report=1; report<=14; report++)); do
+                printf '%s\n' 'Closed under the global context'
+            done
+            exit 0
+        fi
         IFS= read -r line < "$source"
         [[ "$line" == "generated ${GENERATION:-initial}" ]] || exit 44
         if [[ "$module" == "${COMPILER_FAULT_MODULE:-Probe}" && ${COMPILER_MODE:-success} == error ]]; then
@@ -134,6 +141,12 @@ case "${1:-}" in
         : > "${source%.v}.glob"
         : > "$(dirname "$source")/.${module}.aux"
         exit 0
+        ;;
+    --fake-git)
+        shift
+        log_call git rejected "$@"
+        printf '%s\n' 'fatal: detected dubious ownership in repository (harness Git stub)' >&2
+        exit 128
         ;;
     --fake-lndir)
         shift
@@ -1101,5 +1114,56 @@ run_make 0 -C base-src HANDMOD=GHC/Enum ../base/GHC/Enum.v
 assert_contains base/GHC/Enum.v 'From Stdlib Require Import ssreflect Lia.'
 assert_calls translate GHC/Enum 0
 passed
+
+# The real IdentityTraversal runner must work when Git rejects the checkout.
+# Use its default base paths from the root and the two Make caller directories.
+suite=identity-traversal
+for target in 8.20 9.0; do
+    for caller in root make; do
+        name="$target-$caller-without-git"
+        test_dir="$tmp/$suite/$name"
+        mkdir -p "$test_dir/bin" "$test_dir/test" "$test_dir/base" \
+            "$test_dir/examples/base-tests" "$test_dir/examples/rocq9.0/base" "$test_dir/tmp"
+        test_dir=$(cd "$test_dir" && pwd)
+        ln -s "$workspace/test/identity-traversal.sh" "$test_dir/test/identity-traversal.sh"
+        ln -s "$workspace/examples/base-tests/IdentityTraversal.v" \
+            "$test_dir/examples/base-tests/IdentityTraversal.v"
+        for tool in coqc rocq git; do
+            printf '#!/usr/bin/env bash\nexec bash "%s" --fake-%s "$@"\n' "$script" "$tool" > "$test_dir/bin/$tool"
+            chmod +x "$test_dir/bin/$tool"
+        done
+        : > "$test_dir/tools.log"
+        expected_base="$test_dir/base"
+        make_dir="$test_dir/examples/base-tests"
+        compiler_options='<coqc>'
+        if [[ "$target" == 9.0 ]]; then
+            expected_base="$test_dir/examples/rocq9.0/base"
+            make_dir="$test_dir/examples/rocq9.0"
+            compiler_options='<rocq> <c> <-w> <+deprecated-dirpath-Coq>'
+        fi
+        caller_dir=$test_dir
+        runner=test/identity-traversal.sh
+        if [[ "$caller" == make ]]; then
+            caller_dir=$make_dir
+            runner=../../test/identity-traversal.sh
+        fi
+        if (
+            cd "$caller_dir" || exit 1
+            PATH="$test_dir/bin:$PATH" COQC= TMPDIR="$test_dir/tmp" \
+                HARNESS_LOG="$test_dir/tools.log" \
+                HARNESS_IDENTITY_SOURCE="$workspace/examples/base-tests/IdentityTraversal.v" \
+                bash "$runner" --target-version "$target"
+        ) > "$test_dir/make.log" 2>&1; then
+            actual=0
+        else
+            actual=$?
+        fi
+        [[ "$actual" == 0 ]] || fail "$suite/$name: runner returned $actual, expected 0"
+        assert_calls compile IdentityTraversal 1
+        assert_contains tools.log "compile:IdentityTraversal $compiler_options <-Q> <$expected_base> <> <$test_dir/tmp/identity-traversal-$target."
+        assert_contains make.log "IdentityTraversal ($target): PASS (fourteen closed assumption reports)"
+        passed
+    done
+done
 
 printf 'Passed %d harness checks.\n' "$checks"

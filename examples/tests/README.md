@@ -66,13 +66,17 @@ fixtures remain separate. See the [tool test guide](../../test/README.md) for
 dependencies and focused commands.
 
 The fake-tool `harness.sh` checks Make recipes, failure propagation, regeneration,
-helper dependencies, and cleanup, not edit semantics. Its 221 cases include eight that
+helper dependencies, and cleanup, not edit semantics. Its 225 cases include eight that
 restore missing manual `.h2ci` files when the corresponding `.v` files already
 exist. They exercise both base generators, direct and `vfiles` targets, and
-`-j1`/`-j2`, while preserving successfully generated sources. `concurrent.sh` runs
-real translators with a shared Haskell dependency to check concurrent translation
-and the explicit GHC code-generation override. These checks do not replace
-compiler tests.
+`-j1`/`-j2`, while preserving successfully generated sources. Four cases run the
+real `test/identity-traversal.sh` with fake compilers and a Git stub that rejects
+repository access. They cover both targets from the repository root, plus 8.20
+from `examples/base-tests` and 9.0 from `examples/rocq9.0`. They verify compiler
+arguments and the fixture source path and exercise the fourteen-report check.
+`concurrent.sh` runs real translators with a shared Haskell dependency to check
+concurrent translation and the explicit GHC code-generation override. These checks
+do not replace compiler tests.
 
 ## What a passing check establishes
 
@@ -155,9 +159,10 @@ proofs/examples. These checks do not establish axiom-freedom for unrelated base
 definitions or GHC proofs.
 
 The Make entry points enable both scripts through `BASE_CHECKS`. The fake-tool
-harness sets `BASE_CHECKS=` because it tests recipes rather than real translation
-or compilation; keep the default checks enabled for normal builds. Both base
-generators prepare manual `.h2ci` prerequisites even for direct file targets.
+harness sets `BASE_CHECKS=` for Make recipe tests, but directly exercises the real
+`identity-traversal.sh` runner with fake compilers. Keep the default checks enabled
+for normal builds. Both base generators prepare manual `.h2ci` prerequisites even
+for direct file targets.
 In particular, `GHC/Tuple.h2ci` supplies metadata for the existing `Solo` datatype.
 
 ### Issue 228 validation

@@ -5,7 +5,8 @@
 # Use the matching compiler environment, as with the other compiler checks.
 set -euo pipefail
 
-root=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+root=$(cd "$script_dir/.." && pwd)
 target=8.20
 base=
 while [ "$#" -gt 0 ]; do

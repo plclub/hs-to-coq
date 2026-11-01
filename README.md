@@ -308,7 +308,7 @@ boundaries, Unicode identifier and notation boundaries, user-name preservation, 
 literals (including doubled quote escapes), comments, qualified paths split by
 whitespace/comments, relative `From` imports,
 unrelated AST text, header imports, and Coq 8.20 identity.
-`test/harness.sh` runs 221 checks with fake tools. These exercise both production
+`test/harness.sh` runs 225 checks with fake tools. These exercise both production
 test wrappers, nested helper compilation, clean rebuilds, concurrent tool logging,
 and serial and parallel base-generation retries through the `base` and `vfiles`
 entry points, plus fresh Coq builds with manual modules. Eight cases check that
@@ -317,6 +317,10 @@ already exist, through direct and `vfiles` targets with `-j1` and `-j2`.
 Forced and outdated regeneration must reject stale output, remove failed output
 even when its timestamp is unchanged, and retry without regenerating successful
 sources.
+Four cases run the real `test/identity-traversal.sh` with fake compilers and a
+Git stub that rejects repository access. They cover 8.20 and 9.0 from the repository
+root and each target's Make caller directory. They verify compiler arguments and
+the `IdentityTraversal.v` source path and exercise the fourteen-report check.
 The fake translator
 writes interfaces and dependency files, so a missing dependency directory fails
 the check. These checks do not replace real

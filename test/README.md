@@ -109,9 +109,11 @@ make -C examples/base-tests
 make -C examples/rocq9.0 base
 ```
 
-The deriving runner also needs the Stack-built translator; the traversal runner
-uses Git to locate the repository and compiles
-`examples/base-tests/IdentityTraversal.v`. See
+The deriving runner also needs the Stack-built translator. The traversal runner
+locates the repository relative to its script path and compiles
+`examples/base-tests/IdentityTraversal.v`. The fake-tool harness exercises this
+runner from the repository root and both Make caller directories with Git
+rejecting repository access. See
 [deriving and base integration](../examples/tests/README.md#deriving-and-base-integration)
 for direct commands, prerequisites, and the scope of the assumption checks.
 
