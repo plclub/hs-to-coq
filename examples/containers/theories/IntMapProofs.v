@@ -16,15 +16,13 @@ Require Import IntSetProofs.
 Require Import Data.IntSet.Internal.
 Require Import Data.IntMap.Internal.
 Require Import MapProofs.Bounds.
+Require Import IntMapRecursion.
 Require Import Lia.
 
 Import GHC.Base.
 
 Set Bullet Behavior "Strict Subproofs".
 
-
-Axiom deferredFix2_eq : forall a b r `{Default r} (f : (a -> b -> r) -> (a -> b -> r)),
-  deferredFix2 f = f (deferredFix2 f).
 
 From Coq Require Import ssreflect.
 From Coq Require Import Unicode.Utf8.
@@ -56,12 +54,13 @@ Definition singletonRange k : range := (k, 0%N).
 
 Local Open Scope N_scope.
 
-Inductive Desc : forall {a}, IntMap a -> range -> (N -> option a) -> Prop :=
-  | DescTip : forall a k (v : a) r f,
+(* Keep the element type uniform so inversion produces homogeneous equalities. *)
+Inductive Desc {a : Type} : IntMap a -> range -> (N -> option a) -> Prop :=
+  | DescTip : forall k (v : a) r f,
     (forall i, f i = if i =? k then Some v else None) ->
     r = singletonRange k ->
     Desc (Tip k v) r f
-  | DescBin : forall a m1 r1 f1 m2 r2 f2 p msk r (f : N  -> option a),
+  | DescBin : forall m1 r1 f1 m2 r2 f2 p msk r (f : N  -> option a),
     Desc m1 r1 f1 ->
     Desc m2 r2 f2 ->
     (0 < rBits r)%N ->
@@ -77,10 +76,9 @@ Inductive Desc : forall {a}, IntMap a -> range -> (N -> option a) -> Prop :=
     This is used to describe operations that may delete elements.
  *)
 
-Inductive Desc0 : forall {a}, IntMap a -> range -> (N -> option a) -> Prop :=
-  | Desc0Nil : forall {a} r (f : N -> option a), (forall i, f i = None) -> Desc0 Nil r f
+Inductive Desc0 {a : Type} : IntMap a -> range -> (N -> option a) -> Prop :=
+  | Desc0Nil : forall r (f : N -> option a), (forall i, f i = None) -> Desc0 Nil r f
   | Desc0NotNil :
-      forall {a},
       forall m r f r' (f' : N -> option a),
       forall (HD : Desc m r f),
       forall (Hsubrange: isSubrange r r' = true)
@@ -91,9 +89,9 @@ Inductive Desc0 : forall {a}, IntMap a -> range -> (N -> option a) -> Prop :=
     for the top-level specification.
  *)
 
-Inductive Sem : forall {a}, IntMap a -> (N -> option a) -> Prop :=
-  | SemNil : forall {a} (f : N -> option a), (forall i, f i = None) -> Sem Nil f
-  | DescSem : forall {a} s r (f : N -> option a) (HD : Desc s r f), Sem s f.
+Inductive Sem {a : Type} : IntMap a -> (N -> option a) -> Prop :=
+  | SemNil : forall (f : N -> option a), (forall i, f i = None) -> Sem Nil f
+  | DescSem : forall s r (f : N -> option a) (HD : Desc s r f), Sem s f.
 
 (** The highest level: Just well-formedness.
  *)
@@ -115,27 +113,11 @@ Fixpoint Sem2 {a} (s: IntMap a) (i : N) : option a :=
 
 Definition WF {a} (s : IntMap a) : Prop := exists f, Sem s f.
 
-(* Blanket WF axiom: all IntMaps are well-formed patricia tries.
-   This is NOT provable by induction on the IntMap type because the Bin
-   constructor is exposed, allowing construction of structurally invalid
-   maps (e.g., Bin 0 0 Nil Nil with wrong prefix/mask).  However, this
-   axiom is sound in practice: all IntMaps manipulated by translated
-   Haskell code are built exclusively from smart constructors (empty,
-   singleton, insert, delete, union, intersection, difference, filter,
-   etc.) which maintain the patricia trie invariants.  The Bin constructor
-   is never called directly in generated code.
-   Concentrating this trust assumption in one axiom is preferable to
-   threading explicit WF hypotheses through every lemma and every
-   downstream call site (39+ public lemmas, 64+ downstream uses across
-   6 files). *)
-Axiom All_IntMaps_WF : forall A (m : IntMap A), WF m.
+(* Raw constructors also admit malformed trees. Consumers must establish WF
+   from their input contract or from operation-preservation lemmas. *)
 
 Ltac inversion_Desc HD1 :=
-  inversion HD1;
-  repeat match goal with [ H : existT ?f ?a ?s1 = existT ?f ?a ?s2 |- _ ] =>
-                  apply Eqdep.EqdepTheory.inj_pair2 in H
-  end;
-  subst.
+  inversion HD1; subst.
 
 
 (** ** Lemmas related to well-formedness *)
@@ -282,11 +264,11 @@ Proof.
   induction HD; subst.
   + intros r2 f2 HD2 i.
     inversion_Desc HD2.
-    rewrite H H5.
+    rewrite H H2.
     reflexivity.
   + intros r3 f3 HD3 i.
     inversion_Desc HD3.
-    rewrite H17 H4.
+    rewrite H16 H4.
     erewrite IHHD1 by eassumption.
     erewrite IHHD2 by eassumption.
     reflexivity.
@@ -578,22 +560,14 @@ Theorem Sem_extensional {a} (s : IntMap a) (f1 f2 : N -> option a) :
   forall i, f1 i = f2 i.
 Proof.
   intros S1 S2 k;
-    inversion S1 as [a1 f1' E1 | a1 s1 r1 f1' D1];
-    apply Eqdep.EqdepTheory.inj_pair2 in H0;
-    apply Eqdep.EqdepTheory.inj_pair2 in H1;
-    subst f1' s;
-    inversion S2 as [a2 f2' E2 | a2 s2 r2 f2' D2];
-    apply Eqdep.EqdepTheory.inj_pair2 in H1.
-    subst f2';
-    try subst s1; try subst s2.
+    inversion S1 as [f1' E1 | s1 r1 f1' D1]; subst;
+    inversion S2 as [f2' E2 | s2 r2 f2' D2]; subst.
   - now rewrite E1 E2.
   - subst.
     inversion D2.
   - subst.
     inversion D1.
-  - apply Eqdep.EqdepTheory.inj_pair2 in H2.
-    subst.
-    eauto using Desc_unique_f.
+  - eauto using Desc_unique_f.
 Qed.
 
 (** *** Verification of [nomatch] *)
@@ -844,7 +818,7 @@ Lemma findWithDefault_Desc:
                                      | None => findWithDefaultOption x i s = Some x
                                      end.
 Proof.
-  intros. induction H.
+  intros. revert x. induction H; intro x.
   * destruct (f i) eqn: E; unfold findWithDefaultOption; unfold findWithDefault; specialize (H i);
       destruct (i == k) eqn: ik; rewrite ik; rewrite E in H; destruct (i =? k) eqn: ik2; try discriminate.
       - congruence.
@@ -997,7 +971,7 @@ Proof.
     destruct (Hall i v Hi) as [v2 [Hv2 _]].
     eapply Desc_inside; eassumption. }
   (* Use destruct to get clean hypotheses *)
-  destruct HD1 as [a0 k v r1' f1' Hf1_tip Hr1_eq | a0 m1 r1_l f1_l m2 r1_r f1_r p msk r1' f1' HD1_l HD1_r Hbits Hsub_l Hsub_r Hp Hmsk Hf1_oro].
+  destruct HD1 as [k v r1' f1' Hf1_tip Hr1_eq | m1 r1_l f1_l m2 r1_r f1_r p msk r1' f1' HD1_l HD1_r Hbits Hsub_l Hsub_r Hp Hmsk Hf1_oro].
   - (* Tip: rBits r1 = 0, rBits r2 < 0, impossible *)
     subst. simpl in Hsmaller. lia.
   - (* Bin: s1 = Bin p msk m1 m2 *)
@@ -1090,12 +1064,12 @@ Next Obligation.
   revert isSubmapOfBy_Desc1 H H0.
   intros IH HD1 HD2.
   destruct HD1 as
-    [ a1 k1 v1 r1_ f1_ Hf1_sem Hr1_eq
-    | a1 s1_l r1_l f1_l s1_r r1_r f1_r p1 m1 r1_ f1_
+    [ k1 v1 r1_ f1_ Hf1_sem Hr1_eq
+    | s1_l r1_l f1_l s1_r r1_r f1_r p1 m1 r1_ f1_
       HD1_l HD1_r Hbits1 Hsub1_l Hsub1_r Hp1 Hm1 Hf1_oro ];
   destruct HD2 as
-    [ a2 k2 v2 r2_ f2_ Hf2_sem Hr2_eq
-    | a2 s2_l r2_l f2_l s2_r r2_r f2_r p2 m2 r2_ f2_
+    [ k2 v2 r2_ f2_ Hf2_sem Hr2_eq
+    | s2_l r2_l f2_l s2_r r2_r f2_r p2 m2 r2_ f2_
       HD2_l HD2_r Hbits2 Hsub2_l Hsub2_r Hp2 Hm2 Hf2_oro ];
   subst.
 
@@ -1535,7 +1509,7 @@ Proof.
     }
     rewrite rangeDisjoint_sym in H3.
     rewrite -> commonRangeDisj_sym in * by (eapply Desc_rNonneg; eassumption).
-    apply (DescBin _ _ _ _ _ _ _  _ _ _ f H0 H); auto.
+    apply (DescBin _ _ _ _ _ _ _ _ _ f H0 H); auto.
     + apply commonRangeDisj_rBits_pos; (eapply Desc_rNonneg; eassumption).
     + rewrite <- Hbit2.
       apply isSubrange_halfRange_commonRangeDisj;
@@ -1555,7 +1529,7 @@ Proof.
       apply not_eq_sym.
       apply commonRangeDisj_rBits_Different; try (eapply Desc_rNonneg; eassumption); auto.
     }
-    apply (DescBin _ _ _ _ _ _ _ _ _ _ f H H0); auto.
+    apply (DescBin _ _ _ _ _ _ _ _ _ f H H0); auto.
     + apply commonRangeDisj_rBits_pos; (eapply Desc_rNonneg; eassumption).
     + rewrite <- Hbit.
       apply isSubrange_halfRange_commonRangeDisj;
@@ -1685,7 +1659,8 @@ which makes the proofs easier
  Proof.
   intros ??????????? HD Sf ; subst.
   generalize dependent f1.
-  induction H as [p2' bm2 r2 f2|s2 r2 f2 s3 r3 f3 p2' r]; subst; intros f' Hf.
+  revert f v.
+  induction H as [bm2 r2 f2 f0|r2 f2 s3 r3 f3 p2' r msk r0 f0]; subst; intros f v f' Hf.
   (** Induction on Desc **)
   (** Maybe the destruct should come later if this proof is recreated **)
   destruct (e =? bm2) eqn:EE. 
@@ -1962,7 +1937,7 @@ which makes the proofs easier
  Proof.
    intros ?????????? HD ?? Sf ; subst.
    generalize dependent f1.
-   induction HD as [p2' bm2 r2 f2|s2 r2 f2 s3 r3 f3 p2' r]; subst; intros f' Hf.
+   induction HD as [bm2 r2 f2|r2 f2 s3 r3 f3 p2' r]; subst; intros f' Hf.
     + unfold insertWith.
     eapply insertWithKey_Desc.
      -eapply DescTip; reflexivity.
@@ -2204,9 +2179,9 @@ Proof.
     by (apply isSubrange_halfRange; exact Hbits).
   assert (HhrR : isSubrange (halfRange r true) r = true)
     by (apply isSubrange_halfRange; exact Hbits).
-  destruct HD1 as [a1 r1 f1 Hf1_nil | a1 s1 r1i f1i r1 f1 HD1i Hsub1 Hf1_eq].
+  destruct HD1 as [r1 f1 Hf1_nil | s1 r1i f1i r1 f1 HD1i Hsub1 Hf1_eq].
   - (* Case: s1 = Nil *)
-    destruct HD2 as [a2 r2 f2 Hf2_nil | a2 s2 r2i f2i r2 f2 HD2i Hsub2 Hf2_eq].
+    destruct HD2 as [r2 f2 Hf2_nil | s2 r2i f2i r2 f2 HD2i Hsub2 Hf2_eq].
     + (* Case 1: s1 = Nil, s2 = Nil -> bin returns Nil *)
       simpl. apply Desc0Nil. intro i.
       rewrite Hf. rewrite Hf1_nil. rewrite Hf2_nil. reflexivity.
@@ -2217,7 +2192,7 @@ Proof.
         eapply isSubrange_trans; [eapply isSubrange_trans; [exact Hsub2 | exact Hr2] | exact HhrR] |
         intro i; rewrite Hf; rewrite Hf1_nil; simpl; apply Hf2_eq ].
   - (* Case: s1 non-Nil *)
-    destruct HD2 as [a2 r2 f2 Hf2_nil | a2 s2 r2i f2i r2 f2 HD2i Hsub2 Hf2_eq].
+    destruct HD2 as [r2 f2 Hf2_nil | s2 r2i f2i r2 f2 HD2i Hsub2 Hf2_eq].
     + (* Case 3: s1 non-Nil, s2 = Nil -> bin returns s1 *)
       destruct s1; [| | inversion HD1i].
       all: simpl; eapply Desc0NotNil; [
@@ -2271,11 +2246,11 @@ Proof.
          ** discriminate.
        - auto.
   * intros. subst. simpl.
-    specialize (IHDesc1 p (fun i => match f1 i with
+    specialize (IHDesc1 (fun i => match f1 i with
                                   | None => None
                                   | Some v => if p v then Some v else None
                                   end) ltac:(intros; auto)).
-    specialize (IHDesc2 p (fun i => match f2 i with
+    specialize (IHDesc2 (fun i => match f2 i with
                                   | None => None
                                   | Some v => if p v then Some v else None
                                  end) ltac:(intros; auto)).
@@ -2481,6 +2456,34 @@ Proof.
        ++ reflexivity.
 Qed.
 
+Lemma delete_Sem:
+  forall {a} e (s: IntMap a) f f',
+  Sem s f ->
+  (forall i, f' i = if (i =? e) then None else f i) ->
+  Sem (delete e s) f'.
+Proof.
+  intros a e s f f' Hsem Hf.
+  destruct Hsem as [f Hnil | s r f HD].
+  * apply SemNil. intro i. rewrite Hf Hnil.
+    destruct (i =? e); reflexivity.
+  * eapply Desc0_Sem.
+    eapply delete_Desc.
+    - exact HD.
+    - apply isSubrange_refl.
+    - exact Hf.
+Qed.
+
+Lemma delete_WF:
+  forall {a} e (s: IntMap a),
+  WF s -> WF (delete e s).
+Proof.
+  intros a e s [f Hsem].
+  exists (fun i => if (i =? e) then None else f i).
+  eapply delete_Sem.
+  - exact Hsem.
+  - intro i. reflexivity.
+Qed.
+
 Definition IMFilterWithKey {a} p (s: IntMap a) :=
   Data.IntMap.Internal.filterWithKey p s.
 
@@ -2503,8 +2506,7 @@ Definition restrictKeys_body {a} := restrictKeys_f (@restrictKeys a).
 Lemma restrictKeys_eq {a} (m : IntMap a) s :
   restrictKeys m s = restrictKeys_body m s.
 Proof.
-  enough (@restrictKeys a = restrictKeys_body) by congruence.
-  apply deferredFix2_eq.
+  exact (IntMapRecursion.restrictKeys_eq m s).
 Qed.
 
 Definition restrictBitMapToRange r bm :=
@@ -2673,7 +2675,7 @@ Next Obligation.
             eapply Desc0_subRange.
             eapply restrictKeys_Desc; clear restrictKeys_Desc.
             ** subst m s. simpl. lia.
-            ** eapply (DescBin _ _ _ _ _ _ _ _ _ _ _ HD1_1 HD1_2 H H0 H1 eq_refl eq_refl H4).
+            ** eapply (DescBin _ _ _ _ _ _ _ _ _ _ HD1_1 HD1_2 H H0 H1 eq_refl eq_refl H4).
             ** exact H5.
             ** intro i. rewrite Hf. rewrite H12.
                destruct (f4 i) eqn:Hf4i; simpl.
@@ -2706,7 +2708,7 @@ Next Obligation.
             eapply Desc0_subRange.
             eapply restrictKeys_Desc; clear restrictKeys_Desc.
             ** subst s m. simpl. lia.
-            ** eapply (DescBin _ _ _ _ _ _ _ _ _ _ _ HD1_1 HD1_2 H H0 H1 eq_refl eq_refl H4).
+            ** eapply (DescBin _ _ _ _ _ _ _ _ _ _ HD1_1 HD1_2 H H0 H1 eq_refl eq_refl H4).
             ** exact H6.
             ** intro i. rewrite Hf. rewrite H12.
                destruct (f5 i) eqn:Hf5i.
@@ -2854,7 +2856,8 @@ Proof.
   * simpl. eapply DescTip.
     - intro i. specialize (H i). rewrite H. destruct (i =? k); reflexivity.
     - apply H0.
-  * simpl. eapply DescBin; auto. intro i. simpl. specialize (H6 i).
+  * simpl. eapply DescBin; try exact IHDesc1; try exact IHDesc2; auto.
+    intro i. simpl. specialize (H6 i).
     rewrite H6. unfold oro. destruct (f1 i) eqn: Hf; reflexivity.
 Qed.
 
@@ -2867,6 +2870,13 @@ Proof.
   intros. induction H.
   - apply SemNil. intros i0. specialize (H i0). rewrite H. reflexivity.
   - eapply DescSem. eapply map_Desc. apply HD. 
+Qed.
+
+Lemma map_WF: forall a b (s: IntMap a) (f: a -> b),
+    WF s -> WF (IMMap f s).
+Proof.
+  intros a b s f [g Hsem].
+  eexists. exact (map_Sem a b s g f Hsem).
 Qed.
 
 (** Verification of [mapWithKey] **)
@@ -2885,7 +2895,8 @@ Proof.
     - intro i. specialize (H i). rewrite H. destruct (i =? k) eqn: Hik.
       + apply Neqb_ok in Hik. rewrite Hik. reflexivity.
       + reflexivity.
-  * simpl. eapply DescBin; auto. intro i. simpl. specialize (H6 i).
+  * simpl. eapply DescBin; try exact IHDesc1; try exact IHDesc2; auto.
+    intro i. simpl. specialize (H6 i).
     rewrite H6. unfold oro. destruct (f1 i) eqn: Hf; reflexivity.
 Qed.
 
@@ -2898,6 +2909,13 @@ Proof.
   intros. induction H.
   - apply SemNil. intros i. specialize (H i). rewrite H. reflexivity.
   - eapply DescSem. eapply mapWithKey_Desc. apply HD.
+Qed.
+
+Lemma mapWithKey_WF: forall a b (s: IntMap a) (f: Key -> a -> b),
+    WF s -> WF (IMMapWithKey f s).
+Proof.
+  intros a b s f [g Hsem].
+  eexists. exact (mapWithKey_Sem a b s g f Hsem).
 Qed.
 
 Fixpoint sem_for_lists {a: Type} (l : list (Key * a)) (i : Key) :=
@@ -2928,7 +2946,7 @@ Proof.
   intro H.
   specialize (H N (fun k => k + 100)%N (Tip 1%N 42%N) (singletonRange 1%N)
     (fun i => if i =? 1%N then Some 42%N else None)
-    (DescTip _ _ _ _ _ (fun i => eq_refl) eq_refl)).
+    (DescTip _ _ _ _ (fun i => eq_refl) eq_refl)).
   (* H : Desc (mapKeys (+100) (Tip 1 42)) (singletonRange 1) _ *)
   (* Reduce: mapKeys (+100) (Tip 1 42) = Tip 101 42 *)
   (* Desc (Tip 101 42) (singletonRange 1) _ is absurd *)
@@ -3099,4 +3117,3 @@ Proof.
         -- discriminate.
         -- fold (@go a). exact IHHD1_1.
 Qed.
-

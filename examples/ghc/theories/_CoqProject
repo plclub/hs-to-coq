@@ -8,7 +8,9 @@
 -arg -w -arg -masking-absolute-name,-intuition-auto-with-star
 Util.v
 ContainerProofs.v
+ContainerContractCounterexamples.v
 Axioms.v
+VarSetInvariant.v
 ScopeInvariant.v
 JoinPointInvariants.v
 # JoinPointInvariantsInductive.v
@@ -36,4 +38,4 @@ TrieMap.v
 CSE.v
 CoreStats.v
 UniqSetInv.v
-
+RecoveryChecks.v

@@ -19,7 +19,9 @@ Require Import PrelNames.
 Require Import Id.
 Require Import Core.
 Require Import Unique.
+Require GHC.Builtin.Uniques.
 Require Import CoreFVs.
+Require Proofs.ContainerProofs.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -83,9 +85,10 @@ Definition isLocalUnique  (u : Unique.Unique) : bool :=
      negb (List.elem c &"B0123456789:kmnrz").
 *)
 
-(* GHC 9.10: initExitJoinUnique moved to GHC.Builtin.Uniques (not translated) *)
-(* Axiom isLocalUnique_initExitJoinUnique:
-  Unique.isLocalUnique Unique.initExitJoinUnique = true. *)
+(* The baseline locality assumption, at its GHC 9.10 module path.
+   initExitJoinUnique is concrete; isLocalUnique remains abstract. *)
+Axiom isLocalUnique_initExitJoinUnique:
+  Unique.isLocalUnique GHC.Builtin.Uniques.initExitJoinUnique = true.
 
 
 
@@ -210,22 +213,19 @@ Qed.
   
 (** ** Valid VarSets *)
 
-(* This property is an invariant of the VarSet/UniqFM type. We may want to either 
-   axiomatize it or add it to a sigma type in one of the definitions. *)
+(* This property must be established for each raw VarSet. A value can be
+   stored at an unrelated key through the exposed UniqFM constructors. *)
 
 Definition ValidVarSet (vs : VarSet) : Prop :=
   forall v1 v2, lookupVarSet vs v1 = Some v2 -> (v1 == v2).
 
-Axiom ValidVarSet_Axiom : forall vs, ValidVarSet vs.
-
-
 (** ** Strong Valid VarSets *)
 
-(* StrongValidVarSet says that every entry (k, v) in a VarSet's underlying
-   IntMap has key_of(v) = k. This is key-surjectivity: it ensures that every
-   key in the IntMap comes from the Unique of the stored Var. This is needed
-   for proofs that go from "no Var is a member" to "the map is empty", or
-   from "all Vars pass a predicate" to "all stored values pass". *)
+(* StrongValidVarSet says that the stored variable's unique agrees with its
+   lookup key in the underlying IntMap. This agreement is needed
+   for relating queries to stored payloads, for example when going from
+   "all Vars pass a predicate" to "all stored values pass". It is equivalent
+   to ValidVarSet, independently of the IntMap's structural well-formedness. *)
 
 Definition StrongValidVarSet (vs : VarSet) : Prop :=
   match vs with
@@ -234,28 +234,105 @@ Definition StrongValidVarSet (vs : VarSet) : Prop :=
       Unique.getWordKey (Unique.getUnique v) = k
   end.
 
-Axiom StrongValidVarSet_Axiom : forall vs, StrongValidVarSet vs.
-
+(* The stronger invariant is derived from ValidVarSet: every raw key can
+   be queried with a Var carrying that unique. Reuse the stored Var's other
+   fields so that this argument needs no additional inhabitance assumptions. *)
+Lemma ValidVarSet_StrongValidVarSet :
+  forall vs, ValidVarSet vs -> StrongValidVarSet vs.
+Proof.
+  intros [[m]] Hvalid k [n [u] t mult sc d i] Hlookup.
+  pose proof (Hvalid (Mk_Id n (Unique.MkUnique k) t mult sc d i)
+                    (Mk_Id n (Unique.MkUnique u) t mult sc d i)
+                    Hlookup) as Heq.
+  change (BinNat.N.eqb k u = true) in Heq.
+  change (u = k).
+  symmetry. apply BinNat.N.eqb_eq. exact Heq.
+Qed.
 
 (** ** Extensional equality for VarSets *)
 
-(* Two VarSets with the same membership (elemVarSet) have equal underlying
-   IntMaps (via _==_). This combines three facts about VarSets:
+(* Well-formed, key-valid VarSets with equal membership have boolean-equal
+   underlying IntMaps. The explicit premises supply three required facts:
    1. StrongValidVarSet: every key comes from a Var's unique
    2. WF PATRICIA tries: same key domain → same tree structure
    3. Values at same key are ==-equal (same unique)
-   Proving this formally requires ~150 lines of Desc_unique-style reasoning
-   from IntMapProofs. We axiomatize it as a sound property of VarSets. *)
+   The proof maps stored values to keys before applying semantic uniqueness. *)
 (* Formulated with destructured VarSet to avoid match in conclusion *)
 Definition VarSet_IntMap (vs : VarSet) :=
   match vs with UniqSet.Mk_UniqSet (UniqFM.UFM m) => m end.
 
-Axiom VarSet_extensional_equal : forall vs1 vs2 : VarSet,
+Lemma Var_key_equal_complete (x y : Var) :
+  Unique.getWordKey (Unique.getUnique x) =
+  Unique.getWordKey (Unique.getUnique y) ->
+  GHC.Base.op_zeze__ x y = true.
+Proof.
+  destruct x as [nx [ux] tx mx sx dx ix].
+  destruct y as [ny [uy] ty my sy dy iy].
+  change (ux = uy -> BinNat.N.eqb ux uy = true).
+  intro Heq. subst uy. apply BinNat.N.eqb_refl.
+Qed.
+
+(* A lookup queries precisely the unique of its argument. No trie-WF or
+   default payload is needed to recover query validity from key validity. *)
+Lemma StrongValidVarSet_ValidVarSet :
+  forall vs, StrongValidVarSet vs -> ValidVarSet vs.
+Proof.
+  intros [[m]] Hvalid v1 v2 Hlookup.
+  apply Var_key_equal_complete.
+  symmetry. exact (Hvalid _ _ Hlookup).
+Qed.
+
+Lemma ValidVarSet_iff_StrongValidVarSet :
+  forall vs, ValidVarSet vs <-> StrongValidVarSet vs.
+Proof.
+  intro vs. split.
+  - apply ValidVarSet_StrongValidVarSet.
+  - apply StrongValidVarSet_ValidVarSet.
+Qed.
+
+Lemma VarSet_extensional_equal : forall vs1 vs2 : VarSet,
+  IntMapProofs.WF (VarSet_IntMap vs1) ->
+  IntMapProofs.WF (VarSet_IntMap vs2) ->
+  ValidVarSet vs1 -> ValidVarSet vs2 ->
   (forall v, elemVarSet v vs1 = elemVarSet v vs2) ->
   GHC.Base.op_zeze__ (VarSet_IntMap vs1) (VarSet_IntMap vs2) = true.
+Proof.
+  intros vs1 vs2 W1 W2 V1 V2 members.
+  pose proof (@ValidVarSet_StrongValidVarSet vs1 V1) as K1.
+  pose proof (@ValidVarSet_StrongValidVarSet vs2 V2) as K2.
+  destruct vs1 as [[m1]], vs2 as [[m2]].
+  cbn in W1, W2, K1, K2 |- *.
+  eapply (ContainerProofs.IntMap_equal_by_key_membership
+    (fun v : Var => Unique.getWordKey (Unique.getUnique v))
+    Var_key_equal_complete m1 m2 W1 W2 K1 K2).
+  destruct W1 as [f1 S1], W2 as [f2 S2].
+  intro k.
+  rewrite (IntMapProofs.member_Sem S1) (IntMapProofs.member_Sem S2).
+  pose proof (@IntMapProofs.lookup_Sem _ _ _ k S1) as L1.
+  pose proof (@IntMapProofs.lookup_Sem _ _ _ k S2) as L2.
+  destruct (f1 k) as [v1|] eqn:F1;
+    destruct (f2 k) as [v2|] eqn:F2; try reflexivity.
+  - pose proof (members v1) as E.
+    change (Data.IntMap.Internal.member
+      (Unique.getWordKey (Unique.getUnique v1)) m1 =
+      Data.IntMap.Internal.member
+      (Unique.getWordKey (Unique.getUnique v1)) m2) in E.
+    pose proof (K1 k v1 L1) as KV.
+    change (Unique.getWordKey (Unique.getUnique v1) = k) in KV.
+    rewrite KV (IntMapProofs.member_Sem S1)
+      (IntMapProofs.member_Sem S2) F1 F2 in E.
+    discriminate.
+  - pose proof (members v2) as E.
+    change (Data.IntMap.Internal.member
+      (Unique.getWordKey (Unique.getUnique v2)) m1 =
+      Data.IntMap.Internal.member
+      (Unique.getWordKey (Unique.getUnique v2)) m2) in E.
+    pose proof (K2 k v2 L2) as KV.
+    change (Unique.getWordKey (Unique.getUnique v2) = k) in KV.
+    rewrite KV (IntMapProofs.member_Sem S1)
+      (IntMapProofs.member_Sem S2) F1 F2 in E.
+    discriminate.
+Qed.
 
 
 (********************************* *)
-
-
-

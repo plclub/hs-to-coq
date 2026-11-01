@@ -68,11 +68,12 @@ compiler tests.
 | --- | --- |
 | [Edits.hs](checks/Edits.hs) | Currently 237 assertions through `parseEditList`, `parseTerm`, `buildEdits`, and related public APIs: exact ASTs, configuration fields, diagnostics, ordering, and precedence. |
 | [edits.sh](checks/edits.sh) | 32 real-CLI cases per target, 64 for both. Success requires nonempty `.v` and `.h2ci` output plus selected source assertions; rejection requires a nonzero exit and a diagnostic substring. This script does not compile output. |
-| Shared compiler fixtures | Currently 66 `PASS` cases and 3 `TODO_PASS` cases per compiler. Generated proofs, type checks, and deliberate `Fail` commands distinguish selected edit effects from mere successful translation. |
+| Shared compiler fixtures | Currently 67 `PASS` cases and 3 `TODO_PASS` cases per compiler. Generated proofs, type checks, and deliberate `Fail` commands distinguish selected edit effects from mere successful translation. |
 
-The compiler counts include 12 new edit fixtures and the reactivated `Records`
-and `RecordConstruction`, up from 52 `PASS` cases. The record assertions check
-field update, named-field construction, and projection of the constructed value.
+The compiler counts include 12 new edit fixtures, the reactivated `Records`
+and `RecordConstruction`, and `SoleCtorGuard`, up from 52 `PASS` cases. The record
+assertions check field update, named-field construction, and projection of the
+constructed value. `SoleCtorGuard` checks refutable and irrefutable pattern guards.
 The lists in `test-rules.mk` determine which fixtures actually run.
 
 | Category | Required translation result | Required compiler result |
