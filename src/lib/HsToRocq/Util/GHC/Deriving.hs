@@ -107,13 +107,10 @@ import GHC.Builtin.Names (typeableClassName)
 -- Use the converter's instance-name calculation, including type renames and
 -- module renames, so a skip has the same meaning before and after recovery.
 derivationIsSkipped :: GlobalMonad r m => ModuleName -> LHsType GhcRn -> m Bool
-derivationIsSkipped mod ty = derivationIsSkippedUsing mod ty ty
+derivationIsSkipped mod ty = uncurry (||) <$> derivationSkips mod ty ty
 
 -- Only source syntax determines skipped dependencies. A checked head supplies
 -- the canonical instance name, including inferred kinds and eta reduction.
-derivationIsSkippedUsing :: GlobalMonad r m => ModuleName -> LHsType GhcRn -> LHsType GhcRn -> m Bool
-derivationIsSkippedUsing mod sourceTy headTy = uncurry (||) <$> derivationSkips mod sourceTy headTy
-
 -- Preserve the converter's skip-instance comment for a successful derivation,
 -- while keeping dependency-skipped instances and unused helpers out of output.
 derivationSkips :: GlobalMonad r m => ModuleName -> LHsType GhcRn -> LHsType GhcRn -> m (Bool, Bool)
@@ -178,6 +175,11 @@ requestMatchesExactly request spec =
   let (_, _, _, tys) = instanceSig spec
   in requestMatches request spec && isJust (tcMatchTys tys (requestTypes request))
 
+derivingClauseTypes :: HsDerivingClause (GhcPass pass) -> [LHsSigType (GhcPass pass)]
+derivingClauseTypes clause = case unLoc (deriv_clause_tys clause) of
+  DctSingle _ ty -> [ty]
+  DctMulti _ tys -> tys
+
 -- Inspect every declaration before generating bodies. These typed heads are
 -- independent of InstInfo and md_insts, so losing both cannot pass validation.
 checkedDerivingRequests :: [DerivInfo] -> [LDerivDecl GhcRn] -> TcM [DerivingRequest]
@@ -199,7 +201,7 @@ checkedDerivingRequests infos standalone = do
   inlineRequests <- fmap concat $ forM infos $ \info ->
     tcExtendNameTyVarEnv (di_scoped_tvs info) $ fmap concat $ forM (di_clauses info) $ \(L _ clause) -> do
       (_, viaTVs) <- tcDerivStrategy (deriv_clause_strategy clause)
-      tcExtendTyVarEnv viaTVs $ forM (clauseTypes clause) $ \ty -> setSrcSpan (getLocA ty) $ do
+      tcExtendTyVarEnv viaTVs $ forM (derivingClauseTypes clause) $ \ty -> setSrcSpan (getLocA ty) $ do
         (_, cls, clsArgs, argKinds) <- tcHsDeriv ty
         let rep = di_rep_tc info
             (tc, args) = case tyConFamInstSig_maybe rep of
@@ -217,11 +219,6 @@ checkedDerivingRequests infos standalone = do
                      text "Cannot recover the checked inline deriving head" <+> ppr ty
           _ -> failWithTc (TcRnNonUnaryTypeclassConstraint ty)
   pure (standaloneRequests ++ inlineRequests)
-  where
-    clauseTypes :: HsDerivingClause GhcRn -> [LHsSigType GhcRn]
-    clauseTypes clause = case unLoc (deriv_clause_tys clause) of
-      DctSingle _ ty -> [ty]
-      DctMulti _ tys -> tys
 
 parsedDerivingSpans :: ParsedModule -> [SrcSpan]
 parsedDerivingSpans pm =
@@ -229,11 +226,7 @@ parsedDerivingSpans pm =
   ++ everything (++) ([] `mkQ` inline) (pm_parsed_source pm)
   where
     inline :: HsDataDefn GhcPs -> [SrcSpan]
-    inline defn = concatMap (types . unLoc) (dd_derivs defn)
-    types :: HsDerivingClause GhcPs -> [SrcSpan]
-    types clause = case unLoc (deriv_clause_tys clause) of
-      DctSingle _ ty -> [getLocA ty]
-      DctMulti _ tys -> map getLocA tys
+    inline defn = concatMap (map getLocA . derivingClauseTypes . unLoc) (dd_derivs defn)
 
 sameRequestSpans :: [SrcSpan] -> [SrcSpan] -> Bool
 sameRequestSpans [] b = null b
@@ -292,12 +285,7 @@ derivingRequests group =
     inline :: HsDataDefn GhcRn -> [(SrcSpan, LHsType GhcRn)]
     inline defn =
       [ (getLocA ty, sig_body (unLoc ty))
-      | L _ clause <- dd_derivs defn, ty <- clauseTypes clause ]
-
-    clauseTypes :: HsDerivingClause GhcRn -> [LHsSigType GhcRn]
-    clauseTypes clause = case unLoc (deriv_clause_tys clause) of
-      DctSingle _ ty -> [ty]
-      DctMulti _ tys -> tys
+      | L _ clause <- dd_derivs defn, ty <- derivingClauseTypes clause ]
 
 -- For inline requests, the diagnostic supplies the fully applied instance
 -- head, including eta reduction for higher-kinded classes. Do not guess it

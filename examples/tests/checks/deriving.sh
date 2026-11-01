@@ -28,7 +28,7 @@ translator=(stack --allow-different-user exec hs-to-rocq --)
 if [[ "$version" == 8.20 ]]; then
     read -r -a compiler <<< "${COQC:-coqc}"
 else
-    read -r -a compiler <<< "${COQC:-rocq c}"
+    read -r -a compiler <<< "${COQC:-rocq c -w +deprecated-dirpath-Coq}"
 fi
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/hs-to-rocq-deriving.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT

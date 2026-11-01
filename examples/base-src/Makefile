@@ -176,13 +176,15 @@ $(OUT)/GHC/Base.v: $(GHC_BASE_PRE) $(GHC_BASE_MID) $(GHC_BASE_EDITS) edits
 	test -e $(OUT)/GHC/Base.v
 	rm -f Base_preamble.v Base_midamble.v
 
+LINK_MANUAL = lndir ../examples/base-src/manual $(OUT)/
+
 $(VFILES_MAN): $(OUT)/% : manual/%
 	rm -f $@
-	lndir ../examples/base-src/manual $(OUT)/
+	$(LINK_MANUAL)
 
 $(MANUAL_IFACES): $(OUT)/%.h2ci: manual/%.h2ci
 	mkdir -p $(OUT)
-	lndir ../examples/base-src/manual $(OUT)/
+	$(LINK_MANUAL)
 
 $(VFILES_DROPIN): $(OUT)/%.v : module-edits/%/edits edits module-edits/%/preamble.v drop-in/%.hs
 	rm -f $@
