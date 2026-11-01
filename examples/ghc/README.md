@@ -9,9 +9,10 @@ The combined tree retains PR 229's Exitify, VarSet, and IntMap proof recovery
 from `a038d05a`, including the key-only contract refinement and TrieMap/Eqdep
 cleanup, together with issue 228's deriving recovery from `e41f3c37`. CSE now
 uses the shared `Traversable Identity` instance instead of PR 229's local
-dictionary. **Full post-rebase validation is pending.** The dated build,
-kernel-check, and assumption reports below describe their original revisions,
-not a fresh check of this combination.
+dictionary. **Post-rebase validation passed at `1ca9107f`**, including all 31
+enabled theories, kernel checks, and comparison with the recorded upstream
+assumption baseline. The [current record](#post-rebase-validation) is separate
+from the historical results below.
 
 Compilation
 -----------
@@ -241,7 +242,8 @@ omit redundant wildcard branches for irrefutable patterns. The shared
 `SoleCtorGuard` PASS fixture covers sole and nested constructors, refutable
 constructors, guarded case arms, and empty-list guards. The combined fixture
 also retains issue 228's computational assertions for exhaustive
-single-constructor guards and nested refutable fallbacks. It is one module in
+single-constructor guards and nested refutable fallbacks, and adds computational
+proofs for each upstream case. It is one module in
 the current 67-PASS inventory, not an additional module for each branch.
 
 #### 2026-10-28 assumptions and validation
@@ -289,11 +291,34 @@ All 29 theory files enabled at that revision compiled, including CSE with
 PR 229's Exitify/WF recovery, and it recorded no separate `coqchk` result.
 Those limitations describe `e41f3c37`, not the combined source tree.
 
-During the rebase, the proof agent reported eight closed scratch checks for
-the Identity replacement on both compilers. These focused checks support the
-replacement but do not validate the combined GHC development or replace the
-14-report base regression. Full post-rebase generation, compilation, kernel
-checks, and final theorem assumption reports remain pending.
+#### Post-rebase validation
+
+**Revision: `1ca9107fcc6a0e3d7c386100858f4fc9ef316482`**, following the first
+rebased commit `24f04845` atop `a038d05a`. The following checks passed:
+
+* Forced full base generation and compilation on Coq 8.20 and Rocq 9.0, with
+  byte-identical tracked generated outputs (`git diff --exit-code` returned zero).
+  Both targets passed the [translator and base checks](../tests/README.md#post-rebase-validation).
+* Full `base-thy` and containers library/theory builds, then full GHC regeneration,
+  library compilation, and all **31 enabled theories**, including `RecoveryChecks`.
+  The earlier 29-file count above belongs to `e41f3c37`.
+* With Coq 8.20.1, `coqchk -silent` passed for the exact roots `IntMapRecursion`,
+  `IntMapUnionProofs`, `CSE`, `Proofs.CSE`, `Proofs.Exitify`, and
+  `Proofs.RecoveryChecks`.
+
+Against each freshly compiled base, a scratch comparison proved pointwise
+equivalence of the upstream local Identity dictionary and the shared instance
+for `traverse`, `sequenceA`, `mapM`, `sequence`, and `mapAccumL`, with eight closed
+reports per target. These are separate from the permanent 26-case deriving and
+14-report production-instance/proof checks.
+
+Typed queries for final Exitify and substitution matched the recorded upstream
+baseline: 47 and 25 assumption names respectively, with identical
+whitespace-normalized signatures and no added or lost names. The rejected blanket
+names and `Eqdep.Eq_rect_eq.eq_rect_eq` remain absent. See the
+[audit record](../../paper-claims-audit.md#post-rebase-validation) for source
+comparisons and the historical log's provenance limitation; this is not an
+axiom-freedom claim.
 
 ### WF contract recovery
 
@@ -386,8 +411,8 @@ validity alias. At that checkpoint, final Exitify depended on:
   extensionality, and `Eqdep.Eq_rect_eq.eq_rect_eq`.
 
 The 2026-10-31 cleanup removed `Eqdep.Eq_rect_eq.eq_rect_eq` from this list.
-That cleaned assumption baseline is retained from PR 229 in the combined tree;
-it must be rechecked after the rebase, not inferred from the earlier build.
+The [post-rebase checks](#post-rebase-validation) at `1ca9107f` match that recorded
+upstream baseline; the earlier build is not the evidence for the combined tree.
 
 Substitution also retains its `uniqAway` contracts and abstract model APIs.
 Neither result establishes a fully concrete GHC model. `coqchk` checks proof

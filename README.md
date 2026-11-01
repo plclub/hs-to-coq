@@ -28,8 +28,8 @@ of the [containers](examples/containers) library.
 
 See [paper-claims-audit.md](paper-claims-audit.md) for the historical claims audit
 and revision-specific recovery results for GHC 9.10.3, Coq 8.20, and containers
-v0.7. The audit distinguishes those results from validation still pending on
-the combined tree.
+v0.7, including post-rebase validation at `1ca9107f`. Historical results remain
+scoped to their original revisions.
 
 [**Documentation for the `hs-to-rocq` tool is
 available!**](https://hs-to-coq.readthedocs.io/en/latest/)
@@ -170,7 +170,7 @@ base → base-thy → containers/lib → containers/theories
 
 ## Build Status
 
-**Full post-rebase validation is pending.** The combined source retains PR 229's
+**Post-rebase checks passed at `1ca9107f`.** The combined source retains PR 229's
 Exitify, VarSet, and IntMap recovery from `a038d05a`, including the key-only
 contract refinement and TrieMap/Eqdep cleanup, together with issue 228's deriving
 recovery from `e41f3c37`. CSE uses the shared `Traversable Identity` instance,
@@ -178,6 +178,14 @@ not PR 229's local dictionary. The exact final Exitify contract and the explicit
 WF/validity requirements are preserved; intentional model assumptions and the
 CSE `WS_cseExpr` admission remain. See the
 [GHC proof and validation record](examples/ghc/README.md#exitify-and-cse-proof-recovery).
+
+At that revision, `stack build`, forced generation and compilation of both base
+targets, both shared suites, and the deriving/traversal and fast checks passed.
+Full base generation left tracked generated outputs byte-identical.
+`base-thy`, containers library/theories, and the regenerated GHC library and
+all **31 enabled theories** also compiled. See the
+[test results](examples/tests/README.md#post-rebase-validation) and
+[kernel and assumption checks](examples/ghc/README.md#post-rebase-validation).
 
 On the original issue 228 branch (`e41f3c37`), both production base trees were
 regenerated after the retained-kind fix and compiled with their matching
@@ -302,7 +310,7 @@ writes interfaces and dependency files, so a missing dependency directory fails
 the check. These checks do not replace real
 compiler tests.
 The issue 228 branch at `e41f3c37` recorded all 221 harness cases passing with
-macOS Bash 3.2 and Bash 5.3.20; the combined tree has not yet been revalidated.
+macOS Bash 3.2 and Bash 5.3.20. All 221 also passed at `1ca9107f`.
 
 A separate real-translator check runs two modules with a shared source dependency
 concurrently on each target. It requires both `.v` and `.h2ci` outputs and checks

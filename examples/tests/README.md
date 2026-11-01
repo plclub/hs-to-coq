@@ -76,11 +76,11 @@ compiler tests.
 The compiler counts include 12 edit fixtures, the reactivated `Records` and
 `RecordConstruction`, and `SoleCtorGuard`, up from 52 `PASS` cases. The record
 assertions check field update, named-field construction, and projection of the
-constructed value. `SoleCtorGuard` combines sole and nested constructors,
-refutable constructors, guarded case arms, and empty-list guards with
-computational assertions for exhaustive single-constructor guards and nested
-refutable fallbacks. It counts as one `PASS` module, so combining the two branches
-keeps the total at 67, not 68.
+constructed value. `SoleCtorGuard` combines `Single`, `Nested`, `Choice`, guarded
+case arms, and empty-list guards with the `Box` and nested-pair cases. Computational
+assertions cover each fixture case, including exhaustive guards and refutable
+fallbacks. It counts as one `PASS` module, so combining the two branches keeps
+the total at 67, not 68.
 The lists in `test-rules.mk` determine which fixtures run; these counts describe
 the inventory, not the outcome of a particular run.
 
@@ -167,9 +167,21 @@ retained-kind fix and compiled with Coq 8.20 and Rocq 9.0 respectively:
   and HLint.
 - All 221 harness cases on both Bash 3.2 and Bash 5.3.20.
 
-These results do not validate the combined tree. Full post-rebase validation is
-pending, including both shared suites with the combined `SoleCtorGuard` fixture,
-both targets' deriving/traversal checks, and the harness.
+### Post-rebase validation
+
+At `1ca9107f`, `stack build` and forced full base generation and compilation passed
+for both Coq 8.20 and Rocq 9.0. Tracked generated outputs remained byte-identical
+(`git diff --exit-code` returned zero). The following checks also passed:
+
+- Per target: 67 `PASS` fixtures and 3 expected compiler failures, including the
+  combined `SoleCtorGuard` cases and their computational proofs; 26 deriving CLI
+  cases; and 14 closed production-instance/proof reports.
+- Per target: 237 edits API assertions and 32 edits CLI cases.
+- All 221 harness cases and 805 version/rewrite assertions, the `CiCatalog` guard,
+  real-translator concurrency check, and HLint.
+
+The [GHC validation record](../ghc/README.md#post-rebase-validation) covers the
+dependency builds, kernel checks, and separate scratch Identity comparison.
 
 ## Edit coverage matrix
 

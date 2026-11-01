@@ -9,7 +9,7 @@
 **Key-only contract refinement**: 2026-10-30, proof-recovery, relative to `c8187b0c`
 **Logical-assumption cleanup**: 2026-10-31, proof-recovery, relative to `c14ff1f6`
 **Shared traversal update**: 2026-10-31, issue 228 at `e41f3c37`
-**Combined source**: PR 229 at `a038d05a` plus issue 228; full post-rebase validation pending
+**Combined source**: PR 229 at `a038d05a` plus issue 228; post-rebase checks passed at `1ca9107f`
 
 This document preserves a source-search audit of claims from three publications.
 The dated updates distinguish later proof recovery from that historical
@@ -31,9 +31,9 @@ undo the Exitify recovery. Intentional model assumptions remain. See
 and [WF contract recovery](examples/ghc/README.md#wf-contract-recovery) for
 implementation details and validation scope.
 
-**Validation boundary:** the build, `coqchk`, and `Print Assumptions` results
-below belong to the named pre-rebase revisions. They are not evidence of a full
-build or assumption audit of the combined tree.
+**Validation boundary:** results belong to their named revisions. The
+[post-rebase record](#post-rebase-validation) covers `1ca9107f`; the earlier
+reports and historical tables retain their original scope.
 
 ## Papers Audited
 
@@ -197,10 +197,9 @@ opaque, so this recovery does not establish well-scopedness or axiom-freedom for
 the whole CSE theory. The original `e41f3c37` branch did not yet include PR 229's
 Exitify recovery and recorded no separate `coqchk` result. The combined tree
 does retain that recovery, its exact final theorem contract, and its cleaned
-assumption baseline. During the rebase, the proof agent reported eight closed
-scratch checks for the Identity replacement on each compiler. These focused
-checks do not replace full post-rebase generation, compilation, kernel checks,
-or theorem assumption reports, which remain pending.
+assumption baseline. The [post-rebase validation](#post-rebase-validation)
+records the combined build, kernel checks, and assumption comparison at
+`1ca9107f`; the separate scratch Identity comparison is described in the GHC README.
 
 **G7 - VarSetFSet (2026-03-16 report: 15 Admitted, was 18)**:
 This historical account predates the replacement of the raw FSet adapter on
@@ -375,6 +374,34 @@ with their imported dependencies. The shared Coq compiler suite passed all
 53 PASS cases and 3 expected compiler failures. `RecoveryChecks.v` pins the
 final theorem type and rejects the removed instance names with `Fail Check`.
 
+### Post-rebase validation
+
+**Revision: `1ca9107f`, following `24f04845` atop `a038d05a`.** Full base generation
+and compilation passed on both targets without changing tracked generated outputs.
+The rebuilt dependency chain and regenerated GHC library and all **31 enabled
+theories** passed, including `RecoveryChecks`. The
+[GHC record](examples/ghc/README.md#post-rebase-validation) lists the exact Coq
+8.20.1 kernel-check roots and the separate eight-report Identity equivalence
+comparison; the [test record](examples/tests/README.md#post-rebase-validation)
+lists the permanent suites. Historical 29-file counts remain unchanged.
+
+Of the 70 upstream theory source/project files compared, 69 are byte-identical
+to `a038d05a`. The only changed file, `examples/ghc/theories/CSE.v`, adds
+`cseBind_Rec_singleton` and its assumption query without changing existing theorem
+statements. The Haskell translator sources, base-generation inputs, and deriving
+test infrastructure match `dec9f58c` byte-for-byte.
+
+Typed assumption queries for `exitifyProgram_WellScoped_JPV` and
+`WellScoped_substExpr` found 47 and 25 names respectively. Both name sets and
+whitespace-normalized signatures match the recorded upstream baseline, with no
+added or lost names. Neither report contains the rejected blanket names or
+`Eqdep.Eq_rect_eq.eq_rect_eq`. Intentional model and logical assumptions remain.
+
+The historical baseline log has no commit stamp. Identical proof sources at
+`81eb5d44` and `a038d05a`, together with the README's attribution, corroborate its
+association with that baseline; they do not independently authenticate the
+historical execution. These comparisons are not an axiom-freedom claim.
+
 ### Admitted Summary (GHC Theories, historical)
 
 The CSE and Exitify rows were rechecked on 2026-10-28; issue 228's `e41f3c37`
@@ -424,8 +451,8 @@ JoinPointInvariantsInductive, OrdList, Unique, Util
 1. **CSE.v**: The four equation regressions were resolved on 2026-10-28 with
    native translation, edits, and a translator pattern-guard fix. The inherited
    `WS_cseExpr` admission remains. Issue 228 replaces the local Identity support
-   with a shared instance and adds the singleton-`Rec` equation; its original
-   build results do not validate the combined tree.
+   with a shared instance and adds the singleton-`Rec` equation; the combined
+   build and kernel checks passed at `1ca9107f`.
 2. **TrieMap.v** (historical: 5 Admitted): On 2026-10-31, three unsupported raw-map
    law instances were removed. The two law instances for opaque ListMap and
    GenMap APIs remain admitted.
@@ -446,8 +473,8 @@ JoinPointInvariantsInductive, OrdList, Unique, Util
 
 The GHC entries below include the dated recoveries through 2026-10-31. Other
 entries retain the original audit's findings and have not been re-audited here.
-The combined source retains these recoveries; its full build and assumption
-checks remain pending.
+The combined source retains these recoveries; its post-rebase build, kernel
+checks, and recorded-baseline assumption comparison passed at `1ca9107f`.
 
 ### What Holds
 - `WellScoped_substExpr`: preserved conclusion under strengthened
@@ -482,7 +509,8 @@ checks remain pending.
 - CSE: four computational equations recovered and a singleton-`Rec` equation
   added using shared Identity traversal; compiled against the refreshed
   dependency chain on the original issue 228 branch (`e41f3c37`). The combined
-  tree retains PR 229's Exitify/WF recovery as well; post-rebase checks are pending.
+  tree retains PR 229's Exitify/WF recovery as well; post-rebase checks passed
+  at `1ca9107f`.
 - MonoidLaws for Map proved (was missing vs JFP Fig 4 claim)
 - More translated functions (fromAscList/fromDescList for Set)
 - New proof modules (ContainerProofs, VarSetStrong, StateLogic, etc.)
