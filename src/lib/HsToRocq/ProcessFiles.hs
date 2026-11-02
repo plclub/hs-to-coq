@@ -103,7 +103,7 @@ recoverDeriving pm = do
           let diagnostic = find (matches span . errMsgSpan) messages
               ty = fromMaybe requestType (diagnostic >>= failedDerivationType . errMsgDiagnostic)
           skipped <- derivationIsSkipped (ms_mod_name (pm_mod_summary pm))
-            ty
+            requestType ty
           let discard failure = do
                 policy <- view leniency
                 let description = showSDocUnsafe (ppr span) ++ ": deriving "

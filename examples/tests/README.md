@@ -135,7 +135,8 @@ bash test/deriving.sh --target-version 8.20 --retained-only
 that infer and compute with the derived dictionaries. Rejection cases require
 a nonzero exit, a relevant diagnostic, and no generated module. Coverage includes:
 
-- Inline and standalone recovery; renamed module, class, and instance skips;
+- Inline and standalone recovery; renamed module, class, and instance skips,
+  including dependencies that occur only in a standalone instance context;
   method skips; and auxiliary bindings needed by retained instances.
 - Nonzero failures in default/strict mode and warnings with partial success in
   permissive mode, including removal of a synthesized instance that fails the

@@ -104,10 +104,10 @@ import GHC.Tc.Deriv (DerivInfo(..))
 import GHC.Tc.Gen.HsType (tcHsClsInstType, tcHsDeriv, tcDerivStrategy)
 import GHC.Builtin.Names (typeableClassName)
 
--- Use the converter's instance-name calculation, including type renames and
--- module renames, so a skip has the same meaning before and after recovery.
-derivationIsSkipped :: GlobalMonad r m => ModuleName -> LHsType GhcRn -> m Bool
-derivationIsSkipped mod ty = uncurry (||) <$> derivationSkips mod ty ty
+-- Use source dependencies and the converter's checked instance-name calculation,
+-- including type and module renames. Diagnostics can omit the source context.
+derivationIsSkipped :: GlobalMonad r m => ModuleName -> LHsType GhcRn -> LHsType GhcRn -> m Bool
+derivationIsSkipped mod sourceTy headTy = uncurry (||) <$> derivationSkips mod sourceTy headTy
 
 -- Only source syntax determines skipped dependencies. A checked head supplies
 -- the canonical instance name, including inferred kinds and eta reduction.
