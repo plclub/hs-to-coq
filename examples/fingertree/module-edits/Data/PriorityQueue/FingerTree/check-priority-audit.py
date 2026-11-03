@@ -60,11 +60,40 @@ def require(condition, message):
 
 
 def generated_declarations(generated):
-    """Named heads in the translator's generated declaration format, not Rocq syntax."""
+    """Mask Rocq comments/strings, then match only translator-emitted named heads."""
+    masked = []
+    depth = 0
+    quoted = False
+    index = 0
+    while index < len(generated):
+        char = generated[index]
+        pair = generated[index:index + 2]
+        # Rocq also treats quoted text inside comments as strings: comment
+        # delimiters there are inert, and doubled quotes do not end a string.
+        if quoted and pair == '""':
+            masked.append("  ")
+            index += 2
+        elif char == '"':
+            quoted = not quoted
+            masked.append(" ")
+            index += 1
+        elif not quoted and pair == "(*":
+            depth += 1
+            masked.append("  ")
+            index += 2
+        elif not quoted and depth and pair == "*)":
+            depth -= 1
+            masked.append("  ")
+            index += 2
+        else:
+            masked.append(char if not (depth or quoted) or char == "\n" else " ")
+            index += 1
+    require(not quoted, "unterminated Rocq string")
+    require(not depth, "unterminated Rocq comment")
     return re.findall(
         r"^(?:#\[(?:local|global)\]\s*)?(?:Program\s+)?"
         r"(?:Inductive|Definition|Instance|Fixpoint|CoFixpoint)\s+([\w']+)",
-        generated,
+        "".join(masked),
         re.MULTILINE,
     )
 
@@ -144,10 +173,13 @@ def main():
     example = audit_dir.parents[3]
     foundation = example.parent / "rocq9.2"
     audit = audit_dir / "PriorityAudit.v"
-    checked = check_inventory(
-        (example / "lib/Data/PriorityQueue/FingerTree.v").read_text(encoding="utf-8"),
-        audit.read_text(encoding="utf-8"),
-    )
+    generated = example / "lib/Data/PriorityQueue/FingerTree.v"
+    try:
+        checked = check_inventory(
+            generated.read_text(encoding="utf-8"), audit.read_text(encoding="utf-8"),
+        )
+    except ValueError as error:
+        raise ValueError(f"{generated} / {audit}: {error}") from error
     paths = ["-Q", str(foundation / "base"), "",
              "-Q", str(foundation / "base-thy"), "Proofs",
              "-Q", str(example / "lib"), "",

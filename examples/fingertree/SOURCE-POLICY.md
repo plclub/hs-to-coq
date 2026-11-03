@@ -42,6 +42,11 @@ sources, and proof theories are outside this guard's input scope.
   the handwritten queue helpers `DefaultPQueue` and `pqueue_size` from the
   combined inventories. Both helpers remain in the full queue inventory.
 
+The shared generated-declaration scan masks nested Rocq comments and string
+literals before matching emitted declaration headers. Declaration-like text in
+documentation neither adds a duplicate nor supplies a missing generated name.
+Unterminated comments or strings fail with the generated source path.
+
 Source inventories check names, not proof assumptions. The
 [full build and checks](README.md#build-and-check) still compile the theories,
 enforce exact transitive assumption sets, and recursively kernel-check results.
@@ -137,3 +142,20 @@ clean foundation rebuild or a hosted CI run. The source pin/license check and
 whitespace checks passed. HEAD and the index remained unchanged. The formal
 review skill requires committed snapshots, so no formal review verdict covers
 these uncommitted changes.
+
+### Inventory-scan correction
+
+The later pinned review of `61329fa674bc5bea3f9fa4c285fd5ff455244a26` reported
+no Standards findings and one medium Spec finding: declaration-like text in
+generated comments/strings could cause duplicate failures or falsely witness a
+missing dictionary. The follow-up masks that text in the shared inventory scan.
+Its first CLI regression failed before the fix; both original failure cases now
+have the expected result, with additional CLI/Make/shared-queue controls.
+
+Validation passed 45 compiler-independent controls and 52 with real Rocq, all
+three Haskell suites, and all 225 existing harness checks. The full Rocq 9.2
+`kernel-check core-check interval-check priority-check` run passed again, matching
+all 1,048 theory assumption sets; all 122 validation-manifest files stayed
+byte-identical. This was not a clean foundation rebuild or hosted CI run. The
+correction was uncommitted at validation time; formal pinned-range re-review is
+still pending.

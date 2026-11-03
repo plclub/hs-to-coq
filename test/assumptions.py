@@ -22,7 +22,7 @@ import subprocess
 import tempfile
 import unittest
 
-from source_policy_checks import SourceInventoryTests, SourcePolicyMakeTests
+from source_policy_checks import DOCUMENTATION, SourceInventoryTests, SourcePolicyMakeTests
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -122,6 +122,21 @@ class InventoryTests(TemporaryTests):
     def test_named_axiom_omitted(self):
         with self.assertRaisesRegex(ValueError, "unaudited declarations:.*rogue"):
             self.inventory("Axiom rogue : True.\n" + CLOSED_SOURCE)
+
+    def test_priority_inventory_ignores_documentation_but_requires_real_dictionary(self):
+        directory = EXAMPLE / "module-edits/Data/PriorityQueue/FingerTree"
+        audit = (directory / "PriorityAudit.v").read_text(encoding="utf-8")
+        generated = (EXAMPLE / "lib/Data/PriorityQueue/FingerTree.v").read_text(encoding="utf-8")
+        marker = "Instance Eq___PQueue "
+        self.assertEqual(generated.count(marker), 1)
+        omitted = generated.replace(marker, "Instance omitted_Eq___PQueue ", 1)
+        # This is the same pre-compilation API called by the full queue audit.
+        for label, documentation in DOCUMENTATION:
+            with self.subTest(documentation=label):
+                documentation = documentation.format(name="Eq___PQueue")
+                self.assertEqual(len(priority.check_inventory(generated + documentation, audit)), 74)
+                with self.assertRaisesRegex(ValueError, "missing.*Eq___PQueue"):
+                    priority.check_inventory(omitted + documentation, audit)
 
 
 class ReportTests(unittest.TestCase):

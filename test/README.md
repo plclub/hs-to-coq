@@ -101,13 +101,13 @@ This is a separate runner, not part of the Cabal suites:
 python3 test/assumptions.py
 ```
 
-The default mode runs **38 compiler-independent cases**:
+The default mode runs **45 compiler-independent cases**:
 
-* The existing 24 cases check theory/priority export inventories, report parsing,
+* The 25 cases check theory/priority export inventories, report parsing,
   missing or malformed reports, and exact dependency sets. CLI controls require
   failure when the compiler is missing, prints a plausible report but exits
   nonzero, or exits zero without reports.
-* The 14 cases in [source_policy_checks.py](source_policy_checks.py) exercise the
+* The 20 cases in [source_policy_checks.py](source_policy_checks.py) exercise the
   public source-inventory CLI and production Make rules in temporary layouts.
   They check the 234 protected names, missing/duplicate inventory entries,
   two-way queue coverage, and failure before dependent compilation. Make controls
@@ -115,6 +115,11 @@ The default mode runs **38 compiler-independent cases**:
   cleanup, and failure propagation. They use the real inventory helper but fake
   Stack, translation, foundations, and proof/compiler stages; the Haskell suite
   above tests the policy parser/scanner itself.
+
+Inventory regressions distinguish real declaration heads from mentions in nested
+comments and multiline strings, including doubled-quote escapes. Such mentions
+must neither reject a present dictionary nor stand in for a missing one; the
+production Make gate is checked for both outcomes.
 
 To add real compiler controls, use Rocq 9.2:
 
@@ -126,7 +131,7 @@ opam exec --switch="${ROCQ92_SWITCH:?Select a Rocq 9.2 switch}" -- \
   python3 test/assumptions.py --rocq rocq
 ```
 
-This adds **seven cases, for 45 total**. The fixtures under
+This adds **seven cases, for 52 total**. The fixtures under
 [`test/assumptions/`](assumptions/) exercise direct and transitive dependencies
 on an unexpected axiom, plus an independent closed proof. Both checkers must
 accept the exact dependency sets and reject unexpected axioms; the theory CLI

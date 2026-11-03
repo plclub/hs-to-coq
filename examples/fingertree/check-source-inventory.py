@@ -59,7 +59,10 @@ def check_generated(module, checker):
     names, audit = inventory(module, checker)
     path = EXAMPLE / "lib" / (module + ".v")
     generated = path.read_text(encoding="utf-8")
-    declarations = Counter(checker.generated_declarations(generated))
+    try:
+        declarations = Counter(checker.generated_declarations(generated))
+    except ValueError as error:
+        raise ValueError(f"{path}: {error}") from error
     missing = sorted(set(names) - set(declarations))
     duplicates = sorted(name for name in names if declarations[name] > 1)
     checker.require(not missing and not duplicates,

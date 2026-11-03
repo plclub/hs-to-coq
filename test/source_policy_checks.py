@@ -24,6 +24,21 @@ AUDITS = ("module-edits/Data/FingerTree/CoreAudit.v",
           "module-edits/Data/PriorityQueue/FingerTree/PriorityAudit.v")
 INVENTORY = "check-source-inventory.py"
 PRIORITY = "module-edits/Data/PriorityQueue/FingerTree/check-priority-audit.py"
+DICTIONARIES = ("Eq___ViewR", "Traversable__IntervalMap", "Eq___PQueue")
+DOCUMENTATION = (
+    ("nested comment", "\n(* Documentation only:\n(* Nested example:\n"
+     "Definition {name} := helper.\n*)\n*)\n"),
+    ("multiline string", '\nGoal True. idtac "Documentation only:\n'
+     'Definition {name} := helper.\n". Abort.\n'),
+    ("doubled quotes", '\nGoal True. idtac "Documentation ""example:\n'
+     'Instance {name} := helper.\n""". Abort.\n'),
+    ("comment delimiters in string", '\nGoal True. idtac "(* *) *) (*\n'
+     'Definition {name} := helper.\n". Abort.\n'),
+    ("quotes in comment", '\n(* Documentation "quoted ""*)"" example":\n'
+     'Definition {name} := helper.\n*)\n'),
+    ("quoted opener in nested comment", '\n(* Documentation:\n(* "(*" example *)\n'
+     'Definition {name} := helper.\n*)\n'),
+)
 
 
 def copy_file(source, target):
@@ -104,6 +119,71 @@ class SourceInventoryTests(unittest.TestCase):
             with self.subTest(module=module):
                 result = self.run_inventory("--module", module)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_declaration_text_in_nested_comment_is_ignored(self):
+        for module, name in zip(MODULES, DICTIONARIES):
+            with self.subTest(module=module):
+                path = self.example / "lib" / (module + ".v")
+                path.write_text(path.read_text(encoding="utf-8") +
+                                DOCUMENTATION[0][1].format(name=name), encoding="utf-8")
+                result = self.run_inventory("--module", module)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_declaration_text_in_strings_and_quoted_comments_is_ignored(self):
+        for module, name in zip(MODULES, DICTIONARIES):
+            path = self.example / "lib" / (module + ".v")
+            original = path.read_text(encoding="utf-8")
+            for label, documentation in DOCUMENTATION[1:]:
+                with self.subTest(module=module, documentation=label):
+                    path.write_text(original + documentation.format(name=name), encoding="utf-8")
+                    result = self.run_inventory("--module", module)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_missing_dictionaries_cannot_use_comment_or_string_witnesses(self):
+        for module, name in zip(MODULES, DICTIONARIES):
+            relative = "lib/" + module + ".v"
+            path = self.example / relative
+            rename_declaration(self, path, "Instance", name)
+            omitted = path.read_text(encoding="utf-8")
+            for label, documentation in DOCUMENTATION:
+                with self.subTest(module=module, documentation=label):
+                    path.write_text(omitted + documentation.format(name=name), encoding="utf-8")
+                    self.assert_rejected(self.run_inventory("--module", module),
+                                         relative, "missing ['" + name + "']")
+
+    def test_declarations_after_documentation_still_count(self):
+        for module, name in zip(MODULES, DICTIONARIES):
+            relative = "lib/" + module + ".v"
+            path = self.example / relative
+            original = path.read_text(encoding="utf-8")
+            for label, documentation in DOCUMENTATION:
+                with self.subTest(module=module, documentation=label):
+                    path.write_text(original + documentation.format(name=name) +
+                                    "Definition " + name + " := helper.\n", encoding="utf-8")
+                    self.assert_rejected(self.run_inventory("--module", module),
+                                         relative, "duplicate ['" + name + "']")
+
+    def test_unterminated_lexical_regions_fail_with_source_paths(self):
+        cases = (("comment", "\n(* unfinished\n", "unterminated Rocq comment"),
+                 ("nested comment", "\n(* outer (* inner *)\n", "unterminated Rocq comment"),
+                 ("string", '\nGoal True. idtac "unfinished\n', "unterminated Rocq string"),
+                 ("string in comment", '\n(* "unfinished *)\n', "unterminated Rocq string"))
+        for module in MODULES:
+            relative = "lib/" + module + ".v"
+            path = self.example / relative
+            original = path.read_text(encoding="utf-8")
+            for label, suffix, diagnostic in cases:
+                with self.subTest(module=module, region=label):
+                    path.write_text(original + suffix, encoding="utf-8")
+                    self.assert_rejected(self.run_inventory("--module", module),
+                                         relative, diagnostic)
+                    if module == MODULES[2]:
+                        result = subprocess.run(
+                            [sys.executable, "-B", str(self.example / PRIORITY),
+                             "--rocq", str(self.directory / "missing-rocq")],
+                            cwd=self.directory, text=True, encoding="utf-8",
+                            capture_output=True, timeout=30)
+                        self.assert_rejected(result, relative, diagnostic)
 
     def test_required_names_come_from_audits_without_generated_files(self):
         shutil.rmtree(self.example / "lib")
@@ -422,14 +502,26 @@ class SourcePolicyMakeTests(unittest.TestCase):
                          output)
 
     def test_generated_inventory_failure_removes_outputs_and_blocks_dependents(self):
-        cases = ((MODULES[0], "Eq___ViewR", "proofs", 1),
-                 (MODULES[0], "Eq___ViewR", "proofs", 2),
-                 (MODULES[1], "Traversable__IntervalMap", "theories/IntervalLaws.vo", 2))
-        for index, (module, name, target, jobs) in enumerate(cases):
-            with self.subTest(module=module, jobs=jobs):
+        cases = ((MODULES[0], DICTIONARIES[0], 0, "proofs", 1),
+                 (MODULES[0], DICTIONARIES[0], 2, "proofs", 2),
+                 (MODULES[1], DICTIONARIES[1], 2, "theories/IntervalLaws.vo", 1),
+                 (MODULES[1], DICTIONARIES[1], 0, "theories/IntervalLaws.vo", 2),
+                 (MODULES[2], DICTIONARIES[2], 0, "theories/PriorityRegression.vo", 1),
+                 (MODULES[2], DICTIONARIES[2], 2, "theories/PriorityRegression.vo", 2))
+        for index, (module, name, documentation_index, target, jobs) in enumerate(cases):
+            label, documentation = DOCUMENTATION[documentation_index]
+            with self.subTest(module=module, jobs=jobs, documentation=label):
                 fixture = MakeExample(self.directory / str(index))
                 fixture.seed_stale()
-                rename_declaration(self, fixture.templates / (module + ".v"), "Instance", name)
+                path = fixture.templates / (module + ".v")
+                rename_declaration(self, path, "Instance", name)
+                omitted = path.read_text(encoding="utf-8")
+                if module == MODULES[2]:
+                    # Balance the queue's old raw 74-head scan: only the decoy
+                    # would restore the missing name and count, not a real head.
+                    omitted = omitted.replace("Instance omitted_" + name + " ",
+                                              "Let omitted_" + name + " ", 1)
+                path.write_text(omitted + documentation.format(name=name), encoding="utf-8")
                 result = fixture.run(target, jobs=jobs, inventory_status=29)
                 output = result.stdout + result.stderr
                 self.assertNotEqual(result.returncode, 0, output)
@@ -447,11 +539,39 @@ class SourcePolicyMakeTests(unittest.TestCase):
                     self.assertFalse((fixture.example / "lib" / (module + suffix)).exists(), output)
                 self.assertNotIn("lib/" + module + ".v",
                                  [event["source"] for event in fixture.events("compile")], output)
-                downstream = (set(fixture.theories) if module == MODULES[0] else
-                              {"IntervalModel", "IntervalOperations", "IntervalLaws", "ApplicationLaws"})
+                if module == MODULES[0]:
+                    downstream = set(fixture.theories)
+                elif module == MODULES[1]:
+                    downstream = {"IntervalModel", "IntervalOperations", "IntervalLaws", "ApplicationLaws"}
+                else:
+                    downstream = {"PriorityModel", "PriorityOperations", "PriorityRegression", "ApplicationLaws"}
                 self.assertFalse([event for event in fixture.events("theory")
                                   if event["name"] in downstream], output)
                 self.assertFalse(fixture.events("kernel"), output)
+
+    def test_vfiles_accepts_declaration_text_in_comments_and_strings(self):
+        fixture = MakeExample(self.directory)
+        for module, name in zip(MODULES, DICTIONARIES):
+            path = fixture.templates / (module + ".v")
+            documentation = "".join(text.format(name=name) for _, text in DOCUMENTATION)
+            path.write_text(path.read_text(encoding="utf-8") + documentation, encoding="utf-8")
+        result = fixture.run("vfiles", jobs=2)
+        output = result.stdout + result.stderr
+        self.assertEqual(result.returncode, 0, output)
+        self.assertCountEqual([event["module"] for event in fixture.events("translate")], MODULES)
+        checked = [event for event in fixture.events("inventory-result")
+                   if "--module" in event["args"]]
+        self.assertEqual(len(checked), len(MODULES), output)
+        self.assertTrue(all(event["status"] == 0 for event in checked), output)
+        self.assertFalse(fixture.events("compile"), output)
+        self.assertFalse(fixture.events("theory"), output)
+        for module in MODULES:
+            with self.subTest(module=module):
+                self.assertEqual((fixture.example / "lib" / (module + ".v")).read_text(
+                    encoding="utf-8"), (fixture.templates / (module + ".v")).read_text(
+                        encoding="utf-8"))
+                self.assertEqual((fixture.example / "lib" / (module + ".h2ci")).read_text(
+                    encoding="utf-8"), "fake interface\n")
 
     def test_default_build_runs_real_inventories_and_supplies_owned_policy_inputs(self):
         fixture = MakeExample(self.directory)
