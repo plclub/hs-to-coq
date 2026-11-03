@@ -291,6 +291,64 @@ rawCases =
   , badSupport "unterminated string fails closed" "Definition note := \"oops" "" "unterminated Rocq string"
   ]
 
+quotedCommentCases :: [IO ()]
+quotedCommentCases =
+  [ fixture "quoted comment delimiters do not hide an Axiom" (policy []) []
+      [("midamble.v", "(* \"*)\" *)\nAxiom hidden_assumption : False.\n(* \"(*\" *)\n")]
+      (Reject "midamble.v" [":2:", "hidden_assumption", "Axiom/Parameter/Conjecture declarations are not approved"])
+  ] ++
+  [ fixture (label ++ " before " ++ keyword) (policy []) []
+      [("midamble.v", comment ++ keyword ++ " " ++ target ++ body ++ "\n")]
+      (Reject "midamble.v" [":2:", target, violation])
+  | (label, comment) <- comments
+  , (keyword, target, body, violation) <-
+      [ ("Definition", "union", " : nat := 0.", "required generated declaration")
+      , ("Axiom", "hidden_assumption", " : False.", "Axiom/Parameter/Conjecture declarations are not approved")
+      , ("Parameter", "hidden_assumption", " : False.", "Axiom/Parameter/Conjecture declarations are not approved")
+      , ("Conjecture", "hidden_assumption", " : False.", "Axiom/Parameter/Conjecture declarations are not approved")
+      ]
+  ] ++
+  [ fixture (label ++ " in harmless documentation") (policy []) []
+      [("midamble.v", comment ++ "Definition harmless : nat := 0.\n")] Accept
+  | (label, comment) <- comments
+  ] ++
+  [ fixture "quoted documentation mentions are ignored" (policy []) []
+      [("midamble.v", unlines
+        [ "(* \"Definition union := 0. Axiom hidden_assumption : False. *)\""
+        , "   (* \"Parameter secret : False. (*\" *)"
+        , "   \"Conjecture doubled\"\"quote : False.\" *)"
+        , "Definition harmless : nat := 0."
+        ])] Accept
+  , fixture "multiline quoted comments retain declaration line numbers" (policy []) []
+      [("preamble.v", unlines
+        [ "(* documentation"
+        , " \"*)"
+        , " (*"
+        , " \""
+        , " (* nested \"*)\" *)"
+        , "*)"
+        , "Definition"
+        , " union : nat := 0."
+        ])]
+      (Reject "preamble.v" [":8:", "union", "required generated declaration"])
+  ] ++
+  [ fixture label (policy []) [] [("midamble.v", source)] (Reject "midamble.v" [diagnostic])
+  | (label, source, diagnostic) <-
+      [ ("unterminated comment after quoted closing delimiter", "\n(* \"*)\"\n", ": 2: unterminated Rocq comment")
+      , ("unterminated outer comment after nested quoted delimiter", "\n(* outer\n (* \"(*\" *)\n", ": 2: unterminated Rocq comment")
+      , ("unterminated string after quoted comment", "(* \"*)\" *)\n\nDefinition note := \"oops", ": 3: unterminated Rocq string")
+      , ("unterminated string inside comment fails closed", "\n(* documentation\n \"*)\n*)\n", ": 3: unterminated Rocq string")
+      ]
+  ]
+  where
+    comments =
+      [ ("quoted closing delimiter", "(* \"*)\" *)\n")
+      , ("quoted opening delimiter", "(* \"(*\" *)\n")
+      , ("quoted opening and closing delimiters", "(* \"(* and *)\" *)\n")
+      , ("nested quoted delimiters", "(* outer (* \"*)\" \"(*\" *) tail \"*)\" *)\n")
+      , ("doubled quotes in comment", "(* \"\"\"*)\"\" and \"\"(*\"\"\" *)\n")
+      ]
+
 rewriteCases :: [IO ()]
 rewriteCases =
   [ badEdit "new rewrite requires decision" rule "Data.FingerTree.union" "not pinned"
@@ -359,6 +417,6 @@ inputCases =
 
 runSourcePolicyTests :: IO ()
 runSourcePolicyTests = do
-  let checks = redefinitionCases ++ axiomCases ++ additionCases ++ renameCases ++ rawCases ++ rewriteCases ++ inputCases
+  let checks = redefinitionCases ++ axiomCases ++ additionCases ++ renameCases ++ rawCases ++ quotedCommentCases ++ rewriteCases ++ inputCases
   sequence_ checks
   putStrLn ("Source policy checks passed (" ++ show (length checks) ++ " cases).")

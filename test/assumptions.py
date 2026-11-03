@@ -46,6 +46,19 @@ witness : True
 Axioms:
 rogue : True
 """
+ASSERTION_FORMS = ("Lemma", "Theorem", "Remark", "Fact", "Corollary", "Proposition", "Example")
+ASSERTION_PREFIXES = (
+    "", "Local ", "Global ", "Polymorphic ", "#[local] ", "#[global] ",
+    "#[universes(polymorphic)] ", "#[local]\nPolymorphic\n",
+)
+
+
+def assertion_fixture(form, admitted=False):
+    names = [f"{form.lower()}_{index}" for index in range(len(ASSERTION_PREFIXES))]
+    proof = ": False. Admitted.\n" if admitted else ": True. Proof. exact I. Qed.\n"
+    source = "".join(f"{prefix}{form} {name} {proof}"
+                     for prefix, name in zip(ASSERTION_PREFIXES, names))
+    return source, names
 
 
 def load_checker(name, path):
@@ -112,12 +125,22 @@ class InventoryTests(TemporaryTests):
         with self.assertRaisesRegex(ValueError, "missing or duplicate export inventory"):
             self.inventory(CLOSED_SOURCE + "Print Assumptions witness.\n")
 
-    def test_named_theorem_omitted(self):
-        for declaration in ("Lemma", "Theorem"):
-            with self.subTest(declaration=declaration):
-                with self.assertRaisesRegex(ValueError, "unaudited declarations:.*omitted"):
-                    self.inventory(CLOSED_SOURCE + declaration +
-                                   " omitted : True. Proof. exact I. Qed.\n")
+    def test_complete_assertion_inventories(self):
+        for form in ASSERTION_FORMS:
+            with self.subTest(form=form):
+                source, names = assertion_fixture(form)
+                source += "".join(f"Print Assumptions {name}.\n" for name in names)
+                self.assertEqual(self.inventory(source), names)
+
+    def test_named_assertion_omitted(self):
+        for form in ASSERTION_FORMS:
+            for admitted in (False, True):
+                with self.subTest(form=form, admitted=admitted):
+                    source, names = assertion_fixture(form, admitted)
+                    with self.assertRaisesRegex(ValueError, "unaudited declarations") as error:
+                        self.inventory(CLOSED_SOURCE + source)
+                    self.assertEqual(str(error.exception),
+                                     f"Inventory.v: unaudited declarations: {sorted(names)}")
 
     def test_named_axiom_omitted(self):
         with self.assertRaisesRegex(ValueError, "unaudited declarations:.*rogue"):
@@ -266,6 +289,36 @@ class CompilerFailureTests(TemporaryTests):
         self.assertIn("audit marker inventory differs", result.stderr)
 
 
+class TheoryCliInventoryTests(TemporaryTests):
+    def test_cli_accepts_audited_closed_assertions(self):
+        for form in ASSERTION_FORMS:
+            with self.subTest(form=form):
+                source, names = assertion_fixture(form)
+                source += "".join(f"Print Assumptions {name}.\n" for name in names)
+                example = make_example(self.directory, source, {"count": len(names)})
+                output = "".join(CLOSED_REPORT.replace("witness", name) for name in names)
+                (example / "c").write_text("print(" + repr(output) + ")\n", encoding="utf-8")
+                result = run_checker(example, sys.executable)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn(f"{len(names)}/{len(names)} exact assumption sets match "
+                              f"({len(names)} closed)", result.stdout)
+
+    def test_cli_rejects_omitted_assertions(self):
+        for form in ASSERTION_FORMS:
+            for admitted in (False, True):
+                with self.subTest(form=form, admitted=admitted):
+                    source, names = assertion_fixture(form, admitted)
+                    example = make_example(self.directory, CLOSED_SOURCE + source, {"count": 1})
+                    # A successful compiler reporting only the inventoried witness
+                    # must not hide any additional closed or admitted assertion.
+                    (example / "c").write_text("print(" + repr(CLOSED_REPORT) + ")\n",
+                                               encoding="utf-8")
+                    result = run_checker(example, sys.executable)
+                    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertIn(f"AssumptionFixture.v: unaudited declarations: {sorted(names)}",
+                                  result.stderr)
+
+
 class RealRocqTests(TemporaryTests):
     rocq = None
     expected = {
@@ -350,6 +403,44 @@ class RealRocqTests(TemporaryTests):
         })
         self.assert_mismatch(result, "closed_control", ["AssumptionFixture.rogue"], [])
 
+    def test_cli_accepts_real_audited_closed_assertions(self):
+        source, names = "", []
+        for form in ASSERTION_FORMS:
+            assertions, exports = assertion_fixture(form)
+            source += assertions
+            names.extend(exports)
+        source += "".join(f"Print Assumptions {name}.\n" for name in names)
+        example = make_example(self.directory, source, {"count": len(names)})
+        result = run_checker(example, self.rocq)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"{len(names)}/{len(names)} exact assumption sets match "
+                      f"({len(names)} closed)", result.stdout)
+
+    def test_cli_rejects_real_omitted_assertions(self):
+        for form in ASSERTION_FORMS:
+            for admitted in (False, True):
+                with self.subTest(form=form, admitted=admitted):
+                    source, names = assertion_fixture(form, admitted)
+                    example = make_example(self.directory, CLOSED_SOURCE + source, {"count": 1})
+                    theories = example / "theories"
+                    paths = ["-Q", str(theories), "FingerTreeProofs"]
+                    theory.compile_file(self.rocq, paths, theories / FIXTURE.name,
+                                        example, self.directory / "fixture.log")
+                    # Compile a separate consumer first: these are genuine,
+                    # qualified exports, not syntax rejected by Rocq itself.
+                    consumer = self.directory / "CheckExports.v"
+                    consumer.write_text("Require FingerTreeProofs.AssumptionFixture.\n" + "".join(
+                        f"Check @FingerTreeProofs.AssumptionFixture.{name}.\n" for name in names
+                    ), encoding="utf-8")
+                    output = theory.compile_file(self.rocq, paths, consumer,
+                                                 example, self.directory / "exports.log")
+                    for name in names:
+                        self.assertIn(name, output)
+                    result = run_checker(example, self.rocq)
+                    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertIn(f"AssumptionFixture.v: unaudited declarations: {sorted(names)}",
+                                  result.stderr)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -357,6 +448,7 @@ def main():
                         help="also run real controls with this Rocq executable (required to work)")
     args = parser.parse_args()
     classes = [InventoryTests, ReportTests, PriorityReportTests, CompilerFailureTests,
+               TheoryCliInventoryTests,
                SourceInventoryTests, SourcePolicyMakeTests]
     if args.rocq is not None:
         # Preserve an explicitly relative executable path across temporary cwd's.

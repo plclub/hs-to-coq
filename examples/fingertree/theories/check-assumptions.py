@@ -30,7 +30,8 @@ def inventory(source):
             f"{source.name}: missing or duplicate export inventory")
     declarations = set(re.findall(
         r"^\s*(?:(?:#\[[^\]]+\]|Local|Global|Polymorphic)\s+)*"
-        r"(?:Lemma|Theorem|Definition|Fixpoint|Record|Instance|Inductive|CoInductive|Class|Axiom|Parameter|Conjecture)\s+([\w']+)",
+        r"(?:Lemma|Theorem|Remark|Fact|Corollary|Proposition|Example|"
+        r"Definition|Fixpoint|Record|Instance|Inductive|CoInductive|Class|Axiom|Parameter|Conjecture)\s+([\w']+)",
         text, re.MULTILINE))
     require(declarations <= set(names),
             f"{source.name}: unaudited declarations: {sorted(declarations - set(names))}")

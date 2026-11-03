@@ -38,11 +38,13 @@ To focus on one suite:
 | `stack test hs-to-rocq:rocq-version` | `cabal test rocq-version` |
 | `stack test hs-to-rocq:ci-catalog` | `cabal test ci-catalog` |
 
-The `edits` suite runs the existing **237 parser/API assertions** plus **152
+The `edits` suite runs the existing **237 parser/API assertions** plus **184
 source-policy cases** in [SourcePolicyTests.hs](SourcePolicyTests.hs). The policy
 cases invoke the public `runPolicy` boundary with real temporary files, covering
 approvals, scopes, file-local aliases, renaming, parsed rewrite pins, handwritten
-declaration forms, and diagnostics. These parser/scanner tests need Haskell;
+declaration forms, and diagnostics. Quoted-comment controls require harmless
+documentation to pass while following axioms and protected declarations remain
+visible to the policy checker. These parser/scanner tests need Haskell;
 the Python Make controls below stub Stack and need no Haskell installation.
 See the [source-policy brief](../examples/fingertree/SOURCE-POLICY.md) for the
 guard's scope and limits.
@@ -101,9 +103,9 @@ This is a separate runner, not part of the Cabal suites:
 python3 test/assumptions.py
 ```
 
-The default mode runs **45 compiler-independent cases**:
+The default mode runs **48 compiler-independent cases**:
 
-* The 25 cases check theory/priority export inventories, report parsing,
+* The 28 cases check theory/priority export inventories, report parsing,
   missing or malformed reports, and exact dependency sets. CLI controls require
   failure when the compiler is missing, prints a plausible report but exits
   nonzero, or exits zero without reports.
@@ -120,6 +122,8 @@ Inventory regressions distinguish real declaration heads from mentions in nested
 comments and multiline strings, including doubled-quote escapes. Such mentions
 must neither reject a present dictionary nor stand in for a missing one; the
 production Make gate is checked for both outcomes.
+The theory inventory also checks all seven named assertion forms, so an omitted
+`Remark` or `Example` cannot escape the audit by using a different theorem keyword.
 
 To add real compiler controls, use Rocq 9.2:
 
@@ -131,12 +135,13 @@ opam exec --switch="${ROCQ92_SWITCH:?Select a Rocq 9.2 switch}" -- \
   python3 test/assumptions.py --rocq rocq
 ```
 
-This adds **seven cases, for 52 total**. The fixtures under
+This adds **nine cases, for 57 total**. The fixtures under
 [`test/assumptions/`](assumptions/) exercise direct and transitive dependencies
 on an unexpected axiom, plus an independent closed proof. Both checkers must
 accept the exact dependency sets and reject unexpected axioms; the theory CLI
-must also reject a nonempty expectation for the closed control. Once `--rocq`
-is requested, an unavailable or erroring compiler fails the runner rather than
+must also reject a nonempty expectation for the closed control and unaudited
+assertions that the real compiler accepts. Once `--rocq` is requested, an
+unavailable or erroring compiler fails the runner rather than
 skipping the real cases or reporting success.
 
 The runner locates its helpers and fixtures relative to the script, independently

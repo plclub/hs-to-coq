@@ -312,7 +312,7 @@ checkSupport protected file source = do
         ++ ["required generated declaration cannot be supplied by handwritten support" | touches protected target]
     ]
 
-data Mask = Code | Comment Int Int | Quoted Int
+data Mask = Code | Comment Int Int | Quoted Int Mask
 
 maskRocq :: String -> Either String String
 maskRocq = go Code 1
@@ -320,15 +320,16 @@ maskRocq = go Code 1
     blank c = if isSpace c then c else ' '
     go Code _ [] = Right []
     go (Comment _ start) _ [] = Left (show start ++ ": unterminated Rocq comment")
-    go (Quoted start) _ [] = Left (show start ++ ": unterminated Rocq string")
+    go (Quoted start _) _ [] = Left (show start ++ ": unterminated Rocq string")
     go Code line ('(':'*':rest) = ("  " ++) <$> go (Comment 1 line) line rest
-    go Code line ('"':rest) = (' ' :) <$> go (Quoted line) line rest
+    go Code line ('"':rest) = (' ' :) <$> go (Quoted line Code) line rest
+    go state@Comment{} line ('"':rest) = (' ' :) <$> go (Quoted line state) line rest
     go (Comment depth start) line ('(':'*':rest) =
       ("  " ++) <$> go (Comment (depth + 1) start) line rest
     go (Comment depth start) line ('*':')':rest) =
       ("  " ++) <$> go (if depth == 1 then Code else Comment (depth - 1) start) line rest
-    go state@(Quoted _) line ('"':'"':rest) = ("  " ++) <$> go state line rest
-    go (Quoted _) line ('"':rest) = (' ' :) <$> go Code line rest
+    go state@(Quoted _ _) line ('"':'"':rest) = ("  " ++) <$> go state line rest
+    go (Quoted _ outer) line ('"':rest) = (' ' :) <$> go outer line rest
     go state line (c:rest) = ((case state of Code -> c; _ -> blank c) :) <$>
       go state (if c == '\n' then line + 1 else line) rest
 

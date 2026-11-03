@@ -86,7 +86,8 @@ declaration headers at command starts:
 
 It handles `Program`, locality/universe prefixes, attributes, ordinary mutual
 heads, constructors, and record/class fields. Nested comments and strings
-(including doubled quotes) are masked; multiline and same-line commands work.
+(including doubled quotes) are masked; quoted strings inside comments leave
+`(*` and `*)` inert, as they do in Rocq. Multiline and same-line commands work.
 Unqualified names conservatively match any protected local name. Raw axioms,
 parameters, and conjectures are rejected; variables and hypotheses are checked
 for protected-name collisions, not banned outright.
@@ -159,3 +160,21 @@ all 1,048 theory assumption sets; all 122 validation-manifest files stayed
 byte-identical. This was not a clean foundation rebuild or hosted CI run. The
 correction was uncommitted at validation time; formal pinned-range re-review is
 still pending.
+
+### Spec-guard corrections: 2026-11-03
+
+The review of `d0aa2436d727942996bdd32c994e22f811983afa` against
+`origin/master` found two medium Spec issues in the guards. Quoted comment
+delimiters could hide active declarations from the handwritten-support scanner,
+and the theory inventory omitted ordinary assertion forms such as `Remark` and
+`Example`. The current fixes retain the enclosing comment state when scanning
+quoted text and include all seven named assertion keywords in the theory gate.
+They do not change algorithm bodies, proof statements, rewrite pins, or the
+assumption manifest.
+
+Regressions failed before each fix and passed afterward: the edits suite passed
+237 parser/API assertions and 184 source-policy cases, while the assumption
+runner passed 48 compiler-independent cases and 57 with native Rocq 9.2. The
+real-compiler controls confirm that omitted assertions are genuine exports before
+requiring the production CLI to reject them. These focused checks do not claim a
+new full proof rebuild, hosted CI pass, or review of the uncommitted fixes.

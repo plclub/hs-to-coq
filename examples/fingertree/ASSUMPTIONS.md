@@ -176,6 +176,9 @@ instance is in its explicit `Print Assumptions` inventory, and that the export
 count equals the manifest. It compiles the theory, then creates a fresh audit
 with an `AUDIT: name` marker, fully qualified `Check`, and `Print Assumptions`
 for each constant. Each marker must have exactly one closed or axiom report.
+All seven named assertion forms (`Theorem`, `Lemma`, `Remark`, `Fact`, `Corollary`,
+`Proposition`, and `Example`) require inventory entries; an omitted assertion
+fails before compilation, including when its proof ends in `Admitted`.
 The checker rejects missing/duplicate reports and **any difference** from each
 expected transitive assumption set, including a missing expected exception.
 Record constructors/projections listed in the inventories are audited as well.
