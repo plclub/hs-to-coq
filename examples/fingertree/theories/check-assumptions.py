@@ -38,6 +38,19 @@ def inventory(source):
     return names
 
 
+def parse_assumption_block(block, name):
+    """Read the exact assumption set from one theory or priority audit block."""
+    closed = block.count("Closed under the global context")
+    axioms = block.count("Axioms:")
+    require((closed, axioms) in {(1, 0), (0, 1)},
+            f"{name}: missing or ambiguous assumption report")
+    assumptions = set()
+    if axioms:
+        assumptions = set(re.findall(r"^(\S+)\s*:", block.split("Axioms:", 1)[1], re.MULTILINE))
+        require(bool(assumptions), f"{name}: empty axiom report")
+    return assumptions
+
+
 def reports(output, names):
     matches = list(re.finditer(r"^AUDIT: ([\w']+)$", output, re.MULTILINE))
     require([m.group(1) for m in matches] == names, "audit marker inventory differs")
@@ -45,15 +58,7 @@ def reports(output, names):
     for i, match in enumerate(matches):
         end = matches[i + 1].start() if i + 1 < len(matches) else len(output)
         block = output[match.end():end]
-        closed = block.count("Closed under the global context")
-        axioms = block.count("Axioms:")
-        require((closed, axioms) in {(1, 0), (0, 1)},
-                f"{match.group(1)}: missing or ambiguous assumption report")
-        assumptions = set()
-        if axioms:
-            assumptions = set(re.findall(r"^(\S+)\s*:", block.split("Axioms:", 1)[1], re.MULTILINE))
-            require(bool(assumptions), f"{match.group(1)}: empty axiom report")
-        result[match.group(1)] = assumptions
+        result[match.group(1)] = parse_assumption_block(block, match.group(1))
     return result
 
 

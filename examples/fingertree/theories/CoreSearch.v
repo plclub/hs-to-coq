@@ -543,10 +543,13 @@ Lemma split_correct {a} (M : Measured v a) p (t : FingerTree v a) l r :
   split p t = (l, r) ->
   splitReference (@measure v a _ _ M) p (contents t) = (contents l, contents r).
 Proof.
-  intros V Mono Es; destruct t as [|u|c pr m sf] eqn:Et.
+  intros V Mono Es.
+  assert (Et : t = Empty \/ t <> Empty) by
+    (destruct t; [left; reflexivity|right; discriminate|right; discriminate]).
+  destruct Et as [->|NE].
   - inversion Es; reflexivity.
-  - destruct (p (measure (Single u))) eqn:Ep.
-    + destruct (split_true_contract M p (Single u) l r V ltac:(discriminate) Ep Es)
+  - destruct (p (measure t)) eqn:Ep.
+    + destruct (split_true_contract M p t l r V NE Ep Es)
         as [x [rr [Er [Vl [Vr [Ec [Eb0 Eb1]]]]]]].
       unfold splitReference; rewrite Ec, Er, consTree_contents; apply splitListFrom_cut.
       * apply prefixMonotone_false_before with (r := x :: contents rr).
@@ -555,26 +558,11 @@ Proof.
            rewrite <- (measure_contents assoc left_id right_id M l Vl); exact Eb0.
       * rewrite listMeasure_app by assumption; rewrite listMeasure_singleton, left_id.
         rewrite <- (measure_contents assoc left_id right_id M l Vl); exact Eb1.
-    + rewrite (split_false_contract M p (Single u) Ep) in Es; inversion Es; subst l r.
+    + rewrite (split_false_contract M p t Ep) in Es; inversion Es; subst l r.
       unfold splitReference; apply splitListFrom_none.
       apply prefixMonotone_false_before with (r := []).
       * rewrite List.app_nil_r; exact Mono.
-      * right; rewrite <- (measure_contents assoc left_id right_id M (Single u) V); exact Ep.
-  - destruct (p (measure (Deep c pr m sf))) eqn:Ep.
-    + destruct (split_true_contract M p (Deep c pr m sf) l r V ltac:(discriminate) Ep Es)
-        as [x [rr [Er [Vl [Vr [Ec [Eb0 Eb1]]]]]]].
-      unfold splitReference; rewrite Ec, Er, consTree_contents; apply splitListFrom_cut.
-      * apply prefixMonotone_false_before with (r := x :: contents rr).
-        -- rewrite <- Ec; exact Mono.
-        -- destruct Eb0 as [->|Eb0]; [left; reflexivity|right].
-           rewrite <- (measure_contents assoc left_id right_id M l Vl); exact Eb0.
-      * rewrite listMeasure_app by assumption; rewrite listMeasure_singleton, left_id.
-        rewrite <- (measure_contents assoc left_id right_id M l Vl); exact Eb1.
-    + rewrite (split_false_contract M p (Deep c pr m sf) Ep) in Es; inversion Es; subst l r.
-      unfold splitReference; apply splitListFrom_none.
-      apply prefixMonotone_false_before with (r := []).
-      * rewrite List.app_nil_r; exact Mono.
-      * right; rewrite <- (measure_contents assoc left_id right_id M (Deep c pr m sf) V); exact Ep.
+      * right; rewrite <- (measure_contents assoc left_id right_id M t V); exact Ep.
 Qed.
 Lemma search_classification {a} (M : Measured v a) p (t : FingerTree v a) :
   validity M t ->

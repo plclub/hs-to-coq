@@ -109,16 +109,6 @@ Local Ltac derived_methods LT SW :=
           |change ((if negb (GHC.Base.op_zl__ y x) then x else y) = rhs)
           |change ((if negb (GHC.Base.op_zl__ y x) then y else x) = rhs)]
     end; rewrite !LT, ?(SW x y); destruct (GHC.Base.compare x y); reflexivity].
-Local Ltac direct_methods :=
-  unfold OrdMethods; repeat apply conj; intros x y;
-  match goal with |- _ = ?rhs =>
-    first [change (GHC.Base.op_zeze__ (GHC.Base.compare x y) Lt = rhs)
-          |change (GHC.Base.op_zsze__ (GHC.Base.compare x y) Gt = rhs)
-          |change (GHC.Base.op_zeze__ (GHC.Base.compare x y) Gt = rhs)
-          |change (GHC.Base.op_zsze__ (GHC.Base.compare x y) Lt = rhs)
-          |change ((if GHC.Base.op_zsze__ (GHC.Base.compare x y) Gt then x else y) = rhs)
-          |change ((if GHC.Base.op_zsze__ (GHC.Base.compare x y) Gt then y else x) = rhs)]
-  end; destruct (GHC.Base.compare x y); reflexivity.
 
 Section IntervalMethods.
 Context {K} `{GHC.Base.Ord K}.
@@ -144,7 +134,7 @@ Proof.
   derived_methods LT SW.
 Qed.
 Lemma map_methods {A} `{GHC.Base.Ord A} : OrdMethods (IM.IntervalMap K A).
-Proof. direct_methods. Qed.
+Proof. direct_ord_methods. Qed.
 End IntervalMethods.
 
 Section IntervalBundles.
@@ -218,7 +208,7 @@ Qed.
 End QueueComparison.
 
 Lemma queue_methods {K A} `{GHC.Base.Ord K} `{GHC.Base.Ord A} : OrdMethods (PQ.PQueue K A).
-Proof. direct_methods. Qed.
+Proof. direct_ord_methods. Qed.
 
 Section QueueOrder.
 Context {K} `{GHC.Base.Ord K} (laws : @PriorityModel.PriorityOrderLaws K H H0).

@@ -19,6 +19,14 @@ Ltac solve_local_split parts :=
   end;
   cbn in *; Lia.lia.
 
+Ltac destruct_accessibility :=
+  repeat match goal with
+  | |- context[?acc] =>
+      match type of acc with
+      | Acc _ _ => destruct acc; cbn
+      end
+  end.
+
 Declare Scope inline_list_scope.
 Delimit Scope inline_list_scope with inline_list.
 Notation "'identity_step'" := (fun xs => xs) : inline_list_scope.

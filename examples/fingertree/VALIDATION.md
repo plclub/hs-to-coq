@@ -134,10 +134,11 @@ comparisons**, with identical path inventories:
 | Fifteen authored theories and exact assumption manifest | 16 |
 | **Total** | **122** |
 
-The durable [`validation.sha256`](validation.sha256) manifest pins the exact
-122 files tested on 2026-11-02. It preserves the hashes from the identical
-`before.json` and `after.json` inventories even if the temporary evidence
-directory is removed. From the worktree root, run
+The durable [`validation.sha256`](validation.sha256) manifest originally pinned
+the exact 122 files tested on 2026-11-02. The standards cleanup below refreshed
+only the three changed theory-source hashes after validation; the original
+manifest remains available at commit `d0aa2436d727942996bdd32c994e22f811983afa`.
+The other 119 entries retain the original hashes. From the worktree root, run
 `shasum -a 256 -c examples/fingertree/validation.sha256` to check those files
 against the manifest.
 
@@ -182,3 +183,52 @@ build logs, the initial failed `05-all-foundation-kernels.log`, corrected
 The current per-constant typed audit logs are also recreated under
 `examples/fingertree/deps/proof-audits/` by normal builds. Temporary evidence is
 not a build dependency.
+
+## Standards cleanup validation: 2026-11-03
+
+The four low-priority duplication findings from the review of
+`a038d05a3f3c45952d1da650b6e8d6657b9b63fc...d0aa2436d727942996bdd32c994e22f811983afa`
+were addressed without changing theorem statements or the Gallina export and
+assumption inventories:
+
+* The three `InlineMutualEdits` regressions share their accessibility tactic.
+* `split_correct` shares one nonempty argument instead of separate Single/Deep copies.
+* `ApplicationLaws` reuses `CoreInstances.direct_ord_methods`.
+* Both Python auditors reuse `parse_assumption_block` from the theory checker;
+  marker and constant association remain separate.
+
+The other concurrent agent's Spec fixes were preserved. The shared Python
+parser extraction changed only report parsing, not their declaration-inventory
+changes or tests. All 57 Python controls passed with native Rocq 9.2, including
+the new omitted-assertion controls and the existing direct/transitive assumption
+rejection checks. The affected `InlineMutualEdits.pass` production target and
+all four negative translation checks passed on both Coq 8.20.1 and Rocq 9.0.1.
+All three `stack test` suites passed, including the 184 source-policy cases,
+237 edits assertions, 805 Rocq-version assertions, and CI-catalog controls.
+
+To avoid races with the concurrent agent's compiler outputs, final proof checks
+ran in an isolated copy of this worktree. The copy reused only the generated
+library sources and compiled Rocq 9.2 foundations; it contained no example
+library, theory, or declaration-audit objects before building. From its
+`examples/fingertree` directory, the command was:
+
+```bash
+opam exec --switch=cs2-rocq92 -- make -j2 \
+  -o lib/Data/FingerTree.v \
+  -o lib/Data/IntervalMap/FingerTree.v \
+  -o lib/Data/PriorityQueue/FingerTree.v \
+  kernel-check core-check interval-check priority-check
+```
+
+The command passed in 88.633 seconds. All three libraries and fifteen theories
+compiled fresh, all 1,048 exact assumption sets matched the unchanged manifest,
+and the requested recursive kernel checks passed. The public source-policy
+invocation also passed in the isolated copy. Hashes confirmed that the relevant
+source inputs did not change during those checks. This was not a clean
+foundation rebuild, a translation rerun, hosted CI, or a formal pinned-range
+re-review of these uncommitted changes.
+
+The three theory-source hashes in `validation.sha256` now identify this tested
+proof cleanup; no generated-library, foundation, or assumption-manifest hash
+changed. Local logs, copied inputs, and `results.json` remain under
+`/var/folders/3c/qfxwcbpj7q590cwh0_scnyl80000gn/T/opencode/fingertree-standards-check-d0aa2436/`.

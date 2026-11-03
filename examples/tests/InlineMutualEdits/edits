@@ -48,12 +48,7 @@ add InlineMutualEdits Theorem InlineMutualEdits.local_split_example :
 Proof.
   split; unfold localSplit, HsToRocq.Wf.wfFix2, HsToRocq.Wf.wfFix1,
     Coq.Program.Wf.Fix_sub;
-    repeat match goal with
-    | |- context[?acc] =>
-        match type of acc with
-        | Acc _ _ => destruct acc; cbn
-        end
-    end;
+    destruct_accessibility;
     reflexivity.
 Qed.
 
@@ -63,12 +58,7 @@ add InlineMutualEdits Theorem InlineMutualEdits.hygienic_helper_calls :
    (localShadow false (cons true (cons false nil)) = cons true nil)).
 Proof.
   repeat split; unfold localShadow, HsToRocq.Wf.wfFix1, Coq.Program.Wf.Fix_sub;
-    repeat match goal with
-    | |- context[?acc] =>
-        match type of acc with
-        | Acc _ _ => destruct acc; cbn
-        end
-    end;
+    destruct_accessibility;
     reflexivity.
 Qed.
 
@@ -78,11 +68,6 @@ add InlineMutualEdits Theorem InlineMutualEdits.local_measured_example :
    cons true (cons false (cons true nil))).
 Proof.
   split; unfold localMeasured, HsToRocq.Wf.wfFix1, Coq.Program.Wf.Fix_sub;
-    repeat match goal with
-    | |- context[?acc] =>
-        match type of acc with
-        | Acc _ _ => destruct acc; cbn
-        end
-    end;
+    destruct_accessibility;
     reflexivity.
 Qed.

@@ -11,6 +11,7 @@ import argparse
 import os
 from pathlib import Path
 import re
+from runpy import run_path
 import subprocess
 import sys
 
@@ -124,6 +125,9 @@ def check_inventory(generated, audit):
 
 
 def check_report(output, expected):
+    parse_assumption_block = run_path(str(
+        Path(__file__).resolve().parents[4] / "theories/check-assumptions.py"
+    ))["parse_assumption_block"]
     # Check prints the constant at the start of a line; all type and assumption
     # continuations are indented. The explicit module alias makes this stable
     # even though both the core and queue library files are named FingerTree.
@@ -137,15 +141,7 @@ def check_report(output, expected):
     for index, match in enumerate(starts):
         end = starts[index + 1].start() if index + 1 < len(starts) else len(output)
         block = output[match.end():end]
-        closed = block.count("Closed under the global context")
-        axiom_headers = block.count("Axioms:")
-        require((closed, axiom_headers) in {(1, 0), (0, 1)},
-                f"{match.group(1)}: missing or ambiguous assumption block")
-        actual = set()
-        if axiom_headers:
-            assumptions = block.split("Axioms:", 1)[1]
-            actual = set(re.findall(r"^(\S+)\s*:", assumptions, re.MULTILINE))
-            require(bool(actual), f"{match.group(1)}: empty axiom report")
+        actual = parse_assumption_block(block, match.group(1))
         require(actual == expected[match.group(1)],
                 f"{match.group(1)}: expected {sorted(expected[match.group(1)])}, "
                 f"got {sorted(actual)}")

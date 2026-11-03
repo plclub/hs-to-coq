@@ -512,7 +512,7 @@ Definition OrdBehavior (a : Type) `{GHC.Base.Ord a} : Prop :=
   ComparisonLaws (@GHC.Base.compare a _ _) /\
   EqCompare (@GHC.Base.op_zeze__ a _) (@GHC.Base.compare a _ _) /\ OrdMethods a.
 
-Local Ltac direct_ord_methods :=
+Ltac direct_ord_methods :=
   unfold OrdMethods; repeat apply conj; intros x y;
   match goal with |- _ = ?rhs =>
     first [change (GHC.Base.op_zeze__ (GHC.Base.compare x y) Lt = rhs)
