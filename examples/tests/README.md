@@ -130,14 +130,18 @@ bash test/identity-traversal.sh --target-version 8.20
 bash test/deriving.sh --target-version 8.20 --retained-only
 ```
 
-[`deriving.sh`](../../test/deriving.sh) contains 27 cases per target and defaults to
+[`deriving.sh`](../../test/deriving.sh) contains 28 cases per target and defaults to
 8.20. Its successful translation cases compile generated modules and consumers
-that infer and compute with the derived dictionaries. Rejection cases require
+that infer dictionaries and check their computations. Rejection cases require
 a nonzero exit, a relevant diagnostic, and no generated module. Coverage includes:
 
 - Inline and standalone recovery; renamed module, class, and instance skips,
   including dependencies that occur only in a standalone instance context;
   method skips; and auxiliary bindings needed by retained instances.
+- Multi-module translation of explicit instances, even with no deriving clauses.
+  The runner prepares the class interface, checks the client alone, then translates
+  both modules together with the client ordered before the class module. It compiles
+  both outputs and a consumer that infers the dictionary and checks its computation.
 - Whole-instance `redefine` excludes helpers used only by the discarded
   implementation. `whole-instance-redefine-unused-helpers` translates
   `DerivingRedefinedAux` through the real CLI, then compiles the output and

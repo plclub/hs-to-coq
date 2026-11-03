@@ -52,7 +52,7 @@ import Bag
 
 import HsToRocq.Edits.Types
 import HsToRocq.ConvertHaskell.Monad
-import HsToRocq.ConvertHaskell.TypeInfo (lookupConstructorType)
+import HsToRocq.ConvertHaskell.TypeInfo (isProcessedModule, lookupConstructorType)
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import System.IO (hPutStrLn, stderr)
@@ -484,6 +484,8 @@ renameModule mod = view $ edits.renamedModules.at mod.non mod
 -- Assumes module renaming has been accomplished
 convertModule :: GlobalMonad r m => ModuleData -> HsGroup GhcRn -> m (ConvertedModule, [ModuleName])
 convertModule convModData group = do
+  -- Start interface collection at conversion, not during deriving-policy checks.
+  isProcessedModule (moduleNameText (convModData ^. modName))
   withCurrentModule convModData $ do
     ConvertedModuleDeclarations { convertedTyClDecls    = convModTyClDecls
                                 , convertedValDecls     = convModValDecls

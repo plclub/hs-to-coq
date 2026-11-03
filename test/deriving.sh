@@ -120,6 +120,52 @@ case_name=retained-inline-kinds
 check_retained DerivingInlineKinds InlineKindsConsumer inline-kinds 2 Semigroup__Phantom Functor__Wrap
 if [[ "$retained_only" == true ]]; then exit 0; fi
 
+case_name=multi-module-forward-interface
+mkdir "$tmp/out" "$tmp/ifaces" "$tmp/control"
+# Neither module derives instances; the client sorts before its provider.
+(
+    cd "$tmp"
+    "${translator[@]}" --target-version "$version" --strict -N -i "$fixtures" \
+        -e "$workspace/examples/tests/renamings" \
+        -o "$tmp/ifaces" "$fixtures/DerivingZClass.hs"
+) > "$tmp/bootstrap.log" 2>&1 || fail 'provider interface bootstrap failed'
+for suffix in v h2ci; do
+    [[ -s "$tmp/ifaces/DerivingZClass.$suffix" ]] || fail "missing bootstrap DerivingZClass.$suffix"
+done
+"${compiler[@]}" -Q "$tmp/ifaces" '' "$tmp/ifaces/DerivingZClass.v" \
+    > "$tmp/compiler.log" 2>&1 || fail 'bootstrap provider did not compile'
+(
+    cd "$tmp"
+    "${translator[@]}" --target-version "$version" --strict -N -i "$fixtures" \
+        -e "$workspace/examples/tests/renamings" --iface-dir "$tmp/ifaces" \
+        -o "$tmp/control" "$fixtures/DerivingAClient.hs"
+) > "$tmp/control.log" 2>&1 || fail 'single-client control translation failed'
+for suffix in v h2ci; do
+    [[ -s "$tmp/control/DerivingAClient.$suffix" ]] || fail "missing control DerivingAClient.$suffix"
+done
+"${compiler[@]}" -Q "$tmp/ifaces" '' -Q "$tmp/control" '' "$tmp/control/DerivingAClient.v" \
+    >> "$tmp/compiler.log" 2>&1 || fail 'single-client control did not compile'
+cp "$fixtures/ForwardInterfaceConsumer.v" "$tmp/Consumer.v"
+"${compiler[@]}" -Q "$tmp/ifaces" '' -Q "$tmp/control" '' "$tmp/Consumer.v" \
+    >> "$tmp/compiler.log" 2>&1 || fail 'single-client dictionary inference or computation failed'
+(
+    cd "$tmp"
+    "${translator[@]}" --target-version "$version" --strict -N -i "$fixtures" \
+        -e "$workspace/examples/tests/renamings" --iface-dir "$tmp/ifaces" \
+        -o "$tmp/out" "$fixtures/DerivingAClient.hs" "$fixtures/DerivingZClass.hs"
+) > "$tmp/translator.log" 2>&1 || fail 'multi-module forward-interface translation failed'
+for module in DerivingZClass DerivingAClient; do
+    for suffix in v h2ci; do
+        [[ -s "$tmp/out/$module.$suffix" ]] || fail "missing $module.$suffix"
+    done
+    "${compiler[@]}" -Q "$tmp/out" '' "$tmp/out/$module.v" \
+        >> "$tmp/compiler.log" 2>&1 || fail "$module did not compile"
+done
+"${compiler[@]}" -Q "$tmp/out" '' "$tmp/Consumer.v" \
+    >> "$tmp/compiler.log" 2>&1 || fail 'multi-module dictionary inference or computation failed'
+printf 'ok - %s/%s\n' "$version" "$case_name"
+rm -rf "$tmp/out" "$tmp/ifaces" "$tmp/control"
+
 case_name=recovery
 check_recovery recovery DerivingRecovery RecoveryConsumer
 case_name=renamed-instance-skip
