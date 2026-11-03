@@ -302,6 +302,19 @@ Containers v0.7. `make clean` removes `lib/` and `hs-spec/`; `make` regenerates 
 ### Transformers example (examples/transformers/)
 Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../ghc/ghc/libraries/transformers`. Makefile strips MonadTrans quantified superclass constraint via sed post-processing. Uses `skip class` for `Contravariant` and `Foldable1` (not in base). WriterT `<*>` has envFor cross-type override (`in ... rename value` for both GHC.Base and GHC.Internal.Base liftA2).
 
+### Measured finger-tree example
+
+When changing `examples/fingertree/`, read its `README.md`, `COVERAGE.md`, and
+`ASSUMPTIONS.md` for the proof interfaces, exact hypotheses, and decision records.
+Generate with `--target-version 9.0` and compile with Rocq 9.2 using only the
+isolated `examples/rocq9.2/` foundations. The example's `kernel-check core-check
+interval-check priority-check` targets enforce the theory export/assumption
+manifest and recursively kernel-check the final modules. The pinned source and
+license stay unchanged. The sole approved manually supplied algorithm body is
+`minViewWithKey`, whose `redefine` restores the source's empty-guard order.
+Valid-queue guards for source Foldable and `unfoldr` recursion are proved; the
+authorized `deferredFix`/`deferredFix_eq_on` axioms remain explicit dependencies.
+
 ### Coq 8.20 compatibility
 - `#[global]` required: `Program Instance` and `Program Definition` need `#[global]` prefix. Locality goes before `Program` (i.e., `#[global] Program Definition`).
 - Type and constructor cannot share the same name (e.g., `StateT`)
