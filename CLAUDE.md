@@ -34,13 +34,13 @@ Use relative path instead of absolute path when `cd` to a directory.
 - `/ci-fix` — run CI checks, diagnose and fix failures, commit fixes
 
 Both commands use `.claude/commands/ci.md` as their shared catalog of all seven
-workflow jobs, including Haskell suites, harness, concurrent, and both Rocq checks.
-The compiler jobs use separate Coq 8.20 and Rocq 9.0 environments. Expected test
+workflow jobs, including Haskell suites, harness, concurrent, and the Rocq checks.
+The compiler jobs use separate Coq 8.20, Rocq 9.0, and Rocq 9.2 environments. Expected test
 failures already return zero; every nonzero Make status needs investigation.
 When changing either command or the workflow, run
 `stack test hs-to-rocq:ci-catalog`.
-This `build-haskell` guard checks catalog coverage, delegation, failure masking,
-shell syntax, and regressions without running the documented builds.
+This `build-haskell` guard checks catalog coverage, delegation, proof/audit wiring,
+compiler isolation, failure masking, and shell syntax without running the documented builds.
 
 ## Architecture
 
@@ -152,11 +152,11 @@ The shared compiler fixtures cover:
 
 ## CI (`.github/workflows/hs-to-rocq.yml`)
 
-Seven jobs: `hlint`; `build-haskell` (haskell:9.10.3-bookworm Docker, builds the executable once and is the cache producer); `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker, builds base+containers+ghc lib and theories); `tests` (haskell:9.10.3-bookworm Docker + opam for Coq 8.20, runs unit + base-tests + base-thy + small examples); `test-translation` (haskell:9.10.3-bookworm Docker, verifies base/containers/ghc/graph regeneration matches); `test-rocq9` (haskell:9.10.3-bookworm Docker + opam, builds `examples/rocq9.0/base` and runs `examples/rocq9.0/tests` on Rocq 9.0); `test-rocq9-translation` (haskell:9.10.3-bookworm Docker, Rocq 9.0 round-trip no-diff). Sets `LANG=C.utf8` globally for Unicode support. All hs-to-rocq-using jobs `needs: build-haskell` and share its Stack cache.
+Seven jobs: `hlint`; `build-haskell` (haskell:9.10.3-bookworm Docker, builds the executable once and is the cache producer); `test-coq-files` (mathcomp/mathcomp:2.5.0-coq-8.20 Docker, builds base+containers+ghc lib and theories); `tests` (haskell:9.10.3-bookworm Docker + opam for Coq 8.20, runs unit + base-tests + base-thy + small examples); `test-translation` (haskell:9.10.3-bookworm Docker, verifies base/containers/ghc/graph regeneration matches); `test-rocq9` (haskell:9.10.3-bookworm Docker + opam, runs the Rocq 9.0 base/tests, then the isolated Rocq 9.2 fingertree foundations/proofs); `test-rocq9-translation` (haskell:9.10.3-bookworm Docker, Rocq 9.0 round-trip no-diff). Sets `LANG=C.utf8` globally for Unicode support. All hs-to-rocq-using jobs `needs: build-haskell` and share its Stack cache.
 
 Use the explicit Bookworm image tag: the unqualified `haskell:9.10.3` tag uses Debian 11 Bullseye, whose LTS ended in August 2026. Its security-package URLs returned 404 during compiler setup. Bookworm keeps GHC 9.10.3 while using a supported Debian package source.
 
-After setup, `build-haskell` runs `stack --allow-different-user test` in the `Run Haskell test suites` step, followed by `bash test/harness.sh` and `bash test/concurrent.sh`. The Haskell step runs all three Cabal suites, including the catalog's complete self-tests. The `test-rocq9` job runs `make -C examples/rocq9.0 clean`, then `make -j2 -C examples/rocq9.0 base`, before its unit-test step. These checks use the existing seven jobs.
+After setup, `build-haskell` runs `stack --allow-different-user test`, the harness and concurrent scripts, and the compiler-independent `python3 test/assumptions.py` controls. The existing `test-rocq9` job runs its 9.0 base/tests before creating a separate 9.2 switch with `--no-switch`; every new compiler check uses explicit `opam exec --switch`. It initializes both GHC and fingertree source submodules and installs Python through the setup action. Read `test/README.md` for the fast and real-Rocq audit controls, and `.claude/commands/ci.md` for the exact job sequence and version pins.
 
 **Shared setup**: `build-haskell`, `tests`, `test-rocq9`, `test-rocq9-translation`, and `test-translation` all run `actions/checkout@v7` then `.github/actions/setup-hs-to-rocq` (composite), which does fix Docker permissions → init requested submodules (`submodules` / `shallow-submodules` inputs) → install extra apt packages (`extra-apt-packages`) → restore Stack cache via `actions/cache@v6` → `stack build`. A local action is not available until after checkout, so the checkout step must precede the composite action. Per-job variation is expressed via those inputs, not duplicated steps. `hlint` (native runner) and `test-coq-files` (docker-coq-action) keep their own checkout.
 

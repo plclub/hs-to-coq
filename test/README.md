@@ -1,9 +1,9 @@
 # Tool tests
 
-This directory contains the Haskell test suites and shell integration runners
-for hs-to-rocq. Compiler fixtures remain in
-[`examples/tests/`](../examples/tests/README.md), shared by the Coq 8.20 and
-Rocq 9.0 Make wrappers. Base-dependent fixtures remain in
+This directory contains the Haskell test suites, shell integration runners, and
+Python assumption-audit checks for hs-to-rocq. The Coq 8.20 and Rocq 9.0 Make
+wrappers share compiler fixtures in
+[`examples/tests/`](../examples/tests/README.md). Base-dependent fixtures remain in
 `examples/base-tests/`.
 
 Run the commands below from the repository root.
@@ -40,9 +40,11 @@ To focus on one suite:
 
 `CiCatalog` runs its complete self-tests with no arguments. It reads the
 workflow, both command documents, and the pinned `ci-catalog-old-head.md`
-fixture. Its shell regressions use stubbed tools; they do not run the documented
-builds or regeneration. The `--self-test` argument remains accepted for direct
-compatibility:
+fixture. Its guards and mutation tests cover the assumption runner's CI wiring,
+compiler pins, pinned submodule setup, switch isolation, check ordering, and
+unconditional failure propagation. Its shell regressions use stubbed tools;
+they do not run the documented builds or regeneration. The `--self-test`
+argument remains accepted for direct compatibility:
 
 ```bash
 stack exec -- runghc -package=yaml test/CiCatalog.hs --self-test
@@ -79,6 +81,48 @@ Neither script needs a Coq/Rocq compiler or a compiled base library:
 The runners use temporary directories and remove them on exit. The
 [coverage matrix](../examples/tests/README.md#edit-coverage-matrix) records the
 edits API, CLI, and compiler witnesses and their limitations.
+
+## Assumption-audit checks
+
+Run the fingertree assumption-checker controls with Python 3.8+ and its standard
+library only. This is a separate runner, not part of the Cabal suites:
+
+```bash
+python3 test/assumptions.py
+```
+
+The default mode runs **24 compiler-independent cases** against the theory and
+priority-audit helpers. They check export inventories, report parsing, missing
+or malformed reports, and exact dependency sets. CLI controls use a nonexistent
+executable and fake compilers: the checker must fail when the compiler is
+missing, prints a plausible report but exits nonzero, or exits zero without
+reports.
+
+To add real compiler controls, use Rocq 9.2:
+
+```bash
+# With Rocq 9.2 on PATH:
+python3 test/assumptions.py --rocq rocq
+# Or select an existing Rocq 9.2 opam switch:
+opam exec --switch="${ROCQ92_SWITCH:?Select a Rocq 9.2 switch}" -- \
+  python3 test/assumptions.py --rocq rocq
+```
+
+This adds **seven cases, for 31 total**. The fixtures under
+[`test/assumptions/`](assumptions/) exercise direct and transitive dependencies
+on an unexpected axiom, plus an independent closed proof. Both checkers must
+accept the exact dependency sets and reject unexpected axioms; the theory CLI
+must also reject a nonempty expectation for the closed control. Once `--rocq`
+is requested, an unavailable or erroring compiler fails the runner rather than
+skipping the real cases or reporting success.
+
+The runner locates its helpers and fixtures relative to the script, independently
+of the caller's working directory. All generated inputs, temporary manifests,
+logs, and compiler products stay in temporary directories removed on exit.
+Neither mode needs a generated base or built translator; the default mode also
+needs no Coq/Rocq installation. These controls test the audit tools, not the
+finger-tree proofs themselves; use the
+[example checks](../examples/fingertree/README.md#build-and-check) for those.
 
 ## Compiler and base checks
 
@@ -122,8 +166,15 @@ for direct commands, prerequisites, and the scope of the assumption checks.
 Use [`.claude/commands/ci.md`](../.claude/commands/ci.md) for the authoritative
 seven-job catalog and compiler environments;
 [`ci-fix.md`](../.claude/commands/ci-fix.md) adds repair guidance.
-CI runs the Haskell suites in `build-haskell`, then runs the harness and concurrent
-translation checks separately.
+The existing `build-haskell` job runs the Haskell suites, then the harness,
+concurrent translation, and default assumption-audit checks as separate steps.
+The existing `test-rocq9` job keeps the Rocq 9.0 suite first, then uses an isolated
+Rocq 9.2 switch for the real assumption controls, clean foundations, and full
+fingertree checks. Both jobs install Python through the existing setup action.
+See the catalog's [test-rocq9 section](../.claude/commands/ci.md#job-test-rocq9)
+for the ordered commands and compiler pins. The workflow still has seven jobs;
+expected-failure categories are unchanged, and every nonzero check status fails
+its job.
 
 The [historical validation records](../examples/tests/README.md#issue-228-validation)
 remain scoped to their recorded revisions. This guide describes commands and

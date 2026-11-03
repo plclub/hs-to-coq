@@ -78,18 +78,21 @@ by the final theorem inventory.
 ## Build and check
 
 Run from the repository root in the `fingertree` worktree, with its translator
-built and its pinned fingertree and GHC source submodules initialized:
+built and its pinned fingertree and GHC source submodules initialized. Set
+`ROCQ92_SWITCH` to an existing Rocq 9.2 opam switch:
 
 ```bash
-opam exec --switch=cs2-rocq92 -- make -j2 -C examples/rocq9.2 check
-opam exec --switch=cs2-rocq92 -- \
+opam exec --switch="${ROCQ92_SWITCH:?Select a Rocq 9.2 switch}" -- \
+  make -j2 -C examples/rocq9.2 check
+opam exec --switch="$ROCQ92_SWITCH" -- \
   make -j2 -C examples/fingertree kernel-check core-check interval-check priority-check
 ```
 
 The translator emits Gallina with `--target-version 9.0`; **Rocq 9.2** compiles
-it with `rocq c`. The local switch name is not a build dependency. Foundations
-come only from `../rocq9.2/base/` and `../rocq9.2/base-thy/`; do not reuse older
-compilers' objects. See the [foundation guide](../rocq9.2/README.md) for
+it with `rocq c`. Historical local runs used `cs2-rocq92`; that switch name is
+not a build dependency. Foundations come only from `../rocq9.2/base/` and
+`../rocq9.2/base-thy/`; do not reuse older compilers' objects. See the
+[foundation guide](../rocq9.2/README.md) for
 prerequisites and load-path isolation.
 
 The [Makefile](Makefile) defines these targets:
@@ -115,14 +118,16 @@ rejects missing declarations, changed counts, and changed assumption sets.
 Its generated audit sources and logs go under `deps/proof-audits/`.
 
 To reproduce the successful clean regeneration and compilation, inspect the
-clean scope, then run these steps in order. [VALIDATION.md](VALIDATION.md) gives
-the exact recorded commands, supplemental kernel checks, and byte comparisons:
+clean scope, then run these steps separately and in order, stopping on failure.
+[VALIDATION.md](VALIDATION.md) gives the exact recorded commands, supplemental
+kernel checks, and byte comparisons:
 
 ```bash
-make -C examples/fingertree clean
-make -C examples/rocq9.2 clean
-opam exec --switch=cs2-rocq92 -- make -j2 -C examples/rocq9.2 check
-opam exec --switch=cs2-rocq92 -- \
+opam exec --switch="${ROCQ92_SWITCH:?Select a Rocq 9.2 switch}" -- \
+  make -C examples/fingertree clean
+opam exec --switch="$ROCQ92_SWITCH" -- make -C examples/rocq9.2 clean
+opam exec --switch="$ROCQ92_SWITCH" -- make -j2 -C examples/rocq9.2 check
+opam exec --switch="$ROCQ92_SWITCH" -- \
   make -j2 -C examples/fingertree kernel-check core-check interval-check priority-check
 ```
 
@@ -131,6 +136,21 @@ compiled theory/audit products, not the authored theories or foundations. The
 foundation clean removes its isolated outputs. Never clean concurrently with a
 build. Reproducibility additionally requires comparison of regenerated sources
 and interfaces; compilation alone does not establish it.
+
+CI runs the [assumption-audit controls](../../test/README.md#assumption-audit-checks)
+in the existing `build-haskell` job without a compiler. The existing
+[`test-rocq9` job](../../.claude/commands/ci.md#job-test-rocq9) retains the Rocq 9.0
+suite first, then runs the real controls in an isolated Rocq 9.2 switch, cleans
+the example and its foundations, and runs the foundation `check` followed by
+`kernel-check core-check interval-check priority-check`. This route enforces the
+theory and queue/foundation assumption inventories and recursively kernel-checks
+all three libraries and all fifteen theories. Every nonzero status fails the job.
+The shared catalog defines the full sequence and pins; the
+[foundation guide](../rocq9.2/README.md#build) explains compiler isolation.
+
+The automated route does not repeat the historical 122-file byte comparison or
+the supplemental checks of all 61 foundation/check roots. Those remain separate
+evidence in [VALIDATION.md](VALIDATION.md), not implied CI results.
 
 ## Approved minViewWithKey redefinition
 
@@ -195,6 +215,12 @@ the supplemental local 3.5 run passed. Old Rocq compiler checks used core/runtim
 9.0.1 rather than CI's exact 9.0.0. These results are qualified local acceptance,
 not an exact seven-job CI pass. The historical containers Make `validate`
 failure below remains a separate recorded failure, not a claim that it was fixed.
+
+Separate CI-wiring checks passed locally: the 24-case compiler-independent
+assumption runner, the focused `ci-catalog` guard with its mutation tests, and
+the 31-case runner with native Rocq 9.2. The workflow's Docker bootstrap was not
+run locally because the Docker daemon was unavailable. These checks do not
+establish a new hosted CI pass or replace the proof-acceptance records above.
 
 ## Historical evidence
 

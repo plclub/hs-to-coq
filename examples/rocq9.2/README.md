@@ -29,12 +29,14 @@ manual replacement. Both decisions are recorded in
 
 Prerequisites are the worktree's built `hs-to-rocq`, GHC 9.10.3 source submodule,
 Stack, GNU Make, Bash, Python 3.8+, and Rocq core/stdlib 9.2. Local validation
-used the existing `cs2-rocq92` opam switch. From the repository root in this
-worktree, run these commands separately and in order:
+used the existing `cs2-rocq92` opam switch. Set `ROCQ92_SWITCH` to your existing
+Rocq 9.2 switch. From the repository root in this worktree, run these commands
+separately and in order, stopping on failure:
 
 ```bash
-opam exec --switch=cs2-rocq92 -- make -C examples/rocq9.2 clean
-opam exec --switch=cs2-rocq92 -- make -j2 -C examples/rocq9.2 check
+opam exec --switch="${ROCQ92_SWITCH:?Select a Rocq 9.2 switch}" -- \
+  make -C examples/rocq9.2 clean
+opam exec --switch="$ROCQ92_SWITCH" -- make -j2 -C examples/rocq9.2 check
 ```
 
 Use an available UTF-8 locale; the initial local run used
@@ -56,6 +58,23 @@ both report 9.2, generates output Makefiles with `rocq makefile`, and passes
 `checks/Unfoldr.v`, and recursively kernel-checks the proof closure, `Data.OldList`,
 and `Rocq92Checks.Unfoldr`. The finger-tree `priority-check` target separately
 enforces the exact assumption sets printed by `Unfoldr.v` and the queue audit.
+
+The existing [`test-rocq9` CI job](../../.claude/commands/ci.md#job-test-rocq9)
+runs its Rocq 9.0 checks before this isolated 9.2 route. Its setup action installs
+Python and initializes the pinned GHC and fingertree submodules. The job creates
+`rocq92` with OCaml 4.14.2 and `--no-switch`, then installs `rocq-prover.meta.1`
+with `rocq-core`, `rocq-runtime`, and `rocq-stdlib` pinned to 9.2.0. Every new check
+uses `opam exec --switch="$ROCQ92_SWITCH"`, leaving the global switch unchanged.
+The 9.2 output directories remain separate from older compilers' objects.
+
+That route first runs the
+[real assumption-checker controls](../../test/README.md#assumption-audit-checks),
+then cleans the example and foundations, runs this foundation `check`, and runs
+the [full example checks](../fingertree/README.md#build-and-check). Use the shared
+catalog for the exact sequence. This describes automated coverage, not a new
+hosted CI result; the
+[local acceptance qualifications](../fingertree/README.md#local-acceptance-and-regression-qualifications)
+and dated validation records below remain separate evidence.
 
 ## Authoritative sources and adaptations
 
