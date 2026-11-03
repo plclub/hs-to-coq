@@ -421,8 +421,16 @@ addDerivedInstances tcm = do
             ++ ": wanted deriving request must have exactly one checked dictionary and retained body: "
             ++ showSDocUnsafe (ppr (requestHead request))
             ++ " (metadata=" ++ show metadataCount ++ ", bodies=" ++ show bodyCount ++ ")"
+    -- Whole-instance edits retain the declaration, but do not use its original
+    -- implementation or auxiliary helpers.
+    targetMod <- view (edits.Edits.renamedModules.at mod.non mod)
+    translatedInfos <- withCurrentModule (ModuleData targetMod [] mempty) $
+      filterM (\info -> do
+        let (_, _, cls, tys) = instanceSig (iSpec info)
+        (instName, _) <- convertInstanceNameAndTy (typeToLHsType' (mkClassPred cls tys))
+        (== TranslateIt) <$> definitionTask instName) wantedInfos
     let inst_decls = map instInfoToDecl retainedInfos
-        needed_aux_binds = neededDerivingBinds (map instInfoToDecl wantedInfos) aux_binds
+        needed_aux_binds = neededDerivingBinds (map instInfoToDecl translatedInfos) aux_binds
 #else
     let inst_decls = map instInfoToDecl inst_infos
         needed_aux_binds = aux_binds
@@ -467,7 +475,7 @@ _initTcHack tcm action = do
 #endif
 
 #if __GLASGOW_HASKELL__ >= 910
--- Keep complete binding groups reachable from retained instance bodies. GHC
+-- Keep complete binding groups reachable from translated instance bodies. GHC
 -- can return shared helpers separately (e.g. tag-to-constructor functions for Enum).
 -- Names bound inside a body may conservatively retain a helper, but a helper
 -- needed by a body or by another helper must never be lost.

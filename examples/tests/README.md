@@ -130,7 +130,7 @@ bash test/identity-traversal.sh --target-version 8.20
 bash test/deriving.sh --target-version 8.20 --retained-only
 ```
 
-[`deriving.sh`](../../test/deriving.sh) contains 26 cases per target and defaults to
+[`deriving.sh`](../../test/deriving.sh) contains 27 cases per target and defaults to
 8.20. Its successful translation cases compile generated modules and consumers
 that infer and compute with the derived dictionaries. Rejection cases require
 a nonzero exit, a relevant diagnostic, and no generated module. Coverage includes:
@@ -138,6 +138,11 @@ a nonzero exit, a relevant diagnostic, and no generated module. Coverage include
 - Inline and standalone recovery; renamed module, class, and instance skips,
   including dependencies that occur only in a standalone instance context;
   method skips; and auxiliary bindings needed by retained instances.
+- Whole-instance `redefine` excludes helpers used only by the discarded
+  implementation. `whole-instance-redefine-unused-helpers` translates
+  `DerivingRedefinedAux` through the real CLI, then compiles the output and
+  `RedefinedAuxConsumer.v`. The consumer infers the replacement `Enum` dictionary
+  and proves `inferredFromEnum B = 7` by reflexivity; stock deriving would return `1`.
 - Nonzero failures in default/strict mode and warnings with partial success in
   permissive mode, including removal of a synthesized instance that fails the
   final GHC typecheck.

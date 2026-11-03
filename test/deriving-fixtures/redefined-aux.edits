@@ -1,0 +1,10 @@
+rename module GHC.Internal.Enum GHC.Enum
+
+redefine Instance DerivingRedefinedAux.Enum__E : GHC.Enum.Enum DerivingRedefinedAux.E := {
+  GHC.Enum.enumFrom := fun _ => nil;
+  GHC.Enum.enumFromTo := fun _ _ => nil;
+  GHC.Enum.fromEnum := fun _ => #7;
+  GHC.Enum.pred := fun _ => DerivingRedefinedAux.A;
+  GHC.Enum.succ := fun _ => DerivingRedefinedAux.B;
+  GHC.Enum.toEnum := fun _ => DerivingRedefinedAux.A
+}.

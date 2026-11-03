@@ -132,6 +132,26 @@ case_name=inline-recovery
 check_recovery inline DerivingInline InlineConsumer DerivingInline
 case_name=skipped-auxiliary-bindings
 check_recovery aux DerivingAux AuxConsumer DerivingAux
+
+case_name=whole-instance-redefine-unused-helpers
+mkdir "$tmp/out"
+(
+    cd "$tmp"
+    "${translator[@]}" --target-version "$version" --strict -N \
+        -e "$workspace/examples/tests/renamings" -e "$fixtures/redefined-aux.edits" \
+        --iface-dir "$base" -o "$tmp/out" "$fixtures/DerivingRedefinedAux.hs"
+) > "$tmp/translator.log" 2>&1 || fail 'whole-instance redefine translation failed'
+for suffix in v h2ci; do
+    [[ -s "$tmp/out/DerivingRedefinedAux.$suffix" ]] || fail "missing DerivingRedefinedAux.$suffix"
+done
+"${compiler[@]}" -Q "$base" '' -Q "$tmp/out" '' "$tmp/out/DerivingRedefinedAux.v" \
+    > "$tmp/compiler.log" 2>&1 || fail 'whole-instance redefine output did not compile'
+cp "$fixtures/RedefinedAuxConsumer.v" "$tmp/Consumer.v"
+"${compiler[@]}" -Q "$base" '' -Q "$tmp/out" '' "$tmp/Consumer.v" \
+    >> "$tmp/compiler.log" 2>&1 || fail 'redefined dictionary inference or computation failed'
+printf 'ok - %s/%s\n' "$version" "$case_name"
+rm -rf "$tmp/out"
+
 case_name=inline-standalone-explicit-method-skips
 check_recovery methods DerivingMethods MethodsConsumer DerivingMethods
 
