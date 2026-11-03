@@ -25,6 +25,13 @@ All other example algorithm and required-instance bodies remain generated from
 unchanged source. Neither approval licenses new operation axioms, admissions,
 source/license edits, or additional manually supplied algorithm bodies.
 
+[source-policy.yaml](source-policy.yaml) records the sole approved redefinition
+target with a link to the decision below, plus the separately approved pins for
+current rewrite guidance. The [source-policy brief](SOURCE-POLICY.md) explains
+the guard and source-only inventory checks. Those checks are separate from the
+exact assumption audits below; they neither establish semantic equivalence nor
+change the manifest or its functional-extensionality/deferred-recursion budget.
+
 ## Approved translation exception: minViewWithKey
 
 On 2026-11-02 the user explicitly instructed:

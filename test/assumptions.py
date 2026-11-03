@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Portable negative controls for the fingertree assumption checkers.
+"""Portable controls for fingertree audit tools and source-policy build wiring.
 
-Run with Python 3.8+ and its standard library only:
+Run with Python 3.8+ (standard library), Make, and standard Unix utilities:
     python3 test/assumptions.py
 Add real compiler controls (a missing or failing compiler is an error):
     python3 test/assumptions.py --rocq rocq
@@ -21,6 +21,8 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+
+from source_policy_checks import SourceInventoryTests, SourcePolicyMakeTests
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -339,7 +341,8 @@ def main():
     parser.add_argument("--rocq", metavar="EXECUTABLE",
                         help="also run real controls with this Rocq executable (required to work)")
     args = parser.parse_args()
-    classes = [InventoryTests, ReportTests, PriorityReportTests, CompilerFailureTests]
+    classes = [InventoryTests, ReportTests, PriorityReportTests, CompilerFailureTests,
+               SourceInventoryTests, SourcePolicyMakeTests]
     if args.rocq is not None:
         # Preserve an explicitly relative executable path across temporary cwd's.
         RealRocqTests.rocq = (str(Path(args.rocq).resolve())

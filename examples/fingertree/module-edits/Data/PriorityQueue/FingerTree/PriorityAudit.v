@@ -13,8 +13,8 @@
    foundation entry, expected to depend only on deferredFix.
 
    This is a source-compilation and assumption audit, not a queue correctness
-   theorem. In particular, the source's lazy-pattern translation gap in
-   minViewWithKey is not repaired or treated as a passing behavioral test. *)
+   theorem. PriorityRegression checks the approved minViewWithKey guard repair;
+   PriorityOperations proves its general valid-input contract. *)
 Require Data.PriorityQueue.FingerTree.
 Require Data.OldList.
 

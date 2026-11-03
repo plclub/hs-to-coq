@@ -97,7 +97,12 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the full chain: `base` → `base-thy` → `examples/containers` → `examples/ghc`. For coq_makefile dirs: `find <dir> \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' \) -delete && coq_makefile -f _CoqProject -o Makefile && make -j`.
 
 ### Axiomatized lib functions
-When lib/*.v functions are `Axiom`, theories/*.v proofs that unfold them must be `Admitted`. Check with `grep "^Axiom" lib/Module.v` before attempting computation-based proofs. See "GHC example" section for the full list of axiomatized functions.
+When a proof depends on an opaque or axiomatized function, inspect its contracts
+and follow the [proof guide](doc/proof-guide.md). Prove from approved contracts
+or explicitly stated, already-authorized premises while preserving the theorem
+contract and task's assumption budget. If blocked, report the exact obligation
+and request a decision when policy requires. Validate dependencies with
+`Print Assumptions` and the existing audits.
 
 ### False theorems
 If a theorem is discovered to be false, construct a formal Coq counterexample (a proved `Lemma` showing `~ (statement)`) and `Abort` the original theorem (not `Admitted`, to prevent unsound use). Add a comment before `Abort` referencing the counterexample. Example: `mapKeys_Desc_false` in IntMapProofs.v disproves `mapKeys_Desc`.
@@ -306,6 +311,9 @@ Regenerated from GHC 9.10 transformers source via symlink `transformers -> ../gh
 
 When changing `examples/fingertree/`, read its `README.md`, `COVERAGE.md`, and
 `ASSUMPTIONS.md` for the proof interfaces, exact hypotheses, and decision records.
+For translation guidance, handwritten support, or source-fidelity review, use
+[SOURCE-POLICY.md](examples/fingertree/SOURCE-POLICY.md). Normal translation runs
+the parser-backed policy gate and generated-name inventories before compilation.
 Generate with `--target-version 9.0` and compile with Rocq 9.2 using only the
 isolated `examples/rocq9.2/` foundations. The example's `kernel-check core-check
 interval-check priority-check` targets enforce the theory export/assumption

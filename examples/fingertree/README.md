@@ -37,6 +37,10 @@ from that source **except for the explicitly approved manual body of
 `Data.PriorityQueue.FingerTree.minViewWithKey`**, described below. Required
 instance bodies remain source-generated.
 
+When reviewing translation guidance, handwritten support, or source-policy
+changes, read [SOURCE-POLICY.md](SOURCE-POLICY.md) for the executable checks,
+their limits, and the remaining review responsibilities.
+
 The supplied `notes/FingerTreeSpec.md`, `notes/FingerTreeMirror.md`, and glossary
 remain in the original checkout; they were not copied into this worktree.
 The user-authorized deferred foundation amends the original restriction on
@@ -99,20 +103,31 @@ The [Makefile](Makefile) defines these targets:
 
 | Target | Work performed |
 | --- | --- |
+| `source-policy` | Check owned guidance and support against approved redefinition targets, pinned rewrites, and protected generated names; needs Stack and Python, not Rocq or generated foundations. |
+| `vfiles` | Regenerate all three library source/interface pairs, automatically running `source-policy` first and source-only inventories after each translation; builds the isolated foundations. |
 | default `all` | Compile all three library modules and all fifteen theories, enforcing the theory assumption manifest. |
 | `proofs` | Compile every `theories/*.v` through `theories/check-assumptions.py`, including required library/theory prerequisites. |
 | `kernel-check` | Compile libraries and proofs, then recursively kernel-check all three libraries and all fifteen theories. |
 | `core-check` | Compile the eight core/support theories and the 131-entry generated core inventory; recursively kernel-check them. |
-| `interval-check` | Compile and recursively kernel-check `IntervalModel`, `IntervalOperations`, `IntervalLaws`, and dependencies. |
+| `interval-check` | Compile the 31-entry interval inventory; compile and recursively kernel-check `IntervalModel`, `IntervalOperations`, `IntervalLaws`, and dependencies. |
 | `priority-check` | Compile the three priority theories; enforce the generated queue, source `unfoldr`, and five-regression inventories with `check-priority-audit.py`; recursively kernel-check them. |
 | `check-source` | Check the release pin and unchanged source tree, including its license. |
 
 The shared `ApplicationLaws` module is included by `all`, `proofs`, and
 `kernel-check`, not by the separate core/interval/priority group targets.
 
+The `source-policy` prerequisite runs before this example builds foundations or
+translates modules. Each translated `.v` must then pass its source-only name
+inventory before compilation. These checks also run for direct targets and with
+existing outputs. They detect specific guidance violations and missing or
+duplicate required names; they prove neither source origin nor semantic
+equivalence. `vfiles` is a translation milestone, not proof acceptance: the full
+theory, assumption, and kernel checks above remain necessary.
+
 Translation, example compilation, and theory audits are forced on each
-invocation. Translation removes old `.v`/`.h2ci` outputs and discards failed or
-missing output. Theory rules remove the old `.vo` before compilation/auditing.
+invocation. Translation removes old `.v`/`.h2ci` outputs and discards failed,
+missing, or inventory-rejected output. Theory rules remove the old `.vo` before
+compilation/auditing.
 The exact checker pairs each exported constant with its own report marker and
 rejects missing declarations, changed counts, and changed assumption sets.
 Its generated audit sources and logs go under `deps/proof-audits/`.

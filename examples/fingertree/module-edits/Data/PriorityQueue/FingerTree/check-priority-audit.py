@@ -59,25 +59,38 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def check_inventory(generated, audit):
-    declarations = re.findall(
+def generated_declarations(generated):
+    """Named heads in the translator's generated declaration format, not Rocq syntax."""
+    return re.findall(
         r"^(?:#\[(?:local|global)\]\s*)?(?:Program\s+)?"
-        r"(?:Inductive|Definition|Instance)\s+([\w']+)",
+        r"(?:Inductive|Definition|Instance|Fixpoint|CoFixpoint)\s+([\w']+)",
         generated,
         re.MULTILINE,
     )
+
+
+def queue_inventory(audit):
+    """Read the existing authoritative queue Check/Print inventory without compiling."""
     checked = re.findall(r"^Check @Queue\.([\w']+)\.$", audit, re.MULTILINE)
     printed = re.findall(
         r"^Print Assumptions Queue\.([\w']+)\.$", audit, re.MULTILINE
     )
-    require(len(declarations) == 74, "queue declaration inventory changed from 74")
-    require(len(set(declarations)) == 74, "duplicate generated declaration")
     require(len(checked) == 74 and len(set(checked)) == 74,
             "expected exactly 74 distinct queue Check entries")
     require(checked == printed, "Check and Print Assumptions inventories differ")
-    require(set(checked) == set(declarations),
-            "audit does not cover the entire generated queue declaration inventory")
     require(RECURSIVE_QUEUE <= set(checked), "expected recursive entry is missing")
+    return checked
+
+
+def check_inventory(generated, audit):
+    declarations = generated_declarations(generated)
+    checked = queue_inventory(audit)
+    require(len(declarations) == 74, "queue declaration inventory changed from 74")
+    require(len(set(declarations)) == 74, "duplicate generated declaration")
+    require(set(checked) == set(declarations),
+            "audit does not cover the entire generated queue declaration inventory; "
+            f"missing {sorted(set(checked) - set(declarations))}; "
+            f"unexpected {sorted(set(declarations) - set(checked))}")
     return checked
 
 

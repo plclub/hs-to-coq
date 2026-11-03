@@ -1,7 +1,7 @@
 # Tool tests
 
 This directory contains the Haskell test suites, shell integration runners, and
-Python assumption-audit checks for hs-to-rocq. The Coq 8.20 and Rocq 9.0 Make
+Python audit/build-wiring checks for hs-to-rocq. The Coq 8.20 and Rocq 9.0 Make
 wrappers share compiler fixtures in
 [`examples/tests/`](../examples/tests/README.md). Base-dependent fixtures remain in
 `examples/base-tests/`.
@@ -26,7 +26,7 @@ The `ci-catalog` suite also requires Bash on `PATH`.
 
 | Suite | Main file | Checks |
 | --- | --- | --- |
-| `edits` | [`test/Edits.hs`](Edits.hs) | Public edits parser and builder APIs, including syntax, configuration, precedence, and diagnostics. |
+| `edits` | [`test/Edits.hs`](Edits.hs) | Public edits parser/builder APIs and the finger-tree source-policy invocation boundary. |
 | `rocq-version` | [`test/RocqVersion.hs`](RocqVersion.hs) | Target-version parsing and AST/text namespace rewriting. |
 | `ci-catalog` | [`test/CiCatalog.hs`](CiCatalog.hs) | Workflow/catalog agreement, `/ci-fix` delegation, failure propagation, Bash syntax, and catalog regressions. |
 
@@ -37,6 +37,15 @@ To focus on one suite:
 | `stack test hs-to-rocq:edits` | `cabal test edits` |
 | `stack test hs-to-rocq:rocq-version` | `cabal test rocq-version` |
 | `stack test hs-to-rocq:ci-catalog` | `cabal test ci-catalog` |
+
+The `edits` suite runs the existing **237 parser/API assertions** plus **152
+source-policy cases** in [SourcePolicyTests.hs](SourcePolicyTests.hs). The policy
+cases invoke the public `runPolicy` boundary with real temporary files, covering
+approvals, scopes, file-local aliases, renaming, parsed rewrite pins, handwritten
+declaration forms, and diagnostics. These parser/scanner tests need Haskell;
+the Python Make controls below stub Stack and need no Haskell installation.
+See the [source-policy brief](../examples/fingertree/SOURCE-POLICY.md) for the
+guard's scope and limits.
 
 `CiCatalog` runs its complete self-tests with no arguments. It reads the
 workflow, both command documents, and the pinned `ci-catalog-old-head.md`
@@ -84,19 +93,28 @@ edits API, CLI, and compiler witnesses and their limitations.
 
 ## Assumption-audit checks
 
-Run the fingertree assumption-checker controls with Python 3.8+ and its standard
-library only. This is a separate runner, not part of the Cabal suites:
+Run the fingertree assumption, source-inventory, and Make-wiring controls with
+Python 3.8+ (standard library), Make on `PATH`, and standard Unix utilities.
+This is a separate runner, not part of the Cabal suites:
 
 ```bash
 python3 test/assumptions.py
 ```
 
-The default mode runs **24 compiler-independent cases** against the theory and
-priority-audit helpers. They check export inventories, report parsing, missing
-or malformed reports, and exact dependency sets. CLI controls use a nonexistent
-executable and fake compilers: the checker must fail when the compiler is
-missing, prints a plausible report but exits nonzero, or exits zero without
-reports.
+The default mode runs **38 compiler-independent cases**:
+
+* The existing 24 cases check theory/priority export inventories, report parsing,
+  missing or malformed reports, and exact dependency sets. CLI controls require
+  failure when the compiler is missing, prints a plausible report but exits
+  nonzero, or exits zero without reports.
+* The 14 cases in [source_policy_checks.py](source_policy_checks.py) exercise the
+  public source-inventory CLI and production Make rules in temporary layouts.
+  They check the 234 protected names, missing/duplicate inventory entries,
+  two-way queue coverage, and failure before dependent compilation. Make controls
+  cover serial/parallel runs, direct targets, stale outputs, input selection,
+  cleanup, and failure propagation. They use the real inventory helper but fake
+  Stack, translation, foundations, and proof/compiler stages; the Haskell suite
+  above tests the policy parser/scanner itself.
 
 To add real compiler controls, use Rocq 9.2:
 
@@ -108,7 +126,7 @@ opam exec --switch="${ROCQ92_SWITCH:?Select a Rocq 9.2 switch}" -- \
   python3 test/assumptions.py --rocq rocq
 ```
 
-This adds **seven cases, for 31 total**. The fixtures under
+This adds **seven cases, for 45 total**. The fixtures under
 [`test/assumptions/`](assumptions/) exercise direct and transitive dependencies
 on an unexpected axiom, plus an independent closed proof. Both checkers must
 accept the exact dependency sets and reject unexpected axioms; the theory CLI
@@ -119,9 +137,9 @@ skipping the real cases or reporting success.
 The runner locates its helpers and fixtures relative to the script, independently
 of the caller's working directory. All generated inputs, temporary manifests,
 logs, and compiler products stay in temporary directories removed on exit.
-Neither mode needs a generated base or built translator; the default mode also
-needs no Coq/Rocq installation. These controls test the audit tools, not the
-finger-tree proofs themselves; use the
+Neither mode needs Haskell, a generated base, or a built translator; the default
+mode also needs no Coq/Rocq installation. These controls test the audit tools and
+build wiring, not the finger-tree proofs themselves; use the
 [example checks](../examples/fingertree/README.md#build-and-check) for those.
 
 ## Compiler and base checks
