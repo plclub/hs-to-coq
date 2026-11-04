@@ -36,8 +36,9 @@ import HsToRocq.Util.GHC.Deriving
 data ProcessingMode = Recursive | NonRecursive
                     deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
--- | Load and typecheck Haskell source files via the GHC API.
-processFiles :: GlobalMonad r m => ProcessingMode -> [FilePath] -> m (Maybe [TypecheckedModule])
+-- | Load and typecheck Haskell source files via the GHC API. Keep recovered
+-- auxiliary bindings separate until conversion selects the original methods.
+processFiles :: GlobalMonad r m => ProcessingMode -> [FilePath] -> m (Maybe [(TypecheckedModule, HsValBinds GhcRn)])
 processFiles mode files = do
   initForDeriving
   traverse_ (addTarget <=< (guessTarget ?? Nothing ?? Nothing)) files
@@ -82,7 +83,7 @@ processFiles mode files = do
 -- Retry the original declarations, removing only a diagnosed failed request.
 -- The final typecheck supplies authoritative metadata and also checks uses of
 -- the accepted instances in the rest of the module.
-recoverDeriving :: GlobalMonad r m => ParsedModule -> m TypecheckedModule
+recoverDeriving :: GlobalMonad r m => ParsedModule -> m (TypecheckedModule, HsValBinds GhcRn)
 recoverDeriving pm = do
   (renamedEnv, group) <- renameForDeriving pm
   retry renamedEnv group (derivingRequests group) [] pm

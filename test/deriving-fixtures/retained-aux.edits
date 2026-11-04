@@ -1,0 +1,21 @@
+rename module DerivingEnumClass GHC.Enum
+rename module GHC.Internal.Enum GHC.Enum
+simple class GHC.Enum.Enum
+rename value DerivingEnumClass.enumFrom = GHC.Enum.enumerate
+rename value GHC.Internal.Enum.enumFrom = GHC.Enum.enumerate
+rename type GHC.Types.Int = EnumAuxRuntime.Boxed
+rename type GHC.Prim.Int# = nat
+rename value GHC.Types.I# = EnumAuxRuntime.BoxInt
+rename value GHC.Prim.tagToEnum# = EnumAuxRuntime.tagToE
+rename value GHC.Prim.==# = Nat.eqb
+rename value GHC.Types.isTrue# = id
+rename value GHC.Magic.dataToTag# = EnumAuxRuntime.dataToTagE
+rename value GHC.Internal.Base.map = EnumAuxRuntime.mapList
+skip method GHC.Enum.Enum succ
+skip method GHC.Enum.Enum pred
+skip method GHC.Enum.Enum toEnum
+skip method GHC.Enum.Enum enumFromThen
+skip method GHC.Enum.Enum enumFromThenTo
+# The stock method enumerates integer tags, not the instance's E values.
+in DerivingRetainedAux.Enum__E_enumerate rename value GHC.Internal.Enum.enumFromTo = EnumAuxRuntime.range
+in DerivingRetainedAux.Enum__E_enumerate rename value GHC.Enum.enumFromTo = EnumAuxRuntime.range

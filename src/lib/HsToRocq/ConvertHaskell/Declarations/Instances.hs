@@ -27,6 +27,7 @@ import qualified Data.Text as T
 import Control.Monad.Reader.Class
 
 import Control.Monad.State
+import Control.Monad.Writer.Strict (runWriterT, tell)
 
 import qualified Data.Map.Strict as M
 
@@ -463,8 +464,11 @@ data ConvMethod = CMRenamed            Sentence
 -- Module-local
 data ConvLevel = CLTerm | CLType deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
-convertClsInstDecl :: forall r m. ConversionMonad r m => ConvertedInstanceEnv -> ClsInstDecl GhcRn -> m [Sentence]
-convertClsInstDecl env cid@ClsInstDecl{..} = do
+-- Return exactly the original method bodies that conversion used. Keeping this
+-- record inside conversion avoids predicting class interfaces or scoped edits
+-- during deriving recovery; failed or replaced instances contribute no bodies.
+convertClsInstDecl :: forall r m. ConversionMonad r m => ConvertedInstanceEnv -> ClsInstDecl GhcRn -> m ([Sentence], [HsBind GhcRn])
+convertClsInstDecl env cid@ClsInstDecl{..} = runWriterT $ do
   ii@InstanceInfo{..} <- convertClsInstDeclInfo cid
   let convUnsupportedHere what = convUnsupportedIn what "type class instance" (showP instanceName)
 
@@ -575,7 +579,8 @@ convertClsInstDecl env cid@ClsInstDecl{..} = do
         methBody <- case (M.lookup meth cid_binds_map, M.lookup meth cid_types_map, M.lookup meth classDefaults) of
           (Just bind, _, _) ->
             local (envFor meth) $ convertMethodBinding localMeth bind >>= \case
-              ConvertedDefinitionBinding cd ->
+              ConvertedDefinitionBinding cd -> do
+                tell [bind]
                 pure . CMDefined CLTerm $ maybeFun (cd^.convDefArgs) (cd^.convDefBody)
               -- Hard errors (not convUnsupported): these indicate edit misconfiguration,
               -- not missing hs-to-rocq features, so we fail immediately.
@@ -679,7 +684,7 @@ convertClsInstDecl _env (XClsInstDecl v) = noExtCon v
 
 --------------------------------------------------------------------------------
 
-convertClsInstDecls :: ConversionMonad r m => ConvertedInstanceEnv -> [ClsInstDecl GhcRn] -> m [Sentence]
+convertClsInstDecls :: ConversionMonad r m => ConvertedInstanceEnv -> [ClsInstDecl GhcRn] -> m ([Sentence], [HsBind GhcRn])
 convertClsInstDecls env = foldTraverse (convertClsInstDecl env)
 
 -- Look up the type class variable and the type of the class member without

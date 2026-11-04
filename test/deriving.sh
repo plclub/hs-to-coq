@@ -38,7 +38,7 @@ trap 'exit 143' TERM
 fail() {
     printf 'not ok - %s/%s: %s\n' "$version" "$case_name" "$*" >&2
     local file line
-    for file in "$tmp"/*.log "$tmp/out"/*.v "$tmp/out"/Data/*.v; do
+    for file in "$tmp"/*.log "$tmp/out"/*.v "$tmp/out"/Data/*.v "$tmp/out"/GHC/*.v; do
         [[ -f "$file" ]] || continue
         printf '%s:\n' "$file" >&2
         while IFS= read -r line || [[ -n "$line" ]]; do printf '%s\n' "$line" >&2; done < "$file"
@@ -119,6 +119,104 @@ check_retained DerivingKleisli KleisliConsumer kleisli 1 Functor__Kleisli
 case_name=retained-inline-kinds
 check_retained DerivingInlineKinds InlineKindsConsumer inline-kinds 2 Semigroup__Phantom Functor__Wrap
 if [[ "$retained_only" == true ]]; then exit 0; fi
+
+case_name=method-redefine-unused-helpers
+mkdir "$tmp/out" "$tmp/ifaces"
+# The manual Enum has no h2ci metadata. Generate just its interface from a
+# compatible source class, without the production edits that skip Enum entirely.
+(
+    cd "$tmp"
+    "${translator[@]}" --target-version "$version" --strict -N \
+        -e "$workspace/examples/tests/renamings" -e "$fixtures/enum-aux.edits" \
+        --iface-dir "$base" -o "$tmp/ifaces" "$fixtures/DerivingEnumClass.hs"
+) > "$tmp/bootstrap.log" 2>&1 || fail 'Enum class interface bootstrap failed'
+[[ -s "$tmp/ifaces/GHC/Enum.h2ci" ]] || fail 'missing bootstrap GHC/Enum.h2ci'
+(
+    cd "$tmp"
+    "${translator[@]}" --target-version "$version" --strict -N \
+        -e "$workspace/examples/tests/renamings" -e "$fixtures/enum-aux.edits" \
+        -e "$fixtures/method-aux.edits" --iface-dir "$tmp/ifaces" --iface-dir "$base" \
+        -o "$tmp/out" "$fixtures/DerivingMethodAux.hs"
+) > "$tmp/translator.log" 2>&1 || fail 'method redefine translation failed'
+for suffix in v h2ci; do
+    [[ -s "$tmp/out/MethodAux.$suffix" ]] || fail "missing MethodAux.$suffix"
+done
+require_occurrences "$tmp/out/MethodAux.v" 'Program Instance Enum__E' 1
+require_occurrences "$tmp/out/MethodAux.v" 'tag2con' 0
+require_occurrences "$tmp/out/MethodAux.v" 'maxtag' 0
+"${compiler[@]}" -Q "$base" '' -Q "$tmp/out" '' "$tmp/out/MethodAux.v" \
+    > "$tmp/compiler.log" 2>&1 || fail 'method redefine output did not compile'
+cp "$fixtures/MethodAuxConsumer.v" "$tmp/Consumer.v"
+"${compiler[@]}" -Q "$base" '' -Q "$tmp/out" '' "$tmp/Consumer.v" \
+    >> "$tmp/compiler.log" 2>&1 || fail 'method dictionary inference or computation failed'
+printf 'ok - %s/%s\n' "$version" "$case_name"
+rm -rf "$tmp/out" "$tmp/ifaces"
+
+check_method_helpers() {
+    local consumer=$1 helpers=$2 bootstrap_edits=$3 target=$4 suffix module
+    shift 4
+    mkdir "$tmp/out"
+    (
+        cd "$tmp"
+        "${translator[@]}" --target-version "$version" --strict -N -i "$fixtures" \
+            -e "$workspace/examples/tests/renamings" -e "$fixtures/retained-aux.edits" \
+            ${bootstrap_edits:+-e "$fixtures/$bootstrap_edits.edits"} \
+            --iface-dir "$tmp/out" -o "$tmp/out" "$fixtures/EnumAuxRuntime.hs" \
+            "$fixtures/DerivingEnumClass.hs"
+    ) > "$tmp/bootstrap.log" 2>&1 || fail 'helper runtime/interface bootstrap failed'
+    if [[ "$bootstrap_edits" == skipped-method-aux ]]; then
+        require_occurrences "$tmp/out/GHC/Enum.v" 'enumerate :' 0
+    else
+        require_occurrences "$tmp/out/GHC/Enum.v" 'enumerate :' 1
+    fi
+    # Extra edits, GHC flags, and selected providers apply only to the consumer run.
+    (
+        cd "$tmp"
+        "${translator[@]}" --target-version "$version" --strict -N -i "$fixtures" \
+            -e "$workspace/examples/tests/renamings" -e "$fixtures/retained-aux.edits" "$@" \
+            --iface-dir "$tmp/out" -o "$tmp/out" "$fixtures/DerivingRetainedAux.hs"
+    ) > "$tmp/translator.log" 2>&1 || fail 'method helper translation failed'
+    for module in EnumAuxRuntime GHC/Enum "$target"; do
+        for suffix in v h2ci; do
+            [[ -s "$tmp/out/$module.$suffix" ]] || fail "missing $module.$suffix"
+        done
+        "${compiler[@]}" -Q "$base" '' -Q "$tmp/out" '' "$tmp/out/$module.v" \
+            >> "$tmp/compiler.log" 2>&1 || fail "$module did not compile"
+    done
+    require_occurrences "$tmp/out/$target.v" 'Program Instance Enum__E' 1
+    sed "s/^Require Import DerivingRetainedAux /Require Import $target /" \
+        "$fixtures/$consumer.v" > "$tmp/Consumer.v"
+    "${compiler[@]}" -Q "$base" '' -Q "$tmp/out" '' "$tmp/Consumer.v" \
+        > "$tmp/consumer.log" 2>&1 || fail 'original method inference or computation failed'
+    require_occurrences "$tmp/consumer.log" 'Closed under the global context' 1
+    require_occurrences "$tmp/out/$target.v" 'Definition lop_zdtag2con' "$helpers"
+    require_occurrences "$tmp/out/$target.v" 'Definition lop_zdmaxtag' "$helpers"
+    printf 'ok - %s/%s\n' "$version" "$case_name"
+    rm -rf "$tmp/out"
+}
+
+case_name=retained-original-method-helpers
+check_method_helpers RetainedAuxConsumer 1 '' DerivingRetainedAux
+case_name=renamed-method-skip-unused-helpers
+check_method_helpers SkippedMethodAuxConsumer 0 skipped-method-aux DerivingRetainedAux \
+    -e "$fixtures/skipped-method-aux.edits"
+case_name=renamed-method-redefine-unused-helpers
+check_method_helpers RenamedMethodAuxConsumer 0 renamed-method-aux DerivingRetainedAux \
+    -e "$fixtures/renamed-method-aux.edits"
+case_name=provider-only-method-skip-unused-helpers
+check_method_helpers SkippedMethodAuxConsumer 0 skipped-method-aux DerivingRetainedAux
+case_name=unselected-source-dependency-method-skip-unused-helpers
+check_method_helpers SkippedMethodAuxConsumer 0 skipped-method-aux DerivingRetainedAux \
+    --ghc -DDERIVING_SOURCE_DEPENDENCY
+# convertModules sorts target names: GHC.Enum precedes ZDerivingRetainedAux.
+case_name=selected-provider-retains-original-method-helpers
+check_method_helpers RetainedAuxConsumer 1 skipped-method-aux ZDerivingRetainedAux \
+    -e "$fixtures/selected-provider-aux.edits" --ghc -DDERIVING_SOURCE_DEPENDENCY \
+    "$fixtures/DerivingEnumClass.hs"
+case_name=selected-provider-skips-unused-method-helpers
+check_method_helpers SkippedMethodAuxConsumer 0 '' ZDerivingRetainedAux \
+    -e "$fixtures/selected-provider-aux.edits" -e "$fixtures/skipped-method-aux.edits" \
+    --ghc -DDERIVING_SOURCE_DEPENDENCY "$fixtures/DerivingEnumClass.hs"
 
 case_name=multi-module-forward-interface
 mkdir "$tmp/out" "$tmp/ifaces" "$tmp/control"

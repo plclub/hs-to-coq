@@ -1,0 +1,8 @@
+rename module DerivingEnumClass GHC.Enum
+rename module GHC.Internal.Enum GHC.Enum
+rename module DerivingMethodAux MethodAux
+rename type DerivingMethodAux.Original = MethodAux.E
+rename type GHC.Types.Int = GHC.Num.Int
+simple class GHC.Enum.Enum
+skip method GHC.Enum.Enum enumFromThen
+skip method GHC.Enum.Enum enumFromThenTo

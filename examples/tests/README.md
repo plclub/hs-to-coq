@@ -130,7 +130,7 @@ bash test/identity-traversal.sh --target-version 8.20
 bash test/deriving.sh --target-version 8.20 --retained-only
 ```
 
-[`deriving.sh`](../../test/deriving.sh) contains 28 cases per target and defaults to
+[`deriving.sh`](../../test/deriving.sh) contains 36 cases per target and defaults to
 8.20. Its successful translation cases compile generated modules and consumers
 that infer dictionaries and check their computations. Rejection cases require
 a nonzero exit, a relevant diagnostic, and no generated module. Coverage includes:
@@ -147,6 +147,21 @@ a nonzero exit, a relevant diagnostic, and no generated module. Coverage include
   `DerivingRedefinedAux` through the real CLI, then compiles the output and
   `RedefinedAuxConsumer.v`. The consumer infers the replacement `Enum` dictionary
   and proves `inferredFromEnum B = 7` by reflexivity; stock deriving would return `1`.
+- Individual method replacements and renamed `skip method` edits also exclude
+  unused stock Enum helpers. These checks bootstrap class metadata from a source
+  fixture rather than using the production edits that skip Enum entirely. The
+  replacement case compiles against the real base Enum class and checks exactly
+  one renamed `Enum__E` instance with no unused helpers. A source-generated
+  primitive model also checks replacement of a renamed method and a
+  surviving original method: its consumer computes `A, B` using both retained
+  stock helpers. No helper bodies or instance dictionaries are replaced in that
+  retention check.
+- A provider-only method skip is respected through the imported class interface:
+  the consumer does not repeat the skip, still infers its dictionary and computes,
+  and emits neither unused Enum helper. This also holds when an empty import puts
+  the unselected provider in GHC's source graph under `-N`. Two selected-provider
+  checks translate the provider before the consumer, replacing stale interfaces
+  that omit or retain the method; helpers follow the newly converted inventory.
 - Nonzero failures in default/strict mode and warnings with partial success in
   permissive mode, including removal of a synthesized instance that fails the
   final GHC typecheck.

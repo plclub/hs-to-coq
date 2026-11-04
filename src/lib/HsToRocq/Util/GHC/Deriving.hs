@@ -20,6 +20,7 @@ module HsToRocq.Util.GHC.Deriving (initForDeriving, addDerivedInstances
 #if __GLASGOW_HASKELL__ >= 910
   , renameForDeriving, derivationIsSkipped, derivingRequests
   , removeDerivingRequest, failedDerivationType, sameDerivingSpan
+  , neededDerivingBinds
 #endif
   ) where
 
@@ -326,10 +327,12 @@ removeDerivingRequest span pm =
 
 -- | Re-derive checked declarations. There is deliberately no per-request
 -- silent fallback: failures must pass through the caller's deriving policy.
+-- Return auxiliary bindings separately: only conversion knows which original
+-- method bodies survive the effective class interface and scoped edits.
 #if __GLASGOW_HASKELL__ >= 910
-addDerivedInstances :: GlobalMonad r m => TypecheckedModule -> m TypecheckedModule
+addDerivedInstances :: GlobalMonad r m => TypecheckedModule -> m (TypecheckedModule, HsValBinds GhcRn)
 #else
-addDerivedInstances :: GhcMonad m => TypecheckedModule -> m TypecheckedModule
+addDerivedInstances :: GhcMonad m => TypecheckedModule -> m (TypecheckedModule, HsValBinds GhcRn)
 #endif
 addDerivedInstances tcm = do
 #if __GLASGOW_HASKELL__ >= 910
@@ -399,8 +402,7 @@ addDerivedInstances tcm = do
         [(index, _, dependencySkip, instanceSkip)] -> pure (info, index, dependencySkip, instanceSkip)
         _ -> throwProgramError $ "Derived instance must match exactly one source request: "
                ++ showSDocUnsafe (ppr (iSpec info))
-    let wantedInfos = [ info | (info, _, False, False) <- associations ]
-        retainedInfos = [ info | (info, _, False, _) <- associations ]
+    let retainedInfos = [ info | (info, _, False, _) <- associations ]
     forM_ inst_infos $ \info ->
       unless (any (identicalClsInstHead (iSpec info)) checked_insts) $
         throwProgramError $ showSDocUnsafe (ppr (getSrcSpan (is_dfun (iSpec info))))
@@ -421,19 +423,9 @@ addDerivedInstances tcm = do
             ++ ": wanted deriving request must have exactly one checked dictionary and retained body: "
             ++ showSDocUnsafe (ppr (requestHead request))
             ++ " (metadata=" ++ show metadataCount ++ ", bodies=" ++ show bodyCount ++ ")"
-    -- Whole-instance edits retain the declaration, but do not use its original
-    -- implementation or auxiliary helpers.
-    targetMod <- view (edits.Edits.renamedModules.at mod.non mod)
-    translatedInfos <- withCurrentModule (ModuleData targetMod [] mempty) $
-      filterM (\info -> do
-        let (_, _, cls, tys) = instanceSig (iSpec info)
-        (instName, _) <- convertInstanceNameAndTy (typeToLHsType' (mkClassPred cls tys))
-        (== TranslateIt) <$> definitionTask instName) wantedInfos
     let inst_decls = map instInfoToDecl retainedInfos
-        needed_aux_binds = neededDerivingBinds (map instInfoToDecl translatedInfos) aux_binds
 #else
     let inst_decls = map instInfoToDecl inst_infos
-        needed_aux_binds = aux_binds
 #endif
 
 #if __GLASGOW_HASKELL__ >= 806
@@ -448,12 +440,11 @@ addDerivedInstances tcm = do
           }
 #endif
     let hsgroup' = hsgroup { hs_tyclds = mkTyClGroup [] inst_decls : hs_tyclds hsgroup }
-          `appendGroups` emptyRnGroup { hs_valds = needed_aux_binds }
 
 #if __GLASGOW_HASKELL__ >= 910
-    return $ tcm { tm_renamed_source = Just (hsgroup', a, b, c, d) }
+    return (tcm { tm_renamed_source = Just (hsgroup', a, b, c, d) }, aux_binds)
 #else
-    return $ tcm { tm_renamed_source = Just (hsgroup', a, b, c) }
+    return (tcm { tm_renamed_source = Just (hsgroup', a, b, c) }, aux_binds)
 #endif
 
 _initTcHack :: GhcMonad m => TypecheckedModule -> TcM a -> m a
@@ -479,8 +470,8 @@ _initTcHack tcm action = do
 -- can return shared helpers separately (e.g. tag-to-constructor functions for Enum).
 -- Names bound inside a body may conservatively retain a helper, but a helper
 -- needed by a body or by another helper must never be lost.
-neededDerivingBinds :: [LInstDecl GhcRn] -> HsValBinds GhcRn -> HsValBinds GhcRn
-neededDerivingBinds insts (XValBindsLR (NValBinds groups sigs)) =
+neededDerivingBinds :: [HsBind GhcRn] -> HsValBinds GhcRn -> HsValBinds GhcRn
+neededDerivingBinds methods (XValBindsLR (NValBinds groups sigs)) =
   let names :: Data a => a -> S.Set Name
       names = everything S.union (S.empty `mkQ` S.singleton)
       bound = S.fromList . collectHsBindsBinders CollNoDictBinders . snd
@@ -488,7 +479,7 @@ neededDerivingBinds insts (XValBindsLR (NValBinds groups sigs)) =
         let used' = used `S.union` S.unions
               [ names binds | group@(_, binds) <- groups, not (S.disjoint used (bound group)) ]
         in if used' == used then used else close used'
-      used = close (names insts)
+      used = close (names methods)
   in XValBindsLR (NValBinds
        (filter (not . S.disjoint used . bound) groups)
        (filter (not . S.disjoint used . names) sigs))

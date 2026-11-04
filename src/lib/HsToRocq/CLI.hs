@@ -288,7 +288,7 @@ type WithModulePrinter m =
 
 processFilesMain ::
     forall m . GhcMonad m
-    => (forall r m. GlobalMonad r m => WithModulePrinter m -> [TypecheckedModule] -> m ())
+    => (forall r m. GlobalMonad r m => WithModulePrinter m -> [(TypecheckedModule, HsValBinds GhcRn)] -> m ())
     -> m ()
 processFilesMain process = do
   conf <- processArgs
@@ -414,10 +414,10 @@ printConvertedModules :: GlobalMonad r m
 printConvertedModules withModulePrinter =
   traverse_ (printConvertedModule withModulePrinter) . foldMap toList
 
-convertAndPrintModules :: GlobalMonad r m => WithModulePrinter m -> [TypecheckedModule] -> m ()
+convertAndPrintModules :: GlobalMonad r m => WithModulePrinter m -> [(TypecheckedModule, HsValBinds GhcRn)] -> m ()
 convertAndPrintModules p = printConvertedModules p <=< convertModules <=< traverse toRenamedHsGroup
   where
-    toRenamedHsGroup tcm
+    toRenamedHsGroup (tcm, auxBinds)
       -- GHC 9.10 added a Docs field to tm_renamed_source (5-tuple vs 4-tuple)
 #if __GLASGOW_HASKELL__ >= 910
       | Just (hs_group, _, _, _, _) <- tm_renamed_source tcm =
@@ -427,6 +427,6 @@ convertAndPrintModules p = printConvertedModules p <=< convertModules <=< traver
           let (_, modDetails) = tm_internals_ tcm in
           let exports = modInfoExports (tm_checked_module_info tcm) 
               modData = ModuleData {_modName = mod, _modExports = exports, _modDetails = modDetails} in
-          pure (modData, hs_group)
+          pure (modData, hs_group, auxBinds)
       | otherwise = throwProgramError $  "Renamer failed for `" ++ moduleNameString mod ++ "'"
       where mod = ms_mod_name . pm_mod_summary $ tm_parsed_module tcm
