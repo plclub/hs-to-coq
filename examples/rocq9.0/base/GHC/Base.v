@@ -1284,7 +1284,29 @@ Program Instance Functor__sept_type {a : Type} {b : Type} {c : Type} {d : Type}
 
 (* Skipping instance `GHC.Base.Monad__arrow' of class `GHC.Base.Monad' *)
 
-(* Skipping instance `GHC.Base.Functor__Solo' of class `GHC.Base.Functor' *)
+#[local] Definition Functor__Solo_fmap
+   : forall {a : Type},
+     forall {b : Type}, (a -> b) -> GHC.Tuple.Solo a -> GHC.Tuple.Solo b :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | f, GHC.Tuple.MkSolo a => GHC.Tuple.MkSolo (f a)
+      end.
+
+#[local] Definition Functor__Solo_op_zlzd__
+   : forall {a : Type},
+     forall {b : Type}, a -> GHC.Tuple.Solo b -> GHC.Tuple.Solo a :=
+  fun {a : Type} {b : Type} =>
+    fun arg_0__ arg_1__ =>
+      match arg_0__, arg_1__ with
+      | x, GHC.Tuple.MkSolo _ => GHC.Tuple.MkSolo x
+      end.
+
+#[global]
+Program Instance Functor__Solo : Functor GHC.Tuple.Solo :=
+  fun _ k__ =>
+    k__ {| fmap__ := fun (a : Type) (b : Type) => Functor__Solo_fmap ;
+           op_zlzd____ := fun (a : Type) (b : Type) => Functor__Solo_op_zlzd__ |}.
 
 #[local] Definition Functor__option_fmap
    : forall {a : Type}, forall {b : Type}, (a -> b) -> option a -> option b :=
@@ -1764,8 +1786,8 @@ End Notations.
 
 (* External variables:
      Eq Gt Lt None Some String Type andb bool comparison cons false list nil
-     op_zeze__ option pair true tt unit Corelib.Init.Datatypes.app
-     GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type GHC.Tuple.sept_type
-     GHC.Tuple.sext_type GHC.Tuple.triple_type Stdlib.Lists.List.flat_map
-     Stdlib.Lists.List.map
+     op_zeze__ option pair true tt unit Corelib.Init.Datatypes.app GHC.Tuple.MkSolo
+     GHC.Tuple.Solo GHC.Tuple.pair_type GHC.Tuple.quad_type GHC.Tuple.quint_type
+     GHC.Tuple.sept_type GHC.Tuple.sext_type GHC.Tuple.triple_type
+     Stdlib.Lists.List.flat_map Stdlib.Lists.List.map
 *)

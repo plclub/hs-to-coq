@@ -1,0 +1,5 @@
+redefine Definition MethodAux.Enum__E_enumFrom : MethodAux.E -> list MethodAux.E := fun _ => nil.
+redefine Definition MethodAux.Enum__E_fromEnum : MethodAux.E -> GHC.Num.Int := fun _ => #7.
+redefine Definition MethodAux.Enum__E_pred : MethodAux.E -> MethodAux.E := fun _ => MethodAux.A.
+in MethodAux.Enum__E_succ redefine Definition MethodAux.Enum__E_succ : MethodAux.E -> MethodAux.E := fun _ => MethodAux.B.
+redefine Definition MethodAux.Enum__E_toEnum : GHC.Num.Int -> MethodAux.E := fun _ => MethodAux.A.

@@ -1,0 +1,5 @@
+rename module DerivingRecovery Recovered
+rename type DerivingRecovery.Rejected = Recovered.Unwanted
+skip class Recovered.Unwanted
+skip Recovered.Default__Wrapped
+order Recovered.Keep__bool Recovered.Keep__Wrapped_keep

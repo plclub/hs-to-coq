@@ -9,6 +9,8 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import Control.Monad
+import Control.Monad.IO.Class (liftIO)
+import System.Exit (exitFailure)
 
 import GHC
 import GHC.Paths
@@ -28,6 +30,6 @@ ghcPpr x = fmap T.pack $ showPpr <$> getSessionDynFlags <*> pure x
 defaultRunGhc :: Ghc () -> IO ()
 defaultRunGhc ghc = defaultErrorHandler defaultFatalMessager defaultFlushOut
                   . runGhc (Just libdir)
-                  . handleSourceError printException $ do
+                  . handleSourceError (\err -> printException err >> liftIO exitFailure) $ do
                       void $ setSessionDynFlags =<< getSessionDynFlags
                       ghc

@@ -69,9 +69,6 @@ Instance Default__EdgeType : HsToRocq.Err.Default EdgeType :=
 
 (* Converted value declarations: *)
 
-(* Skipping all instances of class `Outputable.Outputable', including
-   `Digraph.Outputable__Time' *)
-
 Instance Functor__Node : forall {key}, GHC.Base.Functor (Node key).
 Proof.
 Admitted.

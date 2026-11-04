@@ -23,7 +23,7 @@ case $# in
 esac
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-workspace=$(cd "$script_dir/../../.." && pwd)
+workspace=$(cd "$script_dir/.." && pwd)
 export STACK_YAML="$workspace/stack.yaml"
 translator=(stack --allow-different-user exec hs-to-rocq --)
 fixtures="$script_dir/edit-fixtures"

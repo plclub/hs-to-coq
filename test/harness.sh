@@ -117,6 +117,13 @@ case "${1:-}" in
         module=${module%.v}
         log_call compile "$module" ${compiler_command[@]+"${compiler_command[@]}"} "${compiler_args[@]}"
         test -f "$source"
+        if [[ "$module" == IdentityTraversal ]]; then
+            cmp -s "$source" "$HARNESS_IDENTITY_SOURCE"
+            for ((report=1; report<=14; report++)); do
+                printf '%s\n' 'Closed under the global context'
+            done
+            exit 0
+        fi
         IFS= read -r line < "$source"
         [[ "$line" == "generated ${GENERATION:-initial}" ]] || exit 44
         if [[ "$module" == "${COMPILER_FAULT_MODULE:-Probe}" && ${COMPILER_MODE:-success} == error ]]; then
@@ -134,6 +141,12 @@ case "${1:-}" in
         : > "${source%.v}.glob"
         : > "$(dirname "$source")/.${module}.aux"
         exit 0
+        ;;
+    --fake-git)
+        shift
+        log_call git rejected "$@"
+        printf '%s\n' 'fatal: detected dubious ownership in repository (harness Git stub)' >&2
+        exit 128
         ;;
     --fake-lndir)
         shift
@@ -167,7 +180,7 @@ case "${1:-}" in
 esac
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-workspace=$(cd "$script_dir/../../.." && pwd)
+workspace=$(cd "$script_dir/.." && pwd)
 script="$script_dir/harness.sh"
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/hs-to-rocq-harness.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
@@ -291,7 +304,7 @@ run_make() {
         FOREIGN_HS_TO_ROCQ=1 "HS_TO_ROCQ_DIR=$workspace"
         "HS_TO_ROCQ=bash \"$script\" --fake-translator"
         "PASS=$pass_modules" "TODO_PASS=$todo_pass_modules"
-        EDIT_CHECKS=
+        EDIT_CHECKS= BASE_CHECKS=
     )
     if [[ "$suite" == shared || "$suite" == rocq-tests ]]; then
         args+=("TODO_TRANSLATE=$todo_translate_modules")
@@ -840,6 +853,48 @@ for suite_name in rocq9 base-src8; do
     passed
 done
 
+# An existing manual .v must not hide missing constructor metadata. Exercise
+# both public generation targets without regenerating successful Base/Bool files.
+for suite_name in base-src8 rocq9; do
+    for jobs in 1 2; do
+        for entry in direct vfiles; do
+            new_case "$suite_name" "manual-iface-existing-v-j$jobs-$entry"
+            command=("-j$jobs")
+            output_dir=../../base
+            manual_dir=manual
+            direct_target=../../base/GHC/Base.v
+            if [[ "$suite" == rocq9 ]]; then
+                command+=(-C base-src)
+                output_dir=base
+                manual_dir=../base-src/manual
+                direct_target=../base/GHC/Base.v
+            fi
+            run_make 0 "${command[@]}" vfiles
+            mkdir -p "$test_dir/$manual_dir/GHC"
+            printf 'generated %s\n' "$generation" > "$test_dir/$manual_dir/GHC/Prim.v"
+            printf 'manual GHC.Prim\nconstructor PrimCtor\n' > "$test_dir/$manual_dir/GHC/Prim.h2ci"
+            # Keep the manual .v up to date so its recipe cannot supply metadata.
+            touch -t 200001010000 "$test_dir/$manual_dir/GHC/Prim.v"
+            cp "$test_dir/$manual_dir/GHC/Prim.v" "$test_dir/$output_dir/GHC/Prim.v"
+            assert_output "$output_dir/GHC/Prim.h2ci" absent
+
+            target=$direct_target
+            if [[ "$entry" == vfiles ]]; then target=vfiles; fi
+            run_make 0 "${command[@]}" HANDMOD=GHC/Prim "$target"
+            cmp -s "$test_dir/$manual_dir/GHC/Prim.h2ci" "$test_dir/$output_dir/GHC/Prim.h2ci" ||
+                fail "$suite/$name: manual constructor interface is missing or changed"
+            assert_output "$output_dir/GHC/Prim.v" present
+            for successful in GHC/Base Data/Bool; do
+                assert_output "$output_dir/$successful.v" present
+                assert_output "$output_dir/$successful.h2ci" present
+                assert_calls translate "$successful" 1
+            done
+            assert_calls translate GHC/Prim 0
+            passed
+        done
+    done
+done
+
 # A fresh coq entry point must create OUT before lndir copies a manual module.
 for jobs in 1 2; do
     new_case base-src8 "coq-fresh-manual-j$jobs"
@@ -850,7 +905,8 @@ for jobs in 1 2; do
     run_make 0 "-j$jobs" HANDMOD=GHC/Prim coq
     assert_output ../../base/GHC/Prim.v present
     assert_output ../../base/GHC/Prim.h2ci present
-    assert_calls manual Prim 1
+    # Fresh output visits both the interface and manual .v copy recipes.
+    assert_calls manual Prim 2
     assert_calls coq_makefile base 1
     assert_calls compile Prim 1
     assert_calls compile Base 1
@@ -1058,5 +1114,56 @@ run_make 0 -C base-src HANDMOD=GHC/Enum ../base/GHC/Enum.v
 assert_contains base/GHC/Enum.v 'From Stdlib Require Import ssreflect Lia.'
 assert_calls translate GHC/Enum 0
 passed
+
+# The real IdentityTraversal runner must work when Git rejects the checkout.
+# Use its default base paths from the root and the two Make caller directories.
+suite=identity-traversal
+for target in 8.20 9.0; do
+    for caller in root make; do
+        name="$target-$caller-without-git"
+        test_dir="$tmp/$suite/$name"
+        mkdir -p "$test_dir/bin" "$test_dir/test" "$test_dir/base" \
+            "$test_dir/examples/base-tests" "$test_dir/examples/rocq9.0/base" "$test_dir/tmp"
+        test_dir=$(cd "$test_dir" && pwd)
+        ln -s "$workspace/test/identity-traversal.sh" "$test_dir/test/identity-traversal.sh"
+        ln -s "$workspace/examples/base-tests/IdentityTraversal.v" \
+            "$test_dir/examples/base-tests/IdentityTraversal.v"
+        for tool in coqc rocq git; do
+            printf '#!/usr/bin/env bash\nexec bash "%s" --fake-%s "$@"\n' "$script" "$tool" > "$test_dir/bin/$tool"
+            chmod +x "$test_dir/bin/$tool"
+        done
+        : > "$test_dir/tools.log"
+        expected_base="$test_dir/base"
+        make_dir="$test_dir/examples/base-tests"
+        compiler_options='<coqc>'
+        if [[ "$target" == 9.0 ]]; then
+            expected_base="$test_dir/examples/rocq9.0/base"
+            make_dir="$test_dir/examples/rocq9.0"
+            compiler_options='<rocq> <c> <-w> <+deprecated-dirpath-Coq>'
+        fi
+        caller_dir=$test_dir
+        runner=test/identity-traversal.sh
+        if [[ "$caller" == make ]]; then
+            caller_dir=$make_dir
+            runner=../../test/identity-traversal.sh
+        fi
+        if (
+            cd "$caller_dir" || exit 1
+            PATH="$test_dir/bin:$PATH" COQC= TMPDIR="$test_dir/tmp" \
+                HARNESS_LOG="$test_dir/tools.log" \
+                HARNESS_IDENTITY_SOURCE="$workspace/examples/base-tests/IdentityTraversal.v" \
+                bash "$runner" --target-version "$target"
+        ) > "$test_dir/make.log" 2>&1; then
+            actual=0
+        else
+            actual=$?
+        fi
+        [[ "$actual" == 0 ]] || fail "$suite/$name: runner returned $actual, expected 0"
+        assert_calls compile IdentityTraversal 1
+        assert_contains tools.log "compile:IdentityTraversal $compiler_options <-Q> <$expected_base> <> <$test_dir/tmp/identity-traversal-$target."
+        assert_contains make.log "IdentityTraversal ($target): PASS (fourteen closed assumption reports)"
+        passed
+    done
+done
 
 printf 'Passed %d harness checks.\n' "$checks"

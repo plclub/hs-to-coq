@@ -16,6 +16,11 @@ cabal-version:       >=1.10
 extra-source-files:
   src/lib/HsToRocq/Edits/Parser.y
   src/include/*.h
+  test/README.md
+  test/ci-catalog-old-head.md
+  .github/workflows/hs-to-rocq.yml
+  .claude/commands/ci.md
+  .claude/commands/ci-fix.md
 tested-with: GHC == 8.10.7, GHC == 9.10.3
 
 source-repository head
@@ -34,6 +39,7 @@ library
                      , HsToRocq.Util.GHC.Exception
                      , HsToRocq.Util.GHC.Monad
                      , HsToRocq.Util.GHC.Deriving
+                     , HsToRocq.Util.GHC.StockDeriving
                      , HsToRocq.Util.Coerce
                      , HsToRocq.Util.Generics
                      , HsToRocq.Util.Function
@@ -158,5 +164,41 @@ executable hs-to-rocq
   main-is:             Main.hs
   build-depends:       base, hs-to-rocq
   hs-source-dirs:      src/exe
+  default-language:    Haskell2010
+  ghc-options:         -Wall -Werror -fno-warn-name-shadowing
+
+test-suite edits
+  type:                exitcode-stdio-1.0
+  main-is:             Edits.hs
+  build-depends:       base >=4.14 && < 4.22
+                     , hs-to-rocq
+                     , containers
+                     , mtl
+                     , text
+  hs-source-dirs:      test
+  default-language:    Haskell2010
+  ghc-options:         -Wall -Werror -fno-warn-name-shadowing
+
+test-suite rocq-version
+  type:                exitcode-stdio-1.0
+  main-is:             RocqVersion.hs
+  build-depends:       base >=4.14 && < 4.22
+                     , hs-to-rocq
+                     , optparse-applicative
+                     , text
+  hs-source-dirs:      test
+  default-language:    Haskell2010
+  ghc-options:         -Wall -Werror -fno-warn-name-shadowing
+
+test-suite ci-catalog
+  type:                exitcode-stdio-1.0
+  main-is:             CiCatalog.hs
+  build-depends:       base >=4.14 && < 4.22
+                     , containers
+                     , directory
+                     , process
+                     , text
+                     , yaml
+  hs-source-dirs:      test
   default-language:    Haskell2010
   ghc-options:         -Wall -Werror -fno-warn-name-shadowing

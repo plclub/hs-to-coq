@@ -57,8 +57,5 @@ skip Data.Foldable.Foldable__UFloat
 skip Data.Foldable.Foldable__UDouble
 skip Data.Foldable.Foldable__UChar
 skip Data.Foldable.Foldable__UAddr
-skip Data.Foldable.Foldable__Solo
-skip Data.Foldable.Foldable__Down
-
 
 

@@ -1,0 +1,3 @@
+rename module DerivingRetainedAux ZDerivingRetainedAux
+in ZDerivingRetainedAux.Enum__E_enumerate rename value GHC.Internal.Enum.enumFromTo = EnumAuxRuntime.range
+in ZDerivingRetainedAux.Enum__E_enumerate rename value GHC.Enum.enumFromTo = EnumAuxRuntime.range

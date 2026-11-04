@@ -4,24 +4,31 @@
 
 module HsToRocq.ProcessFiles (ProcessingMode(..), processFiles) where
 
-import Control.Lens
+import Control.Lens hiding (Strict)
 
 import Data.Foldable
-import Data.Maybe (catMaybes)
+import Data.List (find)
+import Data.Maybe (fromMaybe)
 import Control.Monad
 import Control.Monad.IO.Class
 
 import qualified Data.Set as S
 
 import System.Directory
+import System.IO (hPutStrLn, stderr)
 
 import GHC
 import GHC.Hs
+#if __GLASGOW_HASKELL__ >= 910
+import GHC.Data.Bag (bagToList)
+import GHC.Types.Error (getMessages, errMsgSpan, errMsgDiagnostic)
+import GHC.Utils.Outputable (ppr, showSDocUnsafe)
+import GHC.Types.SourceError (srcErrorMessages)
+import qualified Control.Exception as E
+import HsToRocq.Util.GHC.StockDeriving
+#endif
 
 import HsToRocq.ConvertHaskell.Monad
-import HsToRocq.Edits.Types (skippedModules, skippedClasses)
-import HsToRocq.Util.GHC.Module (moduleNameText)
-import HsToRocq.Rocq.Gallina.Util (qualidToIdent)
 import HsToRocq.Util.GHC.Deriving
 
 --------------------------------------------------------------------------------
@@ -29,43 +36,11 @@ import HsToRocq.Util.GHC.Deriving
 data ProcessingMode = Recursive | NonRecursive
                     deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
-#if __GLASGOW_HASKELL__ >= 910
--- | Remove all standalone deriving declarations from a parsed module.
--- This prevents GHC's typechecker from failing on derivations for types
--- from skipped modules. The derivations we DO want are handled separately
--- by 'addDerivedInstances'.
-stripStandaloneDerivDecls :: ParsedModule -> ParsedModule
-stripStandaloneDerivDecls pm =
-  let L loc hsmod = pm_parsed_source pm
-      decls' = filter (not . isDerivDecl . unLoc) (hsmodDecls hsmod)
-      hsmod' = hsmod { hsmodDecls = decls' }
-  in pm { pm_parsed_source = L loc hsmod' }
-
--- | Test whether a parsed declaration is a standalone @deriving@ declaration.
-isDerivDecl :: HsDecl GhcPs -> Bool
-isDerivDecl (DerivD _ _) = True
-isDerivDecl _            = False
-#endif
-
--- | Load and typecheck Haskell source files via the GHC API.
---
--- Uses a two-pass error-tolerant strategy (GHC >= 9.10): if the initial
--- 'load' fails — typically because standalone @deriving instance@
--- declarations reference types from skipped modules — we fall back to
--- parsing each module individually, stripping standalone deriving decls,
--- typechecking, and then re-deriving the wanted instances via
--- 'addDerivedInstances'.
-processFiles :: GlobalMonad r m => ProcessingMode -> [FilePath] -> m (Maybe [TypecheckedModule])
+-- | Load and typecheck Haskell source files via the GHC API. Keep recovered
+-- auxiliary bindings separate until conversion selects the original methods.
+processFiles :: GlobalMonad r m => ProcessingMode -> [FilePath] -> m (Maybe [(TypecheckedModule, HsValBinds GhcRn)])
 processFiles mode files = do
   initForDeriving
-  -- Build skip info from edits so addDerivedInstances can filter out
-  -- instances involving skipped modules or type classes.
-  skipMods <- view (edits.skippedModules)
-  skipCls  <- view (edits.skippedClasses)
-  let skipInfo = DerivSkipInfo
-        { dsi_skippedModules = S.map moduleNameText skipMods
-        , dsi_skippedClasses = S.map qualidToIdent skipCls
-        }
   traverse_ (addTarget <=< (guessTarget ?? Nothing ?? Nothing)) files
   filterModules <- case mode of
     Recursive    -> pure pure
@@ -76,18 +51,13 @@ processFiles mode files = do
       pure . filterM $ fmap (`S.member` filePaths) . moduleFile
   load LoadAllTargets >>= \case
     Succeeded -> Just <$> do
-      traverse (addDerivedInstances skipInfo <=< typecheckModule <=< parseModule)
+      traverse (processModule <=< parseModule)
         =<< skipModulesBy ms_mod_name
         =<< filterModules . mgModSummaries
         =<< getModuleGraph
     Failed ->
 #if __GLASGOW_HASKELL__ >= 910
-      -- When load fails (e.g. due to standalone deriving errors for types
-      -- from skipped modules), try again with standalone deriving declarations
-      -- stripped from the parsed AST. The module graph is still available even
-      -- when load fails.
       do
-        liftIO $ putStrLn "hs-to-rocq: initial load failed, attempting recovery by stripping standalone deriving declarations"
         modSummaries <- skipModulesBy ms_mod_name
                           =<< filterModules . mgModSummaries
                           =<< getModuleGraph
@@ -96,41 +66,65 @@ processFiles mode files = do
             liftIO $ putStrLn "hs-to-rocq: error: no modules found in module graph after filtering"
             pure Nothing
           else do
-            -- Process each module individually: parse, strip standalone derivs,
-            -- typecheck, then re-derive. Modules that still fail are skipped
-            -- (handleSourceError in processWithStrippedDerivs returns Nothing).
-            results <- traverse (processWithStrippedDerivs skipInfo) modSummaries
-            let successes = catMaybes results
-            let failed = length results - length successes
-            when (failed > 0) $
-              liftIO $ putStrLn $ "hs-to-rocq: warning: " ++ show failed ++ " of " ++ show (length results)
-                ++ " modules failed to typecheck and were skipped"
-            if null successes
-              then do
-                liftIO $ putStrLn "hs-to-rocq: error: all modules failed to typecheck"
-                pure Nothing
-              else pure (Just successes)
+            Just <$> traverse (recoverDeriving <=< parseModule) modSummaries
 #else
       do
         liftIO $ putStrLn "hs-to-rocq: error: GHC load failed (standalone deriving recovery requires GHC >= 9.10)"
         pure Nothing
 #endif
+  where
+    processModule pm =
+#if __GLASGOW_HASKELL__ >= 910
+      handleSourceError (const (recoverDeriving pm)) $
+#endif
+        addDerivedInstances =<< typecheckModule pm
 
 #if __GLASGOW_HASKELL__ >= 910
--- | Parse a module, strip standalone deriving declarations, typecheck,
--- then add back derived instances via addDerivedInstances.
-processWithStrippedDerivs :: GlobalMonad r m => DerivSkipInfo -> ModSummary -> m (Maybe TypecheckedModule)
-processWithStrippedDerivs skipInfo ms =
-  handleSourceError (\e -> do
-    liftIO $ putStrLn $ "hs-to-rocq: warning: failed to typecheck "
-      ++ moduleNameString (moduleName (ms_mod ms))
-      ++ " even after stripping standalone deriving declarations:"
-    liftIO $ putStrLn $ "  " ++ show e
-    return Nothing) $ do
-    liftIO $ putStrLn $ "hs-to-rocq: retrying " ++ moduleNameString (moduleName (ms_mod ms))
-      ++ " with standalone deriving declarations stripped"
-    pm <- parseModule ms
-    let pm' = stripStandaloneDerivDecls pm
-    tcm <- typecheckModule pm'
-    Just <$> addDerivedInstances skipInfo tcm
+-- Retry the original declarations, removing only a diagnosed failed request.
+-- The final typecheck supplies authoritative metadata and also checks uses of
+-- the accepted instances in the rest of the module.
+recoverDeriving :: GlobalMonad r m => ParsedModule -> m (TypecheckedModule, HsValBinds GhcRn)
+recoverDeriving pm = do
+  (renamedEnv, group) <- renameForDeriving pm
+  retry renamedEnv group (derivingRequests group) [] pm
+  where
+    retry renamedEnv group requests expanded parsed =
+      handleSourceError (recover renamedEnv group requests expanded parsed) $ do
+        checked <- typecheckModule parsed
+        verifyStockExpansions expanded checked
+        addDerivedInstances checked
+
+    recover renamedEnv group requests expanded parsed err = do
+      let messages = bagToList (getMessages (srcErrorMessages err))
+          matches span actual = sameDerivingSpan span actual || actual `isSubspanOf` span
+          failed = find (\(span, _) -> any (matches span . errMsgSpan) messages) requests
+      case failed of
+        Nothing -> liftIO $ E.throwIO err
+        Just (span, requestType) -> do
+          let diagnostic = find (matches span . errMsgSpan) messages
+              ty = fromMaybe requestType (diagnostic >>= failedDerivationType . errMsgDiagnostic)
+          skipped <- derivationIsSkipped (ms_mod_name (pm_mod_summary pm))
+            requestType ty
+          let discard failure = do
+                policy <- view leniency
+                let description = showSDocUnsafe (ppr span) ++ ": deriving "
+                      ++ showSDocUnsafe (ppr ty) ++ " failed:\n" ++ show failure
+                unless skipped $ case policy of
+                  Strict -> throwProgramError description
+                  Permissive -> liftIO $ hPutStrLn stderr $ "hs-to-rocq: warning: " ++ description
+                retry renamedEnv group (filter (not . sameDerivingSpan span . fst) requests)
+                  (filter (not . sameDerivingSpan span . stockExpansionSpan) expanded)
+                  (removeDerivingRequest span parsed)
+              standalone = find (sameDerivingSpan span . getLocA) (hs_derivds group)
+          if skipped || any (sameDerivingSpan span . stockExpansionSpan) expanded then discard err else
+            case standalone of
+              Nothing -> discard err
+              Just request -> do
+                result <- handleSourceError (pure . Left) $
+                  Right <$> expandStockDeriving parsed renamedEnv group request
+                case result of
+                  Left failure -> discard failure
+                  Right Nothing -> discard err
+                  Right (Just (parsed', expansion)) ->
+                    retry renamedEnv group requests (expansion : expanded) parsed'
 #endif

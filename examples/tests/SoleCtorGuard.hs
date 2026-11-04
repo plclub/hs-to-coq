@@ -24,3 +24,13 @@ inCase mx = case mx of
 empty :: [Bool] -> Bool
 empty xs | [] <- xs = True
 empty _ = False
+
+data Box = MkBox Bool
+
+unbox :: Box -> Bool
+unbox box | MkBox value <- box = value
+          | otherwise = False
+
+nestedGuard :: (Bool, Box) -> Bool
+nestedGuard input | (True, MkBox value) <- input = value
+                  | otherwise = False

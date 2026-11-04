@@ -44,6 +44,9 @@ import GHC hiding (Name)
 import HsToRocq.Util.GHC.HsTypes (noExtCon)
 #endif
 import HsToRocq.Util.GHC.Module
+#if __GLASGOW_HASKELL__ >= 910
+import HsToRocq.Util.GHC.Deriving (neededDerivingBinds)
+#endif
 #if __GLASGOW_HASKELL__ >= 900
 import GHC.Data.Bag (bagToList)
 #else
@@ -52,7 +55,7 @@ import Bag
 
 import HsToRocq.Edits.Types
 import HsToRocq.ConvertHaskell.Monad
-import HsToRocq.ConvertHaskell.TypeInfo (lookupConstructorType)
+import HsToRocq.ConvertHaskell.TypeInfo (isProcessedModule, lookupConstructorType)
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import System.IO (hPutStrLn, stderr)
@@ -384,13 +387,11 @@ toEquationsSentence cdef mterm = do
     isImplicitBinder (Typed _ Implicit _ _) = True
     isImplicitBinder _ = False
 
-convertHsGroup :: ConversionMonad r m => HsGroup GhcRn -> m ConvertedModuleDeclarations
-convertHsGroup HsGroup{..} = do
+-- The first auxiliary pool comes from axiomatized original modules. Keep its
+-- translation mode even when module renaming merges it with translated sources.
+convertHsGroup :: ConversionMonad r m => HsGroup GhcRn -> (HsValBinds GhcRn, HsValBinds GhcRn) -> m ConvertedModuleDeclarations
+convertHsGroup HsGroup{..} (axAuxBinds, auxBinds) = do
   mod                 <- view (currentModule . modName)
-  isModuleAxiomatized <- view currentModuleAxiomatized
-
-  let catchIfAxiomatizing | isModuleAxiomatized = const
-                          | otherwise           = gcatch
   handler             <- whenPermissive axiomatizeBinding
 
   promotions          <- view (edits.promotions)
@@ -399,41 +400,6 @@ convertHsGroup HsGroup{..} = do
                      .  map unLoc
                      $  concatMap group_tyclds hs_tyclds
                          -- Ignore roles
-  (convertedValDecls, promotedDecls)  <- -- TODO RENAMER merge with convertLocalBinds / convertModuleValDecls
-    case hs_valds of
-#if __GLASGOW_HASKELL__ >= 806
-      ValBinds{} ->
-        convUnsupported' "pre-renaming `ValBinds' construct post renaming"
-      XValBindsLR (NValBinds binds lsigs) -> do
-#else
-      ValBindsIn{} ->
-        convUnsupported' "pre-renaming `ValBindsIn' construct post renaming"
-      ValBindsOut binds lsigs -> do
-#endif
-        sigs  <- convertLSigs lsigs `catchIfAxiomatizing` const @_ @SomeException (pure M.empty)
-        let convertBinding' !b = (,) (convertedBindingName b) <$> convertBinding sigs b
-        defns <- (convertTypedModuleBindings (concatMap (bagToList . snd) binds) sigs
-                   ??
-                   handler)
-                 convertBinding'
-        let unnamedSentences = concat [ sentences | (Nothing, sentences) <- defns ]
-        let namedSentences   = [ (name, sentences) | (Just name, sentences) <- defns ]
-        let defnsMap = M.fromList namedSentences
-
-        -- defnsMap    :: Map Qualid [Sentence]
-        -- sentenceBVs :: Map Qualid (Set Qualid)
-        let sentenceBVs = S.unions . fmap (getFreeVars' . bvOf @Qualid) <$> defnsMap
-
-        -- transitiveClosure :: Ord a => Reflexivity -> Map a (Set a) -> Map a (Set a)
-        let tc = transitiveClosure Reflexive sentenceBVs                -- :: Map Qualid (Set Qualid)
-        let depsList = map (`M.lookup` tc) (S.toList promotions)        -- :: [Maybe (Set Qualid)]
-        let depsSet = S.unions $ map (fromMaybe S.empty) depsList       -- :: Set Qualid
-                
-        let (promotedSentences, namedSentences') =
-              partition (\(name, _) -> name `S.member` depsSet) namedSentences
-
-        pure (unnamedSentences ++ concatMap snd namedSentences', concatMap snd promotedSentences)
-
   -- Derived instances have an UnhelpfulSpan, we put those to the top because
   -- they tend to be self-contained and everything else depends on them.
   let compareSpan (UnhelpfulSpan _) (UnhelpfulSpan _) = EQ
@@ -442,9 +408,59 @@ convertHsGroup HsGroup{..} = do
       compareSpan (RealSrcSpan p GHC_900(_)) (RealSrcSpan q GHC_900(_)) = compare p q
 
   instEnv <- view (currentModule.modDetails) >>= instancesOfModDetails
-  
-  convertedClsInstDecls <- convertClsInstDecls instEnv . map unLoc $ sortBy (compareSpan `on` getLoc)
+  (convertedClsInstDecls, methodBinds) <- convertClsInstDecls instEnv . map unLoc $ sortBy (compareSpan `on` getLoc)
     [L l cid | grp <- hs_tyclds, L l (ClsInstD NOEXTP cid) <- group_instds grp]
+
+  -- Classes are registered and instances have made their actual method/edit
+  -- decisions. Only now can their auxiliary bindings be selected safely.
+#if __GLASGOW_HASKELL__ >= 910
+  let neededAux = neededDerivingBinds methodBinds
+#else
+  let neededAux = id
+#endif
+  let convertVals valds = do
+        isModuleAxiomatized <- view currentModuleAxiomatized
+        let catchIfAxiomatizing | isModuleAxiomatized = const
+                               | otherwise           = gcatch
+        case valds of
+#if __GLASGOW_HASKELL__ >= 806
+          ValBinds{} ->
+            convUnsupported' "pre-renaming `ValBinds' construct post renaming"
+          XValBindsLR (NValBinds binds lsigs) -> do
+#else
+          ValBindsIn{} ->
+            convUnsupported' "pre-renaming `ValBindsIn' construct post renaming"
+          ValBindsOut binds lsigs -> do
+#endif
+            sigs <- convertLSigs lsigs `catchIfAxiomatizing` const @_ @SomeException (pure M.empty)
+            let convertBinding' !b = (,) (convertedBindingName b) <$> convertBinding sigs b
+            defns <- (convertTypedModuleBindings (concatMap (bagToList . snd) binds) sigs
+                       ??
+                       handler)
+                     convertBinding'
+            let unnamedSentences = concat [ sentences | (Nothing, sentences) <- defns ]
+            let namedSentences   = [ (name, sentences) | (Just name, sentences) <- defns ]
+            let defnsMap = M.fromList namedSentences
+
+            -- defnsMap    :: Map Qualid [Sentence]
+            -- sentenceBVs :: Map Qualid (Set Qualid)
+            let sentenceBVs = S.unions . fmap (getFreeVars' . bvOf @Qualid) <$> defnsMap
+
+            -- transitiveClosure :: Ord a => Reflexivity -> Map a (Set a) -> Map a (Set a)
+            let tc = transitiveClosure Reflexive sentenceBVs                -- :: Map Qualid (Set Qualid)
+            let depsList = map (`M.lookup` tc) (S.toList promotions)        -- :: [Maybe (Set Qualid)]
+            let depsSet = S.unions $ map (fromMaybe S.empty) depsList       -- :: Set Qualid
+
+            let (promotedSentences, namedSentences') =
+                  partition (\(name, _) -> name `S.member` depsSet) namedSentences
+
+            pure (unnamedSentences ++ concatMap snd namedSentences', concatMap snd promotedSentences)
+
+  (axVals, axPromoted) <- local (edits.axiomatizedModules %~ S.insert mod) $
+    convertVals (neededAux axAuxBinds)
+  (vals, promoted) <- convertVals (hs_valds `plusHsValBinds` neededAux auxBinds)
+  let convertedValDecls = axVals ++ vals
+      promotedDecls = axPromoted ++ promoted
 
   (convertedAddedTyCls,convertedAddedDecls) <- view (edits.additions.at mod.non ([],[]))
 
@@ -462,7 +478,7 @@ convertHsGroup HsGroup{..} = do
         "While translating non-function binding: " <> T.pack (show exn)])
 
 #if __GLASGOW_HASKELL__ >= 806 && __GLASGOW_HASKELL__ < 910
-convertHsGroup (XHsGroup v) = noExtCon v
+convertHsGroup (XHsGroup v) _ = noExtCon v
 #endif
 
 --------------------------------------------------------------------------------
@@ -482,8 +498,10 @@ renameModule :: GlobalMonad r m => ModuleName -> m ModuleName
 renameModule mod = view $ edits.renamedModules.at mod.non mod
 
 -- Assumes module renaming has been accomplished
-convertModule :: GlobalMonad r m => ModuleData -> HsGroup GhcRn -> m (ConvertedModule, [ModuleName])
-convertModule convModData group = do
+convertModule :: GlobalMonad r m => ModuleData -> HsGroup GhcRn -> (HsValBinds GhcRn, HsValBinds GhcRn) -> m (ConvertedModule, [ModuleName])
+convertModule convModData group auxBinds = do
+  -- Start interface collection at conversion, not during deriving-policy checks.
+  isProcessedModule (moduleNameText (convModData ^. modName))
   withCurrentModule convModData $ do
     ConvertedModuleDeclarations { convertedTyClDecls    = convModTyClDecls
                                 , convertedValDecls     = convModValDecls
@@ -491,7 +509,7 @@ convertModule convModData group = do
                                 , convertedAddedTyCls   = convModAddedTyCls
                                 , convertedAddedDecls   = convModAddedDecls
                                 }
-      <- convertHsGroup group
+      <- convertHsGroup group auxBinds
     let convModName = convModData ^. modName
     let allSentences = convModTyClDecls ++ convModValDecls ++ convModClsInstDecls ++ convModAddedTyCls ++ convModAddedDecls
     let freeVars = toList $ foldMap getFreeVars' allSentences
@@ -550,36 +568,39 @@ instance Monoid ConvertModuleMode where
 
   
 
-convertModules :: GlobalMonad r m => [(ModuleData, HsGroup GhcRn)] -> m [NonEmpty ConvertedModule]
+convertModules :: GlobalMonad r m => [(ModuleData, HsGroup GhcRn, HsValBinds GhcRn)] -> m [NonEmpty ConvertedModule]
 convertModules sources = do
   -- Collect modules with the same post-`rename module` name
-  mergedModulesNELs <-  traverse (foldrM buildGroups (emptyRnGroup, emptyRnGroup, mempty, mempty, mempty))
+  let noAux = (hs_valds emptyRnGroup, hs_valds emptyRnGroup)
+  mergedModulesNELs <-  traverse (foldrM buildGroups (emptyRnGroup, emptyRnGroup, mempty, mempty, mempty, noAux))
                     .   M.fromListWith (<>)
-                    =<< traverse (renameModule . _modName . fst <&&&> pure . pure @NonEmpty) sources
+                    =<< traverse (renameModule . _modName . (\(modData, _, _) -> modData) <&&&> pure . pure @NonEmpty) sources
 
-  cmods <- for (M.toList mergedModulesNELs) $ \(name, (axGrp, convGrp, mode, combinedExports, combinedDetails)) -> 
+  cmods <- for (M.toList mergedModulesNELs) $ \(name, (axGrp, convGrp, mode, combinedExports, combinedDetails, auxBinds)) ->
             let modData = ModuleData {_modName = name, _modExports = combinedExports, _modDetails = combinedDetails} in 
               case mode of
-                ModeAxiomatize -> axiomatizeModule' modData (axGrp `appendGroups` convGrp)
-                ModeConvert    -> convertModule modData convGrp
-                ModeBoth       -> combineModules <$> axiomatizeModule' modData axGrp <*> convertModule modData convGrp
+                ModeAxiomatize -> axiomatizeModule' modData (axGrp `appendGroups` convGrp) auxBinds
+                ModeConvert    -> convertModule modData convGrp auxBinds
+                ModeBoth       -> combineModules <$> axiomatizeModule' modData axGrp noAux <*> convertModule modData convGrp auxBinds
                 ModeInitial    -> error "INTERNAL ERROR: impossible, `foldrM` over a `NonEmpty`"
 
   pure $ stronglyConnCompNE [(cmod, convModName cmod, imps) | (cmod, imps) <- cmods]
 
   where
-    buildGroups (modData, modGrp) (axGrp, convGrp, mode, combinedExports, combinedDetails) =
+    buildGroups (modData, modGrp, auxBinds) (axGrp, convGrp, mode, combinedExports, combinedDetails, (axAux, convAux)) =
       view (edits.axiomatizedOriginalModuleNames.contains (modData^.modName)) <&> \case
         True  -> ( modGrp{hs_tyclds = []}                     `appendGroups` axGrp
                  , emptyRnGroup{hs_tyclds = hs_tyclds modGrp} `appendGroups` convGrp
                  , ModeAxiomatize <> mode
                  , (modData^.modExports) <> combinedExports
-                 , (modData^.modDetails) <> combinedDetails )
+                 , (modData^.modDetails) <> combinedDetails
+                 , (auxBinds `plusHsValBinds` axAux, convAux) )
         False -> ( axGrp
                  , modGrp `appendGroups` convGrp
                  , ModeConvert <> mode
                  , (modData^.modExports) <> combinedExports
-                 , (modData^.modDetails) <> combinedDetails )
+                 , (modData^.modDetails) <> combinedDetails
+                 , (axAux, auxBinds `plusHsValBinds` convAux) )
 
     combineModules (ConvertedModule name  imports1 tyClDecls1 valDecls1 clsInstDecls1 addedTyCls1 addedDecls1, imps1)
                    (ConvertedModule _name imports2 tyClDecls2 valDecls2 clsInstDecls2 _addedTyCls2 _addedDecls2, imps2) =
@@ -594,7 +615,9 @@ convertModules sources = do
       -- It's OK not to worry about ordering the declarations
       -- because we 'topoSortByVariablesBy' them in 'moduleDeclarations'.
 
-    axiomatizeModule' modData = local (edits.axiomatizedModules %~ S.insert (modData ^. modName)) . convertModule modData
+    axiomatizeModule' modData group auxBinds =
+      local (edits.axiomatizedModules %~ S.insert (modData ^. modName)) $
+        convertModule modData group auxBinds
 
 data ModuleDeclarations = ModuleDeclarations { moduleTypeDeclarations  :: ![Sentence]
                                              , moduleValueDeclarations :: ![Sentence] }

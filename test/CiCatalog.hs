@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- Run from the repository root; yaml is already a translator dependency.
--- stack exec -- runghc -package=yaml examples/tests/checks/CiCatalog.hs --self-test
+-- Run from the package root with stack test hs-to-rocq:ci-catalog.
 module Main (main) where
 
 import Control.Exception (bracket)
@@ -42,14 +41,13 @@ workflowPath, catalogPath, fixPath, guardCommand :: String
 workflowPath = ".github/workflows/hs-to-rocq.yml"
 catalogPath = ".claude/commands/ci.md"
 fixPath = ".claude/commands/ci-fix.md"
-guardCommand = "stack exec -- runghc -package=yaml examples/tests/checks/CiCatalog.hs --self-test"
+guardCommand = "stack test"
 
 buildChecks :: [String]
 buildChecks =
   [ guardCommand
-  , "stack exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs"
-  , "bash examples/tests/checks/harness.sh"
-  , "bash examples/tests/checks/concurrent.sh"
+   , "bash test/harness.sh"
+   , "bash test/concurrent.sh"
   ]
 
 trim :: String -> String
@@ -210,7 +208,7 @@ selfTests bash workflow catalog fix = do
         putStrLn ("ok - " ++ label)
       mutate label needle old new = rejected label needle (replaceOnce old new catalog) fix
   -- Exact .claude/commands/ci.md snapshot at 9cd1a34c679cd9db904f75108a37e21a494f9251.
-  old <- Text.unpack <$> Text.readFile "examples/tests/checks/ci-catalog-old-head.md"
+  old <- Text.unpack <$> Text.readFile "test/ci-catalog-old-head.md"
   rejected "pinned 9cd1a34 old HEAD catalog" "job headings: missing" old fix
   forM_ ["hlint", "build-haskell", "test-coq-files", "tests", "test-rocq9", "test-rocq9-translation", "test-translation"] $ \name -> do
     let heading = "## Job: " ++ name ++ "\n"
@@ -241,9 +239,9 @@ selfTests bash workflow catalog fix = do
         _ -> error "missing workflow mutation anchor: hlint"
   yamlRejected "missing workflow job" "unknown hlint" withoutHlint
   yamlRejected "duplicate workflow job key" "DuplicateKey" (yaml ++ "\n  hlint:\n    runs-on: ubuntu-latest\n")
-  yamlRejected "workflow guard unwired" "workflow build-haskell check" (replaceOnce ("run: stack --allow-different-user exec -- runghc -package=yaml") "run: removed" yaml)
-  yamlRejected "workflow guard masks failures" "unconditional and fail-fast" (replaceOnce "      - name: Check local CI catalog and regressions\n" "      - name: Check local CI catalog and regressions\n        continue-on-error: true\n" yaml)
-  yamlRejected "workflow guard can be skipped" "unconditional and fail-fast" (replaceOnce "      - name: Check local CI catalog and regressions\n" "      - name: Check local CI catalog and regressions\n        if: false\n" yaml)
+  yamlRejected "workflow guard unwired" "workflow build-haskell check" (replaceOnce "run: stack --allow-different-user test" "run: removed" yaml)
+  yamlRejected "workflow guard masks failures" "unconditional and fail-fast" (replaceOnce "      - name: Run Haskell test suites\n" "      - name: Run Haskell test suites\n        continue-on-error: true\n" yaml)
+  yamlRejected "workflow guard can be skipped" "unconditional and fail-fast" (replaceOnce "      - name: Run Haskell test suites\n" "      - name: Run Haskell test suites\n        if: false\n" yaml)
 
   forM_ [("ci syntax", catalog), ("ci-fix syntax", fix)] $ \(label, text) -> do
     problems <- syntaxErrors bash label text
@@ -262,11 +260,11 @@ selfTests bash workflow catalog fix = do
   let stubs = unlines
         [ "export PATH=/dev/null REAL_BASH='" ++ bash ++ "' COQ820_SWITCH=stub ROCQ90_SWITCH=stub"
         , "cd() { :; }; git() { :; }; coqc() { :; }; hlint() { :; }"
-        , "stack() { if [[ $BLOCK == stack ]]; then return 127; fi; if [[ $* == build && $FAIL == stack ]]; then return 2; fi; }"
+        , "stack() { if [[ $BLOCK == stack ]]; then return 127; fi; if [[ $* == build && $FAIL == stack || $* == test && $FAIL == haskell-tests ]]; then return 2; fi; }"
         , "coq_makefile() { if [[ $BLOCK == coq_makefile ]]; then return 127; fi; }"
         , "make() { if [[ $* == '-C examples/tests' && $FAIL == make ]]; then return 2; fi; }"
         , "opam() { if [[ $BLOCK == opam ]]; then return 127; fi; if [[ $1 == lint ]]; then return 0; fi; while [[ $# -gt 0 && $1 != -- ]]; do shift; done; shift; \"$@\"; }"
-        , "bash() { case $1 in examples/tests/checks/harness.sh|examples/tests/checks/concurrent.sh) return 0;; *) \"$REAL_BASH\" \"$@\";; esac; }"
+        , "bash() { case $1 in test/harness.sh|test/concurrent.sh) return 0;; *) \"$REAL_BASH\" \"$@\";; esac; }"
         , "export -f cd git coqc hlint stack coq_makefile make opam bash"
         ]
       jobBlock name = case lookup ("Job: " ++ name) (sections catalog) >>= either (const Nothing) Just . bashBlocks . unlines of
@@ -279,6 +277,7 @@ selfTests bash workflow catalog fix = do
   forM_ [name | (heading, _) <- sections catalog, Just name <- [stripPrefix "Job: " heading]] $ \name ->
     runStubbed ("stubbed success " ++ name) name "export BLOCK= FAIL=" (== ExitSuccess)
   runStubbed "build failure is not green" "build-haskell" "export BLOCK= FAIL=stack" (== ExitFailure 2)
+  runStubbed "Haskell test failure is not green" "build-haskell" "export BLOCK= FAIL=haskell-tests" (== ExitFailure 2)
   runStubbed "Make exit 2 is not green" "tests" "export BLOCK= FAIL=make" (== ExitFailure 2)
   forM_ [("build-haskell", "stack"), ("tests", "opam"), ("tests", "coq_makefile")] $ \(name, tool) ->
     runStubbed ("blocked " ++ tool ++ " is not green") name ("export BLOCK=" ++ tool ++ " FAIL=") (== ExitFailure 127)
@@ -299,5 +298,5 @@ main = catchIOError run (die . ("CI catalog prerequisite failed: " ++) . show)
       syntax <- (++) <$> syntaxErrors bash catalogPath catalog <*> syntaxErrors bash fixPath fix
       let problems = catalogErrors workflow catalog fix ++ syntax
       unless (null problems) (die (unlines ("CI catalog failed:" : problems)))
-      unless (null args) (selfTests bash workflow catalog fix)
+      selfTests bash workflow catalog fix
       putStrLn "CI catalog: PASS (workflow, /ci, /ci-fix, Bash syntax)"

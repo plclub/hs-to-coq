@@ -57,7 +57,7 @@ import Data.Set (Set)
 
 import HsToRocq.Rocq.Gallina (Qualid, Qualid(..), Ident, RocqVersion(..))
 import HsToRocq.Rocq.Pretty
-import HsToRocq.Util.GHC.Module (moduleNameText, ModuleData, modName)
+import HsToRocq.Util.GHC.Module (ModuleData, modName)
 
 import HsToRocq.Edits.Types
 import HsToRocq.ConvertHaskell.TypeInfo
@@ -220,6 +220,7 @@ runGlobalMonad initEdits leniency paths version act =
     runReaderT ?? GlobalEnv{_globalEnvEdits = initEdits, _globalEnvLeniency = leniency, _globalEnvRocqVersion = version} $
     act
 
+-- | Scope the module environment without starting interface collection.
 withCurrentModule :: GlobalMonad r m =>
     ModuleData ->
     (forall r m. ConversionMonad r m => m a) ->
@@ -228,7 +229,6 @@ withCurrentModule newModule act = do
     _edits    <- view edits
     _leniency <- view leniency
     _version  <- view rocqVersion
-    isProcessedModule (moduleNameText (newModule ^. modName)) -- Start collecting the interface
     runReaderT act $ ModuleEnv
         { _moduleEnvEdits         = _edits
         , _moduleEnvLeniency      = _leniency

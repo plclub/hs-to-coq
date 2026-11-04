@@ -1,0 +1,1 @@
+redefine Definition DerivingRetainedAux.Enum__E_enumerate : EnumAuxRuntime.E -> list EnumAuxRuntime.E := fun _ => cons EnumAuxRuntime.B nil.

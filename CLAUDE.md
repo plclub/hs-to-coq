@@ -13,12 +13,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 stack build                                    # Build hs-to-rocq executable
+stack test                                     # Haskell suites; no Coq/Rocq compiler required
 stack exec hs-to-rocq -- -e edits -o output/ Input.hs  # Run on a file
 make                                           # Build base + base-thy + containers
 make -C examples/base-src vfiles               # Re-generate base/ from Haskell sources
 make -C examples/tests                         # Unit tests (.hs → .v → coqc)
-make -C examples/base-tests                    # Tests requiring base/
-make -C examples/rocq9.0                       # Rocq 9.0 base + shared unit tests
+make -C examples/base-tests                    # Base tests + deriving/traversal checks
+make -C examples/rocq9.0                       # Rocq 9.0 base + base checks + unit tests
 make -C examples/containers                    # containers lib + theories (regenerates + builds)
 make -C examples/transformers                   # transformers lib
 make -C examples/ghc clean && make -C examples/ghc  # Regenerate+compile GHC lib + theories
@@ -33,11 +34,11 @@ Use relative path instead of absolute path when `cd` to a directory.
 - `/ci-fix` — run CI checks, diagnose and fix failures, commit fixes
 
 Both commands use `.claude/commands/ci.md` as their shared catalog of all seven
-workflow jobs, including direct, harness, concurrent, and both Rocq checks. The
-compiler jobs use separate Coq 8.20 and Rocq 9.0 environments. Expected test
+workflow jobs, including Haskell suites, harness, concurrent, and both Rocq checks.
+The compiler jobs use separate Coq 8.20 and Rocq 9.0 environments. Expected test
 failures already return zero; every nonzero Make status needs investigation.
 When changing either command or the workflow, run
-`stack exec -- runghc -package=yaml examples/tests/checks/CiCatalog.hs --self-test`.
+`stack test hs-to-rocq:ci-catalog`.
 This `build-haskell` guard checks catalog coverage, delegation, failure masking,
 shell syntax, and regressions without running the documented builds.
 
@@ -90,6 +91,7 @@ module-edits/<Module>/<Path>/midamble.v  # Coq code inserted mid-file
 - `.h2ci` files store interface information for cross-module translation
 - `make vfiles` (base-src) skips existing `.v` files — `rm` the target file before running to force regeneration
 - `examples/base-src/modules.mk` shares the base module lists; `base-rules.mk` shares dependency-directory ordering and `_CoqProject` completion rules for both targets.
+- Shared `MANUAL_IFACES` prerequisites prepare manual `.h2ci` files before generation, including direct targets. Keep this separate from copying `.v` files: an existing `GHC/Tuple.v` must not hide missing `Solo` constructor metadata. `manual/GHC/Tuple.h2ci` describes the existing datatype; it does not add one.
 
 ### Stale .vo recovery
 If you see "inconsistent assumptions over library Coq.Init.Prelude", rebuild the full chain: `base` → `base-thy` → `examples/containers` → `examples/ghc`. For coq_makefile dirs: `find <dir> \( -name '*.vo' -o -name '*.vok' -o -name '*.vos' -o -name '*.glob' -o -name '.*.aux' \) -delete && coq_makefile -f _CoqProject -o Makefile && make -j`.
@@ -121,12 +123,14 @@ Key lemmas: `bin_Desc0` (combine Desc0), `Desc_outside` (f=None outside range), 
 
 ## Test Structure
 
-- `examples/tests/` and `examples/rocq9.0/tests/` share `examples/tests/test-rules.mk` and the same fixtures, compiled with `coqc` and `rocq c -w +deprecated-dirpath-Coq` respectively. Each suite has 67 `PASS` cases and 3 expected compiler failures (`TODO_PASS`). The Rocq warning flag rejects unrewritten root `Coq.*` paths while permitting user-qualified and relative `Coq` components.
-- `examples/base-tests/` requires the `base/` Coq library to be built first; it has 18 `PASS` cases and 3 expected compiler failures.
-- Test-specific files go in `examples/tests/<TestName>/`: `edits`, `preamble.v`, and `midamble.v`.
-- `examples/tests/checks/` contains 805 direct Haskell assertions for CLI version parsing and namespace rewriting, 237 edits parser/API assertions, and 213 harness checks with fake tools. The harness invokes both production test wrappers, including nested helper dependency/compilation rules and clean rebuilds. It checks concurrent tool logging, dependency-directory creation, manual-file copying, fresh Coq builds with manual modules, and serial and parallel base-generation retries through the `base` and direct/top-level `vfiles` entry points. Forced and outdated regeneration must reject stale output, discard failed output even with unchanged timestamps, and preserve successful sources during retries. It supports macOS Bash 3.2 and Bash 5. See the README test commands. These fast checks do not replace compiler tests.
-- When adding or changing edits tests, use the coverage matrix in `examples/tests/README.md`. Normal shared-suite Make runs include `edit-checks`: the parser/API assertions and 32 real-translator CLI cases for the selected target. All 42 edit constructors have exact grammar checks; `class kinds` remains parser-only because it has no translation consumer. Fixtures assert edit effects, including class defaults, scoped renaming, recursion modes, declaration phases, and invariant construction.
-- `examples/tests/checks/concurrent.sh` runs real translators concurrently with a shared Haskell dependency on both targets. It requires `.v` and `.h2ci` outputs and checks that default translation creates no shared `.ghc-tmp` artifacts. GHC defaults to `-fno-code` because translation only needs typechecking; native compilation otherwise races on shared `.o.tmp` files during fresh parallel base generation. The script also checks that an explicit `--ghc -fobject-code` overrides this default.
+- `test/` holds the Cabal suites `edits`, `rocq-version`, and `ci-catalog`, plus shell integration runners. Run the Haskell suites with `stack test` or `cabal test all`; they require no Coq/Rocq compiler or generated base. `CiCatalog` runs its complete self-tests by default; `--self-test` remains accepted for direct compatibility. For focused commands, dependencies, or shell integration checks, read [test/README.md](test/README.md). Shell runners and compiler checks remain separate from the Cabal suites.
+- `examples/tests/` and `examples/rocq9.0/tests/` share `examples/tests/test-rules.mk` and the same fixtures, compiled with `coqc` and `rocq c -w +deprecated-dirpath-Coq` respectively. Each base-independent suite has 67 `PASS` cases and 3 expected compiler failures (`TODO_PASS`); the combined `SoleCtorGuard` fixture counts as one module. Both suites passed at `1ca9107f`. The Rocq warning flag rejects unrewritten root `Coq.*` paths while permitting user-qualified and relative `Coq` components.
+- `examples/base-tests/` requires compiled `base/`; its 18 `PASS` cases and 3 expected compiler failures now run alongside `test/deriving.sh` and `test/identity-traversal.sh`. The Rocq parent `make -C examples/rocq9.0 base` runs both scripts after base compilation. `BASE_CHECKS=` disables these real-tool checks for the fake harness only; retain the defaults for normal builds.
+- When changing deriving recovery, stock generation, or shared traversal instances, use the [deriving and base integration checks](examples/tests/README.md#deriving-and-base-integration). Run the complete deriving CLI suite per target in the matching compiler environment; `test/deriving.sh --retained-only` focuses on Kleisli and inline kind regressions. The shared `IdentityTraversal.v` runner requires 14 closed assumption reports, not merely successful compilation.
+- Shared compiler fixtures keep their `edits`, `preamble.v`, and `midamble.v` files in `examples/tests/<TestName>/`.
+- `test/` contains 805 direct Haskell assertions for CLI version parsing and namespace rewriting, 237 edits parser/API assertions, and 225 harness checks with fake tools. The harness invokes both production test wrappers, including nested helper dependency/compilation rules and clean rebuilds. It checks concurrent tool logging, dependency-directory creation, manual-file copying, fresh Coq builds with manual modules, and serial and parallel base-generation retries through the `base` and direct/top-level `vfiles` entry points. Eight cases restore missing manual interfaces when `.v` files already exist, using both generators, direct/`vfiles` targets, and `-j1`/`-j2`. Forced and outdated regeneration must reject stale output, discard failed output even with unchanged timestamps, and preserve successful sources during retries. Four cases run the real `test/identity-traversal.sh` from the repository root and Make caller directories for 8.20/9.0 with fake compilers and a Git stub that rejects repository access. They verify compiler arguments and the fixture source path and exercise the fourteen-report check. The issue 228 branch at `e41f3c37` recorded all 221 passing with macOS Bash 3.2 and Bash 5.3.20. All 221 also passed at `1ca9107f`; see the [post-rebase test record](examples/tests/README.md#post-rebase-validation). These fast checks do not replace compiler tests.
+- When adding or changing edits tests, use the coverage matrix in `examples/tests/README.md`. Normal shared-suite Make runs include `edit-checks`: `stack --allow-different-user test hs-to-rocq:edits` runs the parser/API assertions, then `test/edits.sh` runs 32 real-translator CLI cases for the selected target. All 42 edit constructors have exact grammar checks; `class kinds` remains parser-only because it has no translation consumer. Fixtures assert edit effects, including class defaults, scoped renaming, recursion modes, declaration phases, and invariant construction.
+- `test/concurrent.sh` runs real translators concurrently with a shared Haskell dependency on both targets. It requires `.v` and `.h2ci` outputs and checks that default translation creates no shared `.ghc-tmp` artifacts. GHC defaults to `-fno-code` because translation only needs typechecking; native compilation otherwise races on shared `.o.tmp` files during fresh parallel base generation. The script also checks that an explicit `--ghc -fobject-code` overrides this default.
 
 Test categories distinguish translation from compilation:
 
@@ -138,7 +142,7 @@ Both the shared rules and base-tests discard partial `.v` output when the transl
 
 The shared compiler fixtures cover:
 
-- `SoleCtorGuard`: pattern guards over sole and nested constructors, refutable constructors, guarded case arms, and empty lists.
+- `SoleCtorGuard`: pattern guards over sole and nested constructors, refutable constructors, guarded case arms, and empty lists, plus `Box` and nested-pair guards. Computational assertions cover each fixture case, including exhaustive guards and refutable fallbacks.
 - `RocqNestedCorelib`: nested shim references in the AST.
 - `RocqMovedAst`: the moved theorem in a generated `Definition`, raw `Qed`/`Defined` proofs with whitespace/comment-separated path components, and an edits-supplied `Program` obligation tactic. The `Defined` proof also checks string-literal preservation. A local `Obligation Tactic := idtac` keeps the obligation pending, while `set type` makes `fixEqWitness` a dependent pair requiring `fixEqType`. The tactic supplies the moved theorem, and `Check (proj2_sig fixEqWitness) : fixEqType.` makes an incomplete obligation fail compilation.
 - `RocqMovedText`: preamble/midamble text with `From` syntax and extra whitespace, root `Coq.*` references (including after superscript/subscript notation, punctuation ending in dots, pattern apostrophes, and adjacent numerals), and user names that must remain unchanged: identifiers containing combining U+1DC0, non-breaking U+00A0, subscripts, apostrophes, or digits, `MyCoq.add`, and paths under `UserCoq` and `Other.Coq` that resemble shim or moved-module paths.
@@ -152,7 +156,7 @@ Seven jobs: `hlint`; `build-haskell` (haskell:9.10.3-bookworm Docker, builds the
 
 Use the explicit Bookworm image tag: the unqualified `haskell:9.10.3` tag uses Debian 11 Bullseye, whose LTS ended in August 2026. Its security-package URLs returned 404 during compiler setup. Bookworm keeps GHC 9.10.3 while using a supported Debian package source.
 
-After setup, `build-haskell` runs the CI catalog guard above, `stack --allow-different-user exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs`, `bash examples/tests/checks/harness.sh`, and `bash examples/tests/checks/concurrent.sh`. The `test-rocq9` job runs `make -C examples/rocq9.0 clean`, then `make -j2 -C examples/rocq9.0 base`, before its unit-test step. These checks use the existing seven jobs.
+After setup, `build-haskell` runs `stack --allow-different-user test` in the `Run Haskell test suites` step, followed by `bash test/harness.sh` and `bash test/concurrent.sh`. The Haskell step runs all three Cabal suites, including the catalog's complete self-tests. The `test-rocq9` job runs `make -C examples/rocq9.0 clean`, then `make -j2 -C examples/rocq9.0 base`, before its unit-test step. These checks use the existing seven jobs.
 
 **Shared setup**: `build-haskell`, `tests`, `test-rocq9`, `test-rocq9-translation`, and `test-translation` all run `actions/checkout@v7` then `.github/actions/setup-hs-to-rocq` (composite), which does fix Docker permissions → init requested submodules (`submodules` / `shallow-submodules` inputs) → install extra apt packages (`extra-apt-packages`) → restore Stack cache via `actions/cache@v6` → `stack build`. A local action is not available until after checkout, so the checkout step must precede the composite action. Per-job variation is expressed via those inputs, not duplicated steps. `hlint` (native runner) and `test-coq-files` (docker-coq-action) keep their own checkout.
 
@@ -203,7 +207,39 @@ These must use old versions from git master with manual fixes:
 - `_CoqProject` ordering matters: Identity/Traversable must be listed early (EARLY_GHC_INTERNAL_MODULES in Makefile) to avoid Coq typeclass resolution stack overflow
 
 ### Deriving pipeline (GHC 9.10)
-GHC's `load LoadAllTargets` processes standalone `deriving instance` declarations during typechecking — before `addDerivedInstances` runs. If any fail (e.g. types from skipped modules), `load` returns `Failed`. The fallback in `ProcessFiles.hs` strips all standalone deriving decls from the **parsed** AST, then typechecks, then uses `addDerivedInstances` to re-derive the ones we want.
+
+Issue 228 preserves parsed and renamed inline/standalone deriving requests.
+`renameForDeriving` captures the renamed group through `renamedResultAction`
+before deriving or value checking can fail. Recovery in `ProcessFiles.hs`
+removes only diagnosed failed requests, then runs a full GHC typecheck. The default
+`--strict` mode rejects unskipped failures with a nonzero exit; `--permissive` warns
+and keeps successful requests only if the remaining module typechecks.
+
+`Util/GHC/Deriving.hs` checks that parsed, renamed, and checked request inventories
+agree. Each wanted request must have one retained body and one checked dictionary
+(except GHC's `Typeable` no-op). Recovery passes auxiliary bindings separately to
+conversion. After class registration, instance conversion records the original
+method bodies it actually translates; retain only auxiliary groups reachable from
+those bodies, including transitive helper dependencies. This respects imported
+class interfaces and scoped method edits without early interface lookups.
+Skip decisions use source syntax and canonical instance names
+under renaming, not compiler-added kind dependencies such as `GHC.Types`; the
+`Functor__Kleisli` and inline-kind fixtures guard this distinction.
+
+`withCurrentModule` scopes the module environment; `convertModule` starts interface
+collection. Keep that registration at conversion entry so deriving-policy checks
+leave interfaces available for modules not yet converted in a multi-module invocation.
+
+`Util/GHC/StockDeriving.hs` bridges only source-defined `Foldable` and
+`Traversable` in the exact modules `GHC.Internal.Data.Foldable` and
+`GHC.Internal.Data.Traversable`. It checks class kinds, superclasses, method types,
+default-method presence, and the absence of associated types and functional
+dependencies against GHC's stock API. It also checks GHC's stock side conditions
+and constructor visibility before inserting an ordinary parsed instance for a
+full GHC typecheck. Source class identity stays unchanged; a matching class name
+alone is insufficient. Use the generated shared `Traversable__Identity`, not a
+manual local dictionary or a different class encoding. `Foldable` and
+`Traversable` for `Solo` and `Down` use this path rather than new skips.
 
 ### Common edit patterns for GHC 9.10
 - **`skip` vs `skip method`**: Never use `skip Mod.func` for class methods — use `skip method Mod.Class func` only. Using both causes "skipping a binding" errors.
@@ -226,20 +262,33 @@ GHC's `load LoadAllTargets` processes standalone `deriving instance` declaration
 - **Adding Gallina AST constructors**: New `Sentence` variants need cases in `Pretty.hs`, `FreeVars.hs`, `Subst.hs`. Export `(..)` for record types used across modules.
 
 ### GHC example (examples/ghc/)
-Translated from GHC 9.10.3. The library and full theory build pass on Coq 8.20.1. `make clean && make` regenerates lib/ (removes dir, rebuilds via hs-to-rocq + lndir for ~48 manual files). Edit `manual/*.v` directly (not `lib/*.v` symlinks).
+Translated from GHC 9.10.3 for Coq 8.20. The combined tree retains PR 229's proof-contract recovery from `a038d05a` and issue 228's deriving recovery from `e41f3c37`. At `1ca9107f`, full GHC regeneration, library compilation, and all 31 enabled theories passed, including `RecoveryChecks`. See `examples/ghc/README.md` for the revision-specific evidence. `make clean && make` regenerates lib/ (removes dir, rebuilds via hs-to-rocq + lndir for ~48 manual files). Edit `manual/*.v` directly (not `lib/*.v` symlinks).
 
 Key GHC 9.10 type changes: `Alt` uses `Mk_Alt` constructor (not tuple); `Mk_Id` has 7 fields (`varMult : Mult` added 4th); `realUnique` is `Unique` not `N`; `Var` has single constructor `Mk_Id` (no `TyVar`); `cse_bind` has 5 args; `lookupIdSubst` dropped `String` doc param; State monad is bare function type; `mkVarApps` uses `foldl'`. GoDom: use `alt_rhs` projection (strict positivity).
 
 Proof bridge lemmas: `GHC.Base.foldl'` is CPS-via-`fold_right` (not `fold_left`). Use `Foldable.foldl'_is_foldl` (base-thy) to convert `foldl'` to `foldl` in proofs, or `hs_coq_foldl'_base` (base-thy/GHC/Base.v) to convert to `fold_left` directly.
 
-**WF contract recovery**: When changing IntMap/VarSet proofs or their callers, follow the "WF contract recovery" section in `examples/ghc/README.md`. Supply explicit WF and validity evidence using `VarSetInvariant`; raw membership equality does not establish either invariant. `IntMapRecursion` derives operation equations from guarded deferred recursion, and `IntMapUnionProofs` proves semantic preservation. Keep the element type of `Desc`, `Desc0`, and `Sem` uniform so inversion needs no `eq_rect_eq`. `RecoveryChecks.v` fixes the final Exitify contract and checks that the rejected blanket declarations and raw TrieMap law instances remain absent.
+**WF contract recovery**: When changing IntMap/VarSet proofs or their callers, follow the "WF contract recovery" section in `examples/ghc/README.md`. Supply explicit WF and, where required, payload-validity evidence using `VarSetInvariant`; raw membership equality does not establish either invariant. `IntMapRecursion` derives operation equations from guarded deferred recursion, and `IntMapUnionProofs` proves semantic preservation. Keep the element type of `Desc`, `Desc0`, and `Sem` uniform so inversion needs no `eq_rect_eq`. `RecoveryChecks.v` fixes the final Exitify contract and checks that the rejected blanket declarations and raw TrieMap law instances remain absent.
 
 Key-only VarSet laws require trie-WF without payload validity. Keep validity premises on payload-sensitive lookup/filter laws; `ValidVarSet_iff_StrongValidVarSet` converts the equivalent validity predicates without a WF premise. `RecoveryChecks.v` guards these distinctions with exact theorem types and a well-formed, invalid-payload singleton.
 
-**Exitify/CSE recovery**: When changing their translation, proofs, or assumptions, read [Exitify and CSE proof recovery](examples/ghc/README.md#exitify-and-cse-proof-recovery). It covers guarded unfolding, edit-only Identity support, the restored locality axiom, remaining theorem assumptions, and validation scope.
+Preserve the exact final `exitifyProgram_WellScoped_JPV` contract: well-scopedness and join-point validity of the input imply both properties of the output, with no new program-level map premises. In contrast, `WellScoped_Subst` explicitly requires WF and validity of both scopes and WF of the Id substitution environment. Keep `All_IntMaps_WF`, `ValidVarSet_Axiom`, `StrongValidVarSet_Axiom`, `deferredFix2_eq`, and the raw `TrieMapLaws__Map`/`TrieMapLaws__IntMap`/`TrieMapLaws__UniqFM` instances absent. The upstream assumption audit also removed `Eqdep.Eq_rect_eq.eq_rect_eq` from final Exitify, not its intentional model, functional-extensionality, or guarded-recursion assumptions.
 
-Un-axiomatized: `Subst` (concrete inductive in Core.v), `substExpr`/`substBind` (mutual Fixpoint in CoreSubst midamble), `exitifyRec` (concrete with `deferredFix2`), `Id.idJoinPointHood`. CoreSubst hybrid auto-generation: 4 auto-generated, 9 redefined (simplified for `TvSubstEnv=CvSubstEnv=unit`), core subst in midamble (ordering: midamble before generated code).
+**Exitify/CSE recovery**: When changing their translation, proofs, or assumptions, read [Exitify and CSE proof recovery](examples/ghc/README.md#exitify-and-cse-proof-recovery). It covers guarded unfolding, shared Identity traversal, the restored locality axiom, remaining theorem assumptions, and revision-specific validation.
+
+Un-axiomatized: `Subst` (concrete inductive in Core.v), `substExpr`/`substBind` (mutual Fixpoint in CoreSubst midamble), `exitifyRec` (concrete with `deferredFix2`), `mkExitJoinId` (translated with the `ManyTy` builder recovered through edits), `Id.idJoinPointHood`. CoreSubst hybrid auto-generation: 4 auto-generated, 9 redefined (simplified for `TvSubstEnv=CvSubstEnv=unit`), core subst in midamble (ordering: midamble before generated code).
 Key axioms: `tyCoFVsOfType_is_emptyFV`/`tyCoFVsOfCo_is_emptyFV` (types axiomatized), `tyCoVarsOfTypeDSet_empty`. Still axiomatized: `floatExpr`/`floatBind`/`floatRhs`, `fiExpr`/`fiBinds`/`fiRhs`. Locate admission markers with `rg -n Admitted examples/ghc/theories/*.v` (comments can match); use `Print Assumptions` to check a theorem's dependencies.
+
+CSE now translates natively within the current Core model, using the shared
+inferred `Traversable Identity` instance instead of PR 229's local dictionary.
+Preserve all four methods (`traverse`, `sequenceA`, `mapM`, `sequence`) and
+`mapAccumL` behavior when changing that instance. Four recovered computational
+equations and the new `cseBind_Rec_singleton` end in `Qed`; the theory has 8 `Qed`
+proofs and one admission, `WS_cseExpr`. The singleton equation exercises the shared
+instance, not the removed local `cse_identity_mapAccumL` lemma. CoreMap/type
+abstractions remain opaque. The [post-rebase validation record](examples/ghc/README.md#post-rebase-validation)
+documents compilation, kernel checks, and the comparison with the recorded
+upstream assumption baseline at `1ca9107f`.
 
 Build details: `manual/AxiomatizedTypes.v` instances must be `#[global]`. `axiomatize module OccurAnal` needs preamble.v + midamble.v. Midamble placed AFTER types+auto-Defaults, BEFORE values — use `skip` + midamble for custom Defaults. Makefile sed post-processing: BasicTypes/Literal (`#[global]`), UniqFM (phantom kinds), Core.v (mutual type fixes via `fix-files/`).
 Core.v post-processing uses `fix-files/` for multi-line insertions (portable across GNU/BSD sed). GHC and transformers regeneration on macOS requires GNU sed: `brew install gnu-sed && PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH" make -C examples/ghc vfiles`.

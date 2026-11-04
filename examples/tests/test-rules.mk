@@ -112,8 +112,8 @@ main:
 all:  $(VFILES) $(EDIT_CHECKS) pass todo_pass todo_translate
 
 edit-checks:
-	stack --allow-different-user exec -- runghc -package=hs-to-rocq $(SRC_DIR)/checks/Edits.hs
-	bash $(SRC_DIR)/checks/edits.sh --target-version $(EDIT_CHECK_VERSION)
+	stack --allow-different-user test hs-to-rocq:edits
+	bash $(SRC_DIR)/../../test/edits.sh --target-version $(EDIT_CHECK_VERSION)
 
 pass: $(addsuffix .pass,$(PASS))
 	@echo

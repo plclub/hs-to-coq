@@ -1,0 +1,4 @@
+skip class GHC.Internal.Enum.Enum
+skip DerivingAux.Default__Wrapped
+skip DerivingAux.Default__UnwantedEnum
+order DerivingAux.Keep__bool DerivingAux.Keep__Wrapped_keep

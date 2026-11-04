@@ -167,7 +167,10 @@ $(VFILES_MAN): $(OUT)/%.v : $(BASE_SRC)/manual/%.v Makefile
 	    -e 's#^\([[:space:]]*From[[:space:]][[:space:]]*\)Coq\([[:space:]]\)#\1Stdlib\2#' \
 	    -e 's#Coq\.#Stdlib.#g' \
 	    $< > $@
-	@if [ -e $(BASE_SRC)/manual/$*.h2ci ]; then cp $(BASE_SRC)/manual/$*.h2ci $(OUT)/$*.h2ci; fi
+
+$(MANUAL_IFACES): $(OUT)/%.h2ci: $(BASE_SRC)/manual/%.h2ci
+	mkdir -p $(dir $@)
+	cp $< $@
 
 %.h2ci: %.v
 	@true

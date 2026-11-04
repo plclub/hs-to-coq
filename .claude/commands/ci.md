@@ -91,14 +91,15 @@ hlint src/lib src/exe
 bash -e -o pipefail <<'BASH'
 stack build
 stack exec -- ghc --numeric-version
-stack exec -- runghc -package=yaml examples/tests/checks/CiCatalog.hs --self-test
-stack exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs
-bash examples/tests/checks/harness.sh
-bash examples/tests/checks/concurrent.sh
+stack test
+bash test/harness.sh
+bash test/concurrent.sh
 BASH
 ```
 
-The catalog check validates job coverage, prerequisites, `/ci-fix` delegation, failure propagation, and Bash syntax without running builds or regeneration. Its self-tests include the pinned old catalog and mutations. The remaining steps check direct version parsing/rewriting, harness failure propagation with fake tools, and concurrent real translations for both targets. The concurrent check also verifies the explicit GHC code-generation override. None requires a Coq/Rocq compiler; they do not replace the compiler suites.
+`stack test` runs the `edits`, `rocq-version`, and `ci-catalog` Cabal suites. The catalog suite validates job coverage, prerequisites, `/ci-fix` delegation, failure propagation, and Bash syntax without executing real builds or regeneration. Its complete self-tests run by default, including the pinned old catalog and mutations. CI uses `stack --allow-different-user test` in the `Run Haskell test suites` step.
+
+The separate shell steps check harness failure propagation with fake tools and concurrent real translations for both targets. The concurrent check also verifies the explicit GHC code-generation override. None of these checks requires a Coq/Rocq compiler; they do not replace the compiler suites. For focused commands and dependencies, see [test/README.md](../../test/README.md).
 
 ## Job: test-coq-files
 

@@ -1,0 +1,4 @@
+rename module DerivingIgnored Skipped
+skip module Skipped
+skip DerivingModuleSkip.Default__Wrapped
+order DerivingModuleSkip.Keep__bool DerivingModuleSkip.Keep__Wrapped_keep

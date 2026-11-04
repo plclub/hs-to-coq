@@ -8,7 +8,7 @@ Run local CI checks, repair failures, and commit the verified fixes. **Read `.cl
 
 The argument is: $ARGUMENTS
 
-Apply `ci.md`, "Select jobs", to this argument. Empty or `all` means all seven workflow jobs, including HLint, the catalog/direct/harness/concurrency checks in `build-haskell`, and both Rocq jobs. Use the exact blocks under the corresponding `Job:` headings, with their prerequisite checks and environment wrappers.
+Apply `ci.md`, "Select jobs", to this argument. Empty or `all` means all seven workflow jobs, including HLint, the Haskell suites and shell integration checks in `build-haskell`, and both Rocq jobs. Use the exact blocks under the corresponding `Job:` headings, with their prerequisite checks and environment wrappers.
 
 ## Repair loop
 
@@ -20,11 +20,15 @@ Apply `ci.md`, "Select jobs", to this argument. Empty or `all` means all seven w
 
 ## HLint and Haskell failures
 
-For HLint, first confirm the version from `ci.md`; do not suppress a finding merely to pass. For compilation errors, inspect the reported source under `src/`, rebuild, then rerun the remaining `build-haskell` checks.
+For HLint, first confirm the version from `ci.md`; do not suppress a finding merely to pass. For compilation errors, inspect the reported source under `src/` or `test/`, rebuild, then rerun the remaining `build-haskell` checks.
 
-For catalog failures, compare `ci.md` with the current workflow and inspect `examples/tests/checks/CiCatalog.hs`. Keep the job headings and selection table synchronized, retain the shared-catalog delegation here, and preserve nonzero exits. Rerun the catalog check from `ci.md` after a repair.
+For a failing Haskell suite, use the focused commands in [test/README.md](../../test/README.md):
 
-For direct version/rewrite assertions, inspect `examples/tests/checks/RocqVersion.hs` and the relevant CLI or Gallina rewriting code. For harness failures, inspect `examples/tests/checks/harness.sh` and the production Makefile rule it exercises. For concurrency failures, inspect `examples/tests/checks/concurrent.sh` and its translation logs; fake-tool harness success cannot substitute for this real-translator check. Rerun the failing check using its exact `build-haskell` command before rerunning the whole job.
+- **`ci-catalog`**: compare `ci.md` with the current workflow and inspect `test/CiCatalog.hs`. Keep the job headings and selection table synchronized, retain the shared-catalog delegation here, and preserve nonzero exits. The suite runs its complete self-tests by default.
+- **`edits`**: inspect `test/Edits.hs` and the relevant edits parser or builder code. Use the [coverage matrix](../../examples/tests/README.md#edit-coverage-matrix) to identify related CLI and compiler witnesses.
+- **`rocq-version`**: inspect `test/RocqVersion.hs` and the relevant CLI or Gallina rewriting code.
+
+For harness failures, inspect `test/harness.sh` and the production Makefile rule it exercises. For concurrency failures, inspect `test/concurrent.sh` and its translation logs; fake-tool harness success cannot substitute for this real-translator check. Rerun the failing suite or the exact shell command from `ci.md`, then rerun the whole `build-haskell` job.
 
 ## Coq and Rocq failures
 

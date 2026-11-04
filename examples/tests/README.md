@@ -1,9 +1,10 @@
 # Shared translator tests
 
-These tests exercise hs-to-rocq through three interfaces: the public edits
-parser/builder, the real translator CLI, and generated Gallina compiled with
-Coq 8.20 or Rocq 9.0. Both compiler suites use the fixtures in this directory
-and [test-rules.mk](test-rules.mk).
+This directory contains the compiler fixtures and shared
+[test-rules.mk](test-rules.mk) for Coq 8.20 and Rocq 9.0. Tool-level Haskell
+suites, CLI checks, and shell runners live in [`test/`](../../test/README.md).
+Together, these tests exercise the public edits parser/builder, the real
+translator CLI, and generated Gallina compiled with either target compiler.
 
 ## Run the tests
 
@@ -18,7 +19,9 @@ make -C examples/rocq9.0/tests
 ```
 
 Both normal Make entry points reach the shared `all` target, which includes
-`edit-checks` as well as compiler tests. The Coq wrapper compiles with `coqc`;
+`edit-checks` as well as compiler tests. The `edit-checks` target runs
+`stack --allow-different-user test hs-to-rocq:edits`, then `test/edits.sh` for
+the selected target. The Coq wrapper compiles with `coqc`;
 the Rocq wrapper uses `rocq c -w +deprecated-dirpath-Coq` to reject missed root
 `Coq.*` rewrites. Existing CI jobs that invoke these Make targets therefore run
 the edit checks without a workflow change.
@@ -40,41 +43,59 @@ target version, selected by `EDIT_CHECK_VERSION`.
 The checks can also run independently:
 
 ```bash
-stack exec -- runghc -package=hs-to-rocq examples/tests/checks/Edits.hs
-bash examples/tests/checks/edits.sh
-bash examples/tests/checks/edits.sh --target-version 8.20
-bash examples/tests/checks/edits.sh --target-version 9.0
+stack test hs-to-rocq:edits
+bash test/edits.sh
+bash test/edits.sh --target-version 8.20
+bash test/edits.sh --target-version 9.0
 ```
 
 With no option, `edits.sh` checks both targets. It uses temporary directories
 and removes them on exit. Other checks remain separate from `edit-checks`:
 
 ```bash
-stack exec -- runghc -package=hs-to-rocq examples/tests/checks/RocqVersion.hs
-bash examples/tests/checks/harness.sh
-bash examples/tests/checks/concurrent.sh
+stack test hs-to-rocq:rocq-version
+stack test hs-to-rocq:ci-catalog
+bash test/harness.sh
+bash test/concurrent.sh
 ```
 
-`RocqVersion.hs` checks version parsing and namespace rewriting. The fake-tool
-`harness.sh` checks Make recipes, failure propagation, regeneration, helper
-dependencies, and cleanup, not edit semantics. `concurrent.sh` runs real
-translators with a shared Haskell dependency to check concurrent translation
-and the explicit GHC code-generation override. These checks do not replace
-compiler tests.
+`RocqVersion.hs` checks version parsing and namespace rewriting. `CiCatalog.hs`
+checks the CI catalog and runs its complete self-tests by default. Run all three
+Haskell suites with `stack test` or `cabal test all`; shell runners and compiler
+fixtures remain separate. See the [tool test guide](../../test/README.md) for
+dependencies and focused commands.
+
+The fake-tool `harness.sh` checks Make recipes, failure propagation, regeneration,
+helper dependencies, and cleanup, not edit semantics. Its 225 cases include eight that
+restore missing manual `.h2ci` files when the corresponding `.v` files already
+exist. They exercise both base generators, direct and `vfiles` targets, and
+`-j1`/`-j2`, while preserving successfully generated sources. Four cases run the
+real `test/identity-traversal.sh` with fake compilers and a Git stub that rejects
+repository access. They cover both targets from the repository root, plus 8.20
+from `examples/base-tests` and 9.0 from `examples/rocq9.0`. They verify compiler
+arguments and the fixture source path and exercise the fourteen-report check.
+`concurrent.sh` runs real translators with a shared Haskell dependency to check
+concurrent translation and the explicit GHC code-generation override. These checks
+do not replace compiler tests.
 
 ## What a passing check establishes
 
 | Layer | Assertions |
 | --- | --- |
-| [Edits.hs](checks/Edits.hs) | Currently 237 assertions through `parseEditList`, `parseTerm`, `buildEdits`, and related public APIs: exact ASTs, configuration fields, diagnostics, ordering, and precedence. |
-| [edits.sh](checks/edits.sh) | 32 real-CLI cases per target, 64 for both. Success requires nonempty `.v` and `.h2ci` output plus selected source assertions; rejection requires a nonzero exit and a diagnostic substring. This script does not compile output. |
+| [Edits.hs](../../test/Edits.hs) | Currently 237 assertions through `parseEditList`, `parseTerm`, `buildEdits`, and related public APIs: exact ASTs, configuration fields, diagnostics, ordering, and precedence. |
+| [edits.sh](../../test/edits.sh) | 32 real-CLI cases per target, 64 for both. Success requires nonempty `.v` and `.h2ci` output plus selected source assertions; rejection requires a nonzero exit and a diagnostic substring. This script does not compile output. |
 | Shared compiler fixtures | Currently 67 `PASS` cases and 3 `TODO_PASS` cases per compiler. Generated proofs, type checks, and deliberate `Fail` commands distinguish selected edit effects from mere successful translation. |
 
-The compiler counts include 12 new edit fixtures, the reactivated `Records`
-and `RecordConstruction`, and `SoleCtorGuard`, up from 52 `PASS` cases. The record
+The compiler counts include 12 edit fixtures, the reactivated `Records` and
+`RecordConstruction`, and `SoleCtorGuard`, up from 52 `PASS` cases. The record
 assertions check field update, named-field construction, and projection of the
-constructed value. `SoleCtorGuard` checks refutable and irrefutable pattern guards.
-The lists in `test-rules.mk` determine which fixtures actually run.
+constructed value. `SoleCtorGuard` combines `Single`, `Nested`, `Choice`, guarded
+case arms, and empty-list guards with the `Box` and nested-pair cases. Computational
+assertions cover each fixture case, including exhaustive guards and refutable
+fallbacks. It counts as one `PASS` module, so combining the two branches keeps
+the total at 67, not 68.
+The lists in `test-rules.mk` determine which fixtures run; these counts describe
+the inventory, not the outcome of a particular run.
 
 | Category | Required translation result | Required compiler result |
 | --- | --- | --- |
@@ -88,10 +109,123 @@ match their category; an unexpected result must keep Make's nonzero status.
 Generation is forced on reruns, including helper dependencies, and a failed
 translator's partial `.v` output is discarded rather than reused.
 
+## Deriving and base integration
+
+Issue 228 adds base-dependent checks without adding a base dependency to either
+shared unit suite. After building the translator, use the matching compiler
+environment and compiled base library:
+
+```bash
+# Coq 8.20: existing base tests plus deriving and traversal checks
+make -C examples/base-tests
+
+# Rocq 9.0: compile base, then run its base-checks target
+make -C examples/rocq9.0 base
+
+# Run either check independently; use --target-version 9.0 for Rocq
+bash test/deriving.sh --target-version 8.20
+bash test/identity-traversal.sh --target-version 8.20
+
+# Focus on the two retained-instance/kind regressions
+bash test/deriving.sh --target-version 8.20 --retained-only
+```
+
+[`deriving.sh`](../../test/deriving.sh) contains 36 cases per target and defaults to
+8.20. Its successful translation cases compile generated modules and consumers
+that infer dictionaries and check their computations. Rejection cases require
+a nonzero exit, a relevant diagnostic, and no generated module. Coverage includes:
+
+- Inline and standalone recovery; renamed module, class, and instance skips,
+  including dependencies that occur only in a standalone instance context;
+  method skips; and auxiliary bindings needed by retained instances.
+- Multi-module translation of explicit instances, even with no deriving clauses.
+  The runner prepares the class interface, checks the client alone, then translates
+  both modules together with the client ordered before the class module. It compiles
+  both outputs and a consumer that infers the dictionary and checks its computation.
+- Whole-instance `redefine` excludes helpers used only by the discarded
+  implementation. `whole-instance-redefine-unused-helpers` translates
+  `DerivingRedefinedAux` through the real CLI, then compiles the output and
+  `RedefinedAuxConsumer.v`. The consumer infers the replacement `Enum` dictionary
+  and proves `inferredFromEnum B = 7` by reflexivity; stock deriving would return `1`.
+- Individual method replacements and renamed `skip method` edits also exclude
+  unused stock Enum helpers. These checks bootstrap class metadata from a source
+  fixture rather than using the production edits that skip Enum entirely. The
+  replacement case compiles against the real base Enum class and checks exactly
+  one renamed `Enum__E` instance with no unused helpers. A source-generated
+  primitive model also checks replacement of a renamed method and a
+  surviving original method: its consumer computes `A, B` using both retained
+  stock helpers. No helper bodies or instance dictionaries are replaced in that
+  retention check.
+- A provider-only method skip is respected through the imported class interface:
+  the consumer does not repeat the skip, still infers its dictionary and computes,
+  and emits neither unused Enum helper. This also holds when an empty import puts
+  the unselected provider in GHC's source graph under `-N`. Two selected-provider
+  checks translate the provider before the consumer, replacing stale interfaces
+  that omit or retain the method; helpers follow the newly converted inventory.
+- Nonzero failures in default/strict mode and warnings with partial success in
+  permissive mode, including removal of a synthesized instance that fails the
+  final GHC typecheck.
+- The checked stock-generator bridge for the exact source modules
+  `GHC.Internal.Data.Foldable` and `GHC.Internal.Data.Traversable`, including
+  explicit `stock`, incompatible class APIs, invalid fields, hidden
+  constructors, and missing superclasses.
+- Retention of `Functor__Kleisli` and inline kind-polymorphic instances when
+  compiler-added kind names from `GHC.Types` must not trigger a module skip.
+  `--retained-only` selects these two cases.
+
+[`identity-traversal.sh`](../../test/identity-traversal.sh) compiles the same
+[`IdentityTraversal.v`](../base-tests/IdentityTraversal.v) on both targets in a
+fresh temporary directory. The fixture uses public operations with inferred
+dictionaries for `Identity`, `Solo`, and `Down`; it supplies no local replacement
+instances. It checks `fmap`, `foldr`, `traverse`, and `mapAccumL`, including
+effects and state/value order. The runner requires 14 closed `Print Assumptions`
+reports and rejects any `Axioms:` report: six generated instances and eight
+proofs/examples. These checks do not establish axiom-freedom for unrelated base
+definitions or GHC proofs.
+
+The Make entry points enable both scripts through `BASE_CHECKS`. The fake-tool
+harness sets `BASE_CHECKS=` for Make recipe tests, but directly exercises the real
+`identity-traversal.sh` runner with fake compilers. Keep the default checks enabled
+for normal builds. Both base generators prepare manual `.h2ci` prerequisites even
+for direct file targets.
+In particular, `GHC/Tuple.h2ci` supplies metadata for the existing `Solo` datatype.
+
+### Issue 228 validation
+
+The issue 228 branch at `e41f3c37` recorded the following results before rebasing
+onto PR 229 (`a038d05a`). Both production base trees were regenerated after the
+retained-kind fix and compiled with Coq 8.20 and Rocq 9.0 respectively:
+
+- Coq base-tests: 18 `PASS` fixtures, 3 expected compiler failures, 26 deriving
+  cases, and 14 closed assumption reports.
+- Rocq parent `base`: 26 deriving cases and 14 closed assumption reports after
+  base compilation.
+- Both base-independent unit suites: 67 `PASS` fixtures and 3 expected compiler
+  failures, plus 237 edits assertions and 32 real-CLI cases per target.
+- All 805 version/rewrite assertions, the concurrent real-translator check,
+  and HLint.
+- All 221 harness cases on both Bash 3.2 and Bash 5.3.20.
+
+### Post-rebase validation
+
+At `1ca9107f`, `stack build` and forced full base generation and compilation passed
+for both Coq 8.20 and Rocq 9.0. Tracked generated outputs remained byte-identical
+(`git diff --exit-code` returned zero). The following checks also passed:
+
+- Per target: 67 `PASS` fixtures and 3 expected compiler failures, including the
+  combined `SoleCtorGuard` cases and their computational proofs; 26 deriving CLI
+  cases; and 14 closed production-instance/proof reports.
+- Per target: 237 edits API assertions and 32 edits CLI cases.
+- All 221 harness cases and 805 version/rewrite assertions, the `CiCatalog` guard,
+  real-translator concurrency check, and HLint.
+
+The [GHC validation record](../ghc/README.md#post-rebase-validation) covers the
+dependency builds, kernel checks, and separate scratch Identity comparison.
+
 ## Edit coverage matrix
 
 Each row corresponds to one of the 42 `Edit` constructors. `grammarCases` in
-`Edits.hs` checks an exact parsed AST for every constructor; `grammarBranchCases`
+`test/Edits.hs` checks an exact parsed AST for every constructor; `grammarBranchCases`
 checks additional syntax forms. The parser/API column describes those checks
 and the additional builder assertions. Compiler names refer to active shared
 fixtures and their `edits`, `preamble.v`, or `midamble.v` assertions; CLI names
@@ -189,7 +323,7 @@ bugs, not remaining gaps. The CLI checks both recursive and nonrecursive cases.
 For a new fixture, add `NAME.hs` and any `NAME/edits`, `NAME/preamble.v`, or
 `NAME/midamble.v`, then register it in the shared category list. Add an assertion
 that observes the intended effect, not just code that happens to compile.
-For a new directive, extend `Edits.hs` and this matrix: its exhaustive `editKind`
+For a new directive, extend `test/Edits.hs` and this matrix: its exhaustive `editKind`
 match is compiled with `-Wall -Werror` so a new constructor needs an inventory
 entry.
 

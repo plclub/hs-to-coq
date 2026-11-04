@@ -1,0 +1,3 @@
+skip class DerivingInline.Rejected
+skip DerivingInline.Default__Wrapped
+order DerivingInline.Keep__bool DerivingInline.Keep__Wrapped_keep
